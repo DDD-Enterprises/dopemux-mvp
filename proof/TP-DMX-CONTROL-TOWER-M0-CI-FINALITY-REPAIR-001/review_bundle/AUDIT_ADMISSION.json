@@ -1,0 +1,60 @@
+{
+  "activation_authorized": false,
+  "audited_commit": "34dd1cac8362e00d0fcd42c6be966274c8b44b46",
+  "audited_tree": "3e080750825440474f9bc0fd3af4e0552086813c",
+  "auditor_route": {
+    "effort": "high",
+    "model_observed": "claude-opus-5",
+    "model_requested": "opus",
+    "provider_attested_model": "UNKNOWN",
+    "raw_sha256": "1f9532603432f2968240ad2f6d33f87278592846775cd50460c1b6cbd92ef635",
+    "runner": "Claude Code 2.1.276",
+    "subagents": 0
+  },
+  "authority_effect": "PROOF_PACKAGING_FOR_EXACT_H1_ONLY",
+  "blocking_findings": 0,
+  "evidence_refs_total": 39,
+  "evidence_refs_unresolved": 0,
+  "freeze_checksums": "PASS",
+  "m1_m7_authorized": false,
+  "mark_ready_authorized": false,
+  "merge_authorized": false,
+  "native_verdict": "PASS_WITH_RISKS",
+  "proof_packaging_eligible": true,
+  "recorded_at_utc": "2026-09-18T10:40:57.583711+00:00",
+  "residual_risks": [
+    {
+      "id": "R1",
+      "severity": "medium",
+      "title": "No clean Linux/Python 3.11 CI execution of H1 is in the package"
+    },
+    {
+      "id": "R2",
+      "severity": "low",
+      "title": "Isolated reproduction installed from an offline wheelhouse repacked from local caches, not from a package index"
+    },
+    {
+      "id": "R3",
+      "severity": "low",
+      "title": "Dependency is an unpinned floor (`jsonschema>=4.20.0`) resolved from PyPI at hook-install time"
+    },
+    {
+      "id": "R4",
+      "severity": "low",
+      "title": "Parent validation logs are bare outputs without captured commands, exit codes, or environment preconditions"
+    },
+    {
+      "id": "R5",
+      "severity": "low",
+      "title": "The CT hook's `files:` filter excludes `.pre-commit-config.yaml`, so the changed-file pre-commit for H1 itself skipped the hook"
+    }
+  ],
+  "status": "PASS_WITH_RISKS_ADMITTED",
+  "subject_sha256": "47a64b44cdaf7692d0711f2d6bf52e2bc2531936a34900edf60b7a21a8f23c7c",
+  "unknown_disposition": {
+    "U1": "CLOSED_BY_PARENT_GIT_COMMIT_TREE_AND_PATCH_RECOMPUTATION",
+    "U2": "CLOSED_SERIALIZATION_ONLY: validation receipt hashed working-tree patch serialization; freeze binds full-index committed patch for the same one-file delta",
+    "U3": "CLOSED_BY_PARENT_MANIFEST_AND_FILE_SHA256_RECOMPUTATION",
+    "U4": "PRESERVED_UNTIL_POST_PUSH_LINUX_CI"
+  }
+}

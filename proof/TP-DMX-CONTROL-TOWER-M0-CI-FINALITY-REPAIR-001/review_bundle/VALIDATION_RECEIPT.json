@@ -1,0 +1,27 @@
+{
+  "base_head": "9e9605fc7c01accefc5d2f6d72f25dd3f6eea9dc",
+  "changed_paths": [
+    ".pre-commit-config.yaml"
+  ],
+  "model_calls": 0,
+  "parent_validation": {
+    "change_contract_sha256": "c60baffe455286c16851e919ecf608fd63df8697c501ac6162b1006b25aece98",
+    "changed_precommit_log_sha256": "4eb90e10f63e27dd09fb3085326f07b226bca8fbd5d3741080e194b52d9fbfc8",
+    "control_tower_tests_log_sha256": "16767ae6c90bb4ecae824869042326130440cc75a8113de13a5fd862737805d1",
+    "diff_check_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "gec_tests_log_sha256": "52fa0c30831e9360a3372526ffeac2db69460f0aaf5e69504f3fbe9b490b5146",
+    "isolated_hook_log_sha256": "4d7347902b6bbc9cb9396162382975fecabe6d7e3d5db8f18d79c2eda010a300"
+  },
+  "recorded_at_utc": "2026-09-18T10:30:17.807089+00:00",
+  "repair_diff_sha256": "3f3e5a35e433d1d8cc1e0bdadad4fd2155466b5ec01c782888107f07595a2a00",
+  "results": {
+    "change_contract": "PASS_L2_AUDIT_REQUIRED",
+    "changed_precommit": "PASS",
+    "control_tower": "PASS_47",
+    "diff_check": "PASS",
+    "gec": "PASS_590",
+    "isolated_hook": "PASS_47"
+  },
+  "workstream": "W03_VALIDATION_PRE_H1",
+  "writer_custody": "shell/local"
+}
