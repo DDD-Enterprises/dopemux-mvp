@@ -25,7 +25,8 @@ repos:
       - id: control-tower-kit-tests
         name: Validate Control Tower kit contracts
         entry: python3 -m unittest discover -s .control-tower/tests -p test_*.py
-        language: system
+        language: python
+        additional_dependencies: ['jsonschema>=4.20.0']
         files: ^(\.control-tower/|AGENTS\.md$|\.claude/(PROJECT_INSTRUCTIONS|claude|llm|llms)\.md$|\.claude/modules/shared/governance-principles\.md$|\.github/copilot-instructions\.md$|schemas/governed_execution/)
         pass_filenames: false
 
