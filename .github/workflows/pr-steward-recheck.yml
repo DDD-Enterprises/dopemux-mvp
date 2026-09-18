@@ -108,11 +108,14 @@ jobs:
                   require(workflow.get("path") == path, "workflow path mismatch")
                   return positive_int(workflow.get("id"))
 
-              def trusted_run(run, run_id, expected_workflow, name, path):
-                  return (run.get("id") == run_id and same_repo(run.get("repository"))
-                          and run.get("workflow_id") == expected_workflow
-                          and run.get("name") == name and run.get("path") == path
-                          and run.get("status") == "completed" and run.get("conclusion") == "success")
+              def trusted_run(run, run_id, expected_workflow, name, path, *, successful=True):
+                  trusted = (run.get("id") == run_id and same_repo(run.get("repository"))
+                             and run.get("workflow_id") == expected_workflow
+                             and run.get("name") == name and run.get("path") == path
+                             and run.get("status") == "completed")
+                  if successful:
+                      trusted = trusted and run.get("conclusion") == "success"
+                  return trusted
 
               def association(run):
                   prs = run.get("pull_requests")
@@ -130,8 +133,15 @@ jobs:
                   source = event["workflow_run"]
                   ci_id = workflow_id(CI_PATH)
                   source_id = positive_int(source.get("id"))
-                  require(trusted_run(source, source_id, ci_id, CI_NAME, CI_PATH)
-                          and source.get("event") == "pull_request", "CI source mismatch")
+                  require(trusted_run(source, source_id, ci_id, CI_NAME, CI_PATH,
+                                      successful=False),
+                          "CI source identity mismatch")
+                  if source.get("event") != "pull_request":
+                      print("RECHECK_NOOP: CI source event is not pull_request")
+                      return
+                  if source.get("conclusion") != "success":
+                      print("RECHECK_NOOP: CI run did not succeed")
+                      return
                   associated_pr = association(source)
                   if associated_pr is None:
                       print("RECHECK_NOOP: CI run has no PR association")
@@ -151,9 +161,7 @@ jobs:
                   pr_number = positive_int(event_prs[0].get("number"))
                   if "number" in event:
                       require(positive_int(event["number"]) == pr_number, "event PR number mismatch")
-                  review = event.get("review") or {}
-                  if "commit_id" in review:
-                      event_heads.append(review["commit_id"])
+                  # review.commit_id may be stale; the live PR head governs reclassification.
               elif event_name == "workflow_dispatch":
                   pr_number = positive_int(event.get("inputs", {}).get("pr_number"))
               else:
@@ -201,14 +209,19 @@ jobs:
                       runs[run_id] = api(f"{prefix}/actions/runs/{run_id}")
                   # Audit run.head_sha can be the base SHA for pull_request_target.
                   # Candidate identity comes from the exact artifact name; Steward checks proof bytes.
-                  if trusted_run(runs[run_id], run_id, audit_workflow, "embedded-audit", AUDIT_PATH):
+                  # Conclusion is gated after selection so a newer failed audit dominates older green.
+                  if trusted_run(runs[run_id], run_id, audit_workflow, "embedded-audit",
+                                 AUDIT_PATH, successful=False):
                       candidates.append((created, artifact_id, run_id))
-              require(bool(candidates), "no reusable successful audit artifact")
+              require(bool(candidates), "no reusable trusted audit artifact")
               candidates.sort(reverse=True)
               selected = candidates[0]
               require(sum(row[:2] == selected[:2] for row in candidates) == 1,
                       "ambiguous latest audit artifact")
               _, artifact_id, run_id = selected
+              require(trusted_run(runs[run_id], run_id, audit_workflow,
+                                  "embedded-audit", AUDIT_PATH),
+                      "latest trusted exact-head audit run is not successful")
 
               # Steward receives a run ID, not an artifact ID. Its own selector must be unambiguous.
               run_artifacts = artifacts(f"{prefix}/actions/runs/{run_id}/artifacts")

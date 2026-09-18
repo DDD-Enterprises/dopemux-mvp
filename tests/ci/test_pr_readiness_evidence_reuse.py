@@ -230,7 +230,7 @@ def test_repository_identity_must_match_context(monkeypatch, tmp_path, source, c
     assert dispatches == []
 
 
-@pytest.mark.parametrize("change", ["number", "head", "base_repo", "review_head", "action"])
+@pytest.mark.parametrize("change", ["number", "head", "base_repo", "action"])
 def test_stale_or_invalid_review_event_fails_closed(monkeypatch, tmp_path, change):
     data = fixture("pull_request_review", "submitted")
     event = data["event"]
@@ -240,13 +240,21 @@ def test_stale_or_invalid_review_event_fails_closed(monkeypatch, tmp_path, chang
         event["pull_request"]["head"]["sha"] = BASE
     elif change == "base_repo":
         event["pull_request"]["base"]["repo"]["full_name"] = "attacker/repo"
-    elif change == "review_head":
-        event["review"] = {"commit_id": BASE}
     else:
         event["action"] = "edited"
     dispatches, error, _ = execute(monkeypatch, tmp_path, data)
     assert error
     assert dispatches == []
+
+
+@pytest.mark.parametrize("action", ["submitted", "dismissed"])
+def test_stale_review_commit_still_dispatches_exact_head_recheck(monkeypatch, tmp_path, action):
+    data = fixture("pull_request_review", action)
+    data["event"]["review"] = {"commit_id": BASE}
+    dispatches, error, _ = execute(monkeypatch, tmp_path, data)
+    assert error is None
+    assert dispatches == [(f"{PREFIX}/actions/workflows/pr-steward.yml/dispatches",
+                           {"ref": "main", "inputs": {"audit_run_id": "90"}})]
 
 
 @pytest.mark.parametrize("filename", ["ci-complete.yml", "embedded-audit.yml", "pr-steward.yml"])
@@ -271,15 +279,38 @@ def test_api_errors_do_not_dispatch_or_retry(monkeypatch, tmp_path, endpoint):
 
 @pytest.mark.parametrize("field,value", [
     ("name", "other CI"), ("path", ".github/workflows/other.yml"),
-    ("workflow_id", 99), ("event", "push"), ("conclusion", "failure"),
-    ("status", "in_progress"), ("head_sha", BASE),
+    ("workflow_id", 99), ("status", "in_progress"), ("head_sha", BASE),
     ("repository", {"id": 99, "full_name": "attacker/repo"}),
 ])
 @pytest.mark.parametrize("source", ["event", "live"])
-def test_ci_completion_requires_exact_source_event_success_head(monkeypatch, tmp_path, field, value, source):
+def test_ci_completion_requires_trusted_source_identity_and_head(monkeypatch, tmp_path, field, value, source):
     data = fixture("workflow_run")
     run = data["event"]["workflow_run"] if source == "event" else data["ci_run"]
     run[field] = value
+    dispatches, error, _ = execute(monkeypatch, tmp_path, data)
+    assert error
+    assert dispatches == []
+
+
+@pytest.mark.parametrize("field,value", [
+    ("event", "push"), ("event", "merge_group"),
+    ("conclusion", "failure"), ("conclusion", "cancelled"), ("conclusion", None),
+])
+def test_irrelevant_or_unsuccessful_ci_completion_is_quiet_noop(monkeypatch, tmp_path, field, value):
+    data = fixture("workflow_run")
+    data["event"]["workflow_run"][field] = value
+    dispatches, error, reads = execute(monkeypatch, tmp_path, data)
+    assert error is None
+    assert dispatches == []
+    assert not any("/pulls/" in route or "artifacts" in route for route in reads)
+
+
+@pytest.mark.parametrize("field,value", [
+    ("event", "push"), ("conclusion", "failure"), ("conclusion", "cancelled"),
+])
+def test_live_ci_refresh_contradiction_fails_closed(monkeypatch, tmp_path, field, value):
+    data = fixture("workflow_run")
+    data["ci_run"][field] = value
     dispatches, error, _ = execute(monkeypatch, tmp_path, data)
     assert error
     assert dispatches == []
@@ -371,11 +402,28 @@ def test_artifact_creation_time_takes_priority_over_id(monkeypatch, tmp_path):
     assert dispatches[0][1]["inputs"] == {"audit_run_id": "90"}
 
 
-@pytest.mark.parametrize("change", [
-    {"conclusion": "failure"}, {"name": "impostor"},
-    {"path": "untrusted/embedded-audit.yml"}, {"workflow_id": 99},
+@pytest.mark.parametrize("conclusion", [
+    "failure", "cancelled", "timed_out", "stale", None,
 ])
-def test_newer_unusable_run_is_not_reused(monkeypatch, tmp_path, change):
+def test_newer_trusted_non_success_audit_fails_closed(monkeypatch, tmp_path, conclusion):
+    data = fixture()
+    newer = {**data["artifacts"][0], "id": 101, "created_at": "2026-01-02T00:00:00Z",
+             "workflow_run": {"id": 91, "repository_id": 7}}
+    data["other_runs"] = {91: {**data["run"], "id": 91, "conclusion": conclusion}}
+    data["artifacts"].append(newer)
+    dispatches, error, _ = execute(monkeypatch, tmp_path, data)
+    assert error
+    assert dispatches == []
+
+
+@pytest.mark.parametrize("change", [
+    {"name": "impostor"},
+    {"path": "untrusted/embedded-audit.yml"},
+    {"workflow_id": 99},
+    {"status": "in_progress"},
+    {"repository": {"id": 7, "full_name": "attacker/repo"}},
+])
+def test_newer_untrusted_run_is_not_considered(monkeypatch, tmp_path, change):
     data = fixture()
     newer = {**data["artifacts"][0], "id": 101, "created_at": "2026-01-02T00:00:00Z",
              "workflow_run": {"id": 91, "repository_id": 7}}
