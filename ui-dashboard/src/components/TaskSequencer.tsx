@@ -778,6 +778,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
       ) : (
         <Box
           role="status"
+          aria-live="polite"
           aria-label="Ritual Complete: All tasks finished"
           sx={{
             mb: 3,
