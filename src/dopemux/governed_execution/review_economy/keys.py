@@ -7,6 +7,7 @@ module never reads the wall clock.
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from dataclasses import dataclass
 from datetime import datetime
@@ -80,14 +81,19 @@ class ReviewReceiptKey:
     """Identity of a reviewable subject: what kind of review, at what head,
     under what policy, by what class of reviewer.
 
-    Equality of two keys is equality of their four fields, which is in turn
-    equality of their digests: digest is a pure function of the fields.
+    Final independent audits also require packet_id and freeze_sha256, the
+    caller-supplied digest of the FreezeReceipt content (never its display
+    path). For other review types these fields are optional; when supplied,
+    they narrow identity in exactly the same way. Omitted optional fields
+    preserve the legacy four-field identity and digest.
     """
 
     review_type: str
     head_sha: str
     policy_digest: str
     reviewer_class: str
+    packet_id: str | None = None
+    freeze_sha256: str | None = None
 
     def __post_init__(self) -> None:
         if self.review_type not in REVIEW_TYPES:
@@ -102,10 +108,23 @@ class ReviewReceiptKey:
             raise ValueError(
                 f"policy_digest is not a sha256 digest: {self.policy_digest!r}"
             )
+        if self.packet_id is not None:
+            if not isinstance(self.packet_id, str) or not self.packet_id:
+                raise ValueError("packet_id must be a non-empty ASCII string")
+            _require_ascii(self.packet_id, "packet_id")
+        if self.freeze_sha256 is not None and not is_sha256(self.freeze_sha256):
+            raise ValueError("freeze_sha256 must be a lowercase sha256 content digest")
+        if self.review_type == "FINAL_INDEPENDENT_AUDIT":
+            if self.packet_id is None or self.freeze_sha256 is None:
+                raise ValueError("FINAL_INDEPENDENT_AUDIT requires packet_id and freeze_sha256")
 
     @property
     def digest(self) -> str:
-        """sha256 of the four fields joined by newline, in fixed order."""
+        """Hash legacy fields plus an unambiguous optional identity suffix.
+
+        JSON framing escapes arbitrary ASCII packet identifiers and retains
+        None distinctly. No suffix is added for legacy four-field keys.
+        """
         joined = "\n".join(
             (
                 self.review_type,
@@ -114,6 +133,10 @@ class ReviewReceiptKey:
                 self.reviewer_class,
             )
         )
+        if self.packet_id is not None or self.freeze_sha256 is not None:
+            joined += "\n" + json.dumps(
+                (self.packet_id, self.freeze_sha256), ensure_ascii=True, separators=(",", ":")
+            )
         return hashlib.sha256(joined.encode("ascii")).hexdigest()
 
 

@@ -4,6 +4,15 @@ from __future__ import annotations
 
 import pytest
 
+from dopemux.governed_execution.audit_identity.independence import (
+    DIFFERENT_FAMILY,
+    DIFFERENT_FAMILY_AND_RUNTIME,
+    DIFFERENT_RUNTIME,
+    SAME_FAMILY_DIFFERENT_SESSION,
+    SELF_CERTIFICATION_RISK,
+    UNKNOWN,
+    IndependenceAssessment,
+)
 from dopemux.governed_execution.freeze.finality import (
     AuditReceiptRef,
     SubjectMismatch,
@@ -29,6 +38,7 @@ _REPO_IDENTITY = RepoIdentity(
 )
 _HEAD_SHA = "b" * 40
 _FREEZE_REF = EvidenceRef(path="proof/W04/freeze_receipt.json", sha256="e" * 64)
+_INDEPENDENCE = IndependenceAssessment(DIFFERENT_FAMILY_AND_RUNTIME, ("known identities",))
 
 
 def _frozen_lifecycle() -> FreezeLifecycle:
@@ -73,6 +83,7 @@ def test_audited_head_equals_finality_head_validates() -> None:
         packet_id="TP-X",
         macro_id="MACRO-X",
         provenance=_PROVENANCE,
+        independence_assessment=_INDEPENDENCE,
     )
     assert receipt["audited_head"] == receipt["finality_head"] == _HEAD_SHA
     assert receipt["exact_head_equality"] is True
@@ -93,6 +104,7 @@ def test_audited_head_ne_finality_head_raises_subject_mismatch() -> None:
             packet_id="TP-X",
             macro_id="MACRO-X",
             provenance=_PROVENANCE,
+            independence_assessment=_INDEPENDENCE,
         )
 
 
@@ -111,6 +123,7 @@ def test_audited_head_ne_freeze_head_raises_audit_before_freeze() -> None:
             packet_id="TP-X",
             macro_id="MACRO-X",
             provenance=_PROVENANCE,
+            independence_assessment=_INDEPENDENCE,
         )
 
 
@@ -128,6 +141,7 @@ def test_authoring_from_unfrozen_subject_raises_audit_before_freeze() -> None:
             packet_id="TP-X",
             macro_id="MACRO-X",
             provenance=_PROVENANCE,
+            independence_assessment=_INDEPENDENCE,
         )
 
 
@@ -144,6 +158,7 @@ def test_authored_receipt_always_has_merge_and_activation_authorized_false() -> 
         packet_id="TP-X",
         macro_id="MACRO-X",
         provenance=_PROVENANCE,
+        independence_assessment=_INDEPENDENCE,
     )
     assert receipt["merge_authorized"] is False
     assert receipt["activation_authorized"] is False
@@ -164,5 +179,62 @@ def test_steward_readiness_none_becomes_unknown() -> None:
         packet_id="TP-X",
         macro_id="MACRO-X",
         provenance=_PROVENANCE,
+        independence_assessment=_INDEPENDENCE,
     )
     assert receipt["steward_readiness"] == "UNKNOWN"
+
+
+def _author_with_assessment(**kwargs):
+    return author_finality_receipt(
+        _frozen_lifecycle(),
+        _FREEZE_REF,
+        _audit_ref(),
+        finality_head=_HEAD_SHA,
+        pr_ref="NOT_RUN",
+        steward_snapshot=None,
+        recorded_at="2026-09-11T15:00:00Z",
+        packet_id="TP-X",
+        macro_id="MACRO-X",
+        provenance=_PROVENANCE,
+        **kwargs,
+    )
+
+
+def test_missing_independence_cannot_author_finality() -> None:
+    with pytest.raises(ValueError, match="independence"):
+        _author_with_assessment()
+
+
+@pytest.mark.parametrize(
+    "assessment",
+    [
+        None,
+        {"class_": DIFFERENT_FAMILY_AND_RUNTIME, "reasons": (), "authority": "NONE"},
+        IndependenceAssessment(UNKNOWN, ("provider not comparable",)),
+        IndependenceAssessment(DIFFERENT_FAMILY, (), authority="READY"),
+        IndependenceAssessment(DIFFERENT_RUNTIME, (SELF_CERTIFICATION_RISK,)),
+        IndependenceAssessment(
+            DIFFERENT_FAMILY_AND_RUNTIME,
+            ("otherwise known", f"upstream: {SELF_CERTIFICATION_RISK}: shared identity"),
+        ),
+    ],
+    ids=["none", "wrong-type", "unknown", "authority", "self-certification", "risk-substring"],
+)
+def test_invalid_independence_cannot_author_finality(assessment: object) -> None:
+    with pytest.raises(ValueError, match="independence"):
+        _author_with_assessment(independence_assessment=assessment)
+
+
+@pytest.mark.parametrize(
+    "class_",
+    [DIFFERENT_FAMILY_AND_RUNTIME, DIFFERENT_FAMILY, DIFFERENT_RUNTIME, SAME_FAMILY_DIFFERENT_SESSION],
+)
+def test_known_independence_can_author_finality_without_narrowing_route_policy(class_: str) -> None:
+    receipt = _author_with_assessment(
+        independence_assessment=IndependenceAssessment(class_, ("known identity comparison",))
+    )
+    assert receipt["finality_head"] == _HEAD_SHA
+    assert receipt["authority"] == "NONE"
+    assert receipt["merge_authorized"] is False
+    assert receipt["activation_authorized"] is False
+    assert "independence_assessment" not in receipt

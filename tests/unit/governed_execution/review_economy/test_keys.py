@@ -1,6 +1,8 @@
 """Tests for dopemux.governed_execution.review_economy.keys."""
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from dopemux.governed_execution.review_economy.keys import (
@@ -146,7 +148,63 @@ def test_reviewer_class_closed_set_rejects_unknown():
 
 @pytest.mark.parametrize("review_type", sorted(REVIEW_TYPES))
 def test_every_review_type_accepted(review_type: str):
-    make_key(review_type=review_type)
+    if review_type == "FINAL_INDEPENDENT_AUDIT":
+        replace(make_key(), review_type=review_type, packet_id="TP-X", freeze_sha256="f" * 64)
+    else:
+        make_key(review_type=review_type)
+
+
+def test_code_review_four_positional_fields_preserve_legacy_identity():
+    key = ReviewReceiptKey("CODE_REVIEW", HEAD_A, POLICY_DIGEST_A, "MODEL_STANDARD")
+    assert key == make_key()
+    assert key.digest == make_key().digest
+
+
+@pytest.mark.parametrize(
+    "identity",
+    [{}, {"packet_id": "TP-X"}, {"freeze_sha256": "f" * 64}],
+)
+def test_final_audit_rejects_missing_packet_or_freeze_identity(identity):
+    with pytest.raises(ValueError, match="packet_id|freeze_sha256"):
+        replace(make_key(), review_type="FINAL_INDEPENDENT_AUDIT", **identity)
+
+
+@pytest.mark.parametrize("review_type", ["CODE_REVIEW", "FINAL_INDEPENDENT_AUDIT"])
+@pytest.mark.parametrize("packet_id", ["", "caf\u00e9", 42, b"TP-X"])
+def test_packet_identity_requires_nonempty_ascii_string(review_type, packet_id):
+    with pytest.raises(ValueError, match="packet_id"):
+        replace(make_key(), review_type=review_type, packet_id=packet_id, freeze_sha256="f" * 64)
+
+
+@pytest.mark.parametrize("review_type", ["CODE_REVIEW", "FINAL_INDEPENDENT_AUDIT"])
+@pytest.mark.parametrize("freeze_sha256", ["", "proof/freeze.json", "f" * 63, "f" * 65, "F" * 64, "f" * 64 + "\n", 42])
+def test_freeze_identity_requires_lowercase_sha256(review_type, freeze_sha256):
+    with pytest.raises(ValueError, match="freeze_sha256"):
+        replace(make_key(), review_type=review_type, packet_id="TP-X", freeze_sha256=freeze_sha256)
+
+
+@pytest.mark.parametrize("review_type", ["CODE_REVIEW", "FINAL_INDEPENDENT_AUDIT"])
+def test_packet_and_freeze_identity_affect_equality_and_digest(review_type):
+    base = replace(make_key(), review_type=review_type, packet_id="TP-X", freeze_sha256="f" * 64)
+    assert replace(base) == base
+    assert replace(base).digest == base.digest
+    for changed in [replace(base, packet_id="TP-Y"), replace(base, freeze_sha256="e" * 64)]:
+        assert changed != base
+        assert changed.digest != base.digest
+
+
+def test_optional_nonfinal_identity_is_unambiguous_and_narrows_legacy_key():
+    base = make_key()
+    keys = [
+        base,
+        replace(base, packet_id="TP-X"),
+        replace(base, freeze_sha256="f" * 64),
+        replace(base, packet_id="TP-X", freeze_sha256="f" * 64),
+        replace(base, packet_id="TP-X\nf"),
+        replace(base, packet_id="TP-X\\nf"),
+    ]
+    assert len(set(keys)) == len(keys)
+    assert len({key.digest for key in keys}) == len(keys)
 
 
 @pytest.mark.parametrize("reviewer_class", sorted(REVIEWER_CLASSES))
