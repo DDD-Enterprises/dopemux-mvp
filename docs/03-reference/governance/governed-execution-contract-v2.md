@@ -111,7 +111,7 @@ unknowable rather than simply not-yet-assigned.
 
 Every schema in this set that carries a scalar `authority` field sets it to
 the constant `NONE`. Concretely: `execution_binding.v2`, `task_packet.v2`,
-`admission_receipt.v1`, `writer_custody_receipt.v1`, `freeze_receipt.v1`,
+`admission_receipt.v1`, `dispatch_input_receipt.v1`, `writer_custody_receipt.v1`, `freeze_receipt.v1`,
 `finality_receipt.v1` and `aggregate_return_envelope.v1` all carry
 `"authority": "NONE"` directly. `macro_packet.v2` retains the kit v1
 `authority` object (`operator_refs`, `global_allowed_actions`,
@@ -149,6 +149,7 @@ what may happen next: `finality_receipt.v1.merge_authorized` and
 | ExecutionBinding v2 | `execution_binding.v2.schema.json` | `dopemux.governed_execution.execution_binding.v2` | ACTIVE |
 | TaskPacket v2 | `task_packet.v2.schema.json` | `dopemux.governed_execution.task_packet.v2` | ACTIVE |
 | AdmissionReceipt v1 | `admission_receipt.v1.schema.json` | `dopemux.governed_execution.admission_receipt.v1` | ACTIVE |
+| DispatchInputReceipt v1 | `dispatch_input_receipt.v1.schema.json` | `dopemux.governed_execution.dispatch_input_receipt.v1` | ACTIVE |
 | WriterCustodyReceipt v1 | `writer_custody_receipt.v1.schema.json` | `dopemux.governed_execution.writer_custody_receipt.v1` | ACTIVE |
 | FreezeReceipt v1 | `freeze_receipt.v1.schema.json` | `dopemux.governed_execution.freeze_receipt.v1` | ACTIVE |
 | FinalityReceipt v1 | `finality_receipt.v1.schema.json` | `dopemux.governed_execution.finality_receipt.v1` | ACTIVE |
@@ -157,6 +158,39 @@ what may happen next: `finality_receipt.v1.merge_authorized` and
 | ExecutionBinding v1 (kit) | `.control-tower/schemas/execution_binding.schema.json` | `control_tower.execution_binding.v1` | LEGACY_READ_ONLY |
 
 The full, sha256-bound record of this table is `schemas/governed_execution/manifest.v1.json`.
+
+### Dispatch input subject binding
+
+`dispatch_input_receipt.v1` records five existing upstream facts in closed
+`receipt_type` branches. Every branch requires `schema_version`, `receipt_type`,
+non-empty `macro_id`, `packet_id` and `source_ref`, and `authority: NONE`.
+Only these branch-specific fact fields are allowed and required:
+
+| `receipt_type` | Fact fields |
+| --- | --- |
+| `ScopeAuthority` | `scope_status` (`PASS`, `BLOCKED`, `UNKNOWN`), `allowlist_digest` |
+| `WorkflowLegality` | `transition_legal`, `blockers` |
+| `PolicyEligibility` | `dcp_status` |
+| `OperatorGate` | `required`, `granted`, `receipt_ref` |
+| `DriftOverlap` | `drift_class` |
+
+Workflow and gate booleans accept `null` for existing unknown/unresolved states;
+`receipt_ref` accepts `null` when absent. DCP status, drift class and digest
+constraints reference `enums.v1`; scope status uses closed `const` alternatives.
+These receipts record evidence without originating route or workflow authority.
+
+`writer_custody_receipt.v1` also requires non-empty `macro_id` alongside
+`packet_id`. `author_custody_receipt(..., macro_id=...)` requires an explicit
+macro identity and never derives it from the packet ID. Existing custody
+records missing that identity fail current schema validation.
+
+The runtime `validate_receipt()` boundary can validate these contracts into
+`ValidatedReceipt` records. Schema validation checks shape, not upstream source
+authenticity or equality with the dispatch subject. W02A establishes the input
+contracts; W02B owns enforcement of matching macro/packet identities across
+all seven DispatchQualification slots. No dispatch enforcement is added here.
+
+### Closed conditional shapes
 
 Conditionals in this schema set are expressed as closed `oneOf` branches,
 never `if`/`then`/`else`: `additionalProperties:false` inside an `if`

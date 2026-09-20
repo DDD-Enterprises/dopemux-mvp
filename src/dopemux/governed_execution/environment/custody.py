@@ -26,8 +26,9 @@ class CustodyRefused(Exception):
 
     reason is a short, human-readable explanation. Refusal happens
     whenever facts.outside_root_writes is True (a proven out-of-scope
-    write) or None (unprovable): a receipt is never authored describing a
-    writer that may have written outside its filesystem scope.
+    write) or None (unprovable), or macro_id is not a non-empty string:
+    a receipt is never authored for an unidentified macro or a writer
+    that may have written outside its filesystem scope.
     """
 
     def __init__(self, reason: str) -> None:
@@ -96,12 +97,16 @@ def author_custody_receipt(
     lease: WriterLease,
     facts: ObservedFacts,
     now: str,
+    *,
+    macro_id: str,
 ) -> dict[str, Any]:
     """Author a WriterCustodyReceipt dict from plan, writer, lease and facts.
 
     now is an RFC 3339 UTC timestamp supplied by the caller, used only to
     decide whether lease has expired. Raises CustodyRefused when
-    facts.outside_root_writes is True or None.
+    facts.outside_root_writes is True or None, or macro_id is not a
+    non-empty string. The macro identity is explicit, never inferred
+    from plan.packet_id.
     """
     if facts.outside_root_writes is not False:
         raise CustodyRefused(
@@ -111,10 +116,14 @@ def author_custody_receipt(
             )
         )
 
+    if not isinstance(macro_id, str) or not macro_id:
+        raise CustodyRefused(reason="macro_id must be a non-empty string")
+
     custody_state = _custody_state(facts, lease, now)
 
     return {
         "schema_version": "dopemux.governed_execution.writer_custody_receipt.v1",
+        "macro_id": macro_id,
         "packet_id": plan.packet_id,
         "repo_identity": {
             "origin_url": plan.repo_identity.origin_url,

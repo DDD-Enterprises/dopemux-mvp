@@ -26,6 +26,12 @@
       "sha256": "20d8cfc72f71dee8344d59f835411bfc7c8145320f8967b9086ab5ef038ccacb"
     },
     {
+      "path": "schemas/governed_execution/dispatch_input_receipt.v1.schema.json",
+      "schema_version": "dopemux.governed_execution.dispatch_input_receipt.v1",
+      "status": "ACTIVE",
+      "sha256": "64f3990a04b946a81e5a2643cbeb088d7a653338334282b95148b935d248d53b"
+    },
+    {
       "path": "schemas/governed_execution/enums.v1.schema.json",
       "schema_version": "dopemux.governed_execution.enums.v1",
       "status": "ACTIVE",
@@ -65,7 +71,7 @@
       "path": "schemas/governed_execution/writer_custody_receipt.v1.schema.json",
       "schema_version": "dopemux.governed_execution.writer_custody_receipt.v1",
       "status": "ACTIVE",
-      "sha256": "ef2053fee2ce58b31e195cd8d9a9ebf06e330e51ca90f078000ee86bb96bc837"
+      "sha256": "2839107c65369826947b79780fa12a7518f205f2bb6fab975fb313295577d6ec"
     }
   ],
   "compatibility": {

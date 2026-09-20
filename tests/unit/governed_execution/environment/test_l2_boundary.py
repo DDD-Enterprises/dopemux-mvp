@@ -86,9 +86,13 @@ def test_plan_and_receipt_authoring_succeed_with_side_effects_blocked() -> None:
         worktree_exists=True,
         branch_matches=True,
     )
-    receipt = author_custody_receipt(plan, writer, lease, facts, now="2026-09-11T12:00:00Z")
+    receipt = author_custody_receipt(
+        plan, writer, lease, facts,
+        now="2026-09-11T12:00:00Z", macro_id="MACRO-EXPLICIT-001",
+    )
     assert receipt["custody_state"] == "HELD"
     assert receipt["authority"] == "NONE"
+    assert receipt["macro_id"] == "MACRO-EXPLICIT-001"
 
 
 def test_no_forbidden_tokens_in_package_source() -> None:
