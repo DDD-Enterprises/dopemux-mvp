@@ -8,6 +8,10 @@ otherwise); on top of that, ``audited_head`` must exactly equal
 ``finality_head`` (the "exact-head rule" a JSON Schema cannot express on its
 own), or ``SubjectMismatch`` is raised.
 
+The caller must also supply a known ``IndependenceAssessment`` without
+self-certification risk. This authoring gate consumes the upstream assessment;
+it does not compare identities or enforce an L3 route policy.
+
 A FinalityReceipt authored here always carries ``merge_authorized`` and
 ``activation_authorized`` both ``False`` and ``authority`` ``"NONE"``:
 W04 records terminal state, it never mints merge or activation authority.
@@ -22,6 +26,11 @@ import json
 from dataclasses import dataclass
 from typing import Any, Mapping
 
+from dopemux.governed_execution.audit_identity.independence import (
+    SELF_CERTIFICATION_RISK,
+    UNKNOWN,
+    IndependenceAssessment,
+)
 from dopemux.governed_execution.freeze.lifecycle import FreezeLifecycle, attach_audit_ref
 from dopemux.governed_execution.receipts.store import EvidenceRef
 from dopemux.governed_execution.receipts.validate import Provenance, validate_receipt
@@ -32,6 +41,10 @@ _SCHEMA_VERSION = "dopemux.governed_execution.finality_receipt.v1"
 
 class SubjectMismatch(Exception):
     """Raised when an audit ref's audited_head does not equal finality_head."""
+
+
+class InvalidIndependenceAssessment(ValueError):
+    """Raised when caller-supplied independence cannot support finality authoring."""
 
 
 @dataclass(frozen=True)
@@ -63,6 +76,7 @@ def author_finality_receipt(
     packet_id: str,
     macro_id: str,
     provenance: Provenance,
+    independence_assessment: IndependenceAssessment | None = None,
 ) -> Mapping[str, Any]:
     """Author and schema-validate a FinalityReceipt.
 
@@ -70,7 +84,20 @@ def author_finality_receipt(
     is not FROZEN or ``audit_ref.audited_head`` does not equal the frozen
     ``head_sha``. Raises ``SubjectMismatch`` if ``audit_ref.audited_head``
     does not equal ``finality_head``.
+
+    Raises ``InvalidIndependenceAssessment`` for a missing/wrong-type,
+    authority-bearing, UNKNOWN or self-certification-risk assessment.
+    Assessment evidence is an authoring prerequisite, not a receipt field.
     """
+    if not isinstance(independence_assessment, IndependenceAssessment):
+        raise InvalidIndependenceAssessment("independence assessment is required")
+    if independence_assessment.authority != "NONE":
+        raise InvalidIndependenceAssessment("independence assessment authority must be NONE")
+    if independence_assessment.class_ == UNKNOWN:
+        raise InvalidIndependenceAssessment("independence assessment must not be UNKNOWN")
+    if any(SELF_CERTIFICATION_RISK in reason for reason in independence_assessment.reasons):
+        raise InvalidIndependenceAssessment("independence assessment contains SELF_CERTIFICATION_RISK")
+
     attach_audit_ref(
         lifecycle,
         EvidenceRef(path=audit_ref.path, sha256=audit_ref.sha256),

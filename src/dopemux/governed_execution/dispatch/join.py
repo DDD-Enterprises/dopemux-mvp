@@ -1,7 +1,7 @@
 """The W02 derived DispatchQualification join.
 
-qualify() is a PURE function over the seven already-validated receipt dicts
-plus caller-supplied provenance: no file reads, no subprocess, no digest
+qualify() is a PURE function over seven ValidatedReceipt values, an explicit
+expected subject, and caller-supplied provenance: no file reads, no subprocess, no digest
 computation, no schema validation, no clock reads. Same input, same output,
 always.
 
@@ -12,11 +12,11 @@ DISPATCHABLE, BLOCKED, or NEEDS_SUPERVISOR.
 
 Fixed rule precedence (a receipt or field may only ever push the result
 toward BLOCKED; nothing here can widen a denial or invent a pass):
-  1. any mandatory receipt absent or structurally malformed -> BLOCKED
+  1. any receipt absent, unvalidated, wrong-kind/type, or wrong-subject -> BLOCKED
   2. ExecutionBinding.authority != "NONE" -> BLOCKED
   3. PolicyEligibility.dcp_status == BLOCKED -> BLOCKED
-  4. WorkflowLegality.transition_legal is False -> BLOCKED
-  5. OperatorGate.required is True and granted is not True -> BLOCKED
+  4. WorkflowLegality.transition_legal is False or blockers present -> BLOCKED
+  5. OperatorGate.required is True without both grant and receipt -> BLOCKED
   6. CanonicalWriter.custody_state in (AMBIGUOUS, RELEASED) -> BLOCKED
   7. DriftOverlap.drift_class == CONFLICTING -> BLOCKED
   8. ScopeAuthority.scope_status == BLOCKED -> BLOCKED
@@ -33,16 +33,17 @@ soften a denial.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Literal
 
 from .receipts import (
-    EXTRACTORS,
     RECEIPT_FIELD,
     RECEIPT_NAMES,
     Finding,
     JoinInput,
     Provenance,
+    extract_receipt,
 )
 
 DispatchResult = Literal["DISPATCHABLE", "BLOCKED", "NEEDS_SUPERVISOR"]
@@ -66,6 +67,7 @@ _DENY_RULE: dict[tuple[str, str], int] = {
     ("ExecutionBinding", "authority"): 2,
     ("PolicyEligibility", "dcp_status"): 3,
     ("WorkflowLegality", "transition_legal"): 4,
+    ("WorkflowLegality", "blockers"): 4,
     ("OperatorGate", "gate"): 5,
     ("CanonicalWriter", "custody_state"): 6,
     ("DriftOverlap", "drift_class"): 7,
@@ -123,16 +125,17 @@ def _reason_for(finding: Finding) -> Reason:
 
 
 def qualify(inp: JoinInput) -> DispatchQualification:
-    """Derive a DispatchQualification from seven receipt dicts and provenance.
+    """Derive DispatchQualification from seven validated, same-subject receipts.
 
     Pure: no I/O, no digesting, no schema validation, no clock. Calling this
     twice with equal input always yields equal output.
     """
     findings: list[Finding] = []
     for name in RECEIPT_NAMES:
-        payload = inp.receipts.get(name)
-        extractor = EXTRACTORS[name]
-        findings.extend(extractor(payload))
+        receipt = inp.receipts.get(name) if isinstance(inp.receipts, Mapping) else None
+        findings.extend(
+            extract_receipt(name, receipt, macro_id=inp.macro_id, packet_id=inp.packet_id)
+        )
 
     reasons = sorted(
         (_reason_for(finding) for finding in findings if finding.effect != "OK"),

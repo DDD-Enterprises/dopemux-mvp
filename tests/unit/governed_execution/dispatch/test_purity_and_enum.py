@@ -1,80 +1,58 @@
-"""Purity and enum-fidelity tests for the W02 derived DispatchQualification join.
-
-qualify() must never touch the filesystem or a subprocess, must be
-deterministic (same input -> same output), must never claim execution
-authority, and its three output values must equal the schema's
-dispatch_qualification enum exactly.
-"""
+"""Dispatch remains pure, deterministic, advisory, and faithful to its enum."""
 from __future__ import annotations
 
 import builtins
+import hashlib
 import json
+import os
+import socket
 import subprocess
+import time
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
 import pytest
+from jsonschema import Draft7Validator
 
-from dopemux.governed_execution.dispatch import (
-    DISPATCH_QUALIFICATION_VALUES,
-    JoinInput,
-    Provenance,
-    qualify,
+from dopemux.governed_execution.dispatch import DISPATCH_QUALIFICATION_VALUES, qualify
+from tests.unit.governed_execution.dispatch.test_join_positive import (
+    _full_receipts,
+    _join_input,
+    _validated_receipt,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-ENUMS_SCHEMA_PATH = REPO_ROOT / "schemas" / "governed_execution" / "enums.v1.schema.json"
-
-
-def _full_receipts() -> dict[str, dict[str, object] | None]:
-    """A complete, all-clear set of seven receipt payloads."""
-    return {
-        "ScopeAuthority": {"scope_status": "PASS", "allowlist_digest": "a" * 64},
-        "WorkflowLegality": {"transition_legal": True, "blockers": []},
-        "PolicyEligibility": {"dcp_status": "PASS"},
-        "CanonicalWriter": {"custody_state": "HELD"},
-        "ExecutionBinding": {
-            "authority": "NONE",
-            "selection": {"runner_availability": "PROVEN"},
-        },
-        "OperatorGate": {"required": False, "receipt_ref": None, "granted": None},
-        "DriftOverlap": {"drift_class": "IDENTICAL"},
-    }
-
-
-def _provenance() -> Provenance:
-    return Provenance(
-        verified_by="w02-test",
-        verified_at="2026-09-11T00:00:00Z",
-        schema_set_digest="0" * 64,
-    )
+ENUMS_SCHEMA_PATH = REPO_ROOT / "schemas/governed_execution/enums.v1.schema.json"
 
 
 def test_qualify_is_pure_same_input_yields_equal_output() -> None:
-    inp = JoinInput(receipts=_full_receipts(), provenance=_provenance())
+    inp = _join_input(_full_receipts())
+    before = deepcopy(inp)
     first = qualify(inp)
     second = qualify(inp)
     assert first == second
-    assert first.reasons == second.reasons
+    assert first.result == "DISPATCHABLE"
+    assert inp == before
 
 
 def test_qualify_is_pure_across_fresh_equal_inputs() -> None:
-    first = qualify(JoinInput(receipts=_full_receipts(), provenance=_provenance()))
-    second = qualify(JoinInput(receipts=_full_receipts(), provenance=_provenance()))
+    first = qualify(_join_input(_full_receipts()))
+    second = qualify(_join_input(_full_receipts()))
     assert first == second
 
 
 def test_reasons_are_sorted_by_rule_then_receipt_and_deterministic() -> None:
     receipts = _full_receipts()
     receipts["ScopeAuthority"] = None
-    receipts["PolicyEligibility"] = {"dcp_status": "BLOCKED"}
-    receipts["DriftOverlap"] = {"drift_class": "UNKNOWN"}
-    inp = JoinInput(receipts=receipts, provenance=_provenance())
+    receipts["PolicyEligibility"] = _validated_receipt("PolicyEligibility", dcp_status="BLOCKED")
+    receipts["DriftOverlap"] = _validated_receipt("DriftOverlap", drift_class="UNKNOWN")
+    inp = _join_input(receipts)
 
     first = qualify(inp)
     second = qualify(inp)
-    assert first == second
-
+    reversed_input = _join_input(dict(reversed(list(receipts.items()))))
+    assert first == second == qualify(reversed_input)
     assert [(r.rule, r.receipt) for r in first.reasons] == [
         (1, "ScopeAuthority"),
         (3, "PolicyEligibility"),
@@ -83,21 +61,38 @@ def test_reasons_are_sorted_by_rule_then_receipt_and_deterministic() -> None:
     assert first.result == "BLOCKED"
 
 
-def test_qualify_never_opens_a_file_or_spawns_a_subprocess(
-    monkeypatch: pytest.MonkeyPatch,
+@pytest.mark.parametrize("invalid", [False, True], ids=["dispatchable", "blocked"])
+def test_qualify_has_no_io_clock_digest_or_schema_validation(
+    monkeypatch: pytest.MonkeyPatch, invalid: bool
 ) -> None:
-    def _raise_open(*_args: Any, **_kwargs: Any) -> Any:
-        raise AssertionError("qualify() must never open a file")
+    # Upstream validation performs I/O. Finish it before guarding the pure join.
+    receipts = _full_receipts()
+    if invalid:
+        receipts["ScopeAuthority"] = dict(receipts["ScopeAuthority"].payload)
+    inp = _join_input(receipts)
 
-    def _raise_run(*_args: Any, **_kwargs: Any) -> Any:
-        raise AssertionError("qualify() must never spawn a subprocess")
+    def forbidden(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("qualify() must only read its supplied receipt values")
 
-    monkeypatch.setattr(builtins, "open", _raise_open)
-    monkeypatch.setattr(subprocess, "run", _raise_run)
-
-    inp = JoinInput(receipts=_full_receipts(), provenance=_provenance())
-    result = qualify(inp)
-    assert result.result == "DISPATCHABLE"
+    with monkeypatch.context() as patch:
+        for target, attr in (
+            (builtins, "open"),
+            (Path, "open"),
+            (Path, "read_bytes"),
+            (Path, "read_text"),
+            (os, "open"),
+            (subprocess, "run"),
+            (subprocess, "Popen"),
+            (socket, "socket"),
+            (time, "time"),
+            (time, "monotonic"),
+            (hashlib, "sha256"),
+            (Draft7Validator, "iter_errors"),
+        ):
+            patch.setattr(target, attr, forbidden)
+        result = qualify(inp)
+    assert result.result == ("BLOCKED" if invalid else "DISPATCHABLE")
+    assert result.authority == "NONE"
 
 
 def test_dispatch_qualification_enum_matches_schema_exactly() -> None:
@@ -108,24 +103,21 @@ def test_dispatch_qualification_enum_matches_schema_exactly() -> None:
 
 
 @pytest.mark.parametrize(
-    "overrides",
+    ("name", "changes"),
     [
-        {},
-        {"PolicyEligibility": {"dcp_status": "BLOCKED"}},
-        {"PolicyEligibility": {"dcp_status": "UNKNOWN"}},
-        {"ExecutionBinding": None},
-        {"ExecutionBinding": {"authority": "GRANTED", "selection": {"runner_availability": "PROVEN"}}},
-        {"OperatorGate": {"required": True, "receipt_ref": "ref", "granted": False}},
-        {"CanonicalWriter": {"custody_state": "AMBIGUOUS"}},
-        {"DriftOverlap": {"drift_class": "CONFLICTING"}},
-        {"DriftOverlap": {"drift_class": "SUPERSET"}},
-        {"ScopeAuthority": "not-a-dict"},
+        ("PolicyEligibility", {"dcp_status": "PASS"}),
+        ("PolicyEligibility", {"dcp_status": "BLOCKED"}),
+        ("PolicyEligibility", {"dcp_status": "UNKNOWN"}),
+        ("OperatorGate", {"required": True, "granted": False, "receipt_ref": "operator:ref"}),
+        ("CanonicalWriter", {"custody_state": "AMBIGUOUS"}),
+        ("DriftOverlap", {"drift_class": "CONFLICTING"}),
+        ("DriftOverlap", {"drift_class": "SUPERSET"}),
     ],
 )
-def test_result_never_claims_execution_authority(overrides: dict[str, object]) -> None:
+def test_result_never_claims_execution_authority(name: str, changes: dict[str, Any]) -> None:
     receipts = _full_receipts()
-    receipts.update(overrides)
-    result = qualify(JoinInput(receipts=receipts, provenance=_provenance()))
+    receipts[name] = _validated_receipt(name, **changes)
+    result = qualify(_join_input(receipts))
     assert result.authority == "NONE"
     assert result.is_execution_authority is False
     assert result.result in DISPATCH_QUALIFICATION_VALUES

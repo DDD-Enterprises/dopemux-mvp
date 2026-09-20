@@ -9,6 +9,7 @@
     "schema_version": {
       "const": "dopemux.governed_execution.writer_custody_receipt.v1"
     },
+    "macro_id": { "type": "string", "minLength": 1 },
     "packet_id": { "type": "string", "minLength": 1 },
     "repo_identity": {
       "type": "object",
@@ -81,6 +82,7 @@
   },
   "required": [
     "schema_version",
+    "macro_id",
     "packet_id",
     "repo_identity",
     "worktree_path",

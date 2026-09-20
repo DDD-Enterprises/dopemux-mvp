@@ -47,7 +47,8 @@
       "parallel_group": "P0",
       "mutating": true,
       "write_surface": [
-        "schemas/governed_execution/"
+        "schemas/governed_execution/",
+        "docs/03-reference/governance/governed-execution-contract-v2.md"
       ],
       "canonical_writers": [
         "w01"
@@ -439,7 +440,8 @@
       "parallel_group": "B",
       "mutating": true,
       "write_surface": [
-        "src/dopemux/w07/"
+        "src/dopemux/governed_execution/audit_identity/",
+        "docs/03-reference/governance/governed-execution-contract-v2.md"
       ],
       "canonical_writers": [
         "w07"

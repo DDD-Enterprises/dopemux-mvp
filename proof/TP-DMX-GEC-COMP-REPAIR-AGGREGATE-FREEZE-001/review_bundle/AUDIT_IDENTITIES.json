@@ -1,0 +1,43 @@
+{
+  "implementer": {
+    "runner": "codex",
+    "runner_version": "0.154.0",
+    "requested_model": "gpt-6-astra",
+    "configured_model": "gpt-6-astra",
+    "response_claimed_model": "UNKNOWN",
+    "provider_attested_model": "UNKNOWN",
+    "provider": "openai",
+    "effort_requested": "xhigh",
+    "effort_observed": "UNKNOWN",
+    "auth_profile_ref": "local-codex-auth-profile:opaque",
+    "containment": "dedicated worktrees + scoped allowlists + local-only commits",
+    "network_posture": "provider transport only; no web research in child packets",
+    "independence_class": "UNKNOWN",
+    "qualification_receipt": "UNKNOWN",
+    "provider_basis": "repo guidance: Codex actual_tool/provider=openai"
+  },
+  "auditor": {
+    "runner": "agy",
+    "runner_version": "1.2.7",
+    "requested_model": "gemini-3.1-pro-high",
+    "configured_model": "gemini-3.1-pro-high",
+    "response_claimed_model": "UNKNOWN",
+    "provider_attested_model": "UNKNOWN",
+    "provider": "google",
+    "effort_requested": "high",
+    "effort_observed": "UNKNOWN",
+    "auth_profile_ref": "local-agy-auth-profile:opaque",
+    "containment": "macOS sandbox write-denial + self-contained frozen prompt",
+    "network_posture": "provider transport only; no web/MCP/external context",
+    "independence_class": "UNKNOWN",
+    "qualification_receipt": "UNKNOWN",
+    "provider_basis": "GEC closed auditor_tool table: agy -> google"
+  },
+  "assessment": {
+    "class_": "DIFFERENT_FAMILY_AND_RUNTIME",
+    "reasons": [
+      "provider differs and runner differs; both provider fields known"
+    ],
+    "authority": "NONE"
+  }
+}

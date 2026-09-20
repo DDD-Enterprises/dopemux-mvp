@@ -1,0 +1,96 @@
+{
+  "authority": "NONE",
+  "base_sha": "c19b24cf12a03a57a9ea012139efcbe19f989c85",
+  "candidate_digest": "f0c1373fa17705aa0d2a4061d725788456833f9f0e16928f5a43c0c30beb35cd",
+  "freeze_state": "FROZEN",
+  "frozen_at": "2026-09-20T14:40:12Z",
+  "head_sha": "8b0832b14f08d09f52064fd394e9a9d2d1ec533a",
+  "macro_id": "MACRO-DMX-GEC-V2-COMPOSITION-REPAIR-001",
+  "no_audit_before_freeze": true,
+  "packet_id": "TP-DMX-GEC-COMP-REPAIR-AGGREGATE-FREEZE-001",
+  "repo_identity": {
+    "origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "toplevel": "/Users/hue/code/_worktrees/dopemux-gec-v2-composition-repair-001"
+  },
+  "review_refs": [],
+  "schema_version": "dopemux.governed_execution.freeze_receipt.v1",
+  "substantive_path_digest": "54f24bf1cd917d1efa4758d19b9f8c00654e00085f683435338a06f51c105a0f",
+  "substantive_paths": [
+    "docs/03-reference/governance/governed-execution-contract-v2.md",
+    "schemas/governed_execution/dispatch_input_receipt.v1.schema.json",
+    "schemas/governed_execution/manifest.v1.json",
+    "schemas/governed_execution/writer_custody_receipt.v1.schema.json",
+    "src/dopemux/governed_execution/dispatch/join.py",
+    "src/dopemux/governed_execution/dispatch/receipts.py",
+    "src/dopemux/governed_execution/environment/custody.py",
+    "src/dopemux/governed_execution/freeze/finality.py",
+    "src/dopemux/governed_execution/receipts/validate.py",
+    "src/dopemux/governed_execution/review_economy/keys.py",
+    "tests/governance/governed_execution/conftest.py",
+    "tests/governance/governed_execution/fixtures/invalid/admission_receipt.v1__semantic_status_conflict.json",
+    "tests/governance/governed_execution/fixtures/invalid/dispatch_input_receipt.v1__bad_payload.json",
+    "tests/governance/governed_execution/fixtures/invalid/dispatch_input_receipt.v1__missing_macro_id.json",
+    "tests/governance/governed_execution/fixtures/invalid/dispatch_input_receipt.v1__undeclared_field.json",
+    "tests/governance/governed_execution/fixtures/invalid/writer_custody_receipt.v1__enum_violation.json",
+    "tests/governance/governed_execution/fixtures/invalid/writer_custody_receipt.v1__missing_required.json",
+    "tests/governance/governed_execution/fixtures/invalid/writer_custody_receipt.v1__pattern_violation.json",
+    "tests/governance/governed_execution/fixtures/invalid/writer_custody_receipt.v1__undeclared_field.json",
+    "tests/governance/governed_execution/fixtures/valid/admission_receipt.v1.json",
+    "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__drift_overlap.json",
+    "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__operator_gate.json",
+    "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__policy_eligibility.json",
+    "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__scope_authority.json",
+    "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__workflow_legality.json",
+    "tests/governance/governed_execution/fixtures/valid/macro_packet.v2__w01_w08_dag.json",
+    "tests/governance/governed_execution/fixtures/valid/writer_custody_receipt.v1.json",
+    "tests/governance/governed_execution/test_dag_and_authority.py",
+    "tests/unit/governed_execution/dispatch/test_join_negative.py",
+    "tests/unit/governed_execution/dispatch/test_join_positive.py",
+    "tests/unit/governed_execution/dispatch/test_purity_and_enum.py",
+    "tests/unit/governed_execution/environment/test_custody_receipt.py",
+    "tests/unit/governed_execution/environment/test_l2_boundary.py",
+    "tests/unit/governed_execution/freeze/test_finality_subject_binding.py",
+    "tests/unit/governed_execution/receipts/test_validate.py",
+    "tests/unit/governed_execution/review_economy/test_decide.py",
+    "tests/unit/governed_execution/review_economy/test_keys.py"
+  ],
+  "tree_sha": "7a94036a0f2cf1d6c99ee2a70abc1107df4c644a",
+  "validation_refs": [
+    {
+      "path": "external/aggregate/pytest-gec.txt",
+      "sha256": "1710d2b167f52a4bdcaee12eb68e89e935a185da96fe7f15844683781ac9f660"
+    },
+    {
+      "path": "external/aggregate/control-tower-tests.txt",
+      "sha256": "d215f0f327debb7470a3ce811db9e53d5cac9368a8aeaf96c074304ed8d8ca40"
+    },
+    {
+      "path": "external/aggregate/manifest-hashes.txt",
+      "sha256": "524d4f2fe23048d8c1cd888e8b71446caacd32e59937a528450ae7699c0b16b7"
+    },
+    {
+      "path": "external/aggregate/change-contract.txt",
+      "sha256": "dc46f987d2c951797284129149842ef1a7db15e3aa0bf277d8c47a7de285c3f0"
+    },
+    {
+      "path": "external/aggregate/root-hygiene.txt",
+      "sha256": "310570f9d553aec8cdf5d4afaab0415e25de69276baf2cc3b3c7dc4de5650d86"
+    },
+    {
+      "path": "external/aggregate/diff-check.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "external/aggregate/gitleaks.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "external/aggregate/precommit.stdout",
+      "sha256": "3b7fea4936a1913bf992f8c4674c57bd6571d295b83dee77b9c5589595fd3164"
+    },
+    {
+      "path": "external/aggregate/ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    }
+  ]
+}

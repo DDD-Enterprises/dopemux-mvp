@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import builtins
 import subprocess
+from dataclasses import replace
 
 import pytest
 
@@ -156,6 +157,55 @@ def test_reuse_happy_path_deterministic_avoids_zero_calls():
     request = ReviewRequest(key=key, trigger="HEAD_MOVED", explicit_rerun_authorized=False)
     decision = decide_review(request, [record], NOW, make_policy())
     assert decision.decision == "REUSE"
+    assert decision.model_calls_avoided == 0
+
+
+@pytest.mark.parametrize(
+    "changed_identity,expected",
+    [({}, "REUSE"), ({"packet_id": "TP-Y"}, "NEW_CALL"), ({"freeze_sha256": "e" * 64}, "NEW_CALL")],
+)
+def test_final_audit_reuse_requires_exact_packet_and_freeze(changed_identity, expected):
+    key = replace(make_key(), review_type="FINAL_INDEPENDENT_AUDIT", packet_id="TP-X", freeze_sha256="f" * 64)
+    prior = make_record(key)
+    request = ReviewRequest(
+        key=replace(key, **changed_identity), trigger="FREEZE_REACHED", explicit_rerun_authorized=False
+    )
+    decision = decide_review(request, [prior], NOW, make_policy())
+    assert decision.decision == expected
+    assert decision.model_calls_avoided == (1 if expected == "REUSE" else 0)
+    assert decision.reused_receipt_ref == (prior.receipt_ref if expected == "REUSE" else None)
+    assert decision.authority == "NONE"
+    assert decision.is_execution_authority is False
+
+
+@pytest.mark.parametrize("identity", [{"packet_id": "TP-X"}, {"freeze_sha256": "f" * 64}])
+def test_nonfinal_optional_identity_cannot_reuse_legacy_key_in_either_direction(identity):
+    legacy = make_key()
+    scoped = replace(legacy, **identity)
+    for requested, prior_key in [(legacy, scoped), (scoped, legacy)]:
+        request = ReviewRequest(key=requested, trigger="SETTLEMENT_REACHED", explicit_rerun_authorized=False)
+        decision = decide_review(request, [make_record(prior_key)], NOW, make_policy())
+        assert decision.decision == "NEW_CALL"
+        assert decision.model_calls_avoided == 0
+        assert decision.reused_receipt_ref is None
+
+
+@pytest.mark.parametrize(
+    "record_changes,rerun,reason",
+    [
+        ({}, True, "EXPLICIT_RERUN"),
+        ({"expires_at": NOW}, False, "RECEIPT_EXPIRED"),
+        ({"invalidated": True}, False, "REVIEWER_INVALIDATED"),
+        ({"verdict": "FAIL"}, False, "VERDICT_NOT_QUALIFYING"),
+        ({"subject_head": HEAD_B}, False, "SUBJECT_HEAD_MISMATCH"),
+    ],
+)
+def test_exact_final_audit_identity_preserves_other_reuse_gates(record_changes, rerun, reason):
+    key = replace(make_key(), review_type="FINAL_INDEPENDENT_AUDIT", packet_id="TP-X", freeze_sha256="f" * 64)
+    request = ReviewRequest(key=key, trigger="FREEZE_REACHED", explicit_rerun_authorized=rerun)
+    decision = decide_review(request, [make_record(key, **record_changes)], NOW, make_policy())
+    assert decision.decision == "NEW_CALL"
+    assert decision.reasons == (reason,)
     assert decision.model_calls_avoided == 0
 
 

@@ -1,0 +1,44 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1366,
+  "head_sha": "8b0832b14f08d09f52064fd394e9a9d2d1ec533a",
+  "generated_at": "2026-09-20T15:24:55Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --print \"$(cat FINAL_AUDIT_PROMPT.txt)\" --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --output-format json --print-timeout 0",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-GEC-COMP-REPAIR-AGGREGATE-FREEZE-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "AdmissionReceipt PASS is fail-closed against non-PASS required status components.",
+      "DispatchQualification requires validated same-macro/same-packet receipt kinds and validated writer custody.",
+      "Finality consumes non-UNKNOWN, non-self-certified independence assessment.",
+      "FINAL_INDEPENDENT_AUDIT reuse is packet/freeze-content bound.",
+      "Real W01/W07 canonical document overlap is serialized and requires superseding freeze."
+    ],
+    "remaining_risks": [
+      "R-001: Acceptable within a local-only semantic repair scope. Must be corroborated by complete CI hooks prior to subsequent workflow stages.",
+      "R-002: Standard residual risk; must be gating requirements at the downstream PUBLICATION_AND_INTEGRATION gate."
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "codex",
+      "model": "gpt-6-astra",
+      "model_family": "openai",
+      "runtime_family": "codex-cli"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "runner_requested": "AGY",
+  "runner_observed": "1.2.7",
+  "model_requested": "gemini-3.1-pro-high",
+  "model_live_listed": true,
+  "model_configured": "gemini-3.1-pro-high",
+  "response_claimed_model": "UNKNOWN",
+  "provider_attested_model": "UNKNOWN",
+  "effort_requested": "high",
+  "effort_observed": "UNKNOWN",
+  "fallback_authorized": false,
+  "exact_model_marker_count": 6,
+  "fallback_marker_count": 0,
+  "alternate_model_marker_counts": {
+    "gpt-6-astra": 0,
+    "claude": 0,
+    "sonnet": 0,
+    "opus": 0,
+    "grok-4.6": 0,
+    "kimi-k3": 0
+  },
+  "run_status": "SUCCESS",
+  "conversation_id": "e1510fad-e0cd-4623-9277-e694dba4b84f",
+  "num_turns": 1,
+  "duration_seconds": 48.510139,
+  "usage": {
+    "input_tokens": 96673,
+    "output_tokens": 6871,
+    "thinking_tokens": 5095,
+    "cache_read_tokens": 0,
+    "total_tokens": 103544
+  },
+  "raw_response_sha256": "feae2e6e002c3b947717879aea1408e633ecff80d6a5f3a0079de391ef91017a",
+  "normalized_response_sha256": "a4a189cc3949461f42763637c532060e1251d4ac2396f8a7fcd6fd580d02a93e",
+  "audit_input_prompt_sha256": "7953f17d19dfb2e8f5f24468ed83e09087ea3e5888e2a4e0b395865c5f3bf407",
+  "subject_head": "8b0832b14f08d09f52064fd394e9a9d2d1ec533a",
+  "freeze_receipt_sha256": "da92ce8d389d86f846dff6856475b49a734b1d84fab2facf30703efc8556d2ef",
+  "route_disposition": "QUALIFIED_NO_FALLBACK_OBSERVED"
+}

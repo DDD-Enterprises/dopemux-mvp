@@ -103,18 +103,57 @@ def make_facts(**overrides: Any) -> ObservedFacts:
 def test_held_receipt_validates_against_schema(receipt_validator: Draft7Validator) -> None:
     plan = make_plan()
     receipt = author_custody_receipt(
-        plan, make_writer(), make_lease(), make_facts(), now="2026-09-11T12:00:00Z"
+        plan, make_writer(), make_lease(), make_facts(),
+        now="2026-09-11T12:00:00Z",
+        macro_id="MACRO-EXPLICIT-001",
     )
     receipt_validator.validate(receipt)
     assert receipt["custody_state"] == "HELD"
     assert receipt["authority"] == "NONE"
+    assert receipt["macro_id"] == "MACRO-EXPLICIT-001"
+    assert receipt["packet_id"] == plan.packet_id
+
+
+def test_macro_id_must_be_supplied_explicitly() -> None:
+    with pytest.raises(TypeError, match="macro_id"):
+        author_custody_receipt(
+            make_plan(), make_writer(), make_lease(), make_facts(),
+            now="2026-09-11T12:00:00Z",
+        )
+
+
+@pytest.mark.parametrize("macro_id", [None, "", 123, False])
+def test_custody_refused_on_invalid_macro_id(macro_id: Any) -> None:
+    with pytest.raises(CustodyRefused, match="macro_id"):
+        author_custody_receipt(
+            make_plan(), make_writer(), make_lease(), make_facts(),
+            now="2026-09-11T12:00:00Z", macro_id=macro_id,
+        )
+
+
+@pytest.mark.parametrize("macro_id", [None, "", 123, False])
+def test_schema_rejects_missing_or_invalid_macro_id(
+    receipt_validator: Draft7Validator, macro_id: Any,
+) -> None:
+    fixture_path = (
+        REPO_ROOT / "tests/governance/governed_execution/fixtures/valid/"
+        "writer_custody_receipt.v1.json"
+    )
+    receipt = json.loads(fixture_path.read_text(encoding="ascii"))
+    if macro_id is None:
+        del receipt["macro_id"]
+    else:
+        receipt["macro_id"] = macro_id
+    assert not receipt_validator.is_valid(receipt)
 
 
 def test_released_when_lease_expired(receipt_validator: Draft7Validator) -> None:
     plan = make_plan()
     lease = make_lease(expires_at="2026-09-11T00:00:01Z")
     receipt = author_custody_receipt(
-        plan, make_writer(), lease, make_facts(), now="2026-09-12T00:00:00Z"
+        plan, make_writer(), lease, make_facts(),
+        now="2026-09-12T00:00:00Z",
+        macro_id="MACRO-EXPLICIT-001",
     )
     receipt_validator.validate(receipt)
     assert receipt["custody_state"] == "RELEASED"
@@ -124,7 +163,9 @@ def test_released_when_now_equals_expiry(receipt_validator: Draft7Validator) -> 
     plan = make_plan()
     lease = make_lease(expires_at="2026-09-11T12:00:00Z")
     receipt = author_custody_receipt(
-        plan, make_writer(), lease, make_facts(), now="2026-09-11T12:00:00Z"
+        plan, make_writer(), lease, make_facts(),
+        now="2026-09-11T12:00:00Z",
+        macro_id="MACRO-EXPLICIT-001",
     )
     receipt_validator.validate(receipt)
     assert receipt["custody_state"] == "RELEASED"
@@ -145,7 +186,9 @@ def test_ambiguous_on_unprovable_or_false_facts(
 ) -> None:
     plan = make_plan()
     receipt = author_custody_receipt(
-        plan, make_writer(), make_lease(), make_facts(**overrides), now="2026-09-11T12:00:00Z"
+        plan, make_writer(), make_lease(), make_facts(**overrides),
+        now="2026-09-11T12:00:00Z",
+        macro_id="MACRO-EXPLICIT-001",
     )
     receipt_validator.validate(receipt)
     assert receipt["custody_state"] == "AMBIGUOUS"
@@ -157,7 +200,9 @@ def test_custody_refused_on_out_of_scope_writes(outside_root_writes: bool | None
     facts = make_facts(outside_root_writes=outside_root_writes)
     with pytest.raises(CustodyRefused) as excinfo:
         author_custody_receipt(
-            plan, make_writer(), make_lease(), facts, now="2026-09-11T12:00:00Z"
+            plan, make_writer(), make_lease(), facts,
+            now="2026-09-11T12:00:00Z",
+            macro_id="MACRO-EXPLICIT-001",
         )
     assert excinfo.value.reason
 
@@ -165,7 +210,9 @@ def test_custody_refused_on_out_of_scope_writes(outside_root_writes: bool | None
 def test_allowlist_digest_matches_independent_hashlib_computation() -> None:
     plan = make_plan(allowed_paths=("b/two.py", "a/one.py"))
     receipt = author_custody_receipt(
-        plan, make_writer(), make_lease(), make_facts(), now="2026-09-11T12:00:00Z"
+        plan, make_writer(), make_lease(), make_facts(),
+        now="2026-09-11T12:00:00Z",
+        macro_id="MACRO-EXPLICIT-001",
     )
     expected = hashlib.sha256(
         "\n".join(sorted(plan.allowed_paths)).encode("ascii")
@@ -182,6 +229,7 @@ def test_patch_sha256_matches_independent_hashlib_computation() -> None:
         make_lease(),
         make_facts(patch_bytes=patch),
         now="2026-09-11T12:00:00Z",
+        macro_id="MACRO-EXPLICIT-001",
     )
     expected = hashlib.sha256(patch).hexdigest()
     assert receipt["diff_provenance"]["patch_sha256"] == expected
@@ -195,6 +243,7 @@ def test_patch_sha256_of_none_is_sha256_of_empty_bytes() -> None:
         make_lease(),
         make_facts(patch_bytes=None),
         now="2026-09-11T12:00:00Z",
+        macro_id="MACRO-EXPLICIT-001",
     )
     expected = hashlib.sha256(b"").hexdigest()
     assert receipt["diff_provenance"]["patch_sha256"] == expected
@@ -203,7 +252,9 @@ def test_patch_sha256_of_none_is_sha256_of_empty_bytes() -> None:
 def test_authority_is_always_none_literal(receipt_validator: Draft7Validator) -> None:
     plan = make_plan()
     receipt = author_custody_receipt(
-        plan, make_writer(), make_lease(), make_facts(), now="2026-09-11T12:00:00Z"
+        plan, make_writer(), make_lease(), make_facts(),
+        now="2026-09-11T12:00:00Z",
+        macro_id="MACRO-EXPLICIT-001",
     )
     receipt_validator.validate(receipt)
     assert receipt["authority"] == "NONE"
@@ -214,7 +265,9 @@ def test_filesystem_scope_outside_root_writes_is_always_false(
 ) -> None:
     plan = make_plan()
     receipt = author_custody_receipt(
-        plan, make_writer(), make_lease(), make_facts(), now="2026-09-11T12:00:00Z"
+        plan, make_writer(), make_lease(), make_facts(),
+        now="2026-09-11T12:00:00Z",
+        macro_id="MACRO-EXPLICIT-001",
     )
     receipt_validator.validate(receipt)
     assert receipt["filesystem_scope"]["outside_root_writes"] is False

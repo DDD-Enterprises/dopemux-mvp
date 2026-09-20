@@ -1,4 +1,4 @@
-"""Runtime schema-validation boundary for Governed Execution Contract receipts.
+"""Runtime validation boundary for Governed Execution Contract receipts.
 
 This module is the only place a Governed Execution Contract receipt is turned
 from raw bytes into a validated dict at runtime. It builds a
@@ -6,6 +6,7 @@ from raw bytes into a validated dict at runtime. It builds a
 file, keyed by that schema's ``$id``, and validates raw bytes against the
 schema selected by ``kind`` (the schema file's shortname, e.g.
 ``"freeze_receipt.v1"`` for ``freeze_receipt.v1.schema.json``).
+AdmissionReceipt additionally enforces its fail-closed aggregate status.
 
 No clock reads and no child-process calls happen here: provenance timestamps
 are always caller-supplied.
@@ -31,7 +32,7 @@ DEFAULT_SCHEMA_DIR = _REPO_ROOT / "schemas" / "governed_execution"
 
 
 class ReceiptInvalid(Exception):
-    """Raised when raw receipt bytes fail schema validation for ``kind``.
+    """Raised when raw receipt bytes fail schema or admission validation for ``kind``.
 
     ``errors`` is a list of ``"<json-path>: <message>"`` strings sorted by
     the json path of the failing instance location.
@@ -58,7 +59,7 @@ class Provenance:
 
 @dataclass(frozen=True)
 class ValidatedReceipt:
-    """A receipt that has passed schema validation."""
+    """A receipt that has passed schema and applicable admission validation."""
 
     kind: str
     payload: Mapping[str, Any]
@@ -107,7 +108,7 @@ def validate_receipt(
 
     ``kind`` maps to ``<schema_dir>/<kind>.schema.json``; a ``kind`` with no
     matching schema file raises ``UnknownReceiptKind``. Bytes that are not
-    valid JSON, or that are valid JSON failing schema validation, raise
+    valid JSON, or that fail schema or admission aggregate validation, raise
     ``ReceiptInvalid`` with errors sorted by their json path.
     """
     schema_files = _schema_files(schema_dir)
@@ -132,6 +133,18 @@ def validate_receipt(
             for error in errors
         ]
         raise ReceiptInvalid(kind, formatted)
+
+    if kind == "admission_receipt.v1" and payload["admission_status"] == "PASS":
+        semantic_errors = [
+            f"{field}: must be PASS when admission_status is PASS"
+            for field in sorted(schema["required"])
+            if field != "admission_status"
+            and schema["properties"][field].get("$ref")
+            == "enums.v1.schema.json#/definitions/status_class"
+            and payload.get(field) != "PASS"
+        ]
+        if semantic_errors:
+            raise ReceiptInvalid(kind, semantic_errors)
 
     digest = sha256(raw_bytes).hexdigest()
     return ValidatedReceipt(kind=kind, payload=payload, sha256=digest, provenance=provenance)

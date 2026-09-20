@@ -1,0 +1,246 @@
+{
+  "authority": "NONE",
+  "base_sha": "c19b24cf12a03a57a9ea012139efcbe19f989c85",
+  "candidate_digest": "f0c1373fa17705aa0d2a4061d725788456833f9f0e16928f5a43c0c30beb35cd",
+  "file_count": 37,
+  "files": [
+    {
+      "bytes": 27808,
+      "path": "docs/03-reference/governance/governed-execution-contract-v2.md",
+      "sha256": "d8ed057714ae27e33a32d944bd220c9183226dcbc3ff57bf12b490ed4413b40b"
+    },
+    {
+      "bytes": 4437,
+      "path": "schemas/governed_execution/dispatch_input_receipt.v1.schema.json",
+      "sha256": "64f3990a04b946a81e5a2643cbeb088d7a653338334282b95148b935d248d53b"
+    },
+    {
+      "bytes": 3775,
+      "path": "schemas/governed_execution/manifest.v1.json",
+      "sha256": "7f4d4ff5f7f356caead9c368883c5c960549711c0991b50182cefb39837eb9b1"
+    },
+    {
+      "bytes": 3652,
+      "path": "schemas/governed_execution/writer_custody_receipt.v1.schema.json",
+      "sha256": "2839107c65369826947b79780fa12a7518f205f2bb6fab975fb313295577d6ec"
+    },
+    {
+      "bytes": 5770,
+      "path": "src/dopemux/governed_execution/dispatch/join.py",
+      "sha256": "52665419e4cfe40e13b36aad4f1fb0b7380fe83554695d18d7c956a9c7841247"
+    },
+    {
+      "bytes": 12250,
+      "path": "src/dopemux/governed_execution/dispatch/receipts.py",
+      "sha256": "395453336a7da0db6abb75062730663c848e074df2f402e02baa7a6d06d802d0"
+    },
+    {
+      "bytes": 5282,
+      "path": "src/dopemux/governed_execution/environment/custody.py",
+      "sha256": "be3377b9a5ea9ba41b046496508d3b493ef4ac2579c4c7f03097c585dc7fc6ce"
+    },
+    {
+      "bytes": 5221,
+      "path": "src/dopemux/governed_execution/freeze/finality.py",
+      "sha256": "c1811550d1741a2e5738c754d08f77549048e3a97f430292155f27a0730de073"
+    },
+    {
+      "bytes": 5236,
+      "path": "src/dopemux/governed_execution/receipts/validate.py",
+      "sha256": "77d934438b9505107d0fd6a4863a8360ee55b899ede32e826bedcbeb27101bee"
+    },
+    {
+      "bytes": 7321,
+      "path": "src/dopemux/governed_execution/review_economy/keys.py",
+      "sha256": "9900d37320af12c5e2a1d72f7d4b96c18618a24a81fc8505c14b12fc24242cd7"
+    },
+    {
+      "bytes": 4049,
+      "path": "tests/governance/governed_execution/conftest.py",
+      "sha256": "f66d3ac6d1c6ebf466270dda2cca05e59df8a13e97f7839992843b8d6b5727dc"
+    },
+    {
+      "bytes": 655,
+      "path": "tests/governance/governed_execution/fixtures/invalid/admission_receipt.v1__semantic_status_conflict.json",
+      "sha256": "da790f22bf126e25c51bb9c0ad3c29ca6703cd8ad7830b4ddca316e2853d4cbe"
+    },
+    {
+      "bytes": 355,
+      "path": "tests/governance/governed_execution/fixtures/invalid/dispatch_input_receipt.v1__bad_payload.json",
+      "sha256": "f043d039b44495f3dcbbf6a2daf3e5413f1e4f07a342ead77cf342fe56b3d1aa"
+    },
+    {
+      "bytes": 359,
+      "path": "tests/governance/governed_execution/fixtures/invalid/dispatch_input_receipt.v1__missing_macro_id.json",
+      "sha256": "7e633340510391913d15b7cc9440a4cc149f42205b5ebba204adda3662f4ec46"
+    },
+    {
+      "bytes": 358,
+      "path": "tests/governance/governed_execution/fixtures/invalid/dispatch_input_receipt.v1__undeclared_field.json",
+      "sha256": "a77a60117b0abcf7d726b659cf322bd5e5164e3642fada2c6e32780c92b63623"
+    },
+    {
+      "bytes": 1521,
+      "path": "tests/governance/governed_execution/fixtures/invalid/writer_custody_receipt.v1__enum_violation.json",
+      "sha256": "640a46a14e1d2f8a163f11ead7abe9e3712771ba11bb1e3341cca53cd4373586"
+    },
+    {
+      "bytes": 1500,
+      "path": "tests/governance/governed_execution/fixtures/invalid/writer_custody_receipt.v1__missing_required.json",
+      "sha256": "0ba2bace2e7e54da23f2f9d9258939a1ffd2e734d3045c76b34001fe882c4954"
+    },
+    {
+      "bytes": 1493,
+      "path": "tests/governance/governed_execution/fixtures/invalid/writer_custody_receipt.v1__pattern_violation.json",
+      "sha256": "6640774bec3cdc4ce15a9a86ff1bc9b31bb9ba65db6e0dac3d03cc97bda6aade"
+    },
+    {
+      "bytes": 1569,
+      "path": "tests/governance/governed_execution/fixtures/invalid/writer_custody_receipt.v1__undeclared_field.json",
+      "sha256": "cbf5503f806cf39ea6b165a24e137d3610d2ec4ad15372dbb0772b78b07c2482"
+    },
+    {
+      "bytes": 652,
+      "path": "tests/governance/governed_execution/fixtures/valid/admission_receipt.v1.json",
+      "sha256": "6b92d418ea565dc5e00d56cea03fa3004c96a0fad9d43ac463e9bd72443add0c"
+    },
+    {
+      "bytes": 333,
+      "path": "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__drift_overlap.json",
+      "sha256": "fa0fb1cb2dbb7c8bf711136e550c5df2a44184e93eed6799b5f9e81c7f9bd0bb"
+    },
+    {
+      "bytes": 366,
+      "path": "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__operator_gate.json",
+      "sha256": "52c5c74eba803aabc295a062a2951b83e9e3f44d3a8331e6f020fb2ea1a84e8b"
+    },
+    {
+      "bytes": 332,
+      "path": "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__policy_eligibility.json",
+      "sha256": "93810ef36fc36059adf7559f1fc460b20839df810f4456be6400813fd4c0845e"
+    },
+    {
+      "bytes": 421,
+      "path": "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__scope_authority.json",
+      "sha256": "bbdff7843ad6f14200f2bcd4d0bb8f0dd42dfb3961c63a484e132ae8a214c364"
+    },
+    {
+      "bytes": 353,
+      "path": "tests/governance/governed_execution/fixtures/valid/dispatch_input_receipt.v1__workflow_legality.json",
+      "sha256": "abffc548e8f3604a573c0de1447caef20d88d7ca48643d7d1c7458bf72ccbe3c"
+    },
+    {
+      "bytes": 14469,
+      "path": "tests/governance/governed_execution/fixtures/valid/macro_packet.v2__w01_w08_dag.json",
+      "sha256": "ec11987b6d7e824d6a1dfed9b86ef2bbc320bb32bb6fc351333fb869649de991"
+    },
+    {
+      "bytes": 1527,
+      "path": "tests/governance/governed_execution/fixtures/valid/writer_custody_receipt.v1.json",
+      "sha256": "1631144c0bd05ccc26f47106cb2469010d9dc1ed9af23ce1c9a601c4506e6661"
+    },
+    {
+      "bytes": 11507,
+      "path": "tests/governance/governed_execution/test_dag_and_authority.py",
+      "sha256": "a744a24617e1a754d20e055cb4c4785544dc0137c3fbf643e8d1c500b1a1ea56"
+    },
+    {
+      "bytes": 11739,
+      "path": "tests/unit/governed_execution/dispatch/test_join_negative.py",
+      "sha256": "cd7e53c6f525c2f3f44f893eabaac2c712eabd4032c93c73199aabb2884f5492"
+    },
+    {
+      "bytes": 3808,
+      "path": "tests/unit/governed_execution/dispatch/test_join_positive.py",
+      "sha256": "7c5e39d84d38ef931f134f08c62580947f8db6543510619cf474ad776e142a2c"
+    },
+    {
+      "bytes": 4384,
+      "path": "tests/unit/governed_execution/dispatch/test_purity_and_enum.py",
+      "sha256": "8ab6a979723fd67399de4b6e17f6b2096994092cb0a9f6932c6a7ac43c80ae2a"
+    },
+    {
+      "bytes": 9105,
+      "path": "tests/unit/governed_execution/environment/test_custody_receipt.py",
+      "sha256": "ef1f194842a1736fbf39baf6f6b24784c5346c7507ef394928e80d90add00677"
+    },
+    {
+      "bytes": 3683,
+      "path": "tests/unit/governed_execution/environment/test_l2_boundary.py",
+      "sha256": "4a40e188ea623792ce07fcb28b4dfa01ad6df2084e490aad42bba50dc4050cad"
+    },
+    {
+      "bytes": 8046,
+      "path": "tests/unit/governed_execution/freeze/test_finality_subject_binding.py",
+      "sha256": "bfe759b0e96ec9907b8a6fd7c1e3c8c961b294ea94f54b7bd12fc33fe6dbc0ae"
+    },
+    {
+      "bytes": 7725,
+      "path": "tests/unit/governed_execution/receipts/test_validate.py",
+      "sha256": "cb037adf942b759a72dcc1800fbca8f823de6d0243fe135ea2a956d76c544c55"
+    },
+    {
+      "bytes": 19925,
+      "path": "tests/unit/governed_execution/review_economy/test_decide.py",
+      "sha256": "fff9df73a4c421f1e1664260aba75b77085622d65ec191da84e02bc7c50a1b81"
+    },
+    {
+      "bytes": 10802,
+      "path": "tests/unit/governed_execution/review_economy/test_keys.py",
+      "sha256": "6928061a2d8acd4d348312da965c0614ca199c6fcede8efa3c35dc9f6f2ae1e9"
+    }
+  ],
+  "freeze_receipt_sha256": "da92ce8d389d86f846dff6856475b49a734b1d84fab2facf30703efc8556d2ef",
+  "head_sha": "8b0832b14f08d09f52064fd394e9a9d2d1ec533a",
+  "patch_sha256": "3987b88ef2ce684fcbb67b56d15892c43db21089c70d33efdfdf0bb613d45279",
+  "subject": "MACRO-DMX-GEC-V2-COMPOSITION-REPAIR-001",
+  "substantive_path_digest": "54f24bf1cd917d1efa4758d19b9f8c00654e00085f683435338a06f51c105a0f",
+  "tree_sha": "7a94036a0f2cf1d6c99ee2a70abc1107df4c644a",
+  "validation": [
+    {
+      "bytes": 1060,
+      "path": "/private/tmp/dmx-gec-v2-composition-repair-20260920/aggregate/pytest-gec.txt",
+      "sha256": "1710d2b167f52a4bdcaee12eb68e89e935a185da96fe7f15844683781ac9f660"
+    },
+    {
+      "bytes": 576,
+      "path": "/private/tmp/dmx-gec-v2-composition-repair-20260920/aggregate/control-tower-tests.txt",
+      "sha256": "d215f0f327debb7470a3ce811db9e53d5cac9368a8aeaf96c074304ed8d8ca40"
+    },
+    {
+      "bytes": 25,
+      "path": "/private/tmp/dmx-gec-v2-composition-repair-20260920/aggregate/manifest-hashes.txt",
+      "sha256": "524d4f2fe23048d8c1cd888e8b71446caacd32e59937a528450ae7699c0b16b7"
+    },
+    {
+      "bytes": 3102,
+      "path": "/private/tmp/dmx-gec-v2-composition-repair-20260920/aggregate/change-contract.txt",
+      "sha256": "dc46f987d2c951797284129149842ef1a7db15e3aa0bf277d8c47a7de285c3f0"
+    },
+    {
+      "bytes": 36,
+      "path": "/private/tmp/dmx-gec-v2-composition-repair-20260920/aggregate/root-hygiene.txt",
+      "sha256": "310570f9d553aec8cdf5d4afaab0415e25de69276baf2cc3b3c7dc4de5650d86"
+    },
+    {
+      "bytes": 0,
+      "path": "/private/tmp/dmx-gec-v2-composition-repair-20260920/aggregate/diff-check.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 3,
+      "path": "/private/tmp/dmx-gec-v2-composition-repair-20260920/aggregate/gitleaks.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "bytes": 3187,
+      "path": "/private/tmp/dmx-gec-v2-composition-repair-20260920/aggregate/precommit.stdout",
+      "sha256": "3b7fea4936a1913bf992f8c4674c57bd6571d295b83dee77b9c5589595fd3164"
+    },
+    {
+      "bytes": 19,
+      "path": "/private/tmp/dmx-gec-v2-composition-repair-20260920/aggregate/ruff.txt",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    }
+  ]
+}
