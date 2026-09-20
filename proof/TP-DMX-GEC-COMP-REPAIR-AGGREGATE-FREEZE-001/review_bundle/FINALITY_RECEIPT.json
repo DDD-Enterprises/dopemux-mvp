@@ -1,0 +1,23 @@
+{
+  "activation_authorized": false,
+  "audit_receipt_ref": {
+    "path": "external/final-audit/AUDIT_NORMALIZED.json",
+    "sha256": "a4a189cc3949461f42763637c532060e1251d4ac2396f8a7fcd6fd580d02a93e"
+  },
+  "audit_verdict": "PASS_WITH_RISKS",
+  "audited_head": "8b0832b14f08d09f52064fd394e9a9d2d1ec533a",
+  "authority": "NONE",
+  "exact_head_equality": true,
+  "finality_head": "8b0832b14f08d09f52064fd394e9a9d2d1ec533a",
+  "freeze_ref": {
+    "path": "external/final/FREEZE_RECEIPT.json",
+    "sha256": "da92ce8d389d86f846dff6856475b49a734b1d84fab2facf30703efc8556d2ef"
+  },
+  "macro_id": "MACRO-DMX-GEC-V2-COMPOSITION-REPAIR-001",
+  "merge_authorized": false,
+  "packet_id": "TP-DMX-GEC-COMP-REPAIR-AGGREGATE-FREEZE-001",
+  "pr_ref": "NOT_RUN",
+  "recorded_at": "2026-09-20T14:47:12Z",
+  "schema_version": "dopemux.governed_execution.finality_receipt.v1",
+  "steward_readiness": "NOT_RUN"
+}
