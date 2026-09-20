@@ -2,9 +2,9 @@
 
 This module is a PURE data-shaping layer. It never opens a file, never
 shells out, never computes a digest, never validates a receipt against a
-schema (that is W04's boundary) and never reads the clock. It only reads
-plain dicts (or None) that the caller already obtained and, where relevant,
-already schema-validated.
+schema (that is W04's boundary) and never reads the clock. Receipt admission
+requires ValidatedReceipt values with exact kinds and explicit subject
+identity before the payload reaches a semantic extractor.
 
 Extractors never raise on malformed input. A missing, None, or
 structurally-wrong-typed receipt payload -- or a malformed field within an
@@ -16,6 +16,8 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
+
+from ..receipts.validate import ValidatedReceipt
 
 ReceiptName = Literal[
     "ScopeAuthority",
@@ -37,6 +39,16 @@ RECEIPT_NAMES: tuple[ReceiptName, ...] = (
     "DriftOverlap",
 )
 
+_RECEIPT_KINDS: Mapping[ReceiptName, str] = {
+    "ScopeAuthority": "dispatch_input_receipt.v1",
+    "WorkflowLegality": "dispatch_input_receipt.v1",
+    "PolicyEligibility": "dispatch_input_receipt.v1",
+    "CanonicalWriter": "writer_custody_receipt.v1",
+    "ExecutionBinding": "execution_binding.v2",
+    "OperatorGate": "dispatch_input_receipt.v1",
+    "DriftOverlap": "dispatch_input_receipt.v1",
+}
+
 Effect = Literal["DENY", "UNKNOWN", "OK"]
 
 # Sentinel field name used when the whole receipt payload is absent or is not
@@ -47,10 +59,10 @@ RECEIPT_FIELD = "__receipt__"
 
 @dataclass(frozen=True)
 class ReceiptInput:
-    """One named receipt slot as supplied by the caller: name plus payload."""
+    """One named receipt slot carrying a schema-validated receipt."""
 
     name: ReceiptName
-    payload: Mapping[str, Any] | None
+    payload: ValidatedReceipt | None
 
 
 @dataclass(frozen=True)
@@ -64,10 +76,16 @@ class Provenance:
 
 @dataclass(frozen=True)
 class JoinInput:
-    """The full input to qualify(): the seven receipt slots plus provenance."""
+    """Seven validated receipts, provenance, and the caller's expected subject.
 
-    receipts: Mapping[ReceiptName, Mapping[str, Any] | None]
+    Identity is never inferred from receipts or their source references.
+    Malformed identifier values fail closed when qualify() reads them.
+    """
+
+    receipts: Mapping[ReceiptName, ValidatedReceipt | None]
     provenance: Provenance
+    macro_id: str
+    packet_id: str
 
 
 @dataclass(frozen=True)
@@ -88,6 +106,49 @@ def _guard_payload(receipt: ReceiptName, payload: Mapping[str, Any] | None) -> F
         observed = f"malformed:{type(payload).__name__}"
         return Finding(receipt=receipt, field=RECEIPT_FIELD, observed=observed, effect="DENY")
     return None
+
+
+def extract_receipt(
+    name: ReceiptName,
+    receipt: ValidatedReceipt | None,
+    *,
+    macro_id: str,
+    packet_id: str,
+) -> tuple[Finding, ...]:
+    """Admit an exact-kind, same-subject receipt before extracting its facts.
+
+    ValidatedReceipt is the existing validation boundary's value type, not
+    an authority grant. Do not revalidate schemas or infer missing identity.
+    """
+    def denied(observed: str) -> tuple[Finding, ...]:
+        return (Finding(name, RECEIPT_FIELD, observed, "DENY"),)
+
+    for field, expected in (("macro_id", macro_id), ("packet_id", packet_id)):
+        if not isinstance(expected, str) or not expected.strip():
+            return denied(f"invalid expected {field}")
+
+    if receipt is None:
+        return denied("absent")
+    if not isinstance(receipt, ValidatedReceipt):
+        return denied(f"unvalidated:{type(receipt).__name__}")
+    if receipt.kind != _RECEIPT_KINDS[name]:
+        return denied(f"kind mismatch: expected {_RECEIPT_KINDS[name]}, got {receipt.kind!r}")
+
+    payload = receipt.payload
+    guard = _guard_payload(name, payload)
+    if guard is not None:
+        return (guard,)
+    if receipt.kind == "dispatch_input_receipt.v1" and payload.get("receipt_type") != name:
+        return denied(f"receipt_type mismatch: expected {name}, got {payload.get('receipt_type')!r}")
+
+    for field, expected in (("macro_id", macro_id), ("packet_id", packet_id)):
+        actual = payload.get(field)
+        if not isinstance(actual, str) or not actual.strip():
+            return denied(f"missing or malformed {field}")
+        if actual != expected:
+            return denied(f"{field} mismatch: expected {expected!r}, got {actual!r}")
+
+    return EXTRACTORS[name](payload)
 
 
 def extract_scope_authority(payload: Mapping[str, Any] | None) -> tuple[Finding, ...]:
@@ -121,8 +182,16 @@ def extract_workflow_legality(payload: Mapping[str, Any] | None) -> tuple[Findin
         # None, missing, or a non-bool value: genuine uncertainty.
         effect = "UNKNOWN"
     observed = repr(transition_legal)
+    blockers = payload.get("blockers")
+    if not isinstance(blockers, list):
+        blockers_effect: Effect = "UNKNOWN"
+    elif blockers:
+        blockers_effect = "DENY"
+    else:
+        blockers_effect = "OK"
     return (
         Finding(receipt="WorkflowLegality", field="transition_legal", observed=observed, effect=effect),
+        Finding(receipt="WorkflowLegality", field="blockers", observed=repr(blockers), effect=blockers_effect),
     )
 
 
@@ -205,14 +274,14 @@ def extract_operator_gate(payload: Mapping[str, Any] | None) -> tuple[Finding, .
     assert payload is not None
     required = payload.get("required")
     granted = payload.get("granted")
+    receipt_ref = payload.get("receipt_ref")
     if required is True:
-        if granted is True:
+        if granted is True and isinstance(receipt_ref, str) and receipt_ref.strip():
             effect: Effect = "OK"
         else:
-            # required and not affirmatively granted: cannot self-authorize,
-            # even when a receipt_ref is present.
+            # A required gate needs both an affirmative grant and its receipt.
             effect = "DENY"
-        observed = f"required=True granted={granted!r}"
+        observed = f"required=True granted={granted!r} receipt_ref={receipt_ref!r}"
     elif required is False:
         effect = "OK"
         observed = f"required=False granted={granted!r}"
