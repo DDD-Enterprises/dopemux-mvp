@@ -241,6 +241,20 @@ whose `supersedes_freeze_ref` points at the one it replaces, with
 context. This packet does not implement lifecycle transition automation; it
 freezes the receipt shape the lifecycle is recorded against.
 
+W01 and W07 both write the canonical document
+`docs/03-reference/governance/governed-execution-contract-v2.md`; their write
+surfaces are not physically disjoint, regardless of their workstream writer
+labels. The W01-W08 DAG serializes this shared write through W07's transitive
+dependency on W01, retaining one mutating implementer at a time for the document.
+Without that ordering, the existing Control Tower overlap model fails closed.
+Dependency ordering does not transfer freeze or finality authority: W07
+composition that changes this document's bytes requires a new freeze of the
+composed shared subject, with `supersedes_freeze_ref` identifying the prior W01
+freeze. Prior receipts remain immutable historical evidence; W01's freeze, audit
+and finality cannot cover the changed bytes. Revalidation and review settlement
+precede the new freeze, and any required final audit must bind that new subject.
+This rule creates no workflow writer, dispatch, merge or activation authority.
+
 ## Exact-head rule
 
 `finality_receipt.v1.exact_head_equality` is const `true`, documented as
