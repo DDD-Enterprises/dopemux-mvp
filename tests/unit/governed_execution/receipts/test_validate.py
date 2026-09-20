@@ -8,22 +8,35 @@ and rejects.
 
 from __future__ import annotations
 
+import json
+from hashlib import sha256
 from pathlib import Path
 
 import pytest
+from jsonschema import Draft7Validator
 
 from dopemux.governed_execution.receipts.validate import (
+    DEFAULT_SCHEMA_DIR,
     Provenance,
     ReceiptInvalid,
     UnknownReceiptKind,
+    load_registry,
     validate_receipt,
 )
+from tests.governance.governed_execution.conftest import semantic_violations
 
 # tests/unit/governed_execution/receipts/test_validate.py -> repo root
 _REPO_ROOT = Path(__file__).resolve().parents[4]
 _FIXTURES_DIR = _REPO_ROOT / "tests" / "governance" / "governed_execution" / "fixtures"
 _VALID_DIR = _FIXTURES_DIR / "valid"
 _INVALID_DIR = _FIXTURES_DIR / "invalid"
+_ADMISSION_COMPONENTS = (
+    "schema_validity",
+    "authority_validity",
+    "classification_validity",
+    "audit_validity",
+    "execution_validity",
+)
 
 _PROVENANCE = Provenance(
     verified_by="tests/unit/governed_execution/receipts/test_validate.py",
@@ -86,13 +99,86 @@ def test_invalid_fixture_raises_receipt_invalid(path: Path) -> None:
 def test_exact_head_equality_fixture_is_schema_valid_not_receipt_invalid() -> None:
     """The one invalid fixture whose defect the schema cannot express.
 
-    validate_receipt only enforces schema shape, so this fixture round-trips
-    here; the semantic exact-head rule is enforced by
+    validate_receipt leaves FinalityReceipt's exact-head rule to
     freeze/finality.py::author_finality_receipt (SubjectMismatch).
     """
     path = _INVALID_DIR / "finality_receipt.v1__audited_head_ne_finality_head.json"
     validated = validate_receipt("finality_receipt.v1", path.read_bytes(), _PROVENANCE)
     assert validated.payload["audited_head"] != validated.payload["finality_head"]
+
+
+@pytest.mark.parametrize("component", _ADMISSION_COMPONENTS)
+@pytest.mark.parametrize("status", ["FAIL", "UNKNOWN", "NOT_RUN"])
+def test_admission_pass_rejects_non_pass_component(component: str, status: str) -> None:
+    payload = json.loads((_VALID_DIR / "admission_receipt.v1.json").read_bytes())
+    payload[component] = status
+
+    with pytest.raises(ReceiptInvalid) as excinfo:
+        validate_receipt("admission_receipt.v1", json.dumps(payload).encode(), _PROVENANCE)
+    assert excinfo.value.errors == [
+        f"{component}: must be PASS when admission_status is PASS"
+    ]
+    assert semantic_violations("admission_receipt.v1", payload) == excinfo.value.errors
+
+
+def test_admission_pass_preserves_payload_digest_and_provenance() -> None:
+    raw = (_VALID_DIR / "admission_receipt.v1.json").read_bytes()
+    payload = json.loads(raw)
+    assert payload["admission_status"] == "PASS"
+    assert all(payload[component] == "PASS" for component in _ADMISSION_COMPONENTS)
+
+    validated = validate_receipt("admission_receipt.v1", raw, _PROVENANCE)
+    assert validated.payload == payload
+    assert validated.sha256 == sha256(raw).hexdigest()
+    assert validated.provenance is _PROVENANCE
+    assert semantic_violations("admission_receipt.v1", payload) == []
+
+
+@pytest.mark.parametrize("admission_status", ["FAIL", "UNKNOWN", "NOT_RUN"])
+@pytest.mark.parametrize("component_status", ["PASS", "FAIL", "UNKNOWN", "NOT_RUN"])
+def test_non_pass_admission_remains_valid(
+    admission_status: str, component_status: str
+) -> None:
+    payload = json.loads((_VALID_DIR / "admission_receipt.v1.json").read_bytes())
+    payload["admission_status"] = admission_status
+    payload.update(dict.fromkeys(_ADMISSION_COMPONENTS, component_status))
+
+    validated = validate_receipt(
+        "admission_receipt.v1", json.dumps(payload).encode(), _PROVENANCE
+    )
+    assert validated.payload == payload
+    assert semantic_violations("admission_receipt.v1", payload) == []
+
+
+def test_admission_reports_all_conflicts_in_stable_order() -> None:
+    payload = json.loads((_VALID_DIR / "admission_receipt.v1.json").read_bytes())
+    payload.update(dict.fromkeys(_ADMISSION_COMPONENTS, "UNKNOWN"))
+    expected = [
+        f"{component}: must be PASS when admission_status is PASS"
+        for component in sorted(_ADMISSION_COMPONENTS)
+    ]
+
+    for ordered_payload in (payload, dict(reversed(list(payload.items())))):
+        with pytest.raises(ReceiptInvalid) as excinfo:
+            validate_receipt(
+                "admission_receipt.v1", json.dumps(ordered_payload).encode(), _PROVENANCE
+            )
+        assert excinfo.value.errors == expected
+        assert semantic_violations("admission_receipt.v1", ordered_payload) == expected
+
+
+def test_admission_semantic_conflict_fixture_is_schema_valid() -> None:
+    payload = json.loads(
+        (_INVALID_DIR / "admission_receipt.v1__semantic_status_conflict.json").read_bytes()
+    )
+    schema = json.loads(
+        (DEFAULT_SCHEMA_DIR / "admission_receipt.v1.schema.json").read_bytes()
+    )
+    validator = Draft7Validator(schema, registry=load_registry(DEFAULT_SCHEMA_DIR))
+    assert list(validator.iter_errors(payload)) == []
+    assert semantic_violations("admission_receipt.v1", payload) == [
+        "audit_validity: must be PASS when admission_status is PASS"
+    ]
 
 
 def test_provenance_is_carried() -> None:

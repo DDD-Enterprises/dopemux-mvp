@@ -6,7 +6,7 @@
   "schema_validity": "PASS",
   "authority_validity": "PASS",
   "classification_validity": "PASS",
-  "audit_validity": "PASS",
+  "audit_validity": "NOT_RUN",
   "execution_validity": "PASS",
   "admission_status": "PASS",
   "is_execution_authority": false,

@@ -84,13 +84,23 @@ def iter_invalid_fixtures() -> Iterator[tuple[str, Path]]:
 
 
 def semantic_violations(schema_stem: str, instance: dict[str, Any]) -> list[str]:
-    """Cross-field rules that a Draft7 schema cannot express on its own.
+    """Cross-field rules enforced in addition to schema validation.
 
     A fixture may be schema-valid yet still be an intentionally invalid
     fixture because it violates one of these rules (e.g. FinalityReceipt's
     exact-head equality, which the schema documents but cannot enforce).
     """
     violations: list[str] = []
+    if schema_stem == "admission_receipt.v1" and instance.get("admission_status") == "PASS":
+        schema = _load(SCHEMA_FILES[schema_stem])
+        violations.extend(
+            f"{field}: must be PASS when admission_status is PASS"
+            for field in sorted(schema["required"])
+            if field != "admission_status"
+            and schema["properties"][field].get("$ref")
+            == "enums.v1.schema.json#/definitions/status_class"
+            and instance.get(field) != "PASS"
+        )
     if schema_stem == "finality_receipt.v1":
         audited = instance.get("audited_head")
         finality = instance.get("finality_head")
