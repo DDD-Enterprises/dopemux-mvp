@@ -47,8 +47,6 @@ _PATH_RULES: list[tuple[str, re.Pattern[str]]] = [
     ("L2", re.compile(r"^tests/(governance|audit|pr_steward)/")),
     ("L2", re.compile(r"^(src|services)/")),
     ("L2", re.compile(r"^compose\.ya?ml$")),
-    # L1 — bounded frontend / non-core
-    ("L1", re.compile(r"^ui-dashboard/")),
     # L0 — deterministic metadata / proof packaging
     ("L0", re.compile(r"^proof/pr_merge/embedded-audit/pr-\d+/")),
     ("L0", re.compile(r"^proof/[^/]+/(PROOF\.json|PROOF\.json\.sig|AUDITOR_REPORT\.md|review_bundle/)")),
