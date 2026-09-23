@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import RepositoryPlannerPage from '../RepositoryPlannerPage';
 import { buildFoundationLanes } from '../RepositoryPlannerPage';
@@ -124,6 +124,24 @@ describe('RepositoryPlannerPage', () => {
     render(<RepositoryPlannerPage sources={[fixture as never]} />);
     expect(screen.getByRole('button', { name: new RegExp(`Inspect dopemux-mvp pcp-planner-foundation ${fixture.lanes[0].candidate_sha}`) })).toBeVisible();
     expect(screen.getByRole('button', { name: /Inspect dopemux-mvp pcp-planner-foundation b{40}/ })).toBeVisible();
+  });
+
+  test('allows copying candidate SHA via interactive Chip micro-interaction', async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      configurable: true,
+    });
+
+    render(<RepositoryPlannerPage />);
+    const shaChip = screen.getByRole('button', { name: new RegExp(`Copy candidate SHA: ${dopemuxFixture.lanes[0].candidate_sha}`) });
+    expect(shaChip).toBeVisible();
+
+    fireEvent.click(shaChip);
+    expect(writeTextMock).toHaveBeenCalledWith(dopemuxFixture.lanes[0].candidate_sha);
+
+    const copiedChip = await screen.findByRole('button', { name: new RegExp(`Candidate SHA ${dopemuxFixture.lanes[0].candidate_sha.slice(0, 12)} copied`) });
+    expect(copiedChip).toBeVisible();
   });
 });
 
