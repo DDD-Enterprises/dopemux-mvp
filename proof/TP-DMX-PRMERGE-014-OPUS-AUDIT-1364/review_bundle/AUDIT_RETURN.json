@@ -1,0 +1,191 @@
+{
+  "admissible_verdict": "PASS_WITH_RISKS",
+  "audited_base": "35df148a55864b0efc5ada79753f987207b2936c",
+  "audited_head": "902e22aa08b0a6c9129b67bb75b66eca54449eaf",
+  "deterministic_evidence_sha256": "573f90b404e1fbb4d98511dc331977a05cd77fc717a0cfcfd4ca2d1ac1e4ce1d",
+  "deterministic_test_receipts": [
+    {
+      "command": "PAL uv lock --check --offline",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "external frozen PAL venv uv sync --frozen --no-dev",
+      "exit_code": 0,
+      "result": "46 packages installed"
+    },
+    {
+      "command": "frozen import smoke",
+      "exit_code": 0,
+      "result": "anyio 4.14.2, mcp 1.29.0, starlette 1.3.1, uvicorn 0.37.0, httpx 0.28.1, sniffio 1.3.1 imported"
+    },
+    {
+      "command": "AnyIO memory-object-stream smoke",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "instruction-like added-line scan",
+      "result": "0 matches"
+    }
+  ],
+  "effects": {
+    "close": 0,
+    "commits": 0,
+    "container_starts": 0,
+    "github_mutations": 0,
+    "mark_ready": 0,
+    "merge": 0,
+    "repo_mutations": 0,
+    "service_starts": 0,
+    "signatures": 0,
+    "workflow_reruns": 0
+  },
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Edge only active on python<3.11; evidence is CPython 3.12. Reachability-equivalent and lock-checked; residual.",
+        "id": "F1",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Python 3.10 path for exceptiongroup/typing-extensions marker change not exercised"
+      },
+      {
+        "body": "No version change; consistent with uv marker normalization; only macOS sync performed.",
+        "id": "F2",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "uvicorn click/h11 marker unconditionalization and win32/emscripten markers untested"
+      },
+      {
+        "body": "Transitive exposure via MCP stack; cancellation/task-group/transport paths not exercised.",
+        "id": "F3",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "AnyIO 4.11->4.14.2 runtime behavior beyond import/stream smoke unverified"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model opus --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "remaining_risks": [
+      "No py3.10/3.11/3.13 sync",
+      "No Linux container or win32 sync",
+      "Transitive AnyIO runtime semantics unexercised; no PAL test suite run",
+      "sniffio retained only transitively"
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-014-OPUS-AUDIT-1364/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "embedded_audit_schema": "PASS_DRAFT7_EXACT_HEAD_SCHEMA",
+  "files_mutated_in_audited_subject": [],
+  "findings": [
+    {
+      "body": "The exceptiongroup/typing-extensions edge matters on python<3.11; worker sync used Python 3.12.",
+      "id": "F1",
+      "severity": "LOW",
+      "status": "OPEN",
+      "title": "Python 3.10 marker path not exercised"
+    },
+    {
+      "body": "Only one macOS/Python 3.12 install graph was synced; universal lock check supports consistency but not runtime coverage on every marker combination.",
+      "id": "F2",
+      "severity": "LOW",
+      "status": "OPEN",
+      "title": "Platform marker reshaping not exercised on Windows/Linux container/emscripten"
+    },
+    {
+      "body": "PAL has no direct AnyIO imports, but MCP/Starlette/HTTPX/Uvicorn use AnyIO transitively.",
+      "id": "F3",
+      "severity": "INFO",
+      "status": "ACCEPTED_RISK",
+      "title": "Transitive AnyIO runtime semantics beyond import/stream smoke unverified"
+    }
+  ],
+  "instruction_like_content": {
+    "detected": false,
+    "match_count": 0,
+    "matches": [],
+    "truncated": false
+  },
+  "pr": 1364,
+  "prompt_sha256": "fd0aac2590b4887a988cc0957b79aa1721dd4494c4244d7338a28699d19b5951",
+  "raw_return_sha256": "850fdebd0cce67d9344be95388457482695a33eaf4d4bc96ecde925bb983fd83",
+  "remaining_risks": [
+    "No Python 3.10/3.11/3.13 frozen sync.",
+    "No Linux PAL image, Windows, or emscripten sync.",
+    "Transitive AnyIO cancellation/task-group/transport paths not exercised.",
+    "PAL test suite not run."
+  ],
+  "return_state": "RETURNED_ADMISSIBLE_AUDIT_EVIDENCE",
+  "route_usage_receipt": {
+    "automatic_fallback": 0,
+    "automatic_retry": 0,
+    "cost_usd_native_reported": 0.1478038,
+    "displayed_model": "UNKNOWN_NOT_SEPARATELY_REPORTED",
+    "duration_api_ms": 49565,
+    "effort_requested": "high",
+    "exit_code": 0,
+    "independence": "PROVEN",
+    "invocation": "claude -p --model opus --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "max_budget_usd": 2.0,
+    "mcp_calls": 0,
+    "mcp_calls_basis": "strict empty MCP config plus zero available/requested tools; no MCP use reported",
+    "mcp_calls_max": 0,
+    "mcp_config": {
+      "mcpServers": {}
+    },
+    "model_calls_max": 1,
+    "model_family": "claude",
+    "model_selector_requested": "opus",
+    "model_turns_max": 1,
+    "model_usage_keys": [
+      "claude-opus-5-5"
+    ],
+    "native_cli_reported_effective_model": "claude-opus-5-5",
+    "native_cli_reported_provider": "firstParty",
+    "native_status": "success",
+    "num_turns": 1,
+    "output_tokens_native_total": 5622,
+    "permission_denials": [],
+    "permission_mode": "plan",
+    "prompt_bytes": 5420,
+    "provider_attested_identity": "UNKNOWN",
+    "restricted": true,
+    "runner_requested": "claude-code-cli",
+    "runner_version_observed": "2.1.282",
+    "runner_version_requested": "2.1.282",
+    "runtime_family": "claude-code",
+    "secondary_or_advisor_model_reported": false,
+    "session_persistence": false,
+    "slash_commands_disabled": true,
+    "stop_reason": "end_turn",
+    "strict_mcp_config": true,
+    "subagents_spawned": 0,
+    "terminal_reason": "completed",
+    "thinking_tokens_native_subset": 1288,
+    "tool_calls": 0,
+    "tool_calls_basis": "--tools empty; restricted mode; no tool usage reported",
+    "tool_calls_max": 0,
+    "tools_requested": [],
+    "visible_final_output_compliance": "PASS",
+    "visible_final_output_limit": 5000,
+    "visible_final_output_tokens_derived": 4334,
+    "web_fetch_requests": 0,
+    "web_search_requests": 0
+  },
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "task_id": "TP-DMX-PRMERGE-014-OPUS-AUDIT-1364",
+  "title": "PAL AnyIO 4.11.0 -> 4.14.2 lock update",
+  "verdict_scope": "audit evidence only; never readiness/merge authority"
+}
