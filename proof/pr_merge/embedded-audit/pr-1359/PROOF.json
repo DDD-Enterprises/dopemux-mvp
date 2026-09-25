@@ -1,0 +1,68 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "opus",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "none",
+      "model_family": "automation",
+      "runner": "dependabot",
+      "runtime_family": "github-dependabot"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Only uv.lock changed (3+/3-). Only soupsieve's version, URLs, hashes, sizes and upload times changed. beautifulsoup4 stays 4.14.3 and still depends on soupsieve. uv lock --check --offline exited 0.",
+        "id": "F1",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Lock delta is minimal and consistent"
+      },
+      {
+        "body": "document_processor.py uses BeautifulSoup(content,'html.parser'), soup(['script','style']).decompose() and get_text(). That is find_all-based, with no CSS select and no direct soupsieve import. The isolated smoke on bs4 4.14.3 plus soupsieve 2.9 passed these paths and also select/select_one.",
+        "id": "F2",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Repo usage barely touches soupsieve"
+      },
+      {
+        "body": "The root uv run --frozen --offline smoke failed with ModuleNotFoundError: bs4 because bs4 was not in that default environment. This is an environment-selection limit, not a compatibility failure. It means no repo-level or dope-context service tests ran against soupsieve 2.9.",
+        "id": "F3",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Repo test suites not run at head"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "Claude Code 2.1.282 / opus / high / plan+restricted / tools disabled / strict empty MCP / one call",
+    "remaining_risks": [
+      "SoupSieve 2.9 upstream selector or behavior changes are not established by these checks.",
+      "The dope-context service test suite was not executed against the head lock.",
+      "Transitive consumers of soupsieve other than bs4 were not independently exercised.",
+      "A service-specific environment or lock outside root uv.lock may resolve differently; this was not verified."
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-015-OPUS-AUDIT-1359/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-09-25T20:01:41Z",
+  "head_sha": "e0b256544ab7cf1e8796cfefba824cdfee104a72",
+  "pr_number": 1359,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

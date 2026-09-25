@@ -1,0 +1,150 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "opus",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "none",
+      "model_family": "automation",
+      "runner": "dependabot",
+      "runtime_family": "github-dependabot"
+    },
+    "independence": "PROVEN"
+  },
+  "audited_base": "35df148a55864b0efc5ada79753f987207b2936c",
+  "audited_head": "e0b256544ab7cf1e8796cfefba824cdfee104a72",
+  "deterministic_test_receipts": [
+    {
+      "check": "git diff base..head --stat",
+      "detail": "1 file changed: uv.lock, 3 insertions, 3 deletions",
+      "result": "PASS"
+    },
+    {
+      "check": "semantic lock delta",
+      "detail": "soupsieve 2.8.4->2.9 with artifact metadata only; beautifulsoup4 4.14.3 unchanged",
+      "result": "PASS"
+    },
+    {
+      "check": "root pyproject",
+      "detail": "beautifulsoup4>=4.12.0; no direct soupsieve requirement",
+      "result": "INFO"
+    },
+    {
+      "check": "repo source search",
+      "detail": "bs4 used in services/dope-context/src/preprocessing/document_processor.py; no direct soupsieve import found",
+      "result": "INFO"
+    },
+    {
+      "check": "uv lock --check --offline @head",
+      "detail": "exit 0, 276 packages resolved",
+      "result": "PASS"
+    },
+    {
+      "check": "root uv run --frozen --offline smoke",
+      "detail": "ModuleNotFoundError: bs4 because bs4 was not installed in the default env; treated as env-selection evidence, not a compat failure",
+      "result": "NOT_APPLICABLE"
+    },
+    {
+      "check": "isolated offline smoke with beautifulsoup4==4.14.3 and soupsieve==2.9",
+      "detail": "html.parser parse, select('div.card'), select_one('div.card span'), script/style match with decompose, and get_text all passed; reported versions bs4 4.14.3 and soupsieve 2.9",
+      "result": "PASS"
+    },
+    {
+      "check": "instruction-like added-line scan",
+      "detail": "0 matches",
+      "result": "PASS"
+    }
+  ],
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Only uv.lock changed (3+/3-). Only soupsieve's version, URLs, hashes, sizes and upload times changed. beautifulsoup4 stays 4.14.3 and still depends on soupsieve. uv lock --check --offline exited 0.",
+        "id": "F1",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Lock delta is minimal and consistent"
+      },
+      {
+        "body": "document_processor.py uses BeautifulSoup(content,'html.parser'), soup(['script','style']).decompose() and get_text(). That is find_all-based, with no CSS select and no direct soupsieve import. The isolated smoke on bs4 4.14.3 plus soupsieve 2.9 passed these paths and also select/select_one.",
+        "id": "F2",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Repo usage barely touches soupsieve"
+      },
+      {
+        "body": "The root uv run --frozen --offline smoke failed with ModuleNotFoundError: bs4 because bs4 was not in that default environment. This is an environment-selection limit, not a compatibility failure. It means no repo-level or dope-context service tests ran against soupsieve 2.9.",
+        "id": "F3",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Repo test suites not run at head"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "Claude Code 2.1.282 / opus / high / plan+restricted / tools disabled / strict empty MCP / one call",
+    "remaining_risks": [
+      "SoupSieve 2.9 upstream selector or behavior changes are not established by these checks.",
+      "The dope-context service test suite was not executed against the head lock.",
+      "Transitive consumers of soupsieve other than bs4 were not independently exercised.",
+      "A service-specific environment or lock outside root uv.lock may resolve differently; this was not verified."
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-015-OPUS-AUDIT-1359/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "files_mutated_in_audited_subject": [],
+  "findings": [
+    {
+      "body": "Only the soupsieve version and its artifact metadata changed; uv lock --check --offline exited 0 with 276 packages.",
+      "id": "F1",
+      "severity": "INFO",
+      "status": "ACKNOWLEDGED",
+      "title": "Lock delta is minimal and consistent"
+    },
+    {
+      "body": "Repo code uses html.parser, find_all via soup([...]), decompose and get_text. The isolated smoke on bs4 4.14.3 plus soupsieve 2.9 passed.",
+      "id": "F2",
+      "severity": "LOW",
+      "status": "ACKNOWLEDGED",
+      "title": "Repo usage barely touches soupsieve"
+    },
+    {
+      "body": "The root uv run lacked bs4 (an environment-selection limit), so no repo tests exercised soupsieve 2.9.",
+      "id": "F3",
+      "severity": "LOW",
+      "status": "OPEN",
+      "title": "Repo test suites not run at head"
+    }
+  ],
+  "fixes_applied": [],
+  "instruction_like_content": {
+    "detected": false,
+    "match_count": 0,
+    "matches": [],
+    "truncated": false
+  },
+  "pr": 1359,
+  "proposed_PACKET_ID": "TP-DMX-PRMERGE-015-OPUS-AUDIT-1359",
+  "remaining_risks": [
+    "SoupSieve 2.9 upstream behavior beyond the smoke checks is untested.",
+    "The dope-context service tests were not run at head.",
+    "Other transitive soupsieve consumers were not exercised.",
+    "A possible service-specific environment resolution was not verified."
+  ],
+  "task_id": "TP-DMX-PRMERGE-015-OPUS-AUDIT-1359",
+  "verdict": "PASS_WITH_RISKS",
+  "verdict_scope": "Lock-only transitive bump soupsieve 2.8.4->2.9 in root uv.lock. (1) Lock consistency is verified: uv lock --check --offline passed with 276 packages, and the only semantic delta is the soupsieve version plus its artifact metadata. (2) The repo's BeautifulSoup usage is verified in an isolated env with bs4 4.14.3 and soupsieve 2.9. The repo calls html.parser, soup([...]) find_all, decompose and get_text, and none of those route through soupsieve's CSS engine. (3) Upstream SoupSieve 2.9 selector semantics beyond the smoke checks, and the repo's own test suites, were not exercised."
+}
