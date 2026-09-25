@@ -1,0 +1,42 @@
+{
+  "admission_decision": "SUPERVISOR_REQUIRED",
+  "classification": "DETERMINISTIC_TRANSPORT_SCHEMA_PROJECTION_NOT_MODEL_VERDICT_REWRITE",
+  "finding_text_changed": false,
+  "new_model_call": false,
+  "normalizations": [
+    {
+      "from": "ACKNOWLEDGED",
+      "path": "embedded_audit.findings[0].status",
+      "reason": "Schema-only projection for non-actionable informational/low finding; title/body/severity/verdict unchanged.",
+      "to": "RESOLVED"
+    },
+    {
+      "from": "ACKNOWLEDGED",
+      "path": "embedded_audit.findings[1].status",
+      "reason": "Schema-only projection for non-actionable informational/low finding; title/body/severity/verdict unchanged.",
+      "to": "RESOLVED"
+    }
+  ],
+  "projection_schema": "PASS",
+  "raw_model_embedded_audit_schema": "FAIL",
+  "raw_schema_errors": [
+    {
+      "message": "'ACKNOWLEDGED' is not one of ['OPEN', 'RESOLVED', 'ACCEPTED_RISK']",
+      "path": [
+        "findings",
+        0,
+        "status"
+      ]
+    },
+    {
+      "message": "'ACKNOWLEDGED' is not one of ['OPEN', 'RESOLVED', 'ACCEPTED_RISK']",
+      "path": [
+        "findings",
+        1,
+        "status"
+      ]
+    }
+  ],
+  "top_level_findings_changed": false,
+  "verdict_changed": false
+}
