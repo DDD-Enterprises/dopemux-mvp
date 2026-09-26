@@ -1,0 +1,68 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "opus",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "none",
+      "model_family": "automation",
+      "runner": "dependabot",
+      "runtime_family": "github-dependabot"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Edge only active on python<3.11; evidence is CPython 3.12. Reachability-equivalent and lock-checked; residual.",
+        "id": "F1",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Python 3.10 path for exceptiongroup/typing-extensions marker change not exercised"
+      },
+      {
+        "body": "No version change; consistent with uv marker normalization; only macOS sync performed.",
+        "id": "F2",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "uvicorn click/h11 marker unconditionalization and win32/emscripten markers untested"
+      },
+      {
+        "body": "Transitive exposure via MCP stack; cancellation/task-group/transport paths not exercised.",
+        "id": "F3",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "AnyIO 4.11->4.14.2 runtime behavior beyond import/stream smoke unverified"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model opus --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "remaining_risks": [
+      "No py3.10/3.11/3.13 sync",
+      "No Linux container or win32 sync",
+      "Transitive AnyIO runtime semantics unexercised; no PAL test suite run",
+      "sniffio retained only transitively"
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-014-OPUS-AUDIT-1364/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-09-25T20:08:08Z",
+  "head_sha": "902e22aa08b0a6c9129b67bb75b66eca54449eaf",
+  "pr_number": 1364,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
