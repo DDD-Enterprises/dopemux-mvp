@@ -1,0 +1,9 @@
+{
+  "provider_family": "Voyage AI",
+  "affected_path": "proof/mcpint-p0/env_dope_context.json",
+  "first_introducing_commit": "35e41e7fb5382ff5af6d13fc8a5a6a2f90fca0d9",
+  "current_tree_present": false,
+  "rotation_or_revocation_status": "revoked_rotated_keychain_stored",
+  "repository_remediation_status": "redacted_successor_published_merge_forbidden",
+  "private_material_in_proof": false
+}
