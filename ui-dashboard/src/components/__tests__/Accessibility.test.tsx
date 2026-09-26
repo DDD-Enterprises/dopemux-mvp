@@ -378,11 +378,11 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain("isHydrated ? 'Sip Logged!' : 'Health and hydration status: Click to log a hydration sip.'");
   expect(appContent).toContain('onClick={handleHydrate}');
 
-  // Verify onKeyDown handlers for connection, hydration, and recommendation chips
-  expect(appContent).toContain('onKeyDown={');
-  expect(appContent).toContain('handleReconnect();');
-  expect(appContent).toContain('handleHydrate();');
-  expect(appContent).toContain('void handleCopyRecommendation();');
+  // Verify that interactive chips utilize native MUI onClick keyboard accessibility and soft confirmation Escape handling
+  expect(appContent).toContain("onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}");
+  expect(appContent).toContain('onClick={handleHydrate}');
+  expect(appContent).toContain('onClick={handleCopyRecommendation}');
+  expect(appContent).toContain("if (isConfirmingClear && e.key === 'Escape')");
 
   // Verify focus-visible overrides for buttons and icon buttons in theme
   expect(themeContent).toContain('MuiIconButton');
