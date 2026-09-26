@@ -881,9 +881,39 @@ function DashboardApp() {
               })}
             </Box>
           ) : (
-            <Typography variant="body2" color="text.secondary">
-              Waiting for signals...
-            </Typography>
+            <Box
+              role="status"
+              aria-label="Active signal feed: Waiting for signals..."
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}
+            >
+              <Box
+                aria-hidden="true"
+                sx={{
+                  display: 'inline-flex',
+                  gap: 0.5,
+                  '& span': {
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
+                    bgcolor: brandTokens.colors.ritualCyan,
+                    animation: 'listeningPulse 1.4s infinite ease-in-out both',
+                  },
+                  '& span:nth-of-type(1)': { animationDelay: '-0.32s' },
+                  '& span:nth-of-type(2)': { animationDelay: '-0.16s' },
+                  '@keyframes listeningPulse': {
+                    '0%, 80%, 100%': { transform: 'scale(0)' },
+                    '40%': { transform: 'scale(1.0)' },
+                  },
+                }}
+              >
+                <span />
+                <span />
+                <span />
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                Waiting for signals...
+              </Typography>
+            </Box>
           )}
         </Paper>
 
