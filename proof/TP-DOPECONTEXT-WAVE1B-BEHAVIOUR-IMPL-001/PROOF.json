@@ -1,0 +1,70 @@
+{
+  "packet_id": "TP-DOPECONTEXT-WAVE1B-BEHAVIOUR-IMPL-001",
+  "status": "PASS",
+  "risk_lane": "L1_LOW",
+  "head_sha": "564bc6e6390d9c4e173e0fc07344f15aa0520712",
+  "generated_at": "2026-09-04T18:15:00Z",
+  "repo_identity": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "remotes": {"origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git"},
+    "require_identity_match": true,
+    "match": true
+  },
+  "worktree": {
+    "path": "/Users/hue/code/dopemux-mvp/.worktrees/adr226-a5a-wave1",
+    "branch": "feat/adr226-a5a-wave1-behaviour",
+    "base": "33a38119f97611e391aab719151ffadbf541f06c",
+    "base_note": "origin/main tip after PR #1322 (red-lane path-regex hardening)",
+    "content_head": "564bc6e6390d9c4e173e0fc07344f15aa0520712",
+    "final_head": "564bc6e6390d9c4e173e0fc07344f15aa0520712"
+  },
+  "background": "Implementation audit for ADR-226 Amendment A5a / Wave 1b, specified by the already-landed (PR #1318) packet task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md. Distinct packet_id/proof directory from that packet's own admission-audit bundle at proof/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007/. Round 2 after Copilot review found two legitimate issues in round 1 (token_count key present-but-None instead of omitted; isinstance(int) accepting bool) -- both fixed and squashed into one clean content commit before re-auditing.",
+  "files_changed": [
+    "docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md",
+    "services/dope-context/src/mcp/server.py",
+    "services/dope-context/src/utils/model_tokenizer.py",
+    "services/dope-context/src/utils/token_budget.py",
+    "services/dope-context/tests/test_wave1_behaviour.py",
+    "src/dopemux/dcp/red_lane_rules.py",
+    "task-packets/dope-context/TP-DOPECONTEXT-WAVE1-BEHAVIOUR-0007.md",
+    "tests/test_dcp_surface_guard.py"
+  ],
+  "validation": [
+    {"command": "PYTHONPATH=$(pwd)/services/dope-context uv run --frozen pytest -q --no-cov services/dope-context/tests/", "exit_code": 0, "result": "PASS", "detail": "133 passed, 1 skipped"},
+    {"command": "uv run --frozen pytest tests/test_dcp_surface_guard.py tests/dcp/test_dcp_0005_red_lane_scanner.py -q", "exit_code": 0, "result": "PASS", "detail": "76 passed"},
+    {"command": "PYTHONPATH=src uv run --frozen pytest tests/dcp/ --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified", "exit_code": 0, "result": "PASS", "detail": "185 passed, 1 deselected"},
+    {"command": "uv run --frozen pytest tests/unit tests/test_voice_core.py tests/test_brand_voice.py -n auto --disable-warnings --no-cov --deselect tests/unit/test_pm_source_events.py::test_emit_pm_promotable_source_event_rejects_bare_non_repo_workspace_root", "exit_code": 0, "result": "PASS", "detail": "1878 passed, 2 skipped"},
+    {"command": "uv run --frozen python scripts/brand_lint.py", "exit_code": 0, "result": "PASS", "detail": "0 errors, 0 warnings"},
+    {"command": "mutation-test E10/E2-E4/E17, each individually", "exit_code": 0, "result": "PASS", "detail": "all 3 confirmed to actually drive their tests"}
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/adr226-a5a-wave1 --add-dir /tmp/adr226_a5a_audit --print=\"$(cat /tmp/adr226_a5a_audit/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DOPECONTEXT-WAVE1B-BEHAVIOUR-IMPL-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "F-DIFF-SCOPE", "severity": "BLOCKING", "title": "Diff touches exactly the 8 expected files; A5b files untouched", "status": "RESOLVED", "body": "Confirmed via git diff --name-status."},
+      {"id": "F-RED-LANE-REGEX", "severity": "BLOCKING", "title": "Exactly 3 new \\Z-anchored lookaheads, re.DOTALL, no A5b lookahead", "status": "RESOLVED", "body": "Read directly from red_lane_rules.py."},
+      {"id": "F-CACHE-BOUND", "severity": "HIGH", "title": "Tokenizer cache genuinely bounded; no-TTL reasoning sound", "status": "RESOLVED", "body": "Oldest-first eviction confirmed."},
+      {"id": "F-TOKEN-BUDGET", "severity": "HIGH", "title": "Starvation flags correct; bool-exclusion fix confirmed", "status": "RESOLVED", "body": "isinstance(exact_count, bool) check verified."},
+      {"id": "F-SERVER-DOCS", "severity": "HIGH", "title": "token_count omit-not-None fix confirmed", "status": "RESOLVED", "body": "Key omitted entirely when untrustworthy."},
+      {"id": "F-TEST-EXEC", "severity": "MEDIUM", "title": "Both test suites independently re-run, exact expected counts", "status": "RESOLVED", "body": "76 passed (guard); 133 passed/1 skipped (dope-context)."},
+      {"id": "F-TEST-AUTHENTICITY", "severity": "HIGH", "title": "New tests exercise real code paths; digests independently reproduced", "status": "RESOLVED", "body": "a78e8e6bf0aa / bc3e80ff1a1b matched exactly."},
+      {"id": "F-MUTATION", "severity": "HIGH", "title": "Auditor independently performed its own mutation test on E17", "status": "RESOLVED", "body": "Reverted token_count preference, confirmed test failure, restored."},
+      {"id": "F-DOCS-ACCURACY", "severity": "MEDIUM", "title": "ADR-226 and packet Status accurately describe what landed", "status": "RESOLVED", "body": "No overclaims."},
+      {"id": "F-SECRETS", "severity": "BLOCKING", "title": "No secrets/credentials in the diff", "status": "RESOLVED", "body": "Direct inspection."}
+    ],
+    "fixes_applied": [
+      "server.py: omit token_count key entirely when untrustworthy, instead of None (Copilot finding)",
+      "token_budget.py: explicitly exclude bool before isinstance(int) check on token_count (Copilot finding)"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}

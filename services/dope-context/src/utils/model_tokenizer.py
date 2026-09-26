@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 _TOKEN_RE = re.compile(r"\w+|[^\w\s]", re.UNICODE)
 
+DEFAULT_MAX_CACHE_ENTRIES = 10_000
+
 
 def conservative_token_estimate(text: str) -> int:
     """Estimate tokens without pretending a foreign tokenizer is exact.
@@ -51,16 +53,32 @@ class VoyageTokenCounter:
     network fetch.
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        max_cache_entries: int = DEFAULT_MAX_CACHE_ENTRIES,
+    ):
         client_type = getattr(voyageai, "Client", None)
         self._client = client_type(api_key=api_key) if client_type else None
         self._cache: Dict[Tuple[str, str], TokenCount] = {}
         self._unavailable_models: Set[str] = set()
+        self.max_cache_entries = max(1, max_cache_entries)
 
     @staticmethod
     def _key(text: str, model: str) -> Tuple[str, str]:
         digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
         return model, digest
+
+    def _cache_count(self, key: Tuple[str, str], count: TokenCount) -> None:
+        # Bound the cache (E10): a (model, text-hash) -> TokenCount mapping
+        # is a pure memoization of a deterministic function, so unlike
+        # voyage_embedder.py's response cache there is nothing to expire --
+        # only oldest-first eviction is needed once the bound is reached, so
+        # a long-running MCP server cannot grow this dict without limit.
+        if key not in self._cache and len(self._cache) >= self.max_cache_entries:
+            oldest_key = next(iter(self._cache))
+            del self._cache[oldest_key]
+        self._cache[key] = count
 
     def _count_uncached(self, texts: Sequence[str], model: str) -> List[TokenCount]:
         if not texts:
@@ -119,7 +137,7 @@ class VoyageTokenCounter:
                 self._count_uncached, missing_texts, model
             )
             for key, count in zip(missing_keys, new_counts):
-                self._cache[key] = count
+                self._cache_count(key, count)
 
             new_iter = iter(new_counts)
             results = [next(new_iter) if value is None else value for value in results]

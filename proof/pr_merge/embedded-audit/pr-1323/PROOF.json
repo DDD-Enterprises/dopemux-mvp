@@ -1,0 +1,34 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1323,
+  "head_sha": "564bc6e6390d9c4e173e0fc07344f15aa0520712",
+  "generated_at": "2026-09-04T18:15:00Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --output-format json --print-timeout 8m --add-dir /Users/hue/code/dopemux-mvp/.worktrees/adr226-a5a-wave1 --add-dir /tmp/adr226_a5a_audit --print=\"$(cat /tmp/adr226_a5a_audit/PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DOPECONTEXT-WAVE1B-BEHAVIOUR-IMPL-001/AUDITOR_REPORT.md",
+    "findings": [
+      {"id": "F-DIFF-SCOPE", "severity": "BLOCKING", "title": "Diff touches exactly the 8 expected files; A5b files untouched", "status": "RESOLVED", "body": "Confirmed via git diff --name-status."},
+      {"id": "F-RED-LANE-REGEX", "severity": "BLOCKING", "title": "Exactly 3 new \\Z-anchored lookaheads, re.DOTALL, no A5b lookahead", "status": "RESOLVED", "body": "Read directly from red_lane_rules.py."},
+      {"id": "F-CACHE-BOUND", "severity": "HIGH", "title": "Tokenizer cache genuinely bounded; no-TTL reasoning sound", "status": "RESOLVED", "body": "Oldest-first eviction confirmed."},
+      {"id": "F-TOKEN-BUDGET", "severity": "HIGH", "title": "Starvation flags correct; bool-exclusion fix confirmed", "status": "RESOLVED", "body": "isinstance(exact_count, bool) check verified."},
+      {"id": "F-SERVER-DOCS", "severity": "HIGH", "title": "token_count omit-not-None fix confirmed", "status": "RESOLVED", "body": "Key omitted entirely when untrustworthy."},
+      {"id": "F-TEST-EXEC", "severity": "MEDIUM", "title": "Both test suites independently re-run, exact expected counts", "status": "RESOLVED", "body": "76 passed (guard); 133 passed/1 skipped (dope-context)."},
+      {"id": "F-TEST-AUTHENTICITY", "severity": "HIGH", "title": "New tests exercise real code paths; digests independently reproduced", "status": "RESOLVED", "body": "a78e8e6bf0aa / bc3e80ff1a1b matched exactly."},
+      {"id": "F-MUTATION", "severity": "HIGH", "title": "Auditor independently performed its own mutation test on E17", "status": "RESOLVED", "body": "Reverted token_count preference, confirmed test failure, restored."},
+      {"id": "F-DOCS-ACCURACY", "severity": "MEDIUM", "title": "ADR-226 and packet Status accurately describe what landed", "status": "RESOLVED", "body": "No overclaims."},
+      {"id": "F-SECRETS", "severity": "BLOCKING", "title": "No secrets/credentials in the diff", "status": "RESOLVED", "body": "Direct inspection."}
+    ],
+    "fixes_applied": [
+      "server.py: omit token_count key entirely when untrustworthy, instead of None (Copilot finding)",
+      "token_budget.py: explicitly exclude bool before isinstance(int) check on token_count (Copilot finding)"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null,
+    "instruction_like_content": {"detected": false, "match_count": 0, "truncated": false, "matches": []}
+  }
+}

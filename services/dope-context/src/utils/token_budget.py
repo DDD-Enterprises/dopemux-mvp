@@ -178,6 +178,9 @@ def _degrade_single_result(
     chars_removed += _cap_oversized_siblings(
         item, content_field=content_field, per_item_tokens=half_budget
     )
+    # ADR-226 A5a / E17: token_count is an internal budgeting hint, never a
+    # client-facing field.
+    item.pop("token_count", None)
     return item, chars_removed
 
 
@@ -216,15 +219,43 @@ def _truncate_results(
         item = result.copy()
         content = item.get(content_field)
         if isinstance(content, str):
-            shortened, was_truncated = truncate_text_to_tokens(
-                content,
-                per_item_tokens,
-                suffix=content_suffix,
-            )
+            # E17: docs payloads already carry a real Voyage-reported
+            # token_count for this exact content (docs_pipeline.py); code
+            # payloads carry no such key yet (pending the CHUNKING wave).
+            # Trust it over the byte/lexical heuristic to decide whether
+            # truncation is needed at all, so a known-good count doesn't
+            # get second-guessed into an unnecessary truncation. When it
+            # says the content already fits, skip the heuristic entirely;
+            # when it's absent or the content doesn't fit, truncate_text_to_
+            # tokens' own heuristic still finds the cut point (no exact
+            # per-substring count is available to do better).
+            exact_count = item.get("token_count")
+            # bool is an int subclass in Python (isinstance(True, int) is
+            # True) -- exclude it explicitly so a corrupt/malicious payload
+            # carrying token_count=True can't be read as 1 and silently
+            # disable truncation for arbitrarily large content.
+            if (
+                isinstance(exact_count, bool)
+                or not isinstance(exact_count, int)
+                or exact_count <= 0
+            ):
+                exact_count = None
+            if exact_count is not None and exact_count <= per_item_tokens:
+                shortened, was_truncated = content, False
+            else:
+                shortened, was_truncated = truncate_text_to_tokens(
+                    content,
+                    per_item_tokens,
+                    suffix=content_suffix,
+                )
             item[content_field] = shortened
             item[truncated_flag] = was_truncated
             if was_truncated:
                 total_chars_removed += len(content) - len(shortened)
+
+        # token_count is an internal budgeting hint (ADR-226 A5a / E17),
+        # never a client-facing field -- consumed above, stripped here.
+        item.pop("token_count", None)
 
         # An untrimmed sibling (e.g. search_code's "context") can otherwise
         # blow the whole-item budget on its own and starve every result
@@ -247,10 +278,16 @@ def _truncate_results(
         output.append(item)
         total_tokens += item_tokens
 
+    starved = False
     if not output:
         # Non-empty input must never come back empty: an empty list is
         # indistinguishable from "no matches" (F-017). Degrade the first
-        # result instead of dropping it.
+        # result instead of dropping it. E2/E4: this is the one path where
+        # real matches existed but the budget could not accommodate even
+        # one of them normally -- both flags were previously declared and
+        # never assigned, leaving a starved response indistinguishable from
+        # a merely-truncated one.
+        starved = True
         degraded, degraded_chars_removed = _degrade_single_result(
             results[0],
             content_field=content_field,
@@ -271,6 +308,8 @@ def _truncate_results(
         chars_removed=total_chars_removed,
         estimated_tokens=total_tokens,
         budget_used_pct=round((total_tokens / budget_tokens) * 100, 2),
+        budget_starvation=starved,
+        degraded_guarantee_applied=starved,
     )
 
 

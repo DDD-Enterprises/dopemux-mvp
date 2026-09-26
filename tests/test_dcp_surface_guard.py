@@ -153,6 +153,9 @@ _DOPE_CONTEXT_CARVED_OUT = (
     "services/dope-context/tests/test_vector_profiles_and_migration.py",  # ADR-226 A3
     "services/dope-context/src/embeddings/voyage_embedder.py",  # ADR-226 A4
     "services/dope-context/src/search/dense_search.py",  # ADR-226 A4
+    "services/dope-context/tests/test_wave1_behaviour.py",  # ADR-226 A5a
+    "services/dope-context/src/utils/model_tokenizer.py",  # ADR-226 A5a
+    "services/dope-context/src/utils/token_budget.py",  # ADR-226 A5a
 )
 
 _DOPE_CONTEXT_STILL_BLOCKED = (
@@ -190,6 +193,27 @@ _DOPE_CONTEXT_STILL_BLOCKED = (
     "services/dope-context/tests/test_vector_profiles_and_migration.py.bak",
     "services/dope-context/tests/sub/test_vector_profiles_and_migration.py",
     "services/dope-context/tests/test_vector_profiles_and_migration.pyc",
+    # ADR-226 A5a near-misses: exempting model_tokenizer.py and
+    # token_budget.py must not open src/utils/ -- its two other modules
+    # (workspace.py owns workspace_to_hash(), the IDENTITY+RETRIEVAL wave's
+    # file) stay hard-blocked with no lookahead naming them.
+    "services/dope-context/src/utils/workspace.py",
+    "services/dope-context/src/utils/metrics_tracker.py",
+    "services/dope-context/src/utils/model_tokenizer.py.bak",
+    "services/dope-context/src/utils/sub/model_tokenizer.py",
+    "services/dope-context/src/utils/token_budget.py.bak",
+    "services/dope-context/src/utils/sub/token_budget.py",
+    "services/dope-context/eval/../src/utils/model_tokenizer.py",  # traversal out of eval/
+    # ADR-226 A5a near-miss: exempting one new test file must not open
+    # tests/ further -- these two stay blocked exactly like conftest.py.
+    "services/dope-context/tests/test_wave1_behaviour.py.bak",
+    "services/dope-context/tests/sub/test_wave1_behaviour.py",
+    "services/dope-context/tests/test_mcp_server.py",
+    "services/dope-context/tests/test_reliability_repairs.py",
+    # ADR-226 A5b (Amendment A5, second half) is explicitly NOT approved --
+    # contextualized_embedder.py and voyage_reranker.py stay hard-blocked
+    # pending a separate paid-API retry/cost tranche.
+    "services/dope-context/src/rerank/voyage_reranker.py",
 )
 
 

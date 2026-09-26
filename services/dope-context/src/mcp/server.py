@@ -1984,8 +1984,9 @@ async def _docs_search_impl(
     search_duration_ms = round((perf_counter() - search_started) * 1000, 3)
 
     # Build raw results with per-item truncation
-    raw_results = [
-        {
+    raw_results = []
+    for r in results[:top_k]:
+        item = {
             "source_path": r.file_path,
             "text": r.content[:max_content_length]
             + ("..." if len(r.content) > max_content_length else ""),
@@ -1994,8 +1995,21 @@ async def _docs_search_impl(
             "truncated": len(r.content) > max_content_length,
             "original_length": len(r.content),
         }
-        for r in results[:top_k]
-    ]
+        # ADR-226 A5a / E17: the indexed chunk's real Voyage-reported token
+        # count (docs_pipeline.py), added here so truncate_docs_results can
+        # prefer it over a byte/lexical estimate. Only trustworthy when the
+        # char slice above did NOT run -- otherwise the stored count
+        # describes the pre-slice text, not what actually ended up in
+        # "text". Omitted entirely (not set to None) when untrustworthy, so
+        # it never adds serialized payload weight or a falsy-but-present key
+        # for a downstream reader to trip on. Consumed and stripped inside
+        # truncate_docs_results before the item ever reaches a client, so
+        # this never changes the response shape either way.
+        if len(r.content) <= max_content_length:
+            token_count = r.payload.get("token_count")
+            if token_count is not None:
+                item["token_count"] = token_count
+        raw_results.append(item)
 
     # Apply token budget truncation across entire result set
     truncated_results, trunc_info = truncate_docs_results(
