@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Paper,
   Box,
@@ -183,20 +183,27 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
     return sortedTasks.sort((a, b) => a.complexity - b.complexity);
   }, [tasks, cognitiveState.status]);
 
-  const handleCopyTaskTitle = (title: string) => {
-    if (!navigator.clipboard?.writeText) return;
-    void navigator.clipboard
-      .writeText(title)
-      .then(() => {
+  const handleCopyTaskTitle = useCallback(
+    async (title: string) => {
+      if (!navigator.clipboard?.writeText) {
+        onError?.('Clipboard API is not supported in this browser or context.');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(title);
         setIsTaskTitleCopied(true);
         if (copyTaskTitleTimeoutRef.current) clearTimeout(copyTaskTitleTimeoutRef.current);
         copyTaskTitleTimeoutRef.current = setTimeout(() => {
           setIsTaskTitleCopied(false);
           copyTaskTitleTimeoutRef.current = null;
         }, 2000);
-      })
-      .catch(() => {});
-  };
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        onError?.(`Failed to copy task title: ${errorMsg}`);
+      }
+    },
+    [onError]
+  );
 
   const startTask = (taskId: string) => {
     setTasks((prev) =>
