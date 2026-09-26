@@ -1,0 +1,1108 @@
+{
+  "schema_version": "1.0.0",
+  "series_id": "LTAIP-FULL",
+  "authority": "Packet JSON and current in-repo Task Orchestrator REST models. External v3 task-tree tools remain TX.",
+  "root_id": "LTAIP-SERIES-ROOT",
+  "nodes": [
+    {
+      "id": "LTAIP-SERIES-ROOT",
+      "kind": "root",
+      "title": "LTAIP: Leantime AI parity validation and conditional delivery series",
+      "status": "READY",
+      "parent_id": null,
+      "depends_on": [],
+      "packet_path": null,
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-H0-001",
+      "kind": "packet",
+      "title": "Economic buyer, persona, and workflow lock",
+      "status": "READY",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json",
+      "redlane": false
+    },
+    {
+      "id": "TP-LTAIP-H0-001::step-1-preflight-and-protocol",
+      "kind": "task",
+      "title": "Validate repository and worktree identity, then create the consent-safe qualitative research protocol and pre-registered evidence model.",
+      "status": "READY",
+      "parent_id": "TP-LTAIP-H0-001",
+      "depends_on": [],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json",
+      "redlane": false,
+      "validation": [
+        "The protocol defines qualification, consent, redaction, evidence grading, dissent capture, and withdrawal handling.",
+        "The committed participant register contains opaque IDs only.",
+        "The protocol pre-registers the minimum-evidence and stop rules before evidence is scored."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-001::step-2-ingest-qualified-evidence",
+      "kind": "task",
+      "title": "Ingest only consented, redacted session summaries and rank economic-buyer criteria, user outcomes, switching triggers, and workflow frequency.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-001",
+      "depends_on": [
+        "TP-LTAIP-H0-001::step-1-preflight-and-protocol"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json",
+      "redlane": false,
+      "validation": [
+        "Every evidence row references an opaque participant ID and evidence class.",
+        "Buyer and user rankings are calculated separately before synthesis.",
+        "Contradictory sessions remain visible and are not averaged away."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-001::step-3-lock-segment-personas-workflows",
+      "kind": "task",
+      "title": "Select exactly one economic-buyer archetype, exactly two primary personas, and exactly three must-win workflows with explicit non-targets and reversal criteria.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-001",
+      "depends_on": [
+        "TP-LTAIP-H0-001::step-2-ingest-qualified-evidence"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json",
+      "redlane": false,
+      "validation": [
+        "The JSON contains exactly one buyer, two personas, three workflows, non-targets, thresholds, and reversal criteria.",
+        "The markdown and JSON agree.",
+        "The manifest hashes every evidence and decision artifact."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-001::step-4-audit-proof-and-pr",
+      "kind": "task",
+      "title": "Run the independent embedded audit, finalize proof, open the PR, and obtain PR Steward merge readiness.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-001",
+      "depends_on": [
+        "TP-LTAIP-H0-001::step-3-lock-segment-personas-workflows"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json",
+      "redlane": false,
+      "validation": [
+        "Embedded audit is PASS or non-blocking PASS_WITH_RISKS.",
+        "PR Steward status is READY and current to latest head.",
+        "No raw personal data is present in the diff or proof."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-002",
+      "kind": "packet",
+      "title": "Equivalent-edition Leantime and OpenProject workflow trial",
+      "status": "BLOCKED",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-001"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json",
+      "redlane": false
+    },
+    {
+      "id": "TP-LTAIP-H0-002::step-1-lock-and-harness",
+      "kind": "task",
+      "title": "Verify Packet 001 lock and create a candidate-neutral, digest-pinned disposable trial harness for Leantime Community 3.9.8 and OpenProject Community.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-002",
+      "depends_on": [
+        "TP-LTAIP-H0-001"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json",
+      "redlane": false,
+      "validation": [
+        "Both candidate images are digest-pinned.",
+        "The compose network is isolated and uses disposable named volumes.",
+        "No secret value is committed.",
+        "Edition labels are explicit."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-002::step-2-fixtures-and-automation",
+      "kind": "task",
+      "title": "Create equivalent synthetic fixtures, role semantics, workflow scenarios, fixture loaders, and deterministic trial-manifest validation.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-002",
+      "depends_on": [
+        "TP-LTAIP-H0-002::step-1-lock-and-harness"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json",
+      "redlane": false,
+      "validation": [
+        "Fixture record counts and semantic keys match across candidates.",
+        "Role mappings preserve differences.",
+        "Repeated loading into clean instances is deterministic."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-002::step-3-equivalent-trial",
+      "kind": "task",
+      "title": "Run the identical workflow, accessibility, mobile, external-collaborator, administration, backup, and restore protocol against both candidates.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-002",
+      "depends_on": [
+        "TP-LTAIP-H0-002::step-2-fixtures-and-automation"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json",
+      "redlane": false,
+      "validation": [
+        "All three must-win workflows have explicit completion and failure records for both candidates.",
+        "P0 and P1 findings are separated.",
+        "No enterprise or paid capability contaminates results.",
+        "Destruction of disposable instances and volumes is recorded."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-002::step-4-audit-proof-and-pr",
+      "kind": "task",
+      "title": "Run independent audit, finalize proof, open PR, and obtain PR Steward readiness without selecting a base product.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-002",
+      "depends_on": [
+        "TP-LTAIP-H0-002::step-3-equivalent-trial"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json",
+      "redlane": false,
+      "validation": [
+        "Embedded audit is non-blocking.",
+        "PR Steward is READY and current.",
+        "No base selection or implementation authorization is present."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-003",
+      "kind": "packet",
+      "title": "Release-pinned exposure and blocking authorization manifests",
+      "status": "BLOCKED",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-002"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json",
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-H0-003::step-1-policy-and-source-custody",
+      "kind": "task",
+      "title": "Pin candidate versions from Packet 002, materialize release-pinned source in tmp, and define deny-by-default exposure and authorization policy.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-003",
+      "depends_on": [
+        "TP-LTAIP-H0-002"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json",
+      "redlane": true,
+      "validation": [
+        "Policy is deny-by-default.",
+        "Every discovered surface must be classified or startup/test execution blocks.",
+        "No dynamic wildcard dispatch is approved."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-003::step-2-generate-fresh-and-upgraded-manifests",
+      "kind": "task",
+      "title": "Generate content-addressed exposure manifests for fresh-install and upgraded disposable instances of both candidates.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-003",
+      "depends_on": [
+        "TP-LTAIP-H0-003::step-1-policy-and-source-custody"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json",
+      "redlane": true,
+      "validation": [
+        "100 percent of discovered write surfaces are classified.",
+        "Unclassified surfaces cause a failing validator.",
+        "Fresh-to-upgrade drift is explicit."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-003::step-3-adversarial-authorization-matrix",
+      "kind": "task",
+      "title": "Run cross-project, object-level, response-field, token-scope, upgrade-drift, and kill-switch negative tests using synthetic disposable instances.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-003",
+      "depends_on": [
+        "TP-LTAIP-H0-003::step-2-generate-fresh-and-upgraded-manifests"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json",
+      "redlane": true,
+      "validation": [
+        "Zero P0/P1 bypasses.",
+        "All unclassified surfaces block.",
+        "Kill switch blocks candidate adapter execution.",
+        "No sensitive values appear in logs."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-003::step-4-security-disposition-audit-proof-pr",
+      "kind": "task",
+      "title": "Write candidate security disposition, run independent security audit, finalize proof, open PR, obtain PR Steward readiness, and return to supervisor adjudication.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-003",
+      "depends_on": [
+        "TP-LTAIP-H0-003::step-3-adversarial-authorization-matrix"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json",
+      "redlane": true,
+      "validation": [
+        "Independent security audit is PASS or PASS_WITH_RISKS with no P0/P1 open findings.",
+        "PR Steward is current and READY or the packet remains blocked.",
+        "Supervisor adjudication is requested before merge."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-004",
+      "kind": "packet",
+      "title": "Leantime mutation atomicity and event-path spike",
+      "status": "BLOCKED",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-003"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json",
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-H0-004::step-1-source-trace",
+      "kind": "task",
+      "title": "Materialize Leantime 3.9.8 source in tmp and produce call/transaction traces for representative mutations.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-004",
+      "depends_on": [
+        "TP-LTAIP-H0-003"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json",
+      "redlane": true,
+      "validation": [
+        "Every representative mutation has a complete call-order record.",
+        "Transaction boundaries and UNKNOWN segments are explicit."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-004::step-2-plugin-failure-matrix",
+      "kind": "task",
+      "title": "Install the disposable probe plugin and execute commit, rollback, listener failure, duplicate, reorder, and crash tests.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-004",
+      "depends_on": [
+        "TP-LTAIP-H0-004::step-1-source-trace"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json",
+      "redlane": true,
+      "validation": [
+        "Atomicity is proven with failure evidence or explicitly disproven.",
+        "Lost, duplicate, and reordered events are counted."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-004::step-3-fallback-and-rebase",
+      "kind": "task",
+      "title": "Prototype bounded polling/reconciliation and measure one transaction-aware core-patch variant across two source versions.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-004",
+      "depends_on": [
+        "TP-LTAIP-H0-004::step-2-plugin-failure-matrix"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json",
+      "redlane": true,
+      "validation": [
+        "Each alternative has explicit semantics, loss window, recovery path, and maintenance cost.",
+        "No architecture is selected when a P0 correctness failure remains."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-004::step-4-teardown-audit-proof",
+      "kind": "task",
+      "title": "Destroy the spike, run independent audit, finalize proof, and obtain PR Steward readiness.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-004",
+      "depends_on": [
+        "TP-LTAIP-H0-004::step-3-fallback-and-rebase"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json",
+      "redlane": true,
+      "validation": [
+        "Teardown evidence passes.",
+        "Independent audit is non-blocking.",
+        "Supervisor adjudicates before merge."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-005",
+      "kind": "packet",
+      "title": "Derived-data authorization, deletion, and injection laboratory",
+      "status": "BLOCKED",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-003"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-005.json",
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-H0-005::step-1-policy-corpus",
+      "kind": "task",
+      "title": "Create the lineage, ACL, tombstone, citation, and hostile-data model plus deterministic synthetic corpus.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-005",
+      "depends_on": [
+        "TP-LTAIP-H0-003"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-005.json",
+      "redlane": true,
+      "validation": [
+        "Corpus is deterministic and contains positive and negative ACL transitions.",
+        "No real data or secrets are present."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-005::step-2-index-acl-deletion",
+      "kind": "task",
+      "title": "Build the disposable index and test grant, revoke, move, delete, restore, cache, and citation behavior.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-005",
+      "depends_on": [
+        "TP-LTAIP-H0-005::step-1-policy-corpus"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-005.json",
+      "redlane": true,
+      "validation": [
+        "Zero cross-project leakage.",
+        "Deletion/revocation SLO is measured, not assumed.",
+        "Citations resolve only to current authorized sources."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-005::step-3-hostile-content",
+      "kind": "task",
+      "title": "Test hostile source instructions, retrieval poisoning, citation spoofing, and cache replay.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-005",
+      "depends_on": [
+        "TP-LTAIP-H0-005::step-2-index-acl-deletion"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-005.json",
+      "redlane": true,
+      "validation": [
+        "No policy or tool boundary bypass.",
+        "All failures are reproducible and classified."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-005::step-4-destroy-audit-proof",
+      "kind": "task",
+      "title": "Destroy the derived store, prove rebuildability, run security audit, and obtain PR Steward output.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-005",
+      "depends_on": [
+        "TP-LTAIP-H0-005::step-3-hostile-content"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-005.json",
+      "redlane": true,
+      "validation": [
+        "Destroy/rebuild evidence exists.",
+        "Security audit has no open P0/P1 finding."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-006",
+      "kind": "packet",
+      "title": "Official plugin package qualification",
+      "status": "BLOCKED",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-001",
+        "TP-LTAIP-H0-002"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json",
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-H0-006::step-1-input-gate",
+      "kind": "task",
+      "title": "Fail closed unless the operator supplies approved package files through an external input directory.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-006",
+      "depends_on": [
+        "TP-LTAIP-H0-001",
+        "TP-LTAIP-H0-002"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json",
+      "redlane": true,
+      "validation": [
+        "Every package has operator authorization and SHA-256.",
+        "No raw package is staged."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-006::step-2-static-review",
+      "kind": "task",
+      "title": "Scan authorized packages without executing them and classify migrations, permissions, external calls, bundled code, and license/support terms.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-006",
+      "depends_on": [
+        "TP-LTAIP-H0-006::step-1-input-gate"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json",
+      "redlane": true,
+      "validation": [
+        "Migrations, permissions, external endpoints, export paths, and license boundaries are classified."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-006::step-3-runtime-matrix",
+      "kind": "task",
+      "title": "Test each package in disposable Leantime instances and compare workflow outcome and three-year cost.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-006",
+      "depends_on": [
+        "TP-LTAIP-H0-006::step-2-static-review"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json",
+      "redlane": true,
+      "validation": [
+        "ACL, export, upgrade, backup, restore, and rollback results are complete.",
+        "Disposition is buy/build/defer/reject with evidence."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-006::step-4-teardown-audit-proof",
+      "kind": "task",
+      "title": "Destroy disposable instances, audit package handling and claims, and obtain PR Steward readiness.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-006",
+      "depends_on": [
+        "TP-LTAIP-H0-006::step-3-runtime-matrix"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json",
+      "redlane": true,
+      "validation": [
+        "Supply-chain audit is non-blocking.",
+        "Package custody is complete."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-007",
+      "kind": "packet",
+      "title": "Equivalent-scope probabilistic TCO and team operating model",
+      "status": "BLOCKED",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-002",
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-006"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-007.json",
+      "redlane": false
+    },
+    {
+      "id": "TP-LTAIP-H0-007::step-1-evidence-model",
+      "kind": "task",
+      "title": "Collect prototype evidence and define source-linked distributions, correlations, and failure branches.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-007",
+      "depends_on": [
+        "TP-LTAIP-H0-002",
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-006"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-007.json",
+      "redlane": false,
+      "validation": [
+        "Every parameter has source, date, unit, range, and confidence."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-007::step-2-simulation",
+      "kind": "task",
+      "title": "Run seeded simulations for surviving candidate/package variants and explicit failure branches.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-007",
+      "depends_on": [
+        "TP-LTAIP-H0-007::step-1-evidence-model"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-007.json",
+      "redlane": false,
+      "validation": [
+        "Repeated runs with same seed are byte-stable.",
+        "Failure branches and downside are visible."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-007::step-3-team-model",
+      "kind": "task",
+      "title": "Map required skills, named ownership, on-call, support load, bus factor, and unresolved capacity gaps.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-007",
+      "depends_on": [
+        "TP-LTAIP-H0-007::step-2-simulation"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-007.json",
+      "redlane": false,
+      "validation": [
+        "Named ownership exists or implementation is BLOCKED_CAPACITY."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-007::step-4-audit-proof",
+      "kind": "task",
+      "title": "Run independent economic/model challenge, finalize proof, and obtain PR Steward readiness.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-007",
+      "depends_on": [
+        "TP-LTAIP-H0-007::step-3-team-model"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-007.json",
+      "redlane": false,
+      "validation": [
+        "Model audit is non-blocking.",
+        "Uncertainty remains visible."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-008",
+      "kind": "packet",
+      "title": "Independent base-selection gate",
+      "status": "BLOCKED",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-001",
+        "TP-LTAIP-H0-002",
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-005",
+        "TP-LTAIP-H0-006",
+        "TP-LTAIP-H0-007"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-008.json",
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-H0-008::step-1-harvest",
+      "kind": "task",
+      "title": "Collect content-addressed evidence from Packets 001-007 and fail closed on stale or missing proof.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-008",
+      "depends_on": [
+        "TP-LTAIP-H0-001",
+        "TP-LTAIP-H0-002",
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-005",
+        "TP-LTAIP-H0-006",
+        "TP-LTAIP-H0-007"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-008.json",
+      "redlane": true,
+      "validation": [
+        "All required evidence hashes resolve and are current."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-008::step-2-vetoes-corrections",
+      "kind": "task",
+      "title": "Classify every finding and Stage 07 correction without aggregate-score rescue.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-008",
+      "depends_on": [
+        "TP-LTAIP-H0-008::step-1-harvest"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-008.json",
+      "redlane": true,
+      "validation": [
+        "No vetoed candidate remains selectable.",
+        "Unresolved evidence remains blocking."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-008::step-3-decision",
+      "kind": "task",
+      "title": "Select one release-pinned base/variant, reject all, or return to prototype with exact evidence requests.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-008",
+      "depends_on": [
+        "TP-LTAIP-H0-008::step-2-vetoes-corrections"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-008.json",
+      "redlane": true,
+      "validation": [
+        "Decision and ADR agree.",
+        "Exactly one terminal outcome is emitted."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-H0-008::step-4-independent-audit-proof",
+      "kind": "task",
+      "title": "Run a fresh adversarial audit, finalize proof, PR Steward intake, and GPT-5.6 supervisor adjudication.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-H0-008",
+      "depends_on": [
+        "TP-LTAIP-H0-008::step-3-decision"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-H0-008.json",
+      "redlane": true,
+      "validation": [
+        "Independent audit and supervisor agree or packet remains NEEDS_SUPERVISOR."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-009",
+      "kind": "packet",
+      "title": "Read-only policy gateway and selected-base adapter",
+      "status": "CONDITIONAL",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-008"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-009.json",
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-POST-009::step-1-selected-base-contract",
+      "kind": "task",
+      "title": "Load Packet 008 decision and Packet 003 manifest, generate one selected-base contract, and fail if ambiguous.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-009",
+      "depends_on": [
+        "TP-LTAIP-H0-008"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-009.json",
+      "redlane": true,
+      "validation": [
+        "Exactly one base and adapter.",
+        "Every read is classified."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-009::step-2-gateway",
+      "kind": "task",
+      "title": "Implement selected adapter, policy, audit receipts, redaction, rate limits, and explicit denied states.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-009",
+      "depends_on": [
+        "TP-LTAIP-POST-009::step-1-selected-base-contract"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-009.json",
+      "redlane": true,
+      "validation": [
+        "Contract and authorization tests pass.",
+        "Denied/unavailable states explicit."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-009::step-3-negative-upgrade",
+      "kind": "task",
+      "title": "Prove cross-project denial, response filtering, timeout behavior, token rotation, and kill switch on selected version and upgrade candidate.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-009",
+      "depends_on": [
+        "TP-LTAIP-POST-009::step-2-gateway"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-009.json",
+      "redlane": true,
+      "validation": [
+        "Negative and drift tests pass."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-009::step-4-audit-proof",
+      "kind": "task",
+      "title": "Run independent security audit and supervisor adjudication.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-009",
+      "depends_on": [
+        "TP-LTAIP-POST-009::step-3-negative-upgrade"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-009.json",
+      "redlane": true,
+      "validation": [
+        "No P0/P1 security finding.",
+        "Supervisor approves."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-010",
+      "kind": "packet",
+      "title": "Deterministic parity foundation child-series generator",
+      "status": "CONDITIONAL",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-008",
+        "TP-LTAIP-H0-006"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json",
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-POST-010::step-1-gap-selection",
+      "kind": "task",
+      "title": "Map H0 workflow failures to at most three deterministic gaps and choose evidence-backed disposition.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-010",
+      "depends_on": [
+        "TP-LTAIP-H0-008",
+        "TP-LTAIP-H0-006"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json",
+      "redlane": true,
+      "validation": [
+        "At most three gaps.",
+        "Each has canonical writer, evidence, disposition, and acceptance target."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-010::step-2-generate-child-packets",
+      "kind": "task",
+      "title": "Inspect selected-base runtime and generate exact per-gap packets under the strict schema.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-010",
+      "depends_on": [
+        "TP-LTAIP-POST-010::step-1-gap-selection"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json",
+      "redlane": true,
+      "validation": [
+        "Every child packet validates.",
+        "Dependencies are acyclic.",
+        "No implementation performed."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-010::step-3-audit-proof",
+      "kind": "task",
+      "title": "Run independent packet audit, finalize proof, and request supervisor approval for child execution.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-010",
+      "depends_on": [
+        "TP-LTAIP-POST-010::step-2-generate-child-packets"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json",
+      "redlane": true,
+      "validation": [
+        "Generated series is exact, bounded, and non-executing."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-011",
+      "kind": "packet",
+      "title": "Bounded read/draft AI pilot",
+      "status": "CONDITIONAL",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-POST-009",
+        "TP-LTAIP-POST-010",
+        "TP-LTAIP-H0-005"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-011.json",
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-POST-011::step-1-feature-contract",
+      "kind": "task",
+      "title": "Select exactly two read/draft features from accepted evidence and pre-register golden/adversarial thresholds.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-011",
+      "depends_on": [
+        "TP-LTAIP-POST-009",
+        "TP-LTAIP-POST-010",
+        "TP-LTAIP-H0-005"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-011.json",
+      "redlane": true,
+      "validation": [
+        "Exactly two features.",
+        "Thresholds, costs, privacy classes, and rollback are pre-registered."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-011::step-2-implement-pilot",
+      "kind": "task",
+      "title": "Implement external model gateway, policy, citations, budgets, feature flags, and human-review surfaces.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-011",
+      "depends_on": [
+        "TP-LTAIP-POST-011::step-1-feature-contract"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-011.json",
+      "redlane": true,
+      "validation": [
+        "Writes are structurally impossible.",
+        "Citations and uncertainty are schema-required."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-011::step-3-evaluate",
+      "kind": "task",
+      "title": "Run task-specific evaluation with overrides, denial, injection, provider failure, and budget tests.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-011",
+      "depends_on": [
+        "TP-LTAIP-POST-011::step-2-implement-pilot"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-011.json",
+      "redlane": true,
+      "validation": [
+        "Task thresholds pass.",
+        "Zero authorization failures.",
+        "Provider failure falls back deterministically."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-011::step-4-security-audit-proof",
+      "kind": "task",
+      "title": "Exercise kill switch and data destruction, run independent security audit, and request supervisor adjudication.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-011",
+      "depends_on": [
+        "TP-LTAIP-POST-011::step-3-evaluate"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-011.json",
+      "redlane": true,
+      "validation": [
+        "Kill switch and deletion pass.",
+        "No P0/P1 audit finding.",
+        "Supervisor approves."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-012",
+      "kind": "packet",
+      "title": "Parallel upstream contribution stream",
+      "status": "CONDITIONAL",
+      "parent_id": "LTAIP-SERIES-ROOT",
+      "depends_on": [
+        "TP-LTAIP-H0-008"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json",
+      "redlane": true
+    },
+    {
+      "id": "TP-LTAIP-POST-012::step-1-maintainer-alignment",
+      "kind": "task",
+      "title": "Materialize selected upstream source in tmp and document current contribution, security, and support expectations.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-012",
+      "depends_on": [
+        "TP-LTAIP-H0-008"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json",
+      "redlane": true,
+      "validation": [
+        "Each candidate contribution has maintainer-aligned rationale and rejected alternatives."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-012::step-2-build-bundles",
+      "kind": "task",
+      "title": "Create bounded patches/tests/docs for approved generic contribution candidates.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-012",
+      "depends_on": [
+        "TP-LTAIP-POST-012::step-1-maintainer-alignment"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json",
+      "redlane": true,
+      "validation": [
+        "Every patch has purpose, test, compatibility, rollback, and local fallback."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-012::step-3-compatibility",
+      "kind": "task",
+      "title": "Run upstream suites where available and produce submission readiness without posting externally.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-012",
+      "depends_on": [
+        "TP-LTAIP-POST-012::step-2-build-bundles"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json",
+      "redlane": true,
+      "validation": [
+        "Submission readiness is PASS, NEEDS_REWORK, or REJECTED with evidence."
+      ]
+    },
+    {
+      "id": "TP-LTAIP-POST-012::step-4-audit-proof-approval",
+      "kind": "task",
+      "title": "Run independent review and produce an operator-approved external submission plan.",
+      "status": "BLOCKED",
+      "parent_id": "TP-LTAIP-POST-012",
+      "depends_on": [
+        "TP-LTAIP-POST-012::step-3-compatibility"
+      ],
+      "packet_path": "task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json",
+      "redlane": true,
+      "validation": [
+        "Contribution bundle is reviewed and no external write occurred."
+      ]
+    }
+  ],
+  "blocks_dag": {
+    "edges": [
+      {
+        "predecessor": "TP-LTAIP-H0-001",
+        "successor": "TP-LTAIP-H0-002"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-002",
+        "successor": "TP-LTAIP-H0-003"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-003",
+        "successor": "TP-LTAIP-H0-004"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-003",
+        "successor": "TP-LTAIP-H0-005"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-001",
+        "successor": "TP-LTAIP-H0-006"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-002",
+        "successor": "TP-LTAIP-H0-006"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-002",
+        "successor": "TP-LTAIP-H0-007"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-003",
+        "successor": "TP-LTAIP-H0-007"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-004",
+        "successor": "TP-LTAIP-H0-007"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-006",
+        "successor": "TP-LTAIP-H0-007"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-001",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-002",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-003",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-004",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-005",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-006",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-007",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-008",
+        "successor": "TP-LTAIP-POST-009"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-008",
+        "successor": "TP-LTAIP-POST-010"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-006",
+        "successor": "TP-LTAIP-POST-010"
+      },
+      {
+        "predecessor": "TP-LTAIP-POST-009",
+        "successor": "TP-LTAIP-POST-011"
+      },
+      {
+        "predecessor": "TP-LTAIP-POST-010",
+        "successor": "TP-LTAIP-POST-011"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-005",
+        "successor": "TP-LTAIP-POST-011"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-008",
+        "successor": "TP-LTAIP-POST-012"
+      }
+    ],
+    "edge_count": 24
+  },
+  "waves": [
+    {
+      "wave": 0,
+      "nodes": [
+        "TP-LTAIP-H0-001"
+      ],
+      "gate": "READY now"
+    },
+    {
+      "wave": 1,
+      "nodes": [
+        "TP-LTAIP-H0-002"
+      ],
+      "gate": "Packet 001 merged"
+    },
+    {
+      "wave": 2,
+      "nodes": [
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-006"
+      ],
+      "gate": "Packet 002 merged; 006 also needs operator package input"
+    },
+    {
+      "wave": 3,
+      "nodes": [
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-005"
+      ],
+      "gate": "Packet 003 merged"
+    },
+    {
+      "wave": 4,
+      "nodes": [
+        "TP-LTAIP-H0-007"
+      ],
+      "gate": "Packets 002,003,004,006 merged"
+    },
+    {
+      "wave": 5,
+      "nodes": [
+        "TP-LTAIP-H0-008"
+      ],
+      "gate": "Packets 001-007 merged and evidence-current"
+    },
+    {
+      "wave": 6,
+      "nodes": [
+        "TP-LTAIP-POST-009",
+        "TP-LTAIP-POST-010",
+        "TP-LTAIP-POST-012"
+      ],
+      "gate": "Packet 008 selects one base; supervisor authorizes post-selection series"
+    },
+    {
+      "wave": 7,
+      "nodes": [
+        "TP-LTAIP-POST-011"
+      ],
+      "gate": "Packets 005,009,010 complete and deterministic/retrieval gates pass"
+    }
+  ]
+}

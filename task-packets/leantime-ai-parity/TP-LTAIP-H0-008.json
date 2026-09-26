@@ -1,0 +1,269 @@
+{
+  "id": "TP-LTAIP-H0-008",
+  "project": "dopemux-mvp",
+  "target": "h0-gate/independent-base-selection",
+  "invariants": [
+    "All Packets 001-007 are merged and evidence-current.",
+    "Security, workflow, accessibility, mobile, backup, and admin P0 failures are vetoes.",
+    "Stage 07 corrections are resolved or remain blockers.",
+    "Reviewer is independent from prototype implementers.",
+    "One base/variant is selected or all are rejected."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-001",
+    "TP-LTAIP-H0-002",
+    "TP-LTAIP-H0-003",
+    "TP-LTAIP-H0-004",
+    "TP-LTAIP-H0-005",
+    "TP-LTAIP-H0-006",
+    "TP-LTAIP-H0-007"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-H0-VALIDATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "decision/TP-LTAIP-H0-008-base-selection"
+  },
+  "commit": {
+    "message": "decision: adjudicate leantime parity base selection",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-008.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-008.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-008/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-008/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-008/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-008/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-008/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-008/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-008/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-008/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-008/MERGE_READINESS.json",
+      "scripts/leantime-ai-parity/h0/base-selection/harvest_evidence.py",
+      "scripts/leantime-ai-parity/h0/base-selection/adjudicate_gates.py",
+      "scripts/leantime-ai-parity/h0/base-selection/validate_traceability.py",
+      "tests/prototypes/leantime-ai-parity/h0/base-selection/test_gate_vetoes.py",
+      "tests/prototypes/leantime-ai-parity/h0/base-selection/test_traceability.py",
+      "reports/leantime-ai-parity/h0/base-selection/p0-p1-disposition.csv",
+      "docs/06-research/leantime-ai-parity/h0/base-selection/evidence-adjudication.md",
+      "docs/90-adr/adr-ltaip-h0-008-base-selection.md",
+      "reports/leantime-ai-parity/h0/base-selection/evidence-inventory.json",
+      "reports/leantime-ai-parity/h0/base-selection/correction-disposition.json",
+      "reports/leantime-ai-parity/h0/base-selection/base-selection-readiness.json",
+      "reports/leantime-ai-parity/h0/base-selection/decision.json",
+      "reports/leantime-ai-parity/h0/base-selection/manifest.json"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-008.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+      "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/base-selection",
+      "python -m json.tool reports/leantime-ai-parity/h0/base-selection/evidence-inventory.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/base-selection/correction-disposition.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/base-selection/base-selection-readiness.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/base-selection/decision.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/base-selection/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/base-selection/evidence-adjudication.md docs/90-adr/adr-ltaip-h0-008-base-selection.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-008/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "decision: adjudicate Leantime parity base selection",
+    "body": "Harvest Horizon 0 evidence, apply P0/P1 veto gates, resolve every Stage 07 correction, and select one base/variant or reject all. No implementation authorization beyond the explicit decision.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "consensus",
+      "challenge",
+      "implement",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-harvest",
+      "task": "Collect content-addressed evidence from Packets 001-007 and fail closed on stale or missing proof.",
+      "requirements": [
+        "Latest merged head and proof hash for every packet.",
+        "No narrative-only substitution."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/base-selection/harvest_evidence.py --output reports/leantime-ai-parity/h0/base-selection/evidence-inventory.json",
+        "python scripts/leantime-ai-parity/h0/base-selection/validate_traceability.py --inventory reports/leantime-ai-parity/h0/base-selection/evidence-inventory.json"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/base-selection/evidence-inventory.json",
+        "docs/06-research/leantime-ai-parity/h0/base-selection/evidence-adjudication.md"
+      ],
+      "validation": [
+        "All required evidence hashes resolve and are current."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-vetoes-corrections",
+      "task": "Classify every finding and Stage 07 correction without aggregate-score rescue.",
+      "requirements": [
+        "All RC07-001 through RC07-012 resolved or explicit blocker.",
+        "Plane is triggered only by documented criteria."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/base-selection/adjudicate_gates.py --inventory reports/leantime-ai-parity/h0/base-selection/evidence-inventory.json --output reports/leantime-ai-parity/h0/base-selection/base-selection-readiness.json"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/base-selection/p0-p1-disposition.csv",
+        "reports/leantime-ai-parity/h0/base-selection/correction-disposition.json",
+        "reports/leantime-ai-parity/h0/base-selection/base-selection-readiness.json"
+      ],
+      "validation": [
+        "No vetoed candidate remains selectable.",
+        "Unresolved evidence remains blocking."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-3-decision",
+      "task": "Select one release-pinned base/variant, reject all, or return to prototype with exact evidence requests.",
+      "requirements": [
+        "Reversal evidence explicit.",
+        "Post-selection packets remain conditional until merge."
+      ],
+      "commands": [
+        "python -m json.tool reports/leantime-ai-parity/h0/base-selection/decision.json >/dev/null",
+        "python scripts/docs_validator.py docs/90-adr/adr-ltaip-h0-008-base-selection.md"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/base-selection/decision.json",
+        "docs/90-adr/adr-ltaip-h0-008-base-selection.md",
+        "reports/leantime-ai-parity/h0/base-selection/manifest.json"
+      ],
+      "validation": [
+        "Decision and ADR agree.",
+        "Exactly one terminal outcome is emitted."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-4-independent-audit-proof",
+      "task": "Run a fresh adversarial audit, finalize proof, PR Steward intake, and GPT-5.6 supervisor adjudication.",
+      "requirements": [
+        "Same implementer cannot be final auditor.",
+        "Supervisor approval mandatory."
+      ],
+      "commands": [
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-008.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/base-selection",
+        "python -m json.tool reports/leantime-ai-parity/h0/base-selection/evidence-inventory.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/base-selection/correction-disposition.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/base-selection/base-selection-readiness.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/base-selection/decision.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/base-selection/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/base-selection/evidence-adjudication.md docs/90-adr/adr-ltaip-h0-008-base-selection.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-008/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/leantime-ai-parity/TP-LTAIP-H0-008/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-008/AUDITOR_REPORT.md",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-008/MERGE_READINESS.json"
+      ],
+      "validation": [
+        "Independent audit and supervisor agree or packet remains NEEDS_SUPERVISOR."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}
