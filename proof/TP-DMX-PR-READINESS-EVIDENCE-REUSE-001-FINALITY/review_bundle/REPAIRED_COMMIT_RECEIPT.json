@@ -1,0 +1,35 @@
+{
+  "audit_repair_source": "Kimi K3 semantic plan; shell/local deterministic writer due Command Code print-mode mutation denial",
+  "base_main": "35df148a55864b0efc5ada79753f987207b2936c",
+  "commit": "bece0d38ab255c7020643179cbe2edf3712afb9d",
+  "mark_ready_authorized": false,
+  "merge_authorized": false,
+  "net_paths_from_main": [
+    ".github/workflows/ci-complete.yml",
+    ".github/workflows/embedded-audit.yml",
+    ".github/workflows/pr-steward-recheck.yml",
+    ".github/workflows/preflight.yml",
+    "tests/ci/test_embedded_audit_trigger_policy.py",
+    "tests/ci/test_pr_readiness_evidence_reuse.py"
+  ],
+  "parent": "0b47b01fc4a1dcb77b7f9d6b2501145bf617f7f9",
+  "publication_authorized_by_packet": true,
+  "recorded_at_utc": "2026-09-18T12:31:37.943066+00:00",
+  "repair_paths": [
+    ".github/workflows/pr-steward-recheck.yml",
+    "tests/ci/test_pr_readiness_evidence_reuse.py"
+  ],
+  "signing_credential_authorized": false,
+  "status": "PASS_REPAIRED_CONTENT_COMMIT_FROZEN",
+  "tree": "508c95f850ba51d77eb29da68e5684fa602dd6be",
+  "validation": {
+    "change_contract": "PASS L3 model_audit_required=true",
+    "diff_check": "PASS",
+    "focused": "126 PASS",
+    "gitleaks": "PASS",
+    "precommit": "PASS",
+    "relevant_existing": "551 PASS",
+    "workflow_syntax": "PASS"
+  },
+  "writer": "shell/local"
+}

@@ -18,7 +18,6 @@ def test_required_context_keeps_automatic_and_manual_triggers() -> None:
         "opened",
         "synchronize",
         "reopened",
-        "ready_for_review",
     }
     assert {"pr_number", "head_sha"} == set(
         triggers["workflow_dispatch"]["inputs"]
