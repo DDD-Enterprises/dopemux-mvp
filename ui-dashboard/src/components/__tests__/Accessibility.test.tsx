@@ -458,3 +458,8 @@ test('TaskSequencer pending Start button renders tooltip on hover and keyboard f
   fireEvent.mouseOver(hoverStartButton);
   expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(hoverExpected);
 });
+
+test('TaskSequencer renders Ritual Complete banner with aria-live="polite"', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
+  expect(content).toMatch(/role="status"\s+aria-live="polite"\s+aria-label="Ritual Complete: All tasks finished"/);
+});
