@@ -1,9 +1,57 @@
-import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Check, Copy } from 'lucide-react';
 
 import type { PlannerLane } from './extensionTypes';
 
 const statusColor = { ready: 'success', blocked: 'error', stale: 'warning', unknown: 'default', conflicting: 'warning' } as const;
 const statusLabel = { ready: 'Ready evidence', blocked: 'Blocked evidence', stale: 'Stale evidence', unknown: 'Unknown: audit', conflicting: 'Conflicting evidence' } as const;
+
+function CandidateShaChip({ candidateSha }: { candidateSha: string }) {
+  const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    if (!navigator.clipboard?.writeText) return;
+    try {
+      await navigator.clipboard.writeText(candidateSha);
+      setCopied(true);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch {
+      // Ignore clipboard write failures silently
+    }
+  }, [candidateSha]);
+
+  return (
+    <Tooltip title={copied ? 'SHA copied!' : 'Click to copy full candidate SHA'} arrow>
+      <Chip
+        size="small"
+        icon={copied ? <Check size={12} aria-hidden="true" /> : <Copy size={12} aria-hidden="true" />}
+        label={candidateSha.slice(0, 12)}
+        onClick={handleCopy}
+        aria-label={copied ? `Candidate SHA copied: ${candidateSha}` : `Copy full candidate SHA: ${candidateSha}`}
+        sx={{
+          fontFamily: 'monospace',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          '&:hover, &:focus-visible': {
+            transform: 'translateY(-1px)',
+          },
+        }}
+      />
+    </Tooltip>
+  );
+}
 
 export default function PortfolioTable({ lanes, onInspect }: { lanes: readonly PlannerLane[]; onInspect: (lane: PlannerLane, trigger: HTMLButtonElement) => void }) {
   return (
@@ -16,7 +64,7 @@ export default function PortfolioTable({ lanes, onInspect }: { lanes: readonly P
               <TableCell component="th" scope="row">{lane.projectId}</TableCell>
               <TableCell>{lane.laneId}</TableCell>
               <TableCell><Stack spacing={0.5} alignItems="flex-start"><Chip color={lane.states.includes('blocked') ? 'error' : lane.states.includes('stale') || lane.states.includes('conflicting') ? 'warning' : lane.states.includes('unknown') ? 'default' : 'success'} label={lane.recommendation} />{lane.states.map((state) => <Chip size="small" variant="outlined" color={statusColor[state]} label={statusLabel[state]} key={state} />)}</Stack></TableCell>
-              <TableCell><code>{lane.candidateSha.slice(0, 12)}</code></TableCell>
+              <TableCell><CandidateShaChip candidateSha={lane.candidateSha} /></TableCell>
               <TableCell><Button onClick={(event) => onInspect(lane, event.currentTarget)} aria-label={`Inspect ${lane.projectId} ${lane.laneId} ${lane.candidateSha}`}>Inspect</Button></TableCell>
             </TableRow>
           ))}
