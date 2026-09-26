@@ -1,0 +1,107 @@
+{
+  "schema_version": "control_tower.supervisor_macro_packet.v1",
+  "macro_id": "SMP-EXAMPLE-001",
+  "objective": "Bounded independent workstreams",
+  "repository": "PROJECT_ID",
+  "base_policy": "Repository governance and child Task Packets",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate"
+    ],
+    "global_stop_conditions": []
+  },
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "authority_ceiling": "Child-specific intersection only",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.md",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "objective": "Bounded child",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "src/child/**"
+      ],
+      "canonical_writers": [
+        "child"
+      ],
+      "semantic_scope": [
+        "child"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate"
+      ],
+      "rollback_boundary": "Revert child commit",
+      "delivery_risk_lane": "L1",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "UNKNOWN",
+          "model": "UNKNOWN",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": false,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ]
+    }
+  ],
+  "joins": [],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit per frozen L2/L3 subject",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop"
+    ]
+  }
+}

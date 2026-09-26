@@ -1,0 +1,34 @@
+{
+  "captured_at": "2026-09-09T01:49:03Z",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "pr_number": 1337,
+  "content_head": "0aaa239241e4ef486e332a1ba2dc9d1c963d6625",
+  "state": "PARKED_BEFORE_FINAL_AUDIT",
+  "final_independent_audit": "NOT_RUN",
+  "reason": "PR 1330 remains open at c1adbe6bd384eb9bd3c47bcee232265424b8edde and has higher priority.",
+  "acceptance": "NOT_APPROVED",
+  "merge_authorized": false,
+  "activation_authorized": false,
+  "expected_draft_gates": [
+    "independent embedded audit FAIL",
+    "PR Steward final readiness FAIL"
+  ],
+  "next_authorized_sequence": [
+    "Wait for PR 1330 resolution and merge.",
+    "Fetch and integrate then-current main without rewriting published history or adopting contaminated or foreign lineage.",
+    "Resolve bounded overlap and rerun affected deterministic checks; stop and return on semantic overlap governed by the disposition.",
+    "Wait for review findings to settle and repair only authorized bounded P2 or test findings.",
+    "Freeze the final substantive head.",
+    "Run exactly one required independent L2 final audit under current packet authority.",
+    "Publish only the authorized proof-only closure after that audit.",
+    "Reharvest exact-head CI, reviews, unresolved threads, proof state and PR Steward.",
+    "Stop at the operator merge gate; do not merge without later authority."
+  ],
+  "forbidden_while_parked": [
+    "merge any PR",
+    "mutate or close PR 1335",
+    "run the final model audit early",
+    "treat CI Security Review as the independent final audit",
+    "waive or fabricate readiness, review, audit, signer, proof or finality state"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "captured_at": "2026-09-08",
+  "command": "rtk proxy python3 test_ct.py ControlTowerTests.test_stream_scan_blocks_secret_across_chunk_boundary",
+  "cwd": ".control-tower/tests",
+  "exit_code": 1,
+  "status": "FAIL",
+  "raw_output": "test_stream_scan_blocks_secret_across_chunk_boundary (__main__.ControlTowerTests.test_stream_scan_blocks_secret_across_chunk_boundary) ... FAIL\n\n======================================================================\nFAIL: test_stream_scan_blocks_secret_across_chunk_boundary (__main__.ControlTowerTests.test_stream_scan_blocks_secret_across_chunk_boundary)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/tmp/kit001-clean-r1-20260908/checkout/.control-tower/tests/test_ct.py\", line 211, in test_stream_scan_blocks_secret_across_chunk_boundary\n    with self.assertRaisesRegex(ct.PackageBlocked, \"SECRET_ASSIGNMENT\"):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: PackageBlocked not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.034s\n\nFAILED (failures=1)\n",
+  "notes": [
+    "The first invocation used an incorrect module name and failed before loading tests; it is not the behavioral RED result.",
+    "This behavioral RED captured the exempt-prefix nested-assignment bypass. The separately reproduced long sk- stream bypass was added to the same test before repair."
+  ]
+}

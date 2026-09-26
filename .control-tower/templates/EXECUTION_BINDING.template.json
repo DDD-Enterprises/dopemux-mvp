@@ -1,0 +1,74 @@
+{
+  "schema_version": "control_tower.execution_binding.v1",
+  "packet_id": "TP-EXAMPLE-001",
+  "stage": "implementation",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "TASK_PACKET.md",
+    "operator_gate_refs": []
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "selection": {
+    "runner": "UNKNOWN",
+    "runner_availability": "UNKNOWN",
+    "model": "UNKNOWN",
+    "effort": "UNKNOWN",
+    "connector": "UNKNOWN",
+    "configured_identity": "UNKNOWN",
+    "response_claimed_identity": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": []
+  },
+  "constraints": {
+    "allowed_actions": [],
+    "forbidden_actions": [
+      "merge",
+      "activate"
+    ],
+    "stop_conditions": [],
+    "custody_constraints": [],
+    "context_constraints": []
+  },
+  "justification": {
+    "why_runner": "UNKNOWN: fill from live evidence",
+    "why_model": "UNKNOWN: fill from packet authority",
+    "why_effort": "UNKNOWN: fill from packet authority",
+    "alternatives_considered": [
+      {
+        "route": "shell/local",
+        "disposition": "reserved",
+        "reason": "Use for deterministic checks"
+      }
+    ],
+    "cost_latency_tradeoff": "UNKNOWN",
+    "evidence": []
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "NOT_RUN"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  }
+}

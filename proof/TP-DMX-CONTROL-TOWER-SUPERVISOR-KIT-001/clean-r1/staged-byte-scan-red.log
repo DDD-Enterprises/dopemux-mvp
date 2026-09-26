@@ -1,0 +1,19 @@
+error: fsmonitor_ipc__send_query: unspecified error on '/Users/hue/code/dopemux-mvp/.git/worktrees/checkout/fsmonitor--daemon.ipc'
+error: fsmonitor_ipc__send_query: unspecified error on '/Users/hue/code/dopemux-mvp/.git/worktrees/checkout/fsmonitor--daemon.ipc'
+error: fsmonitor_ipc__send_query: unspecified error on '/Users/hue/code/dopemux-mvp/.git/worktrees/checkout/fsmonitor--daemon.ipc'
+error: fsmonitor_ipc__send_query: unspecified error on '/Users/hue/code/dopemux-mvp/.git/worktrees/checkout/fsmonitor--daemon.ipc'
+error: fsmonitor_ipc__send_query: unspecified error on '/Users/hue/code/dopemux-mvp/.git/worktrees/checkout/fsmonitor--daemon.ipc'
+error: fsmonitor_ipc__send_query: unspecified error on '/Users/hue/code/dopemux-mvp/.git/worktrees/checkout/fsmonitor--daemon.ipc'
+error: fsmonitor_ipc__send_query: unspecified error on '/Users/hue/code/dopemux-mvp/.git/worktrees/checkout/fsmonitor--daemon.ipc'
+Traceback (most recent call last):
+  File "<string>", line 20, in <module>
+  File ".control-tower/bin/ct", line 429, in feed
+    if pattern.search(data): raise PackageBlocked(f'BLOCKED_SECRET_SCAN: {name}')
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<run_path>.PackageBlocked: BLOCKED_SECRET_SCAN: PRIVATE_KEY
+PASS 100644 5937 14c0ad891568f4b68003057e81f9fe33b5f3fdde815aa91417983e17b03fe38a .claude/llm.md
+PASS 100644 2571 6a7f3f841e4e972b09e10bfd535a2791f4f3e97948534911c91de8d6700a69c5 .claude/llms.md
+PASS 100644 1781 6e1f7ae8917d71d850b8a2385403e9c86e609e87e6eaef7953df5072b0ca611d .control-tower/README.md
+PASS 100755 50692 a62a72702df318bb2bab8030f82cf85025174edbfb5dd679df43d7f1122c2c38 .control-tower/bin/ct
+PASS 100644 2940 185c1ee644a32c0a90d245e9c62aedc528250baa9a1224d1b8364eefa27ef94f .control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md
+PASS 100644 781 7b2f532f2a6178441333d414439107476bca0cc30e6e469043a3ec69ede6acd3 .control-tower/schemas/return_packet.schema.json

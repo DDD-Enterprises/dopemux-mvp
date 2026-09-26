@@ -1,0 +1,54 @@
+{
+  "captured_at": "2026-09-09T01:09:10Z",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "status": "AUTHORIZED_CLEAN_SUCCESSOR_IMPLEMENTATION",
+  "scope_amendment": {
+    "checkout": "/private/tmp/kit001-clean-r1-20260908/checkout",
+    "branch": "codex/control-tower-supervisor-kit-clean-r1",
+    "creation_head": "46b35b3cb0192d69a45cb41ed55df6ba34201e0e",
+    "allowlist_expansion": [
+      ".control-tower/**",
+      "instruction surfaces",
+      "active packet metadata",
+      "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/clean-r1/**"
+    ],
+    "forbidden": [
+      "canonical Task Packet schema change",
+      "signer, proof acceptance, or finality authority change",
+      "donor merge or cherry-pick",
+      "final model audit while PR 1330 is open",
+      "push before supervisor followup",
+      "PR 1335 mutation or closure",
+      "merge of any PR in this phase"
+    ],
+    "custody_states": [
+      "FROZEN_CONTAMINATED_HISTORY",
+      "UNADOPTED_FOREIGN_HISTORY"
+    ],
+    "publication_guard": "The authorized sole writer retains exclusive commit and push custody; no push occurs before supervisor prepublication followup."
+  },
+  "remote_state_at_authorization": {
+    "pr_1330": {
+      "state": "OPEN",
+      "head_sha": "c1adbe6bd384eb9bd3c47bcee232265424b8edde"
+    },
+    "pr_1335": {
+      "state": "OPEN",
+      "head_sha": "b99e0f57aba6e9119502ef22a973b1495a53ba4a"
+    },
+    "source": "supervisor live readback; raw PR 1335 receipt at /private/tmp/kit001-clean-r1-20260908/pr1335-live-donor.json"
+  },
+  "audit": {
+    "status": "NOT_RUN",
+    "reason": "Final independent audit is deferred until PR 1330 resolves, main is refreshed, and substantive content is frozen."
+  },
+  "historical_evidence": {
+    "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001": "STALE_AFTER_SUBSTANTIVE_REPAIR",
+    "proof/pr_merge/embedded-audit/pr-1335": "HISTORICAL_ONLY_UNCHANGED"
+  },
+  "authority_clarifications": [
+    "REPAIR-002 is NONAUTHORITATIVE",
+    "No REPAIR-003 packet is authorized",
+    "The original packet base/path invariant is amended by this disposition"
+  ]
+}

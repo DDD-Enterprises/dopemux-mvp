@@ -1,0 +1,31 @@
+independent embedded audit	Enforce audit evidence gate	﻿2026-09-09T01:37:27.7195832Z ##[group]Run python - <<'PY'
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7196188Z ^[[36;1mpython - <<'PY'^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7196450Z ^[[36;1mimport json^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7196670Z ^[[36;1mimport os^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7196882Z ^[[36;1mimport sys^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7197112Z ^[[36;1mfrom pathlib import Path^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7197372Z ^[[36;1m^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7197660Z ^[[36;1mproof_path = Path("embedded-audit-artifacts/PROOF.json")^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7198058Z ^[[36;1mif not proof_path.is_file():^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7198413Z ^[[36;1m    raise SystemExit("Audit evidence proof is missing.")^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7198799Z ^[[36;1mtrusted_root = Path("trusted-source")^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7199119Z ^[[36;1mif not trusted_root.is_dir():^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7199478Z ^[[36;1m    raise SystemExit("Trusted audit source is unavailable.")^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7199909Z ^[[36;1msys.path.insert(0, str(trusted_root.resolve()))^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7200402Z ^[[36;1mfrom scripts.audit.run_embedded_audit import enforce_independent_audit_proof^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7200885Z ^[[36;1m^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7201170Z ^[[36;1mproof = json.loads(proof_path.read_text(encoding="utf-8"))^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7201562Z ^[[36;1menforce_independent_audit_proof(^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7201847Z ^[[36;1m    proof,^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7202117Z ^[[36;1m    expected_pr=int(os.environ["EXPECTED_PR"]),^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7202835Z ^[[36;1m    expected_head_sha=os.environ["EXPECTED_HEAD_SHA"],^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7203253Z ^[[36;1m    expected_repo=os.environ["GITHUB_REPOSITORY"],^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7203577Z ^[[36;1m)^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7203761Z ^[[36;1mPY^[[0m
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7237402Z shell: /usr/bin/bash -e {0}
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7237650Z env:
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7237836Z   EXPECTED_PR: 1337
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7238130Z   EXPECTED_HEAD_SHA: 0aaa239241e4ef486e332a1ba2dc9d1c963d6625
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7238471Z ##[endgroup]
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7753284Z audit_not_executed: final readiness requires executed=true; audit_provenance_missing: final readiness requires trusted provenance
+independent embedded audit	Enforce audit evidence gate	2026-09-09T01:37:27.7829039Z ##[error]Process completed with exit code 1.

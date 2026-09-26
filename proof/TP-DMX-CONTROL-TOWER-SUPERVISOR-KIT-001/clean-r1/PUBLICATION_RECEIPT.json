@@ -1,0 +1,53 @@
+{
+  "captured_at": "2026-09-09T01:49:03Z",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "publication": {
+    "branch": "codex/control-tower-supervisor-kit-clean-r1",
+    "content_head": "0aaa239241e4ef486e332a1ba2dc9d1c963d6625",
+    "origin_main_after_fetch": "6a728f74c0311967f83213513308f97613e3f28d",
+    "pre_push_remote_ref": "ABSENT",
+    "pre_push_remote_check_exit": 0,
+    "push_mode": "NORMAL_NEW_BRANCH",
+    "push_exit": 0,
+    "remote_readback_head": "0aaa239241e4ef486e332a1ba2dc9d1c963d6625"
+  },
+  "pull_request": {
+    "number": 1337,
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1337",
+    "base": "main",
+    "state": "OPEN",
+    "is_draft": true,
+    "existing_prs_for_head_before_create": 0,
+    "created_prs_for_head": 1,
+    "supersedes": 1335,
+    "supersession_reason": "PR 1335 custody and lineage are contaminated; it remains open and untouched."
+  },
+  "custody": {
+    "creation_head": "46b35b3cb0192d69a45cb41ed55df6ba34201e0e",
+    "excluded_ancestors": [
+      "4b31331b93fae6ffb98d23b4c0cfa1df7f5e55d5",
+      "6be4f29633292e0c37e146cea4e19045659a83f3",
+      "b99e0f57aba6e9119502ef22a973b1495a53ba4a",
+      "d43ee015c94a1daba7bc265131c9b84485468347",
+      "819081af459e5a748fb9fc61d320e93da252ac7b"
+    ],
+    "excluded_ancestry_status": "PASS",
+    "foreign_history_status": "UNADOPTED",
+    "pr_1335_state": "OPEN_UNTOUCHED",
+    "pr_1335_latest_observed_head": "819081af459e5a748fb9fc61d320e93da252ac7b",
+    "latest_foreign_bundle": "/private/tmp/kit001-clean-r1-20260908/frozen-pr1335-lineage-819081af.bundle",
+    "latest_foreign_bundle_verify": "PASS",
+    "latest_foreign_bundle_sha256": "2708279628c0a0c63288dba1bd10d25544c95b732a2623639496b1d0b068a78d"
+  },
+  "authority": {
+    "pr_1330_state": "OPEN",
+    "pr_1330_head": "c1adbe6bd384eb9bd3c47bcee232265424b8edde",
+    "priority": "PR_1330_HIGHER",
+    "final_independent_audit": "NOT_RUN",
+    "merge_authorized": false
+  },
+  "committed_range_evidence": {
+    "committed-range-change-contract.log": "adc5b1943347ca9c2948b979275ddab91431c6b289b62df6018a2922d7454c4c",
+    "committed-range-precommit.log": "7d25af42b691a00417e050b56e087b557dfa77bbfdada84f8900f78841447b42"
+  }
+}

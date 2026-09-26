@@ -1,0 +1,9 @@
+{
+  "user_response": "i approve",
+  "approved_request": "Send scoped diffs, governance, and test evidence to Claude for independent audits; publish Dopemux detailed proof to its public GitHub repository.",
+  "not_approved": [
+    "risk acceptance",
+    "gate bypass",
+    "semantic repair beyond existing authority"
+  ]
+}

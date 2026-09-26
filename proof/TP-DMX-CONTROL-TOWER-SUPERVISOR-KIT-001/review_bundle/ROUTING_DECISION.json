@@ -1,0 +1,49 @@
+{
+  "audit": {
+    "effort": "medium",
+    "independence": "PROPOSED",
+    "model": "sonnet",
+    "rationale": "One separate non-Codex CLI audit after content freeze; Sonnet is permitted Tier 1.",
+    "required": true,
+    "runner": "claude-code-cli"
+  },
+  "fallback": {
+    "model": null,
+    "runner": null,
+    "trigger": null
+  },
+  "justification": {
+    "alternatives_considered": [
+      {
+        "disposition": "SELECTED_ELSEWHERE",
+        "reason": "Used for bounded external repository publication and read-only discovery.",
+        "route": "Luna"
+      },
+      {
+        "disposition": "REJECTED",
+        "reason": "Forbidden by AGENTS.md 9.1.",
+        "route": "Codex formal audit"
+      }
+    ],
+    "cost_latency_tradeoff": "",
+    "evidence": [
+      "task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001.json"
+    ],
+    "why_effort": "Session effort not exposed; preserved UNKNOWN.",
+    "why_model": "Inherited parent session; deterministic local tools used for remaining validation. No model price assertion.",
+    "why_runner": "Existing root session owns the Dopemux port; Luna workers own other repositories."
+  },
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "recorded_at": "20260908T211834Z",
+  "risk_lane": "L2",
+  "schema_version": "1.0",
+  "selection": {
+    "agent_role": "implementer",
+    "custom_agent": null,
+    "effort": "UNKNOWN",
+    "model": "gpt-6",
+    "runner": "codex",
+    "runner_availability": "PROVEN"
+  },
+  "stage": "publication-validation"
+}

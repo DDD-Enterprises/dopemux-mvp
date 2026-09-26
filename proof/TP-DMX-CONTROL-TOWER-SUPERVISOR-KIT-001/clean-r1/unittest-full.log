@@ -1,0 +1,53 @@
+test_cli_names_crc_only_and_requires_return_reason_and_decision (test_ct.ControlTowerTests.test_cli_names_crc_only_and_requires_return_reason_and_decision) ... ok
+test_final_staged_scan_blocks_generated_diff_secret (test_ct.ControlTowerTests.test_final_staged_scan_blocks_generated_diff_secret) ... ok
+test_identity_chain_rejects_any_mismatch (test_ct.ControlTowerTests.test_identity_chain_rejects_any_mismatch) ... ok
+test_json_packet_identity_rejects_duplicate_keys (test_ct.ControlTowerTests.test_json_packet_identity_rejects_duplicate_keys) ... ok
+test_json_packet_repository_binding_uses_installed_identity_and_origin (test_ct.ControlTowerTests.test_json_packet_repository_binding_uses_installed_identity_and_origin) ... ok
+test_markdown_packet_identity_is_authoritative_and_unambiguous (test_ct.ControlTowerTests.test_markdown_packet_identity_is_authoritative_and_unambiguous) ... ok
+test_packaging_revalidates_staged_packet_and_canonical_proof (test_ct.ControlTowerTests.test_packaging_revalidates_staged_packet_and_canonical_proof) ... {
+  "status": "BLOCKED_PACKAGE",
+  "reason": "BLOCKED_REPO_IDENTITY_MISMATCH: project, marker, or origin does not match installed repository"
+}
+{
+  "status": "BLOCKED_PACKAGE",
+  "reason": "BLOCK_PACKET_IDENTITY_MISMATCH: package identity chain differs"
+}
+ok
+test_packaging_wires_repository_and_packet_identity (test_ct.ControlTowerTests.test_packaging_wires_repository_and_packet_identity) ... {
+  "status": "BLOCKED_PACKAGE",
+  "reason": "BLOCKED_REPO_IDENTITY_MISMATCH: project, marker, or origin does not match installed repository"
+}
+ok
+test_proof_pack_end_to_end_verifies_and_blocks_generated_diff_secret (test_ct.ControlTowerTests.test_proof_pack_end_to_end_verifies_and_blocks_generated_diff_secret) ... {
+  "status": "BLOCKED_PACKAGE",
+  "reason": "BLOCKED_SECRET_SCAN: SECRET_ASSIGNMENT"
+}
+ok
+test_publication_copy_failure_leaves_no_named_or_temporary_archive (test_ct.ControlTowerTests.test_publication_copy_failure_leaves_no_named_or_temporary_archive) ... {
+  "status": "BLOCKED_PACKAGE",
+  "reason": "disk failure"
+}
+ok
+test_return_metadata_requires_nonblank_fields_and_matches_schema (test_ct.ControlTowerTests.test_return_metadata_requires_nonblank_fields_and_matches_schema) ... ok
+test_return_pack_end_to_end_validates_metadata_before_zip (test_ct.ControlTowerTests.test_return_pack_end_to_end_validates_metadata_before_zip) ... ok
+test_runner_inventory_model_discovery_is_opt_in (test_ct.ControlTowerTests.test_runner_inventory_model_discovery_is_opt_in) ... ok
+test_schema_and_route_policy_are_separate (test_ct.ControlTowerTests.test_schema_and_route_policy_are_separate) ... ok
+test_schema_validation_uses_installed_schema_and_rejects_unknown_keywords (test_ct.ControlTowerTests.test_schema_validation_uses_installed_schema_and_rejects_unknown_keywords) ... ok
+test_staged_tree_traversal_errors_block (test_ct.ControlTowerTests.test_staged_tree_traversal_errors_block) ... ok
+test_stream_scan_accepts_clean_large_file_and_blocks_large_secret (test_ct.ControlTowerTests.test_stream_scan_accepts_clean_large_file_and_blocks_large_secret) ... ok
+test_stream_scan_blocks_secret_across_chunk_boundary (test_ct.ControlTowerTests.test_stream_scan_blocks_secret_across_chunk_boundary) ... ok
+test_stream_scan_blocks_unreadable_and_partial_reads (test_ct.ControlTowerTests.test_stream_scan_blocks_unreadable_and_partial_reads) ... ok
+test_stream_scan_preserves_all_detector_boundaries (test_ct.ControlTowerTests.test_stream_scan_preserves_all_detector_boundaries) ... ok
+test_tool_is_proven_only_after_successful_probe (test_ct.ControlTowerTests.test_tool_is_proven_only_after_successful_probe) ... ok
+test_verify_zip_blocks_unsafe_duplicate_and_symlink_members (test_ct.ControlTowerTests.test_verify_zip_blocks_unsafe_duplicate_and_symlink_members) ... ok
+test_verify_zip_checks_structure_manifests_inventory_and_identity (test_ct.ControlTowerTests.test_verify_zip_checks_structure_manifests_inventory_and_identity) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 6.668s
+
+OK
+/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/tmpkjk_04uz/output/20260909T011657Z_demo_TP-PACK-001_PROOF.zip
+SHA256=4158019b4687418fbb7085db30efed56867fc7ba837864435b4986b5b279570f
+/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/tmp2r4ytajz/output/20260909T011701Z_demo_TP-RETURN-001_RETURN.zip
+SHA256=c9d6f5f5536b92f3e150d6a411b7780c0dbd2530888094d73af863f4ba94ebfb
+/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/tmp4moq6lte/.control-tower/state/RUNNER_INVENTORY.json

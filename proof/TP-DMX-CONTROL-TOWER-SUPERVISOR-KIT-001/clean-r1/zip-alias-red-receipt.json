@@ -1,0 +1,8 @@
+{
+  "command": "runpy verifier probe with a valid package plus root/./TASK_PACKET.json alias",
+  "exit_code": 0,
+  "observed_result": "verify_zip_file returned PASS with 7 members",
+  "status": "PRESERVED_FAILURE",
+  "source": "supervisor read-only probe",
+  "defect": "noncanonical ZIP member alias normalized onto a declared member and escaped coverage rejection"
+}

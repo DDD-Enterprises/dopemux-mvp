@@ -5,21 +5,73 @@
 **Mode**: PLAN/ACT-aware with modular authority boundaries
 **Workspace**: `<workspace_root>`
 
+<!-- CONTROL_TOWER_ENTRY_BEGIN -->
+## Control Tower Supervision
+
+For supervised engineering packets, follow [Control Tower Packet Workflow](../AGENTS.md#control-tower-packet-workflow).
+Read the installed kit contracts and project configuration through that entry point.
+Read `.claude/PROJECT_INSTRUCTIONS.md` and `.claude/PRIMER.md` first; this file adds project context.
+<!-- CONTROL_TOWER_ENTRY_END -->
+
 ## 🎯 Governance Principles
 
 **Doctrine**: truth over fluency, inspect before editing, minimal correct change, deterministic systems first, fail closed when evidence is missing. This module elaborates the same Truth Order / proof-and-finality regime that [AGENTS.md](../AGENTS.md) mandates for Codex — keep both files in sync.
 
 **Default workflow**: `inspect → analyze → trace → plan → challenge → implement minimally → validate → precommit → summarize truthfully`.
 
+**Mandatory hierarchy**:
+
+```text
+OPERATOR
+ -> CONTROL TOWER SUPERVISOR
+ -> SUPERVISOR MACROPACKET
+ -> TEAM LEAD
+ -> MULTIPLE CHILD WORKSTREAMS
+ -> AGGREGATE RETURN
+```
+
+Every non-trivial design, implementation, investigation, repair, qualification,
+finality, or repo-changing execution request starts with one supervisor-issued
+MacroPacket containing at least two genuine workstreams; never invent ceremonial
+work. Child Task Packets remain scoped execution law. Authority, risk lane, write
+allowlist, rollback, route, proof, and audit obligations are non-transferable.
+
+The team lead coordinates legal children with one mutating implementer per
+workstream. Parallel mutation requires proven-disjoint physical and semantic
+writes, canonical writers, rollback, custody, and current workflow legality;
+otherwise serialize explicitly. The team lead cannot widen or transfer authority,
+lower risk, waive proof or audit, override Task Orchestrator, create operator
+authority, merge, activate, self-certify acceptance, or independently audit work
+it supervised. Continue unaffected legal children unless a global stop applies;
+return at actual authority/risk/custody/writer/rollback/audit/activation conflicts,
+no legal route, FAIL/NEEDS_SUPERVISOR, or an operator gate.
+
+Before every MacroPacket or child Task Packet, emit TP_ROUTE with runner, exact
+model, effort, and why. Exact runtime runner/model/effort is ExecutionBinding,
+never DCP RouteDecision. DCP owns policy/classification/context/route eligibility;
+Task Orchestrator owns workflow legality; Universal Router ranks eligible routes;
+Audit Broker owns auditor certification/dispatch; Dopetask executes separately
+authorized effects. No layer may widen upstream authority.
+
+Use shell/local for deterministic facts. Settle CI and reviews before substantive
+freeze and one final independent L2/L3 audit; no intermediate model audits. Later
+semantic changes invalidate that audit. Proof-only successors do not automatically
+require re-audit; reuse valid subject-bound evidence and reharvest affected facts.
+Return one aggregate preserving child states and subjects, with authority NONE;
+aggregation cannot mint PASS/READY/DONE. Autonomous next-MacroPacket dispatch
+remains separately gated. Never merge, mark ready, close, force-push, rewrite
+history, alter credentials or permissions, activate, publish, migrate, mutate
+production, or accept security residual risk without required explicit operator authority.
+
 **Non-negotiables**:
 - **Authority order**: latest user instruction → [AGENTS.md](../AGENTS.md) / Task Packet → runtime code → schemas → tests → config → docs → assumptions. Runtime outranks docs. Mark unresolved authority as `UNKNOWN`.
-- **PAL chains**: governed by [AGENTS.md §5](../AGENTS.md) — Codex minimum (`analyze → planner → codereview → precommit`) and risky/architecture variant. Do not restate the chain elsewhere.
-- **Confidence states**: `exploring / low / medium / high / certain`. `certain` requires direct evidence; final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §8](../AGENTS.md).
+- **PAL workflows and audit budgets**: governed by [AGENTS.md §5](../AGENTS.md). Use deterministic validation between slices; do not add intermediate model audits or restate chains here.
+- **Confidence states**: `exploring / low / medium / high / certain`. `certain` requires direct evidence; final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §9](../AGENTS.md).
 - **Validation buckets**: report **PASS / FAIL / NOT_RUN** — never collapse `NOT_RUN` into `PASS`.
 - **Contract-sensitive surfaces** (schemas, migrations, event payloads, MCP manifests, hooks, proof bundles) require canonical-writer inspection before editing.
 - **Security**: least privilege, fail-closed, never expose secrets, strict tool isolation in MCP/agent flows.
 
-**Required final response shape**: Change Summary · Authority Used · Analysis Performed · Validation Performed (PASS/FAIL/NOT_RUN) · Remaining Uncertainty · Files Touched · Git State · Rollback Plan · Requested Next Step. For repo-changing work, also produce the proof bundle from [AGENTS.md §8](../AGENTS.md).
+**Required final response shape**: Change Summary · Authority Used · Analysis Performed · Validation Performed (PASS/FAIL/NOT_RUN) · Remaining Uncertainty · Files Touched · Git State · Rollback Plan · Requested Next Step. For repo-changing work, also produce the proof bundle from [AGENTS.md §9](../AGENTS.md).
 
 **Full doctrine**: [.claude/modules/shared/governance-principles.md](modules/shared/governance-principles.md).
 
@@ -193,6 +245,6 @@ sharing-class table + command surface (`init`/`start`/`stop`/`doctor` implemente
 and `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (ACCEPTED with supervisor rulings 2026-07-28).
 
 **Key docs**:
-- [`docs/02-how-to/mcp-setup-other-repos.md`](docs/02-how-to/mcp-setup-other-repos.md) — user guide for other projects
-- [`docs/02-how-to/mcp-transport-and-port-bugs.md`](docs/02-how-to/mcp-transport-and-port-bugs.md) — bug record + correct analysis
+- [`docs/02-how-to/mcp-setup-other-repos.md`](../docs/02-how-to/mcp-setup-other-repos.md) — user guide for other projects
+- [`docs/02-how-to/mcp-transport-and-port-bugs.md`](../docs/02-how-to/mcp-transport-and-port-bugs.md) — bug record + correct analysis
 - `AGENTS.md §12` — canonical MCP rules for all agents

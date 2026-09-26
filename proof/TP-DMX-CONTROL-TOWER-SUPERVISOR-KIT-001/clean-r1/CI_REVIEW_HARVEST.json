@@ -1,0 +1,87 @@
+{
+  "captured_at": "2026-09-09T01:49:03Z",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "pr_number": 1337,
+  "content_head": "0aaa239241e4ef486e332a1ba2dc9d1c963d6625",
+  "draft": true,
+  "merge_state": "BLOCKED",
+  "deterministic_checks": {
+    "status": "PASS_WITH_PENDING",
+    "passed": [
+      "CodeQL actions",
+      "CodeQL javascript-typescript",
+      "CodeQL python",
+      "CodeQL ruby",
+      "CodeQL aggregate",
+      "docs checks",
+      "identity checks",
+      "preflight",
+      "Code Quality and Linting",
+      "Documentation Check",
+      "Security Review CI job",
+      "Auditor Router",
+      "Extractor Full",
+      "Extractor Smoke",
+      "Audit Proof Validator",
+      "Model Routing Consistency",
+      "Clobber Guard",
+      "Extractor Lint"
+    ],
+    "pending": [
+      "Unit Tests: Run fast unit gate"
+    ],
+    "skipped": [
+      "Installer Smoke",
+      "Scoped Coverage",
+      "Integration Tests"
+    ],
+    "bounded_harvest_cutoff_applied": true
+  },
+  "expected_gate_failures": {
+    "independent_embedded_audit": {
+      "status": "FAIL",
+      "reason": "audit_not_executed and audit_provenance_missing"
+    },
+    "pr_steward_final_readiness": {
+      "status": "FAIL",
+      "reason": "audit failure and Steward skipped; final readiness is not READY"
+    }
+  },
+  "control_tower_ci_hook": {
+    "status": "PASS",
+    "job_id": 102304468202,
+    "evidence": "Validate Control Tower kit contracts...Passed",
+    "note": "GitHub CI used its synthetic merge checkout; this does not change the published content-head identity."
+  },
+  "reviews": {
+    "review_decision": null,
+    "review_count": 0,
+    "review_threads": 0,
+    "unresolved_threads": 0,
+    "approval_state": "NOT_APPROVED"
+  },
+  "raw_evidence": {
+    "ci-checks-content-head.raw.json": {
+      "container_sha256": "5f6a72152ae5707598e703a7682c1e52720b4aebc0ad09e02b4f2d3cef3dd279",
+      "raw_sha256": "dba2e2a439cc2bec1213049313694eb790265484f986981755ffc1469763d093"
+    },
+    "ci-code-quality-content-head.raw.json": {
+      "container_sha256": "cca81ad96db566effce22a1f88891e0d6cf5aecc2d417d0d3cdcc6af7ede3aca",
+      "raw_sha256": "c3ae97e57687784b9e36c7345bc361175ea42a6f6304693a01cbe1288456f733"
+    },
+    "ci-control-tower-hook-content-head.log": "0fbb3d5236651e14492c28b6acb41d39ebaee61d741e2f5c9e800e366a4c9187",
+    "ci-embedded-audit-content-head.log": "a8d5e949f0f0153b36d2ee97527c403e2b090ac30a4686b8c4e97cb9f46cfffa",
+    "pr-state-content-head.json": "d7e8c601e6b865c301a83bce93ab033527cda17bbef59b75855eb952ccf01b8f",
+    "reviews-content-head.json": "af54c19d63c9294076b686ab25372ca6824e15fd1f00783fe31914f0ef509dbc"
+  },
+  "raw_container_policy": {
+    "reason": "GitHub tabular output contains trailing tab bytes that fail git diff --check; JSON strings preserve those bytes as escapes without trimming.",
+    "original_raw_secret_scan": "PASS",
+    "staged_container_secret_scan": "PASS"
+  },
+  "truth_boundaries": [
+    "Security Review is a successful CI job result, but its AI-Powered Security Analysis step was SKIPPED; it is neither a security scan PASS nor the required independent final model audit.",
+    "A passing proof validator does not make historical audit evidence current for PR 1337.",
+    "The gh pr checks command exits 1 while expected gate failures or pending checks exist."
+  ]
+}

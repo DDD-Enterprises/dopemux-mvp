@@ -1,0 +1,54 @@
+{
+  "audit": {
+    "effort": "UNKNOWN_NOT_SELECTED",
+    "independence": "DEFERRED_NOT_INVOKED",
+    "model": "UNKNOWN_NOT_SELECTED",
+    "rationale": "Exactly one final independent L2 audit only after PR1330 resolves, main refresh and final content freeze.",
+    "required": true,
+    "runner": "DEFERRED_NON_CODEX"
+  },
+  "fallback": {
+    "model": null,
+    "runner": null,
+    "trigger": null
+  },
+  "justification": {
+    "alternatives_considered": [
+      {
+        "disposition": "UNAVAILABLE_PRIOR_EVIDENCE",
+        "reason": "User disposition reports unavailable; not retried.",
+        "route": "codex/gpt-6/medium"
+      },
+      {
+        "disposition": "INSUFFICIENT_DELIVERY",
+        "reason": "User disposition and preserved partial candidate; no substitution.",
+        "route": "codex/gpt-5.6-terra/medium"
+      },
+      {
+        "disposition": "RESERVED",
+        "reason": "Deterministic verification and custody only; semantic repair requires implementer.",
+        "route": "shell/local"
+      }
+    ],
+    "cost_latency_tradeoff": "Current prices UNKNOWN; no price optimality claim.",
+    "evidence": [
+      "/private/tmp/kit001-clean-r1-20260908/route-probe-receipt.json"
+    ],
+    "why_effort": "Medium as directed; approved architecture and bounded reconstruction with adversarial tests.",
+    "why_model": "User-preferred Sol route freshly executed successfully; delegated sol_writer configured with explicit gpt-5.6-sol override.",
+    "why_runner": "Fresh codex-cli 0.153.4 version exit 0 and explicit Sol execution probe exit 0."
+  },
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "recorded_at": "20260909T000954Z",
+  "risk_lane": "L2",
+  "schema_version": "1.0",
+  "selection": {
+    "agent_role": "sole-replacement-implementer",
+    "custom_agent": null,
+    "effort": "medium",
+    "model": "gpt-5.6-sol",
+    "runner": "codex",
+    "runner_availability": "PROVEN"
+  },
+  "stage": "repair"
+}

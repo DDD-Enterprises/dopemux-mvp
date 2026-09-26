@@ -26,34 +26,68 @@ or active entrypoints do not support.
 ## 3. Default Behavior
 
 - Simple questions: answer directly, cite the evidence used, and do not create process artifacts.
-- Non-trivial design, implementation, or repo-changing work: Do not stop at a standalone Task Packet. Create the Task Packet, validate it, execute the scoped work end-to-end, and close with proof.
+- Every non-trivial design, implementation, investigation, repair, qualification, finality, or repo-changing execution request starts with one Supervisor MacroPacket issued by the Control Tower supervisor. The team lead executes its legal child workstreams and returns one aggregate result with proof.
 - Ambiguous work: choose the smallest safe slice that preserves authority boundaries instead of inventing scope.
 - Ask only when work is unsafe, impossible, blocked by missing credentials/secrets, or missing a decision that cannot be inferred safely from repo truth.
 
+Mandatory operating hierarchy:
+
+```text
+OPERATOR
+ -> CONTROL TOWER SUPERVISOR
+ -> SUPERVISOR MACROPACKET
+ -> TEAM LEAD
+ -> MULTIPLE CHILD WORKSTREAMS
+ -> AGGREGATE RETURN
+```
+
+Every MacroPacket must contain at least two genuine workstreams, such as implementation,
+validation, custody, evidence, compatibility, route qualification, finality, or security.
+Never invent ceremonial work to satisfy the count. Child Task Packets remain scoped
+execution law: authority, risk lane, write allowlist, rollback, route, proof, and audit
+obligations are non-transferable. The envelope does not pool authority.
+
+The team lead coordinates legal children, uses one mutating implementer per workstream,
+and parallelizes mutating siblings only after proving disjoint physical and semantic
+writes, canonical writers, rollback, custody, and current workflow legality. Otherwise
+serialize explicitly. It cannot widen or transfer authority, lower risk, waive proof or
+audit, override Task Orchestrator, create operator authority, merge, activate, or serve
+as the required independent auditor for work it supervised. Continue unaffected legal
+children when one blocks unless a global stop applies. Return at real authority, risk,
+custody, writer, rollback, audit, or activation contradictions, no legal route,
+`FAIL` / `NEEDS_SUPERVISOR`, or an operator gate.
+
 ## 4. Codex End-to-End Default
 
-For implementation or repo-changing work, ChatGPT/Codex must execute this lifecycle by default:
+Within the Supervisor MacroPacket, ChatGPT/Codex must execute this lifecycle for authorized children:
 
 1. Preflight repo identity, remote, branch, status, and markers from the primary checkout.
 2. Read required authority files and call out missing authority as `UNKNOWN`.
-3. Create a fresh dedicated worktree from the verified base branch.
+3. Use the packet-authorized dedicated worktree, or create a fresh one from the verified base branch when none is designated.
 4. Verify the worktree root, remote, branch, markers, clean status, and that execution is not in the primary checkout.
-5. Create a Task Packet before implementation; assign risk lane L0–L3 per `docs/03-reference/governance/evidence-economy.md`.
-6. Validate the Task Packet against `dopetask-canonical-spec.json` when the schema is present; otherwise perform and report a manual schema check.
-7. Implement only files in the TP allowlist, in commit-sized slices (one bounded implementer).
-8. After each meaningful slice, run the smallest relevant **deterministic** validation and inspect the diff before continuing. Do **not** run intermediate model audits.
-9. Run targeted tests, lint, or type checks where relevant; always run `git diff --check`.
-10. Run changed-contract preflight: `python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text`.
-11. Run repo pre-commit hooks if configured and safe. If a hook modifies files, re-run until clean.
-12. Freeze content head. For L2/L3 only: one independent final audit (no intermediate audits). Proof-only successors use deterministic validation only.
-13. Commit only allowed files, push the branch, and open a PR with `gh pr create` when authenticated.
-14. Emit proof and remove the dedicated worktree after PR creation when safe.
+5. Validate the supervisor-issued MacroPacket and its two or more genuine child workstreams. Each child must have its own scoped Task Packet and risk lane L0–L3 per `docs/03-reference/governance/evidence-economy.md`.
+6. Validate each Task Packet against `dopetask-canonical-spec.json` when the schema is present; otherwise perform and report a manual schema check.
+7. After scope validation and before execution, create and validate the MacroPacket coordinator's Control Tower ExecutionBinding and each executing child's own binding. The coordinator binding cannot authorize child mutation. Exact runner/model/effort belongs to ExecutionBinding, never DCP RouteDecision.
+8. Implement only files in each TP allowlist, in commit-sized slices (one mutating implementer per workstream; proven-disjoint legal siblings may run concurrently).
+9. After each meaningful slice, run the smallest relevant **deterministic** validation and inspect the diff before continuing. Do **not** run intermediate model audits.
+10. Run targeted tests, lint, or type checks where relevant; always run `git diff --check`.
+11. Run changed-contract preflight: `python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text`.
+12. Run repo pre-commit hooks if configured and safe. If a hook modifies files, re-run until clean.
+13. With required explicit operator authority, commit only allowed files and publish the branch to its authorized PR; authentication alone is not publication authority. Settle CI and reviews before substantive freeze.
+14. Freeze the exact substantive content head after review churn settles. For L2/L3: one independent final audit, subject to the packet's audit gate; no intermediate model audits. Later semantic changes invalidate that audit. Proof-only successors do not automatically require re-audit; validate their scope and subject binding deterministically.
+15. Emit child proof and one aggregate return preserving every child's status and subject. Remove a dedicated worktree only when authorized custody, retention, and cleanup obligations permit it.
 
-Do not emit standalone Task Packets as the final deliverable unless the user explicitly asks for only a packet.
+Do not emit a standalone Task Packet as the top-level deliverable for non-trivial work.
+The supervisor issues the MacroPacket; the team lead cannot create the next canonical
+MacroPacket or autonomously dispatch it without separate authority.
 
 **Evidence economy:** default model-call budgets are L0=0, L1≤1 implementer, L2/L3=1 implementer + 1 final auditor. See `docs/03-reference/governance/evidence-economy.md`.
 
 ## 5. Task Packet Rules
+
+Before every MacroPacket or child Task Packet, emit `TP_ROUTE` with `runner`, exact
+`model`, `effort`, and a one-sentence `why`; use `NONE` or `UNKNOWN` honestly.
+See the full format in `.claude/modules/shared/governance-principles.md`.
 
 Task Packets must conform to `dopetask-canonical-spec.json` when that schema is available.
 
@@ -117,6 +151,13 @@ For Repo Truth Extractor work, agents must preserve the merged authority-order m
 
 Never say complete or done without evidence. Final confidence must be `VERIFIED`.
 
+The team lead cannot self-certify acceptance. Aggregate returns preserve child states
+and have authority `NONE`; they do not mint global `PASS`, `READY`, or `DONE`.
+Never merge, mark ready, close, force-push, rewrite history, alter credentials or
+permissions, activate, publish, migrate, mutate production, or accept security residual
+risk without the required explicit operator authority. Autonomous next-MacroPacket
+dispatch remains separately gated.
+
 Proof for repo-changing work must include:
 - TP path and ID
 - worktree path
@@ -167,9 +208,10 @@ The canonical module elaborates the same Truth Order (§2), proof-and-finality r
 
 PAL workflow chain rules remain owned by §5 of this file. The canonical module references §5 — it does not duplicate the chains. If chain rules change, update §5 only; the module link will continue to resolve.
 
-When updating doctrine, keep these three files in sync:
+When updating doctrine, keep these four files in sync:
 
 - `AGENTS.md` (this file) — Codex authority, Task Packet rules, PAL chains, proof bundle requirements
+- `.claude/PROJECT_INSTRUCTIONS.md` — supervisor hierarchy and project governance
 - `.claude/claude.md` — Claude-Code-facing summary + non-negotiables checklist
 - `.claude/modules/shared/governance-principles.md` — full canonical doctrine, referenced by both
 
@@ -340,3 +382,50 @@ Stop: "stop caveman" or "normal mode"
 Auto-Clarity: drop caveman for security warnings, irreversible actions, user confused. Resume after.
 
 Boundaries: code/commits/PRs written normal.
+
+<!-- CONTROL_TOWER_MANAGED_BEGIN -->
+## Control Tower Supervisor
+For every non-trivial execution request, start with the supervisor-issued MacroPacket required by section 3. Read `.control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md`, `.control-tower/contracts/SUPERVISOR_MACROPACKET_CONTRACT.md`, `.control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md`, and `.control-tower/project.json`. After packet validation and before execution, create and validate the coordinator and child ExecutionBindings (runner/model/effort plus justification). Simple direct answers do not synthesize a binding. Use `.control-tower/bin/ct proof-pack` for upload-ready proof bundles and `.control-tower/bin/ct return-pack` whenever a supervisor/advisor return gate fires. Repository authority and live runtime/GitHub truth outrank this pointer.
+<!-- CONTROL_TOWER_MANAGED_END -->
+
+<!-- CONTROL_TOWER_REPO_BEGIN -->
+## Control Tower Packet Workflow
+
+This repository-owned section complements the installer-managed pointer above.
+Existing repository governance and the authorized Task Packet govern scope and
+acceptance; the kit's generic defaults do not override them.
+
+- Run `.control-tower/bin/ct` from the authorized repository/worktree. Confirm
+  that checkout has its own installation; do not use another project's state.
+- For a supervised packet only, after packet validation and before implementation,
+  use `ct bind-record --file` to record the
+  runner, model, effort, alternatives and evidence, then `ct validate-binding --file`
+  on the emitted path. Prefer deterministic shell work with justified
+  `model=NOT_REQUIRED`; otherwise choose the cheapest adequate authorized route
+  from current capability and cost evidence. Record unknowns; do not guess prices.
+- Simple direct answers use existing repository, user, and local model-selection
+  authority without creating a synthetic Control Tower route. This exception does
+  not exempt non-trivial execution from the MacroPacket-first requirement.
+- Honor pinned models, effort, provider restrictions, retry budgets and auditor
+  independence. A timeout does not authorize substitution or another attempt.
+  Required independent audits remain separate from implementation.
+- ExecutionBindings under `.control-tower/state/bindings/` are mutable local state.
+  Preserve each consumed decision in the packet's evidence before an authorized
+  binding change; `bind-record` overwrites the same subject's local record.
+- `ct doctor` and `ct runner-inventory` inspect tools; they do not prove model
+  execution, auditor independence, CI success or acceptance. Inspect command
+  return codes and preserve `PASS`, `FAIL`, `NOT_RUN` and `UNKNOWN`.
+- Use `ct proof-pack` for local proof ZIPs and `ct return-pack` at an applicable
+  supervisor return gate. Outputs default to `~/Downloads/PROOF` and
+  `~/Downloads/RETURN`. Packaging does not replace canonical proof validation,
+  authorize an upload, record acceptance, or grant merge/activation permission.
+<!-- CONTROL_TOWER_REPO_END -->
+
+The supervisor must issue one MacroPacket containing at least two genuine child
+workstreams for every non-trivial execution request. Section 3 governs delegation.
+DCP owns policy, classification, context, and route eligibility; Task Orchestrator
+owns workflow legality; Universal Router ranks eligible routes; Audit Broker owns
+auditor certification and dispatch; Dopetask executes separately authorized effects.
+No layer may widen upstream authority. Generic kit previews and aggregate returns
+have authority NONE. No autonomous dispatch, merge/activation authority, or
+self-audit authority is created by a MacroPacket.
