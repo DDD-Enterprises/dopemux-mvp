@@ -1,0 +1,87 @@
+{
+  "id": "TP-DMX-WSAC-R2-EXTERNAL-CAPABILITY-RESEARCH-001",
+  "project": "dopemux-mvp",
+  "target": "Read-only current external research on MCP standards, runner features, model/effort selection, custom-agent/session/tool semantics, and vendor constraints needed by whole-system synthesis",
+  "invariants": [
+    "Current runtime/source/config/tests and live Git/GitHub state outrank uploaded snapshots, historical handoffs, plans, and architecture prose",
+    "Use OBSERVED, INFERRED, PROPOSED, CLAIMED, CONFLICTING, UNKNOWN, and NOT_RUN; every UNKNOWN names missing evidence",
+    "Preserve system boundaries: Dopemux coordinates; DCP controls policy/context; Dopetask executes only separately authorized work; Task Orchestrator owns workflow legality; canonical systems retain domain authority",
+    "No merge, mark-ready, activation, credential/permission change, production mutation, destructive action, history rewrite, or automatic execution authority is granted",
+    "No secrets, tokens, cookies, private keys, raw credentials, or sensitive provider payloads may enter research/proof artifacts",
+    "Ordinary main movement triggers affected-fact reharvest rather than blanket restart; exact SHA equality is required only where subject provenance requires it",
+    "Preferred runner is ChatGPT Deep Research or equivalent current-research surface; exact model selector is live-discovered and not encoded as authority",
+    "Web/vendor evidence may inform compatibility and future capability only; it cannot establish repo implementation truth",
+    "No provider spend or account mutation is authorized by this packet"
+  ],
+  "depends_on": [
+    "TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-WHOLE-SYSTEM-ARCH-CONVERGENCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(wsac): freeze external capability research",
+    "allowlist": [
+      "docs/06-research/2026-09-04-whole-system-architecture-convergence/research/R2_EXTERNAL_CAPABILITY_RESEARCH.md",
+      "task-packets/TP-DMX-WSAC-R2-EXTERNAL-CAPABILITY-RESEARCH-001.json",
+      "proof/TP-DMX-WSAC-R2-EXTERNAL-CAPABILITY-RESEARCH-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-WSAC-R2-EXTERNAL-CAPABILITY-RESEARCH-001.json",
+      "python -m jsonschema -i task-packets/TP-DMX-WSAC-R2-EXTERNAL-CAPABILITY-RESEARCH-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --files \"docs/06-research/2026-09-04-whole-system-architecture-convergence/research/R2_EXTERNAL_CAPABILITY_RESEARCH.md\" \"task-packets/TP-DMX-WSAC-R2-EXTERNAL-CAPABILITY-RESEARCH-001.json\""
+    ]
+  },
+  "pr": {
+    "title": "docs(wsac): external runner and MCP capability research",
+    "body": "Whole-system architecture convergence evidence. No merge, activation, production, credential, or runtime mutation authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Use R0 to freeze the exact external research questions and current repo-version assumptions.",
+      "validation": [
+        "Questions cover current MCP specification/SDK migration, runner capabilities, custom agents, MCP transports/auth, session/context behavior, structured output/tool semantics, current model/effort selection, and relevant vendor lifecycle/deprecations",
+        "Repo-specific unknowns are not answered from vendor marketing copy"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Research primary vendor/spec documentation for MCP and each supported runner family.",
+      "validation": [
+        "Prefer primary official documentation, release notes, specs, CLIs/help, and SDK migration guides",
+        "Record publication/version dates and distinguish stable, preview, experimental, deprecated, and UNKNOWN capabilities",
+        "Do not assert an exact model selector unless current runner/vendor evidence proves it"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Build runner capability and MCP compatibility matrix keyed by semantic capability rather than product name.",
+      "validation": [
+        "Capabilities include instruction loading, custom agents/subagents, hooks, MCP transport/spec support, structured output, tool calling, context/session continuity, sandbox/network, worktree/project identity, model selection/effort, and evidence available for actual served model",
+        "Missing or conflicting vendor evidence remains UNKNOWN/CONFLICTING"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Produce external design constraints and explicit candidates for live dispatch, without granting authority.",
+      "validation": [
+        "Candidate use of Claude Code/Fable-class, Codex/OpenAI strong reasoning, AGY/Gemini Pro-class, Deep Research, and other tools is labeled PROPOSED until live-discovered",
+        "No paid API or provider call is made unless separately authorized",
+        "No vendor recommendation overrides repo/runtime truth"
+      ]
+    }
+  ]
+}

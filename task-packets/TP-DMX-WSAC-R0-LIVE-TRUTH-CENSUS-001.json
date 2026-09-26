@@ -1,0 +1,113 @@
+{
+  "id": "TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001",
+  "project": "dopemux-mvp",
+  "target": "Deterministic live-truth census for the whole Dopemux developer system: repo/runtime/config/services/state/open-PR/freshness facts only; no architecture adjudication",
+  "invariants": [
+    "Current runtime/source/config/tests and live Git/GitHub state outrank uploaded snapshots, historical handoffs, plans, and architecture prose",
+    "Use OBSERVED, INFERRED, PROPOSED, CLAIMED, CONFLICTING, UNKNOWN, and NOT_RUN; every UNKNOWN names missing evidence",
+    "Preserve system boundaries: Dopemux coordinates; DCP controls policy/context; Dopetask executes only separately authorized work; Task Orchestrator owns workflow legality; canonical systems retain domain authority",
+    "No merge, mark-ready, activation, credential/permission change, production mutation, destructive action, history rewrite, or automatic execution authority is granted",
+    "No secrets, tokens, cookies, private keys, raw credentials, or sensitive provider payloads may enter research/proof artifacts",
+    "Ordinary main movement triggers affected-fact reharvest rather than blanket restart; exact SHA equality is required only where subject provenance requires it",
+    "R0 is deterministic fact acquisition: zero semantic model calls by default",
+    "Runtime/service probes must be read-only and local; provider/API spend calls are forbidden",
+    "R0 does not decide target architecture or component disposition"
+  ],
+  "depends_on": [
+    "TP-DMX-WSAC-SERIES-REGISTRATION-000"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-WHOLE-SYSTEM-ARCH-CONVERGENCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-WSAC-SERIES-REGISTRATION-000",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(wsac): freeze live whole-system census",
+    "allowlist": [
+      "docs/06-research/2026-09-04-whole-system-architecture-convergence/recon/R0_LIVE_TRUTH_CENSUS.md",
+      "docs/06-research/2026-09-04-whole-system-architecture-convergence/recon/R0_LIVE_TRUTH_CENSUS.json",
+      "task-packets/TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001.json",
+      "proof/TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001.json",
+      "python -m jsonschema -i task-packets/TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --files \"docs/06-research/2026-09-04-whole-system-architecture-convergence/recon/R0_LIVE_TRUTH_CENSUS.md\" \"docs/06-research/2026-09-04-whole-system-architecture-convergence/recon/R0_LIVE_TRUTH_CENSUS.json\" \"task-packets/TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001.json\"",
+      "python -m json.tool docs/06-research/2026-09-04-whole-system-architecture-convergence/recon/R0_LIVE_TRUTH_CENSUS.json"
+    ]
+  },
+  "pr": {
+    "title": "docs(wsac): freeze live whole-system census",
+    "body": "Whole-system architecture convergence evidence. No merge, activation, production, credential, or runtime mutation authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Reharvest live repository, branch, schema, governance, active runtime-entrypoint, and open-PR state from current main.",
+      "validation": [
+        "Exact current main SHA/tree and working-base relationship are OBSERVED",
+        "Current AGENTS, governance rules, TP schema, runtime authority manifest, MCP catalog, model-routing policy, and relevant truth/system references are resolved from current main",
+        "Open PRs touching MCP, DCP, UAG/routing, context/memory, workflow, governance/audit, agents, or multi-project surfaces are inventoried with exact heads and changed paths",
+        "Uploaded July source bundle is labeled stale/orientation-only wherever its recorded blobs differ from current main"
+      ],
+      "commands": [
+        "git status -sb",
+        "git rev-parse HEAD",
+        "git rev-parse HEAD^{tree}",
+        "git remote -v",
+        "git ls-files"
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "docs/03-reference/governance/rules.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "mcp_catalog.yaml",
+        "config/runtime_authority_manifest.json",
+        "config/ai/model-routing.policy.yaml"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Build deterministic service/runtime/config/state-store/entrypoint/path census without architecture judgment.",
+      "validation": [
+        "Every listed service/system has source path, runtime entrypoint/status evidence class, persistence/state scope, transport if applicable, and authority owner if OBSERVED",
+        "Duplicate/ambiguous runtime entrypoints are preserved as CONFLICTING or UNKNOWN",
+        "No implementation intent is inferred from docs, package presence, names, or historical plans"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Build current open-work overlap and source-freshness map for downstream recon lanes.",
+      "validation": [
+        "Each R1 lane receives watched path families and relevant open PRs",
+        "Moved heads are recorded without converting them into readiness claims",
+        "Source freshness disposition states exactly which uploaded/project-source files may be used only for orientation"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Freeze R0 census artifacts and run deterministic validation.",
+      "validation": [
+        "Markdown and JSON agree on current base identity and counts",
+        "JSON parses deterministically",
+        "No provider/model calls are made",
+        "No runtime, GitHub, service, or canonical-state mutation occurs"
+      ]
+    }
+  ],
+  "execution": {
+    "agent": "shell",
+    "branch": "research/wsac-r0-live-truth-001",
+    "base_branch": "main"
+  }
+}
