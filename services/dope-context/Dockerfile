@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     build-essential \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Context-4 support and model-aware tokenization require the modern Voyage SDK.
@@ -27,6 +28,15 @@ COPY services/dope-context/ .
 
 # Try to install the MCP package if it exists
 RUN if [ -d "/app/src/mcp" ]; then cd /app/src/mcp && uv pip install --system --no-cache -e . || true; fi
+
+# tiktoken downloads its BPE file from openaipublic.blob.core.windows.net on
+# first get_encoding() call. Warm it at build time into an image-local cache so
+# DocumentProcessor() works on an egress-restricted host instead of raising
+# ConnectionError deep inside __init__.
+ENV TIKTOKEN_CACHE_DIR=/app/.tiktoken-cache
+RUN mkdir -p "$TIKTOKEN_CACHE_DIR" \
+    && python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')" \
+    && test -n "$(ls -A "$TIKTOKEN_CACHE_DIR")"
 
 # Set environment variables
 ENV MCP_SERVER_PORT=3010

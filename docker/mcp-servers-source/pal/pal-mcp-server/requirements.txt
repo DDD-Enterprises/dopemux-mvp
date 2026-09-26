@@ -1,4 +1,16 @@
-mcp>=1.28.1
+# Keep this bound identical to pyproject.toml, which declares mcp>=1.28.1,<2 in
+# both [project.dependencies] and [tool.uv.override-dependencies].
+#
+# The bound matters: mcp 2.x dropped Server.list_tools, so server.py raises
+# AttributeError during startup. Today the Dockerfiles run `uv pip install -r
+# requirements.txt` from /app, where uv reads that pyproject and its override
+# already forces <2 -- verified by building this image with the unbounded
+# "mcp>=1.28.1" and still resolving mcp 1.29.1. So this line was load-bearing
+# only if someone installs with plain pip, from another working directory, or
+# after the override is removed. It is written out anyway because the drift
+# between the two manifests is what makes those paths silently dangerous, and
+# because an older checkout without the override does resolve mcp 2.x.
+mcp>=1.28.1,<2
 google-genai>=1.19.0
 openai>=1.66.0  # Responses API plus httpx 0.28.0 compatibility
 pydantic>=2.0.0
