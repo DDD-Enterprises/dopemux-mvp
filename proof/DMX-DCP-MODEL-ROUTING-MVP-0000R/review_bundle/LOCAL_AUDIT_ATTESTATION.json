@@ -1,0 +1,14 @@
+{
+  "accepted": false,
+  "audited_sha": "c160f010ccf943c0f3cddd140ca0e4f1fcde8102",
+  "embedded_audit": null,
+  "head_sha": "bfc7455b1af20f9d51dbd19189f98a58ee694c7b",
+  "pr_number": 1137,
+  "principal": "hue@local",
+  "proof_path": "proof/pr_merge/embedded-audit/pr-1137/PROOF.json",
+  "reasons": [
+    "local_audit_not_passing: 'FAIL'"
+  ],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "signature_namespace": "dopemux-embedded-audit"
+}

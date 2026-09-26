@@ -1,0 +1,43 @@
+ .../dcp/current-main-runtime-reconciliation.json   |  200 ++++
+ .../dcp/current-main-runtime-reconciliation.md     |  105 ++
+ .../AUDITOR_REPORT.attempt1.incomplete.json        |    1 +
+ .../AUDITOR_REPORT.md                              |   78 ++
+ .../AUDITOR_REPORT.raw.json                        |    1 +
+ .../AUDITOR_REPORT.stderr.txt                      |    0
+ .../DMX-DCP-MODEL-ROUTING-MVP-0000R/COMMAND_LOG.md |   63 ++
+ .../CURRENT_MAIN_RUNTIME_RECONCILIATION.json       |  200 ++++
+ .../CURRENT_MAIN_RUNTIME_RECONCILIATION.md         |  105 ++
+ .../DIFF_NAME_ONLY.txt                             |   37 +
+ .../DMX-DCP-MODEL-ROUTING-MVP-0000R/DIFF_STAT.txt  |   38 +
+ .../EVIDENCE_LEDGER.md                             |   36 +
+ .../FINAL_STATUS_PORCELAIN.txt                     |    5 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.json |   38 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/HANDOFF.md   |   27 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PAL_CHAIN.md |  101 ++
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PROOF.json   |  106 ++
+ .../compileall.exit                                |    1 +
+ .../compose-resolved.exit                          |    1 +
+ .../compose-resolved.json                          | 1160 ++++++++++++++++++++
+ .../compose-resolved.stderr.txt                    |   20 +
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/dcp-help.txt |   10 +
+ .../docker-ps-summary.txt                          |   29 +
+ .../DMX-DCP-MODEL-ROUTING-MVP-0000R/docker-ps.exit |    1 +
+ .../docker-ps.jsonl                                |   28 +
+ .../docker-ps.stderr.txt                           |    0
+ .../dopemux-help.txt                               |  102 ++
+ .../gh-pr-dcp-search.exit                          |    1 +
+ .../gh-pr-dcp-search.json                          |    1 +
+ .../gh-pr-dcp-search.stderr.txt                    |    0
+ .../gh-pr-open-all.exit                            |    1 +
+ .../gh-pr-open-all.json                            |    1 +
+ .../gh-pr-open-all.stderr.txt                      |    0
+ .../gh-pr-this-branch.json                         |    1 +
+ .../DMX-DCP-MODEL-ROUTING-MVP-0000R/inventory.txt  |  105 ++
+ .../opencode-resolved-config.exit                  |    1 +
+ .../opencode-resolved-config.txt                   |  203 ++++
+ proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/pytest.exit  |    1 +
+ .../reference-scan.txt                             |  794 ++++++++++++++
+ .../runner-cli-inventory.txt                       |   12 +
+ .../verify-pal.exit                                |    1 +
+ task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000R.md    |  442 ++++++++
+ 42 files changed, 4057 insertions(+)
