@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import RepositoryPlannerPage from '../RepositoryPlannerPage';
 import { buildFoundationLanes } from '../RepositoryPlannerPage';
@@ -124,6 +124,24 @@ describe('RepositoryPlannerPage', () => {
     render(<RepositoryPlannerPage sources={[fixture as never]} />);
     expect(screen.getByRole('button', { name: new RegExp(`Inspect dopemux-mvp pcp-planner-foundation ${fixture.lanes[0].candidate_sha}`) })).toBeVisible();
     expect(screen.getByRole('button', { name: /Inspect dopemux-mvp pcp-planner-foundation b{40}/ })).toBeVisible();
+  });
+
+  test('copies full candidate SHA to clipboard when candidate SHA chip is clicked', async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextMock,
+      },
+    });
+
+    render(<RepositoryPlannerPage />);
+    const shaChip = screen.getByRole('button', { name: /Candidate SHA 7accb2aab342/i });
+    expect(shaChip).toBeVisible();
+
+    fireEvent.click(shaChip);
+
+    expect(writeTextMock).toHaveBeenCalledWith('7accb2aab3423f32e751640af2b3de130c68567a');
+    expect(await screen.findByRole('button', { name: 'Candidate SHA copied to clipboard' })).toBeVisible();
   });
 });
 
