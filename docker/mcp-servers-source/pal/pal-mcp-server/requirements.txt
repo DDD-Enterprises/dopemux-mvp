@@ -1,4 +1,4 @@
-mcp>=1.28.1
+mcp>=1.28.1,<2.0.0
 google-genai>=1.19.0
 openai>=1.66.0  # Responses API plus httpx 0.28.0 compatibility
 pydantic>=2.0.0
