@@ -1,0 +1,156 @@
+{
+  "base_sha": "9a52ecf4328f28756c3e87a2c351e60d46b805f6",
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.raw.json is a completed run: is_error=false, stop_reason='end_turn', terminal_reason='completed', subtype='success', and its result text ends with 'AUDITOR_VERDICT: FAIL' plus three explicitly BLOCKING findings. The abort belongs to a separate artifact, AUDITOR_REPORT.attempt1.incomplete.json (is_error=true, stop_reason='tool_use', terminal_reason='aborted_streaming'). Nevertheless AUDITOR_REPORT.md states 'Opus stream **aborted** mid-tool-use (`AUDITOR_REPORT.raw.json` terminal_reason=`aborted_streaming`)' and records auditor_verdict PASS_WITH_RISKS attributed to the 'Grok-4.5 Build orchestrator' \u2014 the same actor that assembled the bundle. PROOF.json carries this forward as embedded_audit.auditor_verdict='PASS_WITH_RISKS' and chain_of_custody.embedded_auditor_result='aborted_streaming; completion audit PASS_WITH_RISKS'. Merging this writes a false embedded-audit disposition into the repository's durable proof record and converts an independent FAIL into an implementer-authored pass. Remediation is confined to the proof artifacts: correct AUDITOR_REPORT.md and PROOF.json to state the audit completed with verdict FAIL, and disposition each of the three BLOCKING findings explicitly.",
+        "id": "F001",
+        "severity": "BLOCKING",
+        "status": "OPEN",
+        "title": "Committed proof misrepresents a completed independent FAIL audit as an abort and substitutes a self-authored PASS_WITH_RISKS"
+      },
+      {
+        "body": "docs/03-reference/dcp/current-main-runtime-reconciliation.{md,json} classify docker/mcp-servers-source/pal-stdio/pal_stdio_proxy.py as CANONICAL with label OBSERVED, on the rationale that it is 'Actively referenced by mcp_catalog.yaml ... compose.yml ... opencode.jsonc, scripts/ensure_pal_stdio.sh, scripts/mcp_health_check.sh, and src/dopemux/mcp/fleet_catalog.py'. The bundle's own reference-scan.txt refutes this: the only pal_stdio_proxy occurrences are the module's own two source lines (docker/mcp-servers-source/pal-stdio/pal_stdio_proxy.py:13 and docker/mcp-servers/pal-stdio/pal_stdio_proxy.py:13). Every cited file references the service name 'pal-stdio', not the module. mcp_catalog.yaml:185 shows the exec route is server.py. The prior independent auditor raised this as BLOCKING and it is unremediated. Because the target is a docs/03-reference document, merging records a factually wrong module disposition as settled OBSERVED repo reference truth, which downstream packets (0000S onward) inherit. Remediation is a docs correction only; no source, config, or schema change is required.",
+        "id": "F002",
+        "severity": "BLOCKING",
+        "status": "OPEN",
+        "title": "pal_stdio_proxy.py CANONICAL classification lands in docs/03-reference contradicted by the bundle's own reference scan"
+      },
+      {
+        "body": "COMMAND_LOG.md and EVIDENCE_LEDGER.md cite pytest.log, compileall.log, and verify-pal.log as the artifacts backing the '252 passed', 'compileall clean', and 'verify-pal soft warning' OBSERVED claims. None of the three appears in changed_files or in the bundle's own DIFF_NAME_ONLY.txt; only the corresponding .exit receipts are committed. The prior independent auditor identified the cause (.gitignore '*.log') and flagged it BLOCKING. As committed, the bundle asserts a specific pass count with no artifact a reviewer can inspect. Remediation: force-add the logs or downgrade the affected claims to the evidence the .exit files actually support.",
+        "id": "F003",
+        "severity": "HIGH",
+        "status": "OPEN",
+        "title": "Validation artifacts cited as the basis for OBSERVED test claims are absent from the committed bundle"
+      },
+      {
+        "body": "The head under audit is cdebf85b1f64ee0e88049f5aa63251a3105e8441. proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/PROOF.json declares subject_sha bf46d3306ab09c856ab72e09018a36219ed1e82c and pr_url .../pull/1137. proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PROOF.json, MANIFEST.json, HANDOFF.json and FINALIZATION_POINTER.json declare candidate_subject_sha 3ce0db080527d64eeb3849e88786528422885333. FINALIZATION_POINTER.json commits the literal placeholder structural_proof_commit_sha='CAPTURE_AFTER_COMMIT'. MANIFEST.json/HANDOFF.json also assert trusted_main_sha 72af781e42e0702d9047946e0f5a250e7dff0fa5, which differs from the trusted base 9a52ecf4328f28756c3e87a2c351e60d46b805f6 recorded in the bundle's own review_bundle/MERGE_BASE.txt. Exact-head proof binding is therefore absent. The 0000S bundle discloses this honestly (proof_freshness='PENDING_PROOF_ONLY_SELF_REFERENCE_EXCEPTION', status BLOCKED), so this is a gap rather than a misrepresentation, but it prevents exact-head verification.",
+        "id": "F004",
+        "severity": "HIGH",
+        "status": "OPEN",
+        "title": "No committed proof artifact binds to the audited head SHA; an explicit placeholder is committed"
+      },
+      {
+        "body": "review_bundle/CALLSITE_ANALYSIS.json reports production_is_runnable_call_candidate_count=0 with calls=[], definitions=[], flag_references=[], and parse_errors=[]. review_bundle/EXECUTION_GATE_OCCURRENCES.txt, generated for the same head, lists src/dopemux/dcp/routing_model.py:401 as the definition and two non-test call sites at src/dopemux/dcp/lane_engine.py:165 and src/dopemux/dcp/routing_backend_policy.py:311. With parse_errors empty there is no recorded explanation for the discrepancy. This is the artifact an auditor is directed to rely on for the execution-gate question, and it under-reports against the bundle's own evidence, which is why the reachability disposition is UNKNOWN rather than NON_EXECUTION_REACHABLE.",
+        "id": "F005",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "Callsite analysis artifact contradicts the grep artifact in the same review bundle"
+      },
+      {
+        "body": "The top-level proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/PROOF.json declares status=BLOCKED, validation_state=PARTIAL, embedded_audit.status=SKIPPED, subject_sha=3ce0db08. The archived review_bundle/CANDIDATE_UNIFIED_DIFF.patch embeds an earlier PROOF.json for the same packet declaring status=COMPLETE, validation_state=PASS_WITH_RISKS, embedded_audit.auditor_verdict=PASS_WITH_RISKS, subject_sha=5de3f0ef. The committed top-level version is the more conservative and appears to be the intended authority, but a reader of the bundle encounters two contradictory dispositions for one packet with no in-bundle statement of which supersedes. Recommend an explicit supersession note.",
+        "id": "F006",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "Two conflicting PROOF.json states for packet 0000S are committed in the same PR"
+      },
+      {
+        "body": "docs/03-reference/dcp/current-main-runtime-reconciliation.{md,json} claim 252 pass markers for 'python -m pytest -q tests/unit/dcp tests/dcp/test_dcp_model_routing_0001_domain.py'. proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/VALIDATION.json records a pytest run whose captured progress markers total 237 dots. VALIDATION.json records no command string, so the two cannot be reconciled as same-scope or different-scope from the committed evidence. This is plausibly a scope difference rather than a contradiction, but it is unverifiable as committed.",
+        "id": "F007",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Unreconciled pytest pass-marker counts across bundles"
+      },
+      {
+        "body": "The deterministic scanner reported detected=true, categories=[FORCED_VERDICT_REQUEST], match_count=8. Corroborated in the diff: task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000R.md and -0000S.md contain auditor-directed verdict templates ('auditor_verdict: PASS | PASS_WITH_RISKS | FAIL | NEEDS_SUPERVISOR'), and the proof bundles contain assertive verdict strings ('**auditor_verdict: PASS_WITH_RISKS**', 'AUDITOR_VERDICT: FAIL'). All such strings were treated strictly as reviewed data. No candidate-supplied verdict was adopted; in particular the candidate's PASS_WITH_RISKS self-verdict was rejected and the embedded FAIL text was used only as a pointer to independently checkable diff evidence (see F002). This acknowledgement is not a claim of complete prompt-injection immunity.",
+        "id": "F008",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Instruction-like content detected in candidate data and treated as data only"
+      },
+      {
+        "body": "The candidate self-declares blocked rather than ready: HANDOFF.json governing_posture='NO_GO_LIMIT_TO_ARTIFACTS_ONLY', recommended_next_step='BLOCK_AND_AWAIT_FIX', blocking_reasons=[FORMAL_OPUS_AUDIT_PENDING, CI_EXACT_HEAD_PROOF_PENDING, PR_STEWARD_PENDING, PR_DRAFT_PRESERVED]; FINALIZATION_POINTER.json merge_authorized=false and draft_to_ready_authorized=false; both 0000R and 0000S PROOF.json carry merge_readiness/BLOCKED semantics; IMPLEMENTATION_REPORT.md states the artifact 'must not be used as a passing embedded audit or merge-readiness claim'. This is consistent with a non-passing verdict and is credited as honest disclosure. It does not offset F001, which concerns the 0000R bundle's representation of a completed audit.",
+        "id": "F009",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Candidate does not claim merge readiness (mitigating)"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": true,
+      "match_count": 8,
+      "matches": [
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 64,
+          "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000R/AUDITOR_REPORT.md",
+          "text_sha256": "38870bb9b3a4ac0195e007b2be122d46e4c595e1a6399bc11e1015fbf3381d67"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 25,
+          "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/AUDITOR_REPORT.md",
+          "text_sha256": "38870bb9b3a4ac0195e007b2be122d46e4c595e1a6399bc11e1015fbf3381d67"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 1150,
+          "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/review_bundle/CANDIDATE_UNIFIED_DIFF.patch",
+          "text_sha256": "7c24e44bce36cf4d447ffc994fb9814965c8ad5afedc0cde5b179063c2bc1db2"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 4687,
+          "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/review_bundle/CANDIDATE_UNIFIED_DIFF.patch",
+          "text_sha256": "7c24e44bce36cf4d447ffc994fb9814965c8ad5afedc0cde5b179063c2bc1db2"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 6672,
+          "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/review_bundle/CANDIDATE_UNIFIED_DIFF.patch",
+          "text_sha256": "3a8c6edb3e3b6d88c1c996fe378325f6771a0f414af821ce47ee189ca577fdce"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 7085,
+          "path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/review_bundle/CANDIDATE_UNIFIED_DIFF.patch",
+          "text_sha256": "3a8c6edb3e3b6d88c1c996fe378325f6771a0f414af821ce47ee189ca577fdce"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 348,
+          "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000R.md",
+          "text_sha256": "393c0c3d93dff35455726612daaf302a7e2c133ff7269875f847ae6452647a9c"
+        },
+        {
+          "category": "FORCED_VERDICT_REQUEST",
+          "diff_side": "ADDED",
+          "line": 313,
+          "path": "task-packets/DMX-DCP-MODEL-ROUTING-MVP-0000S.md",
+          "text_sha256": "393c0c3d93dff35455726612daaf302a7e2c133ff7269875f847ae6452647a9c"
+        }
+      ],
+      "truncated": false
+    },
+    "invocation": "env -u ANTHROPIC_API_KEY -u CLAUDE_API_KEY claude --print --model opus --output-format json --tools  --strict-mcp-config --safe-mode --no-session-persistence",
+    "remaining_risks": [
+      "F001, F002, F003, F004 are OPEN and unremediated.",
+      "is_runnable reachability remains UNKNOWN; a supervisor with source access must classify src/dopemux/dcp/lane_engine.py:165 and src/dopemux/dcp/routing_backend_policy.py:311 before any passing verdict.",
+      "Remediation scope answer to review question 6: F001, F003, F004, F005, F006 require edits to proof artifacts only; F002 requires a docs/03-reference correction. None requires a source, config, schema, task-packet, adapter, runner, live-write, rebase, force-push, or merge action.",
+      "No verdict is issued on the correctness of the 0000S series map's packet lineage claims (#851/#862/#854/#909 dispositions); they were not independently verifiable without GitHub or repository access."
+    ],
+    "report_path": "proof/TP-DMX-AUDIT-CI-PROVENANCE-104/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "FAIL"
+  },
+  "executed": true,
+  "generated_at": "2026-07-29T10:18:49Z",
+  "github_mutation_route_added": false,
+  "head_sha": "cdebf85b1f64ee0e88049f5aa63251a3105e8441",
+  "mutation_performed": false,
+  "packet_id": "DMX-DCP-MODEL-ROUTING-MVP-0000S-OPUS-AUDIT-PR-1138",
+  "pr_number": 1138,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

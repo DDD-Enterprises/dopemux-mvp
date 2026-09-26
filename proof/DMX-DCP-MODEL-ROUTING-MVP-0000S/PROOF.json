@@ -1,0 +1,62 @@
+{
+  "authoritative_artifacts": [
+    "IMPLEMENTATION_REPORT.md",
+    "VALIDATION.json",
+    "WARNINGS_AND_BLOCKERS.json",
+    "HANDOFF.json",
+    "FINALIZATION_POINTER.json"
+  ],
+  "bundle_id": "DMX-DCP-MODEL-ROUTING-MVP-0000S-FINALIZATION-STRUCTURAL-001",
+  "chain_of_custody": {
+    "candidate_subject_sha": "3ce0db080527d64eeb3849e88786528422885333",
+    "created_at": "2026-07-29T10:15:14Z",
+    "documented": true,
+    "parent_bundle_ids": [
+      "DMX-DCP-MODEL-ROUTING-MVP-0000S"
+    ],
+    "source_version": "finalization-repair-support/1.0.0",
+    "trusted_main_sha": "72af781e42e0702d9047946e0f5a250e7dff0fa5"
+  },
+  "created_at": "2026-07-29T10:15:14Z",
+  "embedded_audit": {
+    "auditor_model": "unknown",
+    "auditor_tool": "none",
+    "exit_code": null,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": null,
+    "remaining_risks": [
+      "Independent Claude Code Opus audit is pending."
+    ],
+    "report_path": "proof/DMX-DCP-MODEL-ROUTING-MVP-0000S/AUDITOR_REPAIR_REPORT.md",
+    "required": true,
+    "skip_reason": "Structural proof repair stage precedes the separately signed exact-head Opus audit.",
+    "status": "SKIPPED"
+  },
+  "executed": false,
+  "github_mutation_route_added": false,
+  "handoff_refs": [
+    "DMX-DCP-MODEL-ROUTING-MVP-0000S-FINALIZATION-HANDOFF-001"
+  ],
+  "head_sha": "3ce0db080527d64eeb3849e88786528422885333",
+  "mutation_performed": false,
+  "parent_bundle_refs": [
+    "DMX-DCP-MODEL-ROUTING-MVP-0000S"
+  ],
+  "pr_number": 1138,
+  "proof_freshness": {
+    "reason": "The structural proof commit SHA is captured only after this content is committed.",
+    "status": "PENDING_PROOF_ONLY_SELF_REFERENCE_EXCEPTION"
+  },
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "review_order_hint": 2,
+  "run_id": "proof-finalization-20260729T101514Z",
+  "skill": "proof-finalization-repair",
+  "status": "BLOCKED",
+  "subject_sha": "3ce0db080527d64eeb3849e88786528422885333",
+  "supporting_artifacts": [
+    "AUDITOR_REPAIR_REPORT.md",
+    "review_bundle/"
+  ],
+  "validation_state": "PARTIAL"
+}

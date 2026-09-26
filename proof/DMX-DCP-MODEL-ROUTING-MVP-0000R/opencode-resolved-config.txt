@@ -1,0 +1,203 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-5",
+  "small_model": "anthropic/claude-haiku-4-5",
+  "default_agent": "build",
+  "autoupdate": true,
+  "snapshot": true,
+  "share": "manual",
+  "instructions": [
+    "AGENTS.md",
+    ".claude/claude.md",
+    ".claude/CLAUDE.md",
+    ".claude/modules/shared/governance-principles.md",
+    ".claude/modules/shared/superclaude-workflows.md",
+    ".claude/modules/shared/adhd-patterns.md",
+    ".claude/modules/shared/sprint.md",
+    ".claude/modules/shared/event-patterns.md",
+    ".claude/modules/cognitive-plane/serena-lsp.md",
+    ".claude/modules/cognitive-plane/conport-memory.md",
+    "~/.claude/PAL_OPENCODE_GUIDE.md",
+    "config/instructions/pal-opencode-guide.md"
+  ],
+  "skills": {
+    "paths": [
+      "~/.claude/skills",
+      "~/.agents/skills",
+      "/Users/hue/code/dopemux-mvp/.claude/skills"
+    ]
+  },
+  "mcp": {
+    "serena": {
+      "type": "remote",
+      "url": "http://localhost:3006/mcp",
+      "enabled": true
+    },
+    "dope-context": {
+      "type": "remote",
+      "url": "http://localhost:3010/mcp",
+      "enabled": true
+    },
+    "desktop-commander": {
+      "type": "remote",
+      "url": "http://localhost:3012/sse",
+      "enabled": true
+    },
+    "gpt-researcher": {
+      "type": "local",
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "dopemux-mcp-gptr-mcp",
+        "python",
+        "/app/server.py"
+      ],
+      "enabled": true,
+      "environment": {
+        "OPENAI_API_KEY": "",
+        "TAVILY_API_KEY": "[REDACTED]",
+        "EXA_API_KEY": "[REDACTED]"
+      }
+    },
+    "exa": {
+      "type": "local",
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "mcp-litellm",
+        "python",
+        "/app/exa_server.py"
+      ],
+      "enabled": false
+    },
+    "MCP_DOCKER": {
+      "type": "local",
+      "command": [
+        "docker",
+        "mcp",
+        "gateway",
+        "run"
+      ],
+      "enabled": true
+    },
+    "conport": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "mcp-proxy",
+        "--transport",
+        "sse",
+        "http://localhost:3005/sse"
+      ],
+      "enabled": true,
+      "environment": {
+        "DOPEMUX_WORKSPACE_ID": "",
+        "GEMINI_API_KEY": "",
+        "VOYAGEAI_API_KEY": "",
+        "OPENAI_API_KEY": ""
+      }
+    },
+    "dope-memory": {
+      "type": "remote",
+      "url": "http://localhost:3035/mcp",
+      "enabled": true
+    },
+    "task-orchestrator": {
+      "type": "local",
+      "command": [
+        "/Users/hue/code/dopemux-mvp/.worktrees/free-lane-20260722_070957/scripts/mcp-wrappers/task-orchestrator-current-stdio.sh"
+      ],
+      "enabled": true,
+      "environment": {
+        "TASK_ORCHESTRATOR_PROJECT_ROOT": "",
+        "DOPEMUX_PROJECT_ROOT": "",
+        "DOPEMUX_WORKSPACE_ROOT": ""
+      }
+    },
+    "pal-stdio": {
+      "type": "local",
+      "command": [
+        "docker",
+        "exec",
+        "-i",
+        "mcp-pal-stdio",
+        "/app/.venv/bin/python",
+        "server.py"
+      ],
+      "enabled": true,
+      "environment": {
+        "GEMINI_API_KEY": "",
+        "OPENAI_API_KEY": ""
+      }
+    }
+  },
+  "agent": {
+    "dopemux-orchestrator": {
+      "description": "Dopemux-aware agent with full access to MCPs, governance, and ADHD-optimized workflows",
+      "mode": "primary",
+      "model": "anthropic/claude-sonnet-4-5",
+      "permission": {
+        "edit": "ask",
+        "bash": "ask",
+        "*": "allow"
+      },
+      "prompt": "You follow AGENTS.md, .claude/claude.md governance, and use PAL chains for complex work. Prioritize ConPort, Serena, PAL MCPs. Support worktree isolation.",
+      "options": {}
+    },
+    "superclaude": {
+      "description": "SuperClaude /sc: and /dx: command executor with full Dopemux MCP access",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      },
+      "options": {}
+    },
+    "dopemux": {
+      "name": "dopemux",
+      "description": "Primary Dopemux agent with complete access to all project claude.md governance, ADHD principles, SuperClaude workflows, PAL chains, ConPort/Serena/PAL MCPs, worktree isolation, and multi-model orchestration. Use for any Dopemux-related task.",
+      "mode": "primary",
+      "model": "anthropic/claude-sonnet-4-5",
+      "permission": {
+        "edit": "ask",
+        "bash": "ask",
+        "task": "allow",
+        "*": "allow"
+      },
+      "color": "accent",
+      "prompt": "You are the Dopemux Orchestrator agent. You have been loaded with the full content of:\n\n- AGENTS.md (Codex authority, Task Packets, PAL chains, proof requirements, architecture boundaries)\n- .claude/claude.md and .claude/CLAUDE.md (complete Dopemux platform docs, ADHD accommodations, mode-aware operation, integration points, SuperClaude commands)\n- All .claude/modules/shared/*.md (governance-principles, superclaude-workflows, adhd-patterns, sprint, event-patterns)\n- Cognitive plane docs (serena-lsp, conport-memory)\n- mcp_catalog.yaml and all Dopemux MCP server definitions\n\nCore rules you MUST follow:\n- Truth Order: Active Task Packet > runtime code > docs. Mark UNKNOWN when evidence missing.\n- Always use worktree for repo-changing work per AGENTS.md §4.\n- PAL minimum chain for Codex: analyze → planner → codereview → precommit.\n- Log decisions to ConPort.\n- Use Serena for code navigation, ConPort for knowledge graph.\n- Support 25-min focus sessions, energy-aware tasking, progressive disclosure.\n- All MCP tools (pal_*, serena_*, conport_*, gpt-researcher_*, etc.) are available and must be used when relevant.\n- Multi-model: Route complex reasoning to PAL, research to gpt-researcher/exa, code intel to serena.\n\nWhen invoked, immediately orient using the loaded claude.md files and confirm workspace_id via git if needed.\n\nYou replace the default build agent for Dopemux projects.",
+      "options": {}
+    },
+    "pal-planner": {
+      "name": "pal-planner",
+      "description": "PAL planning subagent — delegates to the local pal MCP server for multi-model planning and the analyze → planner → codereview → precommit chain. See config/instructions/pal-opencode-guide.md and AGENTS.md.",
+      "mode": "subagent",
+      "prompt": "# PAL Planner (OpenCode)\n\nSee `config/instructions/pal-opencode-guide.md` and `AGENTS.md` for full PAL usage, tool permissions (pal_* = ask), and chain rules (analyze → planner → codereview → precommit minimum).\n\nThis agent delegates to the local `pal` MCP server registered in opencode.jsonc (via start-pal.sh).",
+      "options": {},
+      "permission": {}
+    },
+    "pal-reviewer": {
+      "name": "pal-reviewer",
+      "description": "PAL codereview/precommit subagent — uses the pal MCP codereview and precommit tools for multi-model validation before commits. See config/instructions/pal-opencode-guide.md and AGENTS.md §5.",
+      "mode": "subagent",
+      "prompt": "# PAL Reviewer / Codereview (OpenCode)\n\nSee `config/instructions/pal-opencode-guide.md` and `AGENTS.md` §5 for PAL codereview and precommit expectations.\n\nUse the `codereview` and `precommit` tools from the pal MCP for multi-model validation before commits.",
+      "options": {},
+      "permission": {}
+    }
+  },
+  "permission": {
+    "edit": "ask",
+    "bash": "ask",
+    "pal_*": "ask"
+  },
+  "compaction": {
+    "auto": true
+  },
+  "mode": {},
+  "plugin": [],
+  "command": {},
+  "username": "hue"
+}
