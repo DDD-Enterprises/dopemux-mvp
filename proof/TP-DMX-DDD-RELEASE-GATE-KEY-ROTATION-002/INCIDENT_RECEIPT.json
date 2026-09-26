@@ -1,0 +1,16 @@
+{
+  "incident": "github_app_private_key_disclosure",
+  "github_app": "ddd-release-gate",
+  "organization": "DDD-Enterprises",
+  "primary_repository": "DDD-Enterprises/dopemux-mvp",
+  "compromised_public_fingerprint": "SHA256:Q5UQVn6HD0PCE0NvPSFugsydKz1beC3RpVvIUm3eicg=",
+  "rotation_state": "ALREADY_ROTATED_VERIFIED",
+  "rotation_performed_by_this_packet": false,
+  "compromised_key_currently_present": false,
+  "current_secret_token_mint": "PASS",
+  "approval_posted_during_verification": false,
+  "app_permissions_changed_by_this_packet": false,
+  "app_installation_scope_changed_by_this_packet": false,
+  "private_material_in_proof": false,
+  "verdict": "PASS"
+}

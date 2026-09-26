@@ -1,0 +1,68 @@
+{
+  "packet_id": "TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "branch": "ops/ddd-release-gate-key-rotation-002",
+  "base_branch": "main",
+  "head_sha": "3313fcc8d043c6cd1f2bb2532e1a511693b0a68d",
+  "generated_at": "2026-08-28T14:05:19Z",
+  "risk_lane": "L3",
+  "outcome": "ALREADY_ROTATED_VERIFIED",
+  "rotation_performed_by_this_packet": false,
+  "credential_mutation_performed": false,
+  "github_setting_mutation_performed": false,
+  "approval_posted": false,
+  "private_material_recorded": false,
+  "audited_paths": [
+    "proof/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002/INCIDENT_RECEIPT.json",
+    "proof/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002/review_bundle/LIVE_EVIDENCE.md",
+    "task-packets/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002.json",
+    "task-packets/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002.md"
+  ],
+  "validation": {
+    "repository_identity": "PASS",
+    "task_packet_schema": "PASS",
+    "compromised_fingerprint_absent": "PASS",
+    "current_secret_token_mint": "PASS",
+    "approval_step_skipped": "PASS",
+    "allowlist": "PASS",
+    "secret_scan": "PASS",
+    "git_diff_check": "PASS",
+    "changed_contract_preflight": "PASS"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --output-format json --print-timeout 5m --print <bounded audit prompt as one argument>",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DDD-RELEASE-GATE-KEY-ROTATION-002/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "ROTATION-002-LOW-1",
+        "severity": "LOW",
+        "title": "App key inventory is operator-captured UI evidence",
+        "status": "ACCEPTED_RISK",
+        "body": "Fingerprint inventory is a point-in-time manual transcription without machine-verifiable pipeline provenance or cryptographic attestation."
+      },
+      {
+        "id": "ROTATION-002-LOW-2",
+        "severity": "LOW",
+        "title": "Organization secret metadata remains unknown",
+        "status": "ACCEPTED_RISK",
+        "body": "Organization Actions-secret inventory returned HTTP 403. Repository-level private-key secret and current token-mint smoke independently prove the effective repository path works."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "GitHub App UI fingerprint inventory is operator-captured point-in-time evidence.",
+      "Organization Actions-secret metadata remains UNKNOWN after HTTP 403.",
+      "AGY warned that --mode plan has no effect when slash expansion is disabled; sandboxing, explicit no-write instructions, and post-audit clean status bound the run."
+    ],
+    "skip_reason": null
+  },
+  "remaining_unknowns": [
+    "Organization Actions-secret metadata and visibility are UNKNOWN because current token lacks required administration permission."
+  ],
+  "next": "FRESH_G12A_RECHECK"
+}
