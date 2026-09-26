@@ -458,3 +458,44 @@ test('TaskSequencer pending Start button renders tooltip on hover and keyboard f
   fireEvent.mouseOver(hoverStartButton);
   expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(hoverExpected);
 });
+
+test('TaskSequencer resets task title copy feedback state on task transition and propagates errors', async () => {
+  let errorMessage: string | null = null;
+  const handleError = (msg: string) => {
+    errorMessage = msg;
+  };
+
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.',
+  };
+
+  const originalClipboard = navigator.clipboard;
+  // Temporarily simulate unsupported clipboard
+  Object.defineProperty(navigator, 'clipboard', {
+    value: undefined,
+    configurable: true,
+  });
+
+  try {
+    render(<TaskSequencer cognitiveState={cognitiveState} onError={handleError} />);
+    const copyButtons = screen.getAllByRole('button', { name: 'Copy task title to clipboard' });
+    copyButtons.forEach((btn) => fireEvent.click(btn));
+
+    expect(errorMessage).toBe('Clipboard API is not supported in this browser or context.');
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
+});
+
+test('PredictionPanel resets copy feedback state when prediction updates', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'PredictionPanel.tsx'), 'utf8');
+  expect(content).toContain('setIsCopied(false);');
+  expect(content).toContain('copyTimeoutRef.current = null;');
+});
