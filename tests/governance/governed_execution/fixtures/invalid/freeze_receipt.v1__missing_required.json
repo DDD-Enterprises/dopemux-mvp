@@ -1,0 +1,27 @@
+{
+  "schema_version": "dopemux.governed_execution.freeze_receipt.v1",
+  "packet_id": "TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001",
+  "macro_id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+  "repo_identity": {
+    "origin_url": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "toplevel": "/Users/hue/code/dopemux-mvp/.worktrees/gec-v2-w01"
+  },
+  "base_sha": "aaaaaaaa11111111bbbbbbbb22222222cccccccc",
+  "head_sha": "bbbbbbbb22222222cccccccc33333333dddddddd",
+  "tree_sha": "cccccccc33333333dddddddd44444444eeeeeeee",
+  "substantive_paths": [
+    "schemas/governed_execution/enums.v1.schema.json"
+  ],
+  "substantive_path_digest": "1111111122222222333333334444444455555555666666667777777788888888",
+  "candidate_digest": "2222222233333333444444445555555566666666777777778888888899999999",
+  "validation_refs": [
+    {
+      "path": "proof/W01/verify.log",
+      "sha256": "3333333344444444555555556666666677777777888888889999999900000000"
+    }
+  ],
+  "review_refs": [],
+  "frozen_at": "2026-09-11T12:00:00Z",
+  "no_audit_before_freeze": true,
+  "authority": "NONE"
+}

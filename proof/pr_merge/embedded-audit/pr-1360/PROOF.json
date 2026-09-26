@@ -1,0 +1,41 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "opus",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "gpt-6-astra",
+      "model_family": "openai-gpt",
+      "runner": "codex-cli",
+      "runtime_family": "codex-cli"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "invocation": "claude --print --model opus --effort high --restricted --disable-slash-commands --no-session-persistence --permission-mode manual --permission-prompts none --output-format json --json-schema NATIVE_RESULT_SCHEMA.json with exact frozen H1 audit instruction",
+    "remaining_risks": [
+      "R1: No clean Linux/Python 3.11 CI execution of H1 is in the package",
+      "R2: Isolated reproduction installed from an offline wheelhouse repacked from local caches, not from a package index",
+      "R3: Dependency is an unpinned floor (`jsonschema>=4.20.0`) resolved from PyPI at hook-install time",
+      "R4: Parent validation logs are bare outputs without captured commands, exit codes, or environment preconditions",
+      "R5: The CT hook's `files:` filter excludes `.pre-commit-config.yaml`, so the changed-file pre-commit for H1 itself skipped the hook"
+    ],
+    "report_path": "proof/TP-DMX-CONTROL-TOWER-M0-CI-FINALITY-REPAIR-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-09-18T10:42:32.263635+00:00",
+  "head_sha": "34dd1cac8362e00d0fcd42c6be966274c8b44b46",
+  "pr_number": 1360,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

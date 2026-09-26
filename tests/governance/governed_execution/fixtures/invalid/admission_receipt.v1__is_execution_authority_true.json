@@ -1,0 +1,17 @@
+{
+  "schema_version": "dopemux.governed_execution.admission_receipt.v1",
+  "packet_id": "TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001",
+  "packet_sha256": "1111111122222222333333334444444455555555666666667777777788888888",
+  "macro_id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+  "schema_validity": "PASS",
+  "authority_validity": "PASS",
+  "classification_validity": "PASS",
+  "audit_validity": "NOT_RUN",
+  "execution_validity": "PASS",
+  "admission_status": "PASS",
+  "is_execution_authority": true,
+  "dcp_route_decision_ref": "NOT_RUN",
+  "task_orchestrator_item_ref": "NOT_RUN",
+  "recorded_at": "2026-09-11T12:00:00Z",
+  "authority": "NONE"
+}

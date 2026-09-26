@@ -1,0 +1,144 @@
+{
+  "base_commit": "1c915b9141e9a5c3d835a5c7ea953381782ae875",
+  "entries": [
+    {
+      "declared_path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+      "path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/AUDITOR_REPORT.md",
+      "sha256": "a94af1cb43749448d960f9b34ba2512ec6f42d992a6a36764aaae62bf411c495",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+      "path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/PROOF.json",
+      "sha256": "ffc416e35c779b68b796502632b649353061848930fbc2ffd4e9a46f43e51407",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+      "path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/review_bundle/audit-prompt.txt",
+      "sha256": "6c8d3411216aea1c71755ef163dbdd9d84641e607cd87f629f3e4a001c128888",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+      "path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/review_bundle/kimi-k3-audit-raw.txt",
+      "sha256": "4cbcf49ec8755e5e8cc884c870c08c7ab2e18d707324cd86bfde8cb9d7799d18",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+      "path": "proof/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/review_bundle/schema-summaries.txt",
+      "sha256": "c854aa37a6a1d80045dab95c884196d4324ab1c4290101050e44ede0149edc62",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/AUDITOR_REPORT.md",
+      "sha256": "472963fea629c9ede99f0fff6111598248c936fb1acd7d260357d8b0e73b5bf6",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/PROOF.json",
+      "sha256": "7fa1482808ae073b789ce0607e5dd9e637a0194850a4ed1c4636ff8f275296da",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/PROOF.json.sig",
+      "sha256": "41bfa16244e30a7fa6232543fdb3f353c441c1c4ec6f2b34428ff09a7646d82b",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/review_bundle/CANDIDATE_CHANGED_FILES.txt",
+      "sha256": "83725292941a075f942747ded92c64868a267c704cd5bfc220586524e03ce5ba",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/review_bundle/CANDIDATE_UNIFIED_DIFF.txt",
+      "sha256": "0369f50a145e83e5ce9bc2af05c9cc11c4d9bbde3dc2f57b9b80bf4ac1928f33",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/review_bundle/DIRECT_CLAUDE_AUDIT_CUSTODY.json",
+      "sha256": "9147c47e1d5265b7c7484c4f6820f57cdf59009896c06f904fe857c2c2b04e06",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/review_bundle/DIRECT_CLAUDE_AUDIT_PROMPT.md",
+      "sha256": "4b926f343d264fdb4d355c524b7ec0c0dfa800790d49ec2be67d9236075e79df",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/review_bundle/DIRECT_CLAUDE_AUDIT_RESULT.json",
+      "sha256": "e9594a4f4e5b57a9d25fe44f73ec6174145bdd38a5ba59aaa1da7d7ac640b926",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/review_bundle/DIRECT_CLAUDE_AUDIT_SCHEMA.json",
+      "sha256": "37bba6e0226ccea927e26d84fb944d3d00c814c4581ab42d36c0625ec14a1604",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/review_bundle/EXCLUDED_ARTIFACTS.md",
+      "sha256": "72c79bc566c629ddd1b7248e24e3afb8743adcc352864df967a8403901515e03",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/review_bundle/INSTRUCTION_LIKE_CONTENT.json",
+      "sha256": "9ff0180f4598e9e890007ce374ce81b939bbc1fcaedc8ad7dd4d015f491abb11",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001",
+      "path": "proof/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001/review_bundle/VALIDATION.md",
+      "sha256": "d800c7744085d52afa008b074e15a954dfd6ecb241241c0b0c0269c017286328",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001",
+      "path": "proof/TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001/AUDITOR_REPORT.md",
+      "sha256": "1087feea3716e3f74e57fc6155680eb1ca265f7c940dbbc797cd7b16bafd6804",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "proof/TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001",
+      "path": "proof/TP-DMX-PROOF-SCHEMA-LOCAL-VALIDATION-001/PROOF.json",
+      "sha256": "b2a6e04a94b9a5270f785ace7424af7bb8948e9942fc391f67bbd3131914cefe",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "task-packets/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+      "path": "task-packets/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/00_RUN_INSTRUCTIONS.md",
+      "sha256": "6d190a6f0076f872eccca748898b6cc234e8528cf3a218358ffe3354f489a288",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "task-packets/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+      "path": "task-packets/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/01_PUBLICATION_CLASSIFICATION.md",
+      "sha256": "c52a00e8a908cb9b3b1ff693a78d0d75319f734b3b74240b9a5ba6f9ca93fae2",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "task-packets/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001",
+      "path": "task-packets/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001/TP-DMX-C0-R2-SCHEMA-PUBLICATION-001.json",
+      "sha256": "b8eef4347bc06e3a39affc34c09f0eeb2c7b66d4c5bc9b9cecfb34c64747f7e9",
+      "status": "PRESENT"
+    },
+    {
+      "declared_path": "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
+      "path": "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
+      "sha256": "5d636307ad1ba7b6ec1498cac4fd79afcf9f480c9b96dad208f3f03e3f807cc9",
+      "status": "PRESENT"
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.benchmark_baseline_manifest.v1"
+}
