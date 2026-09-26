@@ -125,6 +125,28 @@ describe('RepositoryPlannerPage', () => {
     expect(screen.getByRole('button', { name: new RegExp(`Inspect dopemux-mvp pcp-planner-foundation ${fixture.lanes[0].candidate_sha}`) })).toBeVisible();
     expect(screen.getByRole('button', { name: /Inspect dopemux-mvp pcp-planner-foundation b{40}/ })).toBeVisible();
   });
+
+  test('copies candidate SHA to clipboard on chip click', async () => {
+    let copiedText = '';
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: async (text: string) => {
+          copiedText = text;
+        },
+      },
+    });
+
+    render(<RepositoryPlannerPage />);
+    const targetSha = dopemuxFixture.lanes[0].candidate_sha;
+    const shortSha = targetSha.slice(0, 12);
+
+    const chip = screen.getByRole('button', { name: new RegExp(`Candidate SHA ${shortSha}`) });
+    expect(chip).toBeVisible();
+
+    fireEvent.click(chip);
+    expect(copiedText).toBe(targetSha);
+    expect(await screen.findByRole('button', { name: new RegExp(`Candidate SHA ${shortSha} copied to clipboard`) })).toBeVisible();
+  });
 });
 
 describe('extension registry', () => {
