@@ -35,13 +35,13 @@ The refactor tool excels with models that have large context windows like Gemini
 
 ```
 "Use gemini pro to decompose my_crazy_big_class.m into smaller extensions"
-"Using zen's refactor decompose the all_in_one_sync_code.swift into maintainable extensions"
+"Using pal's refactor decompose the all_in_one_sync_code.swift into maintainable extensions"
 ```
 
-💡**Example of a powerful prompt** to get the best out of both Claude + Flash's 1M Context: 
+💡**Example of a powerful prompt** to get the best out of both Claude + Flash's 1M Context:
 ```
 "First, think about how the authentication module works, find related classes and find
- any code smells, then using zen's refactor ask flash to confirm your findings but ask 
+ any code smells, then using pal's refactor ask flash to confirm your findings but ask
  it to find additional code smells and any other quick-wins and then fix these issues"
 ```
 
@@ -97,13 +97,12 @@ This results in Claude first performing its own expert analysis, encouraging it 
 - `relevant_context`: Methods/functions/classes requiring refactoring
 - `issues_found`: Refactoring opportunities with severity and type
 - `confidence`: Confidence level in analysis completeness (exploring/incomplete/partial/complete)
-- `backtrack_from_step`: Step number to backtrack from (for revisions)
 - `hypothesis`: Current assessment of refactoring priorities
 
 **Initial Configuration (used in step 1):**
 - `prompt`: Description of refactoring goals, context, and specific areas of focus (required)
 - `refactor_type`: codesmells|decompose|modernize|organization (default: codesmells)
-- `model`: auto|pro|flash|flash-2.0|flashlite|o3|o3-mini|o4-mini|gpt4.1|gpt5|gpt5-mini|gpt5-nano (default: server default)
+- `model`: auto|pro|flash|flash-2.0|flashlite|o3|o3-mini|o4-mini|gpt4.1|gpt5.2|gpt5.1-codex|gpt5.1-codex-mini|gpt5|gpt5-mini|gpt5-nano (default: server default)
 - `focus_areas`: Specific areas to focus on (e.g., 'performance', 'readability', 'maintainability', 'security')
 - `style_guide_examples`: Optional existing code files to use as style/pattern reference (absolute paths)
 - `thinking_mode`: minimal|low|medium|high|max (default: medium, Gemini only)
@@ -141,7 +140,7 @@ This results in Claude first performing its own expert analysis, encouraging it 
 
 **Top-Down Analysis:**
 1. **File Level**: Identify oversized files that need splitting
-2. **Class Level**: Find classes with too many responsibilities  
+2. **Class Level**: Find classes with too many responsibilities
 3. **Function Level**: Locate functions that are too complex or long
 4. **Code Quality**: Address smells, modernization, and organization
 
@@ -197,5 +196,5 @@ Analyzes multiple files together to understand:
 
 - **Use `refactor`** for: Structural improvements, decomposition, modernization, code organization
 - **Use `codereview`** for: Finding bugs and security issues with immediate fixes
-- **Use `analyze`** for: Understanding code without making change recommendations  
+- **Use `analyze`** for: Understanding code without making change recommendations
 - **Use `debug`** for: Solving specific runtime issues rather than structural problems

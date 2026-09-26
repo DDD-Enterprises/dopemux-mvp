@@ -2,13 +2,9 @@
 # Ensures the off-compose `pal-mcp-server` container that Codex's
 # ~/.codex/config.toml hard-depends on (required = true) is up.
 #
-# This container is SEPARATE from the compose-managed `pal` service that
-# Claude Code talks to (http://localhost:3003/mcp) — that one is owned by
-# `dopemux mcp ensure --full`'s compose-up step, not this script. Codex
-# instead does `docker exec -i pal-mcp-server /opt/venv/bin/python server.py`
-# against a standalone container (image pal-mcp-server:latest) that
-# `compose.yml` has no service for, so `docker compose up` can never
-# start/repair it — this script is the only thing that does.
+# Codex does `docker exec -i pal-mcp-server /opt/venv/bin/python server.py`
+# against a standalone container (image pal-mcp-server:latest). Build that
+# image from the same canonical source tree as the compose-managed HTTP PAL.
 #
 # Idempotent: running while pal-mcp-server is already up is a no-op (exit 0).
 set -euo pipefail
@@ -88,15 +84,11 @@ if [[ -n "${stopped_id}" ]]; then
 fi
 
 if ! docker image inspect "${IMAGE_REF}" >/dev/null 2>&1; then
-  die "image ${IMAGE_REF} not found locally. Build the /opt/venv stdio image \
-that Codex execs into and tag it exactly ${IMAGE_REF} (the name this script and \
-~/.codex/config.toml use), e.g. from your standalone pal-mcp-server checkout: \
-docker build -t ${IMAGE_REF} . \
-NOTE: some pal/zen compose files tag the build 'zen-mcp-server:latest' rather \
-than ${IMAGE_REF} — if you build via 'docker compose up -d --build', re-tag it: \
-docker tag zen-mcp-server:latest ${IMAGE_REF}. \
-(The in-repo docker/mcp-servers/pal/Dockerfile builds a different /app/.venv \
-HTTP-wrapper image for the compose 'pal' service and is NOT a substitute.)"
+  printf 'ensure-pal: building %s from canonical PAL source\n' "${IMAGE_REF}" >&2
+  docker build \
+    -t "${IMAGE_REF}" \
+    "${ROOT_DIR}/docker/mcp-servers-source/pal" || \
+    die "failed to build ${IMAGE_REF} from canonical PAL source"
 fi
 
 # Build the run args as an always-non-empty array and append --env-file only

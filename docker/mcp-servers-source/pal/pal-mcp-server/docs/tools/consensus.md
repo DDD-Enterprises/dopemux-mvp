@@ -26,33 +26,33 @@ The consensus tool orchestrates multiple AI models to provide diverse perspectiv
 The following is a hypothetical example designed to demonstrate how one consensus can be built upon another (via [continuation](../context-revival.md)). In this scenario, we start with a _blinded_ consensus, where one model is tasked with taking a **for** stance and another with an **against** stance. This approach allows us to see how each model evaluates a particular option relative to the alternative. We then conduct a second consensus — all initiated by a single prompt and orchestrated by Claude Code in this video — to gather each model’s final conclusions.
 
 <div style="center">
-  
-  [Zen Consensus Debate](https://github.com/user-attachments/assets/76a23dd5-887a-4382-9cf0-642f5cf6219e)
-  
+
+  [PAL Consensus Debate](https://github.com/user-attachments/assets/76a23dd5-887a-4382-9cf0-642f5cf6219e)
+
 </div>
 
 ## Example Prompts
 
 **For/Against Analysis:**
 ```
-Use zen consensus with flash taking a supportive stance and pro being critical to evaluate whether 
+Use pal consensus with flash taking a supportive stance and pro being critical to evaluate whether
 we should migrate from REST to GraphQL for our API
 ```
 
 **Multi-Model Technical Decision:**
 ```
-Get consensus from o3, flash, and pro on our new authentication architecture. Have o3 focus on 
+Get consensus from o3, flash, and pro on our new authentication architecture. Have o3 focus on
 security implications, flash on implementation speed, and pro stay neutral for overall assessment
 ```
 
 **Natural Language Stance Assignment:**
 ```
-Use consensus tool with gemini being "for" the proposal and grok being "against" to debate 
+Use consensus tool with gemini being "for" the proposal and grok being "against" to debate
 whether we should adopt microservices architecture
 ```
 
 ```
-I want to work on module X and Y, unsure which is going to be more popular with users of my app. 
+I want to work on module X and Y, unsure which is going to be more popular with users of my app.
 Get a consensus from gemini supporting the idea for implementing X, grok opposing it, and flash staying neutral
 ```
 

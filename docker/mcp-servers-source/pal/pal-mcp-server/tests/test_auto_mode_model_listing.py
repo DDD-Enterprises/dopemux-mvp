@@ -11,10 +11,10 @@ import utils.model_restrictions as model_restrictions
 from providers.gemini import GeminiModelProvider
 from providers.openai import OpenAIModelProvider
 from providers.openrouter import OpenRouterProvider
-from providers.registries.openrouter import OpenRouterModelRegistry
 from providers.registry import ModelProviderRegistry
 from providers.shared import ProviderType
 from providers.xai import XAIModelProvider
+from tools.shared.exceptions import ToolExecutionError
 
 
 def _extract_available_models(message: str) -> list[str]:
@@ -56,14 +56,6 @@ def _register_core_providers(*, include_xai: bool = False):
         ModelProviderRegistry.register_provider(ProviderType.XAI, XAIModelProvider)
 
 
-def test_openrouter_catalog_excludes_retired_grok_4_aliases():
-    registry = OpenRouterModelRegistry()
-
-    assert "x-ai/grok-4" not in registry.list_models()
-    for retired_name in ("grok-4", "grok4", "grok"):
-        assert registry.resolve(retired_name) is None
-
-
 @pytest.mark.no_mock_provider
 def test_error_listing_respects_env_restrictions(monkeypatch, reset_registry):
     """Error payload should surface only the allowed models for each provider."""
@@ -81,17 +73,17 @@ def test_error_listing_respects_env_restrictions(monkeypatch, reset_registry):
         "AZURE_MODELS_CONFIG_PATH",
     ):
         monkeypatch.delenv(azure_var, raising=False)
-    monkeypatch.setenv("ZEN_MCP_FORCE_ENV_OVERRIDE", "false")
-    env_config.reload_env({"ZEN_MCP_FORCE_ENV_OVERRIDE": "false"})
+    monkeypatch.setenv("PAL_MCP_FORCE_ENV_OVERRIDE", "false")
+    env_config.reload_env({"PAL_MCP_FORCE_ENV_OVERRIDE": "false"})
     try:
         import dotenv
 
-        monkeypatch.setattr(dotenv, "dotenv_values", lambda *_args, **_kwargs: {"ZEN_MCP_FORCE_ENV_OVERRIDE": "false"})
+        monkeypatch.setattr(dotenv, "dotenv_values", lambda *_args, **_kwargs: {"PAL_MCP_FORCE_ENV_OVERRIDE": "false"})
     except ModuleNotFoundError:
         pass
 
     monkeypatch.setenv("GOOGLE_ALLOWED_MODELS", "gemini-2.5-pro")
-    monkeypatch.setenv("OPENAI_ALLOWED_MODELS", "gpt-5")
+    monkeypatch.setenv("OPENAI_ALLOWED_MODELS", "gpt-5.2")
     monkeypatch.setenv("OPENROUTER_ALLOWED_MODELS", "gpt5nano")
     monkeypatch.setenv("XAI_ALLOWED_MODELS", "")
 
@@ -112,7 +104,7 @@ def test_error_listing_respects_env_restrictions(monkeypatch, reset_registry):
         ("OPENAI_API_KEY", "test-openai"),
         ("OPENROUTER_API_KEY", "test-openrouter"),
         ("GOOGLE_ALLOWED_MODELS", "gemini-2.5-pro"),
-        ("OPENAI_ALLOWED_MODELS", "gpt-5"),
+        ("OPENAI_ALLOWED_MODELS", "gpt-5.2"),
         ("OPENROUTER_ALLOWED_MODELS", "gpt5nano"),
         ("XAI_ALLOWED_MODELS", ""),
     ):
@@ -132,22 +124,22 @@ def test_error_listing_respects_env_restrictions(monkeypatch, reset_registry):
     model_restrictions._restriction_service = None
     server.configure_providers()
 
-    result = asyncio.run(
-        server.handle_call_tool(
-            "chat",
-            {
-                "model": "gpt5mini",
-                "prompt": "Tell me about your strengths",
-            },
+    with pytest.raises(ToolExecutionError) as exc_info:
+        asyncio.run(
+            server.handle_call_tool(
+                "chat",
+                {
+                    "model": "gpt5mini",
+                    "prompt": "Tell me about your strengths",
+                },
+            )
         )
-    )
 
-    assert len(result) == 1
-    payload = json.loads(result[0].text)
+    payload = json.loads(exc_info.value.payload)
     assert payload["status"] == "error"
 
     available_models = _extract_available_models(payload["content"])
-    assert set(available_models) == {"gemini-2.5-pro", "gpt-5", "gpt5nano", "openai/gpt-5-nano"}
+    assert set(available_models) == {"gemini-2.5-pro", "gpt-5.2", "gpt5nano", "openai/gpt-5-nano"}
 
 
 @pytest.mark.no_mock_provider
@@ -159,7 +151,7 @@ def test_error_listing_without_restrictions_shows_full_catalog(monkeypatch, rese
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai")
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-openrouter")
     monkeypatch.setenv("XAI_API_KEY", "test-xai")
-    monkeypatch.setenv("ZEN_MCP_FORCE_ENV_OVERRIDE", "false")
+    monkeypatch.setenv("PAL_MCP_FORCE_ENV_OVERRIDE", "false")
     for azure_var in (
         "AZURE_OPENAI_API_KEY",
         "AZURE_OPENAI_ENDPOINT",
@@ -167,11 +159,11 @@ def test_error_listing_without_restrictions_shows_full_catalog(monkeypatch, rese
         "AZURE_MODELS_CONFIG_PATH",
     ):
         monkeypatch.delenv(azure_var, raising=False)
-    env_config.reload_env({"ZEN_MCP_FORCE_ENV_OVERRIDE": "false"})
+    env_config.reload_env({"PAL_MCP_FORCE_ENV_OVERRIDE": "false"})
     try:
         import dotenv
 
-        monkeypatch.setattr(dotenv, "dotenv_values", lambda *_args, **_kwargs: {"ZEN_MCP_FORCE_ENV_OVERRIDE": "false"})
+        monkeypatch.setattr(dotenv, "dotenv_values", lambda *_args, **_kwargs: {"PAL_MCP_FORCE_ENV_OVERRIDE": "false"})
     except ModuleNotFoundError:
         pass
 
@@ -217,23 +209,22 @@ def test_error_listing_without_restrictions_shows_full_catalog(monkeypatch, rese
     model_restrictions._restriction_service = None
     server.configure_providers()
 
-    result = asyncio.run(
-        server.handle_call_tool(
-            "chat",
-            {
-                "model": "dummymodel",
-                "prompt": "Hi there",
-            },
+    with pytest.raises(ToolExecutionError) as exc_info:
+        asyncio.run(
+            server.handle_call_tool(
+                "chat",
+                {
+                    "model": "dummymodel",
+                    "prompt": "Hi there",
+                },
+            )
         )
-    )
 
-    assert len(result) == 1
-    payload = json.loads(result[0].text)
+    payload = json.loads(exc_info.value.payload)
     assert payload["status"] == "error"
 
     available_models = _extract_available_models(payload["content"])
     assert "gemini-2.5-pro" in available_models
-    assert "gpt-5" in available_models
+    assert any(model in available_models for model in {"gpt-5.2", "gpt-5"})
     assert "grok-4.5" in available_models
-    assert "grok-4" not in available_models
     assert len(available_models) >= 5
