@@ -1,0 +1,188 @@
+{
+  "admissible_verdict": "PASS_WITH_RISKS",
+  "audited_base": "35df148a55864b0efc5ada79753f987207b2936c",
+  "audited_head": "15fda1f875f55cdd901eb9f396f994ed4b706bbd",
+  "deterministic_evidence_sha256": "69953c8a87e2aaf3048ee2204084b4d23e566c340ff80606a643af8ac37ee1f1",
+  "deterministic_test_receipts": [
+    {
+      "command": "uv lock --check --offline",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "AnyIO 4.14.2 memory-object-stream + anyio.run smoke",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "pytest.mark.anyio isolated smoke",
+      "exit_code": 0,
+      "result": "1 passed"
+    },
+    {
+      "command": "instruction-like added-line scan",
+      "result": "0 matches"
+    },
+    {
+      "command": "git status before/after",
+      "result": "tracked subject clean"
+    }
+  ],
+  "effects": {
+    "close": 0,
+    "commits": 0,
+    "container_starts": 0,
+    "github_mutations": 0,
+    "mark_ready": 0,
+    "merge": 0,
+    "repo_mutations": 0,
+    "service_starts": 0,
+    "signatures": 0,
+    "workflow_reruns": 0
+  },
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "No release-note content available; smokes may miss behavior changes. Narrow repo API surface; non-blocking.",
+        "id": "F1",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Upstream AnyIO 4.13.0->4.14.2 release notes not reviewed"
+      },
+      {
+        "body": "Only isolated smokes ran; dope-context, serena AnyIO tests and ConPort memory_server were not executed.",
+        "id": "F2",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Repository async test suites not executed against 4.14.2"
+      },
+      {
+        "body": "Only uv.lock AnyIO version/artifact metadata changed; dependencies unchanged; lock check exit 0.",
+        "id": "F3",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Diff scope confined to AnyIO lock block"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model opus --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "remaining_risks": [
+      "Unreviewed upstream AnyIO 4.14.x behavior changes",
+      "Repository AnyIO test suites not executed on 4.14.2",
+      "Transitive AnyIO consumers not runtime-exercised",
+      "Trio backend path not smoked if used"
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-013-OPUS-AUDIT-1363/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "embedded_audit_schema": "PASS_DRAFT7_EXACT_HEAD_SCHEMA",
+  "files_mutated_in_audited_subject": [],
+  "findings": [
+    {
+      "body": "Minimal smokes may miss behavior changes in cancellation, streams, task groups, or pytest plugin behavior.",
+      "id": "F1",
+      "severity": "LOW",
+      "status": "ACCEPTED_RISK",
+      "title": "Upstream AnyIO 4.14.x release notes not reviewed"
+    },
+    {
+      "body": "dope-context/serena AnyIO-marked tests and ConPort memory_server integration were not run in this audit.",
+      "id": "F2",
+      "severity": "LOW",
+      "status": "ACCEPTED_RISK",
+      "title": "Repository async suites not executed on 4.14.2"
+    },
+    {
+      "body": "Only uv.lock changed; dependency list/source unchanged; offline lock check passed.",
+      "id": "F3",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "Diff confined to AnyIO lock block"
+    }
+  ],
+  "instruction_like_content": {
+    "detected": false,
+    "match_count": 0,
+    "matches": [],
+    "truncated": false
+  },
+  "pr": 1363,
+  "prompt_sha256": "c56665446ba85d9edee18e082f1520278172daecdab9c6a8fb286e846555f622",
+  "raw_return_sha256": "7b36529acda77abe5b9f075ed3618c009a5d7c3bc1d4bad88a2650cdb2b00191",
+  "remaining_risks": [
+    "Unreviewed upstream AnyIO 4.14.x behavior changes.",
+    "Repository AnyIO-marked suites and ConPort integration not executed.",
+    "Transitive AnyIO consumers not runtime-exercised.",
+    "Trio backend not smoked if used by repository tests."
+  ],
+  "return_state": "RETURNED_ADMISSIBLE_AUDIT_EVIDENCE",
+  "route_usage_receipt": {
+    "automatic_fallback": 0,
+    "automatic_retry": 0,
+    "cost_usd_native_reported": 0.1209078,
+    "displayed_model": "UNKNOWN_NOT_SEPARATELY_REPORTED",
+    "duration_api_ms": 37188,
+    "effort_requested": "high",
+    "exit_code": 0,
+    "independence": "PROVEN",
+    "invocation": "claude -p --model opus --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "max_budget_usd": 2.0,
+    "mcp_calls": 0,
+    "mcp_calls_basis": "strict empty MCP config plus zero available/requested tools; no MCP use reported",
+    "mcp_calls_max": 0,
+    "mcp_config": {
+      "mcpServers": {}
+    },
+    "model_calls_max": 1,
+    "model_family": "claude",
+    "model_selector_requested": "opus",
+    "model_turns_max": 1,
+    "model_usage_keys": [
+      "claude-opus-5-5"
+    ],
+    "native_cli_reported_effective_model": "claude-opus-5-5",
+    "native_cli_reported_provider": "firstParty",
+    "native_status": "success",
+    "num_turns": 1,
+    "output_tokens_native_total": 4348,
+    "permission_denials": [],
+    "permission_mode": "plan",
+    "prompt_bytes": 4965,
+    "provider_attested_identity": "UNKNOWN",
+    "restricted": true,
+    "runner_requested": "claude-code-cli",
+    "runner_version_observed": "2.1.282",
+    "runner_version_requested": "2.1.282",
+    "runtime_family": "claude-code",
+    "secondary_or_advisor_model_reported": false,
+    "session_persistence": false,
+    "slash_commands_disabled": true,
+    "stop_reason": "end_turn",
+    "strict_mcp_config": true,
+    "subagents_spawned": 0,
+    "terminal_reason": "completed",
+    "thinking_tokens_native_subset": 609,
+    "tool_calls": 0,
+    "tool_calls_basis": "--tools empty; restricted mode; no tool usage reported",
+    "tool_calls_max": 0,
+    "tools_requested": [],
+    "visible_final_output_tokens_derived": 3739,
+    "web_fetch_requests": 0,
+    "web_search_requests": 0
+  },
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "task_id": "TP-DMX-PRMERGE-013-OPUS-AUDIT-1363",
+  "title": "deps(deps): bump anyio from 4.13.0 to 4.14.2",
+  "verdict_scope": "audit evidence only; never readiness/merge authority"
+}

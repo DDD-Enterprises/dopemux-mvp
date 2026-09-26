@@ -1,0 +1,88 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "opus",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "none",
+      "model_family": "automation",
+      "runner": "dependabot",
+      "runtime_family": "github-dependabot"
+    },
+    "independence": "PROVEN"
+  },
+  "base_sha": "35df148a55864b0efc5ada79753f987207b2936c",
+  "branch": "dependabot/uv/anyio-4.14.2",
+  "embedded_audit": {
+    "auditor_model": "opus",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "No release-note content available; smokes may miss behavior changes. Narrow repo API surface; non-blocking.",
+        "id": "F1",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Upstream AnyIO 4.13.0->4.14.2 release notes not reviewed"
+      },
+      {
+        "body": "Only isolated smokes ran; dope-context, serena AnyIO tests and ConPort memory_server were not executed.",
+        "id": "F2",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Repository async test suites not executed against 4.14.2"
+      },
+      {
+        "body": "Only uv.lock AnyIO version/artifact metadata changed; dependencies unchanged; lock check exit 0.",
+        "id": "F3",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Diff scope confined to AnyIO lock block"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model opus --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "remaining_risks": [
+      "Unreviewed upstream AnyIO 4.14.x behavior changes",
+      "Repository AnyIO test suites not executed on 4.14.2",
+      "Transitive AnyIO consumers not runtime-exercised",
+      "Trio backend path not smoked if used"
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-013-OPUS-AUDIT-1363/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-09-25T20:05:11Z",
+  "head_sha": "15fda1f875f55cdd901eb9f396f994ed4b706bbd",
+  "merge_authorized": false,
+  "packet_id": "TP-DMX-PRMERGE-013-OPUS-AUDIT-1363",
+  "publication_authorized": false,
+  "remaining_risks": [
+    "Unreviewed upstream AnyIO 4.14.x behavior changes.",
+    "Repository AnyIO-marked suites and ConPort integration not executed.",
+    "Transitive AnyIO consumers not runtime-exercised.",
+    "Trio backend not smoked if used by repository tests."
+  ],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "risk_lane": "L2",
+  "status": "PASS_WITH_RISKS",
+  "validation_provenance": {
+    "admission": "ACCEPTED",
+    "source_checkpoint": "CHECKPOINT_007",
+    "source_evidence": [
+      "AUDIT_1363_RETURN.json",
+      "AUDIT_1363_REPORT.md"
+    ]
+  }
+}
