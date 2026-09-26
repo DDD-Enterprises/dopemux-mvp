@@ -1,0 +1,50 @@
+{
+  "authority_globs": [
+    "AGENTS.md",
+    "RULES.md",
+    "TRUTH_*.md",
+    "SYSTEM_*.md",
+    "docs/**/*governance*.md",
+    "docs/**/*architecture*.md"
+  ],
+  "downloads": {
+    "proof": "~/Downloads/PROOF",
+    "return": "~/Downloads/RETURN"
+  },
+  "notes": [],
+  "operator_only_gates": [
+    "merge",
+    "force_push",
+    "history_rewrite",
+    "branch_protection",
+    "branch_delete",
+    "credentials_permissions",
+    "production",
+    "migration",
+    "publish_activate",
+    "security_residual_risk_acceptance"
+  ],
+  "project_name": "dopemux-mvp",
+  "return_gates": [
+    "authority_boundary",
+    "public_trust_api",
+    "proof_signer_authority",
+    "finality_semantics",
+    "not_required_semantics",
+    "new_p0_p1_trust_bypass",
+    "final_audit_fail_or_needs_supervisor",
+    "auditor_independence_unknown",
+    "disallowed_audit_route_only",
+    "credential_exposure",
+    "branch_protection_or_permission_change",
+    "semantic_out_of_allowlist",
+    "architecture_conflict"
+  ],
+  "routing": {
+    "l2_l3_final_audit": true,
+    "prefer_cheapest_capable": true,
+    "proof_only_reaudit": false,
+    "require_decision_per_packet": true
+  },
+  "schema_version": "1.0"
+}

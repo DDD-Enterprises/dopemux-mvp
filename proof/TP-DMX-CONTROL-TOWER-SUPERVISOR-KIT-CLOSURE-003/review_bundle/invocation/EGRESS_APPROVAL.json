@@ -1,0 +1,31 @@
+{
+  "approved": true,
+  "user_instruction": "claude out of usage, must use grok build or agy. approved",
+  "in_response_to": "Approve sending the frozen source/evidence bundles to Claude/Sonnet for Dopemux and AdOps, and AGY's gemini-3.8-flash-high for CRM.",
+  "effect": "Explicit payload egress approved with provider replacement: no Claude; use Grok Build or AGY.",
+  "repositories": [
+    "DDD-Enterprises/dopemux-mvp",
+    "DDD-Enterprises/adOps",
+    "DDD-Enterprises/dnh-crm"
+  ],
+  "selected_routes": {
+    "dopemux-mvp": "Grok Build / grok-4.5 / high",
+    "adOps": "Grok Build / grok-4.5 / high",
+    "dnh-crm": "AGY / gemini-3.8-flash-high / high"
+  },
+  "payload": "Frozen repository implementation diffs and source, applicable governance instructions, test/proof evidence and audit provenance for the three existing Control Tower PRs.",
+  "additional_invocations_per_repository": 1,
+  "current_round_prior_invocations": 0,
+  "prior_block": "CLOSURE_AUDIT_EGRESS_BLOCK.json: blocked before process creation, no model invocation consumed",
+  "automatic_retry_or_fallback": false,
+  "not_authorized": [
+    "Claude invocation",
+    "fabricated audit",
+    "AI gov accept",
+    "auditor impersonation",
+    "force push",
+    "protection bypass",
+    "secret disclosure",
+    "production activation"
+  ]
+}

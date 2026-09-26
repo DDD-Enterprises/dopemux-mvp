@@ -1,0 +1,18 @@
+{
+  "manifest_version": "1.0",
+  "run_id": "run-20260908-212556",
+  "tp_id": "UNKNOWN-TP",
+  "run_mode": "enforce",
+  "status": "FAIL",
+  "failures": [
+    "diff-whitespace"
+  ],
+  "skipped": [
+    "git-clean"
+  ],
+  "repo": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+  "branch": "codex/control-tower-supervisor-kit-20260908",
+  "commit": "648475216f2ffab9b249de6502294c124890f090",
+  "manifest_path": ".runs/run-20260908-212556.manifest.json",
+  "timestamp_utc": "2026-09-08T21:26:13Z"
+}

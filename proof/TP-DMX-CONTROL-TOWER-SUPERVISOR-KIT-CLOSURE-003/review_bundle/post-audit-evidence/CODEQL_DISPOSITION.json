@@ -1,0 +1,20 @@
+{
+  "alerts": [
+    269,
+    270
+  ],
+  "authority": "Latest user authorized bounded repairs and specific CodeQL disposition",
+  "evidence": "Synthetic input and generated-diff canaries emitted no matched values, exit 3",
+  "reason": "false positive",
+  "review_replies": [
+    3962719177,
+    3962719676
+  ],
+  "scope": "Only constant-label logging sinks; scanning defects repaired separately",
+  "source_head": "46b35b3cb0192d69a45cb41ed55df6ba34201e0e",
+  "state": "dismissed",
+  "threads_resolved": [
+    "PRRT_kwDOPyIw986ga0T7",
+    "PRRT_kwDOPyIw986ga0UD"
+  ]
+}

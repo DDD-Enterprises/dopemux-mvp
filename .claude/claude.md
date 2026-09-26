@@ -5,6 +5,16 @@
 **Mode**: PLAN/ACT-aware with modular authority boundaries
 **Workspace**: `<workspace_root>`
 
+<!-- CONTROL_TOWER_ENTRY_BEGIN -->
+## Control Tower Supervision
+
+For supervised engineering packets, follow [Control Tower Packet Workflow](../AGENTS.md#control-tower-packet-workflow).
+Read the installed kit contracts and project configuration through that entry point.
+The additional kit routing and packaging requirements apply only to supervised work;
+ordinary work retains existing repository governance.
+Read `.claude/PROJECT_INSTRUCTIONS.md` and `.claude/PRIMER.md` first; this file adds project context.
+<!-- CONTROL_TOWER_ENTRY_END -->
+
 ## 🎯 Governance Principles
 
 **Doctrine**: truth over fluency, inspect before editing, minimal correct change, deterministic systems first, fail closed when evidence is missing. This module elaborates the same Truth Order / proof-and-finality regime that [AGENTS.md](../AGENTS.md) mandates for Codex — keep both files in sync.

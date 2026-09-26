@@ -1,0 +1,207 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai",
+      "runner": "grok-cli",
+      "runtime_family": "grok-build"
+    },
+    "implementer": {
+      "model": "gpt-5.6-luna",
+      "model_family": "openai",
+      "runner": "codex",
+      "runtime_family": "codex"
+    },
+    "independence": "PROVEN"
+  },
+  "auditor_runtime_identity": {
+    "chat_history_model_ids": [
+      "grok-4.5-build"
+    ],
+    "event_types": [
+      "first_token",
+      "loop_started",
+      "mcp_config_resolved",
+      "mcp_init_completed",
+      "mcp_server_connected",
+      "mcp_server_failed",
+      "mcp_server_starting",
+      "phase_changed",
+      "turn_ended",
+      "turn_started"
+    ],
+    "normalization_basis": "Existing repository Grok custody establishes grok-4.5-build as served telemetry label for requested grok-4.5.",
+    "provider_cryptographic_attestation": "NOT_PROVIDED_OR_CLAIMED",
+    "request_id": "2099827e-d4d3-444d-a534-a65101bccf20",
+    "requested_model": "grok-4.5",
+    "served_model_label": "grok-4.5-build",
+    "session_file_hashes": {
+      "chat_history.jsonl": "2879ad21c25ff8a4473246f25dcee24baf2ca92b10519e7d1450d5f0e9f6e6be",
+      "events.jsonl": "d04545dff17427a7087722959ed9926e0a5968193eecdf903f91c59c096fa185",
+      "summary.json": "48e89ae010aa2fd410208b380b5f3857a6e96a53b2a6f4ad64467d762710ba7d"
+    },
+    "session_id": "58bd2559-53e2-493a-87c8-d28d2d3da676",
+    "status": "PROVEN_FROM_LOCAL_RUNNER_METADATA",
+    "summary": {
+      "created_at": "2026-09-09T00:40:18.391936Z",
+      "current_model_id": "grok-4.5",
+      "reasoning_effort": "high",
+      "updated_at": "2026-09-09T00:42:40.951408Z"
+    },
+    "turn_ended": [
+      {
+        "outcome": "completed",
+        "ts": "2026-09-09T00:42:40.923Z",
+        "type": "turn_ended"
+      }
+    ],
+    "turn_started": [
+      {
+        "conversation_message_count": 3,
+        "model_id": "grok-4.5",
+        "schema_version": "1.0",
+        "session_id": "58bd2559-53e2-493a-87c8-d28d2d3da676",
+        "session_relationship": "primary",
+        "ts": "2026-09-09T00:40:18.742Z",
+        "turn_number": 0,
+        "type": "turn_started",
+        "yolo_mode": false
+      }
+    ]
+  },
+  "auditor_runtime_model": "grok-4.5-build",
+  "auditor_runtime_models_observed": [
+    "grok-4.5-build"
+  ],
+  "auxiliary_model_roles": {},
+  "base_sha": "6a728f74c0311967f83213513308f97613e3f28d",
+  "branch": "codex/control-tower-supervisor-kit-20260908",
+  "embedded_audit": {
+    "auditor_model": "grok-4.5",
+    "auditor_tool": "grok-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Path: .control-tower/bin/ct\nClosure claim for JSON repo_binding is met in the frozen head. When require_identity_match is true, validate_packet_binding requires non-empty project_id, repo_marker, and origin_hint; restricts markers to the supported canonical set; rejects unsafe/relative-escape markers, symlinks, and escaping identity configs; compares marker project identity; and compares normalized exact origin with fail-closed rejection of credentialed, query, fragment, and malformed URLs. Focused tests cover happy path, origin mismatch, null binding, taskx marker, boolean-type rejection, unsafe markers, nested foreign fixtures, symlink markers, and escaping identity config.",
+        "id": "F-CLOSURE-001-REPO-BINDING",
+        "severity": "MEDIUM",
+        "status": "RESOLVED",
+        "title": "F-CLOSURE-001-REPO-BINDING"
+      },
+      {
+        "body": "Path: .control-tower/bin/ct\nPrior CORR-01 (first-heading bind) is not present in this head. packet_identity() for Markdown ignores fenced regions with nested-fence handling, collects every out-of-fence heading that yields a packet-ID candidate, and fails closed unless exactly one candidate remains. Tests cover JSON id, Task Packet colon/program/em-dash/backtick forms, nested fences, ambiguity, and invalid encoding. This closes the Markdown identity defect claimed by CLOSURE-003.",
+        "id": "F-CLOSURE-002-MARKDOWN-IDENTITY",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "F-CLOSURE-002-MARKDOWN-IDENTITY"
+      },
+      {
+        "body": "Path: .control-tower/bin/ct\nPackaging now separates COMMITTED_DIFF.patch (merge-base..head) from WORKTREE_DIFF.patch (dirty vs HEAD), captures GIT_STATUS separately, fails closed when required Git evidence is missing or git_capture fails, and documents that Git diffs do not contain untracked-file contents. README and tests assert the committed/dirty split and fsmonitor-disabled capture. This matches the CLOSURE-003 committed-diff packaging invariant.",
+        "id": "F-CLOSURE-003-DIFF-PACKAGING",
+        "severity": "MEDIUM",
+        "status": "RESOLVED",
+        "title": "F-CLOSURE-003-DIFF-PACKAGING"
+      },
+      {
+        "body": "Path: .claude/llm.md\nSupervised vs ordinary model-routing ambiguity is closed in instruction surfaces. llm.md and llms.md require validated packet routing for supervised work, preserve ordinary user/repository authority without inventing a packet, and state that attention presentation does not grant execution authority. AGENTS.md Control Tower Packet Workflow and related CONTROL_TOWER_ENTRY blocks repeat supervised-only scope. Template guidance in README states ROUTING_DECISION.template.json is schema-shape only with UNKNOWN placeholders, not availability or authority evidence.",
+        "id": "F-CLOSURE-004-ROUTING-SCOPE",
+        "severity": "MEDIUM",
+        "status": "RESOLVED",
+        "title": "F-CLOSURE-004-ROUTING-SCOPE"
+      },
+      {
+        "body": "Path: .control-tower/bin/ct\nShipped route_decision.schema.json and return_packet.schema.json are loaded and applied through _validate_schema for route and return-metadata paths. Blank required strings, L2/L3 audit.required=true, and return-pack non-empty reason/decision-needed are enforced. Unit coverage includes schema oracle cross-check against jsonschema for valid and invalid cases.",
+        "id": "F-REPAIR-SCHEMA-ENFORCEMENT",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "F-REPAIR-SCHEMA-ENFORCEMENT"
+      },
+      {
+        "body": "Path: .control-tower/bin/ct\nverify-zip enforces single root, rejects unsafe/symlink members, and cross-checks SHA256SUMS.txt, FILE_INVENTORY.json path/sha256/bytes, and SECRET_SCAN_REPORT.json PASS/empty hits against member bytes. Tests cover tamper, duplicate inventory, and malformed inventory types.",
+        "id": "F-REPAIR-VERIFY-ZIP",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "F-REPAIR-VERIFY-ZIP"
+      },
+      {
+        "body": "Path: .control-tower/bin/ct\nrunner-inventory probes provider models only with explicit --probe-models; default path does not call agy models. tool_info marks failed version probes UNKNOWN rather than PROVEN.",
+        "id": "F-REPAIR-INVENTORY-EGRESS",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "F-REPAIR-INVENTORY-EGRESS"
+      },
+      {
+        "body": "Path: .control-tower/bin/ct\nREPAIR-002 CodeQL alert disposition remains not independently confirmable from the supplied content-only materials: original alert text/locations are not in this audit bundle. Reviewed scan_files behavior is consistent with fail-closed unscannable handling and constant-label sinks that omit matched secret bytes, but consistency is not proof of the specific alert IDs. This does not by itself show a live credential leak in the diff.",
+        "id": "F-GOV-CODEQL-DISPOSITION",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "F-GOV-CODEQL-DISPOSITION"
+      },
+      {
+        "body": "Path: .control-tower/templates/ROUTING_DECISION.template.json\nct validate-route accepts the placeholder template because placeholders are non-blank strings that satisfy schema/shape checks. README and AGENTS.md already state template validation proves shape only and does not prove authority, availability, independence, CI, merge, or activation. Residual misuse risk remains if an operator treats template PASS as a real routing decision.",
+        "id": "F-TEMPLATE-VALIDATE-SHAPE-ONLY",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "F-TEMPLATE-VALIDATE-SHAPE-ONLY"
+      },
+      {
+        "body": "Path: .control-tower/bin/ct\nThe hand-rolled JSON-Schema subset rejects unsupported keywords. Current shipped schemas stay within the supported set, so this is not a present functional defect; future schema edits using unsupported keywords would break validation until the validator is updated in lockstep.",
+        "id": "F-SCHEMA-SUBSET-COUPLING",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "F-SCHEMA-SUBSET-COUPLING"
+      },
+      {
+        "body": "Path: AGENTS.md\nInstruction integrations are additive inside CONTROL_TOWER_* markers. Kit text preserves repository governance precedence, supervised-only extra workflow, operator-only gates, and that packaging/kit reports do not grant acceptance, merge, upload, or activation authority. No operator-gate bypass, credential exposure, or protection/activation mutation appears in the auditable changed sources.",
+        "id": "F-AUTHORITY-PRESERVATION",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "F-AUTHORITY-PRESERVATION"
+      },
+      {
+        "body": "Path: task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-CLOSURE-003.json\nIncremental prior_head..head changes only CLOSURE-003 invariants to the user-approved Grok final-audit selector (from Claude Sonnet medium). No CLI, test, or native governance source changed in that increment. Full allowlist and incremental allowlist checks report PASS with empty unexpected paths. Packet and supplied route both name grok-4.5 / high effort for the final audit; route audit.independence remains PROPOSED rather than proven.",
+        "id": "F-INCREMENTAL-ROUTE-AMENDMENT",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "F-INCREMENTAL-ROUTE-AMENDMENT"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "/Users/hue/.local/bin/grok --model grok-4.5 --reasoning-effort high --session-id 58bd2559-53e2-493a-87c8-d28d2d3da676 --tools '' --deny '*' --permission-mode dontAsk --disable-web-search --no-subagents --no-plan --verbatim --max-turns 3 --output-format json --prompt-file /private/tmp/control-tower-publish-20260908/evidence-dopemux-mvp/closure-003/grok-route/grok-input-bundle-b0c34632/AUDIT_PROMPT.md",
+    "remaining_risks": [
+      "This is a content-only audit: no tools were run here; focused-test PASS (36), precommit/commit receipts, change-contract PASS, and route/packet validation receipts are implementer-supplied evidence and were cross-checked against source but not re-executed by this auditor.",
+      "CI for exact head b0c34632fc49d4ef4e8d84c242f65cc71195fb1d is explicitly NOT_RUN; historical CI success at b99e0f57 is not current-head acceptance and was not converted into this verdict.",
+      "Route records audit.independence=PROPOSED; actual auditor runtime identity is unavailable pre-invocation and must be established from invocation metadata before treating independence as proven.",
+      "Secret scanning remains heuristic; PASS does not prove an archive contains no sensitive data.",
+      "CodeQL alert disposition for the repair slice remains not independently matchable to alert records from this bundle alone.",
+      "No operator risk acceptance, Steward READY, merge permission, or activation authority is inferred or granted by this verdict."
+    ],
+    "report_path": "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-CLOSURE-003/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "head_sha": "b0c34632fc49d4ef4e8d84c242f65cc71195fb1d",
+  "packet_id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-CLOSURE-003",
+  "pr_url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1335",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "rollback": "Close unmerged PR; after merge use authorized successor revert; preserve original checkout",
+  "status": "AUDITED_PENDING_FINAL_GATES",
+  "task_packet_path": "task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-CLOSURE-003.json",
+  "validation": {
+    "deterministic_source_validation": {
+      "evidence": "review_bundle/INPUT_MANIFEST.json",
+      "exact_input_bytes": "review_bundle/AUDIT_INPUTS.zip"
+    },
+    "final_ci_reviews_steward": {
+      "reason": "Pending proof-head publication",
+      "status": "NOT_RUN"
+    },
+    "independent_final_audit": {
+      "evidence": "review_bundle/invocation/audit-raw.json",
+      "status": "PASS_WITH_RISKS"
+    }
+  },
+  "worktree": "/private/tmp/control-tower-publish-20260908/dopemux-mvp"
+}

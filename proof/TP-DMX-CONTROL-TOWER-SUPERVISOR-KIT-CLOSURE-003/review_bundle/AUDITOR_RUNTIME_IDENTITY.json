@@ -1,0 +1,55 @@
+{
+  "status": "PROVEN_FROM_LOCAL_RUNNER_METADATA",
+  "requested_model": "grok-4.5",
+  "served_model_label": "grok-4.5-build",
+  "session_id": "58bd2559-53e2-493a-87c8-d28d2d3da676",
+  "request_id": "2099827e-d4d3-444d-a534-a65101bccf20",
+  "turn_started": [
+    {
+      "ts": "2026-09-09T00:40:18.742Z",
+      "type": "turn_started",
+      "session_id": "58bd2559-53e2-493a-87c8-d28d2d3da676",
+      "turn_number": 0,
+      "model_id": "grok-4.5",
+      "yolo_mode": false,
+      "conversation_message_count": 3,
+      "session_relationship": "primary",
+      "schema_version": "1.0"
+    }
+  ],
+  "turn_ended": [
+    {
+      "ts": "2026-09-09T00:42:40.923Z",
+      "type": "turn_ended",
+      "outcome": "completed"
+    }
+  ],
+  "chat_history_model_ids": [
+    "grok-4.5-build"
+  ],
+  "summary": {
+    "current_model_id": "grok-4.5",
+    "reasoning_effort": "high",
+    "created_at": "2026-09-09T00:40:18.391936Z",
+    "updated_at": "2026-09-09T00:42:40.951408Z"
+  },
+  "session_file_hashes": {
+    "events.jsonl": "d04545dff17427a7087722959ed9926e0a5968193eecdf903f91c59c096fa185",
+    "chat_history.jsonl": "2879ad21c25ff8a4473246f25dcee24baf2ca92b10519e7d1450d5f0e9f6e6be",
+    "summary.json": "48e89ae010aa2fd410208b380b5f3857a6e96a53b2a6f4ad64467d762710ba7d"
+  },
+  "event_types": [
+    "first_token",
+    "loop_started",
+    "mcp_config_resolved",
+    "mcp_init_completed",
+    "mcp_server_connected",
+    "mcp_server_failed",
+    "mcp_server_starting",
+    "phase_changed",
+    "turn_ended",
+    "turn_started"
+  ],
+  "provider_cryptographic_attestation": "NOT_PROVIDED_OR_CLAIMED",
+  "normalization_basis": "Existing repository Grok custody establishes grok-4.5-build as served telemetry label for requested grok-4.5."
+}

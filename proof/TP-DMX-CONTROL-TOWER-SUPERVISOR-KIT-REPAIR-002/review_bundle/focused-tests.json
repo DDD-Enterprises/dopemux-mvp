@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "python3",
+    "-m",
+    "pytest",
+    "tests/unit/test_control_tower_kit.py",
+    "-q"
+  ],
+  "exit_code": 0,
+  "stderr": "",
+  "stdout": "...................                                                      [100%]\n19 passed in 0.18s\n"
+}

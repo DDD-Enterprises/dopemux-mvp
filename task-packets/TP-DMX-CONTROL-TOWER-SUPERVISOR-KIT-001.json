@@ -1,0 +1,98 @@
+{
+  "id": "TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001",
+  "project": "dopemux-mvp",
+  "target": "Publish the operator-requested Control Tower Supervisor Kit v1.0.0 and agent instruction integration on current main (L2 governance/local tooling).",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CONTROL-TOWER-SUPERVISOR-KIT",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "feat(governance): install Control Tower supervisor kit",
+    "allowlist": [
+      ".control-tower/bin/ct",
+      ".control-tower/config/**",
+      ".control-tower/contracts/**",
+      ".control-tower/prompts/**",
+      ".control-tower/schemas/**",
+      ".control-tower/templates/**",
+      ".control-tower/project.json",
+      ".control-tower/state/.gitignore",
+      ".control-tower/backups/.gitignore",
+      "AGENTS.md",
+      ".claude/PROJECT_INSTRUCTIONS.md",
+      ".claude/claude.md",
+      ".claude/llm.md",
+      ".claude/llms.md",
+      ".claude/modules/shared/governance-principles.md",
+      ".github/copilot-instructions.md",
+      "config/repo_hygiene/root_hygiene_policy.json",
+      ".pre-commit-config.yaml",
+      "task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001.json",
+      "proof/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001/**",
+      "proof/pr_merge/embedded-audit/pr-*/**"
+    ],
+    "verify": [
+      "Exclude local state, backups, secrets and unrelated primary-checkout changes.",
+      "Preserve current main governance; kit does not replace audit, acceptance or merge authority.",
+      "Only path-specific markdown location allowance for the installed kit is authorized."
+    ]
+  },
+  "pr": {
+    "title": "feat(governance): install Control Tower supervisor kit",
+    "body": "Install the operator-supplied v1.0.0 local supervision toolkit and align agent instructions while preserving current repository governance, audit and operator gates.",
+    "base": "main"
+  },
+  "invariants": [
+    "Latest user explicitly authorized commit, PR and merge once required checks/reviews pass; no admin bypass, force push, branch deletion or credential/permission changes.",
+    "Base 6a728f74c0311967f83213513308f97613e3f28d in /private/tmp/control-tower-publish-20260908/dopemux-mvp; primary checkout remains untouched.",
+    "L2: one final independent audit from a permitted non-Codex runtime after substantive content freeze; prefer cheapest permitted proven route; no intermediate model audits.",
+    "Existing vendor payload copied byte-identically; schema/report claims remain advisory to canonical repository proof.",
+    "Rollback by reviewed revert of only these commits; retain original kit/state in primary checkout and immutable evidence."
+  ],
+  "steps": [
+    {
+      "id": "CT1",
+      "task": "Port only supplied installation and instruction additions onto verified current main.",
+      "validation": [
+        "Task packet satisfies tracked canonical schema.",
+        "Exact allowlist and vendor manifest verified; no runtime services or provider configuration changed."
+      ]
+    },
+    {
+      "id": "CT2",
+      "task": "Run scoped CLI/contract checks and configured precommit before publication.",
+      "commands": [
+        "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+        "pre-commit run --from-ref origin/main --to-ref HEAD",
+        "git diff --check"
+      ],
+      "validation": [
+        "Required deterministic checks pass; failures captured and resolved only inside allowlist."
+      ]
+    },
+    {
+      "id": "CT3",
+      "task": "Freeze content head, obtain one independent permitted audit and preserve raw verdict/proof.",
+      "validation": [
+        "Audit route/invocation/model/independence proven, no fallback concealed.",
+        "Missing, failed, stale or untrusted audit blocks merge; no fabricated or self-authored audit verdict."
+      ]
+    },
+    {
+      "id": "CT4",
+      "task": "Push branch, create PR, attach valid proof-only successor as required, reharvest checks/reviews and merge.",
+      "validation": [
+        "Exact-head CI and PR Steward ready; no unresolved review threads; ordinary base drift handled without history rewrite.",
+        "User-authorized merge uses normal protected workflow; missing OWNER/signature evidence reported as blocker."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "user_response": "approved",
+  "scope": "Bounded kit repairs, fresh final independent audits under prior explicit scoped Claude egress/public proof approval, protected publication and merges",
+  "not_authorized": [
+    "fabricated verdict",
+    "owner impersonation",
+    "branch protection bypass",
+    "production activation"
+  ]
+}

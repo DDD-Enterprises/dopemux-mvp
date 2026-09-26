@@ -7,12 +7,29 @@ Investigations and redesigns must follow .claude/PRIMER.md
 **Scope**: Single-agent optimization for specific task types
 **Coordination**: Works with llms.md for multi-agent orchestration
 
+<!-- CONTROL_TOWER_ENTRY_BEGIN -->
+## Control Tower Supervision
+
+For supervised engineering packets, follow [Control Tower Packet Workflow](../AGENTS.md#control-tower-packet-workflow).
+Read the installed kit contracts and project configuration through that entry point.
+For supervised packets, model selection is packet-specific. Attention accommodations affect presentation and pacing, not execution authority.
+<!-- CONTROL_TOWER_ENTRY_END -->
+
+## Model Routing Authority
+
+For supervised packets, use the validated packet routing decision and preserve
+its model, effort, retry bounds and required reviewer independence. For ordinary
+unsupervised work, follow existing user/repository model-selection authority and
+use the cheapest adequate authorized available route. Ordinary work does not
+require creating a packet or routing record. This policy applies to every agent
+and attention-state example below; presentation preferences grant no authority.
+
 ## 🤖 Specialized Agent Configurations
 
 ### Developer Agent
 
 **Primary Use**: Code implementation, debugging, testing
-**Optimal Models**: `gemini-2.5-flash`, `o3-mini`
+**Model Route**: Follow Model Routing Authority above for the current work scope
 **Context Limits**:
 
 - Scattered: 15k tokens max
@@ -29,7 +46,7 @@ Investigations and redesigns must follow .claude/PRIMER.md
 ### Architect Agent
 
 **Primary Use**: System design, decision analysis, pattern identification
-**Optimal Models**: `o3`, `gemini-2.5-pro`, `o3-pro` (sparingly)
+**Model Route**: Follow Model Routing Authority above for the current work scope
 **Context Limits**:
 
 - Focused: 25k tokens max
@@ -45,7 +62,7 @@ Investigations and redesigns must follow .claude/PRIMER.md
 ### Researcher Agent
 
 **Primary Use**: Information gathering, documentation analysis
-**Optimal Models**: `gemini-2.5-flash`, `o3-mini`
+**Model Route**: Follow Model Routing Authority above for the current work scope
 **Context Limits**: 15k tokens max (controlled information gathering)
 
 **Behavior Patterns**:
@@ -64,19 +81,19 @@ scattered:
   response_length: concise (1-3 paragraphs)
   actions: single clear next step
   complexity: minimal
-  model_preference: gemini-2.5-flash
+  model_preference: authorized_route_for_work_scope
 
 focused:
   response_length: structured (3-5 sections)
   actions: prioritized list (max 3 items)
   complexity: moderate
-  model_preference: o3-mini
+  model_preference: authorized_route_for_work_scope
 
 hyperfocus:
   response_length: comprehensive (detailed analysis)
   actions: full implementation plan
   complexity: high
-  model_preference: o3, gemini-2.5-pro
+  model_preference: authorized_route_for_work_scope
 ```
 
 ### Context Switch Handling
@@ -132,7 +149,7 @@ hyperfocus:
 
 **Common Failures**:
 
-- Model timeout → Switch to faster model, retry
+- Model timeout → Record the failure; follow applicable user/repository retry authority and any supervised packet's explicit bounds
 - Context overflow → Prune context, focus on essentials
 - Tool unavailable → Graceful degradation, inform user
 
@@ -147,21 +164,21 @@ hyperfocus:
 
 ### Code Review Agent
 
-- **Model**: `o3` for systematic analysis
+- **Model**: Follow Model Routing Authority above; preserve required reviewer independence
 - **Context**: Include style guides and patterns
 - **Output**: Structured findings with severity levels
 - **Memory**: Log code quality patterns
 
 ### Sprint Planning Agent
 
-- **Model**: `gemini-2.5-pro` for synthesis
+- **Model**: Follow Model Routing Authority above for the current work scope
 - **Context**: Recent decisions and active goals
 - **Output**: Organized sprint structure
 - **Memory**: Track planning decisions and rationale
 
 ### Debugging Agent
 
-- **Model**: `gemini-2.5-flash` for speed, `o3` for complex issues
+- **Model**: Follow Model Routing Authority above; escalation requires applicable user/repository authority and any supervised packet's explicit permission
 - **Context**: Error logs, relevant code sections
 - **Output**: Step-by-step investigation plan
 - **Memory**: Log root causes and solutions

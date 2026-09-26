@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "python3",
+    "scripts/governance/validate_change_contract.py",
+    "--base",
+    "6a728f74c0311967f83213513308f97613e3f28d",
+    "--head",
+    "648475216f2ffab9b249de6502294c124890f090",
+    "--format",
+    "text"
+  ],
+  "exit_code": 0,
+  "stdout": "status=PASS\nmax_lane=L2\nmodel_audit_required=True\nproof_only=False\npaths=25\n  [L2] .claude/PROJECT_INSTRUCTIONS.md\n  [L2] .claude/claude.md\n  [L2] .claude/llm.md\n  [L2] .claude/llms.md\n  [L2] .claude/modules/shared/governance-principles.md\n  [L2] .control-tower/backups/.gitignore\n  [L2] .control-tower/bin/ct\n  [L2] .control-tower/config/defaults.json\n  [L2] .control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md\n  [L2] .control-tower/contracts/OPERATOR_GATES.md\n  [L2] .control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md\n  [L2] .control-tower/project.json\n  [L2] .control-tower/prompts/ARCHITECTURE_ADVISOR_PROMPT.md\n  [L2] .control-tower/prompts/SUPERVISOR_LAUNCH_PROMPT.md\n  [L2] .control-tower/schemas/return_packet.schema.json\n  [L2] .control-tower/schemas/route_decision.schema.json\n  [L2] .control-tower/state/.gitignore\n  [L2] .control-tower/templates/ARCHITECTURE_RETURN_PACKET.template.md\n  [L2] .control-tower/templates/ROUTING_DECISION.template.json\n  [L2] .control-tower/templates/SUPERVISOR_HANDOFF.template.md\n  [L2] .github/copilot-instructions.md\n  [L2] .pre-commit-config.yaml\n  [L2] AGENTS.md\n  [L2] config/repo_hygiene/root_hygiene_policy.json\n  [L0] task-packets/TP-DMX-CONTROL-TOWER-SUPERVISOR-KIT-001.json\n",
+  "stderr": ""
+}

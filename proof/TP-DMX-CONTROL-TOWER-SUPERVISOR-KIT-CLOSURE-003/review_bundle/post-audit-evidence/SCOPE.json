@@ -1,0 +1,6 @@
+{
+  "scope": "Post-audit operator evidence, not model-visible audit input and not an auditor verdict amendment",
+  "codeql": "Alerts 269 and 270 remain dismissed false positives under prior explicit scoped disposition; latest alert instances still bind remote b99. Fresh final-head CodeQL remains pending.",
+  "limitation": "Grok finding F-GOV-CODEQL-DISPOSITION remains preserved OPEN in its raw verdict. These actual records supplement the audit package; no independent review of omitted bytes or new risk acceptance is claimed.",
+  "runtime_identity": "Established after invocation from Grok session metadata; no provider cryptographic attestation is claimed."
+}

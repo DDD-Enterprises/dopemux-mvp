@@ -1,0 +1,41 @@
+{
+  "audit": {
+    "effort": "Replace with the packet-specific audit effort.",
+    "independence": "Replace with the packet-specific auditor independence.",
+    "model": "Replace with the packet-specific audit model.",
+    "rationale": "Replace with the packet-specific audit rationale before validation.",
+    "required": true,
+    "runner": "Replace with the packet-specific audit runner."
+  },
+  "fallback": {
+    "model": null,
+    "runner": null,
+    "trigger": null
+  },
+  "justification": {
+    "alternatives_considered": [
+      {
+        "disposition": "rejected",
+        "reason": "Replace with the packet-specific alternative reason before validation.",
+        "route": "shell/local"
+      }
+    ],
+    "cost_latency_tradeoff": "Replace with the packet-specific cost/latency tradeoff before validation.",
+    "evidence": [],
+    "why_effort": "Replace with the packet-specific effort justification before validation.",
+    "why_model": "Replace with the packet-specific model justification before validation.",
+    "why_runner": "Replace with the packet-specific runner justification before validation."
+  },
+  "packet_id": "Replace with the packet-specific packet ID.",
+  "risk_lane": "L2",
+  "schema_version": "1.0",
+  "selection": {
+    "agent_role": "Replace with the packet-specific agent role.",
+    "custom_agent": null,
+    "effort": "Replace with the packet-specific effort.",
+    "model": "Replace with the packet-specific model.",
+    "runner": "Replace with the packet-specific runner.",
+    "runner_availability": "UNKNOWN"
+  },
+  "stage": "Replace with the packet-specific stage."
+}

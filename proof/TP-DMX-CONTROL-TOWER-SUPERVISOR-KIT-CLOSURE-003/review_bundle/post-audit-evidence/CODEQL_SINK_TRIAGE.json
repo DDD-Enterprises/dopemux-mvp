@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "case": "input scan reporting at ct:164",
+      "exit_code": 3,
+      "secret_value_emitted": false,
+      "report_fields": [
+        "path",
+        "pattern"
+      ],
+      "reported_status": "BLOCKED_SECRET_SCAN"
+    },
+    {
+      "case": "generated scan reporting at ct:191",
+      "exit_code": 3,
+      "secret_value_emitted": false,
+      "report_fields": [
+        "path",
+        "pattern"
+      ],
+      "reported_status": "BLOCKED_SECRET_SCAN_GENERATED_PACKAGE"
+    }
+  ],
+  "scope": "Two secret-value logging sinks only; does not assess completeness of secret detection or sensitivity of filenames.",
+  "source": ".control-tower/bin/ct",
+  "content_head": "648475216f2ffab9b249de6502294c124890f090"
+}
