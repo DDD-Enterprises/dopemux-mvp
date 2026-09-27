@@ -345,6 +345,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('System is actively listening for ConPort and ADHD event traffic');
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
   expect(appContent).toContain('Waiting for signals...');
+  expect(appContent).toMatch(/Waiting for signals\.\.\.[\s\S]*aria-hidden="true"[\s\S]*animation: 'listeningPulse 1.4s infinite ease-in-out both'/);
   expect(appContent).toContain('severity="error"');
   expect(appContent).toContain('closeText="Dismiss error notification"');
   expect(appContent).toContain("'aria-label': 'Dismiss error notification'");

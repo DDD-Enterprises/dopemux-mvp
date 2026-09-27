@@ -881,9 +881,32 @@ function DashboardApp() {
               })}
             </Box>
           ) : (
-            <Typography variant="body2" color="text.secondary">
-              Waiting for signals...
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Waiting for signals...
+              </Typography>
+              <Box
+                aria-hidden="true"
+                sx={{
+                  display: 'inline-flex',
+                  gap: 0.5,
+                  alignItems: 'center',
+                  '& span': {
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
+                    bgcolor: brandTokens.colors.ritualCyan,
+                    animation: 'listeningPulse 1.4s infinite ease-in-out both',
+                  },
+                  '& span:nth-of-type(1)': { animationDelay: '-0.32s' },
+                  '& span:nth-of-type(2)': { animationDelay: '-0.16s' },
+                }}
+              >
+                <span />
+                <span />
+                <span />
+              </Box>
+            </Box>
           )}
         </Paper>
 
