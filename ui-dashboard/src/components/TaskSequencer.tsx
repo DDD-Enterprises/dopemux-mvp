@@ -149,9 +149,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
     setTaskTimer(0);
     setIsTimerRunning(false);
     setIsSkipConfirming(false);
+    setIsTaskTitleCopied(false);
     if (skipConfirmTimeoutRef.current) {
       clearTimeout(skipConfirmTimeoutRef.current);
       skipConfirmTimeoutRef.current = null;
+    }
+    if (copyTaskTitleTimeoutRef.current) {
+      clearTimeout(copyTaskTitleTimeoutRef.current);
+      copyTaskTitleTimeoutRef.current = null;
     }
   }, [currentTaskId]);
 
@@ -184,7 +189,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
   }, [tasks, cognitiveState.status]);
 
   const handleCopyTaskTitle = (title: string) => {
-    if (!navigator.clipboard?.writeText) return;
+    if (!navigator.clipboard?.writeText) {
+      onError?.('Clipboard API is not supported in this browser or context.');
+      return;
+    }
     void navigator.clipboard
       .writeText(title)
       .then(() => {
@@ -195,7 +203,10 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
           copyTaskTitleTimeoutRef.current = null;
         }, 2000);
       })
-      .catch(() => {});
+      .catch((err) => {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        onError?.(`Failed to copy task title: ${errorMsg}`);
+      });
   };
 
   const startTask = (taskId: string) => {
@@ -573,6 +584,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
             <Tooltip title={isTaskTitleCopied ? 'Copied!' : 'Copy task title'} arrow>
               <IconButton
                 size="small"
+                data-testid="copy-task-title-button"
                 onClick={() => handleCopyTaskTitle(currentTask.title)}
                 aria-label={isTaskTitleCopied ? 'Task title copied' : 'Copy task title to clipboard'}
                 sx={{

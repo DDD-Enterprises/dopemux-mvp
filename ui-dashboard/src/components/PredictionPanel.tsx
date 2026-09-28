@@ -46,6 +46,14 @@ export default function PredictionPanel({ prediction, currentLoad, onError }: Pr
   }, [hasPrediction, value, statusMeta.label, roast, onError]);
 
   useEffect(() => {
+    setIsCopied(false);
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = null;
+    }
+  }, [prediction, currentLoad]);
+
+  useEffect(() => {
     return () => {
       if (copyTimeoutRef.current) {
         clearTimeout(copyTimeoutRef.current);

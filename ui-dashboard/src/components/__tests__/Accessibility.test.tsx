@@ -402,6 +402,41 @@ test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
   expect(content).toContain('TrendingDown');
 });
 
+test('TaskSequencer propagates clipboard copy error via onError prop', async () => {
+  let errorMessage: string | null = null;
+  const handleError = (msg: string) => {
+    errorMessage = msg;
+  };
+
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.',
+  };
+
+  const originalClipboard = navigator.clipboard;
+  Object.defineProperty(navigator, 'clipboard', {
+    value: undefined,
+    configurable: true,
+  });
+
+  try {
+    render(<TaskSequencer cognitiveState={cognitiveState} onError={handleError} />);
+    const copyButtons = screen.getAllByTestId('copy-task-title-button');
+    const copyButton = copyButtons[copyButtons.length - 1];
+    fireEvent.click(copyButton);
+
+    expect(errorMessage).toBe('Clipboard API is not supported in this browser or context.');
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
+});
+
 test('TaskSequencer pending Start button renders tooltip on hover and keyboard focus', async () => {
   const cognitiveState = {
     energy: 80,
