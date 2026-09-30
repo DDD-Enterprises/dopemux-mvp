@@ -76,6 +76,18 @@ Rules:
 - PAL tools remain available when explicitly invoked. Optional deep chain for high-uncertainty design: `analyze -> planner -> implement` (plus final audit when L2/L3). Do not re-audit unchanged content on proof-only successors.
 - Stage-based dev-workflow model routing: see config/ai/model-routing.policy.yaml §AUTHORITY and `docs/03-reference/governance/evidence-economy.md` for cost-first lane budgets.
 
+### Cost-first delegation
+
+Always choose the cheapest adequate qualified model and the lowest sufficient supported reasoning effort. Use deterministic shell, schema, hash, and inventory tools without model calls. Explicit user/Task Packet model, runner, approval, same-route, and no-fallback restrictions prevail; cost policy never relaxes quality or authority gates.
+
+A strong supervisor delegates suitable bounded work with explicit file/responsibility ownership, validation, and stop conditions; it keeps architecture decisions, synthesis, escalation, and finality. Stay within evidence-economy budgets (L0=0; L1≤1 implementer; L2/L3=1 implementer + one final independent auditor); record exceptions. Do not inherit an expensive supervisor by accident: pin model and effort before dispatch. For collaboration forks, use a fresh child or bounded history with explicit model/effort; full-history forks inherit the supervisor and cannot accept those overrides. If the runner cannot delegate or pin a qualified cheaper model, report that blocker instead of silently using the supervisor.
+
+Start eligible lookup/coordination work with GPT-6 Luna (`gpt-6-luna`); use GPT-6.1 Sol (`gpt-6.1-sol`) for qualified implementation/design slices. Claude Sonnet 5.5 (`claude-sonnet-5-5`) is a candidate for adequate coding/audit work; Claude Opus 5.5 (`claude-opus-5-5`) is escalation only. Gemini 3.8 Flash (`gemini-3.8-flash`) is conditional on actual client/account qualification. These are candidates, not a global numeric price ranking; account availability, capability, actual identity, and current cost remain `UNKNOWN` without evidence. Never invent model IDs or infer execution identity from a selector.
+
+Cheap-model failure, insufficient confidence, contract ambiguity, or security/replay risk returns to the supervisor. Record reason, narrow the stronger slice, and bound any retry under the packet/evidence-economy limits. No hidden upgrade, fallback, retry, or provider substitution; stop when binding restrictions prevent escalation. Codex review is advisory only, never the formal embedded auditor; preserve AGENTS.md §9.1.
+
+Codex project `[agents]` defaults and role-level `model` / `model_reasoning_effort` are observed declarations; role pins override defaults and explicit spawn selection. Instructions must still guide each dispatch. Other runners must use their documented per-agent/per-invocation selectors and supported effort controls, verify requested versus actual route, and report unsupported controls. `config/ai/model-routing.policy.yaml` remains advisory, not an automatic enforcer.
+
 ## 6. Architecture Boundaries
 
 **Memory Trinity (accepted ADR law, 2026-06-19):** ConPort, dope-memory, and dope-context are distinct canonical planes. Cross-plane projection is allowed; cross-plane canonical overwrite is forbidden. See `docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md` and `.claude/modules/shared/memory-trinity-routing.md`.

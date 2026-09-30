@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "global_codex": {
+    "supervisor": {
+      "model": "gpt-6-astra",
+      "model_reasoning_effort": "low"
+    },
+    "agents": {
+      "default_subagent_model": "gpt-6-luna",
+      "default_subagent_reasoning_effort": "medium"
+    },
+    "roles": {
+      "technical-writer.toml": {
+        "model": "gpt-6-luna",
+        "model_reasoning_effort": "medium"
+      },
+      "learning-guide.toml": {
+        "model": "gpt-6-luna",
+        "model_reasoning_effort": "medium"
+      },
+      "socratic-mentor.toml": {
+        "model": "gpt-6-luna",
+        "model_reasoning_effort": "medium"
+      },
+      "business-panel-experts.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "medium"
+      },
+      "deep-research-agent.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "medium"
+      },
+      "frontend-architect.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "medium"
+      },
+      "devops-architect.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "medium"
+      },
+      "performance-engineer.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "medium"
+      },
+      "python-expert.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "medium"
+      },
+      "quality-engineer.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "medium"
+      },
+      "refactoring-expert.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "medium"
+      },
+      "requirements-analyst.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "medium"
+      },
+      "backend-architect.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "high"
+      },
+      "root-cause-analyst.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "high"
+      },
+      "security-engineer.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "high"
+      },
+      "system-architect.toml": {
+        "model": "gpt-6.1-sol",
+        "model_reasoning_effort": "high"
+      }
+    }
+  },
+  "global_agents_section": "## Cost-first delegation\n\nAlways choose cheapest adequate qualified model and lowest sufficient supported reasoning effort. Deterministic shell, schema, hash, and inventory tasks use no model calls. Explicit user and active repository/Task Packet model, runner, approval, same-route, and no-fallback restrictions prevail; cost policy never relaxes quality or authority gates.\n\nStrong supervisor delegates suitable bounded work with explicit file/responsibility ownership, validation, and stop conditions; supervisor keeps decisions, synthesis, escalation, and finality. Follow active repository and Task Packet model-call, audit independence, approval and retry budgets; routine work one bounded worker, no redundant agents. Pin appropriate cheaper child model and supported effort instead of accidentally inheriting expensive supervisor. Use fresh or bounded-history children when full-history forks inherit supervisor and reject model overrides. Report unavailable delegation or unsupported selectors/effort controls instead of hidden fallback.\n\nGPT-6 Luna (gpt-6-luna), GPT-6.1 Sol (gpt-6.1-sol), Claude Sonnet 5.5 (claude-sonnet-5-5), and conditional Gemini 3.8 Flash (gemini-3.8-flash) are candidates, not global numeric price ranking. Claude Opus 5.5 (claude-opus-5-5) is escalation only. Qualify actual client/account availability and adequate capability; actual identity and current costs remain UNKNOWN when unproven. Never invent model IDs or infer execution identity from selector.\n\nCheap-model failure, insufficient confidence, ambiguity, or security/replay risk returns to supervisor. Record reason, narrow stronger slice, and bound retries under active authority. No hidden upgrade, fallback, retry, or provider substitution; stop when binding restrictions prevent escalation. Honor active repository formal auditor restrictions; worker review cannot satisfy independent audit by itself.\n\nConfig defaults and role pins are declarations, not actual identity or enforcement proof. Use documented per-agent/per-invocation selectors and supported effort controls; dispatch instructions still required. Repository routing policies remain advisory unless proven wired.\n"
+}

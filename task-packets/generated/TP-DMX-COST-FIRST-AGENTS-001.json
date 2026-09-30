@@ -1,0 +1,118 @@
+{
+  "id": "TP-DMX-COST-FIRST-AGENTS-001",
+  "project": "dopemux-mvp",
+  "target": "L2 cost-first runner delegation: pin economical Codex role/default models, synchronize runner instruction surfaces, preserve audit/packet gates, and apply validated machine-local settings with guarded backups.",
+  "invariants": [
+    "Latest user authorization: always select cheapest adequate model and delegate suitable tasks from powerful supervisor sessions. Exact explicit user/Task Packet model and no-fallback restrictions remain binding.",
+    "Risk lane L2: one bounded Sol implementer, deterministic validations, one independent final Claude Sonnet audit after content freeze. Extra read-only Sol inventory is justified by global and multi-runner config consumer discovery.",
+    "Policy YAML remains advisory; config pins and instructions do not prove universal runtime enforcement or model availability. No service startup, provider pricing router, secret output, new privileges, schema changes, merge, or production mutation.",
+    "Preserve primary checkout pre-existing edits; review repo candidate in dedicated worktree and apply only explicit cost-first configuration/instruction deltas with before-hash guards after validation.",
+    "Machine-local deployment: ~/.codex/AGENTS.md, ~/.codex/config.toml, and existing ~/.codex/agents/*.toml only. Keep personal configs/backups outside tracked proof; record model assignment plan and nonsecret hash receipts. Preserve currently observed global supervisor selection (gpt-6-astra low at deployment snapshot); repo supervisor remains gpt-6.1-sol high. Global selection changed after prior Sol-default task; child defaults are independent.",
+    "Use observed available gpt-6-luna and gpt-6.1-sol. Do not invent gpt-6.1-luna. Vendor-documented Claude Sonnet/Opus 5.5 and Gemini Flash 3.8 are candidates conditional on runner/account availability.",
+    "Formal embedded auditor uses verified Claude CLI safe no-tools route; AGY containment unclear from help. Codex review remains advisory, never formal auditor. Stop readiness on missing identity or passing audit."
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-COST-FIRST-AGENTS",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/cost-first-agent-routing",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(agents): default to economical task-specific models",
+    "allowlist": [
+      "AGENTS.md",
+      ".codex/config.toml",
+      ".codex/agents/dmx-explorer.toml",
+      ".codex/agents/dmx-housekeeper.toml",
+      ".codex/agents/dmx-worker.toml",
+      ".codex/agents/dmx-reviewer.toml",
+      ".codex/agents/architect.toml",
+      ".codex/agents/developer.toml",
+      ".codex/agents/project-manager.toml",
+      ".codex/agents/researcher.toml",
+      ".claude/claude.md",
+      ".claude/modules/shared/governance-principles.md",
+      ".claude/agents/architect.md",
+      ".claude/agents/developer.md",
+      ".claude/agents/project-manager.md",
+      ".claude/agents/researcher.md",
+      "config/ai/model-routing.policy.yaml",
+      "config/instructions/pal-opencode-guide.md",
+      "docs/03-reference/governance/model-routing.md",
+      "docs/02-how-to/model-routing-usage.md",
+      "GEMINI.md",
+      "CHANGELOG.md",
+      "tests/test_model_routing_policy.py",
+      "task-packets/generated/TP-DMX-COST-FIRST-AGENTS-001.json",
+      "proof/TP-DMX-COST-FIRST-AGENTS-001/**"
+    ],
+    "verify": [
+      "Parse all changed TOML/YAML and canonical packet schema.",
+      "Run tests/test_model_routing_policy.py including regression gates against expensive parent inheritance and preserved audit boundaries.",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "Configured pre-commit hooks; explicit tool availability blockers remain NOT_RUN.",
+      "Independent frozen-head Claude Sonnet audit; validate proof against canonical embedded audit schema."
+    ]
+  },
+  "pr": {
+    "title": "feat(agents): default to economical task-specific models",
+    "body": "Pin economical Codex subagent defaults and role-specific models so a powerful supervisor delegates appropriate work without propagating its model. Synchronize cross-runner cost-first instructions while preserving task-packet, escalation, evidence, and formal audit gates. Machine-local Codex changes are applied separately with guarded backups and nonsecret receipts.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": false,
+    "steps": [
+      "inspect",
+      "analyze",
+      "trace",
+      "plan",
+      "challenge",
+      "implement",
+      "deterministic-validation",
+      "one-final-independent-audit",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Verify identity and inspected config consumers; create and validate L2 packet.",
+      "validation": [
+        "Canonical JSON schema PASS; dedicated clean worktree, marker, origin, and branch verified."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement allowlisted model defaults and synchronized delegation instructions, with machine-local plan.",
+      "requirements": [
+        "No role inherits expensive supervisor by omission. Role safety boundaries preserved. Explicit qualified routes and quality-first escalation.",
+        "Global plan includes every existing Codex specialist without overwriting unrelated fields."
+      ],
+      "validation": [
+        "TOML/YAML parse and bounded routing invariant tests pass.",
+        "Diff scope and whitespace checks pass."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Freeze content, run one independent final audit, emit proof, then push PR and apply guarded active settings.",
+      "validation": [
+        "Auditor exact invocation, actual model, exit code, verdict and frozen SHA recorded.",
+        "Precommit and change-contract outputs recorded; PR attached or exact blocker.",
+        "Deployment re-read verifies semantic deltas only, backup paths reported; primary unrelated dirty state preserved."
+      ]
+    }
+  ]
+}

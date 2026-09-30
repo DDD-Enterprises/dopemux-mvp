@@ -31,6 +31,33 @@ model tier to select, not which exact model string to use (those require
 
 ---
 
+## Cost-first defaults and bounded delegation
+
+Always choose cheapest adequate qualified model and lowest sufficient supported effort; deterministic shell/schema/hash/inventory tasks use no model. Explicit user/packet model, runner, same-route, approval, and no-fallback restrictions prevail. Strong supervisor delegates suitable bounded work with file/responsibility ownership, validation, and stop conditions; supervisor retains decisions, synthesis, escalation, and finality.
+
+Repo Codex supervisor declares `gpt-6.1-sol` high. `[agents]` defaults declare `gpt-6-luna` medium. Custom role `model` / `model_reasoning_effort` override defaults and explicit spawn selection. These are configuration declarations; instructions still guide dispatch and actual identity/availability remain `UNKNOWN` without evidence. Fresh or bounded-history collaboration children accept explicit model/effort; full-history forks inherit supervisor and reject overrides. Report missing cheaper delegation controls instead of silently inheriting expensive model.
+
+| Bounded task / role | Declared route | Effort / boundary |
+|---|---|---|
+| Evidence / research: dmx-explorer, researcher | gpt-6-luna | medium; read-only |
+| Housekeeping / coordination: dmx-housekeeper, project-manager | gpt-6-luna | low; read-only |
+| Allowlisted implementation: dmx-worker, developer | gpt-6.1-sol | medium; packet-scoped |
+| Design: architect / advisory review: dmx-reviewer | gpt-6.1-sol | high; read-only; Codex never formal auditor |
+| Claude architect / developer | claude-sonnet-5-5 | lowest sufficient supported effort; existing tool scopes |
+| Claude project-manager / researcher | claude-haiku-4-5 | supported controls only; read-only |
+
+GPT-6 Luna, GPT-6.1 Sol, Claude Sonnet 5.5 (`claude-sonnet-5-5`), and Gemini 3.8 Flash (`gemini-3.8-flash`) are candidates, not global numeric price ranking. Gemini Flash requires actual client/account qualification. Claude Opus 5.5 (`claude-opus-5-5`) is escalation only. Current prices, capability, availability, and actual identity remain `UNKNOWN` when unproven; selector syntax does not prove account access.
+
+Cheap-model failure, insufficient confidence, contract ambiguity, or security/replay risk returns to supervisor. Record reason, narrow stronger slice, and bound retry under packet/evidence-economy limits. No hidden upgrade, fallback, retry, or provider substitution; stop when binding restrictions prohibit escalation. L0=0 model calls; L1≤1 implementer; L2/L3=1 implementer + one final independent frozen-head audit. Record budget exceptions; no intermediate audits or re-audits of unchanged proof-only content.
+
+Other runners consume AGENTS.md §5 via loaded instructions and pin documented per-agent/per-invocation model and supported effort controls. OpenCode PAL is optional or packet-required within budget. Copilot accepted selectors remain unchanged. Report unavailable delegation/controls; never invent runtime keys. YAML remains advisory, not automatic enforcement. Formal audit candidate Sonnet 5.5 uses schema-compatible `sonnet` alias separately from actual ID evidence; Codex review cannot satisfy formal embedded audit.
+
+Examples: hashes/schema checks → deterministic tools; bounded status/lookup → qualified Luna/Haiku role; approved implementation → qualified Sol medium/Sonnet; failed cheap lookup → supervisor narrows stronger investigation with reason and bounded retry. Config parsing verifies declarations, not account execution.
+
+Official sources: [OpenAI subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Claude Code subagents](https://code.claude.com/docs/en/sub-agents), [Anthropic models](https://platform.claude.com/docs/en/models/overview), [Google Gemini models](https://ai.google.dev/gemini-api/docs/models).
+
+---
+
 ## 1. How to use the policy in Claude Code
 
 Claude Code supports explicit model selection via `--model` and the `opusplan`
@@ -42,21 +69,21 @@ mode (`Opus plans, Sonnet implements`).
 |-------|---------------------|
 | `cheap_read` | Default model or Haiku-equivalent; avoid Opus-tier for pure reads |
 | `investigation` | Default or cheap model; escalate to planner if escalation triggers hit |
-| `planner_strong` | `opusplan` mode (`--model opusplan`) or equivalent Opus-tier invocation |
+| `planner_strong` | architect: qualified `claude-sonnet-5-5`; Opus escalation only |
 | `implementer_standard` | Sonnet-tier; constrained by approved Task Packet allowlist |
-| `judge_strong` | Opus-tier for synthesis and readiness judgment |
-| `self_audit` | Opus-tier; must be run after implementation, before final proof |
+| `judge_strong` | Supervisor synthesis with cheapest adequate qualified route |
+| `self_audit` | One independent final Sonnet candidate audit for L2/L3; Opus escalation only |
 
 **Usage pattern:**
 
 ```bash
-# Planning stage — use opusplan mode or specify a strong model
-claude --model opusplan --effort high
+# Planning candidate — qualify client/account; lowest sufficient supported effort
+claude --model claude-sonnet-5-5
 
 # Implementation stage — Sonnet (default or explicit)
 # Constrained by the active Task Packet file allowlist.
 
-# Self-audit — run Opus explicitly after implementation
+# L2/L3 — one independent final audit after frozen content head
 # Capture auditor_tool, auditor_model, exit_code, and verdict in PROOF.json
 ```
 
@@ -70,24 +97,16 @@ record both the planning model (Opus) and the implementation model (Sonnet).
 
 ## 2. How to use the policy in Codex
 
-Codex CLI selects models via flags (exact flag names and accepted model strings
-require `VERIFY_WITH_VENDOR_DOCS`).
+Codex project defaults and role pins are declared in `.codex/config.toml` and `.codex/agents/*.toml`; current mapping appears above. These do not establish runtime identity or account availability.
 
-**Stage mapping (tier intent; model strings VERIFY_WITH_VENDOR_DOCS):**
-
-| Stage | Tier intent | OBSERVED ids (RTE routing — not confirmed for Codex CLI) |
-|-------|-------------|----------------------------------------------------------|
-| `cheap_read` | cheap_fast | `gpt-5.4-mini` (OBSERVED in RTE) |
-| `investigation` | cheap_fast | `gpt-5.4-mini` |
-| `planner_strong` | strong_reasoning | `gpt-5.5` (OBSERVED in config/pricing.yaml) |
-| `implementer_standard` | coding_balanced | `gpt-5.3-codex` (OBSERVED in RTE) |
-| `judge_strong` | strong_reasoning | `gpt-5.5` |
-| `self_audit` | audit_strong | `gpt-5.5` or equivalent |
-
-> **Important**: The model ids in the table above are OBSERVED in `model_map_v2_tp008.yaml`,
-> `tests/test_routing_config.py`, and `config/pricing.yaml` as RTE extraction lane
-> selectors. Whether they are accepted as Codex CLI `--model` arguments requires
-> `VERIFY_WITH_VENDOR_DOCS`. Do not assume portability.
+| Stage | Project role / model | Boundary |
+|-------|----------------------|----------|
+| `cheap_read` | dmx-explorer: gpt-6-luna medium | Read-only |
+| `investigation` | researcher: gpt-6-luna medium | Read-only |
+| `planner_strong` | architect: gpt-6.1-sol high | Read-only design |
+| `implementer_standard` | developer: gpt-6.1-sol medium | Approved packet allowlist |
+| `judge_strong` | dmx-reviewer: gpt-6.1-sol high | Advisory review |
+| `self_audit` | FORBIDDEN as formal embedded auditor | Use authorized independent route |
 
 **Recording proof:**
 Capture `actual_tool: codex`, `actual_model`, `provider: openai`, and `stage_slot`
@@ -150,7 +169,7 @@ OpenCode in this repo is configured by `opencode.jsonc` and two PAL subagents in
 1. Perform read-only inventory in the main OpenCode session.
 2. Delegate non-trivial planning to `pal-planner`.
 3. Implement in the main session under packet allowlist constraints.
-4. Run `pal-reviewer` for codereview/precommit before readiness claims.
+4. Optional advisory `pal-reviewer` within budget; deterministic precommit required. L2/L3 require one independent final frozen-head audit, with qualified formal auditor route.
 
 ---
 
@@ -202,10 +221,10 @@ determined use `VERIFY_WITH_VENDOR_DOCS` or a tier name.
 ## Model Routing
 - cheap_read: VERIFY_WITH_VENDOR_DOCS
 - investigation: VERIFY_WITH_VENDOR_DOCS
-- planner_strong: opusplan (claude_code) | VERIFY_WITH_VENDOR_DOCS
+- planner_strong: claude_code/architect | codex/architect | VERIFY_WITH_VENDOR_DOCS
 - implementer_standard: claude_code/sonnet | codex/coding_balanced | copilot/dopemux-implementer.agent.md
 - judge_strong: VERIFY_WITH_VENDOR_DOCS
-- self_audit: claude_code/opus | VERIFY_WITH_VENDOR_DOCS
+- self_audit: qualified independent claude_code/sonnet for L2/L3 | packet-required route
 Escalate to strong model if:
 - authority boundary unclear
 - security/auth/secrets/CI touched
@@ -252,8 +271,8 @@ run. Fields marked `actual_*` capture what was used, not just what was intended.
   },
   "embedded_audit": {
     "auditor_tool": "claude_code",
-    "auditor_model": "claude-opus-4",
-    "invocation": "self-audit inside Claude Code after edits",
+    "auditor_model": "sonnet",
+    "invocation": "independent final Claude Code audit on frozen content head",
     "exit_code": 0,
     "auditor_verdict": "PASS_WITH_RISKS",
     "auditor_findings": [

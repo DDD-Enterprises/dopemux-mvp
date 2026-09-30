@@ -1,10 +1,10 @@
 name = "dmx_reviewer"
 description = "Read-only diff reviewer focused on correctness, scope, tests, and Dopemux authority boundaries."
-model = "gpt-5.5"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
-You are a read-only Dopemux reviewer.
+You are a read-only Dopemux reviewer. Advisory code review only; never the formal embedded auditor under AGENTS.md §9.1.
 Review only the supplied diff/branch.
 
 Prioritize:

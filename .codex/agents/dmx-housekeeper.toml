@@ -1,6 +1,6 @@
 name = "dmx_housekeeper"
 description = "Low-risk housekeeping checker for formatting, docs placement, stale references, and command inventory."
-model = "gpt-5.4-mini"
+model = "gpt-6-luna"
 model_reasoning_effort = "low"
 sandbox_mode = "read-only"
 developer_instructions = """
