@@ -207,6 +207,10 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   // Verify start button tooltip
   expect(content).toMatch(/<Tooltip\s+title=\{\s*`Start task and switch active focus to: \$\{task\.title\}`\s*\}\s*arrow\s*>/);
 
+  // Verify task sequence position badges
+  expect(content).toMatch(/<Tooltip\s+title=\{\s*`Step \$\{index \+ 1\} of \$\{optimizedTasks\.length\} in optimized sequence`\s*\}\s*arrow\s*>/);
+  expect(content).toContain('aria-label={`Step ${index + 1} of ${optimizedTasks.length} in optimized ritual sequence`}');
+
   // Verify Predictive Skip and Soft Confirmation
   expect(content).toContain('const [isSkipConfirming, setIsSkipConfirming] = useState(false);');
   expect(content).toContain('const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);');
@@ -400,6 +404,26 @@ test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
   expect(content).toContain('const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;');
   expect(content).toContain('aria-hidden="true"');
   expect(content).toContain('TrendingDown');
+});
+
+test('TaskSequencer step index badges have accessible labels and tooltips', () => {
+  cleanup();
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Stay focused.',
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  const stepBadges = screen.getAllByLabelText('Step 1 of 3 in optimized ritual sequence');
+  expect(stepBadges.length).toBeGreaterThan(0);
+  const stepBadge = stepBadges[0];
+  expect(stepBadge).toBeInTheDocument();
+  expect(stepBadge).toHaveAttribute('tabIndex', '0');
+  expect(stepBadge).toHaveTextContent('#1');
 });
 
 test('TaskSequencer pending Start button renders tooltip on hover and keyboard focus', async () => {

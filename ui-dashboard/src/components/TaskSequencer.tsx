@@ -1088,7 +1088,27 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                           </Tooltip>
                         )}
                       </Box>
-                      <Typography variant="caption" sx={{ color: brandTokens.text.secondary }}>#{index + 1}</Typography>
+                      <Tooltip title={`Step ${index + 1} of ${optimizedTasks.length} in optimized sequence`} arrow>
+                        <Typography
+                          variant="caption"
+                          tabIndex={0}
+                          aria-label={`Step ${index + 1} of ${optimizedTasks.length} in optimized ritual sequence`}
+                          sx={{
+                            color: brandTokens.text.secondary,
+                            cursor: 'help',
+                            outline: 'none',
+                            borderRadius: 1,
+                            px: 0.5,
+                            transition: 'all 0.2s ease',
+                            '&:hover, &:focus-visible': {
+                              color: brandTokens.colors.ritualCyan,
+                              boxShadow: `0 0 0 2px ${alpha(brandTokens.colors.ritualCyan, 0.4)}`,
+                            },
+                          }}
+                        >
+                          #{index + 1}
+                        </Typography>
+                      </Tooltip>
                     </Box>
                   }
                 />
