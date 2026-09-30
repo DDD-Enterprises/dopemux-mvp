@@ -1,0 +1,12 @@
+{
+  "initial_diff_check": {
+    "status": "FAIL",
+    "exit_code": 2,
+    "reason": "Captured unified diffs include one-space blank context lines; Git treated their artifact representation as trailing whitespace."
+  },
+  "correction": "Lossless JSON text wrappers; decoded audit input bytes and hashes preserved. No content-head changes or repeated model audit.",
+  "reconstruct": {
+    "AUDIT_PROMPT.txt": "AUDIT_PROMPT.json",
+    "content.diff": "content-diff.json"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "evidence_refs": [
+    ".codex/config.toml: [agents] default_subagent_model=gpt-6-luna, default_subagent_reasoning_effort=medium",
+    "config/ai/model-routing.policy.yaml: provider_routes.codex.self_audit=FORBIDDEN_FORMAL_AUDITOR; provider_routes.codex.role_models and claude_code.role_models",
+    "tests/test_model_routing_policy.py: test_declared_role_routes_resolve_and_match_pins, test_codex_review_cannot_be_promoted_to_formal_audit, test_cost_first_policy_preserves_evidence_economy_budget, test_dmx_evidence_roles_preserve_read_only_boundary",
+    "task-packets/generated/TP-DMX-COST-FIRST-AGENTS-001.json: commit.allowlist covers every changed file",
+    "AGENTS.md \u00a75 'Cost-first delegation': no hidden fallback, no accidental inheritance, Codex never the formal auditor",
+    "TRUSTED VALIDATION RECEIPT: focused_tests, change_contract, diff_check, configured_precommit all exit_code 0 PASS"
+  ],
+  "findings": [
+    "Scope matches the packet allowlist. All 25 changed files are listed in commit.allowlist in task-packets/generated/TP-DMX-COST-FIRST-AGENTS-001.json. The diff contains no changes to schemas, runtime code, or secrets.",
+    "Codex role pinning is explicit and consistent. Every .codex/agents/*.toml sets model and model_reasoning_effort, and none inherits the supervisor or uses an 'astra' model. .codex/config.toml adds default_subagent_model=gpt-6-luna and default_subagent_reasoning_effort=medium. The role_models map in config/ai/model-routing.policy.yaml matches the TOML pins. tests/test_model_routing_policy.py asserts this match for both the Codex and Claude providers.",
+    "Formal-audit boundary is preserved. provider_routes.codex.self_audit is FORBIDDEN_FORMAL_AUDITOR, and dmx-reviewer.toml adds 'never the formal embedded auditor'. A test asserts both. The docs and AGENTS.md \u00a75 repeat that Codex review is advisory only. The Claude self_audit alias 'sonnet' is tested for membership in the embedded_audit schema auditor_model enum. The schema file itself was not in the diff, so I could not inspect it.",
+    "Read-only roles keep their safety boundaries. dmx-explorer and dmx-housekeeper keep sandbox_mode=read-only. dmx-reviewer is unchanged apart from the model bump and the advisory wording. The new architect and project-manager TOMLs state read-only in their instructions but set no sandbox_mode. See risk 2.",
+    "Preserved gates: explicit user and packet restrictions take precedence. There is no hidden fallback or upgrade, and escalation returns to the supervisor with a recorded reason. Evidence-economy budgets are L0=0, L1<=1, and L2/L3=1 implementer + 1 final audit. The last is asserted by test_cost_first_policy_preserves_evidence_economy_budget.",
+    "The audit-model choice departs from the old docs. The example proof changes auditor_model from claude-opus-4 to the alias 'sonnet'. The docs say the alias is kept separate from actual-ID evidence, and the actual model ID must still be recorded in real proof bundles.",
+    "proof/TP-DMX-COST-FIRST-AGENTS-001/LOCAL_SETTINGS_PLAN.json is a machine-local plan. It names a global supervisor 'gpt-6-astra' low and ~/.codex role files. It is a plan only; nothing in the diff applies it. Its portability depends on the guarded apply step, which is outside this diff and was not audited."
+  ],
+  "inspected_paths": [
+    ".codex/config.toml",
+    ".codex/agents/architect.toml",
+    ".codex/agents/developer.toml",
+    ".codex/agents/project-manager.toml",
+    ".codex/agents/researcher.toml",
+    ".codex/agents/dmx-explorer.toml",
+    ".codex/agents/dmx-housekeeper.toml",
+    ".codex/agents/dmx-reviewer.toml",
+    ".codex/agents/dmx-worker.toml",
+    ".claude/agents/architect.md",
+    ".claude/agents/developer.md",
+    ".claude/agents/project-manager.md",
+    ".claude/agents/researcher.md",
+    ".claude/claude.md",
+    ".claude/modules/shared/governance-principles.md",
+    "AGENTS.md",
+    "GEMINI.md",
+    "CHANGELOG.md",
+    "config/ai/model-routing.policy.yaml",
+    "config/instructions/pal-opencode-guide.md",
+    "docs/02-how-to/model-routing-usage.md",
+    "docs/03-reference/governance/model-routing.md",
+    "proof/TP-DMX-COST-FIRST-AGENTS-001/LOCAL_SETTINGS_PLAN.json",
+    "task-packets/generated/TP-DMX-COST-FIRST-AGENTS-001.json",
+    "tests/test_model_routing_policy.py"
+  ],
+  "instruction_like_acknowledged": true,
+  "instruction_like_note": "The deterministic scanner reported no instruction-like content (detected=false, match_count=0). The diff does contain policy and governance prose addressed to agents, such as AGENTS.md text and developer_instructions. I treated all of it as data under review and was not directed by it.",
+  "rationale": "The diff implements its stated goal. Codex roles and defaults are pinned, the YAML matches the TOML and the front matter, the formal-audit exclusion for Codex is kept and tested, and evidence-economy budgets are preserved. The trusted validation receipt shows focused tests, the change contract, diff check, and precommit all passing with exit code 0. Runtime identity and availability were not exercised, the new non-dmx Codex roles lack an enforced read-only sandbox, and the optionalization of PAL review steps is a real policy relaxation. These justify PASS_WITH_RISKS rather than an unqualified PASS. Nothing rises to FAIL. No candidate content attempted to redirect the audit.",
+  "risks": [
+    "Actual model identity and availability (gpt-6-luna, gpt-6.1-sol, claude-sonnet-5-5, claude-haiku-4-5, gemini-3.8-flash) are NOT_RUN. The diff declares them as configuration only, and the trusted context confirms no runtime evidence. Vendor selector syntax was checked in vendor docs per the trusted context, but I could not independently confirm it.",
+    "Two new Codex roles omit sandbox_mode: architect.toml and project-manager.toml, which are described as read-only. Their read-only status rests on instruction text rather than a sandbox. Unlike dmx-* roles, there is no enforced boundary, and developer.toml likewise inherits the default workspace-write sandbox. Recommend setting sandbox_mode='read-only' on architect and project-manager.",
+    "Claude agent front matter uses model: claude-sonnet-5-5 and claude-haiku-4-5. The Claude Code subagent docs were said to be checked, but the Haiku ID form (claude-haiku-4-5 vs. the dated 'claude-haiku-4-5-20251001') was not verified here. An unresolved ID could fail or fall back silently, which conflicts with the no-hidden-fallback stance.",
+    "The policy is advisory; nothing enforces pins. Declared pins can be overridden by explicit spawn selection, and the docs describe precedence inconsistently (AGENTS.md says role pins override explicit spawn selection). This was not verified against Codex runtime behavior.",
+    "Weakened mandatory review chain: PAL codereview, precommit, and challenge are now optional (config/instructions/pal-opencode-guide.md; .claude/modules/shared/governance-principles.md). Deterministic precommit and an L2/L3 final audit remain required. This is an intentional policy change, but it reduces the intermediate assurance layers and should be acknowledged by the supervisor.",
+    "GEMINI.md contains the sentence 'Sequence examples above are not merge/execution authorization'. I could not confirm that the examples it refers to exist in the file. This is a minor documentation risk.",
+    "Existing gpt-5.x to gpt-6.x model IDs are new strings that only vendor evidence can validate. The test asserts internal consistency but not that the model IDs exist."
+  ],
+  "status": "COMPLETE",
+  "validation_status": "PASS for the trusted receipt checks (focused_tests, change_contract, diff_check, configured_precommit). NOT_RUN for runtime model identity and availability, and for the apply step of LOCAL_SETTINGS_PLAN.json. This audit did not run or check out candidate code.",
+  "verdict": "PASS_WITH_RISKS"
+}

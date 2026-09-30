@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "sign_exit_code": 0,
+  "verify_exit_code": 0,
+  "namespace": "dopemux-embedded-audit",
+  "principal": "hue@local",
+  "trusted_signers_ref": "origin/main",
+  "trusted_base_sha": "c395aa849eeaa08f201ffececed0f891bbfcee49",
+  "scope": "Exact canonical packet PROOF.json bytes only; not PR-scoped CI acceptance or Steward finalization."
+}

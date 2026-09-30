@@ -1,0 +1,30 @@
+status=PASS
+max_lane=L2
+model_audit_required=True
+proof_only=False
+paths=25
+  [L2] .claude/agents/architect.md
+  [L2] .claude/agents/developer.md
+  [L2] .claude/agents/project-manager.md
+  [L2] .claude/agents/researcher.md
+  [L2] .claude/claude.md
+  [L2] .claude/modules/shared/governance-principles.md
+  [L2] .codex/agents/architect.toml
+  [L2] .codex/agents/developer.toml
+  [L2] .codex/agents/dmx-explorer.toml
+  [L2] .codex/agents/dmx-housekeeper.toml
+  [L2] .codex/agents/dmx-reviewer.toml
+  [L2] .codex/agents/dmx-worker.toml
+  [L2] .codex/agents/project-manager.toml
+  [L2] .codex/agents/researcher.toml
+  [L2] .codex/config.toml
+  [L2] AGENTS.md
+  [L2] CHANGELOG.md
+  [L2] GEMINI.md
+  [L2] config/ai/model-routing.policy.yaml
+  [L2] config/instructions/pal-opencode-guide.md
+  [L2] docs/02-how-to/model-routing-usage.md
+  [L2] docs/03-reference/governance/model-routing.md
+  [L0] proof/TP-DMX-COST-FIRST-AGENTS-001/LOCAL_SETTINGS_PLAN.json
+  [L0] task-packets/generated/TP-DMX-COST-FIRST-AGENTS-001.json
+  [L2] tests/test_model_routing_policy.py

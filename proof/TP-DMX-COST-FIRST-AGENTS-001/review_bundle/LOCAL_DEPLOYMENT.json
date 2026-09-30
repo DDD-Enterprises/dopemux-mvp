@@ -1,0 +1,257 @@
+{
+  "backup_location": "/private/tmp/dopemux-cost-first-agents-001-backup",
+  "excluded_from_audit": "The machine-local deployment helper and private backups were outside the audited diff. The independent auditor explicitly identified this limitation.",
+  "exit_code": 0,
+  "files": [
+    {
+      "after_sha256": "f2a0855d7b0a6aecaf7712fe294dd2dd522459662119b562f4a35b58c54bdca6",
+      "before_sha256": "1dca824cf6dfa4a809ffff0eeb8e9697671b3a87de74cc223a2d45b4b32a52a1",
+      "category": "global",
+      "file": "config.toml"
+    },
+    {
+      "after_sha256": "125af92beb2ad95d5fe1eeba6c89cdcde8afa5265d1da115ad3b1796e3f29ac7",
+      "before_sha256": "977c8ee8f84d79bf354a713b417da8ffc704b5d1bbe2d40cd013e2258623992c",
+      "category": "global",
+      "file": "agents/backend-architect.toml"
+    },
+    {
+      "after_sha256": "5f18cc0f99c4c6ff4cdc9cb6c1710ea1a5ba08ab9f0b9a0e7db3af7b6395208a",
+      "before_sha256": "f61d77974097d413879dfe8338d0d207ad09d99744dd841b4b88ce4cb84eec86",
+      "category": "global",
+      "file": "agents/business-panel-experts.toml"
+    },
+    {
+      "after_sha256": "b058a564cd39af87353ad9eeae05c8d6305a6c950d67a1cefeecb84a8a42458e",
+      "before_sha256": "586ac75d7268a66544190e56076b520fb2793047337388dc9d95aeb4be38a6df",
+      "category": "global",
+      "file": "agents/deep-research-agent.toml"
+    },
+    {
+      "after_sha256": "966ef4c66e1d0ae6a38a450605e0ba2ae483c1b363b28c8abff8a9ca5df87bec",
+      "before_sha256": "046cd7dd2a7e49a3b36704282320bdeb31cf436760d0285e7f8eb1a5a9a3d471",
+      "category": "global",
+      "file": "agents/devops-architect.toml"
+    },
+    {
+      "after_sha256": "8a3b7d288154c98c7da31f794b729d7e5b6dc55da4c2a4494538e96fcf2c6bea",
+      "before_sha256": "d65078d0e01722435d537e7f68c782cbfc48e93b3db89743b29f1539ff897c5f",
+      "category": "global",
+      "file": "agents/frontend-architect.toml"
+    },
+    {
+      "after_sha256": "2bc455c8f3f8263933fbcc8ac233f85d0ff402fd5bb957e1bdf8cf9f98d13d7f",
+      "before_sha256": "54089193ee631865a816245297849b95d4a9ed436c4f0d4440a9627336b89458",
+      "category": "global",
+      "file": "agents/learning-guide.toml"
+    },
+    {
+      "after_sha256": "b926774edaf940656f7a421a1fcc89528db8e2378795bfdd58f2319caf15b0d8",
+      "before_sha256": "3893fb5404e5db98c1169f6daa9572fc3c8bd4d3679446912dd85a7215d2d0e1",
+      "category": "global",
+      "file": "agents/performance-engineer.toml"
+    },
+    {
+      "after_sha256": "48c696b8967286a45f3f61dc8c6bb72602ada811e44d0bdfae803f3aaa0ff1f5",
+      "before_sha256": "8f607e88f919b40f0266133c9e5c48f3f310b1de7b9c0581d3c96c70f6a9061e",
+      "category": "global",
+      "file": "agents/python-expert.toml"
+    },
+    {
+      "after_sha256": "e193a1ec43fee23d1334324c0cb8721123c5154d886118b5d049e8bbaa504e0d",
+      "before_sha256": "664afcbe9abcfa87662c3236868e2e0abe474b012c7632b407e05dc516db5b67",
+      "category": "global",
+      "file": "agents/quality-engineer.toml"
+    },
+    {
+      "after_sha256": "bd34e57b7be65abe032e77a4e65b8f9eb604348eef69b571ca85194374a88494",
+      "before_sha256": "88080897094a23d6073d11950fb50e08fa38e85e78fbac139cc0c95594698b16",
+      "category": "global",
+      "file": "agents/refactoring-expert.toml"
+    },
+    {
+      "after_sha256": "2b776b3fe2b4a803ca2634fae7f749c98db675f96f016d1471e35f8810711c93",
+      "before_sha256": "af085409dcaefe5178c3b30fac982a70ba07275d86942b0b9bd46d674aec00b2",
+      "category": "global",
+      "file": "agents/requirements-analyst.toml"
+    },
+    {
+      "after_sha256": "2de97c254219bb183628078fdee8c3721c04085721378378197c6586f6ec2758",
+      "before_sha256": "95cfad9c329aceb4f9fff040be5f95abab11859923a27fd8dfb9e991780aaaf1",
+      "category": "global",
+      "file": "agents/root-cause-analyst.toml"
+    },
+    {
+      "after_sha256": "dbb997597790b5566e1f0ad254b8704e15af3fb67f7d9a42fd5e284a9ff95d83",
+      "before_sha256": "5f4541dce9528cb9b5f9e83e6a07bbe8ead37aca8494d1ed9a45163c6c4dfca5",
+      "category": "global",
+      "file": "agents/security-engineer.toml"
+    },
+    {
+      "after_sha256": "18f69131502ae7240ee6d7587d126fade246c12cb1a35e8f9f702abc0da97d2b",
+      "before_sha256": "4ed44ed9d586b1da2abffd668d1f61f74184d0009b53e1b7164ac92d2c05a95a",
+      "category": "global",
+      "file": "agents/socratic-mentor.toml"
+    },
+    {
+      "after_sha256": "ed757912004b0d0c6da320a37719b211dd76dcebfd9314644764196387ad88ee",
+      "before_sha256": "3f5e1cf12abe244fe136694c62d40ac104c776685bb5a2294794a1cb187b0f07",
+      "category": "global",
+      "file": "agents/system-architect.toml"
+    },
+    {
+      "after_sha256": "e72071c27f5c66bf9e8c3073ef5cd8258bafe6dde693616b897788eb9fa02cbf",
+      "before_sha256": "71e65e898a9f962c2bb41349599779210f9cf642f85b9cc5c829cce0b6f8b4cd",
+      "category": "global",
+      "file": "agents/technical-writer.toml"
+    },
+    {
+      "after_sha256": "38cc1bbf58112f821d6f085c0a568ccb2730e44515d23decbf4464dea6eb3a26",
+      "before_sha256": "76bd4d371955a8614b1ea4ca2d3fee0155a5cb926606789511fa83ea6f8102c8",
+      "category": "global",
+      "file": "AGENTS.md"
+    },
+    {
+      "after_sha256": "144e38be2e3683abd2ba42f9be94379d88ec98ba48265d2c2f573c714be1c777",
+      "before_sha256": "19f197a5a2db963907f3304d0b1a6a81826e552f5ddf44b4d3ee9f550d6dd93d",
+      "category": "repo",
+      "file": "AGENTS.md"
+    },
+    {
+      "after_sha256": "99e7ca53d5b86cca8189978c12d080dfcc15f5c55ca0ddec57c235ad83580aae",
+      "before_sha256": "5cf83a9b69ef2291ef41554cfcb876917317d3f4aa2b7e276c5651ab897f6896",
+      "category": "repo",
+      "file": ".codex/config.toml"
+    },
+    {
+      "after_sha256": "7db704fcf0804872a353ba88d0a9cade211027ebb0c62955522f9f4acd4e5ac5",
+      "before_sha256": "89bee9efa5f21fa1c05b5663609deb16e5ee39a55620d685f5b0b102851d270f",
+      "category": "repo",
+      "file": ".codex/agents/dmx-explorer.toml"
+    },
+    {
+      "after_sha256": "378565f04973bea435529b6df4bca3915f6445fe57cd58f95061c1d65499311a",
+      "before_sha256": "6119bb6ecd78a36896734df81190e148bbb4947d79bc5d7967449b3953bb8df5",
+      "category": "repo",
+      "file": ".codex/agents/dmx-housekeeper.toml"
+    },
+    {
+      "after_sha256": "bbcff22b82e240c253e75fe831083df2bc63628a1dabc8f9fd8aa9803701e302",
+      "before_sha256": "fb89da76b17581aee2f6c279b22f0b729b7d95884ddae46e024267d25810e10a",
+      "category": "repo",
+      "file": ".codex/agents/dmx-worker.toml"
+    },
+    {
+      "after_sha256": "0e0b5ccd28c6a528e45adc3d82d43f93380810630ed9ac0296f43f9a75a507e3",
+      "before_sha256": "1897f1e107c137549ca9dd20e4cc1dd3cf54ea3324f265f4d83ff786872b9aa7",
+      "category": "repo",
+      "file": ".codex/agents/dmx-reviewer.toml"
+    },
+    {
+      "after_sha256": "fc58e7cd78bfe64a0450b9c7d53be9e9dac202974783ee6f39bf7ab52474aad8",
+      "before_sha256": "529e8d8d66fec6e55d4b27671cf8af4965fa59b06cd2f51dc1bd36b05fe7a948",
+      "category": "repo",
+      "file": ".codex/agents/architect.toml"
+    },
+    {
+      "after_sha256": "3404fb9925208c201201abf6e4a53dba710457054d394411acb5ad7b4c76d09a",
+      "before_sha256": "305a44e01709e4812971bc0f39d3206f5e87e121e55a0f78b4e545ea97c1b289",
+      "category": "repo",
+      "file": ".codex/agents/developer.toml"
+    },
+    {
+      "after_sha256": "e64d939a4135c2f5b3527fed344fd596aadfcb54a9dffad2b8f7a8c7c32b1959",
+      "before_sha256": "59956c53d659d63d73d7b9831b43ba1a3acc434892ca4d918ed57d9ecc7cb46b",
+      "category": "repo",
+      "file": ".codex/agents/project-manager.toml"
+    },
+    {
+      "after_sha256": "cbde1f4b986e6c98409a788c183cd77e71af0abc39d97c819215304193e693f6",
+      "before_sha256": "0503e4faac0de3adebc64f8e6b70788292f392eac62f711cc966806c6c44ebcf",
+      "category": "repo",
+      "file": ".codex/agents/researcher.toml"
+    },
+    {
+      "after_sha256": "37a125252c71db8d2c415cdf3d0ff4deb9b4912f8ea269c4382c76230bf13c4b",
+      "before_sha256": "8f6a137b0bec2fcb00129efac11c6de81bbc4f13aa8407cf9277311b094e55f6",
+      "category": "repo",
+      "file": ".claude/claude.md"
+    },
+    {
+      "after_sha256": "94d414b78043ca9e07cddd2db92d90f96fba872e76828740b76e130b84f40147",
+      "before_sha256": "de9f5f331b63d8030bd55f0e6ff8890f1a122480573559dc51b0c031c61e9870",
+      "category": "repo",
+      "file": ".claude/modules/shared/governance-principles.md"
+    },
+    {
+      "after_sha256": "a46f8ed72a3d4dee39a70ff36fc5ec21ddd8f8dce9b6aa317172443c0f34fac2",
+      "before_sha256": "6146b54913651acce7626a66814e30c8e3f0f988c8e4c2d65ddc35924939e71e",
+      "category": "repo",
+      "file": ".claude/agents/architect.md"
+    },
+    {
+      "after_sha256": "a90010abbab01fa2d78ee95bb0c409492f83d271598ca18a3773d6778da63857",
+      "before_sha256": "4593de7c98b4a2885e26ba7a29cf57e270ecff0a416d455593cb9c4510958d60",
+      "category": "repo",
+      "file": ".claude/agents/developer.md"
+    },
+    {
+      "after_sha256": "b85008975cea8ea3a7811e5566d7bd989df5b3033d88902ab2b7adaa8674bca1",
+      "before_sha256": "baf34cc6214afc7b4a040c6e85cf849c0bac671f3b1c4abf403b50f80cb33a14",
+      "category": "repo",
+      "file": ".claude/agents/project-manager.md"
+    },
+    {
+      "after_sha256": "65621b8978eaf37e671612dde66614297c2e79e4d2562dcae3fd43656577d9a0",
+      "before_sha256": "d9173e822f5c4fe59cbf0c7026c12522b615fa33099394dc270d2238c17a2c88",
+      "category": "repo",
+      "file": ".claude/agents/researcher.md"
+    },
+    {
+      "after_sha256": "03ee43a9fab2b8c64feab9ecd9fc7ff46180f9fd8686445f872a5ec6aec76e37",
+      "before_sha256": "309b4d1330750d932efc284bde422521198d84b43fcc7e5bdae9f844e11fabb3",
+      "category": "repo",
+      "file": "config/ai/model-routing.policy.yaml"
+    },
+    {
+      "after_sha256": "e92dd635cd4792b7bc5906edb4789a0de60793cd1de1cda2ccb12000127475c5",
+      "before_sha256": "bbfb0522eb7932cb564da0c74bb79cbadb0927e1048e04a1b6268dc0e8c158c1",
+      "category": "repo",
+      "file": "config/instructions/pal-opencode-guide.md"
+    },
+    {
+      "after_sha256": "f01aa1d683b8fc63d709f34d668e1b4d1cf0448d8a2fb3440bf4eb6d117191e8",
+      "before_sha256": "86d9037d89f2efafd68c6433686b4ef8dc3e6f9c674b59434030058b1718f104",
+      "category": "repo",
+      "file": "docs/03-reference/governance/model-routing.md"
+    },
+    {
+      "after_sha256": "8baf0cd55af707b8dcd96d7bb9eeb575bb3201b22d750021dd5407024347c6c1",
+      "before_sha256": "a616552c0e340ea7b5230c239662800c817f32ecd0aa7a7585df0978dea212f1",
+      "category": "repo",
+      "file": "docs/02-how-to/model-routing-usage.md"
+    },
+    {
+      "after_sha256": "ee891415610cc18b395d05e77d4e8025d60bfe6d402fc7f9af67bcbfefde3981",
+      "before_sha256": "f636f79c250c45bbeab9fd0b30a52ab2a6ae4e3374db16e11908b6c84b19eda1",
+      "category": "repo",
+      "file": "GEMINI.md"
+    },
+    {
+      "after_sha256": "3fac4a18f4f36e584001923701dc69589a7398abd3ac0fee0e6bcdf68c4e61e3",
+      "before_sha256": "ebbc2c70a3b16d39cd60c2305a9bc1ff038ea720c2d6bc981fc1165566414c98",
+      "category": "repo",
+      "file": "CHANGELOG.md"
+    },
+    {
+      "after_sha256": "dd097ecae7f8f6ed5266c4711735ef99a45c3b1093f1d2357a94bad7f48d2d2d",
+      "before_sha256": "51748fa2f05c895c4d0204614a3f5fcf2b77a8af614f1995beb777f667632b94",
+      "category": "repo",
+      "file": "tests/test_model_routing_policy.py"
+    }
+  ],
+  "global_roles_verified": 16,
+  "method": "Before-hash guarded atomic writes, semantic preservation checks, byte readback, then independent hash and role-pin readback.",
+  "repository_roles_verified": 8,
+  "status": "PASS"
+}

@@ -1,0 +1,219 @@
+{
+  "UNKNOWN": [
+    "Live child launch/availability and actual identities for configured Codex/Claude/Gemini roles",
+    "Current account-specific cost ordering/optimality"
+  ],
+  "actual_auditor_model": "claude-sonnet-5-5",
+  "backup_location": "/private/tmp/dopemux-cost-first-agents-001-backup",
+  "base_sha": "c395aa849eeaa08f201ffececed0f891bbfcee49",
+  "branch": "codex/cost-first-agent-routing",
+  "cleanup_status": "PENDING_SAFE_ARCHIVE_AFTER_PR",
+  "codereview_status": "PASS_WITH_RISKS",
+  "commit_sha": "7763bfdb47456b78216d71109412bf7e7f791ab9",
+  "confidence": "VERIFIED for declarations, deterministic validation and local readback only",
+  "content_files_changed": [
+    ".claude/agents/architect.md",
+    ".claude/agents/developer.md",
+    ".claude/agents/project-manager.md",
+    ".claude/agents/researcher.md",
+    ".claude/claude.md",
+    ".claude/modules/shared/governance-principles.md",
+    ".codex/agents/architect.toml",
+    ".codex/agents/developer.toml",
+    ".codex/agents/dmx-explorer.toml",
+    ".codex/agents/dmx-housekeeper.toml",
+    ".codex/agents/dmx-reviewer.toml",
+    ".codex/agents/dmx-worker.toml",
+    ".codex/agents/project-manager.toml",
+    ".codex/agents/researcher.toml",
+    ".codex/config.toml",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "GEMINI.md",
+    "config/ai/model-routing.policy.yaml",
+    "config/instructions/pal-opencode-guide.md",
+    "docs/02-how-to/model-routing-usage.md",
+    "docs/03-reference/governance/model-routing.md",
+    "proof/TP-DMX-COST-FIRST-AGENTS-001/LOCAL_SETTINGS_PLAN.json",
+    "task-packets/generated/TP-DMX-COST-FIRST-AGENTS-001.json",
+    "tests/test_model_routing_policy.py"
+  ],
+  "content_head_sha": "7763bfdb47456b78216d71109412bf7e7f791ab9",
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Scope matches the packet allowlist. All 25 changed files are listed in commit.allowlist in task-packets/generated/TP-DMX-COST-FIRST-AGENTS-001.json. The diff contains no changes to schemas, runtime code, or secrets.",
+        "id": "F01",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Independent auditor observation 1"
+      },
+      {
+        "body": "Codex role pinning is explicit and consistent. Every .codex/agents/*.toml sets model and model_reasoning_effort, and none inherits the supervisor or uses an 'astra' model. .codex/config.toml adds default_subagent_model=gpt-6-luna and default_subagent_reasoning_effort=medium. The role_models map in config/ai/model-routing.policy.yaml matches the TOML pins. tests/test_model_routing_policy.py asserts this match for both the Codex and Claude providers.",
+        "id": "F02",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Independent auditor observation 2"
+      },
+      {
+        "body": "Formal-audit boundary is preserved. provider_routes.codex.self_audit is FORBIDDEN_FORMAL_AUDITOR, and dmx-reviewer.toml adds 'never the formal embedded auditor'. A test asserts both. The docs and AGENTS.md \u00a75 repeat that Codex review is advisory only. The Claude self_audit alias 'sonnet' is tested for membership in the embedded_audit schema auditor_model enum. The schema file itself was not in the diff, so I could not inspect it.",
+        "id": "F03",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Independent auditor observation 3"
+      },
+      {
+        "body": "Read-only roles keep their safety boundaries. dmx-explorer and dmx-housekeeper keep sandbox_mode=read-only. dmx-reviewer is unchanged apart from the model bump and the advisory wording. The new architect and project-manager TOMLs state read-only in their instructions but set no sandbox_mode. See risk 2.",
+        "id": "F04",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Independent auditor observation 4"
+      },
+      {
+        "body": "Preserved gates: explicit user and packet restrictions take precedence. There is no hidden fallback or upgrade, and escalation returns to the supervisor with a recorded reason. Evidence-economy budgets are L0=0, L1<=1, and L2/L3=1 implementer + 1 final audit. The last is asserted by test_cost_first_policy_preserves_evidence_economy_budget.",
+        "id": "F05",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Independent auditor observation 5"
+      },
+      {
+        "body": "The audit-model choice departs from the old docs. The example proof changes auditor_model from claude-opus-4 to the alias 'sonnet'. The docs say the alias is kept separate from actual-ID evidence, and the actual model ID must still be recorded in real proof bundles.",
+        "id": "F06",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Independent auditor observation 6"
+      },
+      {
+        "body": "proof/TP-DMX-COST-FIRST-AGENTS-001/LOCAL_SETTINGS_PLAN.json is a machine-local plan. It names a global supervisor 'gpt-6-astra' low and ~/.codex role files. It is a plan only; nothing in the diff applies it. Its portability depends on the guarded apply step, which is outside this diff and was not audited.",
+        "id": "F07",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Independent auditor observation 7"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "/Users/hue/.local/bin/claude --restricted --print --model claude-sonnet-5-5 --effort medium --output-format json --tools '' --disable-slash-commands --no-session-persistence --strict-mcp-config < proof/TP-DMX-COST-FIRST-AGENTS-001/review_bundle/AUDIT_PROMPT.txt (cwd=/private/tmp)",
+    "remaining_risks": [
+      "Actual model identity and availability (gpt-6-luna, gpt-6.1-sol, claude-sonnet-5-5, claude-haiku-4-5, gemini-3.8-flash) are NOT_RUN. The diff declares them as configuration only, and the trusted context confirms no runtime evidence. Vendor selector syntax was checked in vendor docs per the trusted context, but I could not independently confirm it.",
+      "Two new Codex roles omit sandbox_mode: architect.toml and project-manager.toml, which are described as read-only. Their read-only status rests on instruction text rather than a sandbox. Unlike dmx-* roles, there is no enforced boundary, and developer.toml likewise inherits the default workspace-write sandbox. Recommend setting sandbox_mode='read-only' on architect and project-manager.",
+      "Claude agent front matter uses model: claude-sonnet-5-5 and claude-haiku-4-5. The Claude Code subagent docs were said to be checked, but the Haiku ID form (claude-haiku-4-5 vs. the dated 'claude-haiku-4-5-20251001') was not verified here. An unresolved ID could fail or fall back silently, which conflicts with the no-hidden-fallback stance.",
+      "The policy is advisory; nothing enforces pins. Declared pins can be overridden by explicit spawn selection, and the docs describe precedence inconsistently (AGENTS.md says role pins override explicit spawn selection). This was not verified against Codex runtime behavior.",
+      "Weakened mandatory review chain: PAL codereview, precommit, and challenge are now optional (config/instructions/pal-opencode-guide.md; .claude/modules/shared/governance-principles.md). Deterministic precommit and an L2/L3 final audit remain required. This is an intentional policy change, but it reduces the intermediate assurance layers and should be acknowledged by the supervisor.",
+      "GEMINI.md contains the sentence 'Sequence examples above are not merge/execution authorization'. I could not confirm that the examples it refers to exist in the file. This is a minor documentation risk.",
+      "Existing gpt-5.x to gpt-6.x model IDs are new strings that only vendor evidence can validate. The test asserts internal consistency but not that the model IDs exist."
+    ],
+    "report_path": "proof/TP-DMX-COST-FIRST-AGENTS-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-09-30T17:29:51.957981+00:00",
+  "head_sha": "7763bfdb47456b78216d71109412bf7e7f791ab9",
+  "local_deployment": {
+    "child_default": "gpt-6-luna / medium",
+    "exit_code": 0,
+    "files_changed": 41,
+    "receipt": "proof/TP-DMX-COST-FIRST-AGENTS-001/review_bundle/LOCAL_DEPLOYMENT.json",
+    "status": "PASS",
+    "supervisor_global": "gpt-6-astra / low (preserved)",
+    "supervisor_repository": "gpt-6.1-sol / high"
+  },
+  "packet_id": "TP-DMX-COST-FIRST-AGENTS-001",
+  "pr_scoped_steward_gate": "NOT_RUN; local pre-PR audit is not a signed PR-head finalization proof",
+  "pr_state": "NOT_CREATED_YET; proof-only successor precedes push and draft PR creation",
+  "pr_url": null,
+  "precommit_status": "PASS",
+  "readiness": "NOT_ASSERTED",
+  "repo_identity_result": "PASS: matching origin/default main and .dopetaskroot, isolated clean worktree at verified base",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "residual_risks": [
+    "Instruction-only read-only imported roles; sandbox behavior not strengthened or exercised",
+    "Model selector and effort declarations are not universal enforcement proof",
+    "Machine-local helper was not part of independently audited content",
+    "Reload/new sessions may be required to load the modified settings",
+    "PR-scoped signing, freshness, head match and finalization remain NOT_RUN"
+  ],
+  "risk_lane": "L2",
+  "rollback": "Private before-images plus guarded rollback helper; refuse restoration when a later edit changes any deployed file",
+  "slices_completed": [
+    "Cost-first runner guidance and explicit role/default pins",
+    "Deterministic validation and single final independent Sonnet audit",
+    "Guarded machine-local deployment with readback"
+  ],
+  "supervisor_clarifications": [
+    {
+      "disposition": "ACCEPTED_RISK",
+      "evidence": "The four imported roles were existing untracked local settings. Their permissions and instruction bodies were preserved; architect/project-manager/researcher have instruction-only read-only restrictions. No sandbox enforcement or live launch is claimed.",
+      "topic": "Read-only imported roles"
+    },
+    {
+      "disposition": "DOCUMENTATION_VERIFIED; runtime NOT_RUN",
+      "evidence": "Official Codex subagent documentation states explicit spawn overrides defaults, but custom role TOML model/effort pins override per-spawn choices. This source resolves the auditor uncertainty; no live runtime precedence proof is claimed.",
+      "source": "https://learn.chatgpt.com/docs/agent-configuration/subagents",
+      "topic": "Codex role precedence"
+    },
+    {
+      "disposition": "DOCUMENTATION_VERIFIED; role launch NOT_RUN",
+      "evidence": "Official model catalog lists claude-sonnet-5-5 and claude-haiku-4-5. The audit itself returned canonical claude-sonnet-5-5. Haiku role launches remain NOT_RUN.",
+      "source": "https://platform.claude.com/docs/en/models/overview",
+      "topic": "Claude model IDs"
+    },
+    {
+      "disposition": "CANONICAL_AUTHORITY_ALIGNMENT",
+      "evidence": "Unchanged AGENTS.md section 5 already makes PAL optional and requires one final L2/L3 audit; evidence-economy.md already specifies lane budgets. Subsidiary mandatory intermediate rituals were aligned to that existing canonical rule. Deterministic precommit and final audit remain required.",
+      "topic": "PAL intermediate chains"
+    },
+    {
+      "disposition": "SOURCE_VERIFIED",
+      "evidence": "The full GEMINI.md contains a Sequence section before the new delegation section.",
+      "topic": "GEMINI.md reference"
+    },
+    {
+      "disposition": "DEPLOYMENT_READBACK_PASS; helper not independently audited",
+      "evidence": "All 41 planned file writes passed before-hash guards and byte readback. Independent readback verified all hashes, 16 global role pins, and eight repo role pins. Private backups and the apply helper are deliberately not published.",
+      "topic": "Machine-local plan execution"
+    }
+  ],
+  "task_packet": "task-packets/generated/TP-DMX-COST-FIRST-AGENTS-001.json",
+  "validation": {
+    "NOT_RUN": [
+      "Live Codex/Claude/Gemini role launch and account qualification",
+      "Model cost-optimality benchmarking",
+      "PR-scoped Steward finalization gate",
+      "Strict config schema generation (unsupported --strict-config for generation command)"
+    ],
+    "checks": [
+      {
+        "check": "focused_tests",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "check": "change_contract",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "check": "diff_check",
+        "exit_code": 0,
+        "status": "PASS"
+      },
+      {
+        "check": "configured_precommit",
+        "exit_code": 0,
+        "status": "PASS"
+      }
+    ],
+    "content_head": "7763bfdb47456b78216d71109412bf7e7f791ab9"
+  },
+  "worktree": "/Users/hue/.codex/worktrees/cost-first-agent-routing/dopemux-mvp"
+}

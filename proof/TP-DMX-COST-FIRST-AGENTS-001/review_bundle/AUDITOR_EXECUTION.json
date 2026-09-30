@@ -1,0 +1,39 @@
+{
+  "argv": [
+    "/Users/hue/.local/bin/claude",
+    "--restricted",
+    "--print",
+    "--model",
+    "claude-sonnet-5-5",
+    "--effort",
+    "medium",
+    "--output-format",
+    "json",
+    "--tools",
+    "",
+    "--disable-slash-commands",
+    "--no-session-persistence",
+    "--strict-mcp-config"
+  ],
+  "attempts": 1,
+  "content_head": "7763bfdb47456b78216d71109412bf7e7f791ab9",
+  "exit_code": 0,
+  "identity_status": "PASS",
+  "is_error": false,
+  "mcp": "disabled",
+  "observed_canonical_models": [
+    "claude-sonnet-5-5"
+  ],
+  "observed_model_usage_ids": [
+    "claude-sonnet-5-5"
+  ],
+  "private_cli_envelope": "Excluded: session metadata and complete local CLI envelope are not required for public proof.",
+  "requested_model": "claude-sonnet-5-5",
+  "session_persistence": "disabled",
+  "stdin_receipt": "review_bundle/AUDIT_PROMPT.json",
+  "stdin_reconstruction": "Decode text as UTF-8; SHA-256 must equal stdin_sha256.",
+  "stdin_sha256": "e1497eab0cd1d4d29983c66bfc5a78c87b3f8fcd0cc238b98aef8673d70abae4",
+  "subtype": "success",
+  "tools": "disabled",
+  "working_directory": "/private/tmp"
+}

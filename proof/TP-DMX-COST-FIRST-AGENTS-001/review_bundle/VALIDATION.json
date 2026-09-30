@@ -1,0 +1,31 @@
+{
+  "content_head": "7763bfdb47456b78216d71109412bf7e7f791ab9",
+  "checks": [
+    {
+      "check": "focused_tests",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "check": "change_contract",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "check": "diff_check",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "check": "configured_precommit",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ],
+  "NOT_RUN": [
+    "Live Codex/Claude/Gemini role launch and account qualification",
+    "Model cost-optimality benchmarking",
+    "PR-scoped Steward finalization gate",
+    "Strict config schema generation (unsupported --strict-config for generation command)"
+  ]
+}
