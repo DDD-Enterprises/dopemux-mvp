@@ -1,0 +1,47 @@
+{
+  "audited_content_head": "7763bfdb47456b78216d71109412bf7e7f791ab9",
+  "backup": "/private/tmp/dopemux-cost-first-agents-001-backup",
+  "canonical_proof_head": "2f7f01359d941c94feca3bd046f5d31708712377",
+  "embedded_audit": "PASS_WITH_RISKS",
+  "event": "DRAFT_PR_PUBLISHED",
+  "local_deployment": "PASS; 41 file hashes and role pins verified",
+  "merge": "NOT_RUN",
+  "model_runtime_qualification": "NOT_RUN",
+  "packet_id": "TP-DMX-COST-FIRST-AGENTS-001",
+  "pr": {
+    "baseRefName": "main",
+    "headRefName": "codex/cost-first-agent-routing",
+    "headRefOid": "2f7f01359d941c94feca3bd046f5d31708712377",
+    "isDraft": true,
+    "number": 1381,
+    "state": "OPEN",
+    "url": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1381"
+  },
+  "pr_scoped_steward_gate": "NOT_RUN",
+  "proof_successor_checks": {
+    "change_contract": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "embedded_audit_schema": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "git_diff_check": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "proof_only_path_signature_ancestry": {
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    "trusted_signature_verify": {
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  },
+  "recorded_at": "2026-09-30T17:40:18.952235+00:00",
+  "rollback_helper": "/private/tmp/rollback_dmx_cost_first.py",
+  "scope": "Append-only publication receipt for earlier frozen PROOF.json; no audited content or signed proof bytes changed.",
+  "worktree_cleanup": "Safe archive follows final pushed-head verification; app attachment records actual outcome."
+}
