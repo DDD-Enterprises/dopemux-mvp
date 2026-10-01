@@ -367,10 +367,13 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('onClick={handleReconnect}');
   expect(appContent).toContain('RECONNECT');
 
-  // Verify notification chips are focusable
-  expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
-  expect(appContent).toContain('aria-label={notificationLabel}');
-  expect(appContent).toContain('tabIndex={0}');
+  // Verify notification chips copy to clipboard and tactile feedback
+  expect(appContent).toContain('const [copiedNotificationId, setCopiedNotificationId] = useState<string | null>(null);');
+  expect(appContent).toContain('const handleCopyNotification = useCallback(async (notification: Notification) => {');
+  expect(appContent).toContain('onClick={() => void handleCopyNotification(notification)}');
+  expect(appContent).toContain('cursor: \'copy\'');
+  expect(appContent).toContain('Signal message copied:');
+  expect(appContent).toContain('Click to copy to clipboard.');
 
   // Verify hydration aftercare sip logger interactive states
   expect(appContent).toContain('const [isHydrated, setIsHydrated] = useState(false);');
