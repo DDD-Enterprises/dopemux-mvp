@@ -121,6 +121,12 @@
         "source": "github",
         "repo": "openai/codex-plugin-cc"
       }
+    },
+    "karpathy-skills": {
+      "source": {
+        "source": "github",
+        "repo": "forrestchang/andrej-karpathy-skills"
+      }
     }
   },
   "enabledPlugins": {

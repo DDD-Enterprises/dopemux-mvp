@@ -2,13 +2,13 @@
 
 **Module Version**: 1.1.0
 **Observed**: 2026-10-02 against `~/.claude/plugins/installed_plugins.json` (14 installed, user scope), 14 claude.ai-synced plugins, and `claude plugin list`
-**Enforced by**: project `.claude/settings.json` `enabledPlugins` (28 explicit entries). Project scope overrides user scope; `.claude/settings.local.json` overrides project.
+**Enforced by**: project `.claude/settings.json` `enabledPlugins` (25 explicit entries; marketplaces `openai-codex` and `karpathy-skills` registered in `extraKnownMarketplaces`). Project scope overrides user scope; `.claude/settings.local.json` overrides project.
 **Scope**: Claude Code runtime only. Codex/Gemini/OpenCode do not load these plugins.
 **Authority**: Subordinate to AGENTS.md and `.claude/claude.md`. When a plugin skill conflicts with repo doctrine, doctrine wins; follow the skill only where it agrees.
 
 ## Enabled — use automatically
 
-Enabled for this project: `superpowers`, `codex` (marketplace registered in `extraKnownMarketplaces`), `frontend-design`, `claude-md-management`, `pyright-lsp`, `andrej-karpathy-skills` (as the `developer` preload), and `superdevflow@synced`. The project setting enables a plugin but does not install it. A skill named here is only callable when its plugin shows in the session's skill list. If it does not, say `NOT_AVAILABLE` and proceed under doctrine.
+Enabled for this project: `superpowers`, `codex`, `frontend-design`, `claude-md-management`, `pyright-lsp`, `andrej-karpathy-skills` (as the `developer` preload), and `superdevflow@synced`. The project setting enables a plugin but does not install it. A skill named here is only callable when its plugin shows in the session's skill list. If it does not, say `NOT_AVAILABLE` and proceed under doctrine.
 
 | Trigger | Skill / command | Repo override |
 |---|---|---|
@@ -75,3 +75,5 @@ These load in every session unless disabled. A per-plugin `"<name>@synced": fals
 ## Changing enablement
 
 Edit `.claude/settings.json` `enabledPlugins` through the `update-config` skill (settings carry hooks, which are contract-sensitive), then confirm with `claude plugin list`. Update this card in the same change. Personal overrides go in `.claude/settings.local.json`. Uninstalling a plugin (`claude plugin uninstall`) is user-scope and affects every project.
+
+Supply chain: marketplace sources are registered without a ref pin. The exact plugin version each machine runs is whatever `~/.claude/plugins/installed_plugins.json` records (`version` / `gitCommitSha`), outside this repo. `skills:` preloads inject third-party skill text into the `developer` subagent, which has Bash/Edit/Write, so re-read a preloaded skill after a plugin update before keeping the preload.
