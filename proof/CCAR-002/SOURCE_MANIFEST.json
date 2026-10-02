@@ -40,7 +40,7 @@
             "path": ".claude/personas/adr-generator.agent.md"
         },
         "backend-architect-dopemux": {
-            "sha256": "dc5562119307b690e7fa5e27ee84c2af6ed3f4e31ad79169848f1caa50e8b16f",
+            "sha256": "db0e53e31c1fabdd884be3d6b158b787f6030baf614397a555ef164547127142",
             "path": ".claude/personas/backend-architect-dopemux.md"
         },
         "critical-thinking.agent": {
@@ -52,7 +52,7 @@
             "path": ".claude/personas/devils-advocate.agent.md"
         },
         "devops-architect-dopemux": {
-            "sha256": "d91180ca3080ced9d8e2a607ccae64e23d694bbdf5211019741c5984b207ad3f",
+            "sha256": "8c2349cfe96ef09047d07d700ebc9f9701cf941e8bbfcdd9823bafef4396c9fb",
             "path": ".claude/personas/devops-architect-dopemux.md"
         },
         "devops-expert.agent": {
@@ -64,7 +64,7 @@
             "path": ".claude/personas/frontend-architect-dopemux.md"
         },
         "general-purpose-dopemux": {
-            "sha256": "9f661947ce2943fce54014ee2bc07bb1d1845d1f5e68d49d44674ac99aefc571",
+            "sha256": "45c26573c37d1c52a7118fcfa7c15804b7065e8e1de8b8c873f005b46cf65340",
             "path": ".claude/personas/general-purpose-dopemux.md"
         },
         "github-actions-expert.agent": {
@@ -80,7 +80,7 @@
             "path": ".claude/personas/janitor.agent.md"
         },
         "learning-guide-dopemux": {
-            "sha256": "2f0e3f5df6c391e323eb3e79cdd53f147eb419cb60e6bcba185b046bdab4d9d2",
+            "sha256": "6e59c767a42e3e5a96a46c2043adbc82ac8dd39477c4c771a364ec957dfd4c67",
             "path": ".claude/personas/learning-guide-dopemux.md"
         },
         "modernization.agent": {
@@ -88,7 +88,7 @@
             "path": ".claude/personas/modernization.agent.md"
         },
         "performance-engineer-dopemux": {
-            "sha256": "832c13b665f50bc7e96012f2d1b2e67a33d159ae04c2b04b33b24a03773f1cfe",
+            "sha256": "dae9e19206092604554a32daffb71ed73dc44ed63e2828774b51b46755765c1e",
             "path": ".claude/personas/performance-engineer-dopemux.md"
         },
         "prd.agent": {
@@ -116,7 +116,7 @@
             "path": ".claude/personas/python-mcp-expert.agent.md"
         },
         "quality-engineer-dopemux": {
-            "sha256": "aca19d18509d30152b2c388c302190b87559ce1bfcc99914782d48c55ec72644",
+            "sha256": "5b9249c979bf06639683ab577a1c40d3252f0cb1fc3124477bfa0bd4996d3361",
             "path": ".claude/personas/quality-engineer-dopemux.md"
         },
         "refine-issue.agent": {
@@ -128,7 +128,7 @@
             "path": ".claude/personas/se-gitops-ci-specialist.agent.md"
         },
         "se-product-manager-advisor.agent": {
-            "sha256": "d38a92f0b9a8c8a6d78c303378f95d16d040836e027f63628e4d0266aacddd11",
+            "sha256": "0239c191cb5a01f7465689ca66ac8402d6007979a26ae06f801a336b009ab86b",
             "path": ".claude/personas/se-product-manager-advisor.agent.md"
         },
         "se-security-reviewer.agent": {
@@ -152,11 +152,11 @@
             "path": ".claude/personas/search-ai-optimization-expert.agent.md"
         },
         "security-engineer-dopemux": {
-            "sha256": "6857b5cee66ba7373d2b56f18da97921397a33e04055dd64e45c544ee8659df4",
+            "sha256": "84d25ebb08de32d6329acd8d45d2c573c383f9bcde652508cde02d2a9bb52c31",
             "path": ".claude/personas/security-engineer-dopemux.md"
         },
         "socratic-mentor-dopemux": {
-            "sha256": "eb54d2ddf0c59f34eaecef87420ff9f60417640b4d70420d6b711c12cbcf5d70",
+            "sha256": "22ac8c5f59c90265d86d9f3634eca401987e67041a990285d5877689f38bba70",
             "path": ".claude/personas/socratic-mentor-dopemux.md"
         },
         "specification.agent": {
@@ -168,7 +168,7 @@
             "path": ".claude/personas/statusline-setup-dopemux.md"
         },
         "system-architect-dopemux": {
-            "sha256": "a9e0fc57160caeafcdcda466b81a62d74719970a8b2d4d855a4a65ebe21a65e8",
+            "sha256": "0baa20a4def450e095b2997089d70e2b2a6c6a4a7ea4a1ed8f283bce7dc7260b",
             "path": ".claude/personas/system-architect-dopemux.md"
         },
         "task-planner.agent": {
