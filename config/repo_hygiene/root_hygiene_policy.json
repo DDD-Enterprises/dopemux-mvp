@@ -1,6 +1,7 @@
 {
   "version": 1,
   "allowed_root_dirs": [
+    ".control-tower",
     "qa",
     "templates",
     "ui-dashboard-backend",

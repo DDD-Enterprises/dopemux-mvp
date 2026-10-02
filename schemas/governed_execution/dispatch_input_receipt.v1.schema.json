@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_execution/dispatch_input_receipt.v1.schema.json",
+  "title": "Governed Execution Contract v2 - DispatchInputReceipt",
+  "description": "Subject-bound evidence for five existing upstream dispatch facts. Each closed branch records its macro, packet and source; authority is const NONE. Schema validation does not authenticate the source, prove subject equality or grant execution authority.",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": { "const": "dopemux.governed_execution.dispatch_input_receipt.v1" },
+        "receipt_type": { "const": "ScopeAuthority" },
+        "macro_id": { "type": "string", "minLength": 1 },
+        "packet_id": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "authority": { "const": "NONE" },
+        "scope_status": {
+          "oneOf": [
+            { "const": "PASS" },
+            { "const": "BLOCKED" },
+            { "const": "UNKNOWN" }
+          ]
+        },
+        "allowlist_digest": { "$ref": "enums.v1.schema.json#/definitions/sha256" }
+      },
+      "required": [
+        "schema_version", "receipt_type", "macro_id", "packet_id",
+        "source_ref", "authority", "scope_status", "allowlist_digest"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": { "const": "dopemux.governed_execution.dispatch_input_receipt.v1" },
+        "receipt_type": { "const": "WorkflowLegality" },
+        "macro_id": { "type": "string", "minLength": 1 },
+        "packet_id": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "authority": { "const": "NONE" },
+        "transition_legal": { "type": ["boolean", "null"] },
+        "blockers": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "required": [
+        "schema_version", "receipt_type", "macro_id", "packet_id",
+        "source_ref", "authority", "transition_legal", "blockers"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": { "const": "dopemux.governed_execution.dispatch_input_receipt.v1" },
+        "receipt_type": { "const": "PolicyEligibility" },
+        "macro_id": { "type": "string", "minLength": 1 },
+        "packet_id": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "authority": { "const": "NONE" },
+        "dcp_status": { "$ref": "enums.v1.schema.json#/definitions/dcp_status" }
+      },
+      "required": [
+        "schema_version", "receipt_type", "macro_id", "packet_id",
+        "source_ref", "authority", "dcp_status"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": { "const": "dopemux.governed_execution.dispatch_input_receipt.v1" },
+        "receipt_type": { "const": "OperatorGate" },
+        "macro_id": { "type": "string", "minLength": 1 },
+        "packet_id": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "authority": { "const": "NONE" },
+        "required": { "type": ["boolean", "null"] },
+        "granted": { "type": ["boolean", "null"] },
+        "receipt_ref": { "type": ["string", "null"], "minLength": 1 }
+      },
+      "required": [
+        "schema_version", "receipt_type", "macro_id", "packet_id",
+        "source_ref", "authority", "required", "granted", "receipt_ref"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": { "const": "dopemux.governed_execution.dispatch_input_receipt.v1" },
+        "receipt_type": { "const": "DriftOverlap" },
+        "macro_id": { "type": "string", "minLength": 1 },
+        "packet_id": { "type": "string", "minLength": 1 },
+        "source_ref": { "type": "string", "minLength": 1 },
+        "authority": { "const": "NONE" },
+        "drift_class": { "$ref": "enums.v1.schema.json#/definitions/drift_class" }
+      },
+      "required": [
+        "schema_version", "receipt_type", "macro_id", "packet_id",
+        "source_ref", "authority", "drift_class"
+      ]
+    }
+  ]
+}
