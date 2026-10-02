@@ -1,0 +1,76 @@
+{
+  "admissible_verdict": "PASS_WITH_RISKS",
+  "audited_base": "96ca76f0f8050c1059478bd47c3216c80742054d",
+  "audited_head": "d35d1b843fa1d4e67e4a6911c8e4aa00c6b52e89",
+  "deterministic_evidence_sha256": "375645f111ba92a95849abeea9a1054d69c9844fda00e75de0d056a6aa1c2572",
+  "deterministic_test_receipts": [
+    {
+      "command": "uv lock --check --offline",
+      "exit_code": 0,
+      "result": "Resolved 276 packages"
+    },
+    {
+      "command": "git diff --check origin/main",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "validate_change_contract",
+      "exit_code": 0,
+      "result": "max_lane L2, model_audit_required true, status PASS"
+    },
+    {
+      "command": "PyJWT encode/decode/signature/expiration/audience/algorithm test suite",
+      "exit_code": 0,
+      "result": "All PyJWT 2.15.0 acceptance tests passed"
+    },
+    {
+      "command": "instruction-like added-line scan",
+      "result": "0 matches"
+    }
+  ],
+  "effects": {
+    "close": 0,
+    "commits": 0,
+    "container_starts": 0,
+    "github_mutations": 0,
+    "mark_ready": 0,
+    "merge": 0,
+    "repo_mutations": 0,
+    "service_starts": 0,
+    "signatures": 0,
+    "workflow_reruns": 0
+  },
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "The diff changes only uv.lock in the single package block for pyjwt from 2.13.0 to 2.15.0. No other dependencies or files modified.",
+        "id": "F1",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Minimal mechanical lockfile bump of pyjwt"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model sonnet --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "remaining_risks": [
+      "No PyPI hash verification performed during tool-less audit (verified locally via uv lock --check --offline).",
+      "Transitive pyjwt runtime behavior in auth consumers unexercised beyond test suite."
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-018-ROOT-SECURITY-1385/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "raw_output_sha256": "cf929890611891a0c4cf627fbc9a6266840a06079275eaf5f6a4d8d5f7c2a51f",
+  "status": "COMPLETED"
+}
