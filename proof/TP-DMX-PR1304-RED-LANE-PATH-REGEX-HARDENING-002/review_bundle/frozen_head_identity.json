@@ -1,0 +1,13 @@
+{
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "worktree": "/Users/hue/code/dopemux-mvp/.worktrees/red-lane-scanner-fail-closed-002-clean",
+  "branch": "fix/red-lane-scanner-fail-closed-002-clean",
+  "audited_content_head": "02e78481f3650e2d0d5c7ee4a888928a249e5009",
+  "prior_audited_head": "d1b6539f446085992e1e5e9e9535d51b429c4d9a",
+  "delta_since_prior_audit": "docs-only YAML frontmatter fix in task-packets/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002.md; src/ and tests/ unchanged, independently verified",
+  "base_sha": "c395aa849eeaa08f201ffececed0f891bbfcee49",
+  "merge_base": "c395aa849eeaa08f201ffececed0f891bbfcee49",
+  "origin_main_head": "c395aa849eeaa08f201ffececed0f891bbfcee49",
+  "main_drift_paths": [],
+  "main_drift_classification": "NO_RELEVANT_OVERLAP"
+}

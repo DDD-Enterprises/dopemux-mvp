@@ -1,0 +1,34 @@
+{
+  "diff_check": {
+    "command": "git diff --check 6a728f74c0311967f83213513308f97613e3f28d..HEAD",
+    "exit_code": 0
+  },
+  "pytest_new_test_file": {
+    "command": "python3 -m pytest tests/dcp/test_dcp_0005_red_lane_scanner.py -v",
+    "passed": 39,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "pytest_full_dcp_suite": {
+    "command": "python3 -m pytest tests/dcp/ -q",
+    "passed": 192,
+    "failed": 1,
+    "exit_code": 1,
+    "known_failure": "test_16_no_forbidden_files_modified",
+    "known_failure_disposition": "Pre-existing, unrelated to this change. Falls back to `git diff HEAD^..HEAD` when run outside its CI packet-base-ref context, which reflects origin/main's own prior commit (fix(ci) #1328), not this branch's two commits. Independently confirmed unrelated by the AGY audit in original_audit_evidence.json."
+  },
+  "ruff": {
+    "command": "ruff check src/dopemux/dcp/red_lane_scanner.py",
+    "result": "All checks passed"
+  },
+  "scope_diff_check": {
+    "command": "git diff --stat 6a728f74c0311967f83213513308f97613e3f28d..d1b6539f446085992e1e5e9e9535d51b429c4d9a -- src/dopemux/dcp/red_lane_rules.py .claude/hooks/dcp_surface_guard.py",
+    "result": "empty (both files byte-identical to base)"
+  },
+  "mutation_evidence": {
+    "path": "proof/TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-002/MUTATION_EVIDENCE.md",
+    "result": "BITES",
+    "probes_executed": 13,
+    "early_abort": false
+  }
+}
