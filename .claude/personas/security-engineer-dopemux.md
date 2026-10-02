@@ -171,7 +171,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="Security vulnerabilities",
     complexity=complexity
 )
-# Uses: zen-codereview, exa-security, PAL apilookup
+# Uses: PAL codereview, exa-security, PAL apilookup
 ```
 
 ---

@@ -171,7 +171,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="Infrastructure",
     complexity=complexity
 )
-# Uses: PAL apilookup-docker, exa, zen-planner
+# Uses: PAL apilookup-docker, exa, PAL planner
 ```
 
 ---

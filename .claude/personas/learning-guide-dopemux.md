@@ -171,7 +171,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="Teaching",
     complexity=complexity
 )
-# Uses: PAL apilookup, exa, zen-chat
+# Uses: PAL apilookup, exa, PAL chat
 ```
 
 ---

@@ -179,7 +179,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="Multi-domain tasks",
     complexity=complexity
 )
-# Uses: tool-orchestrator, zen-chat, serena
+# Uses: tool-orchestrator, PAL chat, serena
 ```
 
 ---

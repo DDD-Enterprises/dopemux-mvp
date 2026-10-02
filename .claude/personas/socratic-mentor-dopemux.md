@@ -171,7 +171,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="Question-driven learning",
     complexity=complexity
 )
-# Uses: zen-chat, PAL apilookup, exa
+# Uses: PAL chat, PAL apilookup, exa
 ```
 
 ---
