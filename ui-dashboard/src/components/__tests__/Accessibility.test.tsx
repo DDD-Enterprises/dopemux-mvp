@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // @ts-nocheck
 import { expect, test } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import fs from 'fs';
@@ -400,6 +400,39 @@ test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
   expect(content).toContain('const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;');
   expect(content).toContain('aria-hidden="true"');
   expect(content).toContain('TrendingDown');
+});
+
+test('PredictionPanel.tsx resets copy state when prediction prop updates', async () => {
+  cleanup();
+  const originalClipboard = navigator.clipboard;
+  Object.defineProperty(navigator, 'clipboard', {
+    value: {
+      writeText: async () => {},
+    },
+    configurable: true,
+  });
+
+  try {
+    const { rerender } = render(<PredictionPanel prediction={0.5} />);
+
+    const activeRoastBox = screen.getByRole('button', { name: /Click to copy/i });
+    fireEvent.click(activeRoastBox);
+
+    await screen.findByLabelText('Forecast copied');
+    expect(screen.getByLabelText('Forecast copied')).toBeInTheDocument();
+
+    await act(async () => {
+      rerender(<PredictionPanel prediction={0.8} />);
+    });
+
+    expect(screen.queryByLabelText('Forecast copied')).toBeNull();
+    expect(screen.getByRole('button', { name: /Click to copy/i })).toBeInTheDocument();
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
 });
 
 test('TaskSequencer pending Start button renders tooltip on hover and keyboard focus', async () => {
