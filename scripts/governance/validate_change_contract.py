@@ -773,7 +773,15 @@ def main(argv: Optional[list[str]] = None) -> int:
                 args.head = env_head
 
     try:
-        if args.paths is not None and len(args.paths) > 0:
+        if args.paths is not None:
+            # Explicit --paths skips git diff. A bare `--paths` (empty list) must
+            # not silently fall back to the working-tree diff: refuse it.
+            if not args.paths:
+                print(
+                    "error: --paths given with no paths; refusing empty validation",
+                    file=sys.stderr,
+                )
+                return 2
             paths = sorted({p.replace("\\", "/") for p in args.paths})
         elif args.base:
             paths = changed_paths(args.base, args.head, cwd)
