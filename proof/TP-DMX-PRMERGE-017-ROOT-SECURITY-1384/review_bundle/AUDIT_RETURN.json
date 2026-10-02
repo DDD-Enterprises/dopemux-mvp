@@ -1,0 +1,86 @@
+{
+  "admissible_verdict": "PASS_WITH_RISKS",
+  "audited_base": "949d485d066f697a011a385122bb4ecd03313454",
+  "audited_head": "7efa4bb1dcb0f23565c987a910c34de3e2af60ab",
+  "deterministic_evidence_sha256": "0bafe8fb86940818b9284b26424196660f23be99a42923cfc9cad10784f619b4",
+  "deterministic_test_receipts": [
+    {
+      "command": "uv lock --check --offline",
+      "exit_code": 0,
+      "result": "Resolved 276 packages"
+    },
+    {
+      "command": "git diff --check origin/main",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "validate_change_contract",
+      "exit_code": 0,
+      "result": "max_lane L2, model_audit_required true, status PASS"
+    },
+    {
+      "command": "test_extract_local_smoke.py",
+      "exit_code": 0,
+      "result": "6 passed"
+    },
+    {
+      "command": "test_cli_smoke.py",
+      "exit_code": 0,
+      "result": "1 passed"
+    },
+    {
+      "command": "urllib3 negative connection and scheme tests",
+      "exit_code": 0,
+      "result": "NewConnectionError and URLSchemeUnknown caught"
+    },
+    {
+      "command": "instruction-like added-line scan",
+      "result": "0 matches"
+    }
+  ],
+  "effects": {
+    "close": 0,
+    "commits": 0,
+    "container_starts": 0,
+    "github_mutations": 0,
+    "mark_ready": 0,
+    "merge": 0,
+    "repo_mutations": 0,
+    "service_starts": 0,
+    "signatures": 0,
+    "workflow_reruns": 0
+  },
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "The diff changes only uv.lock in the single package block for urllib3 from 2.7.0 to 2.8.0. No other dependencies or files modified.",
+        "id": "F1",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Minimal mechanical lockfile bump of urllib3"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model sonnet --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "remaining_risks": [
+      "No PyPI hash verification performed during tool-less audit (verified locally via uv lock --check --offline).",
+      "Transitive urllib3 runtime behavior in HTTP consumers unexercised beyond smoke tests."
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-017-ROOT-SECURITY-1384/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "raw_output_sha256": "72e2b707ecfc1b8bac9e0719fbdbd7fb77e32c4a03d7e5eaaea71b8cdb5aef5b",
+  "status": "COMPLETED"
+}
