@@ -1,0 +1,6 @@
+{
+  "audited_sha": "28e65967f8572382fe673efc062873cea153e6fa",
+  "checkpoint": "CHECKPOINT_MERGE_DRAIN_20261002_002",
+  "task_id": "TP-DMX-PRMERGE-021-ANYIO-SECURITY-1363",
+  "verdict": "PASS_WITH_RISKS"
+}
