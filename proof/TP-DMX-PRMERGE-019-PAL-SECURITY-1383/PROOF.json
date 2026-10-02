@@ -1,0 +1,69 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "none",
+      "model_family": "automation",
+      "runner": "dependabot",
+      "runtime_family": "github-dependabot"
+    },
+    "independence": "PROVEN"
+  },
+  "base_sha": "f40242cb6882b001d427477ef90e098e2d199291",
+  "branch": "dependabot/uv/docker/mcp-servers-source/pal/pal-mcp-server/uv-656ae9f94f",
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "Scope is a single file, docker/mcp-servers-source/pal/pal-mcp-server/uv.lock. No source, workflow, policy, schema, or manifest files change. pyjwt goes from 2.13.0 to 2.15.0. urllib3 goes from 2.7.0 to 2.8.0.",
+        "id": "F1",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Minimal mechanical lockfile bump of pyjwt and urllib3 in pal-mcp-server"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model sonnet --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "remaining_risks": [
+      "No PyPI hash verification performed during tool-less audit (verified locally via uv lock --check --offline).",
+      "Lockfile feeds pal-mcp-server Docker build path; runtime behavior in pal-mcp-server unexercised beyond test suite."
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-019-PAL-SECURITY-1383/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-10-02T12:40:00Z",
+  "head_sha": "70cec8ad0cb223ec39388d02359cb766616362a5",
+  "merge_authorized": false,
+  "packet_id": "TP-DMX-PRMERGE-019-PAL-SECURITY-1383",
+  "publication_authorized": false,
+  "remaining_risks": [
+    "No PyPI hash verification performed during tool-less audit (verified locally via uv lock --check --offline).",
+    "Lockfile feeds pal-mcp-server Docker build path; runtime behavior in pal-mcp-server unexercised beyond test suite."
+  ],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "risk_lane": "L2",
+  "status": "PASS_WITH_RISKS",
+  "validation_provenance": {
+    "admission": "ACCEPTED",
+    "source_checkpoint": "CHECKPOINT_001",
+    "source_evidence": [
+      "AUDIT_1383_RAW.json"
+    ]
+  }
+}
