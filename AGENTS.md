@@ -262,8 +262,9 @@ When MCP servers fail to connect, follow this sequence in order:
 
 4. **Tail container logs** during connection attempt:
    ```bash
-   docker logs -f dopemux-dope-memory-1 2>&1 | grep -i "mcp\|error"
-   docker logs -f dopemux-task-orchestrator 2>&1 | grep -i "mcp\|error"
+   # Names are instance-scoped: dopemux-<project>-<id>-dope-memory, task-orchestrator-<workspace_id>
+   docker ps --format '{{.Names}}' | grep -E 'dope-memory|task-orchestrator'
+   docker logs -f <name> 2>&1 | grep -i "mcp\|error"
    ```
 
 5. **Run health report**: `./mcp_server_health_report.sh`
