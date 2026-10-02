@@ -15,6 +15,12 @@ scripts/
 ├── monitoring/        # Health checks
 ├── docs_audit/        # Documentation auditing
 ├── audit/             # General audits
+├── ci/                # CI gate scripts
+├── commandcode_router/  # Builds config/commandcode catalog (hash-gated vs proof/CCAR-002)
+├── governance/        # Governance validators
+├── opencode/          # OpenCode helpers
+├── pal/               # PAL helpers
+├── proofs/            # Proof-bundle tooling
 ├── dev/               # Developer utilities
 ├── mcp/               # MCP server scripts
 ├── mcp-wrappers/      # MCP wrapper scripts
@@ -36,7 +42,7 @@ scripts/
 └── env_outputs/       # Environment output artifacts
 ```
 
-Note: `deployment/`, `testing/`, `maintenance/` do **not** exist; use `deploy/deployment/` for stack scripts.
+Note: `deployment/`, `testing/`, `maintenance/` do **not** exist at top level. Start the MCP fleet with `dopemux mcp start`, never raw `docker compose up`.
 
 ---
 
@@ -47,7 +53,9 @@ Note: `deployment/`, `testing/`, `maintenance/` do **not** exist; use `deploy/de
 | `docs_validator.py` | Validate doc frontmatter |
 | `docs_frontmatter_guard.py` | Fix frontmatter issues |
 | `docs_normalize.py` | Normalize filenames |
-| `deploy/deployment/start_stack.sh` | Launch Docker stack |
+| `smoke_up.sh` | Bring up smoke stack + runtime gate |
+| `deploy/deployment/stack_status.sh` | Stack status |
+| `sync_personas.py` | Mirror canonical `.claude/personas` → packaged `src/dopemux/personas` (`--check` is read-only) |
 
 ---
 

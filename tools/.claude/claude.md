@@ -22,9 +22,11 @@ Standalone tools for development and operations:
 tools/
 ├── auditor_router/       # PAL clink audit routing
 ├── copilot_repair/       # Copilot import repair utilities
+├── dcp/                  # DCP read-only facade tooling
 ├── pr_action_bridge/     # PR action bridge (GitHub → internal)
 ├── pr_steward/           # PR steward automation
 ├── prompt_rewrite_v4/    # Prompt rewrite v4 engine
+├── task_orchestrator_reconcile/  # Task-orchestrator reconciliation
 ├── env_drift_scan.py     # Detect env var drift
 ├── generate_smoke_env.py # Generate smoke test env files
 ├── ports_health_audit.py # Check service port health
@@ -46,6 +48,8 @@ tools/
 | `pr_action_bridge/` | Bridge PR actions to internal systems |
 | `pr_steward/` | Automate PR stewardship workflows |
 | `prompt_rewrite_v4/` | V4 prompt rewrite engine |
+
+Tests live in `tests/tools/`, `tests/auditor_router/`, `tests/pr_action_bridge/`, `tests/pr_steward/`, `tests/copilot_repair/`, `tests/dcp/`.
 
 ---
 

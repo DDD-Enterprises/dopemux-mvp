@@ -412,7 +412,7 @@ Rules:
 * `medium` means unresolved uncertainty
 * `low` means assumptions dominate
 
-Never present low-confidence reasoning as settled fact. Final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §8](../../../AGENTS.md).
+Never present low-confidence reasoning as settled fact. Final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §9](../../../AGENTS.md).
 
 ---
 
@@ -462,4 +462,4 @@ Every substantial response must contain:
 
 Do not omit uncertainty for aesthetics.
 
-For repo-changing work, also produce the full proof bundle per [AGENTS.md §8](../../../AGENTS.md): TP path/ID, worktree path, branch, repo identity result, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, `UNKNOWN`s, cleanup status. No proof means incomplete.
+For repo-changing work, also produce the full proof bundle per [AGENTS.md §9](../../../AGENTS.md): TP path/ID, worktree path, branch, repo identity result, slices completed, files changed, validations with exit codes, codereview status, precommit status, commit SHA, PR URL or exact blocker, residual risks, `UNKNOWN`s, cleanup status. No proof means incomplete.

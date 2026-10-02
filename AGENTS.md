@@ -53,6 +53,8 @@ Do not emit standalone Task Packets as the final deliverable unless the user exp
 
 **Evidence economy:** default model-call budgets are L0=0, L1≤1 implementer, L2/L3=1 implementer + 1 final auditor. See `docs/03-reference/governance/evidence-economy.md`.
 
+**Commands (step 9):** the Makefile is the canonical runner (uv, frozen lockfile; Python 3.12 via mise, venv at `.venv`). `make test` · `make test-fast` (unit, no coverage) · `make test-integration` · `make lint` (flake8) · `make format` (black + isort) · `make type-check` (mypy). Lint/format/type targets call bare tool names — activate `.venv` or use `.venv/bin/<tool>`. `pytest.ini` overrides pyproject's `[tool.pytest.ini_options]`; markers are strict.
+
 ## 5. Task Packet Rules
 
 Task Packets must conform to `dopetask-canonical-spec.json` when that schema is available.
@@ -153,11 +155,11 @@ Governance, process, schema, prompt, proof, and authority-boundary packets requi
 - `scripts/dopetask` is the observed runtime, but operator naming still drifts through TaskX language.
 - MCP and proxy config surfaces are inconsistent in places, including stale port assumptions and missing launch targets.
 
-## 10. Claude-Code Doctrine Alignment
+## 10a. Claude-Code Doctrine Alignment
 
 This file is the Codex-facing authority. The Claude-Code-facing companion is `.claude/claude.md`, which embeds a brief governance section and links to the full canonical module at `.claude/modules/shared/governance-principles.md`.
 
-The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§8), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
+The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§9), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
 
 - inspect-before-edit, minimal correct change, deterministic-systems-first
 - canonical writer rules and contract-sensitive surfaces specific to this repo

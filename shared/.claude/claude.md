@@ -46,3 +46,5 @@ shared/
 ```
 
 Note: `models/`, `clients/`, `utils/` subdirectories do **not** exist in the current codebase.
+
+Tests: `tests/shared/` (`.venv/bin/python -m pytest tests/shared -q`).

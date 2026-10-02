@@ -4,6 +4,8 @@ Status: [LIVE] PR Merge Specialist Active
 
 # Gemini CLI: PR Merge Specialist
 
+**Authority**: this file is a role brief, not workspace doctrine. [AGENTS.md](AGENTS.md) governs all agents — Truth Order (§2), architecture boundaries (§6), proof and finality (§9), MCP rules (§12). Validation: `make test` / `make test-fast` (see AGENTS.md §4 Commands).
+
 ## When to Use
 - PR remediation and queue diagnosis.
 - Feedback classification and verification execution.
@@ -14,7 +16,6 @@ Status: [LIVE] PR Merge Specialist Active
 
 ## Instructions
 Operate as a policy-governed enforcement engine for PRs.
-...
 
 ## Sequence
 1. **Analyze**: `dopemux pr-merge flight` (Dashboard) or `queue-scan`.
@@ -31,5 +32,5 @@ Operate as a policy-governed enforcement engine for PRs.
 
 ## Evidence Rules
 - Never claim success without artifact citation.
-- Resolve threads only if `THREAD_RESOLUTION_GUARD_REPORT.json` confirms it is safe.
+- Resolve threads only when `decide_thread_disposition` (`src/dopemux_pr_merge_specialist/thread_resolution.py`) marks them safe: green verification and no newer objection.
 - Escalate conflicts if classified as `HIGH_RISK`.

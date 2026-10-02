@@ -11,6 +11,8 @@ prelude: Gemini (explanation) for dopemux documentation and developer workflows.
 ---
 # Gemini CLI - Workspace Configuration & MCP Usage
 
+> **Superseded (2026-10-02)** — stale TaskX/Zen-era snapshot kept for history. It contradicts current doctrine (e.g. `.claude/` is *not* authoritative over AGENTS.md; `zen` is now `pal`). Authority: [AGENTS.md](../../../AGENTS.md) (Truth Order §2, boundaries §6, proof §9, MCP §12). Do not follow instructions below.
+
 This workspace integrates custom MCP servers inherited from the `dopemux-mvp` project. These tools power a **Two-Plane Architecture** combining Project Management (PM Plane) with Cognitive accommodations (Cognitive Plane). Below are detailed instructions on how to use them implicitly during tasks:
 
 ## ⚠️ CRITICAL SAFETY & COST SAFEGUARD

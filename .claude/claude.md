@@ -14,14 +14,31 @@
 **Non-negotiables**:
 - **Authority order**: latest user instruction → [AGENTS.md](../AGENTS.md) / Task Packet → runtime code → schemas → tests → config → docs → assumptions. Runtime outranks docs. Mark unresolved authority as `UNKNOWN`.
 - **PAL chains**: governed by [AGENTS.md §5](../AGENTS.md) — Codex minimum (`analyze → planner → codereview → precommit`) and risky/architecture variant. Do not restate the chain elsewhere.
-- **Confidence states**: `exploring / low / medium / high / certain`. `certain` requires direct evidence; final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §8](../AGENTS.md).
+- **Confidence states**: `exploring / low / medium / high / certain`. `certain` requires direct evidence; final confidence for repo-changing work must be `VERIFIED` per [AGENTS.md §9](../AGENTS.md).
 - **Validation buckets**: report **PASS / FAIL / NOT_RUN** — never collapse `NOT_RUN` into `PASS`.
 - **Contract-sensitive surfaces** (schemas, migrations, event payloads, MCP manifests, hooks, proof bundles) require canonical-writer inspection before editing.
 - **Security**: least privilege, fail-closed, never expose secrets, strict tool isolation in MCP/agent flows.
 
-**Required final response shape**: Change Summary · Authority Used · Analysis Performed · Validation Performed (PASS/FAIL/NOT_RUN) · Remaining Uncertainty · Files Touched · Git State · Rollback Plan · Requested Next Step. For repo-changing work, also produce the proof bundle from [AGENTS.md §8](../AGENTS.md).
+**Required final response shape**: Change Summary · Authority Used · Analysis Performed · Validation Performed (PASS/FAIL/NOT_RUN) · Remaining Uncertainty · Files Touched · Git State · Rollback Plan · Requested Next Step. For repo-changing work, also produce the proof bundle from [AGENTS.md §9](../AGENTS.md).
 
 **Full doctrine**: [.claude/modules/shared/governance-principles.md](modules/shared/governance-principles.md).
+
+## ⚙️ Commands & Environment
+
+Python 3.12 via mise; repo venv at `.venv` (hooks prefer it). The Makefile is the canonical runner (uv, frozen lockfile).
+
+```bash
+make test              # uv run --frozen --extra test pytest tests
+make test-fast         # unit only, --maxfail=1, no coverage
+make test-integration  # syncs --extra services first
+make lint              # flake8 — bare tool names; activate .venv first
+make format            # black + isort
+make type-check        # mypy src/
+```
+
+- `pytest.ini` overrides `[tool.pytest.ini_options]` in pyproject.toml (pytest warns and ignores the latter) — edit `pytest.ini`; markers are strict.
+- CLI: `cli.py` (~6.5k lines) registers the `commands/*.py` groups and still hosts ~29 legacy inline commands — put new commands in `src/dopemux/commands/`.
+- Personas in `.claude/personas/` and `.claude/agents/*.md` are SHA-256-pinned by `proof/CCAR-002/SOURCE_MANIFEST.json`; editing one makes `scripts/commandcode_router/build_normalized_catalog.py` exit 1 and fails `tests/commandcode_router/test_normalized_catalog.py`. Re-pin the changed entries' `sha256` in the same PR (separate `proof(ccar-002): re-pin …` commit), then run the builder's `--check`.
 
 ## 🧠 Core ADHD Principles
 
@@ -123,7 +140,7 @@ The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStar
 
 **Orchestrator-coordination hooks** (ported from upstream `claude-plugins/task-orchestrator`, TP-CS-101 / Path B — see [docs/03-reference/orchestrator-integration/plugin-hooks-port.md](../docs/03-reference/orchestrator-integration/plugin-hooks-port.md)): available as `.claude/hooks/orchestrator_session_start.py` (SessionStart context inject), `orchestrator_post_edit_nudge.py` (PostToolUse edit nudge), `orchestrator_subagent_protocol.py` (SubagentStart agent-owned-phase protocol for implementation subagents), and `orchestrator_enforcement.py` (PreToolUse actor-attribution enforcement [dormant until `actor_authentication.enabled`], skill-invocation enforcement, and EnterPlanMode/ExitPlanMode guidance). These route through `native_hooks.py` when invoked and fail open (no-op) when their helpers or config are absent.
 
-**DCP/MCP hooks** (branch `claude/dcp-mcp-skills-hooks-2026-06-10`): four hooks that wire the DCP read-only facade and MCP server health into the normal edit workflow — all fail-open, all with per-session cooldown caches under `.claude/`:
+**DCP/MCP hooks**: four hooks that wire the DCP read-only facade and MCP server health into the normal edit workflow — all fail-open, all with per-session cooldown caches under `.claude/`:
 - **H1** `dcp_surface_guard.py` — PreToolUse hard-deny for DCP-RED-MERGE-SEAM-0001 paths; one-time advisory for contract surfaces (schemas, route_manifest, mcp_catalog, .mcp.json).
 - **H2** `dcp_denylist_nudge.py` — PostToolUse scan of facade adapter edits for denied-route tokens loaded at runtime from `route_manifest.py` (no drift); advisory names token + line.
 - **H3** `mcp_health_probe.py` — SessionStart 15-min-cached MCP server health snapshot; detects leaked task-orchestrator containers (SQLite-contention risk) and unreachable http/sse servers.
@@ -166,7 +183,6 @@ When you need comprehensive details, refer to:
 
 ---
 
-**MCP Status**: Fully operational with ConPort auto-initialization
 **Python Standards**: Type hints, pytest, PEP 8 with Black formatting, src/ layout
 **ADHD Support**: Progressive disclosure, gentle guidance, visual progress indicators active
 
@@ -205,6 +221,6 @@ sharing-class table + command surface (`init`/`start`/`stop`/`doctor` implemente
 and `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (ACCEPTED with supervisor rulings 2026-07-28).
 
 **Key docs**:
-- [`docs/02-how-to/mcp-setup-other-repos.md`](docs/02-how-to/mcp-setup-other-repos.md) — user guide for other projects
-- [`docs/02-how-to/mcp-transport-and-port-bugs.md`](docs/02-how-to/mcp-transport-and-port-bugs.md) — bug record + correct analysis
+- [`docs/02-how-to/mcp-setup-other-repos.md`](../docs/02-how-to/mcp-setup-other-repos.md) — user guide for other projects
+- [`docs/02-how-to/mcp-transport-and-port-bugs.md`](../docs/02-how-to/mcp-transport-and-port-bugs.md) — bug record + correct analysis
 - `AGENTS.md §12` — canonical MCP rules for all agents
