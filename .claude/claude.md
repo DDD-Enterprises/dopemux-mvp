@@ -38,7 +38,7 @@ make type-check        # mypy src/
 
 - `pytest.ini` overrides `[tool.pytest.ini_options]` in pyproject.toml (pytest warns and ignores the latter) — edit `pytest.ini`; markers are strict.
 - CLI: `cli.py` (~6.5k lines) registers the `commands/*.py` groups and still hosts ~29 legacy inline commands — put new commands in `src/dopemux/commands/`.
-- Personas in `.claude/personas/` and `.claude/agents/*.md` are SHA-256-pinned by `proof/CCAR-002/SOURCE_MANIFEST.json`; editing one makes `scripts/commandcode_router/build_normalized_catalog.py` exit 1 and fails `tests/commandcode_router/test_normalized_catalog.py`. Re-pin the changed entries' `sha256` in the same PR (separate `proof(ccar-002): re-pin …` commit), then run the builder's `--check`.
+- Personas in `.claude/personas/` and `.claude/agents/*.md` are SHA-256-pinned by `proof/CCAR-002/SOURCE_MANIFEST.json`; editing one makes `scripts/commandcode_router/build_normalized_catalog.py` exit 1 and fails `tests/commandcode_router/test_normalized_catalog.py`. Precedent (#1388, #1389): re-pin only the changed entries' `sha256` in a separate `proof(ccar-002): re-pin …` commit in the same PR, then run the builder's `--check`.
 
 ## 🧠 Core ADHD Principles
 
