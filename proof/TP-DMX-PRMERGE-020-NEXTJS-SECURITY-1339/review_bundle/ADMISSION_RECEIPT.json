@@ -1,0 +1,6 @@
+{
+  "audited_sha": "0590f9581ac473b8c2354c171770121b033128cc",
+  "checkpoint": "CHECKPOINT_001",
+  "task_id": "TP-DMX-PRMERGE-020-NEXTJS-SECURITY-1339",
+  "verdict": "PASS_WITH_RISKS"
+}

@@ -1,0 +1,52 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "none",
+      "model_family": "automation",
+      "runner": "dependabot",
+      "runtime_family": "github-dependabot"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "The change is a coordinated Next.js patch bump from 15.5.21 to 15.5.24, limited to package.json and package-lock.json.",
+        "id": "F1",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Minimal mechanical bump of next and @next/* to 15.5.24"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model sonnet --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "remaining_risks": [
+      "Integrity hashes not checked against npm registry during tool-less audit.",
+      "Build/lint behavior verified by CI pipeline rather than offline sandbox."
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-020-NEXTJS-SECURITY-1339/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-10-02T13:00:00Z",
+  "head_sha": "0590f9581ac473b8c2354c171770121b033128cc",
+  "pr_number": 1339,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

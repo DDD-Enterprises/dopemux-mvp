@@ -1,0 +1,66 @@
+{
+  "admissible_verdict": "PASS_WITH_RISKS",
+  "audited_base": "18471e81e574e0b100a051d9a5002505e99e6157",
+  "audited_head": "0590f9581ac473b8c2354c171770121b033128cc",
+  "deterministic_evidence_sha256": "8712ff872198b15b4d84fa6f755b63e039f3f648b5f34c033dd688320fae9ba6",
+  "deterministic_test_receipts": [
+    {
+      "command": "git diff --check origin/main",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "validate_change_contract",
+      "exit_code": 0,
+      "result": "max_lane L2, model_audit_required true, status PASS"
+    },
+    {
+      "command": "instruction-like added-line scan",
+      "result": "0 matches"
+    }
+  ],
+  "effects": {
+    "close": 0,
+    "commits": 0,
+    "container_starts": 0,
+    "github_mutations": 0,
+    "mark_ready": 0,
+    "merge": 0,
+    "repo_mutations": 0,
+    "service_starts": 0,
+    "signatures": 0,
+    "workflow_reruns": 0
+  },
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "The change is a coordinated Next.js patch bump from 15.5.21 to 15.5.24, limited to package.json and package-lock.json.",
+        "id": "F1",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Minimal mechanical bump of next and @next/* to 15.5.24"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model sonnet --effort high --permission-mode plan --restricted --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 2",
+    "remaining_risks": [
+      "Integrity hashes not checked against npm registry during tool-less audit.",
+      "Build/lint behavior verified by CI pipeline rather than offline sandbox."
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-020-NEXTJS-SECURITY-1339/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "raw_output_sha256": "7babe7c0b26e06a1c661c6ec8f9167ba025495429f45c5a2f1c6478ac9a9e997",
+  "status": "COMPLETED"
+}
