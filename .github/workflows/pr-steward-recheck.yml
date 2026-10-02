@@ -1,0 +1,242 @@
+name: PR Steward recheck
+
+on:
+  pull_request_target:
+    types: [ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+  workflow_run:
+    workflows: ["🚀 Complete CI Pipeline (ADHD-Optimized)"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Open pull request number to recheck
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: write
+
+concurrency:
+  group: pr-steward-recheck-${{ github.event.pull_request.number || inputs.pr_number || github.event.workflow_run.pull_requests[0].number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Reuse exact-head audit evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          CI_NAME = "🚀 Complete CI Pipeline (ADHD-Optimized)"
+          AUDIT_PATH = ".github/workflows/embedded-audit.yml"
+          CI_PATH = ".github/workflows/ci-complete.yml"
+          STEWARD_PATH = ".github/workflows/pr-steward.yml"
+          SHA = re.compile(r"[0-9a-f]{40}")
+          PROOF_NAME = re.compile(r"embedded-audit-pr-[0-9]+-head-[0-9a-f]{40}-proof")
+
+          def require(condition, reason):
+              if not condition:
+                  raise SystemExit("RECHECK_BLOCKED: " + reason)
+
+          def positive_int(value):
+              require(type(value) in (str, int) and
+                      re.fullmatch(r"[1-9][0-9]*", str(value)) is not None,
+                      "invalid numeric identity")
+              return int(value)
+
+          def api(path, *, payload=None, paginate=False):
+              command = ["gh", "api", "--method", "GET" if payload is None else "POST", path]
+              if paginate:
+                  command += ["--paginate", "--slurp"]
+              if payload is not None:
+                  command += ["--input", "-"]
+              result = subprocess.run(command, input=None if payload is None else json.dumps(payload),
+                                      check=True, capture_output=True, text=True)
+              return json.loads(result.stdout) if result.stdout.strip() else None
+
+          def artifacts(path):
+              pages = api(path, paginate=True)
+              require(isinstance(pages, list) and bool(pages), "artifact pages missing")
+              result = []
+              for page in pages:
+                  require(isinstance(page, dict) and isinstance(page.get("artifacts"), list),
+                          "artifact page malformed")
+                  result.extend(page["artifacts"])
+              return result
+
+          def timestamp(value):
+              require(isinstance(value, str), "artifact timestamp missing")
+              parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+              require(parsed.tzinfo is not None, "artifact timestamp lacks timezone")
+              return parsed
+
+          def main():
+              repo = os.environ["GITHUB_REPOSITORY"]
+              require(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo),
+                      "invalid repository name")
+              repo_id = positive_int(os.environ["GITHUB_REPOSITORY_ID"])
+              prefix = f"repos/{repo}"
+              event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text(encoding="utf-8"))
+
+              def same_repo(value):
+                  return (isinstance(value, dict) and value.get("full_name") == repo
+                          and value.get("id") == repo_id)
+
+              require(same_repo(event.get("repository")), "event repository mismatch")
+              repository = api(prefix)
+              require(same_repo(repository), "live repository mismatch")
+              default_branch = repository.get("default_branch")
+              require(isinstance(default_branch, str) and bool(default_branch.strip()),
+                      "default branch missing")
+
+              def workflow_id(path):
+                  workflow = api(f"{prefix}/actions/workflows/{path.rsplit('/', 1)[1]}")
+                  require(workflow.get("path") == path, "workflow path mismatch")
+                  return positive_int(workflow.get("id"))
+
+              def trusted_run(run, run_id, expected_workflow, name, path, *, successful=True):
+                  trusted = (run.get("id") == run_id and same_repo(run.get("repository"))
+                             and run.get("workflow_id") == expected_workflow
+                             and run.get("name") == name and run.get("path") == path
+                             and run.get("status") == "completed")
+                  if successful:
+                      trusted = trusted and run.get("conclusion") == "success"
+                  return trusted
+
+              def association(run):
+                  prs = run.get("pull_requests")
+                  require(isinstance(prs, list), "PR association missing")
+                  if not prs:
+                      return None
+                  require(len(prs) == 1, "ambiguous PR association")
+                  return prs[0]
+
+              event_name = os.environ["GITHUB_EVENT_NAME"]
+              event_prs = []
+              event_heads = []
+              if event_name == "workflow_run":
+                  require(event.get("action") == "completed", "unsupported CI activity")
+                  source = event["workflow_run"]
+                  ci_id = workflow_id(CI_PATH)
+                  source_id = positive_int(source.get("id"))
+                  require(trusted_run(source, source_id, ci_id, CI_NAME, CI_PATH,
+                                      successful=False),
+                          "CI source identity mismatch")
+                  if source.get("event") != "pull_request":
+                      print("RECHECK_NOOP: CI source event is not pull_request")
+                      return
+                  if source.get("conclusion") != "success":
+                      print("RECHECK_NOOP: CI run did not succeed")
+                      return
+                  associated_pr = association(source)
+                  if associated_pr is None:
+                      print("RECHECK_NOOP: CI run has no PR association")
+                      return
+                  live_source = api(f"{prefix}/actions/runs/{source_id}")
+                  require(trusted_run(live_source, source_id, ci_id, CI_NAME, CI_PATH)
+                          and live_source.get("event") == "pull_request", "live CI source mismatch")
+                  live_association = association(live_source)
+                  require(live_association is not None, "live CI PR association missing")
+                  event_prs = [associated_pr, live_association]
+                  event_heads = [source.get("head_sha"), live_source.get("head_sha")]
+                  pr_number = positive_int(associated_pr.get("number"))
+              elif event_name in ("pull_request_target", "pull_request_review"):
+                  allowed = ["ready_for_review"] if event_name == "pull_request_target" else ["submitted", "dismissed"]
+                  require(event.get("action") in allowed, "unsupported PR activity")
+                  event_prs = [event["pull_request"]]
+                  pr_number = positive_int(event_prs[0].get("number"))
+                  if "number" in event:
+                      require(positive_int(event["number"]) == pr_number, "event PR number mismatch")
+                  # review.commit_id may be stale; the live PR head governs reclassification.
+              elif event_name == "workflow_dispatch":
+                  pr_number = positive_int(event.get("inputs", {}).get("pr_number"))
+              else:
+                  raise SystemExit("RECHECK_BLOCKED: unsupported event")
+
+              def live_pr():
+                  pr = api(f"{prefix}/pulls/{pr_number}")
+                  require(pr.get("number") == pr_number and pr.get("state") == "open",
+                          "live PR number/state mismatch")
+                  require(same_repo(pr.get("base", {}).get("repo")), "live PR repository mismatch")
+                  head = pr.get("head", {}).get("sha")
+                  require(isinstance(head, str) and SHA.fullmatch(head), "invalid live PR head")
+                  return head
+
+              head = live_pr()
+              for pr in event_prs:
+                  require(positive_int(pr.get("number")) == pr_number, "event PR mismatch")
+                  event_heads.append(pr.get("head", {}).get("sha"))
+                  base_repo = pr.get("base", {}).get("repo", {})
+                  # Workflow-run associations expose repository IDs, sometimes without full_name.
+                  require(base_repo.get("id") == repo_id, "event PR repository mismatch")
+                  if "full_name" in base_repo:
+                      require(base_repo["full_name"] == repo, "event PR repository name mismatch")
+              require(all(isinstance(value, str) and SHA.fullmatch(value) and value == head
+                          for value in event_heads), "event head differs from live PR head")
+
+              name = f"embedded-audit-pr-{pr_number}-head-{head}-proof"
+              audit_workflow = workflow_id(AUDIT_PATH)
+
+              def reusable(artifact):
+                  return (artifact.get("name") == name and artifact.get("expired") is False
+                          and timestamp(artifact.get("expires_at")) > datetime.now(timezone.utc))
+
+              candidates = []
+              runs = {}
+              for artifact in artifacts(f"{prefix}/actions/artifacts?name={name}&per_page=100"):
+                  if not reusable(artifact):
+                      continue
+                  artifact_id = positive_int(artifact.get("id"))
+                  created = timestamp(artifact.get("created_at"))
+                  origin = artifact.get("workflow_run") or {}
+                  require(origin.get("repository_id") == repo_id, "artifact repository mismatch")
+                  run_id = positive_int(origin.get("id"))
+                  if run_id not in runs:
+                      runs[run_id] = api(f"{prefix}/actions/runs/{run_id}")
+                  # Audit run.head_sha can be the base SHA for pull_request_target.
+                  # Candidate identity comes from the exact artifact name; Steward checks proof bytes.
+                  # Conclusion is gated after selection so a newer failed audit dominates older green.
+                  if trusted_run(runs[run_id], run_id, audit_workflow, "embedded-audit",
+                                 AUDIT_PATH, successful=False):
+                      candidates.append((created, artifact_id, run_id))
+              require(bool(candidates), "no reusable trusted audit artifact")
+              candidates.sort(reverse=True)
+              selected = candidates[0]
+              require(sum(row[:2] == selected[:2] for row in candidates) == 1,
+                      "ambiguous latest audit artifact")
+              _, artifact_id, run_id = selected
+              require(trusted_run(runs[run_id], run_id, audit_workflow,
+                                  "embedded-audit", AUDIT_PATH),
+                      "latest trusted exact-head audit run is not successful")
+
+              # Steward receives a run ID, not an artifact ID. Its own selector must be unambiguous.
+              run_artifacts = artifacts(f"{prefix}/actions/runs/{run_id}/artifacts")
+              proofs = [a for a in run_artifacts if PROOF_NAME.fullmatch(a.get("name", ""))]
+              require(len(proofs) == 1 and proofs[0].get("id") == artifact_id and reusable(proofs[0]),
+                      "selected run artifact changed or ambiguous")
+              require(trusted_run(api(f"{prefix}/actions/runs/{run_id}"), run_id,
+                                  audit_workflow, "embedded-audit", AUDIT_PATH),
+                      "selected audit run no longer successful")
+              workflow_id(STEWARD_PATH)
+              require(live_pr() == head, "PR head changed before dispatch")
+              api(f"{prefix}/actions/workflows/pr-steward.yml/dispatches",
+                  payload={"ref": default_branch, "inputs": {"audit_run_id": str(run_id)}})
+              print(f"RECHECK_DISPATCHED: pr={pr_number} head={head} audit_run_id={run_id}")
+
+          if __name__ == "__main__":
+              main()
+          PY
