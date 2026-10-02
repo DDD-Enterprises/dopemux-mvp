@@ -114,5 +114,40 @@
         ]
       }
     ]
+  },
+  "extraKnownMarketplaces": {
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "codex@openai-codex": true,
+    "frontend-design@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "hookify@claude-plugins-official": false,
+    "feature-dev@claude-plugins-official": false,
+    "code-review@claude-plugins-official": false,
+    "commit-commands@claude-plugins-official": false,
+    "pyright-lsp@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": false,
+    "andrej-karpathy-skills@karpathy-skills": true,
+    "superdevflow@synced": true,
+    "engineering@synced": false,
+    "ultrapowers-dev@synced": false,
+    "crewmarshal@synced": false,
+    "ux-superpowers@synced": false,
+    "desktop-commander@synced": false,
+    "design@synced": false,
+    "design-superpowers@synced": false,
+    "brand-voice@synced": false,
+    "searchfit-seo@synced": false,
+    "product-management@synced": false,
+    "cowork-plugin-management@synced": false,
+    "supericons@synced": false,
+    "airtable@synced": false
   }
 }

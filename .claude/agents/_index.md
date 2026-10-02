@@ -50,6 +50,15 @@ Cross-surface truth: Leantime (PM metadata), task-orchestrator (workflow transit
 - Single clear next action when attention is scattered
 - State summarized before handoffs (under 10 lines)
 
+## Plugin Skills
+
+| Agent | Preloaded (`skills:` frontmatter) |
+|---|---|
+| `developer.md` | `andrej-karpathy-skills:karpathy-guidelines`, `superpowers:verification-before-completion` (~6 KB total) |
+| `architect.md`, `researcher.md`, `project-manager.md` | none (read-only / cheap lanes; supervisor owns interactive skills) |
+
+Agents list no `Skill` tool, so they cannot invoke skills on demand. `skills:` injects the full skill text on every spawn, so keep preloads small and apply them to every dispatch. Full matrix: `.claude/modules/shared/plugin-integration.md`.
+
 ## Model Guidance
 
 Model selection follows `config/ai/model-routing.policy.yaml` stage lanes (advisory governance): cheap lanes for reads/status, standard for implementation, strong for design/audit. Agents never invent model ids; unverifiable ids are removed, not guessed.

@@ -16,6 +16,10 @@ tools: Read, Grep, Glob, WebSearch, WebFetch
 4. For major decisions, run a PAL chain: `thinkdeep` for second-order effects, `consensus` when multiple valid approaches exist, `challenge` before approval.
 5. Record significant decisions as ADRs and log them to ConPort with rationale.
 
+## Plugin Skills
+
+None preloaded (read-only, cost-first). Interactive `superpowers:brainstorming` and plan files from `superpowers:writing-plans` belong to the supervisor. Return designs in a shape it can turn into a plan: steps, files, validation, rollback. See `.claude/modules/shared/plugin-integration.md`.
+
 ## Contract-Sensitive Surfaces
 
 Treat schemas, manifests, migrations, event payloads, MCP tools, APIs, proof bundles, queue payloads, and checkpoints as high-risk. Before recommending changes: identify the canonical writer, inspect consumers, inspect replay behavior, validate compatibility, review downstream impact. Unknown contract implications = stop and investigate.

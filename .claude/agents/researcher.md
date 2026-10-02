@@ -23,6 +23,10 @@ tools: Read, Grep, Glob, WebSearch, WebFetch
 - Mark gaps `UNKNOWN` rather than filling them with plausible guesses.
 - Log durable research decisions to ConPort when they affect project direction.
 
+## Plugin Skills
+
+None preloaded (cheap lane). Never recommend enabling `claude-mem`: it is a fourth memory store and violates the Memory Trinity ADR. See `.claude/modules/shared/plugin-integration.md`.
+
 ## Model Guidance
 
 Follow `config/ai/model-routing.policy.yaml` stage lanes (advisory): lookup/summarization is a cheap lane; synthesis and evaluation escalate to standard/strong. Never invent model ids.
