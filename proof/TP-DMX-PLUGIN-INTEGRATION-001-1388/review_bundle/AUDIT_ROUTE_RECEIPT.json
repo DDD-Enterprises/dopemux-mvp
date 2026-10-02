@@ -1,0 +1,32 @@
+{
+  "round_1": {
+    "head": "1bf07278c346460c0178cac3c09d3d8d1d1e6edf",
+    "native_verdict": "NEEDS_SUPERVISOR",
+    "tools": "none",
+    "cost_usd": 0.0985006,
+    "turns": 1,
+    "model_observed": [
+      "claude-sonnet-5-5"
+    ],
+    "prompt_sha256": "fe1e259e0d726d4f5edc16aab67e2966963384e8a3c4e49d638d2462e88f0555",
+    "raw_sha256": "19af77660212b7e3123aac7b3b58bdb4495b6a57dd316902d399591446a63443"
+  },
+  "round_2": {
+    "head": "2c137b884719af77c5bc4b2c8124db13ea112d63",
+    "native_verdict": "PASS_WITH_RISKS",
+    "tools": "Read,Grep,Glob,Bash(shasum|git diff|git show|git log|jq)",
+    "cost_usd": 0.12218140000000001,
+    "turns": 4,
+    "model_observed": [
+      "claude-sonnet-5-5"
+    ],
+    "prompt_sha256": "949e12a8b4c8fb580a819bd8b6ecc0160c3a5e2df7352f0a08f523072c1db525",
+    "prompt_base_sha256": "3a07e69ba21d8c0a94d80cf1b00047eb984b4eba346b9d175939665e23dfd407",
+    "raw_sha256": "29c768185df6b049730f7ec716da3e910eb763972676006cb9f1df7c61894900",
+    "exit_code": 0
+  },
+  "runner": "Claude Code CLI",
+  "runner_version": "2.1.287 (Claude Code)",
+  "fallback_used": false,
+  "subagents_spawned": 0
+}

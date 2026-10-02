@@ -135,6 +135,17 @@ The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStar
 
 Hooks run outside the model's turn. If you want to change hook behavior, edit the dispatcher or `.claude/hooks/` scripts; routine settings tweaks should go through the `update-config` skill rather than hand-editing `settings.json`. Hook output reaches the model as `<user-prompt-submit-hook>` blocks — treat as user input.
 
+## 🧩 Plugin Skills (auto-use)
+
+Invoke these without being asked when the trigger fires. Repo doctrine overrides any skill step that conflicts with it. Full matrix and overrides: [.claude/modules/shared/plugin-integration.md](modules/shared/plugin-integration.md).
+
+- Bug / failing test → `superpowers:systematic-debugging` · feature or fix → `superpowers:test-driven-development` · before any done/commit/PR claim → `superpowers:verification-before-completion` · multi-step spec → `superpowers:writing-plans`
+- Finishing a branch → `superpowers:finishing-a-development-branch`, **PR route only** (never local-merge to `main`). Worktrees go in `<repo>/.worktrees/`.
+- Second opinion / stuck → `codex:rescue`, `/codex:review`. **Codex is advisory, never the §9.1 auditor.** New UI → `frontend-design:frontend-design`.
+- GHA failure → `superdevflow:gha` · session handoff → `superdevflow:handoff` (plus `/save`) · CLAUDE.md upkeep → `claude-md-management:revise-claude-md` (manual).
+- After editing Python → `LSP` tool (pyright-lsp) for hover/diagnostics. Serena stays the navigation and symbol-edit authority. Server install: `uv tool install 'pyright[nodejs]'`.
+- Parallel/subagent skills stay inside AGENTS.md §5 budgets. Enablement is pinned in `.claude/settings.json` `enabledPlugins`. `claude-mem`, `caveman`, `ck`, `hookify`, and `feature-dev` are uninstalled; `crewmarshal` and the other off-scope synced plugins are disabled.
+
 ## 📚 Detailed Information Locations
 
 When you need comprehensive details, refer to:
@@ -146,6 +157,7 @@ When you need comprehensive details, refer to:
 **ADHD Engine**: `.claude/modules/shared/adhd-patterns.md` (sessions, energy tracking, break management; separates observed support from planned automation)
 **Shared Systems**: `.claude/modules/shared/` (sprint.md, event-patterns.md, superclaude-workflows.md)
 **Filesystem Organization**: `docs/03-reference/filesystem-guide.md` (directory structure, file placement rules)
+**Plugins**: `.claude/modules/shared/plugin-integration.md` (installed plugins, auto-use triggers, doctrine overrides, do-not-enable list)
 **Harness features** (Plan mode, advisor, /loop, ToolSearch, Skill): `~/.claude/MODES_AND_TOOLS.md`
 
 ## 🎖️ Success Metrics

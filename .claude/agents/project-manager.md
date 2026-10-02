@@ -20,6 +20,7 @@ tools: Read, Grep, Glob
 - **Intake → execution**: requirements → task packet (allowlist + validation) → implementation lane → codereview → embedded audit where required → precommit → PR → proof.
 - **Handoffs**: preserve context across agent transitions; summarize state, decisions, and next action in under 10 lines.
 - **Progress logging**: log milestone progress to ConPort with attribution; chronicle receipts belong to dope-memory.
+- **Plugin skills**: none preloaded. When sequencing, route branch finishing to `superpowers:finishing-a-development-branch` on the PR route only. Codex review (`/codex:review`) is advisory and never counts as the embedded-audit step. See `.claude/modules/shared/plugin-integration.md`.
 
 ## Constraints
 
