@@ -1,0 +1,116 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "claude-opus-5-5",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "independence": "SEPARATE_SESSION_SAME_FAMILY",
+    "independence_note": "Auditor ran as a fresh non-persistent headless session (--safe-mode --restricted: no CLAUDE.md, hooks, plugins, settings, MCP) with read-only tools; same model family/runtime as the implementer. Operator explicitly authorized implementer-orchestrated audit + signing (2026-10-02)."
+  },
+  "base_sha": "d39b691c7d420a95a1a1372a793623840b4e84b0",
+  "branch": "claude/plugin-integration-2026-10-02",
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "SOURCE_MANIFEST integrity verified. I recomputed sha256 for all 5 active_agents entries (_index, architect, developer, project-manager, researcher) at head 2c137b884. Each matches the manifest value exactly. The manifest diff touches only those 5 hashes (10 lines changed, 5 insertions and 5 deletions).",
+        "id": "F1",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "CCAR-002 manifest agent hashes verified"
+      },
+      {
+        "body": "The changed-file set from `git diff --name-only d39b691c7..HEAD` is exactly the 9 paths in the candidate metadata. All are under .claude/ or proof/CCAR-002/, which fits the stated plugin-integration scope. No code, workflow, or hook scripts changed.",
+        "id": "F2",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Changed paths match declared scope"
+      },
+      {
+        "body": ".claude/settings.json: the `hooks` block is byte-identical to base (jq -S diff of .hooks is empty). All other top-level keys outside hooks, enabledPlugins and extraKnownMarketplaces are also identical to base. The change is purely additive: `extraKnownMarketplaces` (2 entries) and `enabledPlugins`.",
+        "id": "F3",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "settings.json hooks byte-identical; change additive"
+      },
+      {
+        "body": "enabledPlugins has 25 entries, matching the card's '25 explicit entries' claim. 7 are true (superpowers, codex, frontend-design, claude-md-management, pyright-lsp, andrej-karpathy-skills, superdevflow@synced) and 18 are false. There are no duplicate keys. The file parses as valid JSON.",
+        "id": "F4",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "enabledPlugins count and values verified"
+      },
+      {
+        "body": "The documentation is consistent with doctrine in the diff. Codex is explicitly advisory and never the \u00a79.1 auditor. Finishing a branch is PR-route only. The packet allowlist stays the edit boundary. Plugin skills are subordinate to AGENTS.md. The 4 non-developer agents get no preloads. No agent `tools:` list gained `Skill`.",
+        "id": "F5",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Doctrine consistency: Codex advisory, PR-only finish, allowlist kept"
+      },
+      {
+        "body": "developer.md adds `skills:` frontmatter that preloads two third-party plugin skills (`andrej-karpathy-skills:karpathy-guidelines`, `superpowers:verification-before-completion`). The developer agent has Bash, Edit and Write, so this is a prompt-injection surface that the card acknowledges.",
+        "id": "F6",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "developer skills preload is a prompt-injection surface (acknowledged)"
+      }
+    ],
+    "fixes_applied": [
+      "Round-1 audit (tool-less, head 1bf07278c) returned NEEDS_SUPERVISOR; repaired in 2c137b884: card entry count corrected 28->25, karpathy-skills marketplace registered in extraKnownMarketplaces, supply-chain note added."
+    ],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "claude -p --model sonnet --effort high --permission-mode plan --restricted --safe-mode --strict-mcp-config --mcp-config '{\"mcpServers\":{}}' --tools \"Read,Grep,Glob,Bash\" --allowedTools \"Bash(shasum *)\" \"Bash(git diff *)\" \"Bash(git show *)\" \"Bash(git log *)\" \"Bash(jq *)\" --disable-slash-commands --no-session-persistence --output-format json --max-budget-usd 4",
+    "remaining_risks": [
+      "Supply chain: both new marketplaces (`openai/codex-plugin-cc`, `forrestchang/andrej-karpathy-skills`) are registered from GitHub with no ref or commit pin. The plugin version actually run is whatever each machine has installed, outside the repo. Skill text from a mutable third-party repo is injected into a subagent with Bash, Edit and Write. The card discloses this and says to re-read preloads after an update. It is a documented process control, not a technical one. Consider pinning a ref or SHA, or vendoring the 2.5 KB karpathy skill.",
+      "Unverifiable machine-local claims (treated as claims, not evidence): the uninstalls of claude-mem, caveman, ck, hookify and feature-dev, the deletion of ~/.claude-mem (794 MB), `claude plugin list` results, the pyright 1.1.414 version, and `stopReviewGate: false`. The '~6 KB total' preload size and the 'preload names verified to load' statement could not be checked from the repo.",
+      "claude.md directs the model to invoke several plugin skills automatically ('without being asked'). These skills are not in the repo and are only available if installed. The card adds a NOT_AVAILABLE fallback, which mitigates this. Behavior still varies by machine.",
+      "`enabledPlugins` pins `hookify` and `feature-dev` to false for plugins the card says are uninstalled. This is a defensible guard but adds stale-looking config. Behavior of `code-review@claude-plugins-official` alongside the built-in `/code-review` is documented as UNKNOWN.",
+      "The agent hash re-pin in SOURCE_MANIFEST means the proof bundle's generated_at (2026-07-31) and base_commit (683b2411) no longer describe the pinned contents. Only the hashes were refreshed. This is a minor provenance-labeling gap, not an integrity failure.",
+      "The operator-reported results (validate_change_contract.py PASS at L2, pre-commit PASS, 35/35 tests PASS) were not re-run by this audit."
+    ],
+    "report_path": "proof/TP-DMX-PLUGIN-INTEGRATION-001-1388/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-10-02T16:16:36Z",
+  "head_sha": "2c137b884719af77c5bc4b2c8124db13ea112d63",
+  "merge_authorized": false,
+  "packet_id": "TP-DMX-PLUGIN-INTEGRATION-001-1388",
+  "publication_authorized": false,
+  "remaining_risks": [
+    "Supply chain: both new marketplaces (`openai/codex-plugin-cc`, `forrestchang/andrej-karpathy-skills`) are registered from GitHub with no ref or commit pin. The plugin version actually run is whatever each machine has installed, outside the repo. Skill text from a mutable third-party repo is injected into a subagent with Bash, Edit and Write. The card discloses this and says to re-read preloads after an update. It is a documented process control, not a technical one. Consider pinning a ref or SHA, or vendoring the 2.5 KB karpathy skill.",
+    "Unverifiable machine-local claims (treated as claims, not evidence): the uninstalls of claude-mem, caveman, ck, hookify and feature-dev, the deletion of ~/.claude-mem (794 MB), `claude plugin list` results, the pyright 1.1.414 version, and `stopReviewGate: false`. The '~6 KB total' preload size and the 'preload names verified to load' statement could not be checked from the repo.",
+    "claude.md directs the model to invoke several plugin skills automatically ('without being asked'). These skills are not in the repo and are only available if installed. The card adds a NOT_AVAILABLE fallback, which mitigates this. Behavior still varies by machine.",
+    "`enabledPlugins` pins `hookify` and `feature-dev` to false for plugins the card says are uninstalled. This is a defensible guard but adds stale-looking config. Behavior of `code-review@claude-plugins-official` alongside the built-in `/code-review` is documented as UNKNOWN.",
+    "The agent hash re-pin in SOURCE_MANIFEST means the proof bundle's generated_at (2026-07-31) and base_commit (683b2411) no longer describe the pinned contents. Only the hashes were refreshed. This is a minor provenance-labeling gap, not an integrity failure.",
+    "The operator-reported results (validate_change_contract.py PASS at L2, pre-commit PASS, 35/35 tests PASS) were not re-run by this audit."
+  ],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "risk_lane": "L2",
+  "status": "PASS_WITH_RISKS",
+  "validation_provenance": {
+    "admission": "ACCEPTED",
+    "source_checkpoint": "ROUND_2",
+    "source_evidence": [
+      "AUDIT_ROUTE_RECEIPT.json",
+      "AUDIT_RETURN.json"
+    ]
+  }
+}
