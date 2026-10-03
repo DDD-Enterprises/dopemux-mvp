@@ -42,7 +42,7 @@ scripts/
 └── env_outputs/       # Environment output artifacts
 ```
 
-Note: `deployment/`, `testing/`, `maintenance/` do **not** exist at top level. Bring up the full stack with `dopemux mcp start-all` and check health with `dopemux mcp doctor` (`dopemux mcp start` only starts the worktree-scoped conport/dope-memory sidecars and the host-singleton task-orchestrator on :7890, which serves one active project at a time); never raw `docker compose up`.
+Note: `deployment/`, `testing/`, `maintenance/` do **not** exist at top level. Bring up the full stack with `dopemux mcp start-all`; `dopemux mcp doctor` only diagnoses the repo sidecars, and `smoke_up.sh`'s runtime gate only covers `enabled_in_smoke` services — there is no single full-stack health gate (`dopemux mcp start` only starts the worktree-scoped conport/dope-memory sidecars and the host-singleton task-orchestrator on :7890, which serves one active project at a time); never raw `docker compose up`.
 
 ---
 
