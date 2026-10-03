@@ -1,0 +1,114 @@
+{
+  "project": "dopemux-mvp",
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MP-DMX-MERGE-DRAIN-20261003-007",
+  "workstream_id": "R7",
+  "authority": "NONE",
+  "receipt_refs": {},
+  "operator_gate_required": false,
+  "id": "TP-DMX-MD-R7-UI-DEPS-001",
+  "target": "reconcile Vitest 5 lockfiles without dropping security overrides",
+  "invariants": [
+    "Do not accept PR #1406 pnpm-lock.yaml because it removes the security override block.",
+    "All package.json overrides and pnpm.overrides values must remain represented in pnpm-lock.yaml.",
+    "No source behavior changes.",
+    "Primary checkout is read-only."
+  ],
+  "depends_on": [],
+  "series": {
+    "id": "MP-DMX-MERGE-DRAIN-20261003-007",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "successor/ui-deps-vitest5-r7",
+    "base_branch": "main",
+    "stacked_because": "fresh current-main successor for unsafe lockfile donor #1406"
+  },
+  "commit": {
+    "message": "chore(ui): update Vitest while preserving security lock overrides",
+    "allowlist": [
+      "ui-dashboard/package.json",
+      "ui-dashboard/package-lock.json",
+      "ui-dashboard/pnpm-lock.yaml",
+      "proof/TP-DMX-MD-R7-UI-DEPS-001/",
+      "proof/pr_merge/embedded-audit/"
+    ],
+    "verify": [
+      "lockfiles agree with package.json",
+      "pnpm security overrides preserved exactly",
+      "npm test -- --run",
+      "npm run lint",
+      "npm run build",
+      "git diff --check",
+      "validate_change_contract.py on exact range"
+    ]
+  },
+  "pr": {
+    "title": "chore(ui): update Vitest while preserving security lock overrides",
+    "body": "Safe successor for #1406. Rejects pnpm override loss and requires exact lock consistency plus independent audit.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Recompute the intended #1406 delta against current main and prove which requested updates are not already present.",
+      "validation": [
+        "Desired manifest delta is explicit; no stale transitive changes are blindly copied."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Regenerate or reconcile package-lock and pnpm-lock using repo-compatible tooling while preserving security override keys/values.",
+      "validation": [
+        "Every security override remains exact; Vitest target is resolved consistently; no unrelated dependency downgrade."
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run UI tests/lint/build and freeze exact deterministic subject.",
+      "validation": [
+        "All configured UI gates pass and exact head is recorded."
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Obtain one independent AGY Gemini 3.1 Pro audit and publish only after proof/readiness gates.",
+      "validation": [
+        "Proof accepted and protected merge succeeds without bypass."
+      ]
+    }
+  ],
+  "risk_lane": "L2",
+  "audit_group": "R7-UI-DEPS",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "shell",
+      "model": "none",
+      "effort": "none"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_RUNTIME"
+  },
+  "write_surface": [
+    "ui-dashboard/",
+    "proof/"
+  ],
+  "canonical_writers": [
+    "deterministic-lockfile-integrator"
+  ],
+  "semantic_scope": [
+    "ui_dependency_lock_consistency",
+    "security_override_preservation"
+  ],
+  "rollback_boundary": "ce95ee375b2ad677d73a71f4452440486a8e0740"
+}

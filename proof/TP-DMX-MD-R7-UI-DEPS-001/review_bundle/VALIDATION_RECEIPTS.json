@@ -1,0 +1,22 @@
+{
+  "vitest_run": {
+    "command": "npm test -- --run",
+    "exit_code": 0,
+    "summary": "7 files passed (54 tests passed)"
+  },
+  "ui_build": {
+    "command": "npm run build",
+    "exit_code": 0,
+    "summary": "built in 356ms"
+  },
+  "git_diff_check": {
+    "command": "git diff --check origin/main..HEAD",
+    "exit_code": 0,
+    "summary": "PASS (clean diff)"
+  },
+  "change_contract": {
+    "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+    "exit_code": 0,
+    "summary": "status=PASS max_lane=L0 paths=3"
+  }
+}
