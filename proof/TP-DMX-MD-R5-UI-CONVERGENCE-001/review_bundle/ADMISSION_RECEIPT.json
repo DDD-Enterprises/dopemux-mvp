@@ -1,0 +1,22 @@
+{
+  "task_packet_id": "TP-DMX-MD-R5-UI-CONVERGENCE-001",
+  "macro_id": "MP-DMX-MERGE-DRAIN-20261002-005",
+  "lane": "UI",
+  "risk_lane": "L2",
+  "base_sha": "e9c34acdf741975508ea02a5fc2dfa229fe498db",
+  "head_sha": "c0e000336f4e8d8be1922234454c3768218f0a4a",
+  "admission_time": "2026-10-03T06:25:00Z",
+  "implementer": {
+    "runner": "agy",
+    "model": "gemini-3.8-flash-high",
+    "effort": "high",
+    "runtime_family": "agy"
+  },
+  "auditor": {
+    "runner": "claude-code",
+    "model": "claude-sonnet-4-6",
+    "effort": "high",
+    "runtime_family": "claude-code"
+  },
+  "contract_valid": true
+}

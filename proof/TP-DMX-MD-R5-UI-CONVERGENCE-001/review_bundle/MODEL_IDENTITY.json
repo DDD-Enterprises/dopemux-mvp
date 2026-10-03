@@ -1,0 +1,22 @@
+{
+  "auditor": {
+    "tool": "claude-code",
+    "requested_model": "claude-sonnet-4-6",
+    "actual_model": "claude-opus-5-5",
+    "runtime_family": "claude-code",
+    "provider_family": "anthropic-claude",
+    "effort": "high",
+    "session_id": "32c6b46a-db75-4e0a-9f6d-b6b3d6356e7d"
+  },
+  "implementer": {
+    "tool": "agy",
+    "requested_model": "gemini-3.8-flash-high",
+    "actual_model": "gemini-3.8-flash-high",
+    "runtime_family": "agy",
+    "provider_family": "google-gemini",
+    "effort": "high",
+    "session_id": "dc94e2c5-acf6-4f53-8fc5-d3e67e8506c6"
+  },
+  "independence": "PROVEN",
+  "verdict": "FAIL"
+}

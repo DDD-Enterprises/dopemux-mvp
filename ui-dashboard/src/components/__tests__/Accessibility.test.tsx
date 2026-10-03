@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // @ts-nocheck
-import { expect, test } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { afterEach, expect, test, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import fs from 'fs';
@@ -9,6 +9,8 @@ import path from 'path';
 import PredictionPanel from '../PredictionPanel';
 import TaskSequencer from '../TaskSequencer';
 import TeamDashboard from '../TeamDashboard';
+
+afterEach(cleanup);
 
 const componentsDir = path.resolve(__dirname, '..');
 
@@ -181,6 +183,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('role="status"');
   expect(content).toMatch(/aria-label=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks completed\. \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\.\$\{finishTimeLabel\s*\?\s*` Estimated completion: \$\{finishTimeLabel\}`\s*:\s*''\}`\s*\}/);
   expect(content).toContain('aria-label="Ritual Complete: All tasks finished"');
+  expect(content).toContain('aria-live="polite"');
+  expect(content).toMatch(/aria-label=\{\s*`Step \$\{index \+ 1\} of \$\{optimizedTasks\.length\} in optimized ritual sequence`\s*\}/);
+  expect(content).toMatch(/title=\{\s*`Step \$\{index \+ 1\} of \$\{optimizedTasks\.length\} in optimized sequence`\s*\}/);
   expect(content).toContain('const headerRef = useRef<HTMLHeadingElement>(null);');
   expect(content).toContain('ref={headerRef}');
   expect(content).toContain('tabIndex={-1}');
@@ -457,4 +462,194 @@ test('TaskSequencer pending Start button renders tooltip on hover and keyboard f
   // Hover path — MUI Tooltip portals title text after enter delay.
   fireEvent.mouseOver(hoverStartButton);
   expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(hoverExpected);
+});
+
+test('PredictionPanel reset on prediction prop update and ignores pending stale copy promises', async () => {
+  const writeTextMock = vi.fn().mockResolvedValue(undefined);
+  const originalClipboard = navigator.clipboard;
+  Object.defineProperty(navigator, 'clipboard', {
+    value: { writeText: writeTextMock },
+    configurable: true,
+  });
+
+  try {
+    const { rerender } = render(<PredictionPanel prediction={0.4} />);
+    const copyButton = screen.getByRole('button', { name: /15-min prediction roast/i });
+    fireEvent.click(copyButton);
+
+    expect(await screen.findByLabelText('Forecast copied')).toBeInTheDocument();
+
+    // Rerender with a new prediction prop (identity/data change)
+    rerender(<PredictionPanel prediction={0.8} />);
+
+    // isCopied should be reset immediately
+    expect(screen.queryByLabelText('Forecast copied')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /15-min prediction roast/i })).toBeInTheDocument();
+
+    // Stale promise handling: verify pending copy promise cannot repaint after prediction change
+    let resolveStalePromise: () => void = () => {};
+    const stalePromise = new Promise<void>((resolve) => {
+      resolveStalePromise = resolve;
+    });
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockReturnValue(stalePromise) },
+      configurable: true,
+    });
+
+    rerender(<PredictionPanel prediction={0.5} />);
+    const copyBtn2 = screen.getByRole('button', { name: /15-min prediction roast/i });
+    fireEvent.click(copyBtn2);
+
+    // Prop updates while copy promise is pending
+    rerender(<PredictionPanel prediction={0.9} />);
+
+    // Resolve stale promise inside act() to flush microtasks
+    await act(async () => {
+      resolveStalePromise();
+      await stalePromise;
+    });
+
+    // Stale promise must not have set isCopied
+    expect(screen.queryByLabelText('Forecast copied')).not.toBeInTheDocument();
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
+});
+
+test('TaskSequencer copy error propagation to onError', async () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Complete tasks.',
+  };
+
+  const originalClipboard = navigator.clipboard;
+
+  // Case 1: Clipboard API unsupported
+  let errorMsg: string | null = null;
+  Object.defineProperty(navigator, 'clipboard', {
+    value: undefined,
+    configurable: true,
+  });
+
+  try {
+    const { unmount } = render(<TaskSequencer cognitiveState={cognitiveState} onError={(msg) => { errorMsg = msg; }} />);
+    const copyBtn = screen.getByRole('button', { name: 'Copy task title to clipboard' });
+    fireEvent.click(copyBtn);
+
+    expect(errorMsg).toBe('Clipboard API is not supported in this browser or context.');
+    unmount();
+
+    // Case 2: Clipboard API rejects
+    let rejectErrorMsg: string | null = null;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: vi.fn().mockRejectedValue(new Error('Clipboard write rejected')),
+      },
+      configurable: true,
+    });
+
+    render(<TaskSequencer cognitiveState={cognitiveState} onError={(msg) => { rejectErrorMsg = msg; }} />);
+    const copyBtn2 = screen.getByRole('button', { name: 'Copy task title to clipboard' });
+    fireEvent.click(copyBtn2);
+
+    await vi.waitFor(() => {
+      expect(rejectErrorMsg).toBe('Failed to copy task title: Clipboard write rejected');
+    });
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
+});
+
+test('TaskSequencer resets isTaskTitleCopied when currentTaskId changes', async () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Complete tasks.',
+  };
+
+  const originalClipboard = navigator.clipboard;
+  Object.defineProperty(navigator, 'clipboard', {
+    value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    configurable: true,
+  });
+
+  try {
+    render(<TaskSequencer cognitiveState={cognitiveState} />);
+    const copyBtn = screen.getByRole('button', { name: 'Copy task title to clipboard' });
+    fireEvent.click(copyBtn);
+
+    expect(await screen.findByRole('button', { name: 'Task title copied' })).toBeInTheDocument();
+
+    // Complete current task to transition to next task
+    const completeBtn = screen.getByRole('button', { name: /^Complete / });
+    fireEvent.click(completeBtn);
+
+    expect(screen.queryByRole('button', { name: 'Task title copied' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy task title to clipboard' })).toBeInTheDocument();
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
+});
+
+test('TaskSequencer Ritual Complete banner aria-live="polite" and role="status"', () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Complete tasks.',
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  // Complete all 3 tasks
+  fireEvent.click(screen.getByRole('button', { name: /Complete /i }));
+  fireEvent.click(screen.getByRole('button', { name: /Complete /i }));
+  fireEvent.click(screen.getByRole('button', { name: /Complete /i }));
+
+  const banner = screen.getByRole('status', { name: 'Ritual Complete: All tasks finished' });
+  expect(banner).toBeInTheDocument();
+  expect(banner).toHaveAttribute('aria-live', 'polite');
+  expect(banner).toHaveAttribute('role', 'status');
+});
+
+test('TaskSequencer step index badges accessibility and tooltip attributes', () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Complete tasks.',
+  };
+
+  render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+  const badge1 = screen.getByLabelText('Step 1 of 3 in optimized ritual sequence');
+  expect(badge1).toBeInTheDocument();
+  expect(badge1).toHaveAttribute('tabIndex', '0');
+  expect(badge1).toHaveTextContent('#1');
+
+  const badge2 = screen.getByLabelText('Step 2 of 3 in optimized ritual sequence');
+  expect(badge2).toBeInTheDocument();
+  expect(badge2).toHaveAttribute('tabIndex', '0');
+  expect(badge2).toHaveTextContent('#2');
+
+  const badge3 = screen.getByLabelText('Step 3 of 3 in optimized ritual sequence');
+  expect(badge3).toBeInTheDocument();
+  expect(badge3).toHaveAttribute('tabIndex', '0');
+  expect(badge3).toHaveTextContent('#3');
 });

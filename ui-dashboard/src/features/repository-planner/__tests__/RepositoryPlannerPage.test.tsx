@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import RepositoryPlannerPage from '../RepositoryPlannerPage';
 import { buildFoundationLanes } from '../RepositoryPlannerPage';
@@ -124,6 +124,60 @@ describe('RepositoryPlannerPage', () => {
     render(<RepositoryPlannerPage sources={[fixture as never]} />);
     expect(screen.getByRole('button', { name: new RegExp(`Inspect dopemux-mvp pcp-planner-foundation ${fixture.lanes[0].candidate_sha}`) })).toBeVisible();
     expect(screen.getByRole('button', { name: /Inspect dopemux-mvp pcp-planner-foundation b{40}/ })).toBeVisible();
+  });
+
+  test('CandidateShaChip copies full candidate SHA to clipboard on click with visual feedback', async () => {
+    const fullSha = dopemuxFixture.lanes[0].candidate_sha;
+    const shortSha = fullSha.slice(0, 12);
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      configurable: true,
+    });
+
+    try {
+      render(<RepositoryPlannerPage />);
+
+      const chip = screen.getByRole('button', { name: new RegExp(`Copy candidate SHA ${shortSha}`) });
+      expect(chip).toBeVisible();
+
+      fireEvent.click(chip);
+
+      expect(writeTextMock).toHaveBeenCalledWith(fullSha);
+      expect(await screen.findByText(`Candidate SHA ${shortSha} copied`)).toBeVisible();
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        configurable: true,
+      });
+    }
+  });
+
+  test('CandidateShaChip surfaces copy failure to onError and updates aria-label', async () => {
+    const fullSha = dopemuxFixture.lanes[0].candidate_sha;
+    const shortSha = fullSha.slice(0, 12);
+    const writeTextMock = vi.fn().mockRejectedValue(new Error('Permission denied'));
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      configurable: true,
+    });
+
+    try {
+      render(<RepositoryPlannerPage />);
+
+      const chip = screen.getByRole('button', { name: new RegExp(`Copy candidate SHA ${shortSha}`) });
+      fireEvent.click(chip);
+
+      expect(await screen.findByRole('button', { name: `Failed to copy candidate SHA ${shortSha}` })).toBeVisible();
+      expect(await screen.findByText(/Failed to copy candidate SHA: Permission denied/)).toBeVisible();
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        configurable: true,
+      });
+    }
   });
 });
 

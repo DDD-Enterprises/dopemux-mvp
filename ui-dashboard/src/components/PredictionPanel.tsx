@@ -19,6 +19,8 @@ export default function PredictionPanel({ prediction, currentLoad, onError }: Pr
   const roast = getDynamicRoast('15-min Prediction', prediction ?? null);
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentPredictionRef = useRef(prediction);
+  currentPredictionRef.current = prediction;
 
   const isTrendingUp = hasPrediction && typeof currentLoad === 'number' ? prediction > currentLoad : true;
   const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;
@@ -30,8 +32,13 @@ export default function PredictionPanel({ prediction, currentLoad, onError }: Pr
     }
     if (!hasPrediction) return;
 
+    const capturedPrediction = prediction;
+
     try {
       await navigator.clipboard.writeText(`15-min Forecast: ${value}% (${statusMeta.label}) - ${roast}`);
+      if (currentPredictionRef.current !== capturedPrediction) {
+        return;
+      }
       setIsCopied(true);
 
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
@@ -40,10 +47,21 @@ export default function PredictionPanel({ prediction, currentLoad, onError }: Pr
         copyTimeoutRef.current = null;
       }, 2000);
     } catch (err) {
+      if (currentPredictionRef.current !== capturedPrediction) {
+        return;
+      }
       const errorMsg = err instanceof Error ? err.message : String(err);
       onError?.(`Failed to copy forecast: ${errorMsg}`);
     }
-  }, [hasPrediction, value, statusMeta.label, roast, onError]);
+  }, [hasPrediction, prediction, value, statusMeta.label, roast, onError]);
+
+  useEffect(() => {
+    setIsCopied(false);
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = null;
+    }
+  }, [prediction]);
 
   useEffect(() => {
     return () => {

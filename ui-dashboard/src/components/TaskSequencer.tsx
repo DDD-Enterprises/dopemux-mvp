@@ -145,6 +145,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
     return () => clearInterval(interval);
   }, []);
 
+  const currentTaskIdRef = useRef(currentTaskId);
+  currentTaskIdRef.current = currentTaskId;
+
   useEffect(() => {
     setTaskTimer(0);
     setIsTimerRunning(false);
@@ -152,6 +155,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
     if (skipConfirmTimeoutRef.current) {
       clearTimeout(skipConfirmTimeoutRef.current);
       skipConfirmTimeoutRef.current = null;
+    }
+    setIsTaskTitleCopied(false);
+    if (copyTaskTitleTimeoutRef.current) {
+      clearTimeout(copyTaskTitleTimeoutRef.current);
+      copyTaskTitleTimeoutRef.current = null;
     }
   }, [currentTaskId]);
 
@@ -184,10 +192,15 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
   }, [tasks, cognitiveState.status]);
 
   const handleCopyTaskTitle = (title: string) => {
-    if (!navigator.clipboard?.writeText) return;
+    const capturedTaskId = currentTaskIdRef.current;
+    if (!navigator.clipboard?.writeText) {
+      onError?.('Clipboard API is not supported in this browser or context.');
+      return;
+    }
     void navigator.clipboard
       .writeText(title)
       .then(() => {
+        if (currentTaskIdRef.current !== capturedTaskId) return;
         setIsTaskTitleCopied(true);
         if (copyTaskTitleTimeoutRef.current) clearTimeout(copyTaskTitleTimeoutRef.current);
         copyTaskTitleTimeoutRef.current = setTimeout(() => {
@@ -195,7 +208,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
           copyTaskTitleTimeoutRef.current = null;
         }, 2000);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (currentTaskIdRef.current !== capturedTaskId) return;
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        onError?.(`Failed to copy task title: ${errorMsg}`);
+      });
   };
 
   const startTask = (taskId: string) => {
@@ -778,6 +795,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
       ) : (
         <Box
           role="status"
+          aria-live="polite"
           aria-label="Ritual Complete: All tasks finished"
           sx={{
             mb: 3,
@@ -1088,7 +1106,29 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                           </Tooltip>
                         )}
                       </Box>
-                      <Typography variant="caption" sx={{ color: brandTokens.text.secondary }}>#{index + 1}</Typography>
+                      <Tooltip
+                        title={`Step ${index + 1} of ${optimizedTasks.length} in optimized sequence`}
+                        arrow
+                        describeChild
+                      >
+                        <Typography
+                          variant="caption"
+                          tabIndex={0}
+                          aria-label={`Step ${index + 1} of ${optimizedTasks.length} in optimized ritual sequence`}
+                          sx={{
+                            color: brandTokens.text.secondary,
+                            cursor: 'help',
+                            outline: 'none',
+                            borderRadius: 1,
+                            px: 0.5,
+                            '&:focus-visible': {
+                              boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
+                            },
+                          }}
+                        >
+                          #{index + 1}
+                        </Typography>
+                      </Tooltip>
                     </Box>
                   }
                 />

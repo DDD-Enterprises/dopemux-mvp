@@ -1,0 +1,8 @@
+{
+  "ui-dashboard/src/components/PredictionPanel.tsx": "ee0353bdcad1a42fbfd936f5c78df95e2815b70cd6787c9b108868df32051c2b",
+  "ui-dashboard/src/components/TaskSequencer.tsx": "6af509f8511996bc8e980524343e7330cadeb73adf9b17798927d0bd78968961",
+  "ui-dashboard/src/components/__tests__/Accessibility.test.tsx": "c02c8e4ef4ae8bdba158e0557556e9a5b9944c92badab426d7ecfcf6d48081fb",
+  "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx": "3cd22a11bceb75ef3aed94d3c937ad138caaab01072f4740671b883aab5efeb8",
+  "ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx": "df061c334a106a5ae66080a93986e9ead6206c68af8d3c0cbcb854921a7cacb5",
+  "ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx": "b22a39635924f4f5d3819ed47471929cb6d7063bf273f34bef029296c787e336"
+}

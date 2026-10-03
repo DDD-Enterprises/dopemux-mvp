@@ -1,0 +1,6 @@
+M	ui-dashboard/src/components/PredictionPanel.tsx
+M	ui-dashboard/src/components/TaskSequencer.tsx
+M	ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+M	ui-dashboard/src/features/repository-planner/PortfolioTable.tsx
+M	ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx
+M	ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx
