@@ -77,18 +77,22 @@ Do not keep a port/transport table here — it drifts. Authorities:
 scripts/smoke_up.sh
 
 # Full stack (MCP servers, bridge, orchestrator, app services) — always via the CLI,
-# never raw `docker compose up` (AGENTS.md §12). Verify health with `dopemux mcp doctor`:
-# start-all's --verify only runs when scripts/start-all.sh exists (absent in a clean
-# checkout, where start-all falls back to plain compose startup without checks).
+# never raw `docker compose up` (AGENTS.md §12). start-all's --verify only runs when
+# scripts/start-all.sh exists (absent in a clean checkout, where start-all falls back to
+# plain compose startup without checks). There is no single enforcing full-stack health gate:
+#   - `dopemux mcp doctor` = sidecar/config diagnostics (conport, dope-memory, task-orchestrator only)
+#   - `scripts/smoke_up.sh` runs tools/smoke_runtime_gate.py, which gates (non-zero exit) only the
+#     hardcoded conport, dopecon-bridge and task-orchestrator services
+#   - `python tools/ports_health_audit.py --mode runtime` probes every services/registry.yaml entry
+#     (docker status + health_path) and writes reports/ports_health_matrix.{json,md}; report only, exits 0
 dopemux mcp start-all
-dopemux mcp doctor
 
 # Repo sidecars only (assumes shared infrastructure is already up):
 #   conport, dope-memory -> worktree-scoped containers
 #   task-orchestrator    -> host-wide wrapper-singleton on :7890, one active project at a time
 #                           (not isolated per project; see AGENTS.md §12.6)
 dopemux mcp start
-dopemux mcp doctor
+dopemux mcp doctor      # sidecar/config diagnostics for the three services above
 
 # Build specific service
 docker compose -f compose.yml build my-service

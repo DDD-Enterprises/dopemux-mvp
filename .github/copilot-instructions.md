@@ -42,7 +42,8 @@ make quality                  # All quality checks
 # Docker stacks
 scripts/smoke_up.sh                              # Core services only
 dopemux mcp start-all                            # Full stack (MCP servers, bridge, orchestrator, apps)
-dopemux mcp doctor                               # Health check (start-all --verify is a no-op without scripts/start-all.sh)
+dopemux mcp doctor                               # Sidecar/config diagnostics only (conport, dope-memory, task-orchestrator)
+python tools/ports_health_audit.py --mode runtime # All registry services: docker status + health_path -> reports/ (report only, exits 0)
 dopemux mcp start                                # Repo sidecars only: conport + dope-memory (worktree-scoped), task-orchestrator (host-singleton :7890, one active project)
 docker compose -f compose.yml up -d leantime mysql_leantime redis_leantime  # non-MCP PM stack only
 docker compose config         # Validate compose file syntax

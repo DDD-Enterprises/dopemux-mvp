@@ -1,0 +1,19 @@
+# Exact invocation record -- PR #1402 L2 embedded audit (TP-DMX-PR1402-L2-AUDIT-001)
+# custody OK 2026-10-03T12:40:36Z head=6c9c7192a954210edfe554a6141733850670acd5; CI settled (20/20 non-gate green); attempt 1 on 2b453caad hit AGY 429 quota (no output)
+# exit=0 duration=348s end=2026-10-03T12:46:24Z
+# conversation_id=2d5dcb4e-b3be-43c6-a851-d965e41807f4  status=SUCCESS  duration_seconds=340.763978
+# usage: {'input_tokens': 206835, 'output_tokens': 13438, 'thinking_tokens': 6967, 'cache_read_tokens': 1425261, 'total_tokens': 220273}
+# raw output sha256=d0f30ea0c22c129b8e8f5197969dc0b75510cd9a67cb810b264e4379a1d84aa6
+# Attempt 1 (2026-10-03T11:27Z) failed before any model output: AGY 429 RESOURCE_EXHAUSTED (individual quota);
+#   error JSON preserved in review_bundle/prior_attempt_1_quota_429/. Retried unchanged after the quota reset.
+# agy CLI version 1.2.15
+
+agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m \
+    --output-format json --add-dir <repo>/.worktrees/agent-files-followups \
+    --print="$(cat AUDIT_INPUT.md)"
+
+# auditor_model gemini-3.1-pro-high is an exact schema enum value; audit_identity.auditor.effort="high" from the model variant.
+# Advisory (non-formal) Codex review, operator-requested, run 2026-10-03T11:33Z-11:40Z on 2b453caad
+#   (codex-cli 0.162.0-alpha.9, --sandbox read-only): VERDICT=FAIL, F-01 HIGH "smoke runtime gate scope
+#   claim is false". Verified and fixed in 6c9c7192a before this formal audit. Codex is advisory only
+#   (AGENTS.md §9.1; not in the embedded_audit auditor_tool enum). Record: review_bundle/advisory_codex_review/.
