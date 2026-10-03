@@ -83,6 +83,8 @@ MacroPacket or autonomously dispatch it without separate authority.
 
 **Evidence economy:** default model-call budgets are L0=0, L1≤1 implementer, L2/L3=1 implementer + 1 final auditor. See `docs/03-reference/governance/evidence-economy.md`.
 
+**Commands (tests/lint step above):** the Makefile is the canonical runner (uv, frozen lockfile; Python 3.12 via mise, venv at `.venv`). `make test` · `make test-fast` (unit, no coverage) · `make test-integration` · `make lint` (flake8) · `make format` (black + isort) · `make type-check` (mypy). Lint/format/type targets call bare tool names — activate `.venv` or use `.venv/bin/<tool>`. `pytest.ini` overrides pyproject's `[tool.pytest.ini_options]`; markers are strict.
+
 ## 5. Task Packet Rules
 
 Before every MacroPacket or child Task Packet, emit `TP_ROUTE` with `runner`, exact
@@ -194,11 +196,11 @@ Governance, process, schema, prompt, proof, and authority-boundary packets requi
 - `scripts/dopetask` is the observed runtime, but operator naming still drifts through TaskX language.
 - MCP and proxy config surfaces are inconsistent in places, including stale port assumptions and missing launch targets.
 
-## 10. Claude-Code Doctrine Alignment
+## 10a. Claude-Code Doctrine Alignment
 
 This file is the Codex-facing authority. The Claude-Code-facing companion is `.claude/claude.md`, which embeds a brief governance section and links to the full canonical module at `.claude/modules/shared/governance-principles.md`.
 
-The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§8), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
+The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§9), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
 
 - inspect-before-edit, minimal correct change, deterministic-systems-first
 - canonical writer rules and contract-sensitive surfaces specific to this repo
@@ -302,8 +304,9 @@ When MCP servers fail to connect, follow this sequence in order:
 
 4. **Tail container logs** during connection attempt:
    ```bash
-   docker logs -f dopemux-dope-memory-1 2>&1 | grep -i "mcp\|error"
-   docker logs -f dopemux-task-orchestrator 2>&1 | grep -i "mcp\|error"
+   # Names are instance-scoped: dopemux-<project>-<id>-dope-memory, task-orchestrator-<workspace_id>
+   docker ps --format '{{.Names}}' | grep -E 'dope-memory|task-orchestrator'
+   docker logs -f <name> 2>&1 | grep -i "mcp\|error"
    ```
 
 5. **Run health report**: `./mcp_server_health_report.sh`

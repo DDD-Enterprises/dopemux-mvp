@@ -1,0 +1,45 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1389,
+  "head_sha": "dd6ee150cd2abcf5b59149fac1059e4057924752",
+  "generated_at": "2026-10-03T09:55:37Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m --output-format json --add-dir <repo>/.worktrees/agent-files-optimization --print=\"$(cat AUDIT_INPUT.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1389-L2-AUDIT-005/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-003-01",
+        "severity": "HIGH",
+        "status": "RESOLVED",
+        "title": "(prior -003) Deleted instruction copies lacked byte-identical twins",
+        "body": "-003 FAIL on 9932d542f; resolved in a289260ca by restoring agents.md/gemini.md to merge-base bytes; re-verified by -004 point 14 and -005 point 14."
+      }
+    ],
+    "fixes_applied": [
+      "a289260ca: restore agents.md/gemini.md to merge-base bytes (resolves -003 F-01)"
+    ],
+    "remaining_risks": [],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}

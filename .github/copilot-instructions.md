@@ -18,20 +18,20 @@ Read the installed kit contracts and project configuration through that entry po
 ### Build, Test, and Lint Commands
 
 ```bash
-# Install dependencies
-pip install -e .              # Production mode
-pip install -e .[dev]         # Development mode with dev dependencies
+# Install dependencies (uv, frozen lockfile; Python 3.12 via mise, venv at .venv)
+make install                  # uv sync --frozen
+make install-dev              # uv sync --frozen --extra dev
 
-# Testing
-pytest tests/                 # All tests
-pytest tests/ -m unit         # Unit tests only
-pytest tests/ -m integration  # Integration tests only
-pytest tests/ -m "not slow"   # Skip slow tests (fast feedback)
-pytest tests/specific_test.py # Single test file
-pytest tests/specific_test.py::test_name  # Single test
+# Testing (Makefile = canonical runner)
+make test                     # uv run --frozen --extra test pytest tests
+make test-fast                # unit only, --maxfail=1, no coverage
+make test-integration         # syncs --extra services first
+make test-coverage            # term-missing + html
 
-# Test coverage
-pytest --cov=src/dopemux --cov-report=term-missing
+# Direct pytest — use the repo venv; bare `pytest`/`black`/`mypy` are not on PATH
+.venv/bin/python -m pytest tests/ -m "not slow"          # Skip slow tests
+.venv/bin/python -m pytest tests/specific_test.py::test_name  # Single test
+# pytest.ini overrides [tool.pytest.ini_options] in pyproject.toml — edit pytest.ini; markers are strict
 
 # Quality checks
 make lint                     # Run flake8
@@ -41,7 +41,9 @@ make quality                  # All quality checks
 
 # Docker stacks
 scripts/smoke_up.sh                              # Core services only
-dopemux mcp start                                # MCP fleet
+dopemux mcp start-all                            # Full stack (MCP servers, bridge, orchestrator, apps)
+dopemux mcp doctor                               # Health check (start-all --verify is a no-op without scripts/start-all.sh)
+dopemux mcp start                                # Repo sidecars only: conport + dope-memory (worktree-scoped), task-orchestrator (host-singleton :7890, one active project)
 docker compose -f compose.yml up -d leantime mysql_leantime redis_leantime  # non-MCP PM stack only
 docker compose config         # Validate compose file syntax
 
@@ -60,10 +62,11 @@ Fleet MCP services must only be started via `dopemux mcp` commands, never raw `d
 - **postgres** (5432): PostgreSQL with AGE extension
 - **redis** (6379): Caching and event streaming
 - **qdrant** (6333): Vector database
-- **dope-query** (3004): Knowledge graph MCP (formerly ConPort)
+- **conport** (3004 HTTP / 3005 MCP SSE): Knowledge graph, decisions
 - **dopecon-bridge** (3016): Event routing and coordination
 - **task-orchestrator** (8000): ADHD-aware task management
-- **adhd-engine** (8095): Real-time ADHD accommodations (Serena)
+- **adhd-engine** (3025 host / 8095 in-container): Energy, attention, cognitive-load engine
+- **serena** (3006): LSP code intelligence
 - **dope-memory** (3020): Temporal chronicle and working-context
 
 ### Multi-Workspace Architecture
@@ -212,10 +215,10 @@ Rules:
 
 ### Python Code Style
 - **Formatting**: Black (line length 88) + isort (black profile)
-- **Type hints**: Required for function signatures (mypy strict mode)
+- **Type hints**: Required for function signatures (mypy `disallow_untyped_defs` etc.; not full `strict = true`)
 - **Linting**: flake8 for code quality
 - **Testing**: pytest with markers (unit, integration, slow, adhd, database)
-- **Coverage**: Minimum 80% branch coverage required
+- **Coverage**: >= 80% on active/new modules (`scripts/check_coverage.sh`)
 
 ### Common Patterns
 - Manager classes for resource lifecycle: `InstanceManager`, `ProfileManager`, `WorktreeTemplateManager`
@@ -262,8 +265,8 @@ If anything is uncertain, state it clearly and name the file(s) that would resol
 Before you conclude:
 - `docker compose config` passes for any compose file you touched
 - Unit tests pass: `pytest tests/path/to/modified_test.py`
-- Type checking passes: `mypy src/dopemux/modified_file.py`
-- Formatting applied: `black src/ && isort src/`
+- Type checking passes: `.venv/bin/mypy src/dopemux/modified_file.py` (or `make type-check`)
+- Formatting applied: `make format`
 - If modifying docs: `python scripts/docs_validator.py` passes
 - Smoke stack unchanged unless requested
 - No duplicated networks in compose
@@ -275,7 +278,7 @@ Before you conclude:
 
 ### Three-Layer Integration (ADR-207)
 1. **Infrastructure Layer**: postgres, redis, qdrant
-2. **MCP Layer**: dope-query, zen, dope-context
+2. **MCP Layer**: conport, pal (formerly zen), dope-context, dope-memory, serena
 3. **Coordination/Cognitive Layer**: dopecon-bridge, task-orchestrator, adhd-engine
 
 ### Event-Driven Coordination

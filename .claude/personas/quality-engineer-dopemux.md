@@ -179,7 +179,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="Testing strategies",
     complexity=complexity
 )
-# Uses: zen-codereview, serena, PAL apilookup-testing
+# Uses: PAL codereview, serena, PAL apilookup-testing
 ```
 
 ---

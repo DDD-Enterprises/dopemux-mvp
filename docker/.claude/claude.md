@@ -13,22 +13,24 @@ docker/
 ├── mcp-servers/           # Symlink → mcp-servers-source/
 ├── mcp-servers-source/    # Actual MCP server source (editable)
 │   ├── claude-context/    # Claude context server
-│   ├── conport/           # Knowledge graph (port 3004)
+│   ├── conport/           # Knowledge graph
 │   ├── conport-bridge/    # ConPort bridge
 │   ├── desktop-commander/ # Desktop automation
 │   ├── dopemux/           # Dopemux MCP
-│   ├── exa/               # Exa search MCP
 │   ├── gpt-researcher/    # GPT Researcher MCP
 │   ├── gptr-mcp/          # GPT-Researcher MCP wrapper
 │   ├── leantime-bridge/   # Leantime PM bridge
 │   ├── litellm/           # LiteLLM proxy
-│   ├── pal/               # PAL multi-model reasoning (formerly zen)
+│   ├── pal/, pal-stdio/   # PAL multi-model reasoning (formerly zen)
 │   ├── serena/            # Serena LSP code intelligence
 │   ├── services/          # Service Dockerfiles
 │   └── docs/              # MCP server documentation
-├── services/              # Service Dockerfiles
-└── infrastructure/        # postgres, redis, qdrant
+├── conport-kg/            # ConPort KG notes
+├── leantime/              # Leantime image + plugins
+└── postgres/              # AGE init SQL (01-init-age.sql)
 ```
+
+`compose.yml` lives at the **repo root**, not in `docker/`.
 
 ---
 
@@ -59,20 +61,12 @@ CMD ["uvicorn", "main:app"]
 
 ## MCP Servers
 
-MCP server source is in `docker/mcp-servers-source/` (symlinked from `docker/mcp-servers/`):
+MCP server source is in `docker/mcp-servers-source/` (symlinked from `docker/mcp-servers/`).
 
-| Server | Port | Transport |
-|--------|------|-----------|
-| conport | 3004 | SSE |
-| pal | - | stdio |
-| serena | 8095 | HTTP |
-| desktop-commander | 3012 | stdio |
-| exa | - | stdio |
-| gpt-researcher | 3009 | HTTP |
-| litellm | varies | HTTP |
-| leantime-bridge | - | stdio |
-
-See `docker/mcp-servers-source/.claude/claude.md` for MCP-specific context.
+Do not keep a port/transport table here — it drifts. Authorities:
+- **Host ports**: `services/registry.yaml`
+- **Client transports/URLs**: `.mcp.json` and the transport table in root `.claude/claude.md` (AGENTS.md §12)
+- **MCP catalog**: `mcp_catalog.yaml`
 
 ---
 
@@ -82,8 +76,19 @@ See `docker/mcp-servers-source/.claude/claude.md` for MCP-specific context.
 # Smoke stack (core)
 scripts/smoke_up.sh
 
-# Full stack
-docker compose -f compose.yml up -d
+# Full stack (MCP servers, bridge, orchestrator, app services) — always via the CLI,
+# never raw `docker compose up` (AGENTS.md §12). Verify health with `dopemux mcp doctor`:
+# start-all's --verify only runs when scripts/start-all.sh exists (absent in a clean
+# checkout, where start-all falls back to plain compose startup without checks).
+dopemux mcp start-all
+dopemux mcp doctor
+
+# Repo sidecars only (assumes shared infrastructure is already up):
+#   conport, dope-memory -> worktree-scoped containers
+#   task-orchestrator    -> host-wide wrapper-singleton on :7890, one active project at a time
+#                           (not isolated per project; see AGENTS.md §12.6)
+dopemux mcp start
+dopemux mcp doctor
 
 # Build specific service
 docker compose -f compose.yml build my-service

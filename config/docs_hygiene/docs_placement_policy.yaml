@@ -115,7 +115,7 @@ root_overrides:
   docs/dopetask-kernel-integration.md: docs/04-explanation/integrations/dopetask-kernel-integration.md
   docs/DOPE_MEMORY_INTEGRATION.md: docs/04-explanation/integrations/dope-memory-integration.md
   docs/final-complete-session-summary-2.md: docs/05-audit-reports/root-relocated/final-complete-session-summary-2.md
-  docs/GEMINI.md: docs/03-reference/instructions/gemini-2.md
+  docs/GEMINI.md: docs/03-reference/instructions/gemini.md
   docs/mcp-status-update.md: docs/05-audit-reports/root-relocated/mcp-status-update.md
   docs/migration-taskx-to-dopetask.md: docs/04-explanation/migrations/migration-taskx-to-dopetask.md
   docs/monitoring-design-sprint-summary-2.md: docs/05-audit-reports/root-relocated/monitoring-design-sprint-summary-2.md

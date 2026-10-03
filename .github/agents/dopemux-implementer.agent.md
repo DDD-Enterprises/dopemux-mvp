@@ -79,7 +79,7 @@ Return:
 
 - files changed
 - authority used
-- validations run with pass/fail result
+- validations run, bucketed PASS / FAIL / NOT_RUN (never collapse NOT_RUN into PASS; AGENTS.md §9)
 - diff-risk summary
 - remaining uncertainty or drift
 - commit and PR status when requested by the task packet

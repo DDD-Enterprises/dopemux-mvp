@@ -179,7 +179,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="Optimization",
     complexity=complexity
 )
-# Uses: zen-thinkdeep, serena-complexity, PAL apilookup
+# Uses: PAL thinkdeep, serena-complexity, PAL apilookup
 ```
 
 ---

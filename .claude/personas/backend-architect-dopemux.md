@@ -179,7 +179,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="APIs",
     complexity=complexity
 )
-# Uses: PAL apilookup-fastapi, zen-thinkdeep, serena
+# Uses: PAL apilookup-fastapi, PAL thinkdeep, serena
 ```
 
 ---

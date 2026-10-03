@@ -75,6 +75,23 @@ production, or accept security residual risk without required explicit operator 
 
 **Full doctrine**: [.claude/modules/shared/governance-principles.md](modules/shared/governance-principles.md).
 
+## ⚙️ Commands & Environment
+
+Python 3.12 via mise; repo venv at `.venv` (hooks prefer it). The Makefile is the canonical runner (uv, frozen lockfile).
+
+```bash
+make test              # uv run --frozen --extra test pytest tests
+make test-fast         # unit only, --maxfail=1, no coverage
+make test-integration  # syncs --extra services first
+make lint              # flake8 — bare tool names; activate .venv first
+make format            # black + isort
+make type-check        # mypy src/
+```
+
+- `pytest.ini` overrides `[tool.pytest.ini_options]` in pyproject.toml (pytest warns and ignores the latter) — edit `pytest.ini`; markers are strict.
+- CLI: `cli.py` (~6.5k lines) registers the `commands/*.py` groups and still hosts 27 legacy inline commands (26 `@cli.command` + 1 `@click.command`) — put new commands in `src/dopemux/commands/`.
+- Personas in `.claude/personas/` and `.claude/agents/*.md` are SHA-256-pinned by `proof/CCAR-002/SOURCE_MANIFEST.json`; editing one makes `scripts/commandcode_router/build_normalized_catalog.py` exit 1 and fails `tests/commandcode_router/test_normalized_catalog.py`. Precedent (#1388, #1389): re-pin only the changed entries' `sha256` in a separate `proof(ccar-002): re-pin …` commit in the same PR, then run the builder's `--check`.
+
 ## 🧠 Core ADHD Principles
 
 - **Context Preservation**: Manual `dopemux save` and `/dx:save` support context capture; Stop hooks can perform best-effort saves when the ADHD Engine is running. A background 30-second save loop is planned/configured behavior, not observed Claude runtime support.
@@ -175,7 +192,7 @@ The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStar
 
 **Orchestrator-coordination hooks** (ported from upstream `claude-plugins/task-orchestrator`, TP-CS-101 / Path B — see [docs/03-reference/orchestrator-integration/plugin-hooks-port.md](../docs/03-reference/orchestrator-integration/plugin-hooks-port.md)): available as `.claude/hooks/orchestrator_session_start.py` (SessionStart context inject), `orchestrator_post_edit_nudge.py` (PostToolUse edit nudge), `orchestrator_subagent_protocol.py` (SubagentStart agent-owned-phase protocol for implementation subagents), and `orchestrator_enforcement.py` (PreToolUse actor-attribution enforcement [dormant until `actor_authentication.enabled`], skill-invocation enforcement, and EnterPlanMode/ExitPlanMode guidance). These route through `native_hooks.py` when invoked and fail open (no-op) when their helpers or config are absent.
 
-**DCP/MCP hooks** (branch `claude/dcp-mcp-skills-hooks-2026-06-10`): four hooks that wire the DCP read-only facade and MCP server health into the normal edit workflow — all fail-open, all with per-session cooldown caches under `.claude/`:
+**DCP/MCP hooks**: four hooks that wire the DCP read-only facade and MCP server health into the normal edit workflow — all fail-open, all with per-session cooldown caches under `.claude/`:
 - **H1** `dcp_surface_guard.py` — PreToolUse hard-deny for DCP-RED-MERGE-SEAM-0001 paths; one-time advisory for contract surfaces (schemas, route_manifest, mcp_catalog, .mcp.json).
 - **H2** `dcp_denylist_nudge.py` — PostToolUse scan of facade adapter edits for denied-route tokens loaded at runtime from `route_manifest.py` (no drift); advisory names token + line.
 - **H3** `mcp_health_probe.py` — SessionStart 15-min-cached MCP server health snapshot; detects leaked task-orchestrator containers (SQLite-contention risk) and unreachable http/sse servers.
@@ -218,7 +235,6 @@ When you need comprehensive details, refer to:
 
 ---
 
-**MCP Status**: Fully operational with ConPort auto-initialization
 **Python Standards**: Type hints, pytest, PEP 8 with Black formatting, src/ layout
 **ADHD Support**: Progressive disclosure, gentle guidance, visual progress indicators active
 

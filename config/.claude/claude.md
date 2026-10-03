@@ -10,6 +10,11 @@
 
 ```
 config/
+├── ai/                # model-routing.policy.yaml (advisory model lanes)
+├── audit/             # Audit configs
+├── commandcode/       # Normalized agent/persona catalog (generated)
+├── dcp/               # DCP facade config
+├── pr_steward/        # PR steward config
 ├── profiles/          # ADHD profiles (see below)
 ├── env/               # Environment variable definitions
 ├── orchestrator/      # Orchestrator policy files
@@ -25,7 +30,7 @@ config/
 └── runtime_authority_manifest.json  # Runtime authority config
 ```
 
-Note: `.claude.json` lives at the **repo root**, not inside `config/`.
+Note: MCP client config is `.mcp.json` at the **repo root** (not `.claude.json`, which is an empty `{}`).
 
 ---
 
@@ -33,7 +38,8 @@ Note: `.claude.json` lives at the **repo root**, not inside `config/`.
 
 | File | Purpose |
 |------|---------|
-| `../.claude.json` | MCP server configuration (repo root) |
+| `.mcp.json` | MCP client configuration (repo root) |
+| `config/ai/model-routing.policy.yaml` | Model routing lanes (pinned by `tests/test_model_routing_policy.py`) |
 | `config/profiles/*.yaml` | ADHD energy profiles |
 | `config/pricing.yaml` | LLM model cost data |
 | `config/runtime_authority_manifest.json` | Runtime authority config |
@@ -44,15 +50,15 @@ Note: `.claude.json` lives at the **repo root**, not inside `config/`.
 ## Settings Pattern
 
 ```python
-from pydantic import BaseSettings, Field
+# Pydantic v2 (repo pins pydantic>=2.7 + pydantic-settings); `pydantic.BaseSettings` no longer exists
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class AppConfig(BaseSettings):
-    environment: str = Field("development", env="ENVIRONMENT")
-    debug: bool = Field(False, env="DEBUG")
-    database_url: str = Field(..., env="DATABASE_URL")
-    
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
+
+    environment: str = "development"   # reads ENVIRONMENT
+    debug: bool = False                # reads DEBUG
+    database_url: str                  # reads DATABASE_URL (required)
 ```
 
 ---

@@ -181,7 +181,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="System design",
     complexity=complexity
 )
-# Uses: zen-consensus, zen-thinkdeep, PAL apilookup
+# Uses: PAL consensus, PAL thinkdeep, PAL apilookup
 ```
 
 ---

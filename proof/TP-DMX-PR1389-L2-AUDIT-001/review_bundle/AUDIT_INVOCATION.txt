@@ -1,0 +1,22 @@
+# Exact invocation record -- PR #1389 L2 embedded audit (TP-DMX-PR1389-L2-AUDIT-001)
+# Executed from: <repo>/.worktrees/agent-files-optimization (clean worktree, no uncommitted changes)
+# AUDIT_START_UTC=2026-10-03T02:56:31Z
+# AUDIT_END_UTC=2026-10-03T03:02:44Z
+# exit_code=0  duration_seconds=367.38  num_turns=1  status=SUCCESS
+# conversation_id=e913b347-0b3d-41b6-9789-4e26b119e981
+# usage: input=313431 output=24189 thinking=12222 cache_read=3999050 total=337620
+# raw output sha256=a3a13a4109f0fe8cc4adbfbd31ee218b0f35ee42c34d9bf79eb043b0cde78db1
+# custody verified immediately before dispatch: git rev-parse HEAD == 808c0c0549032761813e7eebeed1f8e8f99b1ccd and git status --porcelain empty
+# agy CLI version 1.2.15; pre-dispatch probe (same model) answered "PONG / Gemini 3.1 Pro (High)"
+
+agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m \
+    --output-format json --add-dir <repo>/.worktrees/agent-files-optimization \
+    --print="$(cat AUDIT_INPUT.md)"
+
+# auditor_model enum: gemini-3.1-pro-high is an exact value in
+# schemas/proof/embedded_audit.schema.json (no generic-bucket mapping needed).
+
+# audit_identity.auditor.effort = "high": taken from the model variant
+# gemini-3.1-pro-high ("Gemini 3.1 Pro (High)"); no separate --effort flag was
+# passed. Added after CI rejected the first signed proof for a missing
+# `effort` key (audit_identity_auditor_shape_invalid); verdict unchanged.

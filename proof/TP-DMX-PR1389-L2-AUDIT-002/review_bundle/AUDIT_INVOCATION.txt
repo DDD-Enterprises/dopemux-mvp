@@ -1,0 +1,27 @@
+# Exact invocation record -- PR #1389 L2 embedded audit, successor (TP-DMX-PR1389-L2-AUDIT-002)
+# Supersedes TP-DMX-PR1389-L2-AUDIT-001 (PASS on 808c0c054), made stale by merging main (#1395) at 176d965e8.
+# Executed from: <repo>/.worktrees/agent-files-optimization (clean worktree, no uncommitted changes)
+# CI on 176d965e8b0e9a9b99b73450154475a327f859d7 settled before dispatch: all checks green except the approval gates
+#   (independent embedded audit, Clobber Guard, PR Steward / final readiness).
+# AUDIT_START_UTC=2026-10-03T05:15:46Z
+# AUDIT_END_UTC=2026-10-03T05:20:38Z
+# exit_code=0  duration_seconds=288.08  num_turns=1  status=SUCCESS
+# conversation_id=360e832b-98d8-4def-9cb8-ced4f385f94b
+# usage: input=234891 output=21935 thinking=10171 cache_read=2405378 total=256826
+# raw output sha256=d5928e6b9ff263497ac70aa8dd5ce27202c043a173e21c5d8d235b70a8cc2e75
+# custody verified immediately before dispatch: git rev-parse HEAD == 176d965e8b0e9a9b99b73450154475a327f859d7 and git status --porcelain empty
+# agy CLI version 1.2.15
+
+agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m \
+    --output-format json --add-dir <repo>/.worktrees/agent-files-optimization \
+    --print="$(cat AUDIT_INPUT.md)"
+
+# auditor_model: gemini-3.1-pro-high is an exact enum value in schemas/proof/embedded_audit.schema.json.
+# audit_identity.auditor.effort = "high": from the model variant ("Gemini 3.1 Pro (High)"); no separate --effort flag.
+
+# Auditor scratch files: during the run (05:16-05:17Z) the auditor wrote three
+# untracked helper scripts into the worktree root despite --sandbox --mode plan
+# (check_twins.py, check_dangling.sh, check_ccar.py). They are read-only git/shasum
+# queries showing its independent recomputation of points 1, 2 and 5. No tracked file
+# was modified, so the audited commit is unaffected. Preserved verbatim under
+# review_bundle/auditor_scratch/ as evidence; not executed by the implementer.

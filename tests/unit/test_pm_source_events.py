@@ -32,6 +32,10 @@ def _hermetic_capture_ledger(tmp_path, monkeypatch):
     monkeypatch.setenv(
         "DOPEMUX_CAPTURE_LEDGER_PATH", str(tmp_path / "chronicle.sqlite")
     )
+    # _resolve_capture_repo_root falls back through these; an ambient value
+    # (e.g. a dopemux-launched shell) would leak a real repo root into tests.
+    for var in ("DOPEMUX_WORKSPACE_ROOT", "WORKSPACE_ID", "DOPEMUX_PROJECT_ROOT"):
+        monkeypatch.delenv(var, raising=False)
 
 
 class _RecordingOrchestrator:

@@ -17,28 +17,32 @@
 
 ## Service Registry
 
-All services must be registered in [`services/registry.yaml`](file:///Users/hue/code/dopemux-mvp/services/registry.yaml):
+All services must be registered in [`services/registry.yaml`](../registry.yaml) (a **list**; schema in the file header):
 
 ```yaml
 services:
-  my-service:
-    name: my-service
-    port: 8XXX
-    transport: http
-    health_endpoint: /health
-    category: cognitive  # infrastructure|mcp|coordination|cognitive
+  - name: my-service
+    port: 30XX            # host port
+    container_port: 8000  # optional, defaults to port
+    health_path: /health
+    enabled_in_smoke: false
+    category: cognitive   # infrastructure|mcp|coordination|cognitive
+    description: ...
 ```
 
 ---
 
 ## Key Services
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| conport | 3004 | Knowledge graph, memory |
+Host ports from `registry.yaml` (verify there before relying on them):
+
+| Service | Host port | Purpose |
+|---------|-----------|---------|
+| conport | 3004 HTTP / 3005 MCP (SSE) | Knowledge graph, memory (source: `docker/mcp-servers-source/conport/`) |
 | dopecon-bridge | 3016 | Event routing |
-| task-orchestrator | 8000 | ADHD-aware task mgmt |
-| adhd-engine | 8095 | Serena ADHD accommodations |
+| task-orchestrator | 8000 | ADHD-aware task mgmt (the MCP singleton is separate, `:7890`) |
+| adhd-engine | 3025 (8095 in-container) | Energy / attention / cognitive-load engine |
+| serena | 3006 | LSP code intelligence |
 
 ---
 
@@ -82,10 +86,9 @@ async def health():
 services/
 ├── task-orchestrator/    # ADHD-aware coordination
 ├── dopecon-bridge/       # Event routing
-├── orchestrator/         # Tmux layout management
-├── adhd_engine/          # Serena ADHD engine
-├── conport/              # (in docker/mcp-servers/)
-└── [50+ more services]
+├── adhd_engine/          # ADHD engine
+├── dope-context/, dope-memory/, serena/, dcp-readonly-facade/, ...
+└── (~21 service dirs total — `ls services/`; ConPort source is in docker/mcp-servers-source/)
 ```
 
 Always check existing services before creating duplicates.

@@ -66,6 +66,6 @@ Return findings first, ordered by severity. Each finding must include:
 
 Then return:
 
-- validation evidence reviewed
+- validation evidence reviewed — treat any NOT_RUN reported as PASS as a finding (AGENTS.md §9)
 - residual risks
 - approval or blocked status

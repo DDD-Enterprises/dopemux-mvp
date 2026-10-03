@@ -1,0 +1,28 @@
+# Exact invocation record -- PR #1389 L2 embedded audit, final (TP-DMX-PR1389-L2-AUDIT-004)
+# History: -001 PASS @808c0c054, -002 PASS @176d965e8 (stale after merging main #1395),
+#          -003 FAIL @9932d542f (blocking F-01: agents-2/agents-3/gemini-2 lacked byte-identical twins
+#          because kept agents.md/gemini.md had gained a banner; repaired in a289260ca by restoring
+#          both to merge-base bytes, operator choice), -004 PASS @370d84f59b641ed04c4d8e48d241589d149eebbc (this record).
+#   -003 prompt + raw output preserved in review_bundle/prior_attempt_003_FAIL/ (raw sha256=bd36aca1683541641f3063a6aabefea5b0daf85b53acc0717554a0c270c4385c).
+# Executed from: <repo>/.worktrees/agent-files-optimization (clean worktree; clean again after the run)
+# CI at dispatch: all checks green except the audit-dependent gates and Unit Tests (pending);
+#   operator said continue, so dispatch preceded Unit Tests completion. Unit Tests finished PASS on
+#   370d84f59b641ed04c4d8e48d241589d149eebbc during the run (21/21 non-gate checks green afterwards).
+# AUDIT_START_UTC=2026-10-03T09:09:07Z
+# AUDIT_END_UTC=2026-10-03T09:14:15Z
+# exit_code=0  duration_seconds=304.45  num_turns=1  status=SUCCESS
+# conversation_id=18d82516-9193-4d55-8e40-b3ff968c9880
+# usage: input=215073 output=22532 thinking=10848 cache_read=2090906 total=237605
+# raw output sha256=ed6932aa4cc397ae537cab10e23e5adf02b1e7cd3878b9f6e7cf783969cfc94e
+# custody verified immediately before dispatch: git rev-parse HEAD == 370d84f59b641ed04c4d8e48d241589d149eebbc and git status --porcelain empty
+# agy CLI version 1.2.15
+
+agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m \
+    --output-format json --add-dir <repo>/.worktrees/agent-files-optimization \
+    --print="$(cat AUDIT_INPUT.md)"
+
+# auditor_model: gemini-3.1-pro-high is an exact enum value in schemas/proof/embedded_audit.schema.json.
+# audit_identity.auditor.effort = "high": from the model variant ("Gemini 3.1 Pro (High)"); no separate --effort flag.
+# Known diff-check exception: git diff --check b4780306e exits 2 on
+#   proof/TP-DMX-PR1389-L2-AUDIT-002/review_bundle/auditor_scratch/{check_ccar.py:34,check_twins.py:59}
+#   ("new blank line at EOF"). Those are auditor-written scratch files kept byte-exact as evidence.

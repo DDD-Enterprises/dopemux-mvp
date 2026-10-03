@@ -73,6 +73,6 @@ Return:
 
 - tests added or changed
 - behavior or contract covered
-- commands run and results
+- commands run and results, bucketed PASS / FAIL / NOT_RUN (AGENTS.md §9); run via `make test-fast` or `.venv/bin/python -m pytest <path>`
 - untested residual risk
 - any production-code edit request that must be handed to the implementer

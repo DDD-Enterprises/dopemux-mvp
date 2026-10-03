@@ -1,0 +1,131 @@
+{
+  "packet_id": "TP-DMX-PR1389-L2-AUDIT-001",
+  "branch": "claude/agent-files-optimization-2026-10-02",
+  "base": "main",
+  "base_sha": "e047b542206df1d43d1f3b35cec2329769c39fcb",
+  "head_sha": "808c0c0549032761813e7eebeed1f8e8f99b1ccd",
+  "generated_at": "2026-10-03T03:02:44Z",
+  "kind": "agent_instruction_surface_audit",
+  "risk_lane": "L2",
+  "implementer": "Claude Code (claude-opus-5-5 session) authored the PR, the audit prompt, and this proof bundle; single AGY dispatch.",
+  "audited_files": [
+    ".claude/claude.md",
+    ".claude/modules/shared/governance-principles.md",
+    ".claude/personas/backend-architect-dopemux.md",
+    ".claude/personas/devops-architect-dopemux.md",
+    ".claude/personas/general-purpose-dopemux.md",
+    ".claude/personas/learning-guide-dopemux.md",
+    ".claude/personas/performance-engineer-dopemux.md",
+    ".claude/personas/quality-engineer-dopemux.md",
+    ".claude/personas/se-product-manager-advisor.agent.md",
+    ".claude/personas/security-engineer-dopemux.md",
+    ".claude/personas/socratic-mentor-dopemux.md",
+    ".claude/personas/system-architect-dopemux.md",
+    ".github/agents/dopemux-implementer.agent.md",
+    ".github/agents/dopemux-reviewer.agent.md",
+    ".github/agents/dopemux-testgen.agent.md",
+    ".github/copilot-instructions.md",
+    "AGENTS.md",
+    "GEMINI.md",
+    "config/.claude/claude.md",
+    "config/docs_hygiene/docs_placement_policy.yaml",
+    "docker/.claude/claude.md",
+    "docs/01-tutorials/installation-3.md",
+    "docs/03-reference/instructions/agents-2.md",
+    "docs/03-reference/instructions/agents-3.md",
+    "docs/03-reference/instructions/agents.md",
+    "docs/03-reference/instructions/claude-2-moved-2.md",
+    "docs/03-reference/instructions/codex-2-moved-2.md",
+    "docs/03-reference/instructions/codex-2.md",
+    "docs/03-reference/instructions/contributing-zen-moved-2.md",
+    "docs/03-reference/instructions/gemini-2.md",
+    "docs/03-reference/instructions/gemini.md",
+    "docs/03-reference/instructions/project-init-report-2.md",
+    "docs/03-reference/instructions/project-instructions-2.md",
+    "docs/03-reference/instructions/project-patch-report-2.md",
+    "docs/04-explanation/history/sourceFiles/ALL_RECOVERED_DOCS__commit_11b6b52__docs__DMPX IMPORT__claude.md",
+    "docs/04-explanation/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__.claude__claude.md",
+    "docs/04-explanation/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CLAUDE.md",
+    "docs/04-explanation/history/sourceFiles/docs__DMPX IMPORT__claude.md",
+    "docs/archive/history/sourceFiles/docker__mcp-servers__.claude__claude.md",
+    "docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__CLAUDE.md",
+    "docs/archive/history/sourceFiles/docker__mcp-servers__mcp-server-mas-sequential-thinking__GEMINI.md",
+    "docs/archive/history/sourceFiles/docker__mcp-servers__zen__zen-mcp-server__CLAUDE.md",
+    "docs/archive/history/sourceFiles/docs__DMPX IMPORT__claude.md",
+    "proof/CCAR-002/SOURCE_MANIFEST.json",
+    "scripts/.claude/claude.md",
+    "scripts/governance/validate_change_contract.py",
+    "services/.claude/claude.md",
+    "shared/.claude/claude.md",
+    "src/.claude/claude.md",
+    "tests/.claude/claude.md",
+    "tests/unit/test_pm_source_events.py",
+    "tools/.claude/claude.md"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "validations": [
+    {
+      "name": "pre-commit range",
+      "result": "PASS",
+      "detail": "pre-commit run --from-ref origin/main --to-ref HEAD: all hooks passed (pre-rebase head; rebase onto e047b542 was conflict-free)."
+    },
+    {
+      "name": "change contract",
+      "result": "PASS",
+      "detail": "validate_change_contract.py --base origin/main: status=PASS max_lane=L2 model_audit_required=True."
+    },
+    {
+      "name": "unit tests",
+      "result": "PASS",
+      "detail": "tests/unit: 1867 passed, 2 skipped (ambient env)."
+    },
+    {
+      "name": "catalog + pins",
+      "result": "PASS",
+      "detail": "build_normalized_catalog.py --check CHECK_PASS after rebase; tests/commandcode_router + tests/governance/test_validate_change_contract.py 60 passed."
+    },
+    {
+      "name": "full make test",
+      "result": "NOT_RUN",
+      "detail": "integration extras not exercised locally; CI ordinary checks cover them."
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m --output-format json --add-dir <repo>/.worktrees/agent-files-optimization --print=\"$(cat AUDIT_INPUT.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1389-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Lossless Documentation Deduplication",
+        "body": "Auditor: all 19 deleted files have a byte-identical or frontmatter-only twin kept in the tree (or, for the zen CLAUDE.md, the live pal-mcp-server CLAUDE.md); git history preserves the blobs. Informational, no action."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Implementer-disclosed D-01 (LOW): '~29 legacy inline commands' in two CLAUDE.md files overstates the actual 27; deferred to a follow-up to keep the audited head frozen."
+    ],
+    "skip_reason": null
+  }
+}

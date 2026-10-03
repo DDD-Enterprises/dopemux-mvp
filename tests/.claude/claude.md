@@ -8,6 +8,8 @@
 
 ## Test Structure
 
+Key directories (≈40 total — `ls tests/`):
+
 ```
 tests/
 ├── unit/              # Fast isolated tests
@@ -23,6 +25,9 @@ tests/
 ├── ci/                # CI-specific tests
 ├── mcp/               # MCP tests
 ├── security/          # Security tests
+├── contracts/         # Contract tests
+├── governance/        # Governance validators
+├── commandcode_router/  # Persona catalog (hash-gated vs proof/CCAR-002)
 ├── shared/            # Shared test utilities
 └── conftest.py        # Shared fixtures
 ```
@@ -33,20 +38,28 @@ Note: `e2e/` directory does **not** exist.
 
 ## Running Tests
 
+Canonical runner is the Makefile (uv, frozen lockfile):
+
 ```bash
-# All tests
-pytest tests/ -v
+make test              # uv run --frozen --extra test pytest tests
+make test-fast         # unit only, --maxfail=1, no coverage
+make test-integration  # syncs --extra services first
+
+# Direct pytest: use the repo venv (mise python 3.12)
+.venv/bin/python -m pytest tests/ -v
 
 # Specific category
-pytest tests/unit/ -v
-pytest tests/integration/ -v
+.venv/bin/python -m pytest tests/unit/ -v
+.venv/bin/python -m pytest tests/integration/ -v
 
 # With coverage
-pytest tests/ --cov=src/dopemux --cov-report=html
+.venv/bin/python -m pytest tests/ --cov=src/dopemux --cov-report=html
 
 # Skip slow tests
-pytest tests/ -m "not slow"
+.venv/bin/python -m pytest tests/ -m "not slow"
 ```
+
+`pytest.ini` overrides `[tool.pytest.ini_options]` in pyproject.toml (pytest warns and ignores the latter) — edit `pytest.ini`. Markers are strict (`--strict-markers`): register new ones there.
 
 ---
 
@@ -71,7 +84,6 @@ def test_should_create_task_when_valid_input():
 
 - Unit: `test_should_[behavior]_when_[condition]`
 - Integration: `test_integration_[component]_[scenario]`
-- E2E: `test_e2e_[workflow]_[outcome]`
 
 ---
 
@@ -81,7 +93,6 @@ def test_should_create_task_when_valid_input():
 |------|-------|----------|
 | Unit | <100ms each | 90% business logic |
 | Integration | <5s each | 80% component interaction |
-| E2E | <15min total | 100% critical workflows |
 
 ---
 
