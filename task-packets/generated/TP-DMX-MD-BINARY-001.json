@@ -1,0 +1,95 @@
+{
+  "id": "TP-DMX-MD-BINARY-001",
+  "project": "dopemux-mvp",
+  "target": "fix(governance): classify opaque evidence without weakening text validation",
+  "invariants": [
+    "PROPOSED_NOT_ADMITTED: do not execute until exact native authority and live schema validation are recorded.",
+    "Separate source repair, audit, proof signing/publication, push, readiness and merge grants. No production activation or personal configuration changes.",
+    "Use a clean dedicated admitted worktree; preserve all original signed evidence and pre-existing dirty worktrees.",
+    "Current active native packet/model/no-fallback constraints win. AGY CLI is not an auditor qualification. Required PAL steps must actually execute or remain blocked.",
+    "One independent qualified final audit after substantive freeze when required; no fabricated identity, PASS or authority."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MP-DMX-MERGE-DRAIN-20261002-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "merge-drain/tp-dmx-md-binary-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(governance): classify opaque evidence without weakening text validation",
+    "allowlist": [
+      "scripts/governance/validate_change_contract.py",
+      "tests/governance/test_validate_change_contract.py",
+      "task-packets/generated/TP-DMX-MD-BINARY-001.json",
+      "proof/TP-DMX-MD-BINARY-001/**"
+    ],
+    "verify": [
+      "python -m pytest tests/governance/test_validate_change_contract.py -q",
+      "git diff --check",
+      "Validate exact admitted TaskPacket against current canonical schema.",
+      "Run current trusted change-contract validation and configured pre-commit checks."
+    ]
+  },
+  "pr": {
+    "title": "fix(governance): classify opaque evidence without weakening text validation",
+    "body": "Proposed bounded merge-drain successor. No authority is implied by this form. Record donor coverage, exact source freeze, deterministic tests, independent audit and separately authorized publication/readiness/merge actions.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "inspect",
+      "analyze",
+      "trace",
+      "plan",
+      "challenge",
+      "implement",
+      "deterministic-validation",
+      "independent-final-audit",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Rebind exact current main, scope, native authority, model route and allowed paths before source changes.",
+      "validation": [
+        "Repo marker/origin, active pin, packet schema and real authority record verified."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write regression tests and implement only the admitted source behavior.",
+      "requirements": [
+        "Opaque binary audit ZIP must not be UTF-8 decoded.",
+        "Invalid UTF-8 required JSON/Markdown fails closed.",
+        "Proof-only path boundaries remain enforced."
+      ],
+      "validation": [
+        "python -m pytest tests/governance/test_validate_change_contract.py -q"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Freeze tested source; obtain or lawfully reuse the required independent audit, then return exact custody.",
+      "requirements": [
+        "PR-scoped proof path is not included until the new PR number and a separate path grant are known. No signing/push/merge authority is implied."
+      ],
+      "validation": [
+        "Source/test evidence recorded; actual audit state truthfully PASS/FAIL/NOT_RUN; immutable return with remaining gates."
+      ]
+    }
+  ]
+}
