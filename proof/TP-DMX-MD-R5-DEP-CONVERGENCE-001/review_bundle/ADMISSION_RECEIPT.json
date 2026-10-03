@@ -1,0 +1,8 @@
+{
+  "packet_id": "TP-DMX-MD-R5-DEP-CONVERGENCE-001",
+  "macro_id": "MP-DMX-MERGE-DRAIN-20261002-005",
+  "base_sha": "728d7c42e9ab3050d7b449935f463e0e71fbf7aa",
+  "substantive_head": "4cfefd59f50da5ba45e442928714642f877187b6",
+  "risk_lane": "L2",
+  "admission": "ACCEPTED"
+}
