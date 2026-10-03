@@ -430,6 +430,44 @@
       "enforcement_side": "llm_advisory"
     },
     {
+      "contract_id": "DCP_RUNNER_CAPABILITY_REGISTRY",
+      "schema_file": "schemas/dcp/runner_capability_registry.schema.json",
+      "schema_version": "1.0.0",
+      "contract_version": "0.1.0",
+      "validation_state": "REPO_CROSS_CHECKED",
+      "level": "L1",
+      "instance_files": [
+        "config/dcp/runner_capabilities.json"
+      ],
+      "runtime_producers": [],
+      "runtime_consumers": [
+        "src/dopemux/dcp/runner_capability_registry.py"
+      ],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
+      "contract_id": "DCP_RUNNER_CONTRACT",
+      "schema_file": "schemas/dcp/runner_contract.schema.json",
+      "schema_version": "1.0.0",
+      "contract_version": "0.1.0",
+      "validation_state": "REPO_CROSS_CHECKED",
+      "level": "L1",
+      "instance_files": [],
+      "runtime_producers": [
+        "src/dopemux/dcp/runner_contract.py"
+      ],
+      "runtime_consumers": [
+        "src/dopemux/dcp/runner_contract.py"
+      ],
+      "ci_gates": [
+        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
+      ],
+      "enforcement_side": "deterministic"
+    },
+    {
       "contract_id": "DCP_RUN_CONTEXT_PACKET",
       "schema_file": "schemas/dcp/run_context_packet.schema.json",
       "schema_version": "dcp-run-context-packet.v0",
