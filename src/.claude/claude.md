@@ -48,7 +48,7 @@ src/dopemux/
 
 Other top-level packages in `src/`: `conport`, `core`, `integrations`, `utils`, `dopemux_github_specialist`, `dopemux_pr_merge_specialist`, `dopemux_pr_steward` (console scripts in `pyproject.toml [project.scripts]`).
 
-> **CLI convention**: `cli.py` is ~6.5k lines; it registers `commands/*` groups and still hosts ~29 legacy inline commands. Put new commands in `commands/`. Command files use `@click.group()` (not `@cli.group()`).
+> **CLI convention**: `cli.py` is ~6.5k lines; it registers `commands/*` groups and still hosts 27 legacy inline commands (26 `@cli.command` + 1 `@click.command`). Put new commands in `commands/`. Command files use `@click.group()` (not `@cli.group()`).
 > Imports within `commands/` use `..module` (parent package) not `.module`.
 
 ---
@@ -100,7 +100,7 @@ except ServiceError as e:
 make test
 
 # Check coverage
-pytest tests/ --cov=src/dopemux --cov-report=html
+.venv/bin/python -m pytest tests/ --cov=src/dopemux --cov-report=html
 ```
 
 ---

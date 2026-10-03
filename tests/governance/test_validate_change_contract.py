@@ -476,6 +476,12 @@ def test_quarantine_deleted_sig_path_is_not_treated_as_carried(tmp_path: Path) -
 
     proof_dir = tmp_path / "proof/pr_merge/embedded-audit/pr-9"
     proof_dir.mkdir(parents=True)
+    # The SKIPPED-proof check validates against the repo schema; without it the
+    # proof is misread as non-quarantine and validation returns before ever
+    # reaching the signature rule (vacuous pass).
+    schema_rel = "schemas/proof/embedded_audit.schema.json"
+    (tmp_path / schema_rel).parent.mkdir(parents=True)
+    (tmp_path / schema_rel).write_text((ROOT / schema_rel).read_text(encoding="utf-8"))
 
     def git(*args: str) -> str:
         return subprocess.check_output(
@@ -515,8 +521,66 @@ def test_quarantine_deleted_sig_path_is_not_treated_as_carried(tmp_path: Path) -
         quarantine_mode=True,
     )
     codes = {f.code for f in result.findings}
+    # The proof must be recognised as SKIPPED quarantine, or the signature rule
+    # below is never evaluated and the absence assertions would be vacuous.
+    assert "quarantine_mixed_proof_status" not in codes
+    assert "quarantine_missing_skipped_proof" not in codes
     assert "quarantine_forbids_signature" not in codes
     assert "proof_only_missing_signature" not in codes
+
+
+def test_quarantine_sig_carried_at_tip_is_forbidden(tmp_path: Path) -> None:
+    """Companion: a PROOF.json.sig still present at the tip DOES trip the forbid,
+    proving the deleted-sig test above exercises a live rule."""
+    from scripts.governance.validate_change_contract import (
+        Result,
+        validate_proof_only_closure,
+    )
+
+    proof_dir = tmp_path / "proof/pr_merge/embedded-audit/pr-9"
+    proof_dir.mkdir(parents=True)
+    schema_rel = "schemas/proof/embedded_audit.schema.json"
+    (tmp_path / schema_rel).parent.mkdir(parents=True)
+    (tmp_path / schema_rel).write_text((ROOT / schema_rel).read_text(encoding="utf-8"))
+
+    def git(*args: str) -> str:
+        return subprocess.check_output(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+            cwd=tmp_path,
+            text=True,
+        ).strip()
+
+    git("init", "-q")
+    (proof_dir / "PROOF.json").write_text("{}\n")
+    git("add", "-A")
+    git("commit", "-q", "-m", "proof")
+    base = git("rev-parse", "HEAD")
+    (proof_dir / "PROOF.json").write_text(_skipped_quarantine_proof())
+    (proof_dir / "PROOF.json.sig").write_text("restored signature\n")
+    git("add", "-A")
+    git("commit", "-q", "-m", "quarantine but keep a signature")
+    head = git("rev-parse", "HEAD")
+
+    result = Result(status="PASS", max_lane="L0")
+    validate_proof_only_closure(
+        [
+            "proof/pr_merge/embedded-audit/pr-9/PROOF.json",
+            "proof/pr_merge/embedded-audit/pr-9/PROOF.json.sig",
+        ],
+        result,
+        content_head=base,
+        proof_head=head,
+        audited_head=None,
+        cwd=tmp_path,
+        head=head,
+        file_text={
+            "proof/pr_merge/embedded-audit/pr-9/PROOF.json": _skipped_quarantine_proof(),
+        },
+        quarantine_mode=True,
+    )
+    codes = {f.code for f in result.findings}
+    assert "quarantine_mixed_proof_status" not in codes
+    assert "quarantine_forbids_signature" in codes
 
 
 def test_quarantine_auto_detect_from_skipped_proof_without_audited_head() -> None:
@@ -708,12 +772,32 @@ def test_cli_refuses_empty_without_base(monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.delenv("PRE_COMMIT_ORIGIN", raising=False)
     monkeypatch.delenv("PRE_COMMIT_SOURCE", raising=False)
 
-    # Force empty staged/unstaged by using a temp empty git repo is heavy;
-    # explicit empty --paths list is the deterministic unit surface.
+    # Explicit empty --paths list is the deterministic unit surface: it must be a
+    # usage error (2), never a fallback to the working-tree / base diff.
     code = main(["--paths", "--format", "json", "--repo", str(ROOT)])
-    # argparse may reject bare --paths (exit via SystemExit) or yield empty list PASS;
-    # when empty list is accepted, evaluate of zero paths is PASS (0).
-    assert code in {0, 2}
+    assert code == 2
+
+
+@pytest.mark.parametrize(
+    "extra", [[], ["--base", "HEAD~1"]], ids=["no-base", "with-base"]
+)
+def test_cli_bare_paths_never_falls_back_to_git_diff(
+    monkeypatch: pytest.MonkeyPatch, extra: list[str]
+) -> None:
+    # Explicit --paths takes precedence over --base, so a bare --paths must fail
+    # closed (2) without consulting either diff source.
+    import scripts.governance.validate_change_contract as vcc
+
+    for var in ("PRE_COMMIT_FROM_REF", "PRE_COMMIT_TO_REF", "PRE_COMMIT_ORIGIN", "PRE_COMMIT_SOURCE"):
+        monkeypatch.delenv(var, raising=False)
+
+    def _no_diff(*_a: object, **_k: object) -> str:
+        raise AssertionError("bare --paths must not fall back to a git diff")
+
+    monkeypatch.setattr(vcc, "changed_paths", _no_diff)
+    monkeypatch.setattr(vcc, "_run_git", _no_diff)
+    code = main(["--paths", *extra, "--format", "json", "--repo", str(ROOT)])
+    assert code == 2
 
 
 def test_cli_uses_pre_commit_from_ref_env(monkeypatch: pytest.MonkeyPatch) -> None:
