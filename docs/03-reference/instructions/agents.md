@@ -11,8 +11,6 @@ prelude: Agents (explanation) for dopemux documentation and developer workflows.
 ---
 # AGENTS Instructions
 
-> **Superseded (2026-10-02)** — stale TaskX/Zen-era snapshot kept for history. It contradicts current doctrine (e.g. `.claude/` is *not* authoritative over AGENTS.md; `zen` is now `pal`). Authority: [AGENTS.md](../../../AGENTS.md) (Truth Order §2, boundaries §6, proof §9, MCP §12). Do not follow instructions below.
-
 ## Dopemux Instruction Source of Truth
 All agents must treat `.claude/` as authoritative:
 
