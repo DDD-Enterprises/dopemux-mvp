@@ -1,0 +1,3 @@
+# Auditor-written scratch files are preserved byte-for-byte as audit evidence;
+# do not flag their whitespace (e.g. blank line at EOF) in `git diff --check`.
+**/auditor_scratch/** -whitespace
