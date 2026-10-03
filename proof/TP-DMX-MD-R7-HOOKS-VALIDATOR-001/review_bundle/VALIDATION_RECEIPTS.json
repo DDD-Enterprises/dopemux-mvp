@@ -1,0 +1,36 @@
+{
+  "pytest_sign_local_audit_proof": {
+    "status": "PASS",
+    "passed": 5,
+    "failed": 0,
+    "command": ".venv/bin/pytest tests/audit/test_sign_local_audit_proof.py -q"
+  },
+  "pytest_change_contract_proof_schema": {
+    "status": "PASS",
+    "passed": 3,
+    "failed": 0,
+    "command": ".venv/bin/pytest tests/governance/test_change_contract_proof_schema.py -q"
+  },
+  "pytest_validate_change_contract": {
+    "status": "PASS",
+    "passed": 39,
+    "failed": 0,
+    "command": ".venv/bin/pytest tests/governance/test_validate_change_contract.py -q"
+  },
+  "pytest_cli_audit_remediations": {
+    "status": "PASS",
+    "passed": 12,
+    "failed": 0,
+    "command": ".venv/bin/pytest tests/unit/test_cli_audit_remediations.py -q"
+  },
+  "git_diff_check": {
+    "status": "PASS",
+    "command": "git diff --check 52591ccf403523bce6a4684179ea74ebe889cbde..6451fb02fbddcef7d38228792426412789f929c1"
+  },
+  "validate_change_contract": {
+    "status": "PASS",
+    "max_lane": "L3",
+    "paths": 10,
+    "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+  }
+}

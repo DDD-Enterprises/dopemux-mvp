@@ -1,0 +1,113 @@
+{
+  "packet_id": "TP-DMX-MD-R7-HOOKS-VALIDATOR-001",
+  "series": "MP-DMX-MERGE-DRAIN-20261003-007",
+  "branch": "successor/hooks-validator-hardening-r7",
+  "base": "main",
+  "base_sha": "52591ccf403523bce6a4684179ea74ebe889cbde",
+  "head_sha": "6451fb02fbddcef7d38228792426412789f929c1",
+  "agent": "gemini-2.5-pro",
+  "timestamp": "2026-10-03T13:03:00-07:00",
+  "kind": "governance+hooks",
+  "final_packet": false,
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "gemini-2.5-pro",
+      "model_family": "google-gemini",
+      "runner": "antigravity",
+      "runtime_family": "antigravity"
+    },
+    "independence": "PROVEN"
+  },
+  "test_results": {
+    "pytest_sign_local_audit_proof": {
+      "command": ".venv/bin/pytest tests/audit/test_sign_local_audit_proof.py -q",
+      "exit_code": 0,
+      "summary": "5 passed in 1.73s"
+    },
+    "pytest_change_contract_proof_schema": {
+      "command": ".venv/bin/pytest tests/governance/test_change_contract_proof_schema.py -q",
+      "exit_code": 0,
+      "summary": "3 passed in 0.06s"
+    },
+    "pytest_validate_change_contract": {
+      "command": ".venv/bin/pytest tests/governance/test_validate_change_contract.py -q",
+      "exit_code": 0,
+      "summary": "39 passed in 1.11s"
+    },
+    "pytest_cli_audit_remediations": {
+      "command": ".venv/bin/pytest tests/unit/test_cli_audit_remediations.py -q",
+      "exit_code": 0,
+      "summary": "12 passed in 0.28s"
+    },
+    "git_diff_check": {
+      "command": "git diff --check 52591ccf403523bce6a4684179ea74ebe889cbde..6451fb02fbddcef7d38228792426412789f929c1",
+      "exit_code": 0,
+      "summary": "PASS (clean diff)"
+    },
+    "change_contract": {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "summary": "status=PASS max_lane=L3 paths=10"
+    }
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --dangerously-skip-permissions",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MD-R7-HOOKS-VALIDATOR-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "C3-F01",
+        "severity": "MEDIUM",
+        "title": "Wrapper CLAUDE_PROJECT_DIR resolution",
+        "status": "ACCEPTED_RISK",
+        "body": "run_native_hooks.sh overwrites CLAUDE_PROJECT_DIR with git rev-parse of current directory instead of checking CLAUDE_PROJECT_DIR first."
+      },
+      {
+        "id": "C3-F02",
+        "severity": "MEDIUM",
+        "title": "Codex hooks inline copy",
+        "status": "ACCEPTED_RISK",
+        "body": ".codex/hooks.json inlines git and venv lookup rather than delegating directly through run_native_hooks.sh wrapper."
+      },
+      {
+        "id": "C3-F03",
+        "severity": "LOW",
+        "title": "Global native_hooks_register path",
+        "status": "ACCEPTED_RISK",
+        "body": "native_hooks_register in cli.py only emits wrapper for non-global registration; global registration emits bare python3."
+      },
+      {
+        "id": "C3-F04",
+        "severity": "LOW",
+        "title": "Strict validation of legacy pr_merge proofs",
+        "status": "ACCEPTED_RISK",
+        "body": "Removing pattern popping applies strict canonical pattern to older legacy proofs under proof/pr_merge/."
+      },
+      {
+        "id": "C3-F05",
+        "severity": "LOW",
+        "title": "find-principals and relative path handling in sign script",
+        "status": "ACCEPTED_RISK",
+        "body": "sign_local_audit_proof.sh selects first principal with head -n 1 and assumes relative paths from working directory."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "run_native_hooks.sh assumes invocation from project repository root",
+      "Codex hooks inlined rather than invoking wrapper script",
+      "Legacy proof packets under proof/pr_merge/embedded-audit require strict canonical report_path format if modified"
+    ],
+    "skip_reason": null
+  }
+}

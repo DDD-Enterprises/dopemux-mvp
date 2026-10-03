@@ -1,0 +1,778 @@
+diff --git a/.claude/claude.md b/.claude/claude.md
+index dc4ae5848..552c9bfd1 100644
+--- a/.claude/claude.md
++++ b/.claude/claude.md
+@@ -190,7 +190,7 @@ All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
+ 
+ ## 🪝 Lifecycle Hooks
+ 
+-The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStart`, `SubagentStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `src/dopemux/claude/native_hooks.py`. Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
++The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStart`, `SubagentStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `.claude/hooks/run_native_hooks.sh`, which runs `src/dopemux/claude/native_hooks.py` with the repo `.venv` interpreter (falling back to `python3`). A bare `python3` can resolve to an interpreter without the repo's dependencies (e.g. no `pydantic`), making every hook fail. Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
+ 
+ **Orchestrator-coordination hooks** (ported from upstream `claude-plugins/task-orchestrator`, TP-CS-101 / Path B — see [docs/03-reference/orchestrator-integration/plugin-hooks-port.md](../docs/03-reference/orchestrator-integration/plugin-hooks-port.md)): available as `.claude/hooks/orchestrator_session_start.py` (SessionStart context inject), `orchestrator_post_edit_nudge.py` (PostToolUse edit nudge), `orchestrator_subagent_protocol.py` (SubagentStart agent-owned-phase protocol for implementation subagents), and `orchestrator_enforcement.py` (PreToolUse actor-attribution enforcement [dormant until `actor_authentication.enabled`], skill-invocation enforcement, and EnterPlanMode/ExitPlanMode guidance). These route through `native_hooks.py` when invoked and fail open (no-op) when their helpers or config are absent.
+ 
+@@ -200,7 +200,7 @@ The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStar
+ - **H3** `mcp_health_probe.py` — SessionStart 15-min-cached MCP server health snapshot; detects leaked task-orchestrator containers (SQLite-contention risk) and unreachable http/sse servers.
+ - **H4** `proof_tracking_guard.py` — PostToolUse advisory when a TRACK-tier proof artifact (`PROOF.json`, `SUMMARY.md`, etc.) is gitignored or untracked; prompts `git add -f`.
+ 
+-**Observed runtime support**: Settings dispatch all lifecycle events through `native_hooks.py`; hook scripts provide best-effort context save on Stop, energy warnings before complex tools, and progress/edit event signals.
++**Observed runtime support**: Settings dispatch all lifecycle events through `run_native_hooks.sh` → `native_hooks.py`; hook scripts provide best-effort context save on Stop, energy warnings before complex tools, and progress/edit event signals.
+ 
+ **Planned/specification behavior**: focus-session timers, periodic save loops, automatic break prompts, and forced hyperfocus pauses are not proven wired in the observed Claude runtime.
+ 
+diff --git a/.claude/hooks/run_native_hooks.sh b/.claude/hooks/run_native_hooks.sh
+new file mode 100755
+index 000000000..5de374fba
+--- /dev/null
++++ b/.claude/hooks/run_native_hooks.sh
+@@ -0,0 +1,34 @@
++#!/usr/bin/env sh
++# Shared dispatcher for Dopemux native lifecycle hooks across Claude Code and Codex.
++# Resolves the repository root, prefers .venv/bin/python, injects site-packages,
++# and executes native_hooks.py.
++set -eu
++
++ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
++if [ ! -d "$ROOT" ]; then
++  ROOT="$(pwd)"
++fi
++export CLAUDE_PROJECT_DIR="$ROOT"
++
++PY="$ROOT/.venv/bin/python"
++if [ ! -x "$PY" ]; then
++  PY=$(command -v python3 || true)
++fi
++if [ -z "${PY}" ]; then
++  echo "native hooks: no python interpreter" >&2
++  exit 1
++fi
++
++for site in "$ROOT"/.venv/lib/python*/site-packages; do
++  if [ -d "$site" ]; then
++    if [ -n "${PYTHONPATH:-}" ]; then
++      PYTHONPATH="$site:$PYTHONPATH"
++    else
++      PYTHONPATH="$site"
++    fi
++    export PYTHONPATH
++    break
++  fi
++done
++
++exec "$PY" "$ROOT/src/dopemux/claude/native_hooks.py"
+diff --git a/.claude/settings.json b/.claude/settings.json
+index 109fef1ea..2457d4027 100644
+--- a/.claude/settings.json
++++ b/.claude/settings.json
+@@ -9,7 +9,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -19,7 +19,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -29,7 +29,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -39,7 +39,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -49,7 +49,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -59,7 +59,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -69,7 +69,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -79,7 +79,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -89,7 +89,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -99,7 +99,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+@@ -109,7 +109,7 @@
+         "hooks": [
+           {
+             "type": "command",
+-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
++            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+           }
+         ]
+       }
+diff --git a/.codex/hooks.json b/.codex/hooks.json
+new file mode 100644
+index 000000000..9b2ce15bd
+--- /dev/null
++++ b/.codex/hooks.json
+@@ -0,0 +1,104 @@
++{
++  "hooks": {
++    "PreToolUse": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ],
++    "PermissionRequest": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ],
++    "PostToolUse": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ],
++    "PreCompact": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ],
++    "SessionStart": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ],
++    "SessionEnd": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ],
++    "UserPromptSubmit": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ],
++    "SubagentStart": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ],
++    "SubagentStop": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ],
++    "Stop": [
++      {
++        "hooks": [
++          {
++            "type": "command",
++            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
++          }
++        ]
++      }
++    ]
++  }
++}
+diff --git a/scripts/audit/sign_local_audit_proof.sh b/scripts/audit/sign_local_audit_proof.sh
+index fb1c044d5..8aab49460 100755
+--- a/scripts/audit/sign_local_audit_proof.sh
++++ b/scripts/audit/sign_local_audit_proof.sh
+@@ -196,8 +196,36 @@ if errors:
+ print(f"proof shape OK (audited head {proof['head_sha']})")
+ PY
+ 
++SIG_FILE="${PROOF_FILE}.sig"
++rm -f "$SIG_FILE"
++
+ ssh-keygen -Y sign -f "$KEY_PATH" -n "$NAMESPACE" "$PROOF_FILE"
+-echo "signed: ${PROOF_FILE}.sig"
++
++if [ ! -s "$SIG_FILE" ]; then
++    echo "error: signing failed; signature file $SIG_FILE was not created" >&2
++    exit 1
++fi
++
++ALLOWED_SIGNERS="config/audit/embedded-audit-allowed-signers"
++if [ ! -f "$ALLOWED_SIGNERS" ]; then
++    echo "error: allowed signers file $ALLOWED_SIGNERS not found" >&2
++    exit 1
++fi
++
++PRINCIPALS=$(ssh-keygen -Y find-principals -s "$SIG_FILE" -f "$ALLOWED_SIGNERS" 2>/dev/null || true)
++if [ -z "$PRINCIPALS" ]; then
++    echo "error: signature was not produced by an allowed signer in $ALLOWED_SIGNERS" >&2
++    exit 1
++fi
++
++PRINCIPAL=$(echo "$PRINCIPALS" | head -n 1)
++
++if ! ssh-keygen -Y verify -f "$ALLOWED_SIGNERS" -I "$PRINCIPAL" -n "$NAMESPACE" -s "$SIG_FILE" < "$PROOF_FILE" >/dev/null 2>&1; then
++    echo "error: post-sign verification failed for $SIG_FILE" >&2
++    exit 1
++fi
++
++echo "signed: ${SIG_FILE}"
+ echo
+ echo "Next steps:"
+ echo "  git add ${PROOF_DIR}/"
+diff --git a/scripts/governance/validate_change_contract.py b/scripts/governance/validate_change_contract.py
+index c53c687eb..6a8d49d23 100755
+--- a/scripts/governance/validate_change_contract.py
++++ b/scripts/governance/validate_change_contract.py
+@@ -299,20 +299,10 @@ def validate_proof_json(path: str, text: str, result: Result, cwd: Path) -> None
+         result.add("jsonschema_unavailable", "warning", "jsonschema not installed; skipped proof schema", path)
+         return
+     schema = json.loads(schema_path.read_text(encoding="utf-8"))
+-    # Local acceptance intentionally skips report_path for pr_merge; full schema for TP packages
+     embedded = payload["embedded_audit"]
+     if not isinstance(embedded, dict):
+         result.add("proof_embedded_not_object", "error", "embedded_audit must be object", path)
+         return
+-    # Soften report_path for pr_merge packages (matches CI local-attestation practice)
+-    if path.replace("\\", "/").startswith("proof/pr_merge/"):
+-        schema = dict(schema)
+-        props = dict(schema.get("properties") or {})
+-        if "report_path" in props:
+-            rp = dict(props["report_path"])
+-            rp.pop("pattern", None)
+-            props["report_path"] = rp
+-            schema["properties"] = props
+     validator = jsonschema.Draft7Validator(schema)
+     errors = sorted(validator.iter_errors(embedded), key=lambda e: list(e.path))
+     if errors:
+diff --git a/src/dopemux/cli.py b/src/dopemux/cli.py
+index 38b7d0952..1a21f0de2 100644
+--- a/src/dopemux/cli.py
++++ b/src/dopemux/cli.py
+@@ -4162,8 +4162,11 @@ def native_hooks_register(is_global: bool):
+     from pathlib import Path
+     
+     # Path to this script's native hook entry point
+-    hook_script = Path(__file__).resolve().parent / "claude" / "native_hooks.py"
+-    cmd = f"python3 {shlex.quote(str(hook_script))}"
++    if not is_global:
++        cmd = 'sh "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh"'
++    else:
++        hook_script = Path(__file__).resolve().parent / "claude" / "native_hooks.py"
++        cmd = f"python3 {shlex.quote(str(hook_script))}"
+     
+     # Define hook configuration
+     hooks_config = {
+diff --git a/task-packets/TP-DMX-MD-R7-HOOKS-VALIDATOR-001.json b/task-packets/TP-DMX-MD-R7-HOOKS-VALIDATOR-001.json
+new file mode 100644
+index 000000000..b04fe7a2a
+--- /dev/null
++++ b/task-packets/TP-DMX-MD-R7-HOOKS-VALIDATOR-001.json
+@@ -0,0 +1,102 @@
++{
++  "id": "TP-DMX-MD-R7-HOOKS-VALIDATOR-001",
++  "project": "dopemux-mvp",
++  "target": "fix(hooks): harden lifecycle hook dispatch and embedded-audit validator scopes",
++  "invariants": [
++    "Primary checkout is read-only",
++    "No force/admin/service/credential/PAYG effects"
++  ],
++  "depends_on": [],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": ".dopetaskroot",
++    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "MP-DMX-MERGE-DRAIN-20261003-007",
++    "base_branch": "main",
++    "parent_tp_id": "MP-DMX-MERGE-DRAIN-20261003-007",
++    "final_packet": false
++  },
++  "execution": {
++    "agent": "gemini",
++    "branch": "successor/hooks-validator-hardening-r7",
++    "base_branch": "main",
++    "stacked_because": "R7 isolated post-UI-deps main successor"
++  },
++  "commit": {
++    "message": "fix(hooks): harden lifecycle hook dispatch and embedded-audit validator scopes",
++    "allowlist": [
++      ".claude/claude.md",
++      ".claude/hooks/run_native_hooks.sh",
++      ".claude/settings.json",
++      ".codex/hooks.json",
++      "scripts/audit/sign_local_audit_proof.sh",
++      "scripts/governance/validate_change_contract.py",
++      "src/dopemux/cli.py",
++      "tests/audit/test_sign_local_audit_proof.py",
++      "tests/governance/test_change_contract_proof_schema.py",
++      "task-packets/TP-DMX-MD-R7-HOOKS-VALIDATOR-001.json",
++      "proof/TP-DMX-MD-R7-HOOKS-VALIDATOR-001/",
++      "proof/pr_merge/embedded-audit/"
++    ],
++    "verify": [
++      "pytest tests/audit/test_sign_local_audit_proof.py tests/governance/test_change_contract_proof_schema.py -q",
++      "git diff --check",
++      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
++    ]
++  },
++  "pr": {
++    "title": "fix(hooks): harden lifecycle hook dispatch and embedded-audit validator scopes",
++    "body": "R7 governed merge-drain successor to PR #1219 and #1407; hardens lifecycle hook dispatch, signing preflights, and change-contract validator schemas.",
++    "base": "main"
++  },
++  "steps": [
++    {
++      "id": "S0",
++      "task": "Bind post-UI main, repo identity, and verify clean isolated writer worktree.",
++      "requirements": [
++        "No primary checkout write",
++        "No duplicate active attempt"
++      ],
++      "commands": [
++        "git status --short --branch",
++        "git rev-parse origin/main"
++      ],
++      "validation": [
++        "Exact post-UI main recorded (52591ccf403523bce6a4684179ea74ebe889cbde)",
++        "Writer worktree clean"
++      ],
++      "context_files": [
++        "AGENTS.md"
++      ]
++    },
++    {
++      "id": "S1",
++      "task": "Implement hook wrapper dispatch, Codex hooks config, cli registration, audit signing verification, and schema validation hardening.",
++      "validation": [
++        "Only allowlisted files change",
++        "Regression tests pass for sign_local_audit_proof and change_contract_proof_schema"
++      ]
++    },
++    {
++      "id": "S2",
++      "task": "Freeze candidate head, run independent audit C3, assemble and sign proof bundle.",
++      "validation": [
++        "git diff --check passes",
++        "validate_change_contract passes",
++        "Independent audit passes and is signed"
++      ]
++    }
++  ],
++  "pal_chain": {
++    "enabled": true,
++    "steps": [
++      "analyze",
++      "planner",
++      "codereview",
++      "precommit"
++    ]
++  }
++}
+diff --git a/tests/audit/test_sign_local_audit_proof.py b/tests/audit/test_sign_local_audit_proof.py
+new file mode 100644
+index 000000000..fe47d14b8
+--- /dev/null
++++ b/tests/audit/test_sign_local_audit_proof.py
+@@ -0,0 +1,211 @@
++"""Tests for scripts/audit/sign_local_audit_proof.sh.
++
++Covers:
++- Fail-closed behavior on missing PROOF.json or missing signing key.
++- Pre-removal of stale .sig file.
++- Rejection when packet bundle has uncommitted changes.
++- Rejection when signing key is not listed in config/audit/embedded-audit-allowed-signers.
++- Successful signing and post-sign verification against allowed-signers.
++"""
++from __future__ import annotations
++
++import json
++import shutil
++import subprocess
++from pathlib import Path
++
++import pytest
++
++ROOT = Path(__file__).resolve().parents[2]
++SIGN_SCRIPT = ROOT / "scripts" / "audit" / "sign_local_audit_proof.sh"
++SCHEMA_SRC = ROOT / "schemas" / "proof" / "embedded_audit.schema.json"
++
++PACKET_ID = "TP-DMX-SIGN-TEST-001"
++PR_NUMBER = 7777
++REPO = "DDD-Enterprises/dopemux-mvp"
++
++
++def _git(repo: Path, *args: str) -> str:
++    result = subprocess.run(
++        ["git", "-C", str(repo), *args],
++        capture_output=True,
++        text=True,
++        check=True,
++    )
++    return result.stdout.strip()
++
++
++def _setup_repo(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
++    """Sets up a temp git repo matching the expectations of sign_local_audit_proof.sh."""
++    repo = tmp_path / "repo"
++    repo.mkdir()
++    _git(repo, "init", "--quiet", "--initial-branch=main")
++    _git(repo, "config", "user.email", "tester@example.com")
++    _git(repo, "config", "user.name", "Tester")
++
++    # Initial commit to have a valid commit SHA
++    (repo / "dummy.txt").write_text("initial\n", encoding="utf-8")
++    _git(repo, "add", "dummy.txt")
++    _git(repo, "commit", "-m", "initial commit")
++    head_sha = _git(repo, "rev-parse", "HEAD")
++
++    # Copy schema into repo
++    schema_dest = repo / "schemas" / "proof" / "embedded_audit.schema.json"
++    schema_dest.parent.mkdir(parents=True, exist_ok=True)
++    shutil.copy2(SCHEMA_SRC, schema_dest)
++
++    # Generate test ed25519 signing key
++    key_path = tmp_path / "signing_key"
++    subprocess.run(
++        ["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(key_path)],
++        check=True,
++        capture_output=True,
++    )
++    pub_key_content = (tmp_path / "signing_key.pub").read_text(encoding="utf-8").strip()
++
++    # Allowed signers
++    allowed_signers = repo / "config" / "audit" / "embedded-audit-allowed-signers"
++    allowed_signers.parent.mkdir(parents=True, exist_ok=True)
++    allowed_signers.write_text(f"signer@example.com {pub_key_content}\n", encoding="utf-8")
++
++    # Packet bundle
++    packet_dir = repo / "proof" / PACKET_ID
++    packet_dir.mkdir(parents=True, exist_ok=True)
++    report_file = packet_dir / "AUDITOR_REPORT.md"
++    report_file.write_text("# Auditor Report\nPASS\n", encoding="utf-8")
++    review_bundle = packet_dir / "review_bundle"
++    review_bundle.mkdir(parents=True, exist_ok=True)
++    (review_bundle / "notes.txt").write_text("audit notes\n", encoding="utf-8")
++
++    embedded_obj = {
++        "required": True,
++        "status": "PASS",
++        "auditor_tool": "claude-code-cli",
++        "auditor_model": "sonnet",
++        "invocation": "claude",
++        "exit_code": 0,
++        "report_path": f"proof/{PACKET_ID}/AUDITOR_REPORT.md",
++        "findings": [],
++        "fixes_applied": [],
++        "remaining_risks": [],
++        "skip_reason": None,
++    }
++    packet_proof = {
++        "packet_id": PACKET_ID,
++        "repo": REPO,
++        "head_sha": head_sha,
++        "embedded_audit": embedded_obj,
++    }
++    (packet_dir / "PROOF.json").write_text(json.dumps(packet_proof, indent=2), encoding="utf-8")
++
++    # Commit support files first
++    _git(repo, "add", "schemas/", "config/")
++    _git(repo, "commit", "-m", "commit support files")
++    audited_sha = _git(repo, "rev-parse", "HEAD")
++
++    # Packet bundle audited at audited_sha
++    packet_proof = {
++        "packet_id": PACKET_ID,
++        "repo": REPO,
++        "head_sha": audited_sha,
++        "embedded_audit": embedded_obj,
++    }
++    (packet_dir / "PROOF.json").write_text(json.dumps(packet_proof, indent=2), encoding="utf-8")
++
++    # Commit the packet bundle as required by sign_local_audit_proof.sh
++    _git(repo, "add", f"proof/{PACKET_ID}/")
++    _git(repo, "commit", "-m", "commit canonical packet bundle")
++
++    # PR proof (uncommitted in working tree, as expected by the script)
++    pr_proof_dir = repo / f"proof/pr_merge/embedded-audit/pr-{PR_NUMBER}"
++    pr_proof_dir.mkdir(parents=True, exist_ok=True)
++    pr_proof = {
++        "repo": REPO,
++        "pr_number": PR_NUMBER,
++        "head_sha": audited_sha,
++        "embedded_audit": embedded_obj,
++    }
++    (pr_proof_dir / "PROOF.json").write_text(json.dumps(pr_proof, indent=2), encoding="utf-8")
++
++    return repo, key_path, pr_proof_dir / "PROOF.json", allowed_signers
++
++
++def test_sign_missing_proof_fails(tmp_path: Path) -> None:
++    repo, key_path, _, _ = _setup_repo(tmp_path)
++    result = subprocess.run(
++        ["bash", str(SIGN_SCRIPT), "99999", str(key_path)],
++        cwd=str(repo),
++        capture_output=True,
++        text=True,
++    )
++    assert result.returncode != 0
++    assert "not found" in result.stderr
++
++
++def test_sign_missing_key_fails(tmp_path: Path) -> None:
++    repo, _, _, _ = _setup_repo(tmp_path)
++    result = subprocess.run(
++        ["bash", str(SIGN_SCRIPT), str(PR_NUMBER), str(tmp_path / "nonexistent_key")],
++        cwd=str(repo),
++        capture_output=True,
++        text=True,
++    )
++    assert result.returncode != 0
++    assert "signing key" in result.stderr
++
++
++def test_sign_uncommitted_packet_bundle_fails(tmp_path: Path) -> None:
++    repo, key_path, _, _ = _setup_repo(tmp_path)
++    # Dirty the packet bundle directory
++    (repo / "proof" / PACKET_ID / "extra.txt").write_text("uncommitted dirty file\n", encoding="utf-8")
++
++    result = subprocess.run(
++        ["bash", str(SIGN_SCRIPT), str(PR_NUMBER), str(key_path)],
++        cwd=str(repo),
++        capture_output=True,
++        text=True,
++        env={"PATH": "/usr/bin:/bin:/usr/local/bin:/usr/sbin:/sbin", "PYTHONPATH": str(ROOT)},
++    )
++    assert result.returncode != 0
++    assert "has uncommitted changes" in result.stderr
++
++
++def test_sign_removes_stale_signature_and_succeeds(tmp_path: Path) -> None:
++    """Verifies VSH-001: stale signature is removed and replaced by clean verified signature."""
++    repo, key_path, pr_proof_file, _ = _setup_repo(tmp_path)
++    stale_sig = pr_proof_file.with_name(f"{pr_proof_file.name}.sig")
++    stale_sig.write_text("corrupted_stale_signature_bytes\n", encoding="utf-8")
++
++    result = subprocess.run(
++        ["bash", str(SIGN_SCRIPT), str(PR_NUMBER), str(key_path)],
++        cwd=str(repo),
++        capture_output=True,
++        text=True,
++        env={"PATH": "/usr/bin:/bin:/usr/local/bin:/usr/sbin:/sbin", "PYTHONPATH": str(ROOT)},
++    )
++    assert result.returncode == 0, f"Expected 0 exit, got: {result.stdout}\n{result.stderr}"
++    assert stale_sig.is_file()
++    new_sig_content = stale_sig.read_text(encoding="utf-8")
++    assert "corrupted_stale_signature_bytes" not in new_sig_content
++    assert "-----BEGIN SSH SIGNATURE-----" in new_sig_content
++
++
++def test_sign_unallowed_signer_fails(tmp_path: Path) -> None:
++    repo, _, _, allowed_signers = _setup_repo(tmp_path)
++    # Generate an unallowed key
++    rogue_key = tmp_path / "rogue_key"
++    subprocess.run(
++        ["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(rogue_key)],
++        check=True,
++        capture_output=True,
++    )
++
++    result = subprocess.run(
++        ["bash", str(SIGN_SCRIPT), str(PR_NUMBER), str(rogue_key)],
++        cwd=str(repo),
++        capture_output=True,
++        text=True,
++        env={"PATH": "/usr/bin:/bin:/usr/local/bin:/usr/sbin:/sbin", "PYTHONPATH": str(ROOT)},
++    )
++    assert result.returncode != 0
++    assert "signature was not produced by an allowed signer" in result.stderr
+diff --git a/tests/governance/test_change_contract_proof_schema.py b/tests/governance/test_change_contract_proof_schema.py
+new file mode 100644
+index 000000000..5de35dde9
+--- /dev/null
++++ b/tests/governance/test_change_contract_proof_schema.py
+@@ -0,0 +1,87 @@
++"""Tests for schema enforcement on embedded_audit in validate_change_contract.py.
++
++Verifies:
++- Canonical report_path patterns pass validation.
++- Non-matching report_path patterns fail with proof_schema_fail.
++- Canonical schema is strictly enforced without popping or weakening report_path.pattern.
++"""
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++from scripts.governance.validate_change_contract import evaluate
++
++ROOT = Path(__file__).resolve().parents[2]
++
++
++def _build_proof(report_path: str, *, status: str = "PASS") -> dict:
++    return {
++        "packet_id": "TP-DMX-TEST-001",
++        "head_sha": "0123456789abcdef0123456789abcdef01234567",
++        "embedded_audit": {
++            "required": True,
++            "status": status,
++            "auditor_tool": "claude-code-cli",
++            "auditor_model": "sonnet",
++            "invocation": "claude-code",
++            "exit_code": 0,
++            "report_path": report_path,
++            "findings": [],
++            "fixes_applied": [],
++            "remaining_risks": [],
++            "skip_reason": None,
++        },
++    }
++
++
++def test_canonical_report_path_passes_validation() -> None:
++    proof_path = "proof/TP-DMX-TEST-001/PROOF.json"
++    valid_paths = [
++        "proof/TP-DMX-TEST-001/AUDITOR_REPORT.md",
++        "proof/TP-DMX-TEST-001/AUDITOR_REPAIR_REPORT.md",
++        "proof/TP-DMX-TEST-001/AUDITOR_REPAIR_1_REPORT.md",
++    ]
++    for rep in valid_paths:
++        payload = _build_proof(rep)
++        result = evaluate(
++            paths=[proof_path],
++            cwd=ROOT,
++            file_text={proof_path: json.dumps(payload)},
++        )
++        failures = [f for f in result.findings if f.code == "proof_schema_fail"]
++        assert not failures, f"Expected {rep} to pass schema validation, but got: {failures}"
++
++
++def test_non_canonical_report_path_fails_validation() -> None:
++    invalid_paths = [
++        "proof/pr_merge/embedded-audit/pr-1181/AUDITOR_REPORT.md",
++        "proof/TP-DMX-TEST-001/extra/AUDITOR_REPORT.md",
++        "other/AUDITOR_REPORT.md",
++        "proof/TP-DMX-TEST-001/report.md",
++    ]
++    for rep in invalid_paths:
++        proof_path = "proof/TP-DMX-TEST-001/PROOF.json"
++        payload = _build_proof(rep)
++        result = evaluate(
++            paths=[proof_path],
++            cwd=ROOT,
++            file_text={proof_path: json.dumps(payload)},
++        )
++        failures = [f for f in result.findings if f.code == "proof_schema_fail"]
++        assert len(failures) == 1, f"Expected {rep} to fail schema validation, but got: {failures}"
++        assert "report_path" in failures[0].message
++
++
++def test_report_path_pattern_not_softened_for_pr_merge_path() -> None:
++    """Verifies defect VSH-002: proof paths containing 'proof/pr_merge/' must not bypass pattern check."""
++    pr_merge_proof = "proof/pr_merge/embedded-audit/pr-9999/PROOF.json"
++    payload = _build_proof("proof/pr_merge/embedded-audit/pr-9999/AUDITOR_REPORT.md")
++    result = evaluate(
++        paths=[pr_merge_proof],
++        cwd=ROOT,
++        file_text={pr_merge_proof: json.dumps(payload)},
++    )
++    failures = [f for f in result.findings if f.code == "proof_schema_fail"]
++    assert len(failures) == 1, "Must fail schema validation for non-canonical report_path in pr_merge proof"
++    assert "report_path" in failures[0].message
