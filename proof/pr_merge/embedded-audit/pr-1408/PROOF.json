@@ -1,0 +1,38 @@
+{
+  "packet_id": "TP-DMX-MD-R7-UI-DEPS-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1408,
+  "head_sha": "3f06719abf1531740662742cd6d1dd0c2d0bc4aa",
+  "executed": true,
+  "mutation_performed": true,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy subagent da064f20-fe88-4977-b8dd-6dc60b2cc172",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MD-R7-UI-DEPS-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "none",
+      "model_family": "deterministic",
+      "runner": "shell",
+      "runtime_family": "shell"
+    },
+    "independence": "PROVEN"
+  }
+}
