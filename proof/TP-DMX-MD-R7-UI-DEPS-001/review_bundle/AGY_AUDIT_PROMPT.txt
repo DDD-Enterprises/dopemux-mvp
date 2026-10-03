@@ -1,0 +1,16 @@
+You are performing independent final audit C2 for TP-DMX-MD-R7-UI-DEPS-001 (Lane U1 - UI-DEPS) in repository /Users/hue/code/dopemux-r7-ui.
+
+Base commit: ce95ee375b2ad677d73a71f4452440486a8e0740
+Frozen candidate head: 3f06719abf1531740662742cd6d1dd0c2d0bc4aa
+Diff: git diff ce95ee375b2ad677d73a71f4452440486a8e0740..3f06719abf1531740662742cd6d1dd0c2d0bc4aa
+
+Task:
+Perform independent audit of the frozen commit.
+1. Inspect git diff and verify changed files are strictly limited to:
+   - ui-dashboard/package.json
+   - ui-dashboard/package-lock.json
+   - ui-dashboard/pnpm-lock.yaml
+2. Verify package.json bumps vitest from ^4.1.0 to ^5.0.3 without modifying dependencies or scripts.
+3. Verify every security override in package.json (nanoid 3.3.18, @babel/core 7.29.6, postcss 8.5.23, brace-expansion 5.0.9, socket.io-parser 4.2.7, undici 7.29.0, ws 8.21.0, esbuild 0.28.1, yaml@1 1.10.3) is preserved in pnpm-lock.yaml.
+4. Verify pnpm-lock.yaml does not downgrade ws to 8.18.3 (as donor PR #1406 did).
+5. Verify no secrets, credentials, or malicious artifacts are introduced.
