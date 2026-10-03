@@ -2,12 +2,12 @@
   "_README": {
     "authority": "Dopemux routing catalog",
     "generator": "scripts/generate_pal_model_manifest.py",
-    "projection": "compatibility"
+    "projection": "direct-ci"
   },
   "models": [
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for aion-labs.aion-2-0.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for aion-labs.aion-2-0.",
       "friendly_name": "aion-labs.aion-2-0",
       "max_image_size_mb": 0.0,
       "model_name": "aion-labs.aion-2-0",
@@ -22,7 +22,7 @@
         "anthropic/claude-fable-5"
       ],
       "context_window": 1000000,
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-fable-5. Adaptive thinking always on; manual disable/budget route unsupported.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-fable-5. Adaptive thinking always on; manual disable/budget route unsupported.",
       "friendly_name": "claude-fable-5",
       "max_image_size_mb": 40.0,
       "max_output_tokens": 128000,
@@ -37,7 +37,7 @@
       "aliases": [
         "anthropic/claude-haiku-4-5"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-haiku-4.5.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-haiku-4.5.",
       "friendly_name": "claude-haiku-4.5",
       "max_image_size_mb": 40.0,
       "model_name": "claude-haiku-4.5",
@@ -51,7 +51,7 @@
       "aliases": [
         "anthropic/claude-opus-4-7-fast"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4-7-fast.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4-7-fast.",
       "friendly_name": "claude-opus-4-7-fast",
       "max_image_size_mb": 40.0,
       "model_name": "claude-opus-4-7-fast",
@@ -65,7 +65,7 @@
       "aliases": [
         "anthropic/claude-opus-4-8-fast"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4-8-fast.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4-8-fast.",
       "friendly_name": "claude-opus-4-8-fast",
       "max_image_size_mb": 40.0,
       "model_name": "claude-opus-4-8-fast",
@@ -79,7 +79,7 @@
       "aliases": [
         "anthropic/claude-opus-4-5"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4.5.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4.5.",
       "friendly_name": "claude-opus-4.5",
       "max_image_size_mb": 40.0,
       "model_name": "claude-opus-4.5",
@@ -93,7 +93,7 @@
       "aliases": [
         "anthropic/claude-opus-4-6"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4.6.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4.6.",
       "friendly_name": "claude-opus-4.6",
       "max_image_size_mb": 40.0,
       "model_name": "claude-opus-4.6",
@@ -107,7 +107,7 @@
       "aliases": [
         "anthropic/claude-opus-4-7"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4.7.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4.7.",
       "friendly_name": "claude-opus-4.7",
       "max_image_size_mb": 40.0,
       "model_name": "claude-opus-4.7",
@@ -121,7 +121,7 @@
       "aliases": [
         "anthropic/claude-opus-4-8"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4.8.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4.8.",
       "friendly_name": "claude-opus-4.8",
       "max_image_size_mb": 40.0,
       "model_name": "claude-opus-4.8",
@@ -135,7 +135,7 @@
       "aliases": [
         "anthropic/claude-opus-5"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-5.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-5.",
       "friendly_name": "claude-opus-5",
       "max_image_size_mb": 40.0,
       "model_name": "claude-opus-5",
@@ -149,7 +149,7 @@
       "aliases": [
         "anthropic/claude-opus-5-fast"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-5-fast.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-5-fast.",
       "friendly_name": "claude-opus-5-fast",
       "max_image_size_mb": 40.0,
       "model_name": "claude-opus-5-fast",
@@ -163,7 +163,7 @@
       "aliases": [
         "anthropic/claude-sonnet-4-5"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-sonnet-4.5.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-sonnet-4.5.",
       "friendly_name": "claude-sonnet-4.5",
       "max_image_size_mb": 40.0,
       "model_name": "claude-sonnet-4.5",
@@ -177,7 +177,7 @@
       "aliases": [
         "anthropic/claude-sonnet-4-6"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-sonnet-4.6.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-sonnet-4.6.",
       "friendly_name": "claude-sonnet-4.6",
       "max_image_size_mb": 40.0,
       "model_name": "claude-sonnet-4.6",
@@ -191,7 +191,7 @@
       "aliases": [
         "anthropic/claude-sonnet-5"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for claude-sonnet-5.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-sonnet-5.",
       "friendly_name": "claude-sonnet-5",
       "max_image_size_mb": 40.0,
       "model_name": "claude-sonnet-5",
@@ -203,7 +203,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for deepseek-v4-flash.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for deepseek-v4-flash.",
       "friendly_name": "deepseek-v4-flash",
       "max_image_size_mb": 0.0,
       "model_name": "deepseek-v4-flash",
@@ -215,7 +215,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for deepseek-v4-flash-0731.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for deepseek-v4-flash-0731.",
       "friendly_name": "deepseek-v4-flash-0731",
       "max_image_size_mb": 0.0,
       "model_name": "deepseek-v4-flash-0731",
@@ -227,7 +227,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for deepseek-v4-pro.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for deepseek-v4-pro.",
       "friendly_name": "deepseek-v4-pro",
       "max_image_size_mb": 0.0,
       "model_name": "deepseek-v4-pro",
@@ -239,7 +239,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for deepseek-v4-pro-0813.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for deepseek-v4-pro-0813.",
       "friendly_name": "deepseek-v4-pro-0813",
       "max_image_size_mb": 0.0,
       "model_name": "deepseek-v4-pro-0813",
@@ -253,7 +253,7 @@
       "aliases": [
         "google/gemini-2.5-flash"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-2.5-flash.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-2.5-flash.",
       "friendly_name": "gemini-2.5-flash",
       "max_image_size_mb": 40.0,
       "model_name": "gemini-2.5-flash",
@@ -267,7 +267,7 @@
       "aliases": [
         "google/gemini-3.5-flash"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3-5-flash.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3-5-flash.",
       "friendly_name": "gemini-3-5-flash",
       "max_image_size_mb": 40.0,
       "model_name": "gemini-3-5-flash",
@@ -281,7 +281,7 @@
       "aliases": [
         "google/gemini-3-flash-preview"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3-flash-preview.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3-flash-preview.",
       "friendly_name": "gemini-3-flash-preview",
       "max_image_size_mb": 40.0,
       "model_name": "gemini-3-flash-preview",
@@ -295,7 +295,7 @@
       "aliases": [
         "google/gemini-3.1-flash-lite"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.1-flash-lite.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.1-flash-lite.",
       "friendly_name": "gemini-3.1-flash-lite",
       "max_image_size_mb": 40.0,
       "model_name": "gemini-3.1-flash-lite",
@@ -309,7 +309,7 @@
       "aliases": [
         "google/gemini-3.1-pro"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.1-pro.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.1-pro.",
       "friendly_name": "gemini-3.1-pro",
       "max_image_size_mb": 40.0,
       "model_name": "gemini-3.1-pro",
@@ -323,7 +323,7 @@
       "aliases": [
         "google/gemini-3.1-pro-preview"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.1-pro-preview.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.1-pro-preview.",
       "friendly_name": "gemini-3.1-pro-preview",
       "max_image_size_mb": 0.0,
       "model_name": "gemini-3.1-pro-preview",
@@ -337,7 +337,7 @@
       "aliases": [
         "google/gemini-3.6-flash"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.6-flash.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.6-flash.",
       "friendly_name": "gemini-3.6-flash",
       "max_image_size_mb": 40.0,
       "model_name": "gemini-3.6-flash",
@@ -351,7 +351,7 @@
       "aliases": [
         "google/gemini-3.7-flash"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.7-flash.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.7-flash.",
       "friendly_name": "gemini-3.7-flash",
       "max_image_size_mb": 40.0,
       "model_name": "gemini-3.7-flash",
@@ -363,7 +363,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for glm-4.5.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-4.5.",
       "friendly_name": "glm-4.5",
       "max_image_size_mb": 0.0,
       "model_name": "glm-4.5",
@@ -375,7 +375,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for glm-4.5-air.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-4.5-air.",
       "friendly_name": "glm-4.5-air",
       "max_image_size_mb": 0.0,
       "model_name": "glm-4.5-air",
@@ -387,7 +387,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for glm-4.6.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-4.6.",
       "friendly_name": "glm-4.6",
       "max_image_size_mb": 0.0,
       "model_name": "glm-4.6",
@@ -399,7 +399,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for glm-4.7.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-4.7.",
       "friendly_name": "glm-4.7",
       "max_image_size_mb": 0.0,
       "model_name": "glm-4.7",
@@ -411,7 +411,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for glm-5.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-5.",
       "friendly_name": "glm-5",
       "max_image_size_mb": 0.0,
       "model_name": "glm-5",
@@ -423,7 +423,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for glm-5.1.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-5.1.",
       "friendly_name": "glm-5.1",
       "max_image_size_mb": 0.0,
       "model_name": "glm-5.1",
@@ -435,7 +435,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for glm-5.2.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-5.2.",
       "friendly_name": "glm-5.2",
       "max_image_size_mb": 0.0,
       "model_name": "glm-5.2",
@@ -447,7 +447,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for glm-5.3.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-5.3.",
       "friendly_name": "glm-5.3",
       "max_image_size_mb": 0.0,
       "model_name": "glm-5.3",
@@ -461,7 +461,7 @@
       "aliases": [
         "google/google/gemini-3.5-flash-lite"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for google/gemini-3.5-flash-lite.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for google/gemini-3.5-flash-lite.",
       "friendly_name": "google/gemini-3.5-flash-lite",
       "max_image_size_mb": 40.0,
       "model_name": "google/gemini-3.5-flash-lite",
@@ -475,7 +475,7 @@
       "aliases": [
         "openai/gpt-4.1-nano"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-4.1-nano.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-4.1-nano.",
       "friendly_name": "gpt-4.1-nano",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-4.1-nano",
@@ -489,7 +489,7 @@
       "aliases": [
         "openai/gpt-5-mini"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5-mini.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5-mini.",
       "friendly_name": "gpt-5-mini",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5-mini",
@@ -503,7 +503,7 @@
       "aliases": [
         "openai/gpt-5-nano"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5-nano.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5-nano.",
       "friendly_name": "gpt-5-nano",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5-nano",
@@ -517,7 +517,7 @@
       "aliases": [
         "openai/gpt-5.2-codex"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.2-codex.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.2-codex.",
       "friendly_name": "gpt-5.2-codex",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.2-codex",
@@ -531,7 +531,7 @@
       "aliases": [
         "openai/gpt-5.3-codex"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.3-codex.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.3-codex.",
       "friendly_name": "gpt-5.3-codex",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.3-codex",
@@ -545,7 +545,7 @@
       "aliases": [
         "openai/gpt-5.4"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.4.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.4.",
       "friendly_name": "gpt-5.4",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.4",
@@ -559,7 +559,7 @@
       "aliases": [
         "openai/gpt-5.4-mini"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.4-mini.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.4-mini.",
       "friendly_name": "gpt-5.4-mini",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.4-mini",
@@ -573,7 +573,7 @@
       "aliases": [
         "openai/gpt-5.4-nano"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.4-nano.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.4-nano.",
       "friendly_name": "gpt-5.4-nano",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.4-nano",
@@ -587,7 +587,7 @@
       "aliases": [
         "openai/gpt-5.4-pro"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.4-pro.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.4-pro.",
       "friendly_name": "gpt-5.4-pro",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.4-pro",
@@ -601,7 +601,7 @@
       "aliases": [
         "openai/gpt-5.5"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.5.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.5.",
       "friendly_name": "gpt-5.5",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.5",
@@ -615,7 +615,7 @@
       "aliases": [
         "openai/gpt-5.5-pro"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.5-pro.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.5-pro.",
       "friendly_name": "gpt-5.5-pro",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.5-pro",
@@ -629,7 +629,7 @@
       "aliases": [
         "openai/gpt-5.6-luna"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.6-luna.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.6-luna.",
       "friendly_name": "gpt-5.6-luna",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.6-luna",
@@ -643,7 +643,7 @@
       "aliases": [
         "openai/gpt-5.6-sol"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.6-sol.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.6-sol.",
       "friendly_name": "gpt-5.6-sol",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.6-sol",
@@ -657,7 +657,7 @@
       "aliases": [
         "openai/gpt-5.6-terra"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.6-terra.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.6-terra.",
       "friendly_name": "gpt-5.6-terra",
       "max_image_size_mb": 40.0,
       "model_name": "gpt-5.6-terra",
@@ -671,7 +671,7 @@
       "aliases": [
         "openai/gpt-oss-120b"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-oss-120b.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-oss-120b.",
       "friendly_name": "gpt-oss-120b",
       "max_image_size_mb": 0.0,
       "model_name": "gpt-oss-120b",
@@ -685,7 +685,7 @@
       "aliases": [
         "x-ai/grok-4.5"
       ],
-      "description": "Dopemux-generated compatibility PAL catalog entry for grok-4.5.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for grok-4.5.",
       "friendly_name": "grok-4.5",
       "max_image_size_mb": 40.0,
       "model_name": "grok-4.5",
@@ -698,7 +698,7 @@
     {
       "aliases": [],
       "context_window": 1000000,
-      "description": "Dopemux-generated compatibility PAL catalog entry for kimi-k3. Thinking always on; reasoning effort low/high/max.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for kimi-k3. Thinking always on; reasoning effort low/high/max.",
       "friendly_name": "kimi-k3",
       "max_image_size_mb": 40.0,
       "model_name": "kimi-k3",
@@ -709,24 +709,8 @@
       "supports_streaming": true
     },
     {
-      "aliases": [
-        "local-llama",
-        "ollama-llama"
-      ],
-      "context_window": 128000,
-      "description": "PAL packaged-default local Llama compatibility entry.",
-      "friendly_name": "llama3.2",
-      "max_image_size_mb": 0.0,
-      "max_output_tokens": 64000,
-      "model_name": "llama3.2",
-      "supports_extended_thinking": false,
-      "supports_function_calling": false,
-      "supports_images": false,
-      "supports_json_mode": false
-    },
-    {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for minimax-m2.7.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for minimax-m2.7.",
       "friendly_name": "minimax-m2.7",
       "max_image_size_mb": 0.0,
       "model_name": "minimax-m2.7",
@@ -738,7 +722,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for muse-spark-1.2.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for muse-spark-1.2.",
       "friendly_name": "muse-spark-1.2",
       "max_image_size_mb": 40.0,
       "model_name": "muse-spark-1.2",
@@ -750,7 +734,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for qwen-3-8-max.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for qwen-3-8-max.",
       "friendly_name": "qwen-3-8-max",
       "max_image_size_mb": 40.0,
       "model_name": "qwen-3-8-max",
@@ -762,7 +746,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for qwen3-5-35b-a3b.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for qwen3-5-35b-a3b.",
       "friendly_name": "qwen3-5-35b-a3b",
       "max_image_size_mb": 40.0,
       "model_name": "qwen3-5-35b-a3b",
@@ -774,7 +758,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for qwen3-6-35b-a3b.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for qwen3-6-35b-a3b.",
       "friendly_name": "qwen3-6-35b-a3b",
       "max_image_size_mb": 40.0,
       "model_name": "qwen3-6-35b-a3b",
@@ -786,7 +770,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for qwen3.6-27b.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for qwen3.6-27b.",
       "friendly_name": "qwen3.6-27b",
       "max_image_size_mb": 40.0,
       "model_name": "qwen3.6-27b",
@@ -798,7 +782,7 @@
     },
     {
       "aliases": [],
-      "description": "Dopemux-generated compatibility PAL catalog entry for stealth/ox-alpha.",
+      "description": "Dopemux-generated direct-ci PAL catalog entry for stealth/ox-alpha.",
       "friendly_name": "stealth/ox-alpha",
       "max_image_size_mb": 40.0,
       "model_name": "stealth/ox-alpha",

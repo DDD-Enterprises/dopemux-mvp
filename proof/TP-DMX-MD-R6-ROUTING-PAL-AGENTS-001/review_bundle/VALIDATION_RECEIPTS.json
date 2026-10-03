@@ -1,0 +1,24 @@
+{
+  "pytest_routing": {
+    "status": "PASS",
+    "passed": 46,
+    "failed": 0,
+    "command": "uv run pytest tests/test_model_catalog.py tests/test_model_routing_policy.py tests/test_pal_model_manifest.py tests/test_routing_config.py tests/test_mcp_pal_runtime_contract.py -q"
+  },
+  "pytest_normalized_catalog": {
+    "status": "PASS",
+    "passed": 26,
+    "failed": 0,
+    "command": "uv run pytest tests/commandcode_router/test_normalized_catalog.py -q"
+  },
+  "git_diff_check": {
+    "status": "PASS",
+    "command": "git diff --check origin/main..HEAD"
+  },
+  "validate_change_contract": {
+    "status": "PASS",
+    "max_lane": "L2",
+    "paths": 43,
+    "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+  }
+}

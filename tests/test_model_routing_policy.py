@@ -8,7 +8,9 @@ These are governance invariants, not runtime behavior: read/plan/review/audit
 lanes must not be able to edit or execute, and OpenRouter must stay a broker.
 """
 
+import json
 from pathlib import Path
+import tomllib
 
 import pytest
 import yaml
@@ -184,3 +186,59 @@ def test_edit_agents_have_edit_tool():
     for name in EDIT_AGENTS:
         tools = set(_agent_frontmatter(name)["tools"])
         assert "edit" in tools, f"{name} should have the edit tool"
+
+
+@pytest.mark.parametrize("key", ["default_subagent_model", "default_subagent_reasoning_effort"])
+def test_codex_subagents_have_explicit_economical_defaults(key):
+    config = tomllib.loads((REPO_ROOT / ".codex/config.toml").read_text())
+    assert config["agents"].get(key), f"missing explicit {key}; expensive inheritance risk"
+    assert config["agents"]["default_subagent_model"] == "gpt-6-luna"
+    assert config["agents"]["default_subagent_reasoning_effort"] == "medium"
+
+
+@pytest.mark.parametrize("provider", ["codex"])
+def test_declared_role_routes_resolve_and_match_pins(provider):
+    routes = _load_policy()["provider_routes"][provider]
+    for role, route in routes["role_models"].items():
+        path = REPO_ROOT / route["file"]
+        assert path.is_file(), f"missing role {role}: {path}"
+        text = path.read_text()
+        if provider == "codex":
+            data = tomllib.loads(text)
+            assert data.get("model") == route["model"]
+            assert data.get("model_reasoning_effort") == route["effort"]
+            assert data["model"] != "inherit"
+            assert "astra" not in data["model"].lower()
+        else:
+            data = yaml.safe_load(text.split("---", 2)[1])
+            assert data.get("model") == route["model"]
+            assert data["model"] != "inherit"
+    for stage in EXPECTED_STAGES - {"self_audit"}:
+        assert (REPO_ROOT / routes[stage]).is_file()
+
+
+@pytest.mark.parametrize("role", ["dmx-explorer", "dmx-housekeeper", "dmx-reviewer"])
+def test_dmx_evidence_roles_preserve_read_only_boundary(role):
+    data = tomllib.loads((REPO_ROOT / f".codex/agents/{role}.toml").read_text())
+    assert data["sandbox_mode"] == "read-only"
+    assert "Do not edit files" in data["developer_instructions"] or "editing files" in data["developer_instructions"]
+
+
+def test_codex_review_cannot_be_promoted_to_formal_audit():
+    routes = _load_policy()["provider_routes"]
+    assert routes["codex"]["self_audit"] == "FORBIDDEN_FORMAL_AUDITOR"
+    reviewer = tomllib.loads((REPO_ROOT / routes["codex"]["judge_strong"]).read_text())
+    assert "Advisory code review only" in reviewer["developer_instructions"]
+    assert "never the formal embedded auditor" in reviewer["developer_instructions"]
+    schema = json.loads((REPO_ROOT / "schemas/proof/embedded_audit.schema.json").read_text())
+    assert routes["claude_code"]["self_audit"] in schema["properties"]["auditor_model"]["enum"]
+
+
+def test_cost_first_policy_preserves_evidence_economy_budget():
+    policy = _load_policy()
+    assert "cheapest_adequate_qualified_model" in policy["principles"]
+    assert "lowest_sufficient_supported_effort" in policy["principles"]
+    for lane in ("L2_material", "L3_red_lane"):
+        budget = policy["evidence_economy"]["lanes"][lane]
+        assert budget["implementer_model_calls"] == 1
+        assert budget["auditor_model_calls"] == 1

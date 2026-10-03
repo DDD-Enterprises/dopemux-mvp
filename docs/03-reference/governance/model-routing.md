@@ -25,6 +25,33 @@ does not dispatch model calls.
 
 ---
 
+## Cost-first defaults and bounded delegation
+
+Always choose cheapest adequate qualified model and lowest sufficient supported effort; deterministic shell/schema/hash/inventory tasks use no model. Explicit user/packet model, runner, same-route, approval, and no-fallback restrictions prevail. Strong supervisor delegates suitable bounded work with file/responsibility ownership, validation, and stop conditions; supervisor retains decisions, synthesis, escalation, and finality.
+
+Repo Codex supervisor declares `gpt-6.1-sol` high. `[agents]` defaults declare `gpt-6-luna` medium. Custom role `model` / `model_reasoning_effort` override defaults and explicit spawn selection. These are configuration declarations; instructions still guide dispatch and actual identity/availability remain `UNKNOWN` without evidence. Fresh or bounded-history collaboration children accept explicit model/effort; full-history forks inherit supervisor and reject overrides. Report missing cheaper delegation controls instead of silently inheriting expensive model.
+
+| Bounded task / role | Declared route | Effort / boundary |
+|---|---|---|
+| Evidence / research: dmx-explorer, researcher | gpt-6-luna | medium; read-only |
+| Housekeeping / coordination: dmx-housekeeper, project-manager | gpt-6-luna | low; read-only |
+| Allowlisted implementation: dmx-worker, developer | gpt-6.1-sol | medium; packet-scoped |
+| Design: architect / advisory review: dmx-reviewer | gpt-6.1-sol | high; read-only; Codex never formal auditor |
+| Claude architect / developer | claude-sonnet-5-5 | lowest sufficient supported effort; existing tool scopes |
+| Claude project-manager / researcher | claude-haiku-4-5 | supported controls only; read-only |
+
+GPT-6 Luna, GPT-6.1 Sol, Claude Sonnet 5.5 (`claude-sonnet-5-5`), and Gemini 3.8 Flash (`gemini-3.8-flash`) are candidates, not global numeric price ranking. Gemini Flash requires actual client/account qualification. Claude Opus 5.5 (`claude-opus-5-5`) is escalation only. Current prices, capability, availability, and actual identity remain `UNKNOWN` when unproven; selector syntax does not prove account access.
+
+Cheap-model failure, insufficient confidence, contract ambiguity, or security/replay risk returns to supervisor. Record reason, narrow stronger slice, and bound retry under packet/evidence-economy limits. No hidden upgrade, fallback, retry, or provider substitution; stop when binding restrictions prohibit escalation. L0=0 model calls; L1≤1 implementer; L2/L3=1 implementer + one final independent frozen-head audit. Record budget exceptions; no intermediate audits or re-audits of unchanged proof-only content.
+
+Other runners consume AGENTS.md §5 via loaded instructions and pin documented per-agent/per-invocation model and supported effort controls. OpenCode PAL is optional or packet-required within budget. Copilot accepted selectors remain unchanged. Report unavailable delegation/controls; never invent runtime keys. YAML remains advisory, not automatic enforcement. Formal audit candidate Sonnet 5.5 uses schema-compatible `sonnet` alias separately from actual ID evidence; Codex review cannot satisfy formal embedded audit.
+
+Examples: hashes/schema checks → deterministic tools; bounded status/lookup → qualified Luna/Haiku role; approved implementation → qualified Sol medium/Sonnet; failed cheap lookup → supervisor narrows stronger investigation with reason and bounded retry. Config parsing verifies declarations, not account execution.
+
+Official sources: [OpenAI subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Claude Code subagents](https://code.claude.com/docs/en/sub-agents), [Anthropic models](https://platform.claude.com/docs/en/models/overview), [Google Gemini models](https://ai.google.dev/gemini-api/docs/models).
+
+---
+
 ## 1. Purpose
 
 This policy assigns a **stage slot** (cheap_read → investigation → planner_strong →
@@ -77,10 +104,10 @@ Verdict values for `self_audit`: `PASS` · `PASS_WITH_RISKS` · `FAIL` ·
 
 | Provider | cheap_read | planner_strong | implementer_standard | judge_strong / self_audit |
 |----------|-----------|---------------|---------------------|--------------------------|
-| Codex | VERIFY_WITH_VENDOR_DOCS (cheap_fast tier) | VERIFY_WITH_VENDOR_DOCS (strong_reasoning) | VERIFY_WITH_VENDOR_DOCS (coding_balanced) | VERIFY_WITH_VENDOR_DOCS (strong_reasoning / audit_strong) |
+| Codex | dmx-explorer: gpt-6-luna medium | architect: gpt-6.1-sol high | developer: gpt-6.1-sol medium | dmx-reviewer: advisory Sol high / formal audit FORBIDDEN |
 | OpenCode | VERIFY_WITH_VENDOR_DOCS (session model / cheap_fast intent) | `.opencode/agents/pal-planner.md` | VERIFY_WITH_VENDOR_DOCS (session model / coding_balanced intent) | `.opencode/agents/pal-reviewer.md` |
 | Copilot | `dopemux-reader.agent.md` | `dopemux-planner.agent.md` | `dopemux-implementer.agent.md` | `dopemux-auditor.agent.md` |
-| Claude Code | VERIFY_WITH_VENDOR_DOCS (Haiku / Sonnet-low) | VERIFY_WITH_VENDOR_DOCS (opusplan: Opus plans, Sonnet implements) | VERIFY_WITH_VENDOR_DOCS (Sonnet) | VERIFY_WITH_VENDOR_DOCS (Opus) |
+| Claude Code | project-manager/researcher: claude-haiku-4-5 | architect: claude-sonnet-5-5 | developer: claude-sonnet-5-5 | Sonnet candidate; Opus escalation only / independent audit when required |
 | AGY | VERIFY_WITH_VENDOR_DOCS (Flash tier) | VERIFY_WITH_VENDOR_DOCS (Pro-high tier) | VERIFY_WITH_VENDOR_DOCS (Claude Sonnet in-AGY) | VERIFY_WITH_VENDOR_DOCS (Pro-high) |
 | Gemini CLI | VERIFY_WITH_VENDOR_DOCS (Flash tier) | VERIFY_WITH_VENDOR_DOCS (Pro-high tier) | VERIFY_WITH_VENDOR_DOCS (coding_balanced) | VERIFY_WITH_VENDOR_DOCS (Pro-high / audit_strong) |
 | xAI | VERIFY_WITH_VENDOR_DOCS (low-reasoning Grok) | VERIFY_WITH_VENDOR_DOCS (high-reasoning Grok) | VERIFY_WITH_VENDOR_DOCS (medium-reasoning Grok) | VERIFY_WITH_VENDOR_DOCS (high-reasoning Grok) |
@@ -134,7 +161,7 @@ questions. The cheap lane must stop and escalate.
 **2. Implementer audits itself without independent audit.**
 The `implementer_standard` agent declares its own work ready without a separate
 `self_audit` pass by a different tool or model. Self-certification is not evidence.
-The proof bundle requires an independent audit verdict.
+L2/L3 proof requires one independent final frozen-head audit verdict; follow packet-specific audit requirements for other lanes.
 
 **3. Agent / coder chooses its own model silently.**
 A tool decides at runtime which model to use without recording the actual choice in
@@ -233,11 +260,7 @@ same verdict space.
   the agents declare `Claude Sonnet 4.5`. Reconciling this naming is out of scope
   here and preserved as **UNKNOWN**.
 
-- **All provider model selectors**: Exact model selector strings for Codex CLI,
-  Claude Code `--model`, AGY, Gemini CLI, xAI, and Moonshot are marked
-  **VERIFY_WITH_VENDOR_DOCS** throughout this policy. Operators must replace tier
-  intent labels with actual verified model strings before treating this policy as
-  executable configuration.
+- **Provider qualification**: Codex/Claude role pins are observed declarations with vendor selector documentation above. Account availability and actual identity remain separate runtime evidence. AGY, Gemini CLI, xAI, and Moonshot selectors remain **VERIFY_WITH_VENDOR_DOCS** until qualified; conditional Flash candidate is not account proof.
 
 - **Runtime wiring**: No runtime system currently reads this file. The policy is
   advisory until a runtime routing component explicitly consumes it, at which point

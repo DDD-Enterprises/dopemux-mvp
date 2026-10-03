@@ -1,7 +1,7 @@
 """
-Configuration and constants for Zen MCP Server
+Configuration and constants for PAL MCP Server
 
-This module centralizes all configuration settings for the Zen MCP Server.
+This module centralizes all configuration settings for the PAL MCP Server.
 It defines model configurations, token limits, temperature defaults, and other
 constants used throughout the application.
 
@@ -14,9 +14,9 @@ from utils.env import get_env
 # These values are used in server responses and for tracking releases
 # IMPORTANT: This is the single source of truth for version and author info
 # Semantic versioning: MAJOR.MINOR.PATCH
-__version__ = "9.0.2"
+__version__ = "9.8.2"
 # Last update date in ISO format
-__updated__ = "2025-10-15"
+__updated__ = "2025-12-15"
 # Primary maintainer
 __author__ = "Fahad Gilani"
 
@@ -43,6 +43,10 @@ IS_AUTO_MODE = DEFAULT_MODEL.lower() == "auto"
 
 
 # Temperature defaults for different tool types
+# NOTE: Gemini 3.0 Pro notes suggest temperature should be set at 1.0
+# in most cases. Lowering it can affect the models 'reasoning' abilities.
+# Newer models / inference stacks are able to handle their randomness better.
+
 # Temperature controls the randomness/creativity of model responses
 # Lower values (0.0-0.3) produce more deterministic, focused responses
 # Higher values (0.7-1.0) produce more creative, varied responses

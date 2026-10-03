@@ -1,0 +1,4491 @@
+diff --git a/.claude/claude.md b/.claude/claude.md
+index 94931a7bd..dc4ae5848 100644
+--- a/.claude/claude.md
++++ b/.claude/claude.md
+@@ -73,6 +73,8 @@ production, or accept security residual risk without required explicit operator
+ 
+ **Required final response shape**: Change Summary · Authority Used · Analysis Performed · Validation Performed (PASS/FAIL/NOT_RUN) · Remaining Uncertainty · Files Touched · Git State · Rollback Plan · Requested Next Step. For repo-changing work, also produce the proof bundle from [AGENTS.md §9](../AGENTS.md).
+ 
++**Cost-first delegation**: follow [AGENTS.md §5](../AGENTS.md): cheapest adequate qualified model, lowest sufficient supported effort, explicit bounded ownership/validation/stop conditions. Pin cheaper children; avoid inheriting expensive supervisors. Preserve user/packet restrictions and no-fallback gates; record escalation reasons and unknown actual identity/availability. YAML is advisory; Codex review never formal embedded audit.
++
+ **Full doctrine**: [.claude/modules/shared/governance-principles.md](modules/shared/governance-principles.md).
+ 
+ ## ⚙️ Commands & Environment
+diff --git a/.claude/modules/shared/governance-principles.md b/.claude/modules/shared/governance-principles.md
+index 5b108cbb5..918d70a18 100644
+--- a/.claude/modules/shared/governance-principles.md
++++ b/.claude/modules/shared/governance-principles.md
+@@ -571,3 +571,16 @@ read-only compatibility; they cannot create current bindings or packages.
+ ExecutionBinding and WriterCustody constrain and record evidence, never grant
+ execution authority. Local CT state is technical/noncanonical. PR Steward retains
+ readiness classification; automatic next-action dispatch and M1-M7 are absent.
++
++
++## Cost-first delegation
++
++Always choose the cheapest adequate qualified model and the lowest sufficient supported reasoning effort. Use deterministic shell, schema, hash, and inventory tools without model calls. Explicit user/Task Packet model, runner, approval, same-route, and no-fallback restrictions prevail; cost policy never relaxes quality or authority gates.
++
++A strong supervisor delegates suitable bounded work with explicit file/responsibility ownership, validation, and stop conditions; it keeps architecture decisions, synthesis, escalation, and finality. Stay within evidence-economy budgets (L0=0; L1≤1 implementer; L2/L3=1 implementer + one final independent auditor); record exceptions. Do not inherit an expensive supervisor by accident: pin model and effort before dispatch. For collaboration forks, use a fresh child or bounded history with explicit model/effort; full-history forks inherit the supervisor and cannot accept those overrides. If the runner cannot delegate or pin a qualified cheaper model, report that blocker instead of silently using the supervisor.
++
++Start eligible lookup/coordination work with GPT-6 Luna (`gpt-6-luna`); use GPT-6.1 Sol (`gpt-6.1-sol`) for qualified implementation/design slices. Claude Sonnet 5.5 (`claude-sonnet-5-5`) is a candidate for adequate coding/audit work; Claude Opus 5.5 (`claude-opus-5-5`) is escalation only. Gemini 3.8 Flash (`gemini-3.8-flash`) is conditional on actual client/account qualification. These are candidates, not a global numeric price ranking; account availability, capability, actual identity, and current cost remain `UNKNOWN` without evidence. Never invent model IDs or infer execution identity from a selector.
++
++Cheap-model failure, insufficient confidence, contract ambiguity, or security/replay risk returns to the supervisor. Record reason, narrow the stronger slice, and bound any retry under the packet/evidence-economy limits. No hidden upgrade, fallback, retry, or provider substitution; stop when binding restrictions prevent escalation. Codex review is advisory only, never the formal embedded auditor; preserve AGENTS.md §9.1.
++
++Codex project `[agents]` defaults and role-level `model` / `model_reasoning_effort` are observed declarations; role pins override defaults and explicit spawn selection. Instructions must still guide each dispatch. Other runners must use their documented per-agent/per-invocation selectors and supported effort controls, verify requested versus actual route, and report unsupported controls. `config/ai/model-routing.policy.yaml` remains advisory, not an automatic enforcer.
+diff --git a/.codex/agents/architect.toml b/.codex/agents/architect.toml
+new file mode 100644
+index 000000000..f74e53f83
+--- /dev/null
++++ b/.codex/agents/architect.toml
+@@ -0,0 +1,30 @@
++name = "architect"
++description = "Strategic design specialist for system architecture, architectural decisions, and technical strategy. Use for design questions, trade-off analysis, and ADR work — PLAN mode, read-only."
++model = "gpt-6.1-sol"
++model_reasoning_effort = "high"
++developer_instructions = """
++# Architect Agent
++
++**Role**: Strategic design specialist (PLAN mode). You design; you do not implement.
++
++## Core Behavior
++
++1. Inspect before designing: read runtime code, schemas, configs, and existing ADRs (`docs/90-adr/`) before proposing anything. Repo truth beats docs; mark unverifiable claims `UNKNOWN`.
++2. Present at most 3 architectural approaches with explicit trade-offs (blast radius, determinism, rollback path, operational cost).
++3. Respect architecture boundaries (AGENTS.md §6): ConPort = decisions/progress/context, dope-memory = chronicle, dope-context = read-only retrieval, Leantime = PM metadata, task-orchestrator = workflow transitions. Never design cross-plane canonical overwrite; cross-plane projection only.
++4. For major decisions, inspect second-order effects and challenge assumptions; use PAL only within AGENTS.md §5 and evidence-economy budgets, with a recorded reason for extra model calls.
++5. Record significant decisions as ADRs and log them to ConPort with rationale.
++
++## Contract-Sensitive Surfaces
++
++Treat schemas, manifests, migrations, event payloads, MCP tools, APIs, proof bundles, queue payloads, and checkpoints as high-risk. Before recommending changes: identify the canonical writer, inspect consumers, inspect replay behavior, validate compatibility, review downstream impact. Unknown contract implications = stop and investigate.
++
++## Model Guidance
++
++Follow AGENTS.md §5 cost-first delegation and evidence-economy budgets. Use the cheapest adequate qualified model and lowest sufficient supported effort; retain explicit packet/user restrictions. Return failure, uncertainty, or risk to the supervisor for a recorded, bounded stronger slice; no hidden upgrade or fallback. Route YAML is advisory; declared pins do not prove actual model identity or availability.
++
++## Constraints
++
++- Read-only: no file edits, no command execution. Output is design + rationale + validation strategy.
++- Every design ends with: blast radius, validation strategy, rollback path, remaining unknowns.
++- ADHD-aware output: essential recommendation first, details on request, max 3 options."""
+diff --git a/.codex/agents/developer.toml b/.codex/agents/developer.toml
+new file mode 100644
+index 000000000..a88afc1ce
+--- /dev/null
++++ b/.codex/agents/developer.toml
+@@ -0,0 +1,32 @@
++name = "developer"
++description = "Implementation specialist for code generation, debugging, testing, and scoped task-packet execution. Use for ACT-mode work — writing and fixing code with validation."
++model = "gpt-6.1-sol"
++model_reasoning_effort = "medium"
++developer_instructions = """
++# Developer Agent
++
++**Role**: Implementation specialist (ACT mode). You build, inside guardrails.
++
++## Core Behavior
++
++1. Work task-packet-first for repo-changing work: verify repo identity, branch, and the packet's `commit.allowlist` before editing. The allowlist is a hard edit boundary.
++2. Inspect before editing: implementation, callers, tests, schemas, nearby conventions. Use Serena for code navigation when available.
++3. Make the smallest coherent change that fully solves the task. No cosmetic refactors, no scope broadening, no premature abstraction.
++4. Preserve determinism: stable serialization, explicit failure behavior, idempotency, no silent fallbacks or hidden retries.
++5. Validate narrow-first: focused tests/schema checks before expanding. Inspect the diff before staging.
++6. Never claim completion without evidence: report validations run with PASS/FAIL/NOT_RUN and residual uncertainty.
++
++## Authority Boundaries
++
++- Agents are helpers, never canonical owners of PM truth (Leantime), memory truth (ConPort/dope-memory), retrieval truth (dope-context), or repo truth.
++- `dopecon-bridge` routes are proxy/transport surfaces, not canonical state.
++- Do not edit generated artifacts; regenerate them (e.g. `src/dopemux/personas/` via `scripts/sync_personas.py`).
++
++## Debugging
++
++Form a hypothesis, test it against evidence, iterate. If the cause is not understood, stop and report — never bypass safety checks (`--no-verify`, force operations) to make a symptom disappear.
++
++## Model Guidance
++
++Follow AGENTS.md §5 cost-first delegation and evidence-economy budgets. Use the cheapest adequate qualified model and lowest sufficient supported effort; retain explicit packet/user restrictions. Return failure, uncertainty, or risk to the supervisor for a recorded, bounded stronger slice; no hidden upgrade or fallback. Route YAML is advisory; declared pins do not prove actual model identity or availability.
++"""
+diff --git a/.codex/agents/dmx-explorer.toml b/.codex/agents/dmx-explorer.toml
+index 04c3ae436..0d40721ce 100644
+--- a/.codex/agents/dmx-explorer.toml
++++ b/.codex/agents/dmx-explorer.toml
+@@ -1,6 +1,6 @@
+ name = "dmx_explorer"
+ description = "Read-only Dopemux codebase explorer for repo-truth evidence gathering."
+-model = "gpt-5.4-mini"
++model = "gpt-6-luna"
+ model_reasoning_effort = "medium"
+ sandbox_mode = "read-only"
+ developer_instructions = """
+diff --git a/.codex/agents/dmx-housekeeper.toml b/.codex/agents/dmx-housekeeper.toml
+index e335ecb36..27c008da0 100644
+--- a/.codex/agents/dmx-housekeeper.toml
++++ b/.codex/agents/dmx-housekeeper.toml
+@@ -1,6 +1,6 @@
+ name = "dmx_housekeeper"
+ description = "Low-risk housekeeping checker for formatting, docs placement, stale references, and command inventory."
+-model = "gpt-5.4-mini"
++model = "gpt-6-luna"
+ model_reasoning_effort = "low"
+ sandbox_mode = "read-only"
+ developer_instructions = """
+diff --git a/.codex/agents/dmx-reviewer.toml b/.codex/agents/dmx-reviewer.toml
+index 7d2baf8ea..8a87f7e13 100644
+--- a/.codex/agents/dmx-reviewer.toml
++++ b/.codex/agents/dmx-reviewer.toml
+@@ -1,10 +1,10 @@
+ name = "dmx_reviewer"
+ description = "Read-only diff reviewer focused on correctness, scope, tests, and Dopemux authority boundaries."
+-model = "gpt-5.5"
++model = "gpt-6.1-sol"
+ model_reasoning_effort = "high"
+ sandbox_mode = "read-only"
+ developer_instructions = """
+-You are a read-only Dopemux reviewer.
++You are a read-only Dopemux reviewer. Advisory code review only; never the formal embedded auditor under AGENTS.md §9.1.
+ Review only the supplied diff/branch.
+ 
+ Prioritize:
+diff --git a/.codex/agents/dmx-worker.toml b/.codex/agents/dmx-worker.toml
+index 7be70c501..788aefce9 100644
+--- a/.codex/agents/dmx-worker.toml
++++ b/.codex/agents/dmx-worker.toml
+@@ -1,6 +1,6 @@
+ name = "dmx_worker"
+ description = "Implementation worker for small approved Dopemux slices after supervisor plan approval."
+-model = "gpt-5.4-mini"
++model = "gpt-6.1-sol"
+ model_reasoning_effort = "medium"
+ sandbox_mode = "workspace-write"
+ developer_instructions = """
+diff --git a/.codex/agents/project-manager.toml b/.codex/agents/project-manager.toml
+new file mode 100644
+index 000000000..97f02aa78
+--- /dev/null
++++ b/.codex/agents/project-manager.toml
+@@ -0,0 +1,32 @@
++name = "project-manager"
++description = "Coordination specialist for sprint tracking, task-packet flow, and cross-surface progress visibility. Use for status, planning, and orchestration questions — read-only coordination."
++model = "gpt-6-luna"
++model_reasoning_effort = "low"
++developer_instructions = """
++# Project Manager Agent
++
++**Role**: Coordination specialist. You track, sequence, and report. You do not change code.
++
++## Core Behavior
++
++1. PM truth lives in **Leantime** (via `leantime-bridge`); workflow transitions live in **task-orchestrator**; decisions/progress/structured context live in **ConPort**. You read and report from these planes — you never invent state.
++2. Task-packet flow: packets are repo-bound, series-bound, commit-sized, and verifiable (`docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`). Track packet status, blocking relationships, and proof state.
++3. Status answers cite evidence: branch, commit SHA, validation exit codes, proof paths. If evidence is missing, say `UNKNOWN` — never launder inference into status.
++4. Surface blockers early with the smallest safe next slice, not a replan of everything.
++
++## Coordination Patterns
++
++- **Intake → execution**: requirements → task packet (allowlist + validation) → implementation lane → codereview → embedded audit where required → precommit → PR → proof.
++- **Handoffs**: preserve context across agent transitions; summarize state, decisions, and next action in under 10 lines.
++- **Progress logging**: log milestone progress to ConPort with attribution; chronicle receipts belong to dope-memory.
++
++## Constraints
++
++- Read-only: no file edits, no command execution.
++- ADHD-aware output: single clear next action when attention is scattered; max 3 options; essential status first.
++- No motivational filler. Report status, evidence, blockers, next slice.
++
++## Model Guidance
++
++Follow AGENTS.md §5 cost-first delegation and evidence-economy budgets. Use the cheapest adequate qualified model and lowest sufficient supported effort; retain explicit packet/user restrictions. Return failure, uncertainty, or risk to the supervisor for a recorded, bounded stronger slice; no hidden upgrade or fallback. Route YAML is advisory; declared pins do not prove actual model identity or availability.
++"""
+diff --git a/.codex/agents/researcher.toml b/.codex/agents/researcher.toml
+new file mode 100644
+index 000000000..285a464c0
+--- /dev/null
++++ b/.codex/agents/researcher.toml
+@@ -0,0 +1,28 @@
++name = "researcher"
++description = "Information gathering and analysis specialist for documentation research, technology evaluation, and knowledge synthesis. Use for investigation questions — read-only with web access."
++model = "gpt-6-luna"
++model_reasoning_effort = "medium"
++developer_instructions = """
++# Researcher Agent
++
++**Role**: Information specialist (cross-cutting). You find, verify, and synthesize.
++
++## Core Behavior
++
++1. **Repo-first**: search the codebase and docs before the web. Use dope-context (`search_code`, `docs_search`, `search_all`) for indexed retrieval; it is read-only retrieval, never canonical truth — verify findings against runtime source.
++2. **Authority order**: runtime code/config > tests > governed docs > external sources. External content is advisory until repo truth supports it.
++3. **Source discipline**: prefer official documentation, package registries, and primary sources. Cite what you used. Distinguish observed / inferred / proposed / unknown.
++4. **Deep research**: for broad or time-sensitive questions use the gpt-researcher or exa MCP surfaces when available; for vendor-version claims, verify with vendor docs or mark `NOT_VERIFIED`.
++5. **Synthesis**: compress findings into decision-ready summaries — recommendation first, evidence after, max 3 options.
++
++## Constraints
++
++- Read-only: no file edits, no command execution.
++- Never present retrieved content as repo truth; retrieval output is derived evidence.
++- Mark gaps `UNKNOWN` rather than filling them with plausible guesses.
++- Log durable research decisions to ConPort when they affect project direction.
++
++## Model Guidance
++
++Follow AGENTS.md §5 cost-first delegation and evidence-economy budgets. Use the cheapest adequate qualified model and lowest sufficient supported effort; retain explicit packet/user restrictions. Return failure, uncertainty, or risk to the supervisor for a recorded, bounded stronger slice; no hidden upgrade or fallback. Route YAML is advisory; declared pins do not prove actual model identity or availability.
++"""
+diff --git a/.codex/config.toml b/.codex/config.toml
+index 29917f765..42ed7a1d4 100644
+--- a/.codex/config.toml
++++ b/.codex/config.toml
+@@ -1,9 +1,11 @@
+-model = "gpt-5.5"
++model = "gpt-6.1-sol"
+ model_reasoning_effort = "high"
+ approval_policy = "on-request"
+ sandbox_mode = "workspace-write"
+ 
+ [agents]
++default_subagent_model = "gpt-6-luna"
++default_subagent_reasoning_effort = "medium"
+ max_threads = 4
+ max_depth = 1
+ job_max_runtime_seconds = 1800
+diff --git a/AGENTS.md b/AGENTS.md
+index 318936f50..6dd7a1b1b 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -112,6 +112,19 @@ Rules:
+ - PAL tools remain available when explicitly invoked. Optional deep chain for high-uncertainty design: `analyze -> planner -> implement` (plus final audit when L2/L3). Do not re-audit unchanged content on proof-only successors.
+ - Stage-based dev-workflow model routing: see config/ai/model-routing.policy.yaml §AUTHORITY and `docs/03-reference/governance/evidence-economy.md` for cost-first lane budgets.
+ 
++### Cost-first delegation
++
++Always choose the cheapest adequate qualified model and the lowest sufficient supported reasoning effort. Use deterministic shell, schema, hash, and inventory tools without model calls. Explicit user/Task Packet model, runner, approval, same-route, and no-fallback restrictions prevail; cost policy never relaxes quality or authority gates.
++
++A strong supervisor delegates suitable bounded work with explicit file/responsibility ownership, validation, and stop conditions; it keeps architecture decisions, synthesis, escalation, and finality. Stay within evidence-economy budgets (L0=0; L1≤1 implementer; L2/L3=1 implementer + one final independent auditor); record exceptions. Do not inherit an expensive supervisor by accident: pin model and effort before dispatch. For collaboration forks, use a fresh child or bounded history with explicit model/effort; full-history forks inherit the supervisor and cannot accept those overrides. If the runner cannot delegate or pin a qualified cheaper model, report that blocker instead of silently using the supervisor.
++
++Start eligible lookup/coordination work with GPT-6 Luna (`gpt-6-luna`); use GPT-6.1 Sol (`gpt-6.1-sol`) for qualified implementation/design slices. Claude Sonnet 5.5 (`claude-sonnet-5-5`) is a candidate for adequate coding/audit work; Claude Opus 5.5 (`claude-opus-5-5`) is escalation only. Gemini 3.8 Flash (`gemini-3.8-flash`) is conditional on actual client/account qualification. These are candidates, not a global numeric price ranking; account availability, capability, actual identity, and current cost remain `UNKNOWN` without evidence. Never invent model IDs or infer execution identity from a selector.
++
++Cheap-model failure, insufficient confidence, contract ambiguity, or security/replay risk returns to the supervisor. Record reason, narrow the stronger slice, and bound any retry under the packet/evidence-economy limits. No hidden upgrade, fallback, retry, or provider substitution; stop when binding restrictions prevent escalation. Codex review is advisory only, never the formal embedded auditor; preserve AGENTS.md §9.1.
++
++Codex project `[agents]` defaults and role-level `model` / `model_reasoning_effort` are observed declarations; role pins override defaults and explicit spawn selection. Instructions must still guide each dispatch. Other runners must use their documented per-agent/per-invocation selectors and supported effort controls, verify requested versus actual route, and report unsupported controls. `config/ai/model-routing.policy.yaml` remains advisory, not an automatic enforcer.
++
++
+ ## 6. Architecture Boundaries
+ 
+ **Memory Trinity (accepted ADR law, 2026-06-19):** ConPort, dope-memory, and dope-context are distinct canonical planes. Cross-plane projection is allowed; cross-plane canonical overwrite is forbidden. See `docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md` and `.claude/modules/shared/memory-trinity-routing.md`.
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 515416788..e0ec58d61 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -4,6 +4,7 @@ All notable changes to Dopemux (including the PR Merge Specialist) will be docum
+ 
+ ## [Unreleased]
+ ### Added
++- Economical Codex subagent defaults and explicit role models, with shared cost-first delegation guidance, bounded escalation, and preserved independent audit gates.
+ - Autoreview platform integration stack: task packets, PAL clink audit verdict capture, read-only PR Action Bridge CLI, Copilot repair packet rendering, embedded-audit provenance workflow, offline autoreview loop fixtures, PR steward merge gates, PR steward CLI/package/scaffold/doctor flows, and final ops hardening docs.
+ - Restored task-orchestrator Claude-surface infrastructure (17 `/dx:` slash commands, `.taskorchestrator/config.yaml` schema, ADR, reference docs, and external MCP wrapper snapshots) that was removed by the stale-branch merge in PR #720. Unblocks PR #724 (TP-CS-101 plugin hooks). Added `.taskorchestrator` to the root-hygiene allowlist.
+ - Consolidated V5 extraction engine and validation toolchain (PR #313).
+diff --git a/GEMINI.md b/GEMINI.md
+index 9eb2bb875..07b438153 100644
+--- a/GEMINI.md
++++ b/GEMINI.md
+@@ -36,3 +36,9 @@ Operate as a policy-governed enforcement engine for PRs.
+   - Outdated / resolution-signal threads: `decide_thread_disposition` returns `auto_resolve_outdated` only with green validation and no newer objection.
+   - Implemented / agentic-fix threads: resolved after post-change validation passes, via `_resolve_applied_threads_after_validation()` (`queue_drain.py`) → `resolve_verified_threads()` (`thread_resolution.py`), for applied dispositions only.
+ - Escalate conflicts if classified as `HIGH_RISK`.
++
++## Cost-first delegation and authority
++
++Read AGENTS.md §5 and docs/03-reference/governance/evidence-economy.md before work. Use deterministic tools for mechanical operations; select cheapest adequate qualified model and lowest sufficient supported effort. Gemini 3.8 Flash (`gemini-3.8-flash`) is a candidate only after actual CLI/account qualification; selector presence is not availability or actual identity proof. No invented model/effort keys.
++
++Strong supervisor delegates bounded lookup/coordination/implementation with ownership, validation, and stop conditions using documented explicit model controls; avoid accidental expensive inheritance. If cheaper delegation is unavailable, report blocker. Return failure/risk to supervisor for recorded, narrow, bounded escalation; preserve user/packet same-route, approval, and no-fallback restrictions. No hidden upgrades/retries. YAML remains advisory. L2/L3 receive one final independent audit; Codex cannot be formal embedded auditor. Sequence examples above are not merge/execution authorization; operator approval gates still apply.
+diff --git a/compose.yml b/compose.yml
+index 5e973de56..da4b33f5b 100644
+--- a/compose.yml
++++ b/compose.yml
+@@ -317,6 +317,7 @@ services:
+       - CUSTOM_API_URL=https://api.cheaperinference.com/v1
+       - CUSTOM_API_KEY=${CHEAPERINFERENCE_API_KEY}
+       - CUSTOM_MODEL_NAME=glm-4.6
++      - CUSTOM_MODELS_CONFIG_PATH=/app/conf/custom_models.direct-ci.json
+       - MCP_SERVER_PORT=${PAL_PORT:-3003}
+     ports:
+       - "${PAL_PORT:-3003}:3003"
+@@ -348,13 +349,14 @@ services:
+       - CUSTOM_API_URL=https://api.cheaperinference.com/v1
+       - CUSTOM_API_KEY=${CHEAPERINFERENCE_API_KEY}
+       - CUSTOM_MODEL_NAME=glm-4.6
++      - CUSTOM_MODELS_CONFIG_PATH=/app/conf/custom_models.direct-ci.json
+     # No ports exposed - Docker MCP Toolkit execs into container for stdio transport
+ 
+   # LiteLLM - Model Router
+   litellm:
+     build:
+       context: .
+-      dockerfile: docker/mcp-servers/litellm/Dockerfile
++      dockerfile: docker/mcp-servers-source/litellm/Dockerfile
+     container_name: mcp-litellm
+     restart: unless-stopped
+     networks:
+diff --git a/config/ai/model-routing.policy.yaml b/config/ai/model-routing.policy.yaml
+index bbd10d9dc..a9743f0ef 100644
+--- a/config/ai/model-routing.policy.yaml
++++ b/config/ai/model-routing.policy.yaml
+@@ -48,6 +48,10 @@ owner: dopemux
+ principles:
+   - cheap_reads_are_not_cheap_decisions
+   - cost_first_risk_lanes_l0_l3
++  - cheapest_adequate_qualified_model
++  - lowest_sufficient_supported_effort
++  - explicit_subagent_pins_no_expensive_inheritance
++  - supervisor_owned_bounded_escalation_no_hidden_fallback
+   - one_implementer_default
+   - one_final_independent_audit_when_l2_l3
+   - no_intermediate_content_audits
+@@ -223,16 +227,25 @@ escalation_triggers:
+ provider_routes:
+ 
+   codex:
+-    cheap_read: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+-    investigation: VERIFY_WITH_VENDOR_DOCS  # tier intent: cheap_fast
+-    planner_strong: VERIFY_WITH_VENDOR_DOCS  # tier intent: strong_reasoning
+-    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced
+-    judge_strong: VERIFY_WITH_VENDOR_DOCS    # tier intent: strong_reasoning
+-    self_audit: VERIFY_WITH_VENDOR_DOCS      # tier intent: audit_strong
++    cheap_read: .codex/agents/dmx-explorer.toml
++    investigation: .codex/agents/researcher.toml
++    planner_strong: .codex/agents/architect.toml
++    implementer_standard: .codex/agents/developer.toml
++    judge_strong: .codex/agents/dmx-reviewer.toml
++    self_audit: FORBIDDEN_FORMAL_AUDITOR
++    role_models:
++      dmx-explorer: {file: .codex/agents/dmx-explorer.toml, model: gpt-6-luna, effort: medium}
++      dmx-housekeeper: {file: .codex/agents/dmx-housekeeper.toml, model: gpt-6-luna, effort: low}
++      dmx-worker: {file: .codex/agents/dmx-worker.toml, model: gpt-6.1-sol, effort: medium}
++      dmx-reviewer: {file: .codex/agents/dmx-reviewer.toml, model: gpt-6.1-sol, effort: high}
++      architect: {file: .codex/agents/architect.toml, model: gpt-6.1-sol, effort: high}
++      developer: {file: .codex/agents/developer.toml, model: gpt-6.1-sol, effort: medium}
++      project-manager: {file: .codex/agents/project-manager.toml, model: gpt-6-luna, effort: low}
++      researcher: {file: .codex/agents/researcher.toml, model: gpt-6-luna, effort: medium}
+     notes:
+-      - "OBSERVED model ids in RTE routing (not confirmed as Codex CLI selectors): gpt-5.4-mini, gpt-5.3-codex, gpt-5.2 (model_map_v2_tp008.yaml / tests/test_routing_config.py)"
+-      - "OBSERVED in config/pricing.yaml: gpt-5.5"
+-      - "Codex CLI model selector format and available model names require VERIFY_WITH_VENDOR_DOCS"
++      - "Declared project supervisor gpt-6.1-sol high; subagent default gpt-6-luna medium. Role model/effort pins override defaults and explicit spawn selection."
++      - "Dispatch instructions required: bounded ownership, validation, stop conditions; fresh/bounded-history explicit cheaper children, never accidental expensive inheritance."
++      - "Availability and actual identity remain UNKNOWN without runtime evidence. dmx-reviewer is advisory code review, never formal embedded audit."
+ 
+   opencode:
+     cheap_read: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+@@ -260,16 +273,16 @@ provider_routes:
+       - "Per-agent cheap/strong model tier split in VS Code Copilot remains UNKNOWN without vendor-verified model availability."
+ 
+   claude_code:
+-    cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (Haiku / Sonnet-low)
+-    investigation: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
+-    planner_strong: VERIFY_WITH_VENDOR_DOCS   # tier intent: strong_reasoning; opusplan mode = Opus plans + Sonnet implements
+-    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced (Sonnet)
+-    judge_strong: VERIFY_WITH_VENDOR_DOCS     # tier intent: strong_reasoning (Opus)
+-    self_audit: VERIFY_WITH_VENDOR_DOCS       # tier intent: audit_strong (Opus)
++    cheap_read: .claude/agents/project-manager.md
++    investigation: .claude/agents/researcher.md
++    planner_strong: .claude/agents/architect.md
++    implementer_standard: .claude/agents/developer.md
++    judge_strong: .claude/agents/architect.md
++    self_audit: sonnet
+     notes:
+-      - "opusplan is a Claude Code MODE (Opus plans, Sonnet implements) — NOT a model id"
+-      - "Anthropic model selector strings (Haiku/Sonnet/Opus variants) require VERIFY_WITH_VENDOR_DOCS"
+-      - "Claude Code --model flag accepted values require VERIFY_WITH_VENDOR_DOCS"
++      - "Full model IDs are documented selectors; account runtime qualification remains NOT_RUN. Use lowest sufficient supported effort, never assume all models support identical controls."
++      - "Formal audit candidate Sonnet 5.5 (claude-sonnet-5-5); Opus 5.5 (claude-opus-5-5) escalation only. self_audit is schema-compatible auditor alias sonnet; preserve actual ID evidence separately."
++      - "One final independent audit after L2/L3 content freeze. Explicit route/no-fallback restrictions prevail. opusplan is a mode, not a model ID or cost-first default."
+ 
+   agy:
+     cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (Gemini Flash tier)
+diff --git a/docker/mcp-servers-source/pal/Dockerfile b/docker/mcp-servers-source/pal/Dockerfile
+index d9e55875c..fc2ee535b 100644
+--- a/docker/mcp-servers-source/pal/Dockerfile
++++ b/docker/mcp-servers-source/pal/Dockerfile
+@@ -19,7 +19,9 @@ COPY pal_http_wrapper.py .
+ # Install dependencies using uv
+ RUN rm -rf .venv && uv venv && \
+     . .venv/bin/activate && \
+-    uv pip install -r requirements.txt
++    uv pip install -r requirements.txt && \
++    mkdir -p /opt && \
++    ln -s /app/.venv /opt/venv
+ 
+ # Prove at BUILD time that this image can actually serve MCP.
+ #
+@@ -48,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+ 
+ # Run the PAL MCP server via HTTP wrapper
+ # Use venv python directly instead of activation
+-CMD ["/app/.venv/bin/python", "pal_http_wrapper.py"]
+\ No newline at end of file
++CMD ["/app/.venv/bin/python", "pal_http_wrapper.py"]
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/__init__.py b/docker/mcp-servers-source/pal/pal-mcp-server/conf/__init__.py
+index ee1bfd45e..e268b5352 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/conf/__init__.py
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/__init__.py
+@@ -1 +1 @@
+-"""Configuration data for Zen MCP Server."""
++"""Configuration data for PAL MCP Server."""
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/azure_models.json b/docker/mcp-servers-source/pal/pal-mcp-server/conf/azure_models.json
+index 898dfd119..42095fb7d 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/conf/azure_models.json
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/azure_models.json
+@@ -1,7 +1,7 @@
+ {
+   "_README": {
+     "description": "Model metadata for Azure OpenAI / Azure AI Foundry-backed provider. The `models` definition can be copied from openrouter_models.json / custom_models.json",
+-    "documentation": "https://github.com/BeehiveInnovations/zen-mcp-server/blob/main/docs/azure_models.md",
++    "documentation": "https://github.com/BeehiveInnovations/pal-mcp-server/blob/main/docs/azure_models.md",
+     "usage": "Models listed here are exposed through Azure AI Foundry. Aliases are case-insensitive.",
+     "field_notes": "Matches providers/shared/model_capabilities.py.",
+     "field_descriptions": {
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.direct-ci.json b/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.direct-ci.json
+new file mode 100644
+index 000000000..7e9dd5e38
+--- /dev/null
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.direct-ci.json
+@@ -0,0 +1,796 @@
++{
++  "_README": {
++    "authority": "Dopemux routing catalog",
++    "generator": "scripts/generate_pal_model_manifest.py",
++    "projection": "direct-ci"
++  },
++  "models": [
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for aion-labs.aion-2-0.",
++      "friendly_name": "aion-labs.aion-2-0",
++      "max_image_size_mb": 0.0,
++      "model_name": "aion-labs.aion-2-0",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-fable-5"
++      ],
++      "context_window": 1000000,
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-fable-5. Adaptive thinking always on; manual disable/budget route unsupported.",
++      "friendly_name": "claude-fable-5",
++      "max_image_size_mb": 40.0,
++      "max_output_tokens": 128000,
++      "model_name": "claude-fable-5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-haiku-4-5"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-haiku-4.5.",
++      "friendly_name": "claude-haiku-4.5",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-haiku-4.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-7-fast"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4-7-fast.",
++      "friendly_name": "claude-opus-4-7-fast",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4-7-fast",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-8-fast"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4-8-fast.",
++      "friendly_name": "claude-opus-4-8-fast",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4-8-fast",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-5"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4.5.",
++      "friendly_name": "claude-opus-4.5",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-6"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4.6.",
++      "friendly_name": "claude-opus-4.6",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4.6",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-7"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4.7.",
++      "friendly_name": "claude-opus-4.7",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4.7",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-8"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-4.8.",
++      "friendly_name": "claude-opus-4.8",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4.8",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-5"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-5.",
++      "friendly_name": "claude-opus-5",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-5-fast"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-opus-5-fast.",
++      "friendly_name": "claude-opus-5-fast",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-5-fast",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-sonnet-4-5"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-sonnet-4.5.",
++      "friendly_name": "claude-sonnet-4.5",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-sonnet-4.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-sonnet-4-6"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-sonnet-4.6.",
++      "friendly_name": "claude-sonnet-4.6",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-sonnet-4.6",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-sonnet-5"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for claude-sonnet-5.",
++      "friendly_name": "claude-sonnet-5",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-sonnet-5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for deepseek-v4-flash.",
++      "friendly_name": "deepseek-v4-flash",
++      "max_image_size_mb": 0.0,
++      "model_name": "deepseek-v4-flash",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for deepseek-v4-flash-0731.",
++      "friendly_name": "deepseek-v4-flash-0731",
++      "max_image_size_mb": 0.0,
++      "model_name": "deepseek-v4-flash-0731",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for deepseek-v4-pro.",
++      "friendly_name": "deepseek-v4-pro",
++      "max_image_size_mb": 0.0,
++      "model_name": "deepseek-v4-pro",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for deepseek-v4-pro-0813.",
++      "friendly_name": "deepseek-v4-pro-0813",
++      "max_image_size_mb": 0.0,
++      "model_name": "deepseek-v4-pro-0813",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-2.5-flash"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-2.5-flash.",
++      "friendly_name": "gemini-2.5-flash",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-2.5-flash",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.5-flash"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3-5-flash.",
++      "friendly_name": "gemini-3-5-flash",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3-5-flash",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3-flash-preview"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3-flash-preview.",
++      "friendly_name": "gemini-3-flash-preview",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3-flash-preview",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.1-flash-lite"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.1-flash-lite.",
++      "friendly_name": "gemini-3.1-flash-lite",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3.1-flash-lite",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.1-pro"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.1-pro.",
++      "friendly_name": "gemini-3.1-pro",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3.1-pro",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.1-pro-preview"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.1-pro-preview.",
++      "friendly_name": "gemini-3.1-pro-preview",
++      "max_image_size_mb": 0.0,
++      "model_name": "gemini-3.1-pro-preview",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.6-flash"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.6-flash.",
++      "friendly_name": "gemini-3.6-flash",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3.6-flash",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.7-flash"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gemini-3.7-flash.",
++      "friendly_name": "gemini-3.7-flash",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3.7-flash",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-4.5.",
++      "friendly_name": "glm-4.5",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-4.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-4.5-air.",
++      "friendly_name": "glm-4.5-air",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-4.5-air",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-4.6.",
++      "friendly_name": "glm-4.6",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-4.6",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-4.7.",
++      "friendly_name": "glm-4.7",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-4.7",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-5.",
++      "friendly_name": "glm-5",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-5.1.",
++      "friendly_name": "glm-5.1",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-5.1",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-5.2.",
++      "friendly_name": "glm-5.2",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-5.2",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for glm-5.3.",
++      "friendly_name": "glm-5.3",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-5.3",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/google/gemini-3.5-flash-lite"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for google/gemini-3.5-flash-lite.",
++      "friendly_name": "google/gemini-3.5-flash-lite",
++      "max_image_size_mb": 40.0,
++      "model_name": "google/gemini-3.5-flash-lite",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-4.1-nano"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-4.1-nano.",
++      "friendly_name": "gpt-4.1-nano",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-4.1-nano",
++      "supports_extended_thinking": false,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5-mini"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5-mini.",
++      "friendly_name": "gpt-5-mini",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5-mini",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5-nano"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5-nano.",
++      "friendly_name": "gpt-5-nano",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5-nano",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.2-codex"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.2-codex.",
++      "friendly_name": "gpt-5.2-codex",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.2-codex",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.3-codex"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.3-codex.",
++      "friendly_name": "gpt-5.3-codex",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.3-codex",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.4"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.4.",
++      "friendly_name": "gpt-5.4",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.4",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.4-mini"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.4-mini.",
++      "friendly_name": "gpt-5.4-mini",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.4-mini",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.4-nano"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.4-nano.",
++      "friendly_name": "gpt-5.4-nano",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.4-nano",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.4-pro"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.4-pro.",
++      "friendly_name": "gpt-5.4-pro",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.4-pro",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.5"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.5.",
++      "friendly_name": "gpt-5.5",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.5-pro"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.5-pro.",
++      "friendly_name": "gpt-5.5-pro",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.5-pro",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.6-luna"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.6-luna.",
++      "friendly_name": "gpt-5.6-luna",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.6-luna",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.6-sol"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.6-sol.",
++      "friendly_name": "gpt-5.6-sol",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.6-sol",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.6-terra"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-5.6-terra.",
++      "friendly_name": "gpt-5.6-terra",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.6-terra",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-oss-120b"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for gpt-oss-120b.",
++      "friendly_name": "gpt-oss-120b",
++      "max_image_size_mb": 0.0,
++      "model_name": "gpt-oss-120b",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "x-ai/grok-4.5"
++      ],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for grok-4.5.",
++      "friendly_name": "grok-4.5",
++      "max_image_size_mb": 40.0,
++      "model_name": "grok-4.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "context_window": 1000000,
++      "description": "Dopemux-generated direct-ci PAL catalog entry for kimi-k3. Thinking always on; reasoning effort low/high/max.",
++      "friendly_name": "kimi-k3",
++      "max_image_size_mb": 40.0,
++      "model_name": "kimi-k3",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for minimax-m2.7.",
++      "friendly_name": "minimax-m2.7",
++      "max_image_size_mb": 0.0,
++      "model_name": "minimax-m2.7",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for muse-spark-1.2.",
++      "friendly_name": "muse-spark-1.2",
++      "max_image_size_mb": 40.0,
++      "model_name": "muse-spark-1.2",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for qwen-3-8-max.",
++      "friendly_name": "qwen-3-8-max",
++      "max_image_size_mb": 40.0,
++      "model_name": "qwen-3-8-max",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for qwen3-5-35b-a3b.",
++      "friendly_name": "qwen3-5-35b-a3b",
++      "max_image_size_mb": 40.0,
++      "model_name": "qwen3-5-35b-a3b",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for qwen3-6-35b-a3b.",
++      "friendly_name": "qwen3-6-35b-a3b",
++      "max_image_size_mb": 40.0,
++      "model_name": "qwen3-6-35b-a3b",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for qwen3.6-27b.",
++      "friendly_name": "qwen3.6-27b",
++      "max_image_size_mb": 40.0,
++      "model_name": "qwen3.6-27b",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated direct-ci PAL catalog entry for stealth/ox-alpha.",
++      "friendly_name": "stealth/ox-alpha",
++      "max_image_size_mb": 40.0,
++      "model_name": "stealth/ox-alpha",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    }
++  ]
++}
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.gateway.json b/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.gateway.json
+new file mode 100644
+index 000000000..f1fb11c86
+--- /dev/null
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.gateway.json
+@@ -0,0 +1,30 @@
++{
++  "_README": {
++    "authority": "Dopemux routing catalog",
++    "generator": "scripts/generate_pal_model_manifest.py",
++    "projection": "gateway"
++  },
++  "models": [
++    {
++      "aliases": [],
++      "context_window": 1000000,
++      "description": "Dopemux-generated gateway PAL catalog entry for fable-5-ci. Adaptive thinking always on; manual disable/budget route unsupported.",
++      "friendly_name": "fable-5-ci",
++      "max_output_tokens": 128000,
++      "model_name": "fable-5-ci",
++      "supports_extended_thinking": true,
++      "supports_images": true,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "context_window": 1000000,
++      "description": "Dopemux-generated gateway PAL catalog entry for kimi-k3-ci. Thinking always on; reasoning effort low/high/max.",
++      "friendly_name": "kimi-k3-ci",
++      "model_name": "kimi-k3-ci",
++      "supports_extended_thinking": true,
++      "supports_images": true,
++      "supports_streaming": true
++    }
++  ]
++}
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.json b/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.json
+index ca11c98f7..4511f16d3 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.json
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/custom_models.json
+@@ -1,174 +1,812 @@
+ {
+   "_README": {
+-    "description": "Model metadata for local/self-hosted OpenAI-compatible endpoints (Custom provider).",
+-    "documentation": "https://github.com/BeehiveInnovations/zen-mcp-server/blob/main/docs/custom_models.md",
+-    "usage": "Each entry will be advertised by the Custom provider. Aliases are case-insensitive.",
+-    "field_notes": "Matches providers/shared/model_capabilities.py.",
+-    "field_descriptions": {
+-      "model_name": "The model identifier e.g., 'llama3.2'",
+-      "aliases": "Array of short names users can type instead of the full model name",
+-      "context_window": "Total number of tokens the model can process (input + output combined)",
+-      "max_output_tokens": "Maximum number of tokens the model can generate in a single response",
+-      "supports_extended_thinking": "Whether the model supports extended reasoning tokens",
+-      "supports_json_mode": "Whether the model can guarantee valid JSON output",
+-      "supports_function_calling": "Whether the model supports function/tool calling",
+-      "supports_images": "Whether the model can process images/visual input",
+-      "max_image_size_mb": "Maximum total size in MB for all images combined (capped at 40MB max for custom models)",
+-      "supports_temperature": "Whether the model accepts temperature parameter in API calls (set to false for O3/O4 reasoning models)",
+-      "temperature_constraint": "Type of temperature constraint: 'fixed' (fixed value), 'range' (continuous range), 'discrete' (specific values), or omit for default range",
+-      "description": "Human-readable description of the model",
+-      "intelligence_score": "1-20 human rating used as the primary signal for auto-mode model ordering"
+-    }
++    "authority": "Dopemux routing catalog",
++    "generator": "scripts/generate_pal_model_manifest.py",
++    "projection": "compatibility"
+   },
+   "models": [
+     {
+-      "model_name": "llama3.2",
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for aion-labs.aion-2-0.",
++      "friendly_name": "aion-labs.aion-2-0",
++      "max_image_size_mb": 0.0,
++      "model_name": "aion-labs.aion-2-0",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
+       "aliases": [
+-        "local-llama",
+-        "ollama-llama"
++        "anthropic/claude-fable-5"
+       ],
+-      "context_window": 128000,
+-      "max_output_tokens": 64000,
+-      "supports_extended_thinking": false,
++      "context_window": 1000000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-fable-5. Adaptive thinking always on; manual disable/budget route unsupported.",
++      "friendly_name": "claude-fable-5",
++      "max_image_size_mb": 40.0,
++      "max_output_tokens": 128000,
++      "model_name": "claude-fable-5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-haiku-4-5"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-haiku-4.5.",
++      "friendly_name": "claude-haiku-4.5",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-haiku-4.5",
++      "supports_extended_thinking": true,
+       "supports_function_calling": false,
+-      "supports_images": false,
+-      "max_image_size_mb": 0.0,
+-      "description": "Local Llama 3.2 model via custom endpoint (Ollama/vLLM) - 128K context window (text-only)",
+-      "intelligence_score": 6
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     },
+     {
+-      "model_name": "claude-opus-5",
+       "aliases": [
+-        "opus-5",
+-        "claude-opus"
++        "anthropic/claude-opus-4-7-fast"
+       ],
+-      "context_window": 32000,
+-      "max_output_tokens": 16000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4-7-fast.",
++      "friendly_name": "claude-opus-4-7-fast",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4-7-fast",
+       "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-8-fast"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4-8-fast.",
++      "friendly_name": "claude-opus-4-8-fast",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4-8-fast",
++      "supports_extended_thinking": true,
+       "supports_function_calling": false,
+       "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-5"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4.5.",
++      "friendly_name": "claude-opus-4.5",
+       "max_image_size_mb": 40.0,
+-      "description": "Claude Opus 5 via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window unassumed by upstream, conservative default used."
++      "model_name": "claude-opus-4.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     },
+     {
+-      "model_name": "claude-sonnet-5",
+       "aliases": [
+-        "sonnet-5",
+-        "claude-sonnet"
++        "anthropic/claude-opus-4-6"
+       ],
+-      "context_window": 32000,
+-      "max_output_tokens": 16000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4.6.",
++      "friendly_name": "claude-opus-4.6",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4.6",
+       "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-7"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4.7.",
++      "friendly_name": "claude-opus-4.7",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-4.7",
++      "supports_extended_thinking": true,
+       "supports_function_calling": false,
+       "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-4-8"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-4.8.",
++      "friendly_name": "claude-opus-4.8",
+       "max_image_size_mb": 40.0,
+-      "description": "Claude Sonnet 5 via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
++      "model_name": "claude-opus-4.8",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     },
+     {
+-      "model_name": "gpt-5.4",
+       "aliases": [
+-        "gpt5.4",
+-        "gpt-5-4"
++        "anthropic/claude-opus-5"
+       ],
+-      "context_window": 32000,
+-      "max_output_tokens": 16000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-5.",
++      "friendly_name": "claude-opus-5",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-5",
+       "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-opus-5-fast"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-opus-5-fast.",
++      "friendly_name": "claude-opus-5-fast",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-opus-5-fast",
++      "supports_extended_thinking": true,
+       "supports_function_calling": false,
+       "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-sonnet-4-5"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-sonnet-4.5.",
++      "friendly_name": "claude-sonnet-4.5",
+       "max_image_size_mb": 40.0,
+-      "description": "GPT-5.4 via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
++      "model_name": "claude-sonnet-4.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     },
+     {
+-      "model_name": "gpt-5.3-codex",
+       "aliases": [
+-        "gpt5.3-codex",
+-        "codex-5.3"
++        "anthropic/claude-sonnet-4-6"
+       ],
+-      "context_window": 32000,
+-      "max_output_tokens": 16000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-sonnet-4.6.",
++      "friendly_name": "claude-sonnet-4.6",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-sonnet-4.6",
+       "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "anthropic/claude-sonnet-5"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for claude-sonnet-5.",
++      "friendly_name": "claude-sonnet-5",
++      "max_image_size_mb": 40.0,
++      "model_name": "claude-sonnet-5",
++      "supports_extended_thinking": true,
+       "supports_function_calling": false,
+       "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for deepseek-v4-flash.",
++      "friendly_name": "deepseek-v4-flash",
++      "max_image_size_mb": 0.0,
++      "model_name": "deepseek-v4-flash",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for deepseek-v4-flash-0731.",
++      "friendly_name": "deepseek-v4-flash-0731",
++      "max_image_size_mb": 0.0,
++      "model_name": "deepseek-v4-flash-0731",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for deepseek-v4-pro.",
++      "friendly_name": "deepseek-v4-pro",
++      "max_image_size_mb": 0.0,
++      "model_name": "deepseek-v4-pro",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for deepseek-v4-pro-0813.",
++      "friendly_name": "deepseek-v4-pro-0813",
++      "max_image_size_mb": 0.0,
++      "model_name": "deepseek-v4-pro-0813",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-2.5-flash"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-2.5-flash.",
++      "friendly_name": "gemini-2.5-flash",
+       "max_image_size_mb": 40.0,
+-      "description": "GPT-5.3 Codex via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
++      "model_name": "gemini-2.5-flash",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     },
+     {
+-      "model_name": "gpt-5.5-pro",
+       "aliases": [
+-        "gpt5.5-pro",
+-        "gpt-5-5-pro"
++        "google/gemini-3.5-flash"
+       ],
+-      "context_window": 32000,
+-      "max_output_tokens": 16000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3-5-flash.",
++      "friendly_name": "gemini-3-5-flash",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3-5-flash",
+       "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3-flash-preview"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3-flash-preview.",
++      "friendly_name": "gemini-3-flash-preview",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3-flash-preview",
++      "supports_extended_thinking": true,
+       "supports_function_calling": false,
+       "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.1-flash-lite"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.1-flash-lite.",
++      "friendly_name": "gemini-3.1-flash-lite",
+       "max_image_size_mb": 40.0,
+-      "description": "GPT-5.5 Pro via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
++      "model_name": "gemini-3.1-flash-lite",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.1-pro"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.1-pro.",
++      "friendly_name": "gemini-3.1-pro",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3.1-pro",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.1-pro-preview"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.1-pro-preview.",
++      "friendly_name": "gemini-3.1-pro-preview",
++      "max_image_size_mb": 0.0,
++      "model_name": "gemini-3.1-pro-preview",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "google/gemini-3.6-flash"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.6-flash.",
++      "friendly_name": "gemini-3.6-flash",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3.6-flash",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     },
+     {
+-      "model_name": "glm-4.6",
+       "aliases": [
+-        "glm4.6"
++        "google/gemini-3.7-flash"
+       ],
+-      "context_window": 32000,
+-      "max_output_tokens": 16000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for gemini-3.7-flash.",
++      "friendly_name": "gemini-3.7-flash",
++      "max_image_size_mb": 40.0,
++      "model_name": "gemini-3.7-flash",
+       "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for glm-4.5.",
++      "friendly_name": "glm-4.5",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-4.5",
++      "supports_extended_thinking": true,
+       "supports_function_calling": false,
+       "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for glm-4.5-air.",
++      "friendly_name": "glm-4.5-air",
+       "max_image_size_mb": 0.0,
+-      "description": "GLM-4.6 (Z.AI) via CheaperInference custom endpoint (api.cheaperinference.com/v1). Reasoning, text-only per catalog snapshot (no vision); context window not published by upstream, conservative default used. Also the CUSTOM_MODEL_NAME default for PAL's custom provider."
++      "model_name": "glm-4.5-air",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for glm-4.6.",
++      "friendly_name": "glm-4.6",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-4.6",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for glm-4.7.",
++      "friendly_name": "glm-4.7",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-4.7",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for glm-5.",
++      "friendly_name": "glm-5",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for glm-5.1.",
++      "friendly_name": "glm-5.1",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-5.1",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for glm-5.2.",
++      "friendly_name": "glm-5.2",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-5.2",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for glm-5.3.",
++      "friendly_name": "glm-5.3",
++      "max_image_size_mb": 0.0,
++      "model_name": "glm-5.3",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     },
+     {
+-      "model_name": "gemini-2.5-flash",
+       "aliases": [
+-        "gemini-flash",
+-        "flash-2.5"
++        "google/google/gemini-3.5-flash-lite"
+       ],
+-      "context_window": 32000,
+-      "max_output_tokens": 16000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for google/gemini-3.5-flash-lite.",
++      "friendly_name": "google/gemini-3.5-flash-lite",
++      "max_image_size_mb": 40.0,
++      "model_name": "google/gemini-3.5-flash-lite",
+       "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-4.1-nano"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-4.1-nano.",
++      "friendly_name": "gpt-4.1-nano",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-4.1-nano",
++      "supports_extended_thinking": false,
+       "supports_function_calling": false,
+       "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5-mini"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5-mini.",
++      "friendly_name": "gpt-5-mini",
+       "max_image_size_mb": 40.0,
+-      "description": "Gemini 2.5 Flash via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
++      "model_name": "gpt-5-mini",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     },
+     {
+-      "model_name": "grok-4.5",
+       "aliases": [
+-        "grok4.5"
++        "openai/gpt-5-nano"
+       ],
+-      "context_window": 32000,
+-      "max_output_tokens": 16000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5-nano.",
++      "friendly_name": "gpt-5-nano",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5-nano",
+       "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.2-codex"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.2-codex.",
++      "friendly_name": "gpt-5.2-codex",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.2-codex",
++      "supports_extended_thinking": true,
+       "supports_function_calling": false,
+       "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.3-codex"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.3-codex.",
++      "friendly_name": "gpt-5.3-codex",
+       "max_image_size_mb": 40.0,
+-      "description": "Grok 4.5 (xAI) via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot; context window not published by upstream, conservative default used."
++      "model_name": "gpt-5.3-codex",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.4"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.4.",
++      "friendly_name": "gpt-5.4",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.4",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     },
+     {
+-      "model_name": "stealth/ox-alpha",
+       "aliases": [
+-        "ox-alpha",
+-        "stealth"
++        "openai/gpt-5.4-mini"
+       ],
+-      "context_window": 32000,
+-      "max_output_tokens": 16000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.4-mini.",
++      "friendly_name": "gpt-5.4-mini",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.4-mini",
+       "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
+       "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.4-nano"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.4-nano.",
++      "friendly_name": "gpt-5.4-nano",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.4-nano",
++      "supports_extended_thinking": true,
+       "supports_function_calling": false,
+       "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.4-pro"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.4-pro.",
++      "friendly_name": "gpt-5.4-pro",
+       "max_image_size_mb": 40.0,
+-      "description": "Stealth ox-alpha via CheaperInference custom endpoint (api.cheaperinference.com/v1). Vision + reasoning per catalog snapshot (free/preview model); context window not published by upstream, conservative default used."
++      "model_name": "gpt-5.4-pro",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.5"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.5.",
++      "friendly_name": "gpt-5.5",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.5-pro"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.5-pro.",
++      "friendly_name": "gpt-5.5-pro",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.5-pro",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.6-luna"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.6-luna.",
++      "friendly_name": "gpt-5.6-luna",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.6-luna",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.6-sol"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.6-sol.",
++      "friendly_name": "gpt-5.6-sol",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.6-sol",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-5.6-terra"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-5.6-terra.",
++      "friendly_name": "gpt-5.6-terra",
++      "max_image_size_mb": 40.0,
++      "model_name": "gpt-5.6-terra",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "openai/gpt-oss-120b"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for gpt-oss-120b.",
++      "friendly_name": "gpt-oss-120b",
++      "max_image_size_mb": 0.0,
++      "model_name": "gpt-oss-120b",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "x-ai/grok-4.5"
++      ],
++      "description": "Dopemux-generated compatibility PAL catalog entry for grok-4.5.",
++      "friendly_name": "grok-4.5",
++      "max_image_size_mb": 40.0,
++      "model_name": "grok-4.5",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "context_window": 1000000,
++      "description": "Dopemux-generated compatibility PAL catalog entry for kimi-k3. Thinking always on; reasoning effort low/high/max.",
++      "friendly_name": "kimi-k3",
++      "max_image_size_mb": 40.0,
++      "model_name": "kimi-k3",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [
++        "local-llama",
++        "ollama-llama"
++      ],
++      "context_window": 128000,
++      "description": "PAL packaged-default local Llama compatibility entry.",
++      "friendly_name": "llama3.2",
++      "max_image_size_mb": 0.0,
++      "max_output_tokens": 64000,
++      "model_name": "llama3.2",
++      "supports_extended_thinking": false,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for minimax-m2.7.",
++      "friendly_name": "minimax-m2.7",
++      "max_image_size_mb": 0.0,
++      "model_name": "minimax-m2.7",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": false,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for muse-spark-1.2.",
++      "friendly_name": "muse-spark-1.2",
++      "max_image_size_mb": 40.0,
++      "model_name": "muse-spark-1.2",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for qwen-3-8-max.",
++      "friendly_name": "qwen-3-8-max",
++      "max_image_size_mb": 40.0,
++      "model_name": "qwen-3-8-max",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for qwen3-5-35b-a3b.",
++      "friendly_name": "qwen3-5-35b-a3b",
++      "max_image_size_mb": 40.0,
++      "model_name": "qwen3-5-35b-a3b",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for qwen3-6-35b-a3b.",
++      "friendly_name": "qwen3-6-35b-a3b",
++      "max_image_size_mb": 40.0,
++      "model_name": "qwen3-6-35b-a3b",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for qwen3.6-27b.",
++      "friendly_name": "qwen3.6-27b",
++      "max_image_size_mb": 40.0,
++      "model_name": "qwen3.6-27b",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
++    },
++    {
++      "aliases": [],
++      "description": "Dopemux-generated compatibility PAL catalog entry for stealth/ox-alpha.",
++      "friendly_name": "stealth/ox-alpha",
++      "max_image_size_mb": 40.0,
++      "model_name": "stealth/ox-alpha",
++      "supports_extended_thinking": true,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "supports_json_mode": false,
++      "supports_streaming": true
+     }
+   ]
+ }
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/dial_models.json b/docker/mcp-servers-source/pal/pal-mcp-server/conf/dial_models.json
+index 8c419871e..3b038eeff 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/conf/dial_models.json
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/dial_models.json
+@@ -1,7 +1,7 @@
+ {
+   "_README": {
+     "description": "Model metadata for the DIAL (Data & AI Layer) aggregation provider.",
+-    "documentation": "https://github.com/BeehiveInnovations/zen-mcp-server/blob/main/docs/configuration.md",
++    "documentation": "https://github.com/BeehiveInnovations/pal-mcp-server/blob/main/docs/configuration.md",
+     "usage": "Models listed here are exposed through the DIAL provider. Aliases are case-insensitive.",
+     "field_notes": "Matches providers/shared/model_capabilities.py.",
+     "field_descriptions": {
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/gemini_models.json b/docker/mcp-servers-source/pal/pal-mcp-server/conf/gemini_models.json
+index 23dfb6c77..05372e301 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/conf/gemini_models.json
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/gemini_models.json
+@@ -1,7 +1,7 @@
+ {
+   "_README": {
+     "description": "Model metadata for Google's Gemini API access.",
+-    "documentation": "https://github.com/BeehiveInnovations/zen-mcp-server/blob/main/docs/custom_models.md",
++    "documentation": "https://github.com/BeehiveInnovations/pal-mcp-server/blob/main/docs/custom_models.md",
+     "usage": "Models listed here are exposed directly through the Gemini provider. Aliases are case-insensitive.",
+     "field_notes": "Matches providers/shared/model_capabilities.py.",
+     "field_descriptions": {
+@@ -17,7 +17,7 @@
+       "max_image_size_mb": "Maximum total size in MB for all images combined (capped at 40MB max for custom models)",
+       "supports_temperature": "Whether the model accepts temperature parameter in API calls (set to false for O3/O4 reasoning models)",
+       "temperature_constraint": "Type of temperature constraint: 'fixed' (fixed value), 'range' (continuous range), 'discrete' (specific values), or omit for default range",
+-      "use_openai_response_api": "Set to true when the model must use the /responses endpoint (reasoning models like GPT-5 Pro). Leave false/omit for standard chat completions.",
++      "use_openai_response_api": "Set to true when the model must use the /responses endpoint (reasoning models like GPT-5.2 Pro). Leave false/omit for standard chat completions.",
+       "default_reasoning_effort": "Default reasoning effort level for models that support it (e.g., 'low', 'medium', 'high'). Omit if not applicable.",
+       "description": "Human-readable description of the model",
+       "intelligence_score": "1-20 human rating used as the primary signal for auto-mode model ordering",
+@@ -26,11 +26,11 @@
+   },
+   "models": [
+     {
+-      "model_name": "gemini-2.5-pro",
+-      "friendly_name": "Gemini (Pro 2.5)",
++      "model_name": "gemini-3-pro-preview",
++      "friendly_name": "Gemini Pro 3.0 Preview",
+       "aliases": [
+         "pro",
+-        "gemini pro",
++        "gemini3",
+         "gemini-pro"
+       ],
+       "intelligence_score": 18,
+@@ -48,6 +48,27 @@
+       "allow_code_generation": true,
+       "max_image_size_mb": 32.0
+     },
++    {
++      "model_name": "gemini-2.5-pro",
++      "friendly_name": "Gemini Pro 2.5",
++      "aliases": [
++        "gemini-pro-2.5"
++      ],
++      "intelligence_score": 18,
++      "description": "Older Model. 1M context - Complex problems, architecture, deep analysis",
++      "context_window": 1048576,
++      "max_output_tokens": 65536,
++      "max_thinking_tokens": 32768,
++      "supports_extended_thinking": true,
++      "supports_system_prompts": true,
++      "supports_streaming": true,
++      "supports_function_calling": true,
++      "supports_json_mode": true,
++      "supports_images": true,
++      "supports_temperature": true,
++      "allow_code_generation": true,
++      "max_image_size_mb": 32.0
++    },
+     {
+       "model_name": "gemini-2.0-flash",
+       "friendly_name": "Gemini (Flash 2.0)",
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/openai_models.json b/docker/mcp-servers-source/pal/pal-mcp-server/conf/openai_models.json
+index 64d61b7f7..b6d16278b 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/conf/openai_models.json
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/openai_models.json
+@@ -1,7 +1,7 @@
+ {
+   "_README": {
+     "description": "Model metadata for native OpenAI API access.",
+-    "documentation": "https://github.com/BeehiveInnovations/zen-mcp-server/blob/main/docs/custom_models.md",
++    "documentation": "https://github.com/BeehiveInnovations/pal-mcp-server/blob/main/docs/custom_models.md",
+     "usage": "Models listed here are exposed directly through the OpenAI provider. Aliases are case-insensitive.",
+     "field_notes": "Matches providers/shared/model_capabilities.py.",
+     "field_descriptions": {
+@@ -17,7 +17,7 @@
+       "max_image_size_mb": "Maximum total size in MB for all images combined (capped at 40MB max for custom models)",
+       "supports_temperature": "Whether the model accepts temperature parameter in API calls (set to false for O3/O4 reasoning models)",
+       "temperature_constraint": "Type of temperature constraint: 'fixed' (fixed value), 'range' (continuous range), 'discrete' (specific values), or omit for default range",
+-      "use_openai_response_api": "Set to true when the model must use the /responses endpoint (reasoning models like GPT-5 Pro). Leave false/omit for standard chat completions.",
++      "use_openai_response_api": "Set to true when the model must use the /responses endpoint (reasoning models like GPT-5.2 Pro). Leave false/omit for standard chat completions.",
+       "default_reasoning_effort": "Default reasoning effort level for models that support it (e.g., 'low', 'medium', 'high'). Omit if not applicable.",
+       "description": "Human-readable description of the model",
+       "intelligence_score": "1-20 human rating used as the primary signal for auto-mode model ordering",
+@@ -124,14 +124,16 @@
+       "temperature_constraint": "fixed"
+     },
+     {
+-      "model_name": "gpt-5-pro",
+-      "friendly_name": "OpenAI (GPT-5 Pro)",
++      "model_name": "gpt-5.2-pro",
++      "friendly_name": "OpenAI (GPT-5.2 Pro)",
+       "aliases": [
++        "gpt5.2-pro",
++        "gpt5.2pro",
+         "gpt5pro",
+         "gpt5-pro"
+       ],
+       "intelligence_score": 18,
+-      "description": "GPT-5 Pro (400K context, 272K output) - Very advanced, reasoning model",
++      "description": "GPT-5.2 Pro (400K context, 272K output) - Very advanced, reasoning model",
+       "context_window": 400000,
+       "max_output_tokens": 272000,
+       "supports_extended_thinking": true,
+@@ -309,6 +311,84 @@
+       "supports_temperature": true,
+       "max_image_size_mb": 20.0,
+       "use_openai_response_api": true
++    },
++    {
++      "model_name": "gpt-5.2",
++      "friendly_name": "OpenAI (GPT-5.2)",
++      "aliases": [
++        "gpt5.2",
++        "gpt-5.2",
++        "5.2",
++        "gpt5.1",
++        "gpt-5.1",
++        "5.1"
++      ],
++      "intelligence_score": 18,
++      "description": "GPT-5.2 (400K context, 128K output) - Flagship reasoning model with configurable thinking effort and vision support.",
++      "context_window": 400000,
++      "max_output_tokens": 128000,
++      "supports_extended_thinking": true,
++      "supports_system_prompts": true,
++      "supports_streaming": true,
++      "supports_function_calling": true,
++      "supports_json_mode": true,
++      "supports_images": true,
++      "supports_temperature": true,
++      "max_image_size_mb": 20.0,
++      "default_reasoning_effort": "medium",
++      "allow_code_generation": true,
++      "temperature_constraint": "fixed"
++    },
++    {
++      "model_name": "gpt-5.1-codex",
++      "friendly_name": "OpenAI (GPT-5.1 Codex)",
++      "aliases": [
++        "gpt5.1-codex",
++        "gpt-5.1-codex",
++        "gpt5.1code",
++        "gpt-5.1-code",
++        "codex-5.1"
++      ],
++      "intelligence_score": 19,
++      "description": "GPT-5.1 Codex (400K context, 128K output) - Agentic coding specialization available through the Responses API.",
++      "context_window": 400000,
++      "max_output_tokens": 128000,
++      "supports_extended_thinking": true,
++      "supports_system_prompts": true,
++      "supports_streaming": false,
++      "supports_function_calling": true,
++      "supports_json_mode": true,
++      "supports_images": true,
++      "supports_temperature": true,
++      "max_image_size_mb": 20.0,
++      "use_openai_response_api": true,
++      "default_reasoning_effort": "high",
++      "allow_code_generation": true,
++      "temperature_constraint": "fixed"
++    },
++    {
++      "model_name": "gpt-5.1-codex-mini",
++      "friendly_name": "OpenAI (GPT-5.1 Codex mini)",
++      "aliases": [
++        "gpt5.1-codex-mini",
++        "gpt-5.1-codex-mini",
++        "codex-mini",
++        "5.1-codex-mini"
++      ],
++      "intelligence_score": 16,
++      "description": "GPT-5.1 Codex mini (400K context, 128K output) - Cost-efficient Codex variant with streaming support.",
++      "context_window": 400000,
++      "max_output_tokens": 128000,
++      "supports_extended_thinking": true,
++      "supports_system_prompts": true,
++      "supports_streaming": true,
++      "supports_function_calling": true,
++      "supports_json_mode": true,
++      "supports_images": true,
++      "supports_temperature": true,
++      "max_image_size_mb": 20.0,
++      "allow_code_generation": true,
++      "temperature_constraint": "fixed"
+     }
+   ]
+ }
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/openrouter_models.json b/docker/mcp-servers-source/pal/pal-mcp-server/conf/openrouter_models.json
+index a3d7fd380..e3b929db6 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/conf/openrouter_models.json
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/openrouter_models.json
+@@ -1,7 +1,7 @@
+ {
+   "_README": {
+     "description": "Model metadata for OpenRouter-backed providers.",
+-    "documentation": "https://github.com/BeehiveInnovations/zen-mcp-server/blob/main/docs/custom_models.md",
++    "documentation": "https://github.com/BeehiveInnovations/pal-mcp-server/blob/main/docs/custom_models.md",
+     "usage": "Models listed here are exposed through OpenRouter. Aliases are case-insensitive.",
+     "field_notes": "Matches providers/shared/model_capabilities.py.",
+     "field_descriptions": {
+@@ -16,7 +16,7 @@
+       "max_image_size_mb": "Maximum total size in MB for all images combined (capped at 40MB max for custom models)",
+       "supports_temperature": "Whether the model accepts temperature parameter in API calls (set to false for O3/O4 reasoning models)",
+       "temperature_constraint": "Type of temperature constraint: 'fixed' (fixed value), 'range' (continuous range), 'discrete' (specific values), or omit for default range",
+-      "use_openai_response_api": "Set to true when the model must use the /responses endpoint (reasoning models like GPT-5 Pro). Leave false/omit for standard chat completions.",
++      "use_openai_response_api": "Set to true when the model must use the /responses endpoint (reasoning models like GPT-5.2 Pro). Leave false/omit for standard chat completions.",
+       "default_reasoning_effort": "Default reasoning effort level for models that support it (e.g., 'low', 'medium', 'high'). Omit if not applicable.",
+       "description": "Human-readable description of the model",
+       "intelligence_score": "1-20 human rating used as the primary signal for auto-mode model ordering",
+@@ -24,6 +24,23 @@
+     }
+   },
+   "models": [
++    {
++      "model_name": "anthropic/claude-opus-4.5",
++      "aliases": [
++        "opus",
++        "opus4.5",
++        "claude-opus"
++      ],
++      "context_window": 200000,
++      "max_output_tokens": 64000,
++      "supports_extended_thinking": false,
++      "supports_json_mode": false,
++      "supports_function_calling": false,
++      "supports_images": true,
++      "max_image_size_mb": 5.0,
++      "description": "Claude Opus 4.5 - Anthropic's frontier reasoning model for complex software engineering and agentic workflows",
++      "intelligence_score": 18
++    },
+     {
+       "model_name": "anthropic/claude-sonnet-4.5",
+       "aliases": [
+@@ -43,8 +60,7 @@
+     {
+       "model_name": "anthropic/claude-opus-4.1",
+       "aliases": [
+-        "opus",
+-        "claude-opus"
++        "opus4.1"
+       ],
+       "context_window": 200000,
+       "max_output_tokens": 64000,
+@@ -53,7 +69,7 @@
+       "supports_function_calling": false,
+       "supports_images": true,
+       "max_image_size_mb": 5.0,
+-      "description": "Claude Opus 4.1 - Our most capable and intelligent model yet",
++      "description": "Claude Opus 4.1 - Last generation flagship model with strong coding and reasoning",
+       "intelligence_score": 14
+     },
+     {
+@@ -87,11 +103,12 @@
+       "intelligence_score": 8
+     },
+     {
+-      "model_name": "google/gemini-2.5-pro",
++      "model_name": "google/gemini-3-pro-preview",
+       "aliases": [
+         "pro",
+         "gemini-pro",
+         "gemini",
++        "gemini3",
+         "pro-openrouter"
+       ],
+       "context_window": 1048576,
+@@ -102,6 +119,23 @@
+       "supports_images": true,
+       "max_image_size_mb": 20.0,
+       "allow_code_generation": true,
++      "description": "Google's Gemini 3.0 Pro via OpenRouter with vision",
++      "intelligence_score": 18
++    },
++    {
++      "model_name": "google/gemini-2.5-pro",
++      "aliases": [
++        "gemini-2.5",
++        "pro-2.5-openrouter"
++      ],
++      "context_window": 1048576,
++      "max_output_tokens": 65536,
++      "supports_extended_thinking": true,
++      "supports_json_mode": true,
++      "supports_function_calling": true,
++      "supports_images": true,
++      "max_image_size_mb": 20.0,
++      "allow_code_generation": true,
+       "description": "Google's Gemini 2.5 Pro via OpenRouter with vision",
+       "intelligence_score": 18
+     },
+@@ -297,8 +331,10 @@
+       "intelligence_score": 16
+     },
+     {
+-      "model_name": "openai/gpt-5-pro",
++      "model_name": "openai/gpt-5.2-pro",
+       "aliases": [
++        "gpt5.2-pro",
++        "gpt5.2pro",
+         "gpt5pro"
+       ],
+       "context_window": 400000,
+@@ -313,7 +349,7 @@
+       "use_openai_response_api": true,
+       "default_reasoning_effort": "high",
+       "allow_code_generation": true,
+-      "description": "GPT-5 Pro - Advanced reasoning model with highest quality responses (text+image input, text output only)",
++      "description": "GPT-5.2 Pro - Advanced reasoning model with highest quality responses (text+image input, text output only)",
+       "intelligence_score": 18
+     },
+     {
+@@ -365,6 +401,112 @@
+       "temperature_constraint": "fixed",
+       "description": "GPT-5 nano (400K context, 128K output) - Fastest, cheapest version of GPT-5 for summarization and classification tasks",
+       "intelligence_score": 8
++    },
++    {
++      "model_name": "openai/gpt-5.2",
++      "aliases": [
++        "gpt5.2",
++        "gpt-5.2",
++        "5.2",
++        "gpt5.1",
++        "gpt-5.1",
++        "5.1"
++      ],
++      "context_window": 400000,
++      "max_output_tokens": 128000,
++      "supports_extended_thinking": true,
++      "supports_json_mode": true,
++      "supports_function_calling": true,
++      "supports_images": true,
++      "max_image_size_mb": 20.0,
++      "supports_temperature": true,
++      "temperature_constraint": "fixed",
++      "default_reasoning_effort": "medium",
++      "allow_code_generation": true,
++      "description": "GPT-5.2 (400K context, 128K output) - Flagship reasoning model with configurable thinking effort and vision support",
++      "intelligence_score": 18
++    },
++    {
++      "model_name": "openai/gpt-5.1-codex",
++      "aliases": [
++        "gpt5.1-codex",
++        "gpt-5.1-codex",
++        "gpt5.1code",
++        "gpt-5.1-code",
++        "codex-5.1"
++      ],
++      "context_window": 400000,
++      "max_output_tokens": 128000,
++      "supports_extended_thinking": true,
++      "supports_json_mode": true,
++      "supports_function_calling": true,
++      "supports_images": true,
++      "max_image_size_mb": 20.0,
++      "supports_temperature": true,
++      "temperature_constraint": "fixed",
++      "use_openai_response_api": true,
++      "default_reasoning_effort": "high",
++      "allow_code_generation": true,
++      "description": "GPT-5.1 Codex (400K context, 128K output) - Agentic coding specialization available through the Responses API",
++      "intelligence_score": 19
++    },
++    {
++      "model_name": "openai/gpt-5.1-codex-mini",
++      "aliases": [
++        "gpt5.1-codex-mini",
++        "gpt-5.1-codex-mini",
++        "codex-mini",
++        "5.1-codex-mini"
++      ],
++      "context_window": 400000,
++      "max_output_tokens": 128000,
++      "supports_extended_thinking": true,
++      "supports_json_mode": true,
++      "supports_function_calling": true,
++      "supports_images": true,
++      "max_image_size_mb": 20.0,
++      "supports_temperature": true,
++      "temperature_constraint": "fixed",
++      "allow_code_generation": true,
++      "description": "GPT-5.1 Codex mini (400K context, 128K output) - Cost-efficient Codex variant with streaming support",
++      "intelligence_score": 16
++    },
++    {
++      "model_name": "x-ai/grok-4",
++      "aliases": [
++        "grok-4",
++        "grok4",
++        "grok"
++      ],
++      "context_window": 256000,
++      "max_output_tokens": 256000,
++      "supports_extended_thinking": true,
++      "supports_json_mode": true,
++      "supports_function_calling": true,
++      "supports_images": true,
++      "max_image_size_mb": 20.0,
++      "supports_temperature": true,
++      "temperature_constraint": "range",
++      "description": "xAI's Grok 4 via OpenRouter with vision and advanced reasoning",
++      "intelligence_score": 15
++    },
++    {
++      "model_name": "x-ai/grok-4.1-fast",
++      "aliases": [
++        "grok-4.1-fast-openrouter",
++        "grok-4.1-openrouter"
++      ],
++      "context_window": 2000000,
++      "max_output_tokens": 2000000,
++      "supports_extended_thinking": true,
++      "supports_json_mode": true,
++      "supports_function_calling": true,
++      "supports_images": true,
++      "max_image_size_mb": 20.0,
++      "supports_temperature": true,
++      "temperature_constraint": "range",
++      "description": "xAI's Grok 4.1 Fast Reasoning via OpenRouter (2M context) with vision and advanced reasoning",
++      "intelligence_score": 15
+     }
+   ]
+ }
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/conf/xai_models.json b/docker/mcp-servers-source/pal/pal-mcp-server/conf/xai_models.json
+index ee8b8c918..60b91aef6 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/conf/xai_models.json
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/conf/xai_models.json
+@@ -1,7 +1,7 @@
+ {
+   "_README": {
+     "description": "Model metadata for X.AI (GROK) API access.",
+-    "documentation": "https://github.com/BeehiveInnovations/zen-mcp-server/blob/main/docs/custom_models.md",
++    "documentation": "https://github.com/BeehiveInnovations/pal-mcp-server/blob/main/docs/custom_models.md",
+     "usage": "Models listed here are exposed directly through the X.AI provider. Aliases are case-insensitive.",
+     "field_notes": "Matches providers/shared/model_capabilities.py.",
+     "field_descriptions": {
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/config.py b/docker/mcp-servers-source/pal/pal-mcp-server/config.py
+index 9a1600775..0f77a3b76 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/config.py
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/config.py
+@@ -1,7 +1,7 @@
+ """
+-Configuration and constants for Zen MCP Server
++Configuration and constants for PAL MCP Server
+ 
+-This module centralizes all configuration settings for the Zen MCP Server.
++This module centralizes all configuration settings for the PAL MCP Server.
+ It defines model configurations, token limits, temperature defaults, and other
+ constants used throughout the application.
+ 
+@@ -14,9 +14,9 @@ from utils.env import get_env
+ # These values are used in server responses and for tracking releases
+ # IMPORTANT: This is the single source of truth for version and author info
+ # Semantic versioning: MAJOR.MINOR.PATCH
+-__version__ = "9.0.2"
++__version__ = "9.8.2"
+ # Last update date in ISO format
+-__updated__ = "2025-10-15"
++__updated__ = "2025-12-15"
+ # Primary maintainer
+ __author__ = "Fahad Gilani"
+ 
+@@ -43,6 +43,10 @@ IS_AUTO_MODE = DEFAULT_MODEL.lower() == "auto"
+ 
+ 
+ # Temperature defaults for different tool types
++# NOTE: Gemini 3.0 Pro notes suggest temperature should be set at 1.0
++# in most cases. Lowering it can affect the models 'reasoning' abilities.
++# Newer models / inference stacks are able to handle their randomness better.
++
+ # Temperature controls the randomness/creativity of model responses
+ # Lower values (0.0-0.3) produce more deterministic, focused responses
+ # Higher values (0.7-1.0) produce more creative, varied responses
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml b/docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml
+index c519a73ac..1feeb3d61 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml
+@@ -1,6 +1,6 @@
+ [project]
+ name = "pal-mcp-server"
+-version = "9.0.3"
++version = "9.8.2"
+ description = "AI-powered PAL MCP server with multiple model providers"
+ requires-python = ">=3.10"
+ dependencies = [
+@@ -18,11 +18,17 @@ include = ["tools*", "providers*", "systemprompts*", "utils*", "conf*", "clink*"
+ py-modules = ["server", "config"]
+ 
+ [tool.setuptools.package-data]
+-"*" = ["conf/*.json"]
++"*" = [
++    "conf/*.json",
++    "conf/cli_clients/*.json",
++    "systemprompts/clink/*.txt",
++]
+ 
+ [tool.setuptools.data-files]
+ "conf" = [
+     "conf/custom_models.json",
++    "conf/custom_models.direct-ci.json",
++    "conf/custom_models.gateway.json",
+     "conf/openrouter_models.json",
+     "conf/azure_models.json",
+     "conf/openai_models.json",
+@@ -32,6 +38,7 @@ py-modules = ["server", "config"]
+ ]
+ 
+ [project.scripts]
++pal-mcp-server = "server:run"
+ zen-mcp-server = "server:run"
+ 
+ [tool.black]
+diff --git a/docs/02-how-to/model-routing-usage.md b/docs/02-how-to/model-routing-usage.md
+index 4074e7903..b6e0685ee 100644
+--- a/docs/02-how-to/model-routing-usage.md
++++ b/docs/02-how-to/model-routing-usage.md
+@@ -31,6 +31,33 @@ model tier to select, not which exact model string to use (those require
+ 
+ ---
+ 
++## Cost-first defaults and bounded delegation
++
++Always choose cheapest adequate qualified model and lowest sufficient supported effort; deterministic shell/schema/hash/inventory tasks use no model. Explicit user/packet model, runner, same-route, approval, and no-fallback restrictions prevail. Strong supervisor delegates suitable bounded work with file/responsibility ownership, validation, and stop conditions; supervisor retains decisions, synthesis, escalation, and finality.
++
++Repo Codex supervisor declares `gpt-6.1-sol` high. `[agents]` defaults declare `gpt-6-luna` medium. Custom role `model` / `model_reasoning_effort` override defaults and explicit spawn selection. These are configuration declarations; instructions still guide dispatch and actual identity/availability remain `UNKNOWN` without evidence. Fresh or bounded-history collaboration children accept explicit model/effort; full-history forks inherit supervisor and reject overrides. Report missing cheaper delegation controls instead of silently inheriting expensive model.
++
++| Bounded task / role | Declared route | Effort / boundary |
++|---|---|---|
++| Evidence / research: dmx-explorer, researcher | gpt-6-luna | medium; read-only |
++| Housekeeping / coordination: dmx-housekeeper, project-manager | gpt-6-luna | low; read-only |
++| Allowlisted implementation: dmx-worker, developer | gpt-6.1-sol | medium; packet-scoped |
++| Design: architect / advisory review: dmx-reviewer | gpt-6.1-sol | high; read-only; Codex never formal auditor |
++| Claude architect / developer | claude-sonnet-5-5 | lowest sufficient supported effort; existing tool scopes |
++| Claude project-manager / researcher | claude-haiku-4-5 | supported controls only; read-only |
++
++GPT-6 Luna, GPT-6.1 Sol, Claude Sonnet 5.5 (`claude-sonnet-5-5`), and Gemini 3.8 Flash (`gemini-3.8-flash`) are candidates, not global numeric price ranking. Gemini Flash requires actual client/account qualification. Claude Opus 5.5 (`claude-opus-5-5`) is escalation only. Current prices, capability, availability, and actual identity remain `UNKNOWN` when unproven; selector syntax does not prove account access.
++
++Cheap-model failure, insufficient confidence, contract ambiguity, or security/replay risk returns to supervisor. Record reason, narrow stronger slice, and bound retry under packet/evidence-economy limits. No hidden upgrade, fallback, retry, or provider substitution; stop when binding restrictions prohibit escalation. L0=0 model calls; L1≤1 implementer; L2/L3=1 implementer + one final independent frozen-head audit. Record budget exceptions; no intermediate audits or re-audits of unchanged proof-only content.
++
++Other runners consume AGENTS.md §5 via loaded instructions and pin documented per-agent/per-invocation model and supported effort controls. OpenCode PAL is optional or packet-required within budget. Copilot accepted selectors remain unchanged. Report unavailable delegation/controls; never invent runtime keys. YAML remains advisory, not automatic enforcement. Formal audit candidate Sonnet 5.5 uses schema-compatible `sonnet` alias separately from actual ID evidence; Codex review cannot satisfy formal embedded audit.
++
++Examples: hashes/schema checks → deterministic tools; bounded status/lookup → qualified Luna/Haiku role; approved implementation → qualified Sol medium/Sonnet; failed cheap lookup → supervisor narrows stronger investigation with reason and bounded retry. Config parsing verifies declarations, not account execution.
++
++Official sources: [OpenAI subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Claude Code subagents](https://code.claude.com/docs/en/sub-agents), [Anthropic models](https://platform.claude.com/docs/en/models/overview), [Google Gemini models](https://ai.google.dev/gemini-api/docs/models).
++
++---
++
+ ## 1. How to use the policy in Claude Code
+ 
+ Claude Code supports explicit model selection via `--model` and the `opusplan`
+@@ -42,21 +69,21 @@ mode (`Opus plans, Sonnet implements`).
+ |-------|---------------------|
+ | `cheap_read` | Default model or Haiku-equivalent; avoid Opus-tier for pure reads |
+ | `investigation` | Default or cheap model; escalate to planner if escalation triggers hit |
+-| `planner_strong` | `opusplan` mode (`--model opusplan`) or equivalent Opus-tier invocation |
++| `planner_strong` | architect: qualified `claude-sonnet-5-5`; Opus escalation only |
+ | `implementer_standard` | Sonnet-tier; constrained by approved Task Packet allowlist |
+-| `judge_strong` | Opus-tier for synthesis and readiness judgment |
+-| `self_audit` | Opus-tier; must be run after implementation, before final proof |
++| `judge_strong` | Supervisor synthesis with cheapest adequate qualified route |
++| `self_audit` | One independent final Sonnet candidate audit for L2/L3; Opus escalation only |
+ 
+ **Usage pattern:**
+ 
+ ```bash
+-# Planning stage — use opusplan mode or specify a strong model
+-claude --model opusplan --effort high
++# Planning candidate — qualify client/account; lowest sufficient supported effort
++claude --model claude-sonnet-5-5
+ 
+ # Implementation stage — Sonnet (default or explicit)
+ # Constrained by the active Task Packet file allowlist.
+ 
+-# Self-audit — run Opus explicitly after implementation
++# L2/L3 — one independent final audit after frozen content head
+ # Capture auditor_tool, auditor_model, exit_code, and verdict in PROOF.json
+ ```
+ 
+@@ -70,24 +97,16 @@ record both the planning model (Opus) and the implementation model (Sonnet).
+ 
+ ## 2. How to use the policy in Codex
+ 
+-Codex CLI selects models via flags (exact flag names and accepted model strings
+-require `VERIFY_WITH_VENDOR_DOCS`).
+-
+-**Stage mapping (tier intent; model strings VERIFY_WITH_VENDOR_DOCS):**
+-
+-| Stage | Tier intent | OBSERVED ids (RTE routing — not confirmed for Codex CLI) |
+-|-------|-------------|----------------------------------------------------------|
+-| `cheap_read` | cheap_fast | `gpt-5.4-mini` (OBSERVED in RTE) |
+-| `investigation` | cheap_fast | `gpt-5.4-mini` |
+-| `planner_strong` | strong_reasoning | `gpt-5.5` (OBSERVED in config/pricing.yaml) |
+-| `implementer_standard` | coding_balanced | `gpt-5.3-codex` (OBSERVED in RTE) |
+-| `judge_strong` | strong_reasoning | `gpt-5.5` |
+-| `self_audit` | audit_strong | `gpt-5.5` or equivalent |
++Codex project defaults and role pins are declared in `.codex/config.toml` and `.codex/agents/*.toml`; current mapping appears above. These do not establish runtime identity or account availability.
+ 
+-> **Important**: The model ids in the table above are OBSERVED in `model_map_v2_tp008.yaml`,
+-> `tests/test_routing_config.py`, and `config/pricing.yaml` as RTE extraction lane
+-> selectors. Whether they are accepted as Codex CLI `--model` arguments requires
+-> `VERIFY_WITH_VENDOR_DOCS`. Do not assume portability.
++| Stage | Project role / model | Boundary |
++|-------|----------------------|----------|
++| `cheap_read` | dmx-explorer: gpt-6-luna medium | Read-only |
++| `investigation` | researcher: gpt-6-luna medium | Read-only |
++| `planner_strong` | architect: gpt-6.1-sol high | Read-only design |
++| `implementer_standard` | developer: gpt-6.1-sol medium | Approved packet allowlist |
++| `judge_strong` | dmx-reviewer: gpt-6.1-sol high | Advisory review |
++| `self_audit` | FORBIDDEN as formal embedded auditor | Use authorized independent route |
+ 
+ **Recording proof:**
+ Capture `actual_tool: codex`, `actual_model`, `provider: openai`, and `stage_slot`
+@@ -150,7 +169,7 @@ OpenCode in this repo is configured by `opencode.jsonc` and two PAL subagents in
+ 1. Perform read-only inventory in the main OpenCode session.
+ 2. Delegate non-trivial planning to `pal-planner`.
+ 3. Implement in the main session under packet allowlist constraints.
+-4. Run `pal-reviewer` for codereview/precommit before readiness claims.
++4. Optional advisory `pal-reviewer` within budget; deterministic precommit required. L2/L3 require one independent final frozen-head audit, with qualified formal auditor route.
+ 
+ ---
+ 
+@@ -202,10 +221,10 @@ determined use `VERIFY_WITH_VENDOR_DOCS` or a tier name.
+ ## Model Routing
+ - cheap_read: VERIFY_WITH_VENDOR_DOCS
+ - investigation: VERIFY_WITH_VENDOR_DOCS
+-- planner_strong: opusplan (claude_code) | VERIFY_WITH_VENDOR_DOCS
++- planner_strong: claude_code/architect | codex/architect | VERIFY_WITH_VENDOR_DOCS
+ - implementer_standard: claude_code/sonnet | codex/coding_balanced | copilot/dopemux-implementer.agent.md
+ - judge_strong: VERIFY_WITH_VENDOR_DOCS
+-- self_audit: claude_code/opus | VERIFY_WITH_VENDOR_DOCS
++- self_audit: qualified independent claude_code/sonnet for L2/L3 | packet-required route
+ Escalate to strong model if:
+ - authority boundary unclear
+ - security/auth/secrets/CI touched
+@@ -252,8 +271,8 @@ run. Fields marked `actual_*` capture what was used, not just what was intended.
+   },
+   "embedded_audit": {
+     "auditor_tool": "claude_code",
+-    "auditor_model": "claude-opus-4",
+-    "invocation": "self-audit inside Claude Code after edits",
++    "auditor_model": "sonnet",
++    "invocation": "independent final Claude Code audit on frozen content head",
+     "exit_code": 0,
+     "auditor_verdict": "PASS_WITH_RISKS",
+     "auditor_findings": [
+diff --git a/docs/03-reference/governance/model-routing.md b/docs/03-reference/governance/model-routing.md
+index d271be3cb..fdb39fe95 100644
+--- a/docs/03-reference/governance/model-routing.md
++++ b/docs/03-reference/governance/model-routing.md
+@@ -25,6 +25,33 @@ does not dispatch model calls.
+ 
+ ---
+ 
++## Cost-first defaults and bounded delegation
++
++Always choose cheapest adequate qualified model and lowest sufficient supported effort; deterministic shell/schema/hash/inventory tasks use no model. Explicit user/packet model, runner, same-route, approval, and no-fallback restrictions prevail. Strong supervisor delegates suitable bounded work with file/responsibility ownership, validation, and stop conditions; supervisor retains decisions, synthesis, escalation, and finality.
++
++Repo Codex supervisor declares `gpt-6.1-sol` high. `[agents]` defaults declare `gpt-6-luna` medium. Custom role `model` / `model_reasoning_effort` override defaults and explicit spawn selection. These are configuration declarations; instructions still guide dispatch and actual identity/availability remain `UNKNOWN` without evidence. Fresh or bounded-history collaboration children accept explicit model/effort; full-history forks inherit supervisor and reject overrides. Report missing cheaper delegation controls instead of silently inheriting expensive model.
++
++| Bounded task / role | Declared route | Effort / boundary |
++|---|---|---|
++| Evidence / research: dmx-explorer, researcher | gpt-6-luna | medium; read-only |
++| Housekeeping / coordination: dmx-housekeeper, project-manager | gpt-6-luna | low; read-only |
++| Allowlisted implementation: dmx-worker, developer | gpt-6.1-sol | medium; packet-scoped |
++| Design: architect / advisory review: dmx-reviewer | gpt-6.1-sol | high; read-only; Codex never formal auditor |
++| Claude architect / developer | claude-sonnet-5-5 | lowest sufficient supported effort; existing tool scopes |
++| Claude project-manager / researcher | claude-haiku-4-5 | supported controls only; read-only |
++
++GPT-6 Luna, GPT-6.1 Sol, Claude Sonnet 5.5 (`claude-sonnet-5-5`), and Gemini 3.8 Flash (`gemini-3.8-flash`) are candidates, not global numeric price ranking. Gemini Flash requires actual client/account qualification. Claude Opus 5.5 (`claude-opus-5-5`) is escalation only. Current prices, capability, availability, and actual identity remain `UNKNOWN` when unproven; selector syntax does not prove account access.
++
++Cheap-model failure, insufficient confidence, contract ambiguity, or security/replay risk returns to supervisor. Record reason, narrow stronger slice, and bound retry under packet/evidence-economy limits. No hidden upgrade, fallback, retry, or provider substitution; stop when binding restrictions prohibit escalation. L0=0 model calls; L1≤1 implementer; L2/L3=1 implementer + one final independent frozen-head audit. Record budget exceptions; no intermediate audits or re-audits of unchanged proof-only content.
++
++Other runners consume AGENTS.md §5 via loaded instructions and pin documented per-agent/per-invocation model and supported effort controls. OpenCode PAL is optional or packet-required within budget. Copilot accepted selectors remain unchanged. Report unavailable delegation/controls; never invent runtime keys. YAML remains advisory, not automatic enforcement. Formal audit candidate Sonnet 5.5 uses schema-compatible `sonnet` alias separately from actual ID evidence; Codex review cannot satisfy formal embedded audit.
++
++Examples: hashes/schema checks → deterministic tools; bounded status/lookup → qualified Luna/Haiku role; approved implementation → qualified Sol medium/Sonnet; failed cheap lookup → supervisor narrows stronger investigation with reason and bounded retry. Config parsing verifies declarations, not account execution.
++
++Official sources: [OpenAI subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Claude Code subagents](https://code.claude.com/docs/en/sub-agents), [Anthropic models](https://platform.claude.com/docs/en/models/overview), [Google Gemini models](https://ai.google.dev/gemini-api/docs/models).
++
++---
++
+ ## 1. Purpose
+ 
+ This policy assigns a **stage slot** (cheap_read → investigation → planner_strong →
+@@ -77,10 +104,10 @@ Verdict values for `self_audit`: `PASS` · `PASS_WITH_RISKS` · `FAIL` ·
+ 
+ | Provider | cheap_read | planner_strong | implementer_standard | judge_strong / self_audit |
+ |----------|-----------|---------------|---------------------|--------------------------|
+-| Codex | VERIFY_WITH_VENDOR_DOCS (cheap_fast tier) | VERIFY_WITH_VENDOR_DOCS (strong_reasoning) | VERIFY_WITH_VENDOR_DOCS (coding_balanced) | VERIFY_WITH_VENDOR_DOCS (strong_reasoning / audit_strong) |
++| Codex | dmx-explorer: gpt-6-luna medium | architect: gpt-6.1-sol high | developer: gpt-6.1-sol medium | dmx-reviewer: advisory Sol high / formal audit FORBIDDEN |
+ | OpenCode | VERIFY_WITH_VENDOR_DOCS (session model / cheap_fast intent) | `.opencode/agents/pal-planner.md` | VERIFY_WITH_VENDOR_DOCS (session model / coding_balanced intent) | `.opencode/agents/pal-reviewer.md` |
+ | Copilot | `dopemux-reader.agent.md` | `dopemux-planner.agent.md` | `dopemux-implementer.agent.md` | `dopemux-auditor.agent.md` |
+-| Claude Code | VERIFY_WITH_VENDOR_DOCS (Haiku / Sonnet-low) | VERIFY_WITH_VENDOR_DOCS (opusplan: Opus plans, Sonnet implements) | VERIFY_WITH_VENDOR_DOCS (Sonnet) | VERIFY_WITH_VENDOR_DOCS (Opus) |
++| Claude Code | project-manager/researcher: claude-haiku-4-5 | architect: claude-sonnet-5-5 | developer: claude-sonnet-5-5 | Sonnet candidate; Opus escalation only / independent audit when required |
+ | AGY | VERIFY_WITH_VENDOR_DOCS (Flash tier) | VERIFY_WITH_VENDOR_DOCS (Pro-high tier) | VERIFY_WITH_VENDOR_DOCS (Claude Sonnet in-AGY) | VERIFY_WITH_VENDOR_DOCS (Pro-high) |
+ | Gemini CLI | VERIFY_WITH_VENDOR_DOCS (Flash tier) | VERIFY_WITH_VENDOR_DOCS (Pro-high tier) | VERIFY_WITH_VENDOR_DOCS (coding_balanced) | VERIFY_WITH_VENDOR_DOCS (Pro-high / audit_strong) |
+ | xAI | VERIFY_WITH_VENDOR_DOCS (low-reasoning Grok) | VERIFY_WITH_VENDOR_DOCS (high-reasoning Grok) | VERIFY_WITH_VENDOR_DOCS (medium-reasoning Grok) | VERIFY_WITH_VENDOR_DOCS (high-reasoning Grok) |
+@@ -134,7 +161,7 @@ questions. The cheap lane must stop and escalate.
+ **2. Implementer audits itself without independent audit.**
+ The `implementer_standard` agent declares its own work ready without a separate
+ `self_audit` pass by a different tool or model. Self-certification is not evidence.
+-The proof bundle requires an independent audit verdict.
++L2/L3 proof requires one independent final frozen-head audit verdict; follow packet-specific audit requirements for other lanes.
+ 
+ **3. Agent / coder chooses its own model silently.**
+ A tool decides at runtime which model to use without recording the actual choice in
+@@ -233,11 +260,7 @@ same verdict space.
+   the agents declare `Claude Sonnet 4.5`. Reconciling this naming is out of scope
+   here and preserved as **UNKNOWN**.
+ 
+-- **All provider model selectors**: Exact model selector strings for Codex CLI,
+-  Claude Code `--model`, AGY, Gemini CLI, xAI, and Moonshot are marked
+-  **VERIFY_WITH_VENDOR_DOCS** throughout this policy. Operators must replace tier
+-  intent labels with actual verified model strings before treating this policy as
+-  executable configuration.
++- **Provider qualification**: Codex/Claude role pins are observed declarations with vendor selector documentation above. Account availability and actual identity remain separate runtime evidence. AGY, Gemini CLI, xAI, and Moonshot selectors remain **VERIFY_WITH_VENDOR_DOCS** until qualified; conditional Flash candidate is not account proof.
+ 
+ - **Runtime wiring**: No runtime system currently reads this file. The policy is
+   advisory until a runtime routing component explicitly consumes it, at which point
+diff --git a/scripts/generate_pal_model_manifest.py b/scripts/generate_pal_model_manifest.py
+new file mode 100644
+index 000000000..81aec67a7
+--- /dev/null
++++ b/scripts/generate_pal_model_manifest.py
+@@ -0,0 +1,77 @@
++#!/usr/bin/env python3
++"""Generate deterministic PAL manifests from Dopemux catalog inputs."""
++
++from __future__ import annotations
++
++import argparse
++import json
++from pathlib import Path
++import sys
++
++import yaml
++
++
++ROOT = Path(__file__).resolve().parents[1]
++SRC = ROOT / "src"
++if str(SRC) not in sys.path:
++    sys.path.insert(0, str(SRC))
++
++from dopemux.model_catalog import build_pal_manifest, render_pal_manifest  # noqa: E402
++
++
++DEFAULT_OUTPUT_DIR = (
++    ROOT / "docker/mcp-servers-source/pal/pal-mcp-server/conf"
++)
++
++
++def expected_outputs() -> dict[str, bytes]:
++    routing = yaml.safe_load((ROOT / "templates/routing.yaml").read_text(encoding="utf-8"))
++    snapshot = json.loads(
++        (ROOT / "config/cheaperinference_models.snapshot.json").read_text(
++            encoding="utf-8"
++        )
++    )
++    direct = render_pal_manifest(
++        build_pal_manifest(routing, snapshot, projection="direct-ci")
++    )
++    compatibility = render_pal_manifest(
++        build_pal_manifest(routing, snapshot, projection="compatibility")
++    )
++    gateway = render_pal_manifest(
++        build_pal_manifest(routing, snapshot, projection="gateway")
++    )
++    return {
++        "custom_models.json": compatibility,
++        "custom_models.direct-ci.json": direct,
++        "custom_models.gateway.json": gateway,
++    }
++
++
++def main() -> int:
++    parser = argparse.ArgumentParser()
++    parser.add_argument("--check", action="store_true")
++    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
++    args = parser.parse_args()
++
++    stale: list[str] = []
++    outputs = expected_outputs()
++    for filename, content in outputs.items():
++        path = args.output_dir / filename
++        if not path.exists() or path.read_bytes() != content:
++            stale.append(str(path))
++
++    if args.check:
++        if stale:
++            print("stale PAL manifest(s): " + ", ".join(stale), file=sys.stderr)
++            return 1
++        return 0
++
++    args.output_dir.mkdir(parents=True, exist_ok=True)
++    for filename, content in outputs.items():
++        (args.output_dir / filename).write_bytes(content)
++    print(f"wrote {len(outputs)} PAL manifests to {args.output_dir}")
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/scripts/mcp-wrappers/ensure-pal.sh b/scripts/mcp-wrappers/ensure-pal.sh
+index 0798bb69b..da7358d78 100755
+--- a/scripts/mcp-wrappers/ensure-pal.sh
++++ b/scripts/mcp-wrappers/ensure-pal.sh
+@@ -2,13 +2,9 @@
+ # Ensures the off-compose `pal-mcp-server` container that Codex's
+ # ~/.codex/config.toml hard-depends on (required = true) is up.
+ #
+-# This container is SEPARATE from the compose-managed `pal` service that
+-# Claude Code talks to (http://localhost:3003/mcp) — that one is owned by
+-# `dopemux mcp ensure --full`'s compose-up step, not this script. Codex
+-# instead does `docker exec -i pal-mcp-server /opt/venv/bin/python server.py`
+-# against a standalone container (image pal-mcp-server:latest) that
+-# `compose.yml` has no service for, so `docker compose up` can never
+-# start/repair it — this script is the only thing that does.
++# Codex does `docker exec -i pal-mcp-server /opt/venv/bin/python server.py`
++# against a standalone container (image pal-mcp-server:latest). Build that
++# image from the same canonical source tree as the compose-managed HTTP PAL.
+ #
+ # Idempotent: running while pal-mcp-server is already up is a no-op (exit 0).
+ set -euo pipefail
+@@ -88,15 +84,11 @@ if [[ -n "${stopped_id}" ]]; then
+ fi
+ 
+ if ! docker image inspect "${IMAGE_REF}" >/dev/null 2>&1; then
+-  die "image ${IMAGE_REF} not found locally. Build the /opt/venv stdio image \
+-that Codex execs into and tag it exactly ${IMAGE_REF} (the name this script and \
+-~/.codex/config.toml use), e.g. from your standalone pal-mcp-server checkout: \
+-docker build -t ${IMAGE_REF} . \
+-NOTE: some pal/zen compose files tag the build 'zen-mcp-server:latest' rather \
+-than ${IMAGE_REF} — if you build via 'docker compose up -d --build', re-tag it: \
+-docker tag zen-mcp-server:latest ${IMAGE_REF}. \
+-(The in-repo docker/mcp-servers/pal/Dockerfile builds a different /app/.venv \
+-HTTP-wrapper image for the compose 'pal' service and is NOT a substitute.)"
++  printf 'ensure-pal: building %s from canonical PAL source\n' "${IMAGE_REF}" >&2
++  docker build \
++    -t "${IMAGE_REF}" \
++    "${ROOT_DIR}/docker/mcp-servers-source/pal" || \
++    die "failed to build ${IMAGE_REF} from canonical PAL source"
+ fi
+ 
+ # Build the run args as an always-non-empty array and append --env-file only
+diff --git a/src/dopemux/model_catalog.py b/src/dopemux/model_catalog.py
+new file mode 100644
+index 000000000..78121e620
+--- /dev/null
++++ b/src/dopemux/model_catalog.py
+@@ -0,0 +1,178 @@
++"""Deterministic PAL projections derived from Dopemux routing/catalog data."""
++
++from __future__ import annotations
++
++import json
++from typing import Any, Dict
++
++
++PAL_CAPABILITY_FIELDS = {
++    "aliases",
++    "allow_code_generation",
++    "context_window",
++    "default_reasoning_effort",
++    "description",
++    "friendly_name",
++    "intelligence_score",
++    "max_image_size_mb",
++    "max_output_tokens",
++    "max_thinking_tokens",
++    "model_name",
++    "supports_extended_thinking",
++    "supports_function_calling",
++    "supports_images",
++    "supports_json_mode",
++    "supports_streaming",
++    "supports_system_prompts",
++    "supports_temperature",
++    "use_openai_response_api",
++}
++
++
++def _enabled(entry: Dict[str, Any]) -> bool:
++    return entry.get("enabled", True) is True
++
++
++def _pal_entry(
++    *,
++    model_name: str,
++    aliases: list[str],
++    capabilities: Dict[str, Any],
++    description: str,
++) -> Dict[str, Any]:
++    entry: Dict[str, Any] = {
++        "model_name": model_name,
++        "aliases": sorted(set(aliases)),
++        "friendly_name": model_name,
++        "description": description,
++    }
++    for field in PAL_CAPABILITY_FIELDS - {
++        "aliases",
++        "description",
++        "friendly_name",
++        "model_name",
++    }:
++        if field in capabilities:
++            entry[field] = capabilities[field]
++    return entry
++
++
++def _active_route_overrides(routing: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
++    providers = {
++        provider["name"]: provider for provider in routing.get("providers", [])
++    }
++    overrides: Dict[str, Dict[str, Any]] = {}
++    for model in routing.get("models", []):
++        pal = model.get("pal")
++        provider = providers.get(model.get("provider"), {})
++        if not isinstance(pal, dict) or not _enabled(model) or not _enabled(provider):
++            continue
++        direct_name = pal.get("direct_model_name")
++        if direct_name:
++            overrides[str(direct_name)] = pal
++    return overrides
++
++
++def _description(model_name: str, pal: Dict[str, Any], projection: str) -> str:
++    text = f"Dopemux-generated {projection} PAL catalog entry for {model_name}."
++    if pal.get("thinking_mode") == "always_on":
++        text += " Thinking always on; reasoning effort low/high/max."
++    elif pal.get("thinking_mode") == "adaptive_always_on":
++        text += " Adaptive thinking always on; manual disable/budget route unsupported."
++    return text
++
++
++def build_pal_manifest(
++    routing: Dict[str, Any],
++    cheaperinference_snapshot: Dict[str, Any],
++    *,
++    projection: str,
++) -> Dict[str, Any]:
++    """Build direct-CI or gateway PAL manifest from repo-owned catalog inputs."""
++    if projection not in {"compatibility", "direct-ci", "gateway"}:
++        raise ValueError(f"Unsupported PAL projection: {projection}")
++
++    models: list[Dict[str, Any]] = []
++    if projection in {"compatibility", "direct-ci"}:
++        overrides = _active_route_overrides(routing)
++        for observed in cheaperinference_snapshot.get("data", []):
++            if observed.get("type") != "text" or not observed.get("id"):
++                continue
++            model_name = str(observed["id"])
++            observed_capabilities = observed.get("capabilities") or {}
++            pal = overrides.get(model_name, {})
++            capabilities = {
++                "supports_extended_thinking": bool(
++                    observed_capabilities.get("reasoning", False)
++                ),
++                "supports_images": bool(observed_capabilities.get("vision", False)),
++                "supports_streaming": bool(
++                    observed_capabilities.get("streaming", False)
++                ),
++                "supports_function_calling": False,
++                "supports_json_mode": False,
++                "max_image_size_mb": (
++                    40.0 if observed_capabilities.get("vision", False) else 0.0
++                ),
++            }
++            capabilities.update(
++                {
++                    key: value
++                    for key, value in pal.items()
++                    if key in PAL_CAPABILITY_FIELDS
++                }
++            )
++            models.append(
++                _pal_entry(
++                    model_name=model_name,
++                    aliases=list(observed.get("aliases") or []),
++                    capabilities=capabilities,
++                    description=_description(model_name, pal, projection),
++                )
++            )
++        if projection == "compatibility":
++            by_name = {entry["model_name"]: entry for entry in models}
++            for raw in routing.get("pal_compatibility_models", []):
++                entry = {
++                    key: deepcopy_value
++                    for key, deepcopy_value in raw.items()
++                    if key in PAL_CAPABILITY_FIELDS
++                }
++                if not entry.get("model_name"):
++                    continue
++                entry.setdefault("aliases", [])
++                entry.setdefault("friendly_name", entry["model_name"])
++                by_name[str(entry["model_name"])] = entry
++            models = list(by_name.values())
++    else:
++        providers = {
++            provider["name"]: provider for provider in routing.get("providers", [])
++        }
++        for model in routing.get("models", []):
++            provider = providers.get(model.get("provider"), {})
++            pal = model.get("pal")
++            if not isinstance(pal, dict) or not _enabled(model) or not _enabled(provider):
++                continue
++            models.append(
++                _pal_entry(
++                    model_name=str(model["name"]),
++                    aliases=list(pal.get("aliases") or []),
++                    capabilities=pal,
++                    description=_description(str(model["name"]), pal, projection),
++                )
++            )
++
++    models.sort(key=lambda entry: entry["model_name"])
++    return {
++        "_README": {
++            "authority": "Dopemux routing catalog",
++            "generator": "scripts/generate_pal_model_manifest.py",
++            "projection": projection,
++        },
++        "models": models,
++    }
++
++
++def render_pal_manifest(manifest: Dict[str, Any]) -> bytes:
++    """Serialize manifest with stable ordering and newline."""
++    return (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode("utf-8")
+diff --git a/src/dopemux/routing_cli.py b/src/dopemux/routing_cli.py
+index 0aa1e0ac1..0ccdee51f 100644
+--- a/src/dopemux/routing_cli.py
++++ b/src/dopemux/routing_cli.py
+@@ -449,6 +449,70 @@ def repair_aliases(apply: bool):
+         raise
+ 
+ 
++@routing.command("audit-catalog")
++@click.option("--json", "json_output", is_flag=True, help="Emit machine-readable JSON.")
++def audit_catalog(json_output: bool):
++    """Audit full repo-owned routing catalog drift without writing."""
++    try:
++        manager = LaunchdServiceManager.get_instance()
++        audit = manager.routing_config.audit_catalog_contract()
++        if json_output:
++            payload = {key: value for key, value in audit.items() if key != "merged_config"}
++            click.echo(json.dumps(payload, indent=2, sort_keys=True))
++            if audit["stale"]:
++                raise SystemExit(1)
++            return
++
++        console.print("Routing Catalog Audit")
++        console.print("=" * 50)
++        if not audit["stale"]:
++            console.print("Catalog matches repo-owned template.")
++            return
++        console.print("Stale repo-owned catalog sections:")
++        for section in audit["changed_sections"]:
++            console.print(f"  - {section}", markup=False)
++        raise SystemExit(1)
++    except RoutingConfigError as e:
++        click.echo(f"Error: {e}", err=True)
++        raise SystemExit(2)
++
++
++@routing.command("sync-catalog")
++@click.option(
++    "--apply",
++    is_flag=True,
++    help="Back up and atomically upsert repo-owned catalog sections.",
++)
++def sync_catalog(apply: bool):
++    """Preview or apply additive routing catalog synchronization."""
++    try:
++        manager = LaunchdServiceManager.get_instance()
++        result = manager.routing_config.sync_catalog_contract(apply=apply)
++        audit = result["audit"]
++
++        console.print("Routing Catalog Sync")
++        console.print("=" * 50)
++        if not audit["stale"] and not result["changed"]:
++            console.print("No catalog sync needed.")
++            return
++
++        console.print("Repo-owned sections to upsert:")
++        for section in audit["changed_sections"]:
++            console.print(f"  - {section}", markup=False)
++
++        if not apply:
++            console.print("\nDry run only. No files changed.")
++            console.print("Run `dopemux routing sync-catalog --apply` to write.")
++            return
++
++        console.print("\nCatalog synchronized.")
++        console.print(f"Backup: {result['backup_path']}", markup=False)
++        console.print(f"Updated: {manager.routing_config.config_path}", markup=False)
++    except RoutingConfigError as e:
++        click.echo(f"Error: {e}", err=True)
++        raise SystemExit(2)
++
++
+ @routing.command()
+ def docker():
+     """Generate Docker Compose snippets for services."""
+diff --git a/src/dopemux/routing_config.py b/src/dopemux/routing_config.py
+index 73d51c6b0..04c4f7956 100644
+--- a/src/dopemux/routing_config.py
++++ b/src/dopemux/routing_config.py
+@@ -3,9 +3,12 @@
+ from __future__ import annotations
+ 
+ from datetime import datetime
++from copy import deepcopy
+ import logging
++import os
+ from pathlib import Path
+ import shutil
++import tempfile
+ from typing import Any, Dict, Optional
+ from urllib.parse import urlparse
+ 
+@@ -15,6 +18,16 @@ logger = logging.getLogger(__name__)
+ 
+ LOCAL_PROVIDER_NAMES = {"ollama", "lmstudio"}
+ LOCAL_PROVIDER_HOSTNAMES = {"localhost", "127.0.0.1", "::1"}
++REPO_CATALOG_SECTIONS = (
++    "providers",
++    "models",
++    "slots",
++    "fallbacks",
++    "default_fallbacks",
++    "aliases",
++    "freeflow",
++    "pal_compatibility_models",
++)
+ 
+ 
+ class RoutingConfigError(RuntimeError):
+@@ -40,6 +53,44 @@ def _provider_allows_inline_auth(provider: Dict[str, Any]) -> bool:
+     return bool(hostname and hostname in LOCAL_PROVIDER_HOSTNAMES)
+ 
+ 
++def _entry_enabled(entry: Dict[str, Any]) -> bool:
++    """Return explicit enablement while preserving legacy active behavior."""
++    return entry.get("enabled", True) is True
++
++
++def _merge_repo_value(current: Any, template: Any) -> Any:
++    """Upsert template authority while retaining user-owned additive entries."""
++    if isinstance(template, dict):
++        merged = deepcopy(current) if isinstance(current, dict) else {}
++        for key, value in template.items():
++            merged[key] = _merge_repo_value(merged.get(key), value)
++        return merged
++
++    if isinstance(template, list):
++        current_list = current if isinstance(current, list) else []
++        template_named = all(
++            isinstance(item, dict) and item.get("name") for item in template
++        )
++        current_named = all(
++            isinstance(item, dict) and item.get("name") for item in current_list
++        )
++        if template_named and current_named:
++            template_names = {item["name"] for item in template}
++            return deepcopy(template) + [
++                deepcopy(item)
++                for item in current_list
++                if item["name"] not in template_names
++            ]
++
++        merged_list: list[Any] = deepcopy(template)
++        for item in current_list:
++            if item not in merged_list:
++                merged_list.append(deepcopy(item))
++        return merged_list
++
++    return deepcopy(template)
++
++
+ class RoutingConfig:
+     """Manage the global routing configuration for Dopemux."""
+ 
+@@ -181,6 +232,82 @@ class RoutingConfig:
+             "audit": self.audit_alias_contract(repaired),
+         }
+ 
++    def audit_catalog_contract(
++        self, config: Optional[Dict[str, Any]] = None
++    ) -> Dict[str, Any]:
++        """Compare repo-owned catalog sections with additive sync result."""
++        current = config if config is not None else self.load()
++        template = self.load_template()
++        merged = deepcopy(current)
++        for section in REPO_CATALOG_SECTIONS:
++            if section not in template:
++                continue
++            merged[section] = _merge_repo_value(
++                current.get(section), template[section]
++            )
++
++        changed_sections = [
++            section
++            for section in REPO_CATALOG_SECTIONS
++            if section in template and current.get(section) != merged.get(section)
++        ]
++        return {
++            "config_path": str(self.config_path),
++            "template_path": str(self.TEMPLATE_PATH),
++            "changed_sections": changed_sections,
++            "stale": bool(changed_sections),
++            "merged_config": merged,
++        }
++
++    def sync_catalog_contract(self, *, apply: bool = False) -> Dict[str, Any]:
++        """Preview or atomically apply additive repo catalog synchronization."""
++        current = self.load()
++        audit = self.audit_catalog_contract(current)
++        if not apply or not audit["stale"]:
++            return {"changed": False, "backup_path": None, "audit": audit}
++
++        timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
++        backup_path = self.config_path.with_name(
++            f"{self.config_path.name}.bak.{timestamp}"
++        )
++        shutil.copy2(self.config_path, backup_path)
++
++        temporary_path: Optional[Path] = None
++        try:
++            with tempfile.NamedTemporaryFile(
++                mode="w",
++                encoding="utf-8",
++                dir=self.config_path.parent,
++                prefix=f".{self.config_path.name}.",
++                suffix=".tmp",
++                delete=False,
++            ) as handle:
++                yaml.safe_dump(
++                    audit["merged_config"],
++                    handle,
++                    sort_keys=False,
++                    allow_unicode=True,
++                )
++                handle.flush()
++                os.fsync(handle.fileno())
++                temporary_path = Path(handle.name)
++
++            RoutingConfig(config_path=temporary_path).load()
++            os.replace(temporary_path, self.config_path)
++            temporary_path = None
++        except Exception:
++            if temporary_path is not None:
++                temporary_path.unlink(missing_ok=True)
++            raise
++
++        self._loaded = False
++        repaired = self.load()
++        return {
++            "changed": True,
++            "backup_path": str(backup_path),
++            "audit": self.audit_catalog_contract(repaired),
++        }
++
+     def _write_alias_block(self, aliases: Dict[str, str]) -> None:
+         """Rewrite only the top-level aliases block in routing.yaml."""
+         text = self.config_path.read_text(encoding="utf-8")
+@@ -262,6 +389,14 @@ class RoutingConfig:
+         for provider in providers:
+             if "name" not in provider:
+                 raise RoutingConfigError("Provider missing 'name' field")
++            if "enabled" in provider and not isinstance(provider["enabled"], bool):
++                raise RoutingConfigError(
++                    f"Provider {provider['name']} enabled must be a boolean"
++                )
++            if provider["name"] in provider_names:
++                raise RoutingConfigError(
++                    f"Duplicate provider name: {provider['name']}"
++                )
+             auth_mode = str(provider.get("auth_mode") or "env").lower()
+             if auth_mode not in {"env", "none", "ignored"}:
+                 raise RoutingConfigError(
+@@ -288,6 +423,12 @@ class RoutingConfig:
+         for model in models:
+             if "name" not in model:
+                 raise RoutingConfigError("Model missing 'name' field")
++            if "enabled" in model and not isinstance(model["enabled"], bool):
++                raise RoutingConfigError(
++                    f"Model {model['name']} enabled must be a boolean"
++                )
++            if model["name"] in model_names:
++                raise RoutingConfigError(f"Duplicate model name: {model['name']}")
+             if "provider" not in model:
+                 raise RoutingConfigError(
+                     f"Model {model['name']} missing 'provider' field"
+@@ -304,8 +445,16 @@ class RoutingConfig:
+                     f"{model['provider']}"
+                 )
+ 
++            self._validate_pal_metadata(model)
+             model_names[model["name"]] = model
+ 
++        active_model_names = {
++            name
++            for name, model in model_names.items()
++            if _entry_enabled(model)
++            and _entry_enabled(provider_names[model["provider"]])
++        }
++
+         # Validate slots
+         slots = self.config.get("slots", {})
+         if not isinstance(slots, dict) or len(slots) == 0:
+@@ -316,6 +465,10 @@ class RoutingConfig:
+                 raise RoutingConfigError(
+                     f"Slot {slot_name} references unknown model: {model_name}"
+                 )
++            if model_name not in active_model_names:
++                raise RoutingConfigError(
++                    f"Slot {slot_name} references disabled model: {model_name}"
++                )
+ 
+         # Validate fallbacks
+         fallbacks = self.config.get("fallbacks", {})
+@@ -327,6 +480,10 @@ class RoutingConfig:
+                 raise RoutingConfigError(
+                     f"Fallbacks contain unknown model: {model_name}"
+                 )
++            if model_name not in active_model_names:
++                raise RoutingConfigError(
++                    f"Fallbacks contain disabled model: {model_name}"
++                )
+             if not isinstance(fallback_list, list):
+                 raise RoutingConfigError(
+                     f"Fallbacks for {model_name} must be a list"
+@@ -337,6 +494,11 @@ class RoutingConfig:
+                         f"Fallbacks for {model_name} references unknown model: "
+                         f"{fb_model}"
+                     )
++                if fb_model not in active_model_names:
++                    raise RoutingConfigError(
++                        f"Fallbacks for {model_name} references disabled model: "
++                        f"{fb_model}"
++                    )
+ 
+         # Validate default_fallbacks
+         default_fb = self.config.get("default_fallbacks", [])
+@@ -347,6 +509,10 @@ class RoutingConfig:
+                 raise RoutingConfigError(
+                     f"default_fallbacks contains unknown model: {model_name}"
+                 )
++            if model_name not in active_model_names:
++                raise RoutingConfigError(
++                    f"default_fallbacks contains disabled model: {model_name}"
++                )
+ 
+         # Validate aliases
+         aliases = self.config.get("aliases", {})
+@@ -365,6 +531,41 @@ class RoutingConfig:
+         except ValueError as exc:
+             raise RoutingConfigError(str(exc)) from exc
+ 
++    @staticmethod
++    def _validate_pal_metadata(model: Dict[str, Any]) -> None:
++        pal = model.get("pal")
++        if pal is None:
++            return
++        if not isinstance(pal, dict):
++            raise RoutingConfigError(f"Model {model['name']} pal metadata must be a dictionary")
++
++        for field in ("context_window", "max_output_tokens"):
++            if field in pal and (
++                not isinstance(pal[field], int) or isinstance(pal[field], bool) or pal[field] <= 0
++            ):
++                raise RoutingConfigError(
++                    f"Model {model['name']} pal.{field} must be a positive integer"
++                )
++
++        direct_name = pal.get("direct_model_name")
++        thinking_mode = pal.get("thinking_mode")
++        if direct_name == "kimi-k3":
++            if thinking_mode != "always_on":
++                raise RoutingConfigError("Kimi K3 thinking_mode must be always_on")
++            if pal.get("reasoning_efforts") != ["low", "high", "max"]:
++                raise RoutingConfigError(
++                    "Kimi K3 reasoning_efforts must be exactly low/high/max"
++                )
++        if direct_name == "claude-fable-5":
++            if thinking_mode != "adaptive_always_on":
++                raise RoutingConfigError(
++                    "Claude Fable 5 thinking_mode must be adaptive_always_on"
++                )
++            if pal.get("max_output_tokens") != 128000:
++                raise RoutingConfigError(
++                    "Claude Fable 5 max_output_tokens must be 128000"
++                )
++
+     def generate_litellm_config(self, master_key: str) -> Dict[str, Any]:
+         """Generate LiteLLM configuration from routing config.
+ 
+@@ -387,7 +588,23 @@ class RoutingConfig:
+         )
+ 
+         if strict_free_enabled(self.config):
+-            return generate_freeflow_litellm_config(self.config, master_key)
++            active_config = deepcopy(self.config)
++            providers_by_name = {
++                provider["name"]: provider
++                for provider in active_config.get("providers", [])
++            }
++            active_config["providers"] = [
++                provider
++                for provider in active_config.get("providers", [])
++                if _entry_enabled(provider)
++            ]
++            active_config["models"] = [
++                model
++                for model in active_config.get("models", [])
++                if _entry_enabled(model)
++                and _entry_enabled(providers_by_name[model["provider"]])
++            ]
++            return generate_freeflow_litellm_config(active_config, master_key)
+ 
+         models = self.config.get("models", [])
+         slots = self.config.get("slots", {})
+@@ -399,6 +616,8 @@ class RoutingConfig:
+         model_list = []
+         for model in models:
+             provider = self._get_provider_by_name(model["provider"])
++            if not _entry_enabled(model) or not _entry_enabled(provider):
++                continue
+             auth_mode = str(provider.get("auth_mode") or "env").lower()
+ 
+             litellm_params = {
+@@ -478,6 +697,17 @@ class RoutingConfig:
+         models = self.config.get("models", [])
+         slots = self.config.get("slots", {})
+ 
++        providers = {
++            provider["name"]: provider
++            for provider in self.config.get("providers", [])
++        }
++        all_model_names = [
++            model["name"]
++            for model in models
++            if _entry_enabled(model)
++            and _entry_enabled(providers[model["provider"]])
++        ]
++
+         default_model = slots.get("default", all_model_names[0] if all_model_names else "default")
+ 
+         return {
+diff --git a/task-packets/TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001.json b/task-packets/TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001.json
+new file mode 100644
+index 000000000..748ee5a48
+--- /dev/null
++++ b/task-packets/TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001.json
+@@ -0,0 +1,122 @@
++{
++  "id": "TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001",
++  "project": "dopemux-mvp",
++  "target": "feat(routing): converge narrow PAL routing and economical agent guidance",
++  "invariants": [
++    "Primary checkout is read-only",
++    "No force/admin/service/credential/PAYG effects"
++  ],
++  "depends_on": [],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": ".dopetaskroot",
++    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "MP-DMX-MERGE-DRAIN-20261002-006",
++    "base_branch": "main",
++    "parent_tp_id": "MP-DMX-MERGE-DRAIN-20261002-006",
++    "final_packet": false
++  },
++  "execution": {
++    "agent": "gemini",
++    "branch": "successor/routing-pal-agents-r6",
++    "base_branch": "main",
++    "stacked_because": "R6 isolated current-main successor"
++  },
++  "commit": {
++    "message": "feat(routing): converge narrow PAL routing and economical agent guidance",
++    "allowlist": [
++      "compose.yml",
++      "config/ai/model-routing.policy.yaml",
++      "docker/mcp-servers-source/pal/Dockerfile",
++      "docker/mcp-servers-source/pal/pal-mcp-server/conf/",
++      "docker/mcp-servers-source/pal/pal-mcp-server/config.py",
++      "docker/mcp-servers-source/pal/pal-mcp-server/pyproject.toml",
++      "docs/02-how-to/model-routing-usage.md",
++      "docs/03-reference/governance/model-routing.md",
++      "scripts/generate_pal_model_manifest.py",
++      "scripts/mcp-wrappers/ensure-pal.sh",
++      "src/dopemux/model_catalog.py",
++      "src/dopemux/routing_cli.py",
++      "src/dopemux/routing_config.py",
++      "templates/routing.yaml",
++      "tests/test_model_catalog.py",
++      "tests/test_model_routing_policy.py",
++      "tests/test_pal_model_manifest.py",
++      "tests/test_routing_config.py",
++      "tests/test_mcp_pal_runtime_contract.py",
++      ".claude/agents/",
++      ".claude/claude.md",
++      ".claude/modules/shared/governance-principles.md",
++      ".codex/agents/",
++      ".codex/config.toml",
++      "AGENTS.md",
++      "GEMINI.md",
++      "CHANGELOG.md",
++      ".github/agents/",
++      ".github/copilot-instructions.md",
++      "proof/TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001/",
++      "proof/pr_merge/embedded-audit/",
++      "task-packets/TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001.json"
++    ],
++    "verify": [
++      "pytest tests/test_model_catalog.py tests/test_model_routing_policy.py tests/test_pal_model_manifest.py tests/test_routing_config.py tests/test_mcp_pal_runtime_contract.py -q",
++      "git diff --check",
++      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
++    ]
++  },
++  "pr": {
++    "title": "feat(routing): converge narrow PAL routing and economical agent guidance",
++    "body": "R6 governed merge-drain successor; exact provenance/tests/audit required before finality.",
++    "base": "main"
++  },
++  "steps": [
++    {
++      "id": "S0",
++      "task": "Bind current main, repo identity, existing attempts and clean isolated writer.",
++      "requirements": [
++        "No primary checkout write",
++        "No duplicate active attempt"
++      ],
++      "commands": [
++        "git status --short --branch",
++        "git rev-parse origin/main"
++      ],
++      "validation": [
++        "Exact current main recorded",
++        "Writer worktree clean"
++      ],
++      "context_files": [
++        "AGENTS.md"
++      ]
++    },
++    {
++      "id": "S1",
++      "task": "Extract only current unmet behavior from #1286/#1381/#1389; fix PAL source-fingerprint rebuild and docs contradiction; preserve R2/GEC doctrine and dirty primary.",
++      "validation": [
++        "Only allowlisted files change",
++        "Acceptance criteria proven with fresh tests"
++      ]
++    },
++    {
++      "id": "S2",
++      "task": "Freeze exact subject and return for independent audit/finality.",
++      "validation": [
++        "git diff --check passes",
++        "change-contract result recorded",
++        "exact base/head and changed paths recorded"
++      ]
++    }
++  ],
++  "pal_chain": {
++    "enabled": true,
++    "steps": [
++      "analyze",
++      "planner",
++      "codereview",
++      "precommit"
++    ]
++  }
++}
+diff --git a/templates/routing.yaml b/templates/routing.yaml
+index b33b97615..99ec3bf79 100644
+--- a/templates/routing.yaml
++++ b/templates/routing.yaml
+@@ -8,15 +8,11 @@
+ #
+ # Changes require `dopemux routing reload` to take effect.
+ #
+-# Regenerating ~/.dopemux/routing.yaml from this template:
++# Synchronizing ~/.dopemux/routing.yaml with this template:
+ # - Alias-only drift: `dopemux routing repair-aliases --apply` (RoutingConfig.repair_alias_contract)
+ #   merges only the top-level `aliases:` block from this template into the live file.
+-# - Full regen (providers/models/freeflow sections, as changed by this migration):
+-#   there is no diff-and-merge command yet. RoutingConfig._copy_template() only fires
+-#   automatically when ~/.dopemux/routing.yaml is absent. To pick up this template's
+-#   provider/model changes, back up and remove ~/.dopemux/routing.yaml, then run any
+-#   `dopemux routing` command that calls RoutingConfig.load() (e.g. `dopemux routing status`)
+-#   to recopy this template as the new live file.
++# - Full repo-owned catalog drift: `dopemux routing sync-catalog` previews an
++#   additive upsert. `--apply` creates a backup first and preserves user extras.
+ 
+ version: 1
+ 
+@@ -50,6 +46,25 @@ providers:
+     label: "CheaperInference"
+     api_key_env: "CHEAPERINFERENCE_API_KEY"
+     base_url: "https://api.cheaperinference.com/v1"
++    enabled: true
++
++  # L2 candidates. Credentials and activation remain deferred to L3.
++  - name: openrouter
++    label: "OpenRouter"
++    api_key_env: "OPENROUTER_API_KEY"
++    base_url: "https://openrouter.ai/api/v1"
++    enabled: false
++
++  - name: moonshot
++    label: "Moonshot AI"
++    api_key_env: "MOONSHOT_API_KEY"
++    base_url: "https://api.moonshot.ai/v1"
++    enabled: false
++
++  - name: anthropic
++    label: "Anthropic"
++    api_key_env: "ANTHROPIC_API_KEY"
++    enabled: false
+ 
+   - name: gemini_paid_cap
+     label: "Google Gemini Paid Cap"
+@@ -170,6 +185,90 @@ models:
+     model_id: "openai/gpt-5.4-pro"
+     max_tokens: 272000
+ 
++  # PROVIDER-QUALIFIED KIMI K3 / FABLE 5 ROUTES
++  # Active CI routes are catalog-only in L2: no slot/fallback promotion.
++  - name: kimi-k3-ci
++    provider: cheaperinference
++    model_id: "openai/kimi-k3"
++    enabled: true
++    pal:
++      direct_model_name: kimi-k3
++      context_window: 1000000
++      supports_extended_thinking: true
++      supports_images: true
++      supports_streaming: true
++      thinking_mode: always_on
++      reasoning_efforts: [low, high, max]
++
++  - name: fable-5-ci
++    provider: cheaperinference
++    model_id: "openai/claude-fable-5"
++    max_tokens: 128000
++    enabled: true
++    pal:
++      direct_model_name: claude-fable-5
++      context_window: 1000000
++      max_output_tokens: 128000
++      supports_extended_thinking: true
++      supports_images: true
++      supports_streaming: true
++      thinking_mode: adaptive_always_on
++
++  # Disabled L3 candidates. Raw provider model ids stay separate from route ids.
++  - name: kimi-k3-or
++    provider: openrouter
++    model_id: "openai/kimi-k3"
++    enabled: false
++    pal:
++      direct_model_name: kimi-k3
++      context_window: 1000000
++      supports_extended_thinking: true
++      supports_images: true
++      supports_streaming: true
++      thinking_mode: always_on
++      reasoning_efforts: [low, high, max]
++
++  - name: fable-5-or
++    provider: openrouter
++    model_id: "openai/claude-fable-5"
++    max_tokens: 128000
++    enabled: false
++    pal:
++      direct_model_name: claude-fable-5
++      context_window: 1000000
++      max_output_tokens: 128000
++      supports_extended_thinking: true
++      supports_images: true
++      supports_streaming: true
++      thinking_mode: adaptive_always_on
++
++  - name: kimi-k3-direct
++    provider: moonshot
++    model_id: "openai/kimi-k3"
++    enabled: false
++    pal:
++      direct_model_name: kimi-k3
++      context_window: 1000000
++      supports_extended_thinking: true
++      supports_images: true
++      supports_streaming: true
++      thinking_mode: always_on
++      reasoning_efforts: [low, high, max]
++
++  - name: fable-5-direct
++    provider: anthropic
++    model_id: "anthropic/claude-fable-5"
++    max_tokens: 128000
++    enabled: false
++    pal:
++      direct_model_name: claude-fable-5
++      context_window: 1000000
++      max_output_tokens: 128000
++      supports_extended_thinking: true
++      supports_images: true
++      supports_streaming: true
++      thinking_mode: adaptive_always_on
++
+   # STRICT-FREE LOCAL / HOSTED-FREE ROUTES
+   - name: ollama-qwen3-coder
+     provider: ollama
+@@ -232,6 +331,20 @@ models:
+     model_id: "openai/qwen-3-8-max"
+     max_tokens: 262144
+ 
++# PAL packaged-default compatibility entries. Current Dopemux PAL services use
++# explicit direct-CI projection instead of this generic fallback catalog.
++pal_compatibility_models:
++  - model_name: llama3.2
++    aliases: [local-llama, ollama-llama]
++    context_window: 128000
++    max_output_tokens: 64000
++    supports_extended_thinking: false
++    supports_json_mode: false
++    supports_function_calling: false
++    supports_images: false
++    max_image_size_mb: 0.0
++    description: "PAL packaged-default local Llama compatibility entry."
++
+ # Slot definitions - assign models to usage slots
+ # These are exposed to Claude Code via CCR
+ slots:
+diff --git a/tests/test_mcp_pal_runtime_contract.py b/tests/test_mcp_pal_runtime_contract.py
+new file mode 100644
+index 000000000..d62b4e444
+--- /dev/null
++++ b/tests/test_mcp_pal_runtime_contract.py
+@@ -0,0 +1,71 @@
++from pathlib import Path
++
++import tomllib
++import yaml
++
++
++ROOT = Path(__file__).resolve().parents[1]
++PAL_ROOT = ROOT / "docker/mcp-servers-source/pal"
++PAL_SOURCE = PAL_ROOT / "pal-mcp-server"
++
++
++def test_compose_litellm_build_uses_tracked_source_dockerfile() -> None:
++    compose = yaml.safe_load((ROOT / "compose.yml").read_text(encoding="utf-8"))
++
++    build = compose["services"]["litellm"]["build"]
++
++    assert build["context"] == "."
++    assert build["dockerfile"] == "docker/mcp-servers-source/litellm/Dockerfile"
++    assert (ROOT / build["dockerfile"]).is_file()
++
++
++def test_pal_http_and_stdio_images_share_canonical_source_tree() -> None:
++    http_dockerfile = (PAL_ROOT / "Dockerfile").read_text(encoding="utf-8")
++    stdio_dockerfile = (
++        ROOT / "docker/mcp-servers-source/pal-stdio/Dockerfile"
++    ).read_text(encoding="utf-8")
++
++    assert "COPY pal-mcp-server/ ." in http_dockerfile
++    assert (
++        "COPY docker/mcp-servers-source/pal/pal-mcp-server/ ."
++        in stdio_dockerfile
++    )
++    assert "COPY docker/mcp-servers-source/pal-stdio/pal-mcp-server/" not in stdio_dockerfile
++
++
++def test_pal_source_is_pinned_to_verified_upstream_version() -> None:
++    project = tomllib.loads((PAL_SOURCE / "pyproject.toml").read_text(encoding="utf-8"))
++    config_text = (PAL_SOURCE / "config.py").read_text(encoding="utf-8")
++
++    assert project["project"]["version"] == "9.8.2"
++    assert '__version__ = "9.8.2"' in config_text
++
++
++def test_canonical_pal_image_preserves_codex_opt_venv_compatibility() -> None:
++    dockerfile = (PAL_ROOT / "Dockerfile").read_text(encoding="utf-8")
++    ensure_script = (ROOT / "scripts/mcp-wrappers/ensure-pal.sh").read_text(
++        encoding="utf-8"
++    )
++
++    assert "/opt/venv" in dockerfile
++    assert "/app/.venv" in dockerfile
++    assert "docker/mcp-servers-source/pal" in ensure_script
++    assert "docker build" in ensure_script
++
++
++def test_pal_http_wrapper_keeps_local_health_endpoint() -> None:
++    wrapper = (PAL_ROOT / "pal_http_wrapper.py").read_text(encoding="utf-8")
++
++    assert "'/health'" in wrapper or '"/health"' in wrapper
++    assert "mcp_process.poll()" in wrapper
++
++
++def test_pal_services_select_generated_direct_ci_manifest() -> None:
++    compose = yaml.safe_load((ROOT / "compose.yml").read_text(encoding="utf-8"))
++
++    for service_name in ("pal", "pal-stdio"):
++        environment = compose["services"][service_name]["environment"]
++        assert (
++            "CUSTOM_MODELS_CONFIG_PATH=/app/conf/custom_models.direct-ci.json"
++            in environment
++        )
+diff --git a/tests/test_model_catalog.py b/tests/test_model_catalog.py
+new file mode 100644
+index 000000000..08742e749
+--- /dev/null
++++ b/tests/test_model_catalog.py
+@@ -0,0 +1,79 @@
++import json
++from pathlib import Path
++
++import yaml
++
++from dopemux.model_catalog import build_pal_manifest, render_pal_manifest
++
++
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def _catalog_inputs():
++    routing = yaml.safe_load((ROOT / "templates/routing.yaml").read_text(encoding="utf-8"))
++    snapshot = json.loads(
++        (ROOT / "config/cheaperinference_models.snapshot.json").read_text(
++            encoding="utf-8"
++        )
++    )
++    return routing, snapshot
++
++
++def test_direct_ci_projection_uses_provider_model_ids_and_verified_capabilities():
++    routing, snapshot = _catalog_inputs()
++
++    manifest = build_pal_manifest(routing, snapshot, projection="direct-ci")
++    models = {entry["model_name"]: entry for entry in manifest["models"]}
++
++    assert "kimi-k3" in models
++    assert "claude-fable-5" in models
++    assert "kimi-k3-ci" not in models
++    assert models["kimi-k3"]["context_window"] == 1_000_000
++    assert models["kimi-k3"]["supports_extended_thinking"] is True
++    assert "low/high/max" in models["kimi-k3"]["description"]
++    assert models["claude-fable-5"]["context_window"] == 1_000_000
++    assert models["claude-fable-5"]["max_output_tokens"] == 128_000
++    assert "adaptive thinking always on" in models["claude-fable-5"]["description"].lower()
++
++
++def test_gateway_projection_uses_active_qualified_routes_only():
++    routing, snapshot = _catalog_inputs()
++
++    manifest = build_pal_manifest(routing, snapshot, projection="gateway")
++    names = {entry["model_name"] for entry in manifest["models"]}
++
++    assert {"kimi-k3-ci", "fable-5-ci"} <= names
++    assert not {
++        "kimi-k3-or",
++        "fable-5-or",
++        "kimi-k3-direct",
++        "fable-5-direct",
++    } & names
++
++
++def test_packaged_compatibility_projection_preserves_local_pal_entry():
++    routing, snapshot = _catalog_inputs()
++
++    manifest = build_pal_manifest(routing, snapshot, projection="compatibility")
++    models = {entry["model_name"]: entry for entry in manifest["models"]}
++
++    assert models["llama3.2"]["aliases"] == ["local-llama", "ollama-llama"]
++    assert "llama3.2" not in {
++        entry["model_name"]
++        for entry in build_pal_manifest(
++            routing, snapshot, projection="direct-ci"
++        )["models"]
++    }
++
++
++def test_pal_manifest_render_is_deterministic_and_excludes_identity_noise():
++    routing, snapshot = _catalog_inputs()
++    manifest = build_pal_manifest(routing, snapshot, projection="direct-ci")
++
++    first = render_pal_manifest(manifest)
++    second = render_pal_manifest(manifest)
++
++    assert first == second
++    assert b"pricing" not in first
++    assert b"api_key" not in first
++    assert b"reasoning_efforts" not in first
+diff --git a/tests/test_model_routing_policy.py b/tests/test_model_routing_policy.py
+index 4aae72e60..7538995d3 100644
+--- a/tests/test_model_routing_policy.py
++++ b/tests/test_model_routing_policy.py
+@@ -8,7 +8,9 @@ These are governance invariants, not runtime behavior: read/plan/review/audit
+ lanes must not be able to edit or execute, and OpenRouter must stay a broker.
+ """
+ 
++import json
+ from pathlib import Path
++import tomllib
+ 
+ import pytest
+ import yaml
+@@ -184,3 +186,59 @@ def test_edit_agents_have_edit_tool():
+     for name in EDIT_AGENTS:
+         tools = set(_agent_frontmatter(name)["tools"])
+         assert "edit" in tools, f"{name} should have the edit tool"
++
++
++@pytest.mark.parametrize("key", ["default_subagent_model", "default_subagent_reasoning_effort"])
++def test_codex_subagents_have_explicit_economical_defaults(key):
++    config = tomllib.loads((REPO_ROOT / ".codex/config.toml").read_text())
++    assert config["agents"].get(key), f"missing explicit {key}; expensive inheritance risk"
++    assert config["agents"]["default_subagent_model"] == "gpt-6-luna"
++    assert config["agents"]["default_subagent_reasoning_effort"] == "medium"
++
++
++@pytest.mark.parametrize("provider", ["codex"])
++def test_declared_role_routes_resolve_and_match_pins(provider):
++    routes = _load_policy()["provider_routes"][provider]
++    for role, route in routes["role_models"].items():
++        path = REPO_ROOT / route["file"]
++        assert path.is_file(), f"missing role {role}: {path}"
++        text = path.read_text()
++        if provider == "codex":
++            data = tomllib.loads(text)
++            assert data.get("model") == route["model"]
++            assert data.get("model_reasoning_effort") == route["effort"]
++            assert data["model"] != "inherit"
++            assert "astra" not in data["model"].lower()
++        else:
++            data = yaml.safe_load(text.split("---", 2)[1])
++            assert data.get("model") == route["model"]
++            assert data["model"] != "inherit"
++    for stage in EXPECTED_STAGES - {"self_audit"}:
++        assert (REPO_ROOT / routes[stage]).is_file()
++
++
++@pytest.mark.parametrize("role", ["dmx-explorer", "dmx-housekeeper", "dmx-reviewer"])
++def test_dmx_evidence_roles_preserve_read_only_boundary(role):
++    data = tomllib.loads((REPO_ROOT / f".codex/agents/{role}.toml").read_text())
++    assert data["sandbox_mode"] == "read-only"
++    assert "Do not edit files" in data["developer_instructions"] or "editing files" in data["developer_instructions"]
++
++
++def test_codex_review_cannot_be_promoted_to_formal_audit():
++    routes = _load_policy()["provider_routes"]
++    assert routes["codex"]["self_audit"] == "FORBIDDEN_FORMAL_AUDITOR"
++    reviewer = tomllib.loads((REPO_ROOT / routes["codex"]["judge_strong"]).read_text())
++    assert "Advisory code review only" in reviewer["developer_instructions"]
++    assert "never the formal embedded auditor" in reviewer["developer_instructions"]
++    schema = json.loads((REPO_ROOT / "schemas/proof/embedded_audit.schema.json").read_text())
++    assert routes["claude_code"]["self_audit"] in schema["properties"]["auditor_model"]["enum"]
++
++
++def test_cost_first_policy_preserves_evidence_economy_budget():
++    policy = _load_policy()
++    assert "cheapest_adequate_qualified_model" in policy["principles"]
++    assert "lowest_sufficient_supported_effort" in policy["principles"]
++    for lane in ("L2_material", "L3_red_lane"):
++        budget = policy["evidence_economy"]["lanes"][lane]
++        assert budget["implementer_model_calls"] == 1
++        assert budget["auditor_model_calls"] == 1
+diff --git a/tests/test_pal_model_manifest.py b/tests/test_pal_model_manifest.py
+new file mode 100644
+index 000000000..ee76dbdcc
+--- /dev/null
++++ b/tests/test_pal_model_manifest.py
+@@ -0,0 +1,75 @@
++import subprocess
++import sys
++from pathlib import Path
++
++
++ROOT = Path(__file__).resolve().parents[1]
++SCRIPT = ROOT / "scripts/generate_pal_model_manifest.py"
++
++
++def test_generated_pal_manifests_are_current():
++    result = subprocess.run(
++        [sys.executable, str(SCRIPT), "--check"],
++        cwd=ROOT,
++        check=False,
++        capture_output=True,
++        text=True,
++    )
++
++    assert result.returncode == 0, result.stderr or result.stdout
++
++
++def test_check_mode_detects_drift_without_writing(tmp_path):
++    output_root = tmp_path / "conf"
++    output_root.mkdir()
++    stale = output_root / "custom_models.direct-ci.json"
++    stale.write_text("{}\n", encoding="utf-8")
++
++    result = subprocess.run(
++        [
++            sys.executable,
++            str(SCRIPT),
++            "--check",
++            "--output-dir",
++            str(output_root),
++        ],
++        cwd=ROOT,
++        check=False,
++        capture_output=True,
++        text=True,
++    )
++
++    assert result.returncode == 1
++    assert stale.read_text(encoding="utf-8") == "{}\n"
++
++
++def test_generated_manifests_load_through_pal_custom_registry():
++    conf = ROOT / "docker/mcp-servers-source/pal/pal-mcp-server/conf"
++    pal_root = conf.parent
++    code = """
++from providers.registries.custom import CustomEndpointModelRegistry
++import sys
++
++direct = CustomEndpointModelRegistry(sys.argv[1])
++gateway = CustomEndpointModelRegistry(sys.argv[2])
++assert direct.resolve('kimi-k3') is not None
++assert direct.resolve('claude-fable-5') is not None
++assert gateway.resolve('kimi-k3-ci') is not None
++assert gateway.resolve('fable-5-ci') is not None
++assert gateway.resolve('kimi-k3-or') is None
++"""
++    result = subprocess.run(
++        [
++            sys.executable,
++            "-c",
++            code,
++            str(conf / "custom_models.direct-ci.json"),
++            str(conf / "custom_models.gateway.json"),
++        ],
++        cwd=pal_root,
++        check=False,
++        capture_output=True,
++        text=True,
++    )
++
++    assert result.returncode == 0, result.stderr or result.stdout
+diff --git a/tests/test_routing_config.py b/tests/test_routing_config.py
+index 0260a0dc6..424f359a8 100644
+--- a/tests/test_routing_config.py
++++ b/tests/test_routing_config.py
+@@ -1,11 +1,12 @@
+ from types import SimpleNamespace
+ from pathlib import Path
++from copy import deepcopy
+ 
+ import yaml
+ from click.testing import CliRunner
+ 
+ import dopemux.routing_cli as routing_cli
+-from dopemux.routing_config import RoutingConfig
++from dopemux.routing_config import RoutingConfig, RoutingConfigError
+ 
+ 
+ def _write_yaml(path, data):
+@@ -114,3 +115,217 @@ def test_routing_repair_aliases_apply_repairs_file(tmp_path, monkeypatch):
+     assert repaired["aliases"]["grok"] == "default"
+     assert repaired["aliases"]["claude-opus-4-6"] == "opus"
+     assert repaired["aliases"]["custom"] == "default"
++
++
++def test_legacy_entries_without_enabled_remain_active(tmp_path, monkeypatch):
++    template, config_path = _make_config(tmp_path, monkeypatch)
++    _write_yaml(config_path, template)
++
++    config = RoutingConfig(config_path=config_path)
++    config.load()
++    generated = config.generate_litellm_config("test-master-key")
++
++    assert [entry["model_name"] for entry in generated["model_list"]] == [
++        "gpt-5.4-mini"
++    ]
++
++
++def test_disabled_provider_and_models_are_omitted_from_active_generation(
++    tmp_path, monkeypatch
++):
++    template, config_path = _make_config(tmp_path, monkeypatch)
++    template["providers"].append(
++        {
++            "name": "candidate",
++            "api_key_env": "CANDIDATE_API_KEY",
++            "enabled": False,
++        }
++    )
++    template["models"].extend(
++        [
++            {
++                "name": "disabled-provider-model",
++                "provider": "candidate",
++                "model_id": "openai/candidate",
++            },
++            {
++                "name": "disabled-model",
++                "provider": "openai",
++                "model_id": "openai/disabled",
++                "enabled": False,
++            },
++        ]
++    )
++    _write_yaml(config_path, template)
++
++    config = RoutingConfig(config_path=config_path)
++    config.load()
++    generated = config.generate_litellm_config("test-master-key")
++
++    assert {entry["model_name"] for entry in generated["model_list"]} == {
++        "gpt-5.4-mini"
++    }
++
++
++def test_disabled_models_cannot_be_routing_targets(tmp_path, monkeypatch):
++    template, config_path = _make_config(tmp_path, monkeypatch)
++    template["models"].append(
++        {
++            "name": "candidate",
++            "provider": "openai",
++            "model_id": "openai/candidate",
++            "enabled": False,
++        }
++    )
++    template["slots"]["candidate"] = "candidate"
++    _write_yaml(config_path, template)
++
++    config = RoutingConfig(config_path=config_path)
++
++    try:
++        config.load()
++    except RoutingConfigError as exc:
++        assert "disabled model" in str(exc)
++    else:  # pragma: no cover - assertion guard
++        raise AssertionError("disabled slot target unexpectedly validated")
++
++
++def test_repo_template_kimi_fable_routes_are_qualified_and_not_promoted():
++    routing = yaml.safe_load(RoutingConfig.TEMPLATE_PATH.read_text(encoding="utf-8"))
++    providers = {provider["name"]: provider for provider in routing["providers"]}
++    models = {model["name"]: model for model in routing["models"]}
++
++    assert providers["cheaperinference"]["enabled"] is True
++    assert providers["openrouter"]["enabled"] is False
++    assert providers["moonshot"]["enabled"] is False
++    assert providers["anthropic"]["enabled"] is False
++
++    assert models["kimi-k3-ci"]["pal"]["reasoning_efforts"] == [
++        "low",
++        "high",
++        "max",
++    ]
++    assert "medium" not in models["kimi-k3-ci"]["pal"]["reasoning_efforts"]
++    assert models["kimi-k3-ci"]["pal"]["thinking_mode"] == "always_on"
++    assert models["fable-5-ci"]["pal"]["thinking_mode"] == "adaptive_always_on"
++    assert models["fable-5-ci"]["pal"]["max_output_tokens"] == 128000
++
++    candidate_names = {
++        "kimi-k3-or",
++        "fable-5-or",
++        "kimi-k3-direct",
++        "fable-5-direct",
++    }
++    assert all(models[name]["enabled"] is False for name in candidate_names)
++    promoted = set(routing["slots"].values()) | set(routing["default_fallbacks"])
++    promoted.update(
++        candidate
++        for fallback_list in routing["fallbacks"].values()
++        for candidate in fallback_list
++    )
++    assert not ({"kimi-k3-ci", "fable-5-ci"} | candidate_names) & promoted
++
++
++def test_full_catalog_generation_includes_active_ci_routes_and_omits_candidates(
++    tmp_path
++):
++    routing = yaml.safe_load(RoutingConfig.TEMPLATE_PATH.read_text(encoding="utf-8"))
++    routing["freeflow"]["enabled"] = False
++    config_path = tmp_path / "routing.yaml"
++    _write_yaml(config_path, routing)
++
++    config = RoutingConfig(config_path=config_path)
++    config.load()
++    generated = config.generate_litellm_config("test-master-key")
++    names = {entry["model_name"] for entry in generated["model_list"]}
++
++    assert {"kimi-k3-ci", "fable-5-ci"} <= names
++    assert not {
++        "kimi-k3-or",
++        "fable-5-or",
++        "kimi-k3-direct",
++        "fable-5-direct",
++    } & names
++
++
++def test_catalog_sync_dry_run_is_side_effect_free_and_preserves_user_extras(
++    tmp_path, monkeypatch
++):
++    template, config_path = _make_config(tmp_path, monkeypatch)
++    current = deepcopy(template)
++    current["providers"][0]["label"] = "stale"
++    current["providers"].append(
++        {"name": "user-provider", "api_key_env": "USER_API_KEY"}
++    )
++    current["models"].append(
++        {
++            "name": "user-model",
++            "provider": "user-provider",
++            "model_id": "openai/user-model",
++        }
++    )
++    _write_yaml(config_path, current)
++    before = config_path.read_bytes()
++
++    config = RoutingConfig(config_path=config_path)
++    result = config.sync_catalog_contract(apply=False)
++
++    assert result["changed"] is False
++    assert result["audit"]["stale"] is True
++    assert "providers" in result["audit"]["changed_sections"]
++    assert config_path.read_bytes() == before
++    assert not list(tmp_path.glob("routing.yaml.bak.*"))
++
++
++def test_catalog_sync_apply_is_backup_first_and_preserves_user_extras(
++    tmp_path, monkeypatch
++):
++    template, config_path = _make_config(tmp_path, monkeypatch)
++    current = deepcopy(template)
++    current["providers"][0]["label"] = "stale"
++    current["providers"].append(
++        {"name": "user-provider", "api_key_env": "USER_API_KEY"}
++    )
++    current["models"].append(
++        {
++            "name": "user-model",
++            "provider": "user-provider",
++            "model_id": "openai/user-model",
++        }
++    )
++    _write_yaml(config_path, current)
++    before = config_path.read_bytes()
++
++    config = RoutingConfig(config_path=config_path)
++    result = config.sync_catalog_contract(apply=True)
++    repaired = yaml.safe_load(config_path.read_text(encoding="utf-8"))
++    backup_path = Path(result["backup_path"])
++
++    assert result["changed"] is True
++    assert result["audit"]["stale"] is False
++    assert backup_path.read_bytes() == before
++    assert repaired["providers"][0] == template["providers"][0]
++    assert any(row["name"] == "user-provider" for row in repaired["providers"])
++    assert any(row["name"] == "user-model" for row in repaired["models"])
++
++
++def test_routing_sync_catalog_cli_defaults_to_dry_run(tmp_path, monkeypatch):
++    template, config_path = _make_config(tmp_path, monkeypatch)
++    current = deepcopy(template)
++    current["providers"][0]["label"] = "stale"
++    _write_yaml(config_path, current)
++    before = config_path.read_bytes()
++    config = RoutingConfig(config_path=config_path)
++    fake_manager = SimpleNamespace(routing_config=config)
++    monkeypatch.setattr(
++        routing_cli.LaunchdServiceManager,
++        "get_instance",
++        staticmethod(lambda: fake_manager),
++    )
++
++    result = CliRunner().invoke(routing_cli.routing, ["sync-catalog"])
++
++    assert result.exit_code == 0
++    assert "Dry run only" in result.output
++    assert "providers" in result.output
++    assert config_path.read_bytes() == before

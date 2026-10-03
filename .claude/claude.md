@@ -73,6 +73,8 @@ production, or accept security residual risk without required explicit operator 
 
 **Required final response shape**: Change Summary · Authority Used · Analysis Performed · Validation Performed (PASS/FAIL/NOT_RUN) · Remaining Uncertainty · Files Touched · Git State · Rollback Plan · Requested Next Step. For repo-changing work, also produce the proof bundle from [AGENTS.md §9](../AGENTS.md).
 
+**Cost-first delegation**: follow [AGENTS.md §5](../AGENTS.md): cheapest adequate qualified model, lowest sufficient supported effort, explicit bounded ownership/validation/stop conditions. Pin cheaper children; avoid inheriting expensive supervisors. Preserve user/packet restrictions and no-fallback gates; record escalation reasons and unknown actual identity/availability. YAML is advisory; Codex review never formal embedded audit.
+
 **Full doctrine**: [.claude/modules/shared/governance-principles.md](modules/shared/governance-principles.md).
 
 ## ⚙️ Commands & Environment

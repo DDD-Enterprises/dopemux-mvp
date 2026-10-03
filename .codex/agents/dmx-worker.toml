@@ -1,6 +1,6 @@
 name = "dmx_worker"
 description = "Implementation worker for small approved Dopemux slices after supervisor plan approval."
-model = "gpt-5.4-mini"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 developer_instructions = """

@@ -1,0 +1,112 @@
+{
+  "packet_id": "TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001",
+  "series": "MP-DMX-MERGE-DRAIN-20261002-006",
+  "branch": "successor/routing-pal-agents-r6",
+  "base": "main",
+  "base_sha": "58b00013067933ba7989eea5bb8929f275512a94",
+  "head_sha": "66a628dd54e5f007f2684ca6855ea08a53e10546",
+  "agent": "gemini-2.5-pro",
+  "timestamp": "2026-10-03T06:48:30-07:00",
+  "kind": "code+governance",
+  "final_packet": false,
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "gemini-2.5-pro",
+      "model_family": "google-gemini",
+      "runner": "antigravity",
+      "runtime_family": "antigravity"
+    },
+    "independence": "PROVEN"
+  },
+  "test_results": {
+    "routing_suite": {
+      "command": "uv run pytest tests/test_model_catalog.py tests/test_model_routing_policy.py tests/test_pal_model_manifest.py tests/test_routing_config.py tests/test_mcp_pal_runtime_contract.py -q",
+      "exit_code": 0,
+      "summary": "46 passed in 1.47s"
+    },
+    "catalog_suite": {
+      "command": "uv run pytest tests/commandcode_router/test_normalized_catalog.py -q",
+      "exit_code": 0,
+      "summary": "26 passed in 10.49s"
+    },
+    "manifest_check": {
+      "command": "python3 scripts/generate_pal_model_manifest.py --check",
+      "exit_code": 0,
+      "summary": "PASS (manifests up to date)"
+    },
+    "git_diff_check": {
+      "command": "git diff --check origin/main..HEAD",
+      "exit_code": 0,
+      "summary": "PASS (clean diff)"
+    },
+    "change_contract": {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "summary": "status=PASS max_lane=L2 paths=43"
+    }
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --dangerously-skip-permissions",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUDIT-001",
+        "severity": "INFO",
+        "title": "Model IDs unverifiable offline",
+        "status": "ACCEPTED_RISK",
+        "body": "Model IDs (gpt-6-luna, gpt-6.1-sol, claude-sonnet-5-5, claude-opus-5-5, gemini-3.8-flash) are unverifiable offline and hard-pinned in .codex config/role TOMLs; availability and actual identity remain UNKNOWN/NOT_RUN per cost-first guidance."
+      },
+      {
+        "id": "AUDIT-002",
+        "severity": "INFO",
+        "title": "dmx_worker and dmx_reviewer role pin tiers",
+        "status": "ACCEPTED_RISK",
+        "body": "dmx_worker moved to gpt-6.1-sol, dmx_reviewer to gpt-6.1-sol, and supervisor default to gpt-6.1-sol; matches stated tiers in metapacket routing policy."
+      },
+      {
+        "id": "AUDIT-003",
+        "severity": "INFO",
+        "title": "Role-name underscore vs hyphen formatting",
+        "status": "ACCEPTED_RISK",
+        "body": "Existing role TOML names use underscores while new roles use hyphens; cosmetic, verified by tests."
+      },
+      {
+        "id": "AUDIT-004",
+        "severity": "INFO",
+        "title": "PAL upstream version bump 9.8.2 and conf JSON sync",
+        "status": "ACCEPTED_RISK",
+        "body": "PAL upstream version bump and openai/gemini/openrouter conf JSON refreshes are allowlisted and test-pinned."
+      },
+      {
+        "id": "AUDIT-005",
+        "severity": "INFO",
+        "title": "ensure-pal.sh image rebuild lifecycle",
+        "status": "ACCEPTED_RISK",
+        "body": "ensure-pal.sh builds only when the image is absent, preserving running container lifecycle without unnecessary rebuilds."
+      }
+    ],
+    "fixes_applied": [
+      "B1: Restored .claude/agents/*.md to origin/main preserving CCAR-002 SHA catalog integrity",
+      "B2: Restored compose.yml dope-context read-only fail-closed mount (:ro)",
+      "B3: Restored mcp<2 build guard in docker/mcp-servers-source/pal/Dockerfile",
+      "B4: Restored cli_clients/ from origin/main, default temperatures in config.py, and integrated cost-first guidance without clobbering .claude/claude.md"
+    ],
+    "remaining_risks": [
+      "Model IDs unverifiable offline; runtime selector resolution subject to provider credentials and availability",
+      "ensure-pal.sh rebuilds only on missing image"
+    ],
+    "skip_reason": null
+  }
+}

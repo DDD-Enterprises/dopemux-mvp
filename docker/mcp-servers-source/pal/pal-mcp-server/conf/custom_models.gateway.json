@@ -1,0 +1,30 @@
+{
+  "_README": {
+    "authority": "Dopemux routing catalog",
+    "generator": "scripts/generate_pal_model_manifest.py",
+    "projection": "gateway"
+  },
+  "models": [
+    {
+      "aliases": [],
+      "context_window": 1000000,
+      "description": "Dopemux-generated gateway PAL catalog entry for fable-5-ci. Adaptive thinking always on; manual disable/budget route unsupported.",
+      "friendly_name": "fable-5-ci",
+      "max_output_tokens": 128000,
+      "model_name": "fable-5-ci",
+      "supports_extended_thinking": true,
+      "supports_images": true,
+      "supports_streaming": true
+    },
+    {
+      "aliases": [],
+      "context_window": 1000000,
+      "description": "Dopemux-generated gateway PAL catalog entry for kimi-k3-ci. Thinking always on; reasoning effort low/high/max.",
+      "friendly_name": "kimi-k3-ci",
+      "model_name": "kimi-k3-ci",
+      "supports_extended_thinking": true,
+      "supports_images": true,
+      "supports_streaming": true
+    }
+  ]
+}
