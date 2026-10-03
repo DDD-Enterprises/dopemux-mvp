@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.local/schemas/dcp/runner_contract.schema.json",
+  "title": "DcpRunnerContract",
+  "type": "object",
+  "required": ["schema_version", "invocation_authorized", "plan", "result"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "string"},
+    "invocation_authorized": {"type": "boolean", "const": false},
+    "plan": {
+      "type": "object",
+      "required": ["runner_id", "argv", "cwd", "env_allowlist"],
+      "additionalProperties": false,
+      "properties": {
+        "runner_id": {"type": "string"},
+        "argv": {"type": "array", "items": {"type": "string"}},
+        "cwd": {"type": "string"},
+        "env_allowlist": {"type": "array", "items": {"type": "string"}},
+        "timeout_seconds": {"type": "number"},
+        "notes": {"type": "string"}
+      }
+    },
+    "result": {
+      "type": "object",
+      "required": ["status", "exit_code", "stdout_digest", "stderr_digest"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {"type": "string", "enum": ["NOT_RUN", "BLOCKED", "PLANNED_ONLY"]},
+        "exit_code": {"type": ["integer", "null"]},
+        "stdout_digest": {"type": "string"},
+        "stderr_digest": {"type": "string"},
+        "error": {"type": "string"}
+      }
+    },
+    "proof_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidence_refs": {"type": "array", "items": {"type": "string"}},
+        "non_claims": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

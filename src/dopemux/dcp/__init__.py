@@ -67,8 +67,46 @@ from dopemux.dcp.input_adapters import (
     refuse_serialized_trust,
     untrusted_classify_source,
 )
+from dopemux.dcp.runner_capability_registry import (
+    CapabilityRegistryError,
+    RunnerCapability,
+    RunnerCapabilityRegistry,
+    assert_no_invocation_authorized,
+    load_runner_capabilities,
+)
+from dopemux.dcp.runner_contract import (
+    InertRunnerAdapter,
+    RunnerAdapter,
+    RunnerContractDocument,
+    RunnerContractError,
+    RunnerInvocationPlan,
+    RunnerPlanStatus,
+    RunnerProofEnvelope,
+    RunnerResult,
+    build_blocked_plan,
+    document_plan,
+    execute_runner_plan,
+)
 
 __all__ = [
+    # Runner capability registry (0009 / R6)
+    "CapabilityRegistryError",
+    "RunnerCapability",
+    "RunnerCapabilityRegistry",
+    "assert_no_invocation_authorized",
+    "load_runner_capabilities",
+    # Runner contract (0008 / R6)
+    "InertRunnerAdapter",
+    "RunnerAdapter",
+    "RunnerContractDocument",
+    "RunnerContractError",
+    "RunnerInvocationPlan",
+    "RunnerPlanStatus",
+    "RunnerProofEnvelope",
+    "RunnerResult",
+    "build_blocked_plan",
+    "document_plan",
+    "execute_runner_plan",
     # Proof artifact readers (pre-existing)
     "ArtifactInspection",
     "AuthorityLabel",
