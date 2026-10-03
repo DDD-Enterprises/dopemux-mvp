@@ -80,8 +80,10 @@ scripts/smoke_up.sh
 # never raw `docker compose up` (AGENTS.md §12)
 dopemux mcp start-all --verify
 
-# Project-scoped sidecars only (conport, dope-memory, task-orchestrator);
-# assumes the shared infrastructure is already up
+# Repo sidecars only (assumes shared infrastructure is already up):
+#   conport, dope-memory -> worktree-scoped containers
+#   task-orchestrator    -> host-wide wrapper-singleton on :7890, one active project at a time
+#                           (not isolated per project; see AGENTS.md §12.6)
 dopemux mcp start
 dopemux mcp doctor
 

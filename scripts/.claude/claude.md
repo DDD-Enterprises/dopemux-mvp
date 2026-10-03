@@ -42,7 +42,7 @@ scripts/
 └── env_outputs/       # Environment output artifacts
 ```
 
-Note: `deployment/`, `testing/`, `maintenance/` do **not** exist at top level. Bring up the full stack with `dopemux mcp start-all --verify` (`dopemux mcp start` only starts the project-scoped conport/dope-memory/task-orchestrator sidecars); never raw `docker compose up`.
+Note: `deployment/`, `testing/`, `maintenance/` do **not** exist at top level. Bring up the full stack with `dopemux mcp start-all --verify` (`dopemux mcp start` only starts the worktree-scoped conport/dope-memory sidecars and the host-singleton task-orchestrator on :7890, which serves one active project at a time); never raw `docker compose up`.
 
 ---
 
