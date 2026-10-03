@@ -1,0 +1,280 @@
+{
+  "id": "TP-LTAIP-POST-009",
+  "project": "dopemux-mvp",
+  "target": "h1-conditional/read-only-policy-gateway",
+  "invariants": [
+    "Packet 008 selected one base and version.",
+    "Exactly one adapter is active.",
+    "Deny-by-default and least privilege.",
+    "Zero cross-project leakage.",
+    "Canonical candidate remains source truth."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-008"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-POST-SELECTION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-008",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/TP-LTAIP-POST-009-read-gateway"
+  },
+  "commit": {
+    "message": "feat: add selected-base read-only policy gateway",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-009.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-POST-009.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-009/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-009/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-009/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-009/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-009/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-009/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-009/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-009/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-POST-009/MERGE_READINESS.json",
+      "services/ltaip-policy-gateway/pyproject.toml",
+      "services/ltaip-policy-gateway/Dockerfile",
+      "services/ltaip-policy-gateway/src/ltaip_gateway/__init__.py",
+      "services/ltaip-policy-gateway/src/ltaip_gateway/app.py",
+      "services/ltaip-policy-gateway/src/ltaip_gateway/policy.py",
+      "services/ltaip-policy-gateway/src/ltaip_gateway/audit.py",
+      "services/ltaip-policy-gateway/src/ltaip_gateway/kill_switch.py",
+      "services/ltaip-policy-gateway/src/ltaip_gateway/adapters/base.py",
+      "services/ltaip-policy-gateway/src/ltaip_gateway/adapters/leantime.py",
+      "services/ltaip-policy-gateway/src/ltaip_gateway/adapters/openproject.py",
+      "services/ltaip-policy-gateway/tests/test_contract.py",
+      "services/ltaip-policy-gateway/tests/test_authorization.py",
+      "services/ltaip-policy-gateway/tests/test_rate_limit.py",
+      "services/ltaip-policy-gateway/tests/test_kill_switch.py",
+      "compose/leantime-ai-parity/h1/compose.read-gateway.yml",
+      "docs/03-reference/leantime-ai-parity/read-only-gateway-contract.md",
+      "docs/92-runbooks/leantime-ai-parity/read-only-gateway.md",
+      "config/leantime-ai-parity/h1/selected-base.json",
+      "config/leantime-ai-parity/h1/read-policy.json",
+      "contracts/leantime-ai-parity/read-gateway.schema.json",
+      "reports/leantime-ai-parity/h1/read-gateway/contract-results.json",
+      "reports/leantime-ai-parity/h1/read-gateway/manifest.json"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-POST-009.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+      "docker compose -f compose/leantime-ai-parity/h1/compose.read-gateway.yml config --quiet",
+      "python -m pytest -q services/ltaip-policy-gateway/tests",
+      "python -m json.tool config/leantime-ai-parity/h1/selected-base.json >/dev/null",
+      "python -m json.tool config/leantime-ai-parity/h1/read-policy.json >/dev/null",
+      "python -m json.tool contracts/leantime-ai-parity/read-gateway.schema.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h1/read-gateway/contract-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h1/read-gateway/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/03-reference/leantime-ai-parity/read-only-gateway-contract.md docs/92-runbooks/leantime-ai-parity/read-only-gateway.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-POST-009/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat: add selected-base read-only policy gateway",
+    "body": "Conditional packet. Add a deny-by-default, typed, read-only adapter for the base selected by TP-LTAIP-H0-008. No writes, MCP, direct DB, or dual-base runtime.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "apilookup",
+      "analyze",
+      "tracer",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "testgen",
+      "secaudit",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-selected-base-contract",
+      "task": "Load Packet 008 decision and Packet 003 manifest, generate one selected-base contract, and fail if ambiguous.",
+      "requirements": [
+        "Exact version and API surface.",
+        "No fallback to unclassified methods."
+      ],
+      "commands": [
+        "python -m json.tool config/leantime-ai-parity/h1/selected-base.json >/dev/null",
+        "python -m json.tool contracts/leantime-ai-parity/read-gateway.schema.json >/dev/null"
+      ],
+      "expected_files": [
+        "config/leantime-ai-parity/h1/selected-base.json",
+        "config/leantime-ai-parity/h1/read-policy.json",
+        "contracts/leantime-ai-parity/read-gateway.schema.json",
+        "docs/03-reference/leantime-ai-parity/read-only-gateway-contract.md"
+      ],
+      "validation": [
+        "Exactly one base and adapter.",
+        "Every read is classified."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-gateway",
+      "task": "Implement selected adapter, policy, audit receipts, redaction, rate limits, and explicit denied states.",
+      "requirements": [
+        "Unselected adapter is absent or disabled.",
+        "No generic method string.",
+        "No token in logs."
+      ],
+      "commands": [
+        "python -m pytest -q services/ltaip-policy-gateway/tests",
+        "docker compose -f compose/leantime-ai-parity/h1/compose.read-gateway.yml up -d --build"
+      ],
+      "expected_files": [
+        "services/ltaip-policy-gateway/src/ltaip_gateway/app.py",
+        "services/ltaip-policy-gateway/src/ltaip_gateway/policy.py",
+        "services/ltaip-policy-gateway/src/ltaip_gateway/adapters/base.py"
+      ],
+      "validation": [
+        "Contract and authorization tests pass.",
+        "Denied/unavailable states explicit."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-3-negative-upgrade",
+      "task": "Prove cross-project denial, response filtering, timeout behavior, token rotation, and kill switch on selected version and upgrade candidate.",
+      "requirements": [
+        "Zero cross-project leak.",
+        "Kill switch blocks all adapter calls."
+      ],
+      "commands": [
+        "python -m pytest -q services/ltaip-policy-gateway/tests",
+        "python -m json.tool reports/leantime-ai-parity/h1/read-gateway/contract-results.json >/dev/null"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h1/read-gateway/contract-results.json",
+        "docs/92-runbooks/leantime-ai-parity/read-only-gateway.md"
+      ],
+      "validation": [
+        "Negative and drift tests pass."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-4-audit-proof",
+      "task": "Run independent security audit and supervisor adjudication.",
+      "requirements": [
+        "Supervisor review mandatory."
+      ],
+      "commands": [
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-POST-009.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+        "docker compose -f compose/leantime-ai-parity/h1/compose.read-gateway.yml config --quiet",
+        "python -m pytest -q services/ltaip-policy-gateway/tests",
+        "python -m json.tool config/leantime-ai-parity/h1/selected-base.json >/dev/null",
+        "python -m json.tool config/leantime-ai-parity/h1/read-policy.json >/dev/null",
+        "python -m json.tool contracts/leantime-ai-parity/read-gateway.schema.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h1/read-gateway/contract-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h1/read-gateway/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/03-reference/leantime-ai-parity/read-only-gateway-contract.md docs/92-runbooks/leantime-ai-parity/read-only-gateway.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-POST-009/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h1/read-gateway/manifest.json",
+        "proof/leantime-ai-parity/TP-LTAIP-POST-009/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-POST-009/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "No P0/P1 security finding.",
+        "Supervisor approves."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}

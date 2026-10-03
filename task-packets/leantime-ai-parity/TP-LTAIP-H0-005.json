@@ -1,0 +1,290 @@
+{
+  "id": "TP-LTAIP-H0-005",
+  "project": "dopemux-mvp",
+  "target": "h0-security/derived-data-authorization-lab",
+  "invariants": [
+    "Canonical source always wins.",
+    "Authorization is enforced at ingest, retrieval, context assembly, citation, and cache.",
+    "Retrieved content is data, never executable instruction.",
+    "Zero cross-project leakage.",
+    "The entire derived store remains destroyable and rebuildable."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-003"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-H0-VALIDATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-003",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "security/TP-LTAIP-H0-005-derived-data-lab"
+  },
+  "commit": {
+    "message": "security: add synthetic derived-data authorization lab",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-005.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-005.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-005/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-005/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-005/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-005/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-005/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-005/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-005/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-005/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-005/MERGE_READINESS.json",
+      "config/leantime-ai-parity/h0/derived-data-lab.json",
+      "compose/leantime-ai-parity/h0/compose.derived-data-lab.yml",
+      "scripts/leantime-ai-parity/h0/derived-data/resolve_lab_images.py",
+      "scripts/leantime-ai-parity/h0/derived-data/generate_corpus.py",
+      "scripts/leantime-ai-parity/h0/derived-data/build_index.py",
+      "scripts/leantime-ai-parity/h0/derived-data/run_acl_matrix.py",
+      "scripts/leantime-ai-parity/h0/derived-data/run_deletion_matrix.py",
+      "scripts/leantime-ai-parity/h0/derived-data/run_injection_suite.py",
+      "scripts/leantime-ai-parity/h0/derived-data/destroy_lab.sh",
+      "tests/prototypes/leantime-ai-parity/h0/derived-data/test_acl_transitions.py",
+      "tests/prototypes/leantime-ai-parity/h0/derived-data/test_deletion_tombstones.py",
+      "tests/prototypes/leantime-ai-parity/h0/derived-data/test_cache_invalidation.py",
+      "tests/prototypes/leantime-ai-parity/h0/derived-data/test_prompt_injection.py",
+      "tests/fixtures/leantime-ai-parity/h0/derived-data/synthetic-corpus.jsonl",
+      "tests/fixtures/leantime-ai-parity/h0/derived-data/hostile-content.jsonl",
+      "docs/06-research/leantime-ai-parity/h0/derived-data/authorization-model.md",
+      "docs/06-research/leantime-ai-parity/h0/derived-data/injection-threat-model.md",
+      "docs/06-research/leantime-ai-parity/h0/derived-data/lab-disposition.md",
+      "reports/leantime-ai-parity/h0/derived-data/corpus-manifest.json",
+      "reports/leantime-ai-parity/h0/derived-data/acl-transition-results.json",
+      "reports/leantime-ai-parity/h0/derived-data/deletion-results.json",
+      "reports/leantime-ai-parity/h0/derived-data/injection-results.json",
+      "reports/leantime-ai-parity/h0/derived-data/retrieval-traces.jsonl",
+      "reports/leantime-ai-parity/h0/derived-data/manifest.json"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-005.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+      "docker compose -f compose/leantime-ai-parity/h0/compose.derived-data-lab.yml config --quiet",
+      "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/derived-data",
+      "python -m json.tool config/leantime-ai-parity/h0/derived-data-lab.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/derived-data/corpus-manifest.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/derived-data/acl-transition-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/derived-data/deletion-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/derived-data/injection-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/derived-data/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/derived-data/authorization-model.md docs/06-research/leantime-ai-parity/h0/derived-data/injection-threat-model.md docs/06-research/leantime-ai-parity/h0/derived-data/lab-disposition.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-005/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "security: add synthetic derived-data authorization lab",
+    "body": "Add a synthetic-only ACL, deletion, citation, cache, and prompt-injection laboratory. No production data, write tools, or global index.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "tracer",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "testgen",
+      "secaudit",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-policy-corpus",
+      "task": "Create the lineage, ACL, tombstone, citation, and hostile-data model plus deterministic synthetic corpus.",
+      "requirements": [
+        "All identities and content are synthetic.",
+        "Every record has project, source version, ACL, deletion state, and lineage."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/derived-data/resolve_lab_images.py --output config/leantime-ai-parity/h0/derived-data-lab.json",
+        "python scripts/leantime-ai-parity/h0/derived-data/generate_corpus.py --output tests/fixtures/leantime-ai-parity/h0/derived-data/synthetic-corpus.jsonl --manifest reports/leantime-ai-parity/h0/derived-data/corpus-manifest.json"
+      ],
+      "expected_files": [
+        "config/leantime-ai-parity/h0/derived-data-lab.json",
+        "tests/fixtures/leantime-ai-parity/h0/derived-data/synthetic-corpus.jsonl",
+        "tests/fixtures/leantime-ai-parity/h0/derived-data/hostile-content.jsonl",
+        "reports/leantime-ai-parity/h0/derived-data/corpus-manifest.json",
+        "docs/06-research/leantime-ai-parity/h0/derived-data/authorization-model.md",
+        "docs/06-research/leantime-ai-parity/h0/derived-data/injection-threat-model.md"
+      ],
+      "validation": [
+        "Corpus is deterministic and contains positive and negative ACL transitions.",
+        "No real data or secrets are present."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-index-acl-deletion",
+      "task": "Build the disposable index and test grant, revoke, move, delete, restore, cache, and citation behavior.",
+      "requirements": [
+        "Authorization checks occur at every stage.",
+        "Deleted or revoked content becomes unreachable inside the pre-registered SLO."
+      ],
+      "commands": [
+        "docker compose -f compose/leantime-ai-parity/h0/compose.derived-data-lab.yml up -d",
+        "python scripts/leantime-ai-parity/h0/derived-data/build_index.py --config config/leantime-ai-parity/h0/derived-data-lab.json --corpus tests/fixtures/leantime-ai-parity/h0/derived-data/synthetic-corpus.jsonl",
+        "python scripts/leantime-ai-parity/h0/derived-data/run_acl_matrix.py --output reports/leantime-ai-parity/h0/derived-data/acl-transition-results.json",
+        "python scripts/leantime-ai-parity/h0/derived-data/run_deletion_matrix.py --output reports/leantime-ai-parity/h0/derived-data/deletion-results.json"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/derived-data/acl-transition-results.json",
+        "reports/leantime-ai-parity/h0/derived-data/deletion-results.json",
+        "reports/leantime-ai-parity/h0/derived-data/retrieval-traces.jsonl"
+      ],
+      "validation": [
+        "Zero cross-project leakage.",
+        "Deletion/revocation SLO is measured, not assumed.",
+        "Citations resolve only to current authorized sources."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-3-hostile-content",
+      "task": "Test hostile source instructions, retrieval poisoning, citation spoofing, and cache replay.",
+      "requirements": [
+        "Retrieved text cannot invoke tools or alter policy.",
+        "No external side effect is allowed."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/derived-data/run_injection_suite.py --corpus tests/fixtures/leantime-ai-parity/h0/derived-data/hostile-content.jsonl --output reports/leantime-ai-parity/h0/derived-data/injection-results.json",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/derived-data"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/derived-data/injection-results.json",
+        "docs/06-research/leantime-ai-parity/h0/derived-data/lab-disposition.md"
+      ],
+      "validation": [
+        "No policy or tool boundary bypass.",
+        "All failures are reproducible and classified."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-4-destroy-audit-proof",
+      "task": "Destroy the derived store, prove rebuildability, run security audit, and obtain PR Steward output.",
+      "requirements": [
+        "No derived data survives teardown.",
+        "Supervisor review is mandatory."
+      ],
+      "commands": [
+        "bash scripts/leantime-ai-parity/h0/derived-data/destroy_lab.sh --volumes",
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-005.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+        "docker compose -f compose/leantime-ai-parity/h0/compose.derived-data-lab.yml config --quiet",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/derived-data",
+        "python -m json.tool config/leantime-ai-parity/h0/derived-data-lab.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/derived-data/corpus-manifest.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/derived-data/acl-transition-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/derived-data/deletion-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/derived-data/injection-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/derived-data/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/derived-data/authorization-model.md docs/06-research/leantime-ai-parity/h0/derived-data/injection-threat-model.md docs/06-research/leantime-ai-parity/h0/derived-data/lab-disposition.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-005/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/derived-data/manifest.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-005/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-005/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Destroy/rebuild evidence exists.",
+        "Security audit has no open P0/P1 finding."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}

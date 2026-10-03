@@ -1,0 +1,414 @@
+{
+  "schema_version": "1.0.0",
+  "series_id": "LTAIP-FULL",
+  "title": "Leantime AI parity full macro-packet series and Task Orchestrator load plan",
+  "description": "Twelve-packet evidence-gated series. In-repo REST can create root/packet epics. Dependency edges stay in the packet DAG and tags because CreateEpicRequest has no dependency or delete field. External v3 MCP task-tree loading is TX and PENDING_LOAD.",
+  "authority": "Runtime repo truth, strict packet JSON, and services/task-orchestrator/app/models/workflow.py.",
+  "repo_snapshot_sha": "d844d71d9ec9b55905dbb545662fc5c0f989e87c",
+  "workspace_id": "/Users/hue/code/dopemux-mvp",
+  "live_task_orchestrator_load": "PENDING_LOAD",
+  "loaded": false,
+  "canonical_rest": {
+    "base_url_default": "http://localhost:8000",
+    "health": "GET /health",
+    "list": "GET /api/workflow/epics?tag=program:LTAIP&limit=100",
+    "create": "POST /api/workflow/epics",
+    "request_model": "CreateEpicRequest",
+    "payload": "docs/ops/load-plans/task_orchestrator_epics-LTAIP-H0.json",
+    "loader": "scripts/leantime-ai-parity/load_task_orchestrator.py",
+    "dependency_support": "NOT_IN_CREATE_EPIC_REQUEST; dependencies remain packet/DAG authority",
+    "delete_support": "NO_DELETE_ENDPOINT_OBSERVED; partial load requires receipt-based reconciliation"
+  },
+  "external_v3": {
+    "classification": "TX",
+    "payload": "docs/ops/load-plans/task_orchestrator_v3_advisory-LTAIP-H0.json",
+    "load": "PENDING_LOAD"
+  },
+  "task_orchestrator_root_id": null,
+  "task_orchestrator_epic_ids": {
+    "TP-LTAIP-H0-001": null,
+    "TP-LTAIP-H0-002": null,
+    "TP-LTAIP-H0-003": null,
+    "TP-LTAIP-H0-004": null,
+    "TP-LTAIP-H0-005": null,
+    "TP-LTAIP-H0-006": null,
+    "TP-LTAIP-H0-007": null,
+    "TP-LTAIP-H0-008": null,
+    "TP-LTAIP-POST-009": null,
+    "TP-LTAIP-POST-010": null,
+    "TP-LTAIP-POST-011": null,
+    "TP-LTAIP-POST-012": null
+  },
+  "waves": [
+    {
+      "wave": 0,
+      "nodes": [
+        "TP-LTAIP-H0-001"
+      ],
+      "gate": "READY now"
+    },
+    {
+      "wave": 1,
+      "nodes": [
+        "TP-LTAIP-H0-002"
+      ],
+      "gate": "Packet 001 merged"
+    },
+    {
+      "wave": 2,
+      "nodes": [
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-006"
+      ],
+      "gate": "Packet 002 merged; 006 also needs operator package input"
+    },
+    {
+      "wave": 3,
+      "nodes": [
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-005"
+      ],
+      "gate": "Packet 003 merged"
+    },
+    {
+      "wave": 4,
+      "nodes": [
+        "TP-LTAIP-H0-007"
+      ],
+      "gate": "Packets 002,003,004,006 merged"
+    },
+    {
+      "wave": 5,
+      "nodes": [
+        "TP-LTAIP-H0-008"
+      ],
+      "gate": "Packets 001-007 merged and evidence-current"
+    },
+    {
+      "wave": 6,
+      "nodes": [
+        "TP-LTAIP-POST-009",
+        "TP-LTAIP-POST-010",
+        "TP-LTAIP-POST-012"
+      ],
+      "gate": "Packet 008 selects one base; supervisor authorizes post-selection series"
+    },
+    {
+      "wave": 7,
+      "nodes": [
+        "TP-LTAIP-POST-011"
+      ],
+      "gate": "Packets 005,009,010 complete and deterministic/retrieval gates pass"
+    }
+  ],
+  "blocks_dag": {
+    "edges": [
+      {
+        "predecessor": "TP-LTAIP-H0-001",
+        "successor": "TP-LTAIP-H0-002"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-002",
+        "successor": "TP-LTAIP-H0-003"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-003",
+        "successor": "TP-LTAIP-H0-004"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-003",
+        "successor": "TP-LTAIP-H0-005"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-001",
+        "successor": "TP-LTAIP-H0-006"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-002",
+        "successor": "TP-LTAIP-H0-006"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-002",
+        "successor": "TP-LTAIP-H0-007"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-003",
+        "successor": "TP-LTAIP-H0-007"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-004",
+        "successor": "TP-LTAIP-H0-007"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-006",
+        "successor": "TP-LTAIP-H0-007"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-001",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-002",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-003",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-004",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-005",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-006",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-007",
+        "successor": "TP-LTAIP-H0-008"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-008",
+        "successor": "TP-LTAIP-POST-009"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-008",
+        "successor": "TP-LTAIP-POST-010"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-006",
+        "successor": "TP-LTAIP-POST-010"
+      },
+      {
+        "predecessor": "TP-LTAIP-POST-009",
+        "successor": "TP-LTAIP-POST-011"
+      },
+      {
+        "predecessor": "TP-LTAIP-POST-010",
+        "successor": "TP-LTAIP-POST-011"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-005",
+        "successor": "TP-LTAIP-POST-011"
+      },
+      {
+        "predecessor": "TP-LTAIP-H0-008",
+        "successor": "TP-LTAIP-POST-012"
+      }
+    ],
+    "edge_count": 24
+  },
+  "nodes": [
+    {
+      "id": "TP-LTAIP-H0-001",
+      "epic": "EPIC-08-001",
+      "title": "Economic buyer, persona, and workflow lock",
+      "objective": "Lock one economic buyer, two primary personas, and three must-win workflows.",
+      "depends_on": [],
+      "priority": "critical",
+      "risk": "HIGH",
+      "authorization": "HORIZON_0_PROTOTYPE",
+      "status": "READY",
+      "series": "LTAIP-H0-VALIDATION-001",
+      "redlane": false,
+      "parallel": false
+    },
+    {
+      "id": "TP-LTAIP-H0-002",
+      "epic": "EPIC-08-002",
+      "title": "Equivalent-edition Leantime and OpenProject workflow trial",
+      "objective": "Run identical Community-edition workflows, accessibility, mobile, administration, backup, and restore trials.",
+      "depends_on": [
+        "TP-LTAIP-H0-001"
+      ],
+      "priority": "critical",
+      "risk": "HIGH",
+      "authorization": "HORIZON_0_PROTOTYPE",
+      "status": "BLOCKED",
+      "series": "LTAIP-H0-VALIDATION-001",
+      "redlane": false,
+      "parallel": false
+    },
+    {
+      "id": "TP-LTAIP-H0-003",
+      "epic": "EPIC-08-003",
+      "title": "Release-pinned exposure and blocking authorization manifests",
+      "objective": "Generate complete exposure manifests and prove blocking authorization with zero P0/P1 bypasses.",
+      "depends_on": [
+        "TP-LTAIP-H0-002"
+      ],
+      "priority": "critical",
+      "risk": "CRITICAL",
+      "authorization": "HORIZON_0_PROTOTYPE",
+      "status": "BLOCKED",
+      "series": "LTAIP-H0-VALIDATION-001",
+      "redlane": true,
+      "parallel": false
+    },
+    {
+      "id": "TP-LTAIP-H0-004",
+      "epic": "EPIC-08-004",
+      "title": "Leantime mutation atomicity and event-path spike",
+      "objective": "Prove or disprove atomic event capture for representative Leantime mutations, document honest fallback semantics, and measure the maintenance tax of any core-patch alternative.",
+      "depends_on": [
+        "TP-LTAIP-H0-003"
+      ],
+      "priority": "critical",
+      "risk": "CRITICAL",
+      "authorization": "HORIZON_0_PROTOTYPE",
+      "status": "BLOCKED",
+      "series": "LTAIP-H0-VALIDATION-001",
+      "redlane": true,
+      "parallel": true
+    },
+    {
+      "id": "TP-LTAIP-H0-005",
+      "epic": "EPIC-08-005",
+      "title": "Derived-data authorization, deletion, and injection laboratory",
+      "objective": "Prove that a destroyable derived-data index can preserve project authorization, deletion, freshness, citations, and hostile-content isolation under synthetic multi-project changes.",
+      "depends_on": [
+        "TP-LTAIP-H0-003"
+      ],
+      "priority": "critical",
+      "risk": "CRITICAL",
+      "authorization": "HORIZON_0_SYNTHETIC_ONLY",
+      "status": "BLOCKED",
+      "series": "LTAIP-H0-VALIDATION-001",
+      "redlane": true,
+      "parallel": true
+    },
+    {
+      "id": "TP-LTAIP-H0-006",
+      "epic": "EPIC-08-006",
+      "title": "Official plugin package qualification",
+      "objective": "Qualify authorized official plugin packages as distinct licensed components using exact hashes, license/support terms, workflow evidence, ACL tests, sequential upgrades, export, backup, restore, rollback, and equivalent-scope cost.",
+      "depends_on": [
+        "TP-LTAIP-H0-001",
+        "TP-LTAIP-H0-002"
+      ],
+      "priority": "high",
+      "risk": "HIGH",
+      "authorization": "HORIZON_0_PACKAGE_REVIEW",
+      "status": "BLOCKED",
+      "series": "LTAIP-H0-VALIDATION-001",
+      "redlane": true,
+      "parallel": true
+    },
+    {
+      "id": "TP-LTAIP-H0-007",
+      "epic": "EPIC-08-007",
+      "title": "Equivalent-scope probabilistic TCO and team operating model",
+      "objective": "Produce equivalent-scope expected and downside TCO distributions plus a named-skill, ownership, on-call, and bus-factor operating model using actual prototype evidence and explicit uncertainty.",
+      "depends_on": [
+        "TP-LTAIP-H0-002",
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-006"
+      ],
+      "priority": "high",
+      "risk": "HIGH",
+      "authorization": "HORIZON_0_ANALYSIS",
+      "status": "BLOCKED",
+      "series": "LTAIP-H0-VALIDATION-001",
+      "redlane": false,
+      "parallel": false
+    },
+    {
+      "id": "TP-LTAIP-H0-008",
+      "epic": "EPIC-08-008",
+      "title": "Independent base-selection gate",
+      "objective": "Independently adjudicate all Horizon 0 evidence and emit one evidence-current result: select one release-pinned base/variant, reject all candidates, or return to prototype with named missing evidence.",
+      "depends_on": [
+        "TP-LTAIP-H0-001",
+        "TP-LTAIP-H0-002",
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-005",
+        "TP-LTAIP-H0-006",
+        "TP-LTAIP-H0-007"
+      ],
+      "priority": "critical",
+      "risk": "CRITICAL",
+      "authorization": "HORIZON_0_DECISION_GATE",
+      "status": "BLOCKED",
+      "series": "LTAIP-H0-VALIDATION-001",
+      "redlane": true,
+      "parallel": false
+    },
+    {
+      "id": "TP-LTAIP-POST-009",
+      "epic": "EPIC-08-009",
+      "title": "Read-only policy gateway and selected-base adapter",
+      "objective": "Implement one release-pinned, deny-by-default, read-only gateway for the selected base with project/identity allowlists, response filtering, audit receipts, rate limits, token rotation, and kill switch.",
+      "depends_on": [
+        "TP-LTAIP-H0-008"
+      ],
+      "priority": "high",
+      "risk": "HIGH",
+      "authorization": "CONDITIONAL_AFTER_BASE_SELECTION",
+      "status": "CONDITIONAL",
+      "series": "LTAIP-POST-SELECTION-001",
+      "redlane": true,
+      "parallel": true
+    },
+    {
+      "id": "TP-LTAIP-POST-010",
+      "epic": "EPIC-08-010",
+      "title": "Deterministic parity foundation child-series generator",
+      "objective": "Select at most three deterministic must-win gaps proven by H0, resolve configure/buy/upstream/build disposition, and generate exact base-specific implementation child packets with permission, accessibility, mobile, upgrade, rollback, and proof gates.",
+      "depends_on": [
+        "TP-LTAIP-H0-008",
+        "TP-LTAIP-H0-006"
+      ],
+      "priority": "high",
+      "risk": "HIGH",
+      "authorization": "CONDITIONAL_AFTER_BASE_SELECTION",
+      "status": "CONDITIONAL",
+      "series": "LTAIP-POST-SELECTION-001",
+      "redlane": true,
+      "parallel": true
+    },
+    {
+      "id": "TP-LTAIP-POST-011",
+      "epic": "EPIC-08-011",
+      "title": "Bounded read/draft AI pilot",
+      "objective": "Implement exactly two selected read/draft AI features with cited outputs, human approval, deterministic fallback, data-class routing, redaction, budget ceilings, task-specific evaluation, and instant disablement.",
+      "depends_on": [
+        "TP-LTAIP-POST-009",
+        "TP-LTAIP-POST-010",
+        "TP-LTAIP-H0-005"
+      ],
+      "priority": "critical",
+      "risk": "CRITICAL",
+      "authorization": "CONDITIONAL_AFTER_DETERMINISTIC_AND_RETRIEVAL_GATES",
+      "status": "CONDITIONAL",
+      "series": "LTAIP-POST-SELECTION-001",
+      "redlane": true,
+      "parallel": false
+    },
+    {
+      "id": "TP-LTAIP-POST-012",
+      "epic": "EPIC-08-012",
+      "title": "Parallel upstream contribution stream",
+      "objective": "Prepare bounded, generic, maintainer-aligned upstream contribution bundles for exposure manifests, permission tests, documentation, or transaction-aware event primitives proven by H0, while preserving a bounded local fallback and avoiding a fork.",
+      "depends_on": [
+        "TP-LTAIP-H0-008"
+      ],
+      "priority": "medium",
+      "risk": "MEDIUM",
+      "authorization": "CONDITIONAL_AFTER_BASE_SELECTION",
+      "status": "CONDITIONAL",
+      "series": "LTAIP-POST-SELECTION-001",
+      "redlane": true,
+      "parallel": true
+    }
+  ],
+  "dry_run_command": "python scripts/leantime-ai-parity/load_task_orchestrator.py --payload docs/ops/load-plans/task_orchestrator_epics-LTAIP-H0.json --dry-run",
+  "apply_command": "python scripts/leantime-ai-parity/load_task_orchestrator.py --payload docs/ops/load-plans/task_orchestrator_epics-LTAIP-H0.json --apply --approve LTAIP_TASK_ORCHESTRATOR_LOAD --receipts reports/leantime-ai-parity/task-orchestrator-load-receipts.json",
+  "partial_failure_policy": "STOP, preserve receipts, do not guess deletion. Reconcile existing idempotency keys before retry.",
+  "replay_instructions": "Use the REST loader for root and packet epics. Use the task-tree artifact for operator view. Only use external v3 after its live schema is inspected and approved."
+}
