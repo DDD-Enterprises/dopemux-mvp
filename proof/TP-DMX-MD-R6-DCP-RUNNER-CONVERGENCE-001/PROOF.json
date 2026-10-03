@@ -1,0 +1,44 @@
+{
+  "packet_id": "TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1403,
+  "head_sha": "9d036fb3308fea5ff63aa3b7691165cfe755f615",
+  "executed": true,
+  "mutation_performed": true,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --dangerously-skip-permissions '<PROMPT>'; exact record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "R1: Minor lint (unused imports in new modules)",
+      "R2: Registry loader hand-rolled checks vs runtime schema validation",
+      "R3: Historical documentation version references",
+      "R4: Runner capabilities point-in-time host snapshot",
+      "R5: Stale base pin in historical test_dcp_0002_contract_derivation.py::test_16 deselected in CI"
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "gemini-cli",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "gemini-cli"
+    },
+    "auditor": {
+      "runner": "claude-code-cli",
+      "model": "sonnet",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}

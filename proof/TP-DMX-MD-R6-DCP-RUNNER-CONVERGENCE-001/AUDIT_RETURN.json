@@ -1,0 +1,94 @@
+{
+  "tool_access": "FULL",
+  "custody": {
+    "match": true,
+    "head": "9d036fb3308fea5ff63aa3b7691165cfe755f615",
+    "base": "efb0ad8924a3c1c813fc4492f60c87896bd975ea"
+  },
+  "verdict": "PASS_WITH_RISKS",
+  "criteria": {
+    "1_allowlist": "PASS",
+    "2_inert_runner_contract": "PASS",
+    "3_capability_registry": "PASS",
+    "4_manifest_35_unique_0_dupes": "PASS",
+    "5_unit_tests_no_network": "PASS",
+    "6_produced_dict_vs_schema_regression": "PASS",
+    "7_docs_frontmatter": "PASS_WITH_RISKS",
+    "8_git_diff_check": "PASS"
+  },
+  "validation": {
+    "pytest_tests_unit_dcp": {
+      "status": "PASS",
+      "passed": 278,
+      "failed": 0
+    },
+    "pytest_tests_dcp_unfiltered": {
+      "status": "FAIL",
+      "passed": 192,
+      "failed": 1,
+      "note": "test_16_no_forbidden_files_modified fails on a stale base pin in TP-DCP-0002.md; candidate touches no forbidden prefixes"
+    },
+    "git_diff_check": {
+      "status": "PASS"
+    },
+    "validate_change_contract": {
+      "status": "PASS",
+      "max_lane": "L2",
+      "paths": 14
+    },
+    "docs_frontmatter_guard": {
+      "status": "PASS"
+    },
+    "flake8_new_files": {
+      "status": "FAIL_MINOR",
+      "findings": [
+        "F401 runner_contract.py:16 Mapping",
+        "F401 test_runner_contract.py:12 RunnerContractDocument"
+      ]
+    },
+    "mypy_new_modules": {
+      "status": "PASS"
+    },
+    "full_test_suite": {
+      "status": "NOT_RUN"
+    },
+    "validate_dcp_p0_contract_semantics": {
+      "status": "NOT_RUN"
+    }
+  },
+  "blocking_findings": [],
+  "risks": [
+    {
+      "id": "R1",
+      "severity": "low",
+      "summary": "Unused imports (flake8 F401) in new files"
+    },
+    {
+      "id": "R2",
+      "severity": "low",
+      "summary": "Registry loader does not validate against its JSON schema at runtime; malformed runner entry raises KeyError not CapabilityRegistryError"
+    },
+    {
+      "id": "R3",
+      "severity": "low-medium",
+      "summary": "current-runtime-reconciliation.md anchors on post-#1400 b2dc31f87 though base is efb0ad892; capability-matrix doc has no per-runner rows; supersession claims for #1137/#1138 unverified"
+    },
+    {
+      "id": "R4",
+      "severity": "low",
+      "summary": "Runner install paths and version strings in config lack probe artifact in diff"
+    },
+    {
+      "id": "R5",
+      "severity": "medium-informational",
+      "summary": "Unfiltered tests/dcp red-lane suite has 1 failure from a stale base pin; author receipt deselects it"
+    },
+    {
+      "id": "R6",
+      "severity": "process",
+      "summary": "Worktree has uncommitted uv.lock and an advisor cache modification (both outside the audited commit) plus an untracked proof directory"
+    }
+  ],
+  "audited_subject_mutated": false,
+  "authority": "NONE"
+}
