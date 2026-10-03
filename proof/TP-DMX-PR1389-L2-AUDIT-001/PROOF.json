@@ -73,7 +73,8 @@
       "runner": "agy",
       "model": "gemini-3.1-pro-high",
       "model_family": "google-gemini",
-      "runtime_family": "agy"
+      "runtime_family": "agy",
+      "effort": "high"
     },
     "independence": "PROVEN"
   },

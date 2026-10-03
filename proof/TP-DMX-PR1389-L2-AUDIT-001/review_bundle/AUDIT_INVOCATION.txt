@@ -15,3 +15,8 @@ agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m \
 
 # auditor_model enum: gemini-3.1-pro-high is an exact value in
 # schemas/proof/embedded_audit.schema.json (no generic-bucket mapping needed).
+
+# audit_identity.auditor.effort = "high": taken from the model variant
+# gemini-3.1-pro-high ("Gemini 3.1 Pro (High)"); no separate --effort flag was
+# passed. Added after CI rejected the first signed proof for a missing
+# `effort` key (audit_identity_auditor_shape_invalid); verdict unchanged.
