@@ -1,0 +1,11 @@
+ .claude/claude.md                                  |   4 +-
+ .claude/hooks/run_native_hooks.sh                  |  34 ++++
+ .claude/settings.json                              |  22 +--
+ .codex/hooks.json                                  | 104 ++++++++++
+ scripts/audit/sign_local_audit_proof.sh            |  30 ++-
+ scripts/governance/validate_change_contract.py     |  10 -
+ src/dopemux/cli.py                                 |   7 +-
+ task-packets/TP-DMX-MD-R7-HOOKS-VALIDATOR-001.json | 102 ++++++++++
+ tests/audit/test_sign_local_audit_proof.py         | 211 +++++++++++++++++++++
+ .../test_change_contract_proof_schema.py           |  87 +++++++++
+ 10 files changed, 585 insertions(+), 26 deletions(-)

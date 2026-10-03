@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -69,7 +69,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -79,7 +79,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -89,7 +89,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -99,7 +99,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }
@@ -109,7 +109,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/src/dopemux/claude/native_hooks.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
           }
         ]
       }

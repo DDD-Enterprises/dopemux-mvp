@@ -1,0 +1,10 @@
+.claude/claude.md
+.claude/hooks/run_native_hooks.sh
+.claude/settings.json
+.codex/hooks.json
+scripts/audit/sign_local_audit_proof.sh
+scripts/governance/validate_change_contract.py
+src/dopemux/cli.py
+task-packets/TP-DMX-MD-R7-HOOKS-VALIDATOR-001.json
+tests/audit/test_sign_local_audit_proof.py
+tests/governance/test_change_contract_proof_schema.py
