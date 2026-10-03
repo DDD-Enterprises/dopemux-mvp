@@ -77,8 +77,11 @@ Do not keep a port/transport table here — it drifts. Authorities:
 scripts/smoke_up.sh
 
 # Full stack (MCP servers, bridge, orchestrator, app services) — always via the CLI,
-# never raw `docker compose up` (AGENTS.md §12)
-dopemux mcp start-all --verify
+# never raw `docker compose up` (AGENTS.md §12). Verify health with `dopemux mcp doctor`:
+# start-all's --verify only runs when scripts/start-all.sh exists (absent in a clean
+# checkout, where start-all falls back to plain compose startup without checks).
+dopemux mcp start-all
+dopemux mcp doctor
 
 # Repo sidecars only (assumes shared infrastructure is already up):
 #   conport, dope-memory -> worktree-scoped containers

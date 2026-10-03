@@ -38,7 +38,7 @@ Note: MCP client config is `.mcp.json` at the **repo root** (not `.claude.json`,
 
 | File | Purpose |
 |------|---------|
-| `../.mcp.json` | MCP client configuration (repo root) |
+| `.mcp.json` | MCP client configuration (repo root) |
 | `config/ai/model-routing.policy.yaml` | Model routing lanes (pinned by `tests/test_model_routing_policy.py`) |
 | `config/profiles/*.yaml` | ADHD energy profiles |
 | `config/pricing.yaml` | LLM model cost data |
