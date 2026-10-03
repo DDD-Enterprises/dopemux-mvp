@@ -178,8 +178,8 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 0
 fi
 
-failures_json="$(json_array "${FAILURES[@]}")"
-skipped_json="$(json_array "${SKIPPED[@]}")"
+failures_json="$(json_array ${FAILURES[@]+"${FAILURES[@]}"})"
+skipped_json="$(json_array ${SKIPPED[@]+"${SKIPPED[@]}"})"
 repo_url="$(git config --get remote.origin.url || true)"
 repo_url="${repo_url:-UNKNOWN}"
 branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"

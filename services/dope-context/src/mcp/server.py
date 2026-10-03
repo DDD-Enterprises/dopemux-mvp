@@ -3221,7 +3221,7 @@ async def get_chunk_complexity(file_path: str, symbol: str) -> Dict:
 
     try:
         source = resolved.read_text(encoding="utf-8", errors="ignore")
-    except Exception as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         return {
             "complexity": 0.5,
             "method": "ast-heuristic",
