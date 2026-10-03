@@ -1,0 +1,53 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "model": "sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    }
+  },
+  "base_sha": "b2dc31f871bf31dbb6bbea73c5a328b67dfcbb30",
+  "branch": "successor/setup-python-v7-r6",
+  "embedded_audit": {
+    "auditor_model": "sonnet",
+    "auditor_tool": "claude-code-cli",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "task-packets/TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001.json fails both oneOf branches of schemas/governed_execution/task_packet.v2.schema.json (no schema_version/macro_id/workstream_id/risk_lane; execution.agent 'shell' with pal_chain.enabled false). Sibling packets TP-DMX-DEPENDABOT-ACTIONS-TOKEN-1169-001 and TP-DMX-STEWARD-DEPENDABOT-ACTOR-1207-001 fail identically and none of the 289 files in task-packets/ carries schema_version, so v2 is not the governing schema for this family. Key set matches precedent except pal_chain and execution.stacked_because. Required invariants are present. validate_change_contract.py passes.",
+        "id": "AUDIT-001",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Task packet is legacy-shape, not task_packet.v2-conformant"
+      },
+      {
+        "body": "Only python-version (3.11 or 3.12) is passed to setup-python in the five files. There is no cache, check-latest or other input, and all 18 runs-on values are ubuntu-latest, so input-surface risk is minimal. Tag v7/v7.0.0 exists upstream (5fda3b95a4ea91299a34e894583c3862153e4b97, verified via git ls-remote). Release notes were not read, and no workflow was executed by the auditor, so CI on the PR is the first runtime proof.",
+        "id": "AUDIT-002",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Workflows not executed; v7 upstream changelog not independently reviewed"
+      },
+      {
+        "body": "setup-python@v7 is a floating major tag, not a SHA pin. This matches the prior @v5 form and the other actions in these files, so it is no regression. SHA pinning is out of scope.",
+        "id": "AUDIT-003",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Mutable major-tag pin, consistent with existing convention"
+      }
+    ],
+    "fixes_applied": [],
+    "invocation": "claude-code-cli interactive session (Claude Code; actual runtime model claude-sonnet-5-5); read-only audit of b2dc31f87..64547395e with deterministic re-runs",
+    "remaining_risks": [
+      "Workflows not executed by auditor; CI on the PR must run the five workflows (AUDIT-002)",
+      "Upstream actions/setup-python v7 release notes not independently reviewed (AUDIT-002)",
+      "Task packet is legacy-shape rather than task_packet.v2 (AUDIT-001)"
+    ],
+    "report_path": "proof/TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "head_sha": "64547395e92d433e821a0790f52a5e257e7dc404",
+  "packet_id": "TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001"
+}
