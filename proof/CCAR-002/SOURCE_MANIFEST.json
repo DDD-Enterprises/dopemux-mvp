@@ -236,7 +236,7 @@
             "path": ".github/agents/dopemux-auditor.agent.md"
         },
         "dopemux-implementer.agent": {
-            "sha256": "2a3fd440b1bb6c3d36f8b8ecc2516f4eb1622bc55d40648541b3bd9d13202568",
+            "sha256": "13b2031ba771af57c94c06981b328d4f7b9276d92b45a3bd28d30782b247c69b",
             "path": ".github/agents/dopemux-implementer.agent.md"
         },
         "dopemux-planner.agent": {
@@ -248,11 +248,11 @@
             "path": ".github/agents/dopemux-reader.agent.md"
         },
         "dopemux-reviewer.agent": {
-            "sha256": "53e376bc1b6e456a91997bb5a6e3dbd7e6a83e00ec99750119f32c1ebd168436",
+            "sha256": "39252ba608133b875b31b5bb93e746f7687cdc5e05285928707be3ec757d0eab",
             "path": ".github/agents/dopemux-reviewer.agent.md"
         },
         "dopemux-testgen.agent": {
-            "sha256": "ecfc668dbf24bf189522056ce87db659c6e0381a2a1d9264c9afb6a4a2484024",
+            "sha256": "b60134b6052ba4c0cc06d065827438bf5f1dde20292f79a1b5865f717087216c",
             "path": ".github/agents/dopemux-testgen.agent.md"
         }
     },
