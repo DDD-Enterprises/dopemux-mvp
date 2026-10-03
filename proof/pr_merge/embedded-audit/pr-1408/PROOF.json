@@ -11,7 +11,7 @@
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy subagent da064f20-fe88-4977-b8dd-6dc60b2cc172",
+    "invocation": "agy subagent da064f20-fe88-4977-b8dd-6dc60b2cc172 --model gemini-3.1-pro-high --effort high --no-fallback",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-MD-R7-UI-DEPS-001/AUDITOR_REPORT.md",
     "findings": [],
