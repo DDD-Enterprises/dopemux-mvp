@@ -190,7 +190,7 @@ All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
 
 ## 🪝 Lifecycle Hooks
 
-The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStart`, `SubagentStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `src/dopemux/claude/native_hooks.py`. Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
+The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStart`, `SubagentStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `.claude/hooks/run_native_hooks.sh`, which runs `src/dopemux/claude/native_hooks.py` with the repo `.venv` interpreter (falling back to `python3`). A bare `python3` can resolve to an interpreter without the repo's dependencies (e.g. no `pydantic`), making every hook fail. Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
 
 **Orchestrator-coordination hooks** (ported from upstream `claude-plugins/task-orchestrator`, TP-CS-101 / Path B — see [docs/03-reference/orchestrator-integration/plugin-hooks-port.md](../docs/03-reference/orchestrator-integration/plugin-hooks-port.md)): available as `.claude/hooks/orchestrator_session_start.py` (SessionStart context inject), `orchestrator_post_edit_nudge.py` (PostToolUse edit nudge), `orchestrator_subagent_protocol.py` (SubagentStart agent-owned-phase protocol for implementation subagents), and `orchestrator_enforcement.py` (PreToolUse actor-attribution enforcement [dormant until `actor_authentication.enabled`], skill-invocation enforcement, and EnterPlanMode/ExitPlanMode guidance). These route through `native_hooks.py` when invoked and fail open (no-op) when their helpers or config are absent.
 
@@ -200,7 +200,7 @@ The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStar
 - **H3** `mcp_health_probe.py` — SessionStart 15-min-cached MCP server health snapshot; detects leaked task-orchestrator containers (SQLite-contention risk) and unreachable http/sse servers.
 - **H4** `proof_tracking_guard.py` — PostToolUse advisory when a TRACK-tier proof artifact (`PROOF.json`, `SUMMARY.md`, etc.) is gitignored or untracked; prompts `git add -f`.
 
-**Observed runtime support**: Settings dispatch all lifecycle events through `native_hooks.py`; hook scripts provide best-effort context save on Stop, energy warnings before complex tools, and progress/edit event signals.
+**Observed runtime support**: Settings dispatch all lifecycle events through `run_native_hooks.sh` → `native_hooks.py`; hook scripts provide best-effort context save on Stop, energy warnings before complex tools, and progress/edit event signals.
 
 **Planned/specification behavior**: focus-session timers, periodic save loops, automatic break prompts, and forced hyperfocus pauses are not proven wired in the observed Claude runtime.
 
