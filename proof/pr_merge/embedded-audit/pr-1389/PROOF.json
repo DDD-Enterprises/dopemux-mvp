@@ -1,8 +1,8 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1389,
-  "head_sha": "808c0c0549032761813e7eebeed1f8e8f99b1ccd",
-  "generated_at": "2026-10-03T03:02:44Z",
+  "head_sha": "176d965e8b0e9a9b99b73450154475a327f859d7",
+  "generated_at": "2026-10-03T05:20:38Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
@@ -10,7 +10,7 @@
     "auditor_model": "gemini-3.1-pro-high",
     "invocation": "agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m --output-format json --add-dir <repo>/.worktrees/agent-files-optimization --print=\"$(cat AUDIT_INPUT.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-PR1389-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-DMX-PR1389-L2-AUDIT-002/AUDITOR_REPORT.md",
     "findings": [
       {
         "id": "F-01",
