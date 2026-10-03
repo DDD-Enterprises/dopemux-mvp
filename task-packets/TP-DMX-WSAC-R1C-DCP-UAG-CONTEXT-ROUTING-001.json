@@ -1,0 +1,111 @@
+{
+  "id": "TP-DMX-WSAC-R1C-DCP-UAG-CONTEXT-ROUTING-001",
+  "project": "dopemux-mvp",
+  "target": "Read-only DCP, UAG, model-routing, context-policy, and capability-boundary reconstruction; produce one evidence-bound reconstruction artifact for final synthesis",
+  "invariants": [
+    "Current runtime/source/config/tests and live Git/GitHub state outrank uploaded snapshots, historical handoffs, plans, and architecture prose",
+    "Use OBSERVED, INFERRED, PROPOSED, CLAIMED, CONFLICTING, UNKNOWN, and NOT_RUN; every UNKNOWN names missing evidence",
+    "Preserve system boundaries: Dopemux coordinates; DCP controls policy/context; Dopetask executes only separately authorized work; Task Orchestrator owns workflow legality; canonical systems retain domain authority",
+    "No merge, mark-ready, activation, credential/permission change, production mutation, destructive action, history rewrite, or automatic execution authority is granted",
+    "No secrets, tokens, cookies, private keys, raw credentials, or sensitive provider payloads may enter research/proof artifacts",
+    "Ordinary main movement triggers affected-fact reharvest rather than blanket restart; exact SHA equality is required only where subject provenance requires it",
+    "This packet is read-only semantic reconstruction, not implementation or architecture ratification",
+    "No formal audit of this intermediate recon artifact; S0 synthesis receives all lanes and A0 audits the frozen final architecture once",
+    "One bounded primary investigator owns this lane; subagents are allowed only for separable read-only source slices and must return evidence, not votes"
+  ],
+  "depends_on": [
+    "TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-WHOLE-SYSTEM-ARCH-CONVERGENCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(wsac): freeze r1c reconstruction",
+    "allowlist": [
+      "docs/06-research/2026-09-04-whole-system-architecture-convergence/recon/R1C_DCP_UAG_CONTEXT_ROUTING.md",
+      "task-packets/TP-DMX-WSAC-R1C-DCP-UAG-CONTEXT-ROUTING-001.json",
+      "proof/TP-DMX-WSAC-R1C-DCP-UAG-CONTEXT-ROUTING-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-WSAC-R1C-DCP-UAG-CONTEXT-ROUTING-001.json",
+      "python -m jsonschema -i task-packets/TP-DMX-WSAC-R1C-DCP-UAG-CONTEXT-ROUTING-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --files \"docs/06-research/2026-09-04-whole-system-architecture-convergence/recon/R1C_DCP_UAG_CONTEXT_ROUTING.md\" \"task-packets/TP-DMX-WSAC-R1C-DCP-UAG-CONTEXT-ROUTING-001.json\""
+    ]
+  },
+  "pr": {
+    "title": "docs(wsac): DCP, UAG, model-routing, context-policy, and capability-boundary reconstruction",
+    "body": "Whole-system architecture convergence evidence. No merge, activation, production, credential, or runtime mutation authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Load frozen R0 census and reharvest only volatile facts affecting DCP, UAG, model-routing, context-policy, and capability-boundary reconstruction.",
+      "validation": [
+        "R0 subject is present and its current-main binding is recorded",
+        "Any moved relevant head/path is reharvested and classified",
+        "No stale project-source snapshot is promoted over current runtime/source truth"
+      ],
+      "context_files": [
+        "docs/06-research/2026-09-04-whole-system-architecture-convergence/recon/R0_LIVE_TRUTH_CENSUS.md"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Reconstruct current DCP source/tests/contracts, RouteDecision/lane behavior, context architecture, GPT/read facade, UAG decisions/donor surfaces, provider-routing systems, PAL/router boundaries, and capability registries.",
+      "validation": [
+        "All material claims cite exact current repo/runtime/config/test evidence or are labeled UNKNOWN/INFERRED",
+        "Relevant source/runtime/test paths are enumerated rather than inferred from names"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Preserve separate concerns: development stage routing, provider/proxy plumbing, RTE lane routing, DCP authorization/context policy, UAG semantic translation, and Audit Broker certification.",
+      "validation": [
+        "Current state, accepted design, open-PR future state, and historical intent remain distinct",
+        "Material contradictions and duplicate responsibility are preserved"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Map request -> policy -> capability -> context -> model route -> ToolIntent boundaries and every place authority could accidentally widen.",
+      "validation": [
+        "Every disposition/recommendation names evidence, authority owner, tradeoff, and missing proof",
+        "No repo/runtime/GitHub/provider mutation is performed"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Identify exact convergence requirements for RouteDecision, ContextPlan, RunContextPacket, ModelRequestPolicy, UAGCompatibilityProfile, SessionCapabilityPlan, and capability compilation.",
+      "validation": [
+        "Downstream S0 receives explicit invariants, open questions, stop conditions, and target constraints",
+        "Artifact is self-contained enough for a fresh synthesis model without hidden chat history"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Freeze the recon artifact and record deterministic custody/provenance checks.",
+      "validation": [
+        "git diff --check and changed-contract/pre-commit are clean or exact blockers are recorded",
+        "No formal independent model audit is run for this read-only recon lane",
+        "Research artifact authority remains DERIVED_EVIDENCE_ONLY"
+      ]
+    }
+  ],
+  "execution": {
+    "agent": "claude",
+    "branch": "research/r1c-wsac-001",
+    "base_branch": "main"
+  }
+}

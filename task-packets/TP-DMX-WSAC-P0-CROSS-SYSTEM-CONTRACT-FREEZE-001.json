@@ -1,0 +1,120 @@
+{
+  "id": "TP-DMX-WSAC-P0-CROSS-SYSTEM-CONTRACT-FREEZE-001",
+  "project": "dopemux-mvp",
+  "target": "Post-ratification L2 contract freeze: publish the cross-system semantic contract registry and architecture invariants that future component refactors must converge on; no runtime implementation",
+  "invariants": [
+    "Current runtime/source/config/tests and live Git/GitHub state outrank uploaded snapshots, historical handoffs, plans, and architecture prose",
+    "Use OBSERVED, INFERRED, PROPOSED, CLAIMED, CONFLICTING, UNKNOWN, and NOT_RUN; every UNKNOWN names missing evidence",
+    "Preserve system boundaries: Dopemux coordinates; DCP controls policy/context; Dopetask executes only separately authorized work; Task Orchestrator owns workflow legality; canonical systems retain domain authority",
+    "No merge, mark-ready, activation, credential/permission change, production mutation, destructive action, history rewrite, or automatic execution authority is granted",
+    "No secrets, tokens, cookies, private keys, raw credentials, or sensitive provider payloads may enter research/proof artifacts",
+    "Ordinary main movement triggers affected-fact reharvest rather than blanket restart; exact SHA equality is required only where subject provenance requires it",
+    "P0 implementation is FORBIDDEN until exact S0 operator ratification after A0",
+    "P0 freezes contract ownership/semantics only; it does not wire or activate any runtime",
+    "If A0 or operator ratification changes the proposed contract-registry shape, this packet is superseded rather than silently broadened",
+    "P0 is L2 and requires one final independent audit on the frozen content head"
+  ],
+  "depends_on": [
+    "TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-WHOLE-SYSTEM-ARCH-CONVERGENCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001",
+    "final_packet": true
+  },
+  "commit": {
+    "message": "arch(wsac): freeze cross-system integration contracts",
+    "allowlist": [
+      "docs/03-reference/architecture/whole-system-integration-contracts-v1.md",
+      "config/architecture/whole-system-contract-registry.v1.yaml",
+      "schemas/architecture/whole-system-contract-registry.schema.json",
+      "tests/arch/test_whole_system_contract_registry.py",
+      "task-packets/TP-DMX-WSAC-P0-CROSS-SYSTEM-CONTRACT-FREEZE-001.json",
+      "proof/TP-DMX-WSAC-P0-CROSS-SYSTEM-CONTRACT-FREEZE-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-WSAC-P0-CROSS-SYSTEM-CONTRACT-FREEZE-001.json",
+      "python -m jsonschema -i task-packets/TP-DMX-WSAC-P0-CROSS-SYSTEM-CONTRACT-FREEZE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --files \"docs/03-reference/architecture/whole-system-integration-contracts-v1.md\" \"config/architecture/whole-system-contract-registry.v1.yaml\" \"schemas/architecture/whole-system-contract-registry.schema.json\" \"tests/arch/test_whole_system_contract_registry.py\" \"task-packets/TP-DMX-WSAC-P0-CROSS-SYSTEM-CONTRACT-FREEZE-001.json\"",
+      "python -m pytest -q tests/arch/test_whole_system_contract_registry.py",
+      "python - <<'PY'\nimport json,yaml\nfrom jsonschema import Draft7Validator\nschema=json.load(open('schemas/architecture/whole-system-contract-registry.schema.json'))\ndata=yaml.safe_load(open('config/architecture/whole-system-contract-registry.v1.yaml'))\nDraft7Validator(schema).validate(data)\nprint('CONTRACT_REGISTRY_SCHEMA=PASS')\nPY"
+    ]
+  },
+  "pr": {
+    "title": "arch(wsac): freeze cross-system integration contracts",
+    "body": "Post-ratification L2 contract freeze only. No runtime integration, client activation, merge, or production authority. Execution blocked until exact S0 architecture digest is independently audited and explicitly ratified by operator.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Admission gate: require A0 acceptable verdict plus explicit operator ratification of exact S0 architecture digest before any P0 edit.",
+      "validation": [
+        "A0 is PASS or explicitly acceptable PASS_WITH_RISKS",
+        "Operator ratification names exact S0 digest and accepted/deferred risks",
+        "If ratification changes architecture semantics or selected contract inventory, STOP and supersede this pre-authored P0 rather than widening scope"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Freeze one machine-readable cross-system contract registry and human-readable authority/dataflow contract reference.",
+      "validation": [
+        "Registry lists semantic contract name, owner, writer, readers, authority class, canonicality, lifecycle, version, source-of-truth path, compatibility expectations, and implementing subsystem",
+        "Existing contracts are referenced rather than duplicated",
+        "Runner/model exact selectors do not appear as durable semantic requirements"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Encode contract-registry schema and architecture tests that fail on duplicate ownership, unknown canonical writers where forbidden, or undeclared authority widening.",
+      "validation": [
+        "Schema is closed and versioned",
+        "Tests prove one-writer invariants and required contract-family presence",
+        "Tests do not claim runtime integration exists merely because registry entries exist"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run full changed-path pre-push gates and freeze substantive P0 head.",
+      "validation": [
+        "Schema/runtime parser tests pass",
+        "git diff --check, changed-contract, pre-commit, and secret scan pass or exact blockers are preserved",
+        "Changed files are exactly allowlisted",
+        "No runtime/client config activation or service behavior change occurs"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run one final independent L2 audit of the frozen P0 content head, then create proof-only successor if accepted.",
+      "validation": [
+        "Auditor independent of P0 implementer",
+        "PASS or explicit non-blocking PASS_WITH_RISKS required",
+        "Proof-only successor changes no substantive contract bytes",
+        "No component implementation series is authorized by audit alone"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Publish P0 PR and stop at operator merge decision.",
+      "validation": [
+        "PR Steward finality is current for exact head before READY may be claimed",
+        "MERGE_AUTHORIZED remains NO until explicit operator decision",
+        "Component convergence packets remain a successor program generated from merged/ratified contract truth"
+      ]
+    }
+  ],
+  "execution": {
+    "agent": "codex",
+    "branch": "arch/wsac-p0-contract-freeze-001",
+    "base_branch": "main"
+  }
+}
