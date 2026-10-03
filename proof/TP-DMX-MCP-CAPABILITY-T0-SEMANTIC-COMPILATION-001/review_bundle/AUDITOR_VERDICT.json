@@ -1,0 +1,11 @@
+{
+  "audited_head": "f216854992526814beae93e38ee92bb0b7be1be3",
+  "auditor_tool": "agy",
+  "auditor_version": "1.1.22",
+  "model_selector": "gemini-3.1-pro-high",
+  "model_display": "Gemini 3.1 Pro (High)",
+  "model_invocations": 1,
+  "fallbacks": 0,
+  "exit_code": 0,
+  "verdict": "PASS"
+}
