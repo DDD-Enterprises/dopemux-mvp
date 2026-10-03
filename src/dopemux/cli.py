@@ -4162,8 +4162,11 @@ def native_hooks_register(is_global: bool):
     from pathlib import Path
     
     # Path to this script's native hook entry point
-    hook_script = Path(__file__).resolve().parent / "claude" / "native_hooks.py"
-    cmd = f"python3 {shlex.quote(str(hook_script))}"
+    if not is_global:
+        cmd = 'sh "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh"'
+    else:
+        hook_script = Path(__file__).resolve().parent / "claude" / "native_hooks.py"
+        cmd = f"python3 {shlex.quote(str(hook_script))}"
     
     # Define hook configuration
     hooks_config = {

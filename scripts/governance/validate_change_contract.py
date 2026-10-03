@@ -299,20 +299,10 @@ def validate_proof_json(path: str, text: str, result: Result, cwd: Path) -> None
         result.add("jsonschema_unavailable", "warning", "jsonschema not installed; skipped proof schema", path)
         return
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
-    # Local acceptance intentionally skips report_path for pr_merge; full schema for TP packages
     embedded = payload["embedded_audit"]
     if not isinstance(embedded, dict):
         result.add("proof_embedded_not_object", "error", "embedded_audit must be object", path)
         return
-    # Soften report_path for pr_merge packages (matches CI local-attestation practice)
-    if path.replace("\\", "/").startswith("proof/pr_merge/"):
-        schema = dict(schema)
-        props = dict(schema.get("properties") or {})
-        if "report_path" in props:
-            rp = dict(props["report_path"])
-            rp.pop("pattern", None)
-            props["report_path"] = rp
-            schema["properties"] = props
     validator = jsonschema.Draft7Validator(schema)
     errors = sorted(validator.iter_errors(embedded), key=lambda e: list(e.path))
     if errors:

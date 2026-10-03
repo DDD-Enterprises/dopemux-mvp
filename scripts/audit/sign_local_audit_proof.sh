@@ -196,8 +196,36 @@ if errors:
 print(f"proof shape OK (audited head {proof['head_sha']})")
 PY
 
+SIG_FILE="${PROOF_FILE}.sig"
+rm -f "$SIG_FILE"
+
 ssh-keygen -Y sign -f "$KEY_PATH" -n "$NAMESPACE" "$PROOF_FILE"
-echo "signed: ${PROOF_FILE}.sig"
+
+if [ ! -s "$SIG_FILE" ]; then
+    echo "error: signing failed; signature file $SIG_FILE was not created" >&2
+    exit 1
+fi
+
+ALLOWED_SIGNERS="config/audit/embedded-audit-allowed-signers"
+if [ ! -f "$ALLOWED_SIGNERS" ]; then
+    echo "error: allowed signers file $ALLOWED_SIGNERS not found" >&2
+    exit 1
+fi
+
+PRINCIPALS=$(ssh-keygen -Y find-principals -s "$SIG_FILE" -f "$ALLOWED_SIGNERS" 2>/dev/null || true)
+if [ -z "$PRINCIPALS" ]; then
+    echo "error: signature was not produced by an allowed signer in $ALLOWED_SIGNERS" >&2
+    exit 1
+fi
+
+PRINCIPAL=$(echo "$PRINCIPALS" | head -n 1)
+
+if ! ssh-keygen -Y verify -f "$ALLOWED_SIGNERS" -I "$PRINCIPAL" -n "$NAMESPACE" -s "$SIG_FILE" < "$PROOF_FILE" >/dev/null 2>&1; then
+    echo "error: post-sign verification failed for $SIG_FILE" >&2
+    exit 1
+fi
+
+echo "signed: ${SIG_FILE}"
 echo
 echo "Next steps:"
 echo "  git add ${PROOF_DIR}/"

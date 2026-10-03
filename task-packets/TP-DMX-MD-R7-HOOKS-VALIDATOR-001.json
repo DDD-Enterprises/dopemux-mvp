@@ -1,0 +1,102 @@
+{
+  "id": "TP-DMX-MD-R7-HOOKS-VALIDATOR-001",
+  "project": "dopemux-mvp",
+  "target": "fix(hooks): harden lifecycle hook dispatch and embedded-audit validator scopes",
+  "invariants": [
+    "Primary checkout is read-only",
+    "No force/admin/service/credential/PAYG effects"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MP-DMX-MERGE-DRAIN-20261003-007",
+    "base_branch": "main",
+    "parent_tp_id": "MP-DMX-MERGE-DRAIN-20261003-007",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "successor/hooks-validator-hardening-r7",
+    "base_branch": "main",
+    "stacked_because": "R7 isolated post-UI-deps main successor"
+  },
+  "commit": {
+    "message": "fix(hooks): harden lifecycle hook dispatch and embedded-audit validator scopes",
+    "allowlist": [
+      ".claude/claude.md",
+      ".claude/hooks/run_native_hooks.sh",
+      ".claude/settings.json",
+      ".codex/hooks.json",
+      "scripts/audit/sign_local_audit_proof.sh",
+      "scripts/governance/validate_change_contract.py",
+      "src/dopemux/cli.py",
+      "tests/audit/test_sign_local_audit_proof.py",
+      "tests/governance/test_change_contract_proof_schema.py",
+      "task-packets/TP-DMX-MD-R7-HOOKS-VALIDATOR-001.json",
+      "proof/TP-DMX-MD-R7-HOOKS-VALIDATOR-001/",
+      "proof/pr_merge/embedded-audit/"
+    ],
+    "verify": [
+      "pytest tests/audit/test_sign_local_audit_proof.py tests/governance/test_change_contract_proof_schema.py -q",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+    ]
+  },
+  "pr": {
+    "title": "fix(hooks): harden lifecycle hook dispatch and embedded-audit validator scopes",
+    "body": "R7 governed merge-drain successor to PR #1219 and #1407; hardens lifecycle hook dispatch, signing preflights, and change-contract validator schemas.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Bind post-UI main, repo identity, and verify clean isolated writer worktree.",
+      "requirements": [
+        "No primary checkout write",
+        "No duplicate active attempt"
+      ],
+      "commands": [
+        "git status --short --branch",
+        "git rev-parse origin/main"
+      ],
+      "validation": [
+        "Exact post-UI main recorded (52591ccf403523bce6a4684179ea74ebe889cbde)",
+        "Writer worktree clean"
+      ],
+      "context_files": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Implement hook wrapper dispatch, Codex hooks config, cli registration, audit signing verification, and schema validation hardening.",
+      "validation": [
+        "Only allowlisted files change",
+        "Regression tests pass for sign_local_audit_proof and change_contract_proof_schema"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Freeze candidate head, run independent audit C3, assemble and sign proof bundle.",
+      "validation": [
+        "git diff --check passes",
+        "validate_change_contract passes",
+        "Independent audit passes and is signed"
+      ]
+    }
+  ],
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "planner",
+      "codereview",
+      "precommit"
+    ]
+  }
+}
