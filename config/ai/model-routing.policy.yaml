@@ -48,6 +48,10 @@ owner: dopemux
 principles:
   - cheap_reads_are_not_cheap_decisions
   - cost_first_risk_lanes_l0_l3
+  - cheapest_adequate_qualified_model
+  - lowest_sufficient_supported_effort
+  - explicit_subagent_pins_no_expensive_inheritance
+  - supervisor_owned_bounded_escalation_no_hidden_fallback
   - one_implementer_default
   - one_final_independent_audit_when_l2_l3
   - no_intermediate_content_audits
@@ -223,16 +227,25 @@ escalation_triggers:
 provider_routes:
 
   codex:
-    cheap_read: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
-    investigation: VERIFY_WITH_VENDOR_DOCS  # tier intent: cheap_fast
-    planner_strong: VERIFY_WITH_VENDOR_DOCS  # tier intent: strong_reasoning
-    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced
-    judge_strong: VERIFY_WITH_VENDOR_DOCS    # tier intent: strong_reasoning
-    self_audit: VERIFY_WITH_VENDOR_DOCS      # tier intent: audit_strong
+    cheap_read: .codex/agents/dmx-explorer.toml
+    investigation: .codex/agents/researcher.toml
+    planner_strong: .codex/agents/architect.toml
+    implementer_standard: .codex/agents/developer.toml
+    judge_strong: .codex/agents/dmx-reviewer.toml
+    self_audit: FORBIDDEN_FORMAL_AUDITOR
+    role_models:
+      dmx-explorer: {file: .codex/agents/dmx-explorer.toml, model: gpt-6-luna, effort: medium}
+      dmx-housekeeper: {file: .codex/agents/dmx-housekeeper.toml, model: gpt-6-luna, effort: low}
+      dmx-worker: {file: .codex/agents/dmx-worker.toml, model: gpt-6.1-sol, effort: medium}
+      dmx-reviewer: {file: .codex/agents/dmx-reviewer.toml, model: gpt-6.1-sol, effort: high}
+      architect: {file: .codex/agents/architect.toml, model: gpt-6.1-sol, effort: high}
+      developer: {file: .codex/agents/developer.toml, model: gpt-6.1-sol, effort: medium}
+      project-manager: {file: .codex/agents/project-manager.toml, model: gpt-6-luna, effort: low}
+      researcher: {file: .codex/agents/researcher.toml, model: gpt-6-luna, effort: medium}
     notes:
-      - "OBSERVED model ids in RTE routing (not confirmed as Codex CLI selectors): gpt-5.4-mini, gpt-5.3-codex, gpt-5.2 (model_map_v2_tp008.yaml / tests/test_routing_config.py)"
-      - "OBSERVED in config/pricing.yaml: gpt-5.5"
-      - "Codex CLI model selector format and available model names require VERIFY_WITH_VENDOR_DOCS"
+      - "Declared project supervisor gpt-6.1-sol high; subagent default gpt-6-luna medium. Role model/effort pins override defaults and explicit spawn selection."
+      - "Dispatch instructions required: bounded ownership, validation, stop conditions; fresh/bounded-history explicit cheaper children, never accidental expensive inheritance."
+      - "Availability and actual identity remain UNKNOWN without runtime evidence. dmx-reviewer is advisory code review, never formal embedded audit."
 
   opencode:
     cheap_read: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
@@ -260,16 +273,16 @@ provider_routes:
       - "Per-agent cheap/strong model tier split in VS Code Copilot remains UNKNOWN without vendor-verified model availability."
 
   claude_code:
-    cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (Haiku / Sonnet-low)
-    investigation: VERIFY_WITH_VENDOR_DOCS    # tier intent: cheap_fast
-    planner_strong: VERIFY_WITH_VENDOR_DOCS   # tier intent: strong_reasoning; opusplan mode = Opus plans + Sonnet implements
-    implementer_standard: VERIFY_WITH_VENDOR_DOCS  # tier intent: coding_balanced (Sonnet)
-    judge_strong: VERIFY_WITH_VENDOR_DOCS     # tier intent: strong_reasoning (Opus)
-    self_audit: VERIFY_WITH_VENDOR_DOCS       # tier intent: audit_strong (Opus)
+    cheap_read: .claude/agents/project-manager.md
+    investigation: .claude/agents/researcher.md
+    planner_strong: .claude/agents/architect.md
+    implementer_standard: .claude/agents/developer.md
+    judge_strong: .claude/agents/architect.md
+    self_audit: sonnet
     notes:
-      - "opusplan is a Claude Code MODE (Opus plans, Sonnet implements) — NOT a model id"
-      - "Anthropic model selector strings (Haiku/Sonnet/Opus variants) require VERIFY_WITH_VENDOR_DOCS"
-      - "Claude Code --model flag accepted values require VERIFY_WITH_VENDOR_DOCS"
+      - "Full model IDs are documented selectors; account runtime qualification remains NOT_RUN. Use lowest sufficient supported effort, never assume all models support identical controls."
+      - "Formal audit candidate Sonnet 5.5 (claude-sonnet-5-5); Opus 5.5 (claude-opus-5-5) escalation only. self_audit is schema-compatible auditor alias sonnet; preserve actual ID evidence separately."
+      - "One final independent audit after L2/L3 content freeze. Explicit route/no-fallback restrictions prevail. opusplan is a mode, not a model ID or cost-first default."
 
   agy:
     cheap_read: VERIFY_WITH_VENDOR_DOCS      # tier intent: cheap_fast (Gemini Flash tier)
