@@ -22,6 +22,14 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: control-tower-kit-tests
+        name: Validate Control Tower kit contracts
+        entry: python3 -m unittest discover -s .control-tower/tests -p test_*.py
+        language: python
+        additional_dependencies: ['jsonschema>=4.20.0']
+        files: ^(\.control-tower/|AGENTS\.md$|\.claude/(PROJECT_INSTRUCTIONS|claude|llm|llms)\.md$|\.claude/modules/shared/governance-principles\.md$|\.github/copilot-instructions\.md$|schemas/governed_execution/)
+        pass_filenames: false
+
       # Frontmatter validation (enable existing)
       - id: docs-frontmatter-guard
         name: Validate YAML frontmatter in docs
@@ -116,6 +124,9 @@ repos:
               # not docs mirrors. Keep this exception path-specific.
               if [[ "$normalized" =~ ^\./contracts/openclaw-dcp-routing/.*\.md$ ]]; then continue; fi
 
+              # Governed-execution benchmark fixtures are synthetic runtime inputs.
+              if [[ "$normalized" =~ ^\./tests/unit/governed_execution/benchmark/fixtures/ ]]; then continue; fi
+
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(claudedocs/) ]]; then continue; fi
@@ -128,6 +139,9 @@ repos:
               # Claude-generated audit/research output and QA harness docs
               if [[ "$normalized" =~ ^\./(claudedocs/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(qa/) ]]; then continue; fi
+
+              # Installed supervisor contracts and prompt assets.
+              if [[ "$normalized" =~ ^\./\.control-tower/(contracts|prompts|templates)/ ]]; then continue; fi
 
               # Config/state and tooling docs
               if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi

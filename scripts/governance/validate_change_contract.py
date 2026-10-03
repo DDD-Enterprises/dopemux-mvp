@@ -102,6 +102,17 @@ class Result:
         self.findings.append(Finding(code=code, severity=severity, path=path, message=message))
 
 
+@dataclass(frozen=True)
+class _Content:
+    """Raw repository content classified before any text-only validation."""
+
+    present: bool
+    text: Optional[str] = None
+    opaque: bool = False
+    size: int = 0
+    invalid_utf8: bool = False
+
+
 def classify_path(path: str) -> str:
     norm = path.replace("\\", "/")
     while norm.startswith("./"):
@@ -140,16 +151,66 @@ def changed_paths(base: str, head: str, cwd: Path) -> list[str]:
 
 
 def read_blob(ref: str, path: str, cwd: Path) -> Optional[str]:
+    """Read a UTF-8 Git blob for legacy callers.
+
+    Evaluation uses ``_read_content`` so an opaque blob is distinguishable from
+    a missing path.  This wrapper intentionally keeps the historical return
+    type for callers that only need textual signature/proof presence checks.
+    """
+    content = _read_content_from_blob(ref, path, cwd)
+    return content.text if content.present and not content.invalid_utf8 else None
+
+
+def _read_blob_bytes(ref: str, path: str, cwd: Path) -> Optional[bytes]:
     proc = subprocess.run(
         ["git", "show", f"{ref}:{path}"],
         cwd=cwd,
         capture_output=True,
-        text=True,
+        text=False,
         check=False,
     )
     if proc.returncode != 0:
         return None
     return proc.stdout
+
+
+def _classify_bytes(raw: bytes, path: str) -> _Content:
+    # The embedded-audit bundle is intentionally opaque; do not decode ZIP
+    # bytes merely because a particular archive happens to be UTF-8-decodable.
+    if path.replace("\\", "/").lower().endswith("review_bundle/audit_inputs.zip"):
+        return _Content(present=True, opaque=True, size=len(raw))
+    try:
+        return _Content(present=True, text=raw.decode("utf-8"), size=len(raw))
+    except UnicodeDecodeError:
+        required_text = path.lower().endswith((".json", ".md"))
+        return _Content(
+            present=True,
+            opaque=not required_text,
+            size=len(raw),
+            invalid_utf8=required_text,
+        )
+
+
+def _read_content_from_blob(ref: str, path: str, cwd: Path) -> _Content:
+    raw = _read_blob_bytes(ref, path, cwd)
+    if raw is None:
+        return _Content(present=False)
+    return _classify_bytes(raw, path)
+
+
+def _read_content(
+    path: str,
+    *,
+    cwd: Path,
+    head: str,
+    file_text: Optional[dict[str, str]],
+) -> _Content:
+    if file_text is not None and path in file_text:
+        return _classify_bytes(file_text[path].encode("utf-8"), path)
+    wt = cwd / path
+    if head in {"HEAD", ""} and wt.is_file():
+        return _classify_bytes(wt.read_bytes(), path)
+    return _read_content_from_blob(head, path, cwd)
 
 
 def parse_frontmatter(text: str) -> Optional[dict[str, Any]]:
@@ -307,12 +368,8 @@ def _resolve_text(
     head: str,
     file_text: Optional[dict[str, str]],
 ) -> Optional[str]:
-    if file_text is not None and path in file_text:
-        return file_text[path]
-    wt = cwd / path
-    if head in {"HEAD", ""} and wt.is_file():
-        return wt.read_text(encoding="utf-8")
-    return read_blob(head, path, cwd)
+    content = _read_content(path, cwd=cwd, head=head, file_text=file_text)
+    return content.text if content.present and not content.invalid_utf8 else None
 
 
 def validate_proof_only_closure(
@@ -360,7 +417,16 @@ def validate_proof_only_closure(
     quarantine_hits: list[str] = []
     non_quarantine_proofs: list[str] = []
     for path in proof_json_paths:
-        text = _resolve_text(path, cwd=cwd, head=blob_ref, file_text=file_text)
+        content = _read_content(path, cwd=cwd, head=blob_ref, file_text=file_text)
+        if content.invalid_utf8:
+            result.add(
+                "invalid_utf8",
+                "error",
+                "Required JSON/Markdown text is not valid UTF-8",
+                path,
+            )
+            continue
+        text = content.text if content.present else None
         if text is None:
             # deleted PROOF.json — neither audited-pass nor quarantine
             continue
@@ -662,19 +728,30 @@ def evaluate(
                 )
 
     for path in paths:
-        text: Optional[str]
-        if file_text is not None and path in file_text:
-            text = file_text[path]
-        else:
-            # Prefer working tree for HEAD when file exists
-            wt = cwd / path
-            if head in {"HEAD", ""} and wt.is_file():
-                text = wt.read_text(encoding="utf-8")
-            else:
-                text = read_blob(head, path, cwd)
-        if text is None:
+        content = _read_content(path, cwd=cwd, head=head, file_text=file_text)
+        if not content.present:
             # deleted path
             continue
+        if content.invalid_utf8:
+            if not any(f.code == "invalid_utf8" and f.path == path for f in result.findings):
+                result.add(
+                    "invalid_utf8",
+                    "error",
+                    "Required JSON/Markdown text is not valid UTF-8",
+                    path,
+                )
+            continue
+        if content.opaque:
+            result.add(
+                "opaque_evidence",
+                "info",
+                f"Opaque non-text content preserved ({content.size} bytes); "
+                "textual validation skipped",
+                path,
+            )
+            continue
+        text = content.text
+        assert text is not None
         if path.endswith(".md") and (
             path.startswith("docs/") or path.startswith("task-packets/")
         ):

@@ -1,0 +1,41 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "none",
+      "model_family": "automation",
+      "runner": "dependabot",
+      "runtime_family": "github-dependabot"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "auditor_model": "gemini-3.1-pro-high",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --output-format json --print <prompt>",
+    "remaining_risks": [],
+    "report_path": "proof/TP-DMX-PRMERGE-022-SOUPSIEVE-1359/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "generated_at": "2026-10-03T02:44:00Z",
+  "head_sha": "b0f5bc95c6a9341a249efd752623cd78e4bffd26",
+  "pr_number": 1391,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

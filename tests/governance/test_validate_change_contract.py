@@ -1,8 +1,10 @@
 """Tests for scripts/governance/validate_change_contract.py."""
 from __future__ import annotations
 
+import io
 import json
 import subprocess
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -13,6 +15,7 @@ from scripts.governance.validate_change_contract import (
     evaluate,
     main,
     max_lane,
+    read_blob,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -90,6 +93,113 @@ def test_invalid_packet_json() -> None:
     )
     assert r.status == "FAIL"
     assert any(f.code.startswith("packet_") for f in r.findings)
+
+
+def _init_fixture_repo(tmp_path: Path, files: dict[str, bytes]) -> tuple[Path, str]:
+    repo = tmp_path / "fixture-repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "Fixture Test"], cwd=repo, check=True)
+    for name, content in files.items():
+        path = repo / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-qm", "fixture"], cwd=repo, check=True)
+    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
+    return repo, head
+
+
+def _proof_zip_bytes() -> bytes:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        info = zipfile.ZipInfo("AUDITOR_REPORT.md", date_time=(2020, 1, 1, 0, 0, 0))
+        archive.writestr(info, "fixture evidence\n")
+    return buffer.getvalue()
+
+
+def test_committed_binary_proof_zip_is_explicit_opaque_evidence(tmp_path: Path) -> None:
+    path = "proof/TP-DMX-CONTROL-TOWER/review_bundle/AUDIT_INPUTS.zip"
+    repo, head = _init_fixture_repo(tmp_path, {path: _proof_zip_bytes()})
+
+    result = evaluate(paths=[path], cwd=repo, head=head)
+
+    assert result.status == "PASS"
+    assert any(f.code == "opaque_evidence" and f.path == path for f in result.findings)
+    assert read_blob(head, path, repo) is None
+
+
+def test_worktree_binary_proof_zip_is_explicit_opaque_evidence(tmp_path: Path) -> None:
+    path = "proof/TP-DMX-CONTROL-TOWER/review_bundle/AUDIT_INPUTS.zip"
+    repo, _ = _init_fixture_repo(tmp_path, {path: _proof_zip_bytes()})
+
+    result = evaluate(paths=[path], cwd=repo, head="HEAD")
+
+    assert result.status == "PASS"
+    assert any(f.code == "opaque_evidence" and f.path == path for f in result.findings)
+
+
+def test_invalid_utf8_required_text_is_structured_failure(tmp_path: Path) -> None:
+    files = {
+        "task-packets/BAD.json": b'{"broken": "\xff"}',
+        "docs/03-reference/governance/BAD.md": b"---\n\xff\n---\n",
+    }
+    repo, head = _init_fixture_repo(tmp_path, files)
+
+    result = evaluate(paths=list(files), cwd=repo, head=head)
+
+    assert result.status == "FAIL"
+    invalid = {f.path for f in result.findings if f.code == "invalid_utf8"}
+    assert invalid == set(files)
+
+
+def test_invalid_utf8_required_text_in_worktree_is_not_deleted(tmp_path: Path) -> None:
+    files = {
+        "task-packets/BAD.json": b"{}",
+        "proof/TP-DMX-INVALID/PROOF.json": b"{}",
+    }
+    repo, _ = _init_fixture_repo(tmp_path, files)
+    for name in files:
+        (repo / name).write_bytes(b"{\xff")
+
+    result = evaluate(paths=list(files), cwd=repo, head="HEAD")
+
+    assert result.status == "FAIL"
+    assert {f.path for f in result.findings if f.code == "invalid_utf8"} == set(files)
+
+
+def test_invalid_utf8_proof_only_text_fails_closed(tmp_path: Path) -> None:
+    path = "proof/TP-DMX-INVALID/PROOF.json"
+    repo, head = _init_fixture_repo(tmp_path, {path: b"{\xff"})
+
+    result = evaluate(
+        paths=[path],
+        cwd=repo,
+        head=head,
+        proof_only_mode=True,
+        content_head=head,
+        audited_head=head,
+        proof_head=head,
+    )
+
+    assert result.status == "FAIL"
+    assert any(f.code == "invalid_utf8" and f.path == path for f in result.findings)
+
+
+def test_binary_audit_bundle_remains_rejected_in_proof_only_mode() -> None:
+    path = "proof/TP-DMX-CONTROL-TOWER/review_bundle/AUDIT_INPUTS.zip"
+    result = evaluate(
+        paths=[path],
+        cwd=ROOT,
+        proof_only_mode=True,
+        content_head="a" * 40,
+        audited_head="a" * 40,
+        proof_head="a" * 40,
+    )
+
+    assert result.status == "FAIL"
+    assert any(f.code == "proof_only_escaped_path" and f.path == path for f in result.findings)
 
 
 def test_invalid_proof_missing_embedded_audit() -> None:
@@ -352,23 +462,39 @@ def test_quarantine_forbids_signature() -> None:
     )
 
 
-def test_quarantine_deleted_sig_path_is_not_treated_as_carried() -> None:
+def test_quarantine_deleted_sig_path_is_not_treated_as_carried(tmp_path: Path) -> None:
     """Deleted PROOF.json.sig appears in name-only delta but must not trip forbid."""
-    # Direct unit of validate_proof_only_closure with monkeypatched delta is heavy;
-    # assert the tip-blob rule: sig only in path_set (deletion) without blob/file_text
-    # does not yield quarantine_forbids_signature when delta mismatches.
+    # Assert the tip-blob rule: a sig present only as a deletion in the delta (no
+    # blob at the tip, no file_text) does not yield quarantine_forbids_signature.
+    # Hermetic two-commit repo: diffing the real checkout's HEAD~1..HEAD made the
+    # result depend on whatever the last commit happened to contain (e.g. a PR
+    # whose tip commit adds a real PROOF.json.sig failed this test).
     from scripts.governance.validate_change_contract import (
         Result,
         validate_proof_only_closure,
     )
 
-    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    try:
-        base = subprocess.check_output(
-            ["git", "rev-parse", "HEAD~1"], cwd=ROOT, text=True
+    proof_dir = tmp_path / "proof/pr_merge/embedded-audit/pr-9"
+    proof_dir.mkdir(parents=True)
+
+    def git(*args: str) -> str:
+        return subprocess.check_output(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+            cwd=tmp_path,
+            text=True,
         ).strip()
-    except subprocess.CalledProcessError:
-        pytest.skip("need at least 2 commits")
+
+    git("init", "-q")
+    (proof_dir / "PROOF.json").write_text("{}\n")
+    (proof_dir / "PROOF.json.sig").write_text("old signature\n")
+    git("add", "-A")
+    git("commit", "-q", "-m", "signed proof")
+    base = git("rev-parse", "HEAD")
+    (proof_dir / "PROOF.json.sig").unlink()
+    (proof_dir / "PROOF.json").write_text(_skipped_quarantine_proof())
+    git("add", "-A")
+    git("commit", "-q", "-m", "quarantine: drop signature")
+    head = git("rev-parse", "HEAD")
 
     result = Result(status="PASS", max_lane="L0")
     # Paths include deleted .sig; file_text has only SKIPPED PROOF (no .sig payload).
@@ -381,7 +507,7 @@ def test_quarantine_deleted_sig_path_is_not_treated_as_carried() -> None:
         content_head=base,
         proof_head=head,
         audited_head=None,
-        cwd=ROOT,
+        cwd=tmp_path,
         head=head,
         file_text={
             "proof/pr_merge/embedded-audit/pr-9/PROOF.json": _skipped_quarantine_proof(),

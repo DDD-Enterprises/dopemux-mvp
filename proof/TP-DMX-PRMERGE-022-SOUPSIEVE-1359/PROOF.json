@@ -1,0 +1,55 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "none",
+      "model_family": "automation",
+      "runner": "dependabot",
+      "runtime_family": "github-dependabot"
+    },
+    "independence": "PROVEN"
+  },
+  "base_sha": "15fa198f465e180855861cfec55df2904a1646df",
+  "branch": "dependabot/uv/soupsieve-2.9",
+  "embedded_audit": {
+    "auditor_model": "gemini-3.1-pro-high",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --output-format json --print <prompt>",
+    "remaining_risks": [],
+    "report_path": "proof/TP-DMX-PRMERGE-022-SOUPSIEVE-1359/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS"
+  },
+  "generated_at": "2026-10-03T02:44:00Z",
+  "head_sha": "b0f5bc95c6a9341a249efd752623cd78e4bffd26",
+  "merge_authorized": false,
+  "packet_id": "TP-DMX-PRMERGE-022-SOUPSIEVE-1359",
+  "publication_authorized": false,
+  "remaining_risks": [],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "risk_lane": "L2",
+  "status": "PASS",
+  "validation_provenance": {
+    "admission": "ACCEPTED",
+    "source_checkpoint": "CHECKPOINT_MERGE_DRAIN_20261002_003",
+    "source_evidence": [
+      "agy_audit_1359_raw.json"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": "dopemux.governed_execution.dispatch_input_receipt.v1",
+  "packet_id": "TP-DMX-GEC-V2-W01-CONTRACT-FOUNDATION-001",
+  "source_ref": "fixture:upstream-evidence",
+  "authority": "NONE",
+  "receipt_type": "ScopeAuthority",
+  "scope_status": "PASS",
+  "allowlist_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}
