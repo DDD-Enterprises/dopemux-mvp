@@ -36,15 +36,20 @@
       "exit_code": 0,
       "summary": "built in 356ms"
     },
+    "ui_lint": {
+      "command": "npm run lint",
+      "exit_code": 2,
+      "summary": "FAIL_PREEXISTING (ESLint 10 flat config migration deferred per PR #1275 / Lane D1)"
+    },
     "git_diff_check": {
       "command": "git diff --check origin/main..HEAD",
       "exit_code": 0,
       "summary": "PASS (clean diff)"
     },
     "change_contract": {
-      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head 3f06719abf1531740662742cd6d1dd0c2d0bc4aa --format text",
       "exit_code": 0,
-      "summary": "status=PASS max_lane=L0 paths=3"
+      "summary": "status=PASS max_lane=L2 paths=3"
     }
   },
   "embedded_audit": {
@@ -52,7 +57,7 @@
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini-3.1-pro-high",
-    "invocation": "agy subagent da064f20-fe88-4977-b8dd-6dc60b2cc172",
+    "invocation": "agy subagent da064f20-fe88-4977-b8dd-6dc60b2cc172 --model gemini-3.1-pro-high --effort high --no-fallback",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-MD-R7-UI-DEPS-001/AUDITOR_REPORT.md",
     "findings": [],
