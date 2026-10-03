@@ -1,8 +1,8 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1389,
-  "head_sha": "176d965e8b0e9a9b99b73450154475a327f859d7",
-  "generated_at": "2026-10-03T05:20:38Z",
+  "head_sha": "370d84f59b641ed04c4d8e48d241589d149eebbc",
+  "generated_at": "2026-10-03T09:14:15Z",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
@@ -10,19 +10,28 @@
     "auditor_model": "gemini-3.1-pro-high",
     "invocation": "agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m --output-format json --add-dir <repo>/.worktrees/agent-files-optimization --print=\"$(cat AUDIT_INPUT.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-PR1389-L2-AUDIT-002/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-DMX-PR1389-L2-AUDIT-004/AUDITOR_REPORT.md",
     "findings": [
       {
         "id": "F-01",
         "severity": "INFO",
         "status": "RESOLVED",
         "title": "Lossless Documentation Deduplication",
-        "body": "Auditor: all 19 deleted files have a byte-identical or frontmatter-only twin kept in the tree (or, for the zen CLAUDE.md, the live pal-mcp-server CLAUDE.md); git history preserves the blobs. Informational, no action."
+        "body": "Auditor: all 19 deleted files have a byte-identical twin at HEAD (archive copies: equal after dropping 12 frontmatter lines); git history preserves the blobs. Informational, no action."
+      },
+      {
+        "id": "F-003-01",
+        "severity": "HIGH",
+        "status": "RESOLVED",
+        "title": "(prior -003) Deleted instruction copies lacked byte-identical twins",
+        "body": "-003 FAIL on 9932d542f: kept agents.md/gemini.md had gained a 'Superseded' banner. Resolved in a289260ca by restoring both to merge-base bytes; re-verified by -004 point 14."
       }
     ],
-    "fixes_applied": [],
+    "fixes_applied": [
+      "a289260ca: restore agents.md/gemini.md to merge-base bytes (resolves -003 F-01)"
+    ],
     "remaining_risks": [
-      "Implementer-disclosed D-01 (LOW): '~29 legacy inline commands' in two CLAUDE.md files overstates the actual 27; deferred to a follow-up to keep the audited head frozen."
+      "D-02: git diff --check flags two verbatim auditor scratch files under proof/TP-DMX-PR1389-L2-AUDIT-002/review_bundle/auditor_scratch/; kept byte-exact as evidence."
     ],
     "skip_reason": null
   },
