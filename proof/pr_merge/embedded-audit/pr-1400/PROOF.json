@@ -1,6 +1,7 @@
 {
   "audit_identity": {
     "auditor": {
+      "effort": "high",
       "model": "sonnet",
       "model_family": "anthropic-claude",
       "runner": "claude-code-cli",
