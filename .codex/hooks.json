@@ -1,0 +1,104 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd); PY=\"$ROOT/.venv/bin/python\"; [ -x \"$PY\" ] || PY=python3; CLAUDE_PROJECT_DIR=\"$ROOT\" \"$PY\" \"$ROOT/src/dopemux/claude/native_hooks.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

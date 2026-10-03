@@ -1,0 +1,106 @@
+{
+  "id": "TP-DMX-MD-UI-A11Y-001",
+  "project": "dopemux-mvp",
+  "target": "fix(ui): consolidate truthful status and accessible interaction feedback",
+  "invariants": [
+    "PROPOSED_NOT_ADMITTED: do not execute until exact native authority and live schema validation are recorded.",
+    "Separate source repair, audit, proof signing/publication, push, readiness and merge grants. No production activation or personal configuration changes.",
+    "Use a clean dedicated admitted worktree; preserve all original signed evidence and pre-existing dirty worktrees.",
+    "Current active native packet/model/no-fallback constraints win. AGY CLI is not an auditor qualification. Required PAL steps must actually execute or remain blocked.",
+    "One independent qualified final audit after substantive freeze when required; no fabricated identity, PASS or authority."
+  ],
+  "depends_on": [
+    "TP-DMX-MD-UI-CLIPBOARD-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MP-DMX-MERGE-DRAIN-20261002-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "merge-drain/tp-dmx-md-ui-a11y-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(ui): consolidate truthful status and accessible interaction feedback",
+    "allowlist": [
+      "ui-dashboard/src/App.tsx",
+      "ui-dashboard/src/components/TaskSequencer.tsx",
+      "ui-dashboard/src/merge-drain-a11y.test.tsx",
+      "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+      "task-packets/generated/TP-DMX-MD-UI-A11Y-001.json",
+      "proof/TP-DMX-MD-UI-A11Y-001/**"
+    ],
+    "verify": [
+      "Run rendered hydration/connection/reduced-motion/live-region/tooltip tests.",
+      "In ui-dashboard: npm test -- --run",
+      "In ui-dashboard: npm run lint",
+      "In ui-dashboard: npm run build",
+      "git diff --check",
+      "Validate exact admitted TaskPacket against current canonical schema.",
+      "Run current trusted change-contract validation and configured pre-commit checks."
+    ]
+  },
+  "pr": {
+    "title": "fix(ui): consolidate truthful status and accessible interaction feedback",
+    "body": "Proposed bounded merge-drain successor. No authority is implied by this form. Record donor coverage, exact source freeze, deterministic tests, independent audit and separately authorized publication/readiness/merge actions.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "inspect",
+      "analyze",
+      "trace",
+      "plan",
+      "challenge",
+      "implement",
+      "deterministic-validation",
+      "independent-final-audit",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Rebind exact current main, scope, native authority, model route and allowed paths before source changes.",
+      "validation": [
+        "Repo marker/origin, active pin, packet schema and real authority record verified."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Write regression tests and implement only the admitted source behavior.",
+      "requirements": [
+        "Cover all six original PR requirements and review findings listed in W15B.",
+        "Hydration Escape cleanup, truthful connection-aware empty state and reduced-motion behavior.",
+        "Polite live announcement and tooltip accessible-name/description semantics without focus noise.",
+        "The observed Ritual Complete banner is in TaskSequencer.tsx; keep this source boundary unless a current-tree change is explicitly admitted. Replace source-string-only acceptance with rendered behavior tests."
+      ],
+      "validation": [
+        "Run rendered hydration/connection/reduced-motion/live-region/tooltip tests.",
+        "In ui-dashboard: npm test -- --run",
+        "In ui-dashboard: npm run lint",
+        "In ui-dashboard: npm run build"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Freeze tested source; obtain or lawfully reuse the required independent audit, then return exact custody.",
+      "requirements": [
+        "PR-scoped proof path is not included until the new PR number and a separate path grant are known. No signing/push/merge authority is implied."
+      ],
+      "validation": [
+        "Source/test evidence recorded; actual audit state truthfully PASS/FAIL/NOT_RUN; immutable return with remaining gates."
+      ]
+    }
+  ]
+}
