@@ -1,0 +1,13 @@
+ docker/mcp-servers-source/pal-stdio/Dockerfile     |  17 +++
+ docker/mcp-servers-source/pal/Dockerfile           |  18 ++++
+ .../pal/pal-mcp-server/requirements.txt            |   2 +-
+ .../services/mcp-client-python/requirements.txt    |   2 +-
+ .../services/mcp-client/requirements.txt           |   2 +-
+ pyproject.toml                                     |   3 +
+ scripts/preflight.sh                               |   4 +-
+ services/dope-context/Dockerfile                   |  10 ++
+ services/dope-context/src/mcp/server.py            |   2 +-
+ .../src/preprocessing/document_processor.py        |  24 +++--
+ src/dopemux/litellm_proxy.py                       |   9 +-
+ tests/test_cli_litellm_lazy_import.py              | 119 +++++++++++++++++++++
+ 12 files changed, 199 insertions(+), 13 deletions(-)

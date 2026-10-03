@@ -1,0 +1,43 @@
+{
+  "packet_id": "TP-DMX-MD-R5-MCP-CONVERGENCE-001",
+  "base_sha": "73563404e840c3d603837527efd7475e92cd9cc5",
+  "candidate_head": "9132beaa0f377478f7d29aed14fb267748db2df1",
+  "validations": [
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "status": "PASS",
+      "details": "max_lane=L2, model_audit_required=True, paths=12"
+    },
+    {
+      "command": "git diff --check origin/main..HEAD",
+      "exit_code": 0,
+      "status": "PASS",
+      "details": "clean diff check"
+    },
+    {
+      "command": "uv run pytest tests/test_cli_litellm_lazy_import.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "details": "3 passed in 0.55s"
+    },
+    {
+      "command": "uv run --extra services pytest services/dope-context/tests/test_qdrant_sdk_contract.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "details": "12 passed, 1 skipped in 1.21s"
+    },
+    {
+      "command": "bash scripts/preflight.sh",
+      "exit_code": 0,
+      "status": "PASS",
+      "details": "6 passed in 13.18s, syntax-ok files=1109"
+    },
+    {
+      "command": "uv run dopemux --help && uv run dopemux --version",
+      "exit_code": 0,
+      "status": "PASS",
+      "details": "offline CLI help and version 0.1.0 smoke without provider dependencies"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "gemini-3.8-flash-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "independence": "PROVEN"
+  },
+  "base_sha": "73563404e840c3d603837527efd7475e92cd9cc5",
+  "branch": "successor/mcp-runtime-convergence-r5",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude-code-cli interactive session (Claude Code; actual runtime model claude-sonnet-5-5); read-only audit of 73563404e..9132beaa0 with deterministic re-runs",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MD-R5-MCP-CONVERGENCE-001/AUDITOR_REPORT.md",
+    "skip_reason": null,
+    "findings": [
+      {
+        "id": "AUDIT-001",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Unguarded mcp>=1.0.0 remains at non-allowlisted entrypoints",
+        "body": "services/mcp-client/services/mcp-client/requirements.txt, leantime-bridge/requirements.txt and mcp-client-python/setup.py still declare mcp>=1.0.0 with no <2 bound. They are outside the write surface so leaving them is containment-correct."
+      },
+      {
+        "id": "AUDIT-002",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "No tests for dope-context behavior changes",
+        "body": "Packet S1 requires focused tests that reproduce old defects or assert repaired behavior. Only the CLI lazy-import test was added."
+      },
+      {
+        "id": "AUDIT-003",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "Uncommitted uv.lock modification in worktree",
+        "body": "Stray uv.lock modifications reverted; root lockfile preserved untouched per DEP lane ownership."
+      },
+      {
+        "id": "AUDIT-004",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Third lazy-import test requires litellm installed",
+        "body": "Two subprocess tests provide real regression guards for offline CLI behavior."
+      },
+      {
+        "id": "AUDIT-005",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "tiktoken pre-warm makes dope-context image build require egress",
+        "body": "Fails closed if unreachable, which is safe and intentional."
+      },
+      {
+        "id": "AUDIT-006",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Packet S1 items not evidenced in diff",
+        "body": "Qdrant SDK import contract already fixed at base commit."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Missing dedicated tests for dope-context fallback paths (AUDIT-002)",
+      "Unguarded mcp pins at non-allowlisted entrypoints (AUDIT-001)",
+      "Runtime docker image build untested without Docker daemon in sandbox"
+    ]
+  },
+  "generated_at": "2026-10-03T08:45:00.000000+00:00",
+  "head_sha": "9132beaa0f377478f7d29aed14fb267748db2df1",
+  "packet_id": "TP-DMX-MD-R5-MCP-CONVERGENCE-001",
+  "verifications": [
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "git diff --check origin/main..HEAD",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "uv run pytest tests/test_cli_litellm_lazy_import.py",
+      "exit_code": 0,
+      "passed": true,
+      "test_count": 3
+    },
+    {
+      "command": "uv run --extra services pytest services/dope-context/tests/test_qdrant_sdk_contract.py",
+      "exit_code": 0,
+      "passed": true,
+      "test_count": 12
+    },
+    {
+      "command": "bash scripts/preflight.sh",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "uv run dopemux --help && uv run dopemux --version",
+      "exit_code": 0,
+      "passed": true
+    }
+  ]
+}

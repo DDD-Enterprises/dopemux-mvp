@@ -1,0 +1,151 @@
+{
+  "id": "TP-DMX-MD-R5-MCP-CONVERGENCE-001",
+  "project": "dopemux-mvp",
+  "target": "fix(mcp): converge SDK pins, dope-context compatibility and offline CLI behavior",
+  "invariants": [
+    "One integrated successor replaces overlapping donor implementations",
+    "No force push/admin bypass/primary-checkout writes",
+    "One implementer call only; repair requires explicit preauthorized bounded repair criterion",
+    "Final auditor must be different provider family/runtime"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MP-DMX-MERGE-DRAIN-20261002-005",
+    "base_branch": "main",
+    "parent_tp_id": "MP-DMX-MERGE-DRAIN-20261002-005",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "gemini",
+    "branch": "successor/mcp-runtime-convergence-r5",
+    "base_branch": "main",
+    "stacked_because": "R5 convergence successor"
+  },
+  "commit": {
+    "message": "fix(mcp): converge SDK pins, dope-context compatibility and offline CLI behavior",
+    "allowlist": [
+      "pyproject.toml",
+      "src/dopemux/litellm_proxy.py",
+      "tests/test_cli_litellm_lazy_import.py",
+      "docker/mcp-servers-source/pal-stdio/Dockerfile",
+      "docker/mcp-servers-source/pal/Dockerfile",
+      "docker/mcp-servers-source/pal/pal-mcp-server/requirements.txt",
+      "docker/mcp-servers-source/services/mcp-client-python/services/mcp-client-python/requirements.txt",
+      "docker/mcp-servers-source/services/mcp-client/requirements.txt",
+      "scripts/preflight.sh",
+      "services/dope-context/Dockerfile",
+      "services/dope-context/src/",
+      "services/dope-context/tests/"
+    ],
+    "verify": [
+      "python3 scripts/governance/validate_change_contract.py under current contract",
+      "focused MCP/dope-context tests discovered from changed surfaces",
+      "offline CLI help/version smoke without provider libs",
+      "git diff --check origin/main...HEAD"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): converge SDK pins, dope-context compatibility and offline CLI behavior",
+    "body": "R5 convergence successor; donor coverage ledger and behavioral tests required.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze donor behavior and failing criteria",
+      "implement one bounded successor",
+      "self-review deterministic evidence only; do not perform final independent audit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Bind exact current SDK/package entrypoints and donor coverage.",
+      "requirements": [
+        "#1329/#1333/#1284/#1323/#1292 are primary donors.",
+        "#1286 is conditional donor only; do not import its wholesale PAL modernization.",
+        "Do not touch root uv.lock; DEP integrator owns it."
+      ],
+      "validation": [
+        "all relevant mcp requirement entrypoints inventoried",
+        "current mcp major compatibility contract stated",
+        "no live service/container action"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Implement minimal current-main successor.",
+      "requirements": [
+        "Pin/guard MCP major consistently at actual entrypoints",
+        "declare dope-context runtime deps actually imported",
+        "narrow encoding fallback to expected decode errors rather than broad Exception",
+        "guard Docker/vendor context against logs/cache pollution where current build path requires",
+        "fix Qdrant SDK import contract",
+        "preserve ADR-226 A5a behavior only; no paid A5b activation",
+        "defer LiteLLM import so offline help/version works."
+      ],
+      "validation": [
+        "focused tests reproduce old defects or assert repaired behavior"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Freeze after deterministic validation.",
+      "validation": [
+        "focused tests pass",
+        "change contract passes",
+        "offline CLI smoke passes",
+        "diff check passes",
+        "no service restart/build activation performed"
+      ]
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MP-DMX-MERGE-DRAIN-20261002-005",
+  "workstream_id": "MCP",
+  "risk_lane": "L2",
+  "audit_group": "R5-MCP",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "agy",
+      "model": "gemini-3.8-flash-high",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY_AND_RUNTIME"
+  },
+  "write_surface": [
+    "pyproject.toml",
+    "src/dopemux/litellm_proxy.py",
+    "tests/test_cli_litellm_lazy_import.py",
+    "docker/mcp-servers-source/pal-stdio/Dockerfile",
+    "docker/mcp-servers-source/pal/Dockerfile",
+    "docker/mcp-servers-source/pal/pal-mcp-server/requirements.txt",
+    "docker/mcp-servers-source/services/mcp-client-python/services/mcp-client-python/requirements.txt",
+    "docker/mcp-servers-source/services/mcp-client/requirements.txt",
+    "scripts/preflight.sh",
+    "services/dope-context/Dockerfile",
+    "services/dope-context/src/",
+    "services/dope-context/tests/"
+  ],
+  "canonical_writers": [
+    "agy-gemini-3.8-flash-high"
+  ],
+  "semantic_scope": [
+    "mcp_version_compatibility",
+    "dope_context_runtime",
+    "offline_cli",
+    "docker_build_input_hardening"
+  ],
+  "rollback_boundary": "728d7c42e9ab3050d7b449935f463e0e71fbf7aa",
+  "operator_gate_required": false,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
