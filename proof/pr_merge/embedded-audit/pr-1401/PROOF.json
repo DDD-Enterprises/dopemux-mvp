@@ -1,4 +1,8 @@
 {
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1401,
+  "head_sha": "64547395e92d433e821a0790f52a5e257e7dc404",
+  "base_sha": "b2dc31f871bf31dbb6bbea73c5a328b67dfcbb30",
   "audit_identity": {
     "auditor": {
       "effort": "high",
@@ -15,8 +19,6 @@
     },
     "independence": "PROVEN"
   },
-  "base_sha": "b2dc31f871bf31dbb6bbea73c5a328b67dfcbb30",
-  "branch": "successor/setup-python-v7-r6",
   "embedded_audit": {
     "auditor_model": "sonnet",
     "auditor_tool": "claude-code-cli",
@@ -56,6 +58,5 @@
     "skip_reason": null,
     "status": "PASS"
   },
-  "head_sha": "64547395e92d433e821a0790f52a5e257e7dc404",
-  "packet_id": "TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001"
+  "generated_at": "2026-10-03T10:32:00.000000+00:00"
 }
