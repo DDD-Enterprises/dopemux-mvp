@@ -1,0 +1,14 @@
+config/dcp/runner_capabilities.json
+docs/03-reference/dcp/backend-runner-contract.md
+docs/03-reference/dcp/current-runtime-reconciliation.md
+docs/03-reference/dcp/runner-capability-matrix.md
+docs/03-reference/dcp/series-lineage.md
+schemas/dcp/manifest.json
+schemas/dcp/runner_capability_registry.schema.json
+schemas/dcp/runner_contract.schema.json
+src/dopemux/dcp/__init__.py
+src/dopemux/dcp/runner_capability_registry.py
+src/dopemux/dcp/runner_contract.py
+task-packets/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001.json
+tests/unit/dcp/test_runner_capability_registry.py
+tests/unit/dcp/test_runner_contract.py

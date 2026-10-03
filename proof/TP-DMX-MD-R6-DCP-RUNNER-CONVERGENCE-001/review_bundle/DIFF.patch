@@ -1,0 +1,1141 @@
+diff --git a/config/dcp/runner_capabilities.json b/config/dcp/runner_capabilities.json
+new file mode 100644
+index 000000000..5d5ffa4ef
+--- /dev/null
++++ b/config/dcp/runner_capabilities.json
+@@ -0,0 +1,69 @@
++{
++  "schema_version": "1.0.0",
++  "global_invocation_authorized": false,
++  "global_mutation_authorized": false,
++  "global_paid_inference_authorized": false,
++  "description": "Non-authoritative runner capability registry. Evidence-backed install probes only; every invocation permission disabled.",
++  "runners": [
++    {
++      "runner_id": "codex",
++      "installed": true,
++      "resolved_path": "~/.local/share/mise/shims/codex",
++      "version_text": "codex-cli 0.145.0",
++      "invocation_authorized": false,
++      "mutation_authorized": false,
++      "paid_inference_authorized": false,
++      "notes": "Static inventory only. All invocation permissions disabled (0009)."
++    },
++    {
++      "runner_id": "claude",
++      "installed": true,
++      "resolved_path": "~/.local/bin/claude",
++      "version_text": "2.1.220 (Claude Code)",
++      "invocation_authorized": false,
++      "mutation_authorized": false,
++      "paid_inference_authorized": false,
++      "notes": "Static inventory only. All invocation permissions disabled (0009)."
++    },
++    {
++      "runner_id": "opencode",
++      "installed": true,
++      "resolved_path": "~/.opencode/bin/opencode",
++      "version_text": "1.18.5",
++      "invocation_authorized": false,
++      "mutation_authorized": false,
++      "paid_inference_authorized": false,
++      "notes": "Static inventory only. All invocation permissions disabled (0009)."
++    },
++    {
++      "runner_id": "gemini",
++      "installed": true,
++      "resolved_path": "~/.local/bin/gemini",
++      "version_text": "0.46.0",
++      "invocation_authorized": false,
++      "mutation_authorized": false,
++      "paid_inference_authorized": false,
++      "notes": "Static inventory only. All invocation permissions disabled (0009)."
++    },
++    {
++      "runner_id": "agy",
++      "installed": true,
++      "resolved_path": "~/.local/bin/agy",
++      "version_text": "1.1.8",
++      "invocation_authorized": false,
++      "mutation_authorized": false,
++      "paid_inference_authorized": false,
++      "notes": "Static inventory only. All invocation permissions disabled (0009)."
++    },
++    {
++      "runner_id": "grok",
++      "installed": true,
++      "resolved_path": "~/.local/bin/grok",
++      "version_text": "grok 0.2.112 (9bbd559437aa) [stable]",
++      "invocation_authorized": false,
++      "mutation_authorized": false,
++      "paid_inference_authorized": false,
++      "notes": "Static inventory only. All invocation permissions disabled (0009)."
++    }
++  ]
++}
+diff --git a/docs/03-reference/dcp/backend-runner-contract.md b/docs/03-reference/dcp/backend-runner-contract.md
+new file mode 100644
+index 000000000..23c738d9e
+--- /dev/null
++++ b/docs/03-reference/dcp/backend-runner-contract.md
+@@ -0,0 +1,33 @@
++---
++id: REF-DCP-BACKEND-RUNNER-CONTRACT
++title: Backend Runner Contract (0008)
++type: reference
++owner: Control Tower | Current
++last_review: 2026-10-03
++next_review: 2026-11-03
++author: '@hu3mann'
++date: '2026-10-03'
++prelude: Backend Runner Contract (0008) (reference) for dopemux documentation and
++  developer workflows.
++---
++# Backend Runner Contract (0008)
++
++Inert pure data contract for future runner invocation.
++
++## Non-claims
++
++- `invocation_authorized` is always **false**
++- No subprocess / network / model execution is implemented
++- `execute_runner_plan` returns `NOT_RUN` only
++- No bridge, memory, context, or task-orchestrator runtime mutations
++
++## Types
++
++- `RunnerInvocationPlan`
++- `RunnerResult`
++- `RunnerProofEnvelope`
++- `RunnerContractDocument`
++- `RunnerAdapter` (protocol)
++- `InertRunnerAdapter` (reference inert implementation)
++
++Schema: `schemas/dcp/runner_contract.schema.json`
+diff --git a/docs/03-reference/dcp/current-runtime-reconciliation.md b/docs/03-reference/dcp/current-runtime-reconciliation.md
+new file mode 100644
+index 000000000..99bb7d176
+--- /dev/null
++++ b/docs/03-reference/dcp/current-runtime-reconciliation.md
+@@ -0,0 +1,30 @@
++---
++id: REF-DCP-CURRENT-RUNTIME-RECONCILIATION
++title: Current-Main Runtime and Toolchain Reconciliation (R6 / 0000R)
++type: reference
++owner: Control Tower | Current
++last_review: 2026-10-03
++next_review: 2026-11-03
++author: '@hu3mann'
++date: '2026-10-03'
++prelude: Current-Main Runtime and Toolchain Reconciliation (R6 / 0000R) (reference)
++  for dopemux documentation and developer workflows.
++---
++# Current-Main Runtime and Toolchain Reconciliation
++
++Reconciles DCP routing, PAL, OpenCode, LiteLLM, runner inventory, MCP wiring, and GitHub control-plane state against current `main` (post-#1400 `b2dc31f871bf31dbb6bbea73c5a328b67dfcbb30`). Supersedes PR #1137.
++
++## Current System State (Observed Repo Truth)
++
++1. **Python Toolchain**: Python 3.11/3.12 managed via `uv`, with pyproject.toml declaring dependencies and strict `tool.uv.override-dependencies`.
++2. **MCP Fleet**: Managed under `mcp_catalog.yaml`. `mcp>=1.28.1,<2` and `fastmcp>=3.2.0,<4` preserved.
++3. **DCP Boundaries**: DCP is an inert, fail-closed policy, classification, and proof validation boundary. All runner invocation permissions remain disabled.
++4. **Trusted Input Adapters**: Active in `src/dopemux/dcp/input_adapters.py` and `trusted_adapter_registry.py` on `main`.
++5. **Historical Evidence Labeling**: Past July/August artifacts (such as DMX-DCP-MODEL-ROUTING-MVP-0000R) are historical evidence only and do not outrank observed runtime truth.
++
++## Non-claims
++
++- No merge authorized outside governed merge drain
++- No live runner/model/connector execution authorized
++- No trusted mutation adapter enabled
++- No Dopetask / Task Orchestrator / MCP write mutations from DCP
+diff --git a/docs/03-reference/dcp/runner-capability-matrix.md b/docs/03-reference/dcp/runner-capability-matrix.md
+new file mode 100644
+index 000000000..73972c9ed
+--- /dev/null
++++ b/docs/03-reference/dcp/runner-capability-matrix.md
+@@ -0,0 +1,35 @@
++---
++id: REF-DCP-RUNNER-CAPABILITY-MATRIX
++title: Runner Capability Matrix (0009)
++type: reference
++owner: Control Tower | Current
++last_review: 2026-10-03
++next_review: 2026-11-03
++author: '@hu3mann'
++date: '2026-10-03'
++prelude: Runner Capability Matrix (0009) (reference) for dopemux documentation and
++  developer workflows.
++---
++# Runner Capability Matrix (0009)
++
++Non-authoritative inventory of local runner CLIs.
++
++## Global flags
++
++| Flag | Value |
++|---|---|
++| global_invocation_authorized | **false** |
++| global_mutation_authorized | **false** |
++| global_paid_inference_authorized | **false** |
++
++## Source
++
++- Config: `config/dcp/runner_capabilities.json`
++- Schema: `schemas/dcp/runner_capability_registry.schema.json`
++- Loader: `src/dopemux/dcp/runner_capability_registry.py`
++
++## Non-claims
++
++- Install presence ≠ authorization
++- Version text from `--version` is observational only
++- No runner may be invoked from DCP via this registry
+diff --git a/docs/03-reference/dcp/series-lineage.md b/docs/03-reference/dcp/series-lineage.md
+new file mode 100644
+index 000000000..67ffb26aa
+--- /dev/null
++++ b/docs/03-reference/dcp/series-lineage.md
+@@ -0,0 +1,28 @@
++---
++id: REF-DCP-SERIES-LINEAGE
++title: Series Lineage and Authority Map (R6 / 0000S)
++type: reference
++owner: Control Tower | Current
++last_review: 2026-10-03
++next_review: 2026-11-03
++author: '@hu3mann'
++date: '2026-10-03'
++prelude: Series Lineage and Authority Map (R6 / 0000S) (reference) for dopemux documentation
++  and developer workflows.
++---
++# Series Lineage and Authority Map
++
++Records the canonical lineage and authority order for the DCP Model Routing series. Supersedes PR #1138.
++
++## Lineage Progression
++
++- **0000R / 0000S**: Reconciliation and series map (superseded and integrated into current main documentation).
++- **0001R**: Domain model, red lanes, proof pointers (integrated on `main`).
++- **0002 - 0006**: Classifier, backend policy, lane engine (integrated on `main`).
++- **0007I / 0007T / 0007A**: Input adapters, test corpus, trusted adapter registry (integrated on `main`).
++- **0008**: Inert backend runner contract and `RunnerAdapter` protocol (integrated in R6).
++- **0009**: Runner capability registry with invocation disabled (integrated in R6).
++
++## Authority Invariant
++
++Never let extracted artifacts outrank the runtime they describe. Runtime code, config, compose wiring, tests, and active entrypoints govern system behavior.
+diff --git a/schemas/dcp/manifest.json b/schemas/dcp/manifest.json
+index 9e1b1dfcc..124f408b6 100644
+--- a/schemas/dcp/manifest.json
++++ b/schemas/dcp/manifest.json
+@@ -429,6 +429,44 @@
+       ],
+       "enforcement_side": "llm_advisory"
+     },
++    {
++      "contract_id": "DCP_RUNNER_CAPABILITY_REGISTRY",
++      "schema_file": "schemas/dcp/runner_capability_registry.schema.json",
++      "schema_version": "1.0.0",
++      "contract_version": "0.1.0",
++      "validation_state": "REPO_CROSS_CHECKED",
++      "level": "L1",
++      "instance_files": [
++        "config/dcp/runner_capabilities.json"
++      ],
++      "runtime_producers": [],
++      "runtime_consumers": [
++        "src/dopemux/dcp/runner_capability_registry.py"
++      ],
++      "ci_gates": [
++        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
++      ],
++      "enforcement_side": "deterministic"
++    },
++    {
++      "contract_id": "DCP_RUNNER_CONTRACT",
++      "schema_file": "schemas/dcp/runner_contract.schema.json",
++      "schema_version": "1.0.0",
++      "contract_version": "0.1.0",
++      "validation_state": "REPO_CROSS_CHECKED",
++      "level": "L1",
++      "instance_files": [],
++      "runtime_producers": [
++        "src/dopemux/dcp/runner_contract.py"
++      ],
++      "runtime_consumers": [
++        "src/dopemux/dcp/runner_contract.py"
++      ],
++      "ci_gates": [
++        "🔴 Run DCP red-lane gate (TP-DMX-DCP-CI-GATE-001)"
++      ],
++      "enforcement_side": "deterministic"
++    },
+     {
+       "contract_id": "DCP_RUN_CONTEXT_PACKET",
+       "schema_file": "schemas/dcp/run_context_packet.schema.json",
+diff --git a/schemas/dcp/runner_capability_registry.schema.json b/schemas/dcp/runner_capability_registry.schema.json
+new file mode 100644
+index 000000000..a01f470a4
+--- /dev/null
++++ b/schemas/dcp/runner_capability_registry.schema.json
+@@ -0,0 +1,33 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "https://dopemux.local/schemas/dcp/runner_capability_registry.schema.json",
++  "title": "RunnerCapabilityRegistry",
++  "type": "object",
++  "required": ["schema_version", "global_invocation_authorized", "runners"],
++  "additionalProperties": false,
++  "properties": {
++    "schema_version": {"type": "string"},
++    "global_invocation_authorized": {"type": "boolean", "const": false},
++    "global_mutation_authorized": {"type": "boolean", "const": false},
++    "global_paid_inference_authorized": {"type": "boolean", "const": false},
++    "description": {"type": "string"},
++    "runners": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "required": ["runner_id", "invocation_authorized", "mutation_authorized", "paid_inference_authorized"],
++        "additionalProperties": false,
++        "properties": {
++          "runner_id": {"type": "string"},
++          "installed": {"type": "boolean"},
++          "resolved_path": {"type": ["string", "null"]},
++          "version_text": {"type": ["string", "null"]},
++          "invocation_authorized": {"type": "boolean", "const": false},
++          "mutation_authorized": {"type": "boolean", "const": false},
++          "paid_inference_authorized": {"type": "boolean", "const": false},
++          "notes": {"type": "string"}
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/dcp/runner_contract.schema.json b/schemas/dcp/runner_contract.schema.json
+new file mode 100644
+index 000000000..0118ae349
+--- /dev/null
++++ b/schemas/dcp/runner_contract.schema.json
+@@ -0,0 +1,45 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "https://dopemux.local/schemas/dcp/runner_contract.schema.json",
++  "title": "DcpRunnerContract",
++  "type": "object",
++  "required": ["schema_version", "invocation_authorized", "plan", "result"],
++  "additionalProperties": false,
++  "properties": {
++    "schema_version": {"type": "string"},
++    "invocation_authorized": {"type": "boolean", "const": false},
++    "plan": {
++      "type": "object",
++      "required": ["runner_id", "argv", "cwd", "env_allowlist"],
++      "additionalProperties": false,
++      "properties": {
++        "runner_id": {"type": "string"},
++        "argv": {"type": "array", "items": {"type": "string"}},
++        "cwd": {"type": "string"},
++        "env_allowlist": {"type": "array", "items": {"type": "string"}},
++        "timeout_seconds": {"type": "number"},
++        "notes": {"type": "string"}
++      }
++    },
++    "result": {
++      "type": "object",
++      "required": ["status", "exit_code", "stdout_digest", "stderr_digest"],
++      "additionalProperties": false,
++      "properties": {
++        "status": {"type": "string", "enum": ["NOT_RUN", "BLOCKED", "PLANNED_ONLY"]},
++        "exit_code": {"type": ["integer", "null"]},
++        "stdout_digest": {"type": "string"},
++        "stderr_digest": {"type": "string"},
++        "error": {"type": "string"}
++      }
++    },
++    "proof_envelope": {
++      "type": "object",
++      "additionalProperties": false,
++      "properties": {
++        "evidence_refs": {"type": "array", "items": {"type": "string"}},
++        "non_claims": {"type": "array", "items": {"type": "string"}}
++      }
++    }
++  }
++}
+diff --git a/src/dopemux/dcp/__init__.py b/src/dopemux/dcp/__init__.py
+index c021d063b..92a3dee30 100644
+--- a/src/dopemux/dcp/__init__.py
++++ b/src/dopemux/dcp/__init__.py
+@@ -67,8 +67,46 @@ from dopemux.dcp.input_adapters import (
+     refuse_serialized_trust,
+     untrusted_classify_source,
+ )
++from dopemux.dcp.runner_capability_registry import (
++    CapabilityRegistryError,
++    RunnerCapability,
++    RunnerCapabilityRegistry,
++    assert_no_invocation_authorized,
++    load_runner_capabilities,
++)
++from dopemux.dcp.runner_contract import (
++    InertRunnerAdapter,
++    RunnerAdapter,
++    RunnerContractDocument,
++    RunnerContractError,
++    RunnerInvocationPlan,
++    RunnerPlanStatus,
++    RunnerProofEnvelope,
++    RunnerResult,
++    build_blocked_plan,
++    document_plan,
++    execute_runner_plan,
++)
+
+ __all__ = [
++    # Runner capability registry (0009 / R6)
++    "CapabilityRegistryError",
++    "RunnerCapability",
++    "RunnerCapabilityRegistry",
++    "assert_no_invocation_authorized",
++    "load_runner_capabilities",
++    # Runner contract (0008 / R6)
++    "InertRunnerAdapter",
++    "RunnerAdapter",
++    "RunnerContractDocument",
++    "RunnerContractError",
++    "RunnerInvocationPlan",
++    "RunnerPlanStatus",
++    "RunnerProofEnvelope",
++    "RunnerResult",
++    "build_blocked_plan",
++    "document_plan",
++    "execute_runner_plan",
+     # Proof artifact readers (pre-existing)
+     "ArtifactInspection",
+     "AuthorityLabel",
+diff --git a/src/dopemux/dcp/runner_capability_registry.py b/src/dopemux/dcp/runner_capability_registry.py
+new file mode 100644
+index 000000000..2e2bda60f
+--- /dev/null
++++ b/src/dopemux/dcp/runner_capability_registry.py
+@@ -0,0 +1,125 @@
++"""Runner capability registry — DMX-DCP-MODEL-ROUTING-MVP-0009 / R6.
++
++Static, non-authoritative inventory of runner CLIs with every invocation
++permission forced false.
++
++Pure load/validate. Does not execute models or runners.
++"""
++
++from __future__ import annotations
++
++import json
++from dataclasses import dataclass
++from pathlib import Path
++from typing import Any, Mapping, Optional
++
++_DEFAULT_PATH = (
++    Path(__file__).resolve().parents[3] / "config" / "dcp" / "runner_capabilities.json"
++)
++
++
++class CapabilityRegistryError(ValueError):
++    """Fail-closed capability registry error."""
++
++
++@dataclass(frozen=True)
++class RunnerCapability:
++    runner_id: str
++    installed: bool
++    resolved_path: Optional[str]
++    version_text: Optional[str]
++    invocation_authorized: bool
++    mutation_authorized: bool
++    paid_inference_authorized: bool
++    notes: str
++
++
++@dataclass(frozen=True)
++class RunnerCapabilityRegistry:
++    schema_version: str
++    global_invocation_authorized: bool
++    global_mutation_authorized: bool
++    global_paid_inference_authorized: bool
++    runners: tuple[RunnerCapability, ...]
++    source_path: str
++
++    def authorized_runners(self) -> list[str]:
++        if self.global_invocation_authorized:
++            raise CapabilityRegistryError("global_invocation_authorized must be false")
++        bad = [r.runner_id for r in self.runners if r.invocation_authorized]
++        if bad:
++            raise CapabilityRegistryError(
++                f"runners with invocation_authorized true forbidden: {bad}"
++            )
++        return []
++
++
++def _validate(data: Mapping[str, Any]) -> None:
++    for key in (
++        "global_invocation_authorized",
++        "global_mutation_authorized",
++        "global_paid_inference_authorized",
++    ):
++        if data.get(key) is not False:
++            raise CapabilityRegistryError(f"{key} must be false")
++    runners = data.get("runners")
++    if not isinstance(runners, list):
++        raise CapabilityRegistryError("runners must be a list")
++    for item in runners:
++        if not isinstance(item, Mapping):
++            raise CapabilityRegistryError("runner entries must be objects")
++        for k in (
++            "invocation_authorized",
++            "mutation_authorized",
++            "paid_inference_authorized",
++        ):
++            if item.get(k) is not False:
++                raise CapabilityRegistryError(
++                    f"runner {item.get('runner_id')!r} {k} must be false"
++                )
++
++
++def load_runner_capabilities(path: Optional[Path] = None) -> RunnerCapabilityRegistry:
++    reg_path = Path(path) if path is not None else _DEFAULT_PATH
++    raw = json.loads(reg_path.read_text(encoding="utf-8"))
++    if not isinstance(raw, dict):
++        raise CapabilityRegistryError("root must be object")
++    _validate(raw)
++    runners = tuple(
++        RunnerCapability(
++            runner_id=str(item["runner_id"]),
++            installed=bool(item.get("installed", False)),
++            resolved_path=item.get("resolved_path"),
++            version_text=item.get("version_text"),
++            invocation_authorized=False,
++            mutation_authorized=False,
++            paid_inference_authorized=False,
++            notes=str(item.get("notes") or ""),
++        )
++        for item in raw["runners"]
++    )
++    return RunnerCapabilityRegistry(
++        schema_version=str(raw.get("schema_version") or "UNKNOWN"),
++        global_invocation_authorized=False,
++        global_mutation_authorized=False,
++        global_paid_inference_authorized=False,
++        runners=runners,
++        source_path=str(reg_path),
++    )
++
++
++def assert_no_invocation_authorized(
++    registry: Optional[RunnerCapabilityRegistry] = None,
++) -> None:
++    reg = registry or load_runner_capabilities()
++    if reg.authorized_runners():
++        raise CapabilityRegistryError("unexpected authorized runners")
++
++
++__all__ = [
++    "CapabilityRegistryError",
++    "RunnerCapability",
++    "RunnerCapabilityRegistry",
++    "load_runner_capabilities",
++    "assert_no_invocation_authorized",
++]
+diff --git a/src/dopemux/dcp/runner_contract.py b/src/dopemux/dcp/runner_contract.py
+new file mode 100644
+index 000000000..9b7ebf000
+--- /dev/null
++++ b/src/dopemux/dcp/runner_contract.py
+@@ -0,0 +1,222 @@
++"""Backend runner interface — DMX-DCP-MODEL-ROUTING-MVP-0008 / R6.
++
++Pure data models for runner invocation plans, results, proof envelopes,
++and runner adapter protocols.
++
++Hard invariants:
++- ``invocation_authorized`` is always False for constructed plans/documents in this packet.
++- No process execution, network, model, MCP, Dopetask, or shell execution is performed.
++- ``execute_runner_plan`` always fails closed without running anything.
++"""
++
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from enum import Enum
++from typing import Any, Mapping, Optional, Protocol, Sequence, runtime_checkable
++
++
++class RunnerPlanStatus(str, Enum):
++    PLANNED_ONLY = "PLANNED_ONLY"
++    BLOCKED = "BLOCKED"
++    NOT_RUN = "NOT_RUN"
++
++
++class RunnerContractError(ValueError):
++    """Fail-closed runner contract error."""
++
++
++@dataclass(frozen=True)
++class RunnerInvocationPlan:
++    runner_id: str
++    argv: tuple[str, ...]
++    cwd: str = "."
++    env_allowlist: tuple[str, ...] = ()
++    timeout_seconds: Optional[float] = None
++    notes: str = ""
++    invocation_authorized: bool = False
++
++    def __post_init__(self) -> None:
++        if not self.runner_id.strip():
++            raise RunnerContractError("runner_id must be non-empty")
++        if self.invocation_authorized:
++            raise RunnerContractError(
++                "invocation_authorized must be false; no runner may be authorized in 0008/R6"
++            )
++        object.__setattr__(self, "argv", tuple(self.argv))
++        object.__setattr__(self, "env_allowlist", tuple(self.env_allowlist))
++
++    def to_dict(self) -> dict[str, Any]:
++        """Convert plan to dictionary matching runner_contract.schema.json plan property."""
++        d: dict[str, Any] = {
++            "runner_id": self.runner_id,
++            "argv": list(self.argv),
++            "cwd": self.cwd,
++            "env_allowlist": list(self.env_allowlist),
++        }
++        if self.timeout_seconds is not None:
++            d["timeout_seconds"] = float(self.timeout_seconds)
++        if self.notes:
++            d["notes"] = self.notes
++        return d
++
++
++@dataclass(frozen=True)
++class RunnerResult:
++    status: RunnerPlanStatus
++    exit_code: Optional[int] = None
++    stdout_digest: str = ""
++    stderr_digest: str = ""
++    error: str = ""
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "status": self.status.value,
++            "exit_code": self.exit_code,
++            "stdout_digest": self.stdout_digest,
++            "stderr_digest": self.stderr_digest,
++            "error": self.error,
++        }
++
++
++@dataclass(frozen=True)
++class RunnerProofEnvelope:
++    evidence_refs: tuple[str, ...] = ()
++    non_claims: tuple[str, ...] = (
++        "no_process_spawned",
++        "no_network_call",
++        "no_model_inference",
++        "invocation_authorized=false",
++    )
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "evidence_refs": list(self.evidence_refs),
++            "non_claims": list(self.non_claims),
++        }
++
++
++@dataclass(frozen=True)
++class RunnerContractDocument:
++    plan: RunnerInvocationPlan
++    result: RunnerResult
++    proof_envelope: RunnerProofEnvelope = field(default_factory=RunnerProofEnvelope)
++    schema_version: str = "1.0.0"
++    invocation_authorized: bool = False
++
++    def __post_init__(self) -> None:
++        if self.invocation_authorized or self.plan.invocation_authorized:
++            raise RunnerContractError("document cannot authorize invocation")
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "schema_version": self.schema_version,
++            "invocation_authorized": False,
++            "plan": self.plan.to_dict(),
++            "result": self.result.to_dict(),
++            "proof_envelope": self.proof_envelope.to_dict(),
++        }
++
++
++@runtime_checkable
++class RunnerAdapter(Protocol):
++    """Protocol for inert backend runner adapters."""
++
++    def plan_invocation(
++        self,
++        argv: Sequence[str],
++        *,
++        cwd: str = ".",
++        timeout_seconds: Optional[float] = None,
++        notes: str = "",
++    ) -> RunnerInvocationPlan:
++        """Construct a non-authorized runner invocation plan."""
++        ...
++
++    def execute(self, plan: RunnerInvocationPlan) -> RunnerResult:
++        """Execute runner plan (fail-closed, invocation disabled)."""
++        ...
++
++
++class InertRunnerAdapter:
++    """Default inert runner adapter enforcing invocation-disabled boundary."""
++
++    def __init__(self, runner_id: str) -> None:
++        self.runner_id = runner_id
++
++    def plan_invocation(
++        self,
++        argv: Sequence[str],
++        *,
++        cwd: str = ".",
++        timeout_seconds: Optional[float] = None,
++        notes: str = "planned only; not authorized",
++    ) -> RunnerInvocationPlan:
++        return RunnerInvocationPlan(
++            runner_id=self.runner_id,
++            argv=tuple(argv),
++            cwd=cwd,
++            timeout_seconds=timeout_seconds,
++            notes=notes,
++            invocation_authorized=False,
++        )
++
++    def execute(self, plan: RunnerInvocationPlan) -> RunnerResult:
++        return execute_runner_plan(plan)
++
++
++def build_blocked_plan(
++    runner_id: str,
++    argv: Sequence[str],
++    *,
++    cwd: str = ".",
++    timeout_seconds: Optional[float] = None,
++    notes: str = "planned only; not authorized",
++) -> RunnerInvocationPlan:
++    """Construct a non-authorized plan. Never sets invocation_authorized true."""
++    return RunnerInvocationPlan(
++        runner_id=runner_id,
++        argv=tuple(argv),
++        cwd=cwd,
++        timeout_seconds=timeout_seconds,
++        notes=notes,
++        invocation_authorized=False,
++    )
++
++
++def execute_runner_plan(plan: RunnerInvocationPlan) -> RunnerResult:
++    """Fail-closed non-executor.
++
++    Always returns NOT_RUN / BLOCKED without performing process execution or network I/O.
++    """
++    if plan.invocation_authorized:
++        # Unreachable under normal construction; belt-and-suspenders.
++        return RunnerResult(
++            status=RunnerPlanStatus.BLOCKED,
++            error="invocation_authorized true is forbidden",
++        )
++    return RunnerResult(
++        status=RunnerPlanStatus.NOT_RUN,
++        exit_code=None,
++        error="runner execution is not authorized (0008 inert contract)",
++    )
++
++
++def document_plan(plan: RunnerInvocationPlan) -> RunnerContractDocument:
++    result = execute_runner_plan(plan)
++    return RunnerContractDocument(plan=plan, result=result)
++
++
++__all__ = [
++    "RunnerPlanStatus",
++    "RunnerContractError",
++    "RunnerInvocationPlan",
++    "RunnerResult",
++    "RunnerProofEnvelope",
++    "RunnerContractDocument",
++    "RunnerAdapter",
++    "InertRunnerAdapter",
++    "build_blocked_plan",
++    "execute_runner_plan",
++    "document_plan",
++]
+diff --git a/task-packets/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001.json b/task-packets/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001.json
+new file mode 100644
+index 000000000..eafd37189
+--- /dev/null
++++ b/task-packets/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001.json
+@@ -0,0 +1,99 @@
++{
++  "id": "TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001",
++  "project": "dopemux-mvp",
++  "target": "feat(dcp): converge inert runner contract and capability registry on current main",
++  "invariants": [
++    "Primary checkout is read-only",
++    "No force/admin/service/credential/PAYG effects"
++  ],
++  "depends_on": [],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": ".dopetaskroot",
++    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "MP-DMX-MERGE-DRAIN-20261002-006",
++    "base_branch": "main",
++    "parent_tp_id": "MP-DMX-MERGE-DRAIN-20261002-006",
++    "final_packet": false
++  },
++  "execution": {
++    "agent": "gemini",
++    "branch": "successor/dcp-runner-convergence-r6",
++    "base_branch": "main",
++    "stacked_because": "R6 isolated current-main successor"
++  },
++  "commit": {
++    "message": "feat(dcp): converge inert runner contract and capability registry on current main",
++    "allowlist": [
++      "config/dcp/",
++      "docs/03-reference/dcp/",
++      "schemas/dcp/",
++      "src/dopemux/dcp/",
++      "tests/unit/dcp/",
++      "tests/fixtures/dcp/",
++      "proof/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001/",
++      "proof/pr_merge/embedded-audit/",
++      "task-packets/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001.json"
++    ],
++    "verify": [
++      "pytest tests/unit/dcp -q",
++      "git diff --check",
++      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
++    ]
++  },
++  "pr": {
++    "title": "feat(dcp): converge inert runner contract and capability registry on current main",
++    "body": "R6 governed merge-drain successor; exact provenance/tests/audit required before finality.",
++    "base": "main"
++  },
++  "steps": [
++    {
++      "id": "S0",
++      "task": "Bind current main, repo identity, existing attempts and clean isolated writer.",
++      "requirements": [
++        "No primary checkout write",
++        "No duplicate active attempt"
++      ],
++      "commands": [
++        "git status --short --branch",
++        "git rev-parse origin/main"
++      ],
++      "validation": [
++        "Exact current main recorded",
++        "Writer worktree clean"
++      ],
++      "context_files": [
++        "AGENTS.md"
++      ]
++    },
++    {
++      "id": "S1",
++      "task": "Repair and integrate #1156/#1157 while refreshing current runtime/series docs needed to supersede #1137/#1138.",
++      "validation": [
++        "Only allowlisted files change",
++        "Acceptance criteria proven with fresh tests"
++      ]
++    },
++    {
++      "id": "S2",
++      "task": "Freeze exact subject and return for independent audit/finality.",
++      "validation": [
++        "git diff --check passes",
++        "change-contract result recorded",
++        "exact base/head and changed paths recorded"
++      ]
++    }
++  ],
++  "pal_chain": {
++    "enabled": true,
++    "steps": [
++      "analyze",
++      "planner",
++      "codereview",
++      "precommit"
++    ]
++  }
++}
+diff --git a/tests/unit/dcp/test_runner_capability_registry.py b/tests/unit/dcp/test_runner_capability_registry.py
+new file mode 100644
+index 000000000..2629c9bbd
+--- /dev/null
++++ b/tests/unit/dcp/test_runner_capability_registry.py
+@@ -0,0 +1,139 @@
++"""Tests for DMX-DCP-MODEL-ROUTING-MVP-0009 / R6 runner capability registry."""
++
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++import jsonschema
++import pytest
++
++from dopemux.dcp.runner_capability_registry import (
++    CapabilityRegistryError,
++    assert_no_invocation_authorized,
++    load_runner_capabilities,
++)
++from dopemux.dcp.runner_contract import (
++    RunnerPlanStatus,
++    build_blocked_plan,
++    execute_runner_plan,
++)
++
++
++def test_default_registry_disables_all_invocation():
++    reg = load_runner_capabilities()
++    assert reg.global_invocation_authorized is False
++    assert reg.authorized_runners() == []
++    assert_no_invocation_authorized(reg)
++    assert len(reg.runners) >= 1
++    for r in reg.runners:
++        assert r.invocation_authorized is False
++        assert r.mutation_authorized is False
++        assert r.paid_inference_authorized is False
++
++
++def test_default_registry_conforms_to_schema():
++    schema_path = (
++        Path(__file__).resolve().parents[3]
++        / "schemas"
++        / "dcp"
++        / "runner_capability_registry.schema.json"
++    )
++    schema = json.loads(schema_path.read_text(encoding="utf-8"))
++    reg_path = (
++        Path(__file__).resolve().parents[3]
++        / "config"
++        / "dcp"
++        / "runner_capabilities.json"
++    )
++    raw = json.loads(reg_path.read_text(encoding="utf-8"))
++    validator = jsonschema.Draft7Validator(schema)
++    errors = list(validator.iter_errors(raw))
++    assert not errors, f"Registry schema validation failed: {[e.message for e in errors]}"
++
++
++def test_rejects_authorized_runner(tmp_path: Path):
++    bad = {
++        "schema_version": "1.0.0",
++        "global_invocation_authorized": False,
++        "global_mutation_authorized": False,
++        "global_paid_inference_authorized": False,
++        "runners": [
++            {
++                "runner_id": "evil",
++                "installed": True,
++                "resolved_path": "/bin/evil",
++                "version_text": "1",
++                "invocation_authorized": True,
++                "mutation_authorized": False,
++                "paid_inference_authorized": False,
++                "notes": "nope",
++            }
++        ],
++    }
++    p = tmp_path / "bad.json"
++    p.write_text(json.dumps(bad))
++    with pytest.raises(CapabilityRegistryError):
++        load_runner_capabilities(p)
++
++
++def test_rejects_global_flags(tmp_path: Path):
++    for key in (
++        "global_invocation_authorized",
++        "global_mutation_authorized",
++        "global_paid_inference_authorized",
++    ):
++        bad = {
++            "schema_version": "1.0.0",
++            "global_invocation_authorized": False,
++            "global_mutation_authorized": False,
++            "global_paid_inference_authorized": False,
++            "runners": [],
++        }
++        bad[key] = True
++        p = tmp_path / f"bad_{key}.json"
++        p.write_text(json.dumps(bad))
++        with pytest.raises(CapabilityRegistryError, match=f"{key} must be false"):
++            load_runner_capabilities(p)
++
++
++def test_authorized_runners_raises_on_mutated_state():
++    from dopemux.dcp.runner_capability_registry import RunnerCapability, RunnerCapabilityRegistry
++
++    reg = RunnerCapabilityRegistry(
++        schema_version="1.0.0",
++        global_invocation_authorized=True,
++        global_mutation_authorized=False,
++        global_paid_inference_authorized=False,
++        runners=(),
++        source_path="",
++    )
++    with pytest.raises(CapabilityRegistryError, match="global_invocation_authorized must be false"):
++        reg.authorized_runners()
++
++    bad_runner = RunnerCapability(
++        runner_id="rogue",
++        installed=True,
++        resolved_path=None,
++        version_text=None,
++        invocation_authorized=True,
++        mutation_authorized=False,
++        paid_inference_authorized=False,
++        notes="",
++    )
++    reg2 = RunnerCapabilityRegistry(
++        schema_version="1.0.0",
++        global_invocation_authorized=False,
++        global_mutation_authorized=False,
++        global_paid_inference_authorized=False,
++        runners=(bad_runner,),
++        source_path="",
++    )
++    with pytest.raises(CapabilityRegistryError, match="runners with invocation_authorized true forbidden"):
++        reg2.authorized_runners()
++
++
++def test_contract_still_blocks_execution():
++    plan = build_blocked_plan("claude", ["claude", "--version"])
++    result = execute_runner_plan(plan)
++    assert result.status is RunnerPlanStatus.NOT_RUN
+diff --git a/tests/unit/dcp/test_runner_contract.py b/tests/unit/dcp/test_runner_contract.py
+new file mode 100644
+index 000000000..0bb6c0736
+--- /dev/null
++++ b/tests/unit/dcp/test_runner_contract.py
+@@ -0,0 +1,111 @@
++"""Tests for DMX-DCP-MODEL-ROUTING-MVP-0008 / R6 inert runner contract."""
++
++from __future__ import annotations
++
++import ast
++import json
++from pathlib import Path
++
++import jsonschema
++import pytest
++
++from dopemux.dcp.runner_contract import (
++    InertRunnerAdapter,
++    RunnerAdapter,
++    RunnerContractDocument,
++    RunnerContractError,
++    RunnerInvocationPlan,
++    RunnerPlanStatus,
++    build_blocked_plan,
++    document_plan,
++    execute_runner_plan,
++)
++
++
++def test_plan_rejects_authorized_true():
++    with pytest.raises(RunnerContractError):
++        RunnerInvocationPlan(
++            runner_id="claude",
++            argv=("claude", "--version"),
++            invocation_authorized=True,
++        )
++
++
++def test_execute_never_runs():
++    plan = build_blocked_plan("claude", ["claude", "--version"])
++    assert plan.invocation_authorized is False
++    result = execute_runner_plan(plan)
++    assert result.status is RunnerPlanStatus.NOT_RUN
++    assert result.exit_code is None
++    assert "not authorized" in result.error
++
++
++def test_document_plan_serializes_false_auth_and_validates_schema():
++    schema_path = (
++        Path(__file__).resolve().parents[3]
++        / "schemas"
++        / "dcp"
++        / "runner_contract.schema.json"
++    )
++    schema = json.loads(schema_path.read_text(encoding="utf-8"))
++    validator = jsonschema.Draft7Validator(schema)
++
++    # Test 1: without optional timeout_seconds
++    plan_no_timeout = build_blocked_plan("codex", ["codex", "--version"])
++    doc1 = document_plan(plan_no_timeout)
++    d1 = doc1.to_dict()
++    assert d1["invocation_authorized"] is False
++    assert "invocation_authorized" not in d1["plan"]
++    assert "timeout_seconds" not in d1["plan"]
++    assert d1["result"]["status"] == "NOT_RUN"
++    assert "no_process_spawned" in d1["proof_envelope"]["non_claims"]
++    errors1 = list(validator.iter_errors(d1))
++    assert not errors1, f"Schema validation failed: {[e.message for e in errors1]}"
++
++    # Test 2: with optional timeout_seconds as float
++    plan_with_timeout = build_blocked_plan(
++        "claude", ["claude", "--version"], timeout_seconds=30.0
++    )
++    doc2 = document_plan(plan_with_timeout)
++    d2 = doc2.to_dict()
++    assert d2["plan"]["timeout_seconds"] == 30.0
++    errors2 = list(validator.iter_errors(d2))
++    assert not errors2, f"Schema validation failed: {[e.message for e in errors2]}"
++
++
++def test_runner_adapter_protocol_conformance():
++    adapter = InertRunnerAdapter("claude")
++    assert isinstance(adapter, RunnerAdapter)
++
++    plan = adapter.plan_invocation(["claude", "--version"], timeout_seconds=15.0)
++    assert plan.runner_id == "claude"
++    assert plan.invocation_authorized is False
++    assert plan.timeout_seconds == 15.0
++
++    result = adapter.execute(plan)
++    assert result.status is RunnerPlanStatus.NOT_RUN
++
++
++def test_no_subprocess_or_bridge_import_side_effects():
++    import dopemux.dcp.runner_contract as mod
++
++    assert not hasattr(mod, "subprocess")
++    tree = ast.parse(Path(mod.__file__).read_text(encoding="utf-8"))
++    imports = []
++    for node in ast.walk(tree):
++        if isinstance(node, ast.Import):
++            imports.extend(a.name for a in node.names)
++        elif isinstance(node, ast.ImportFrom):
++            imports.append(node.module or "")
++    forbidden = {
++        "subprocess",
++        "socket",
++        "httpx",
++        "requests",
++        "asyncio",
++        "dopecon_bridge",
++        "dope_memory",
++        "dope_context",
++        "task_orchestrator",
++    }
++    assert forbidden.isdisjoint(set(imports))

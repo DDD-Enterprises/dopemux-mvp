@@ -1,0 +1,25 @@
+{
+  "change_contract": {
+    "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+    "exit_code": 0,
+    "status": "PASS",
+    "max_lane": "L2"
+  },
+  "git_diff_check": {
+    "command": "git diff --check origin/main..HEAD",
+    "exit_code": 0,
+    "whitespace_errors": 0
+  },
+  "unit_tests_dcp": {
+    "command": "uv run pytest tests/unit/dcp/",
+    "exit_code": 0,
+    "passed": 278,
+    "failed": 0
+  },
+  "red_lane_gate": {
+    "command": "uv run pytest tests/dcp/ --deselect tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified",
+    "exit_code": 0,
+    "passed": 192,
+    "failed": 0
+  }
+}
