@@ -1,0 +1,14 @@
+{
+  "packet_id": "TP-DMX-MD-R5-MCP-CONVERGENCE-001",
+  "verdict": "PASS_WITH_RISKS",
+  "auditor": {
+    "runner": "claude-code-cli",
+    "model": "claude-sonnet-5-5",
+    "runtime_family": "claude-code"
+  },
+  "checked_head": "9132beaa0f377478f7d29aed14fb267748db2df1",
+  "base_sha": "73563404e840c3d603837527efd7475e92cd9cc5",
+  "return_path": "proof/TP-DMX-MD-R5-MCP-CONVERGENCE-001/AUDIT_RETURN.json",
+  "report_path": "proof/TP-DMX-MD-R5-MCP-CONVERGENCE-001/AUDITOR_REPORT.md",
+  "authority": "NONE"
+}

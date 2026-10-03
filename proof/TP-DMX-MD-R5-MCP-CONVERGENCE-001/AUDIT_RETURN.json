@@ -1,0 +1,68 @@
+{
+  "required": true,
+  "status": "PASS_WITH_RISKS",
+  "auditor_tool": "claude-code-cli",
+  "auditor_model": "sonnet",
+  "invocation": "claude-code-cli interactive session (Claude Code; actual runtime model claude-sonnet-5-5); read-only audit of 73563404e..9132beaa0 with deterministic re-runs",
+  "exit_code": 0,
+  "report_path": "proof/TP-DMX-MD-R5-MCP-CONVERGENCE-001/AUDITOR_REPORT.md",
+  "skip_reason": null,
+  "findings": [
+    {
+      "id": "AUDIT-001",
+      "severity": "LOW",
+      "status": "OPEN",
+      "title": "Unguarded mcp>=1.0.0 remains at non-allowlisted entrypoints",
+      "body": "services/mcp-client/services/mcp-client/requirements.txt, leantime-bridge/requirements.txt and mcp-client-python/setup.py still declare mcp>=1.0.0 with no <2 bound. They are outside the write surface so leaving them is containment-correct. The leantime-bridge Dockerfile does not reference its requirements file. Follow-up: pin or confirm dead."
+    },
+    {
+      "id": "AUDIT-002",
+      "severity": "MEDIUM",
+      "status": "OPEN",
+      "title": "No tests for dope-context behavior changes",
+      "body": "Packet S1 requires focused tests that reproduce old defects or assert repaired behavior. Only the CLI lazy-import test was added. Nothing covers the pypdf-then-PyPDF2 import order, the guarded tiktoken.get_encoding degrade path, or the narrowed except in get_chunk_complexity. The Qdrant contract test in the receipts predates this change (base commit 5048571db)."
+    },
+    {
+      "id": "AUDIT-003",
+      "severity": "LOW",
+      "status": "OPEN",
+      "title": "Uncommitted uv.lock modification in worktree (+27 lines)",
+      "body": "Adds pypdf, python-magic and tiktoken after the pyproject edit, apparently from a non-frozen uv run. The candidate commit is clean and the DEP integrator owns uv.lock. It must not be staged or pushed with this packet; revert with git checkout -- uv.lock after audit closure. Committed pyproject.toml and uv.lock are inconsistent until the DEP integrator regenerates the lock. The dope-context image build is unaffected because its Dockerfile copies only pyproject.toml."
+    },
+    {
+      "id": "AUDIT-004",
+      "severity": "LOW",
+      "status": "OPEN",
+      "title": "Third lazy-import test requires litellm installed and is a weak regression guard",
+      "body": "test_sync_litellm_database_imports_litellm_lazily asserts litellm in sys.modules, so it fails in an environment without litellm, where the new ImportError branch is taken. That branch has no direct test. The test runs in-process and passes against base when dopemux resolves to the candidate source. The two subprocess tests are the real guards and both fail on base as verified."
+    },
+    {
+      "id": "AUDIT-005",
+      "severity": "LOW",
+      "status": "OPEN",
+      "title": "tiktoken pre-warm makes the dope-context image build require egress",
+      "body": "The build downloads the cl100k_base BPE file from openaipublic.blob.core.windows.net and fails hard if it is unreachable. This is fail-closed by design. No image was built, so the pre-warm is untested."
+    },
+    {
+      "id": "AUDIT-006",
+      "severity": "INFO",
+      "status": "OPEN",
+      "title": "Packet S1 items not evidenced in the diff",
+      "body": "Qdrant SDK import contract fix was already present at base (5048571db). Docker/vendor context pollution guard: no .dockerignore was touched and it is not on the allowlist. The dope-context image build context is the repo root, so the root .dockerignore governs (the service-level one is not applied). It excludes .git, __pycache__, caches, .venv, node_modules and *.log, but has no logs/ or data/ directory pattern. Neither services/dope-context/logs nor data exists in this worktree, so no pollution was observed. Whether the S1 item required a change is for the supervisor to decide."
+    },
+    {
+      "id": "AUDIT-007",
+      "severity": "INFO",
+      "status": "OPEN",
+      "title": "Requested return shape conflicts with embedded_audit.schema.json",
+      "body": "The task requested verdict/runner/model/runtime_family/checked_head/base_sha. The schema sets additionalProperties false, requires different keys and has no claude-sonnet-5-5 enum value. This file follows the schema (auditor_model sonnet; literal model id in invocation). Identity fields are in sidecar AUDIT_RETURN.identity.json."
+    }
+  ],
+  "fixes_applied": [],
+  "remaining_risks": [
+    "Missing tests for dope-context changes (AUDIT-002)",
+    "Unguarded mcp pins at non-allowlisted entrypoints (AUDIT-001)",
+    "Uncommitted uv.lock change must not be committed (AUDIT-003)",
+    "docker build, live services and preflight.sh not run by auditor"
+  ]
+}

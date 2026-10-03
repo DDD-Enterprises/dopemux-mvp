@@ -1,0 +1,354 @@
+diff --git a/docker/mcp-servers-source/pal-stdio/Dockerfile b/docker/mcp-servers-source/pal-stdio/Dockerfile
+index 9853a2a84..e1b6d07de 100644
+--- a/docker/mcp-servers-source/pal-stdio/Dockerfile
++++ b/docker/mcp-servers-source/pal-stdio/Dockerfile
+@@ -21,5 +21,22 @@ RUN rm -rf .venv && uv venv && \
+     . .venv/bin/activate && \
+     uv pip install -r requirements.txt
+ 
++# Prove at BUILD time that this image can actually serve MCP.
++#
++# The failure this catches is invisible at runtime: on mcp 2.x the low-level
++# Server API no longer exposes list_tools, so server.py raises AttributeError
++# during startup. Importing the module here exercises the @server.list_tools()
++# registration that broke, needs no API keys, and fails the build instead of
++# shipping an image whose server cannot start.
++RUN /app/.venv/bin/python -c \
++      "import importlib, sys; \
++       import importlib.metadata as md; \
++       v = md.version('mcp'); \
++       sys.exit('FATAL: resolved mcp ' + v + '; server.py requires mcp<2') if int(v.split('.')[0]) >= 2 else None; \
++       from mcp.server import Server; \
++       sys.exit('FATAL: mcp ' + v + ' has no Server.list_tools') if not hasattr(Server, 'list_tools') else None; \
++       importlib.import_module('server'); \
++       print('build guard OK: mcp ' + v + ', server.py imports and registers handlers')"
++
+ # Run the PAL MCP server directly on stdio
+ CMD ["/app/.venv/bin/python", "server.py"]
+diff --git a/docker/mcp-servers-source/pal/Dockerfile b/docker/mcp-servers-source/pal/Dockerfile
+index 5f0955278..d9e55875c 100644
+--- a/docker/mcp-servers-source/pal/Dockerfile
++++ b/docker/mcp-servers-source/pal/Dockerfile
+@@ -21,6 +21,24 @@ RUN rm -rf .venv && uv venv && \
+     . .venv/bin/activate && \
+     uv pip install -r requirements.txt
+ 
++# Prove at BUILD time that this image can actually serve MCP.
++#
++# The failure this catches is invisible at runtime: on mcp 2.x the low-level
++# Server API no longer exposes list_tools, so server.py raises AttributeError
++# during startup while the HTTP wrapper's /health still reports the process as
++# running. Importing the module here exercises the @server.list_tools()
++# registration that broke, needs no API keys, and fails the build instead of
++# shipping an image whose server cannot start.
++RUN /app/.venv/bin/python -c \
++      "import importlib, sys; \
++       import importlib.metadata as md; \
++       v = md.version('mcp'); \
++       sys.exit('FATAL: resolved mcp ' + v + '; server.py requires mcp<2') if int(v.split('.')[0]) >= 2 else None; \
++       from mcp.server import Server; \
++       sys.exit('FATAL: mcp ' + v + ' has no Server.list_tools') if not hasattr(Server, 'list_tools') else None; \
++       importlib.import_module('server'); \
++       print('build guard OK: mcp ' + v + ', server.py imports and registers handlers')"
++
+ # Expose port
+ EXPOSE 3003
+ 
+diff --git a/docker/mcp-servers-source/pal/pal-mcp-server/requirements.txt b/docker/mcp-servers-source/pal/pal-mcp-server/requirements.txt
+index 5aa268cc0..7c2fb9cbe 100644
+--- a/docker/mcp-servers-source/pal/pal-mcp-server/requirements.txt
++++ b/docker/mcp-servers-source/pal/pal-mcp-server/requirements.txt
+@@ -1,4 +1,4 @@
+-mcp>=1.28.1
++mcp>=1.28.1,<2.0.0
+ google-genai>=1.19.0
+ openai>=1.66.0  # Responses API plus httpx 0.28.0 compatibility
+ pydantic>=2.0.0
+diff --git a/docker/mcp-servers-source/services/mcp-client-python/services/mcp-client-python/requirements.txt b/docker/mcp-servers-source/services/mcp-client-python/services/mcp-client-python/requirements.txt
+index 991bcb252..bf75d3782 100644
+--- a/docker/mcp-servers-source/services/mcp-client-python/services/mcp-client-python/requirements.txt
++++ b/docker/mcp-servers-source/services/mcp-client-python/services/mcp-client-python/requirements.txt
+@@ -1,2 +1,2 @@
+-mcp>=1.0.0
++mcp>=1.0.0,<2.0.0
+ aiohttp>=3.9.0
+\ No newline at end of file
+diff --git a/docker/mcp-servers-source/services/mcp-client/requirements.txt b/docker/mcp-servers-source/services/mcp-client/requirements.txt
+index b80dcc0ed..251f2d37a 100644
+--- a/docker/mcp-servers-source/services/mcp-client/requirements.txt
++++ b/docker/mcp-servers-source/services/mcp-client/requirements.txt
+@@ -1,4 +1,4 @@
+-mcp>=1.0.0
++mcp>=1.0.0,<2.0.0
+ aiohttp>=3.9.0
+ asyncio
+ subprocess
+\ No newline at end of file
+diff --git a/pyproject.toml b/pyproject.toml
+index a094106d5..ec2af33cb 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -125,6 +125,9 @@ services = [
+     "beautifulsoup4>=4.12.0",
+     "lxml>=6.1.0",
+     "rank_bm25",
++    "tiktoken>=0.7.0",
++    "pypdf>=4.0.0",
++    "python-magic>=0.4.27",
+     "python-multipart>=0.0.31",
+     "aioredis>=2.0.1",
+     "asyncio-mqtt>=0.16.0",
+diff --git a/scripts/preflight.sh b/scripts/preflight.sh
+index 1ecabae8c..a053922c6 100755
+--- a/scripts/preflight.sh
++++ b/scripts/preflight.sh
+@@ -178,8 +178,8 @@ if ! command -v jq >/dev/null 2>&1; then
+   exit 0
+ fi
+ 
+-failures_json="$(json_array "${FAILURES[@]}")"
+-skipped_json="$(json_array "${SKIPPED[@]}")"
++failures_json="$(json_array ${FAILURES[@]+"${FAILURES[@]}"})"
++skipped_json="$(json_array ${SKIPPED[@]+"${SKIPPED[@]}"})"
+ repo_url="$(git config --get remote.origin.url || true)"
+ repo_url="${repo_url:-UNKNOWN}"
+ branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+diff --git a/services/dope-context/Dockerfile b/services/dope-context/Dockerfile
+index 05e7e174c..174fe091d 100644
+--- a/services/dope-context/Dockerfile
++++ b/services/dope-context/Dockerfile
+@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
+     git \
+     curl \
+     build-essential \
++    libmagic1 \
+     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+ 
+ # Context-4 support and model-aware tokenization require the modern Voyage SDK.
+@@ -28,6 +29,15 @@ COPY services/dope-context/ .
+ # Try to install the MCP package if it exists
+ RUN if [ -d "/app/src/mcp" ]; then cd /app/src/mcp && uv pip install --system --no-cache -e . || true; fi
+ 
++# tiktoken downloads its BPE file from openaipublic.blob.core.windows.net on
++# first get_encoding() call. Warm it at build time into an image-local cache so
++# DocumentProcessor() works on an egress-restricted host instead of raising
++# ConnectionError deep inside __init__.
++ENV TIKTOKEN_CACHE_DIR=/app/.tiktoken-cache
++RUN mkdir -p "$TIKTOKEN_CACHE_DIR" \
++    && python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')" \
++    && test -n "$(ls -A "$TIKTOKEN_CACHE_DIR")"
++
+ # Set environment variables
+ ENV MCP_SERVER_PORT=3010
+ ENV PYTHONUNBUFFERED=1
+diff --git a/services/dope-context/src/mcp/server.py b/services/dope-context/src/mcp/server.py
+index 2369ac650..9e241fce4 100644
+--- a/services/dope-context/src/mcp/server.py
++++ b/services/dope-context/src/mcp/server.py
+@@ -3221,7 +3221,7 @@ async def get_chunk_complexity(file_path: str, symbol: str) -> Dict:
+ 
+     try:
+         source = resolved.read_text(encoding="utf-8", errors="ignore")
+-    except Exception as exc:
++    except (OSError, UnicodeDecodeError) as exc:
+         return {
+             "complexity": 0.5,
+             "method": "ast-heuristic",
+diff --git a/services/dope-context/src/preprocessing/document_processor.py b/services/dope-context/src/preprocessing/document_processor.py
+index 193edcb02..38ea15988 100644
+--- a/services/dope-context/src/preprocessing/document_processor.py
++++ b/services/dope-context/src/preprocessing/document_processor.py
+@@ -43,12 +43,17 @@ except ImportError:  # pragma: no cover
+     markdown = Any  # type: ignore
+ 
+ try:
+-    from PyPDF2 import PdfReader
++    from pypdf import PdfReader
+ 
+     PYPDF2_AVAILABLE = True
+ except ImportError:  # pragma: no cover
+-    PYPDF2_AVAILABLE = False
+-    PdfReader = Any  # type: ignore
++    try:
++        from PyPDF2 import PdfReader
++
++        PYPDF2_AVAILABLE = True
++    except ImportError:
++        PYPDF2_AVAILABLE = False
++        PdfReader = Any  # type: ignore
+ 
+ try:
+     import magic
+@@ -65,10 +70,17 @@ class DocumentProcessor:
+ 
+     def __init__(self, encoding_name: str = "cl100k_base"):
+         """Initialize document processor."""
++        self.encoding = None
+         if TIKTOKEN_AVAILABLE:
+-            self.encoding = tiktoken.get_encoding(encoding_name)
+-        else:
+-            self.encoding = None
++            try:
++                self.encoding = tiktoken.get_encoding(encoding_name)
++            except Exception as exc:  # pragma: no cover
++                logger.warning(
++                    "tiktoken.get_encoding(%s) failed (%s); "
++                    "token_count will use the character estimate",
++                    encoding_name,
++                    exc,
++                )
+         self.magic = magic.Magic(mime=True) if MAGIC_AVAILABLE else None
+ 
+     def detect_document_type(self, file_path: str) -> DocumentType:
+diff --git a/src/dopemux/litellm_proxy.py b/src/dopemux/litellm_proxy.py
+index fb91df17a..55cb166f7 100644
+--- a/src/dopemux/litellm_proxy.py
++++ b/src/dopemux/litellm_proxy.py
+@@ -17,7 +17,6 @@ from dataclasses import dataclass
+ from pathlib import Path
+ from typing import Dict, Optional, Tuple
+ 
+-import litellm  # type: ignore
+ import yaml
+ 
+ 
+@@ -484,6 +483,14 @@ def sync_litellm_database(instance_dir: Path, db_url: str) -> tuple[str, bool]:
+             False,
+         )
+ 
++    try:
++        import litellm  # type: ignore
++    except ImportError:
++        return (
++            "⚠️  LiteLLM metrics disabled (litellm package not installed)",
++            False,
++        )
++
+     if not getattr(litellm, "__file__", None):
+         return (
+             "⚠️  LiteLLM metrics disabled (cannot locate litellm package path)",
+diff --git a/tests/test_cli_litellm_lazy_import.py b/tests/test_cli_litellm_lazy_import.py
+new file mode 100644
+index 000000000..7d353c4ba
+--- /dev/null
++++ b/tests/test_cli_litellm_lazy_import.py
+@@ -0,0 +1,119 @@
++"""Regression tests for keeping generic CLI imports offline from LiteLLM."""
++
++from __future__ import annotations
++
++import os
++import socket
++import subprocess
++import sys
++import textwrap
++from pathlib import Path
++
++import pytest
++
++
++REPO_ROOT = Path(__file__).resolve().parents[1]
++SRC_PATH = REPO_ROOT / "src"
++
++
++def _run_isolated_python(script: str) -> subprocess.CompletedProcess[str]:
++    env = os.environ.copy()
++    env["PYTHONPATH"] = str(SRC_PATH)
++    return subprocess.run(
++        [sys.executable, "-c", textwrap.dedent(script)],
++        env=env,
++        capture_output=True,
++        text=True,
++        check=False,
++    )
++
++
++def test_litellm_proxy_import_does_not_import_litellm() -> None:
++    result = _run_isolated_python(
++        """
++        import builtins
++        import sys
++
++        original_import = builtins.__import__
++
++        def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
++            if name == "litellm" or name.startswith("litellm."):
++                raise RuntimeError(f"blocked litellm import: {name}")
++            return original_import(name, globals, locals, fromlist, level)
++
++        builtins.__import__ = guarded_import
++        import dopemux.litellm_proxy
++
++        if "litellm" in sys.modules:
++            raise AssertionError("litellm present in sys.modules after import")
++        """
++    )
++
++    assert result.returncode == 0, result.stdout + result.stderr
++
++
++def test_generic_cli_import_offline_no_litellm_no_network() -> None:
++    result = _run_isolated_python(
++        """
++        import builtins
++        import socket
++        import sys
++
++        original_import = builtins.__import__
++
++        def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
++            if name == "litellm" or name.startswith("litellm."):
++                raise RuntimeError(f"blocked litellm import: {name}")
++            return original_import(name, globals, locals, fromlist, level)
++
++        def blocked_network(*args, **kwargs):
++            raise RuntimeError("network attempted during CLI import")
++
++        builtins.__import__ = guarded_import
++        socket.socket.connect = blocked_network
++        socket.socket.connect_ex = blocked_network
++        socket.create_connection = blocked_network
++
++        import dopemux.cli
++
++        if "litellm" in sys.modules:
++            raise AssertionError("litellm present in sys.modules after CLI import")
++        """
++    )
++
++    assert result.returncode == 0, result.stdout + result.stderr
++
++
++def test_sync_litellm_database_imports_litellm_lazily(
++    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
++) -> None:
++    def blocked_network(*args: object, **kwargs: object) -> None:
++        raise RuntimeError("network attempted during lazy LiteLLM import")
++
++    monkeypatch.setattr(socket.socket, "connect", blocked_network)
++    monkeypatch.setattr(socket.socket, "connect_ex", blocked_network)
++    monkeypatch.setattr(socket, "create_connection", blocked_network)
++
++    import dopemux.litellm_proxy
++
++    monkeypatch.setattr("dopemux.litellm_proxy.shutil.which", lambda _: "/usr/bin/prisma")
++
++    class PrismaBlocked(RuntimeError):
++        pass
++
++    def blocked_prisma(*args: object, **kwargs: object) -> None:
++        raise PrismaBlocked("prisma execution intentionally blocked")
++
++    monkeypatch.setattr("dopemux.litellm_proxy.subprocess.run", blocked_prisma)
++
++    sys.modules.pop("litellm", None)
++    assert "litellm" not in sys.modules
++
++    try:
++        dopemux.litellm_proxy.sync_litellm_database(
++            tmp_path, "postgresql://user:pass@localhost:5432/litellm"
++        )
++    except PrismaBlocked:
++        pass
++
++    assert "litellm" in sys.modules
