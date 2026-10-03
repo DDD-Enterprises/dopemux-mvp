@@ -1,0 +1,25 @@
+# Exact invocation record -- PR #1389 L2 embedded audit, final (TP-DMX-PR1389-L2-AUDIT-005)
+# History: -001 PASS @808c0c054; -002 PASS @176d965e8 (stale after merging main #1395);
+#          -003 FAIL @9932d542f (F-01 lossy-twin; repaired a289260ca; record in
+#          proof/TP-DMX-PR1389-L2-AUDIT-004/review_bundle/prior_attempt_003_FAIL/);
+#          -004 PASS @370d84f59 (stale after final doc fixes dd6ee150c); -005 PASS @dd6ee150cd2abcf5b59149fac1059e4057924752 (this record).
+# Content frozen at dd6ee150cd2abcf5b59149fac1059e4057924752 by operator decision (further non-blocking bot findings -> follow-up PR).
+# Executed from: <repo>/.worktrees/agent-files-optimization (clean before and after the run)
+# CI settled before dispatch: 21/21 non-gate checks green on dd6ee150cd2abcf5b59149fac1059e4057924752.
+# AUDIT_START_UTC=2026-10-03T09:49:31Z
+# AUDIT_END_UTC=2026-10-03T09:55:37Z
+# exit_code=0  duration_seconds=362.24  num_turns=1  status=SUCCESS
+# conversation_id=de28a510-abe0-4df3-8312-5eadd3fcb899
+# usage: input=242522 output=23528 thinking=9045 cache_read=2759650 total=266050
+# raw output sha256=2bd629250de1b9dae5e488d2c0553542b16c97a556dc1fabb2312bb526237607
+# custody verified immediately before dispatch: git rev-parse HEAD == dd6ee150cd2abcf5b59149fac1059e4057924752 and git status --porcelain empty
+# agy CLI version 1.2.15
+
+agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m \
+    --output-format json --add-dir <repo>/.worktrees/agent-files-optimization \
+    --print="$(cat AUDIT_INPUT.md)"
+
+# auditor_model: gemini-3.1-pro-high is an exact enum value in schemas/proof/embedded_audit.schema.json.
+# audit_identity.auditor.effort = "high": from the model variant ("Gemini 3.1 Pro (High)"); no separate --effort flag.
+# Known diff-check exception (unchanged): git diff --check flags two verbatim auditor scratch files in
+#   proof/TP-DMX-PR1389-L2-AUDIT-002/review_bundle/auditor_scratch/ (blank line at EOF); kept byte-exact.
