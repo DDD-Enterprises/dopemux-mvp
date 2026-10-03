@@ -79,11 +79,12 @@ scripts/smoke_up.sh
 # Full stack (MCP servers, bridge, orchestrator, app services) — always via the CLI,
 # never raw `docker compose up` (AGENTS.md §12). start-all's --verify only runs when
 # scripts/start-all.sh exists (absent in a clean checkout, where start-all falls back to
-# plain compose startup without checks). There is no single full-stack health gate:
+# plain compose startup without checks). There is no single enforcing full-stack health gate:
 #   - `dopemux mcp doctor` = sidecar/config diagnostics (conport, dope-memory, task-orchestrator only)
-#   - `scripts/smoke_up.sh` runs tools/smoke_runtime_gate.py (container/port/HTTP checks)
-#     for the `enabled_in_smoke` services in services/registry.yaml only
-#   - other services: probe their `health_path` from services/registry.yaml
+#   - `scripts/smoke_up.sh` runs tools/smoke_runtime_gate.py, which gates (non-zero exit) only the
+#     hardcoded conport, dopecon-bridge and task-orchestrator services
+#   - `python tools/ports_health_audit.py --mode runtime` probes every services/registry.yaml entry
+#     (docker status + health_path) and writes reports/ports_health_matrix.{json,md}; report only, exits 0
 dopemux mcp start-all
 
 # Repo sidecars only (assumes shared infrastructure is already up):
