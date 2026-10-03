@@ -32,5 +32,7 @@ Operate as a policy-governed enforcement engine for PRs.
 
 ## Evidence Rules
 - Never claim success without artifact citation.
-- Resolve threads only when `decide_thread_disposition` (`src/dopemux_pr_merge_specialist/thread_resolution.py`) marks them safe: green verification and no newer objection.
+- Resolve threads only through the runtime gates (`src/dopemux_pr_merge_specialist/`):
+  - Outdated / resolution-signal threads: `decide_thread_disposition` returns `auto_resolve_outdated` only with green validation and no newer objection.
+  - Implemented / agentic-fix threads: resolved after post-change validation passes, via `_resolve_applied_threads_after_validation()` (`queue_drain.py`) → `resolve_verified_threads()` (`thread_resolution.py`), for applied dispositions only.
 - Escalate conflicts if classified as `HIGH_RISK`.
