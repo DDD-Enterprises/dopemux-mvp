@@ -1,0 +1,143 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "effort": "high",
+      "model": "gemini-3.8-flash-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "independence": "PROVEN"
+  },
+  "base_sha": "e9c34acdf741975508ea02a5fc2dfa229fe498db",
+  "branch": "successor/ui-convergence-r5",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude-code CLI independent re-audit of HEAD 6f86c4e5218b834ba604a3b1e8cf28d01d643dcd against base e9c34acdf741975508ea02a5fc2dfa229fe498db (actual runtime model claude-sonnet-5-5; prompt requested claude-sonnet-4-6)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MD-R5-UI-CONVERGENCE-001/AUDITOR_REPAIR_REPORT.md",
+    "skip_reason": null,
+    "findings": [
+      {
+        "id": "AUDIT-001",
+        "severity": "BLOCKING",
+        "status": "RESOLVED",
+        "title": "Lockfile security overrides and ws 8.21.0 floor",
+        "body": "ui-dashboard/pnpm-lock.yaml and package.json have 0-line diffs against base and the lockfile has a 0-line diff against origin/main. The ws 8.21.0 floor and the #1215 overrides are intact."
+      },
+      {
+        "id": "AUDIT-002",
+        "severity": "HIGH",
+        "status": "RESOLVED",
+        "title": "Lockfile change did not match its stated purpose",
+        "body": "The lockfile is no longer part of the candidate. The changed paths are six files under ui-dashboard/src."
+      },
+      {
+        "id": "AUDIT-003",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "Stale-promise guards untested in TaskSequencer and CandidateShaChip",
+        "body": "The PredictionPanel test now wraps resolution in act() and fails when the guard is removed, so that part is fixed. Removing the TaskSequencer currentTaskIdRef guard or the PortfolioTable activeShaRef guards still leaves 54/54 tests passing, so those guards are untested. The prompt's claim that AUDIT-003 is resolved only holds for PredictionPanel."
+      },
+      {
+        "id": "AUDIT-004",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "RepositoryPlannerPage onError propagation",
+        "body": "RepositoryPlannerPage tracks copyError, renders a dismissible error Alert and passes onError={setCopyError} to PortfolioTable. A test covers the Alert."
+      },
+      {
+        "id": "AUDIT-005",
+        "severity": "LOW",
+        "status": "RESOLVED",
+        "title": "CandidateShaChip aria-label reflects the copy failure",
+        "body": "aria-label becomes 'Failed to copy candidate SHA <sha>' when copyFailed is true. A test asserts it."
+      },
+      {
+        "id": "AUDIT-006",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Step badges are focusable non-interactive spans with aria-label",
+        "body": "Unchanged from the prior round. Each task adds a tab stop with no action, aria-label on a role-less element is prohibited by ARIA 1.2, and the tooltip duplicates the label."
+      },
+      {
+        "id": "AUDIT-007",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Ritual Complete aria-live is redundant",
+        "body": "Unchanged from the prior round. role=status already implies polite, and the conditionally mounted banner may not announce."
+      },
+      {
+        "id": "AUDIT-009",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "CandidateShaChip stays on 'copied' after a failed re-copy",
+        "body": "The failure paths in handleCopy set copyFailed and replace the timer, but never reset isCopied. After a successful copy, a rejected copy within 2s leaves isCopied true with no timer to clear it. A temporary probe test confirmed the aria-label still read 'Candidate SHA aaaaaaaaaaaa copied' after 10s of advanced timers. onError still fires, so the page Alert appears. Fix: call setIsCopied(false) in both failure branches."
+      },
+      {
+        "id": "AUDIT-008",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "UI source changes verified",
+        "body": "The review bundle is byte-identical to git diff base..HEAD and git diff --check is clean. vitest passes 54/54, tsc --noEmit is clean and vite build succeeds. Timer cleanup on SHA, prediction and task change behaves as intended."
+      },
+      {
+        "id": "AUDIT-010",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Prompt candidate SHA does not exist",
+        "body": "The prompt names 6f86c4e5254199c08605ee78fb6d766ce51b88e1, which is a bad object. HEAD is 6f86c4e5218b834ba604a3b1e8cf28d01d643dcd, and only the first 8 hex characters match. The bundle diff matches HEAD exactly, so the audited content is HEAD."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Stale-promise guards in TaskSequencer and CandidateShaChip have no test that would catch their removal.",
+      "CandidateShaChip can show a false 'copied' state indefinitely after success then failure within 2s (AUDIT-009).",
+      "The dispatch prompt's candidate SHA does not exist in the repository, so provenance records must use 6f86c4e5218b834ba604a3b1e8cf28d01d643dcd.",
+      "The audit ran on claude-sonnet-5-5, not the claude-sonnet-4-6 requested; the schema enum has no value for either, so 'sonnet' is used.",
+      "Under pnpm 12 the package.json pnpm.overrides block may be ignored, so a future lockfile regeneration could drop the security floors (carried from the prior round)."
+    ],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "generated_at": "2026-10-03T06:31:03.659664+00:00",
+  "head_sha": "6f86c4e5218b834ba604a3b1e8cf28d01d643dcd",
+  "packet_id": "TP-DMX-MD-R5-UI-CONVERGENCE-001",
+  "verifications": [
+    {
+      "command": "pnpm test run",
+      "exit_code": 0,
+      "passed": true,
+      "test_count": 53
+    },
+    {
+      "command": "pnpm run build",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "passed": true
+    }
+  ]
+}

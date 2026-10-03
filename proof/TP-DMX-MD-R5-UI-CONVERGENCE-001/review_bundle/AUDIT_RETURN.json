@@ -1,0 +1,81 @@
+{
+  "required": true,
+  "status": "FAIL",
+  "auditor_tool": "claude-code-cli",
+  "auditor_model": "opus",
+  "invocation": "claude --safe-mode -p c4_audit_prompt.md (Claude Code CLI; actual runtime model claude-opus-5-5)",
+  "exit_code": 0,
+  "report_path": "proof/TP-DMX-MD-R5-UI-CONVERGENCE-001/AUDITOR_REPORT.md",
+  "skip_reason": null,
+  "findings": [
+    {
+      "id": "AUDIT-001",
+      "severity": "BLOCKING",
+      "status": "OPEN",
+      "title": "Lockfile regeneration reverts #1215 security overrides and downgrades ws 8.21.0 to 8.18.3",
+      "body": "ui-dashboard/pnpm-lock.yaml deletes the whole overrides block (nanoid, @babel/core, postcss, brace-expansion, socket.io-parser, undici, ws 8.21.0, esbuild, yaml@^1.0.0). It re-resolves ws to 8.18.3 on the production path socket.io-client -> engine.io-client -> ws, and loosens pinned peer specs (@babel/core to ^7.0.0, esbuild to ^0.27.0 || ^0.28.0). package.json still pins ws 8.21.0. git log -S traces that pin to 5d694cc98 fix(security): close Dependabot vulnerability floors (#1215). The frozen install passes under pnpm 12.3.4 only because that version no longer honors package.json pnpm.overrides. Fix: restore the base lockfile, or move the overrides to pnpm-workspace.yaml and regenerate."
+    },
+    {
+      "id": "AUDIT-002",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "title": "Lockfile change does not match its stated purpose (@humanfs/node convergence)",
+      "body": "@humanfs/core@0.19.1 and @humanfs/node@0.16.7 are identical at base and candidate, so the diff has no @humanfs change. The real content is the override removal and peer re-resolution in AUDIT-001. validate_change_contract.py checks paths only, so it cannot catch this."
+    },
+    {
+      "id": "AUDIT-003",
+      "severity": "MEDIUM",
+      "status": "OPEN",
+      "title": "Stale-promise tests are vacuous for PredictionPanel, TaskSequencer and CandidateShaChip",
+      "body": "Removing each stale-promise guard (currentPredictionRef, currentTaskIdRef, activeShaRef) still leaves all 53 tests passing. The PredictionPanel stale test resolves the promise and asserts outside act(), so the state update never flushes before the assertion. When the resolution is wrapped in await act(...), the test passes with the guard and fails without it, so the guard logic is correct but untested. TaskSequencer and PortfolioTable have no stale-promise test at all."
+    },
+    {
+      "id": "AUDIT-004",
+      "severity": "LOW",
+      "status": "OPEN",
+      "title": "RepositoryPlannerPage does not pass onError to PortfolioTable",
+      "body": "PortfolioTable gained an optional onError, but RepositoryPlannerPage.tsx:165 renders PortfolioTable without it. Copy failures on the page only show as a 2-second visual chip state."
+    },
+    {
+      "id": "AUDIT-005",
+      "severity": "LOW",
+      "status": "OPEN",
+      "title": "CandidateShaChip aria-label does not reflect the copyFailed state",
+      "body": "In the failed state the visible label reads 'Copy failed: <sha>' but aria-label stays 'Copy candidate SHA <sha>'. The aria-label overrides the visible label, so screen-reader users get no failure feedback."
+    },
+    {
+      "id": "AUDIT-006",
+      "severity": "INFO",
+      "status": "ACCEPTED_RISK",
+      "title": "Step badges are focusable non-interactive spans with aria-label",
+      "body": "The Typography caption renders a span with tabIndex 0 and aria-label. This adds a tab stop per task with no action, and aria-label on an element without a role is prohibited by ARIA 1.2 and inconsistently announced. The tooltip and label wording are nearly the same, so content is announced twice. This matches what the packet asked for."
+    },
+    {
+      "id": "AUDIT-007",
+      "severity": "INFO",
+      "status": "ACCEPTED_RISK",
+      "title": "Ritual Complete aria-live is redundant and may not announce",
+      "body": "role=status already implies polite. The banner is mounted conditionally with its content already present, so many screen readers will not announce it whether or not aria-live is set."
+    },
+    {
+      "id": "AUDIT-008",
+      "severity": "INFO",
+      "status": "RESOLVED",
+      "title": "UI source changes are otherwise correct; build, typecheck and tests verified independently",
+      "body": "The review bundle matches git diff base..candidate. Independently re-ran in a clean worktree: frozen install OK, vitest 53/53, tsc 0 errors, vite build OK. Copy state and timer resets, onError propagation, timer cleanup on SHA change and unmount, and MUI Chip's single-trigger keyboard handling all behave as described. Benign ABA edge case: if a prediction returns to the same value while a copy is pending, feedback still shows."
+    }
+  ],
+  "fixes_applied": [],
+  "remaining_risks": [
+    "Merging as-is ships ws 8.18.3 instead of the security-pinned 8.21.0 and leaves pnpm-lock.yaml inconsistent with package.json overrides.",
+    "Under pnpm 12 the package.json pnpm.overrides block appears to be ignored, so any future lockfile regeneration will drop the security floors again unless the overrides move to pnpm-workspace.yaml.",
+    "Stale-promise guards in three components have no test that would catch their removal.",
+    "The audit ran on claude-opus-5-5, not the claude-sonnet-4-6 requested in ADMISSION_RECEIPT.json and the dispatch receipt."
+  ],
+  "instruction_like_content": {
+    "detected": false,
+    "match_count": 0,
+    "truncated": false,
+    "matches": []
+  }
+}

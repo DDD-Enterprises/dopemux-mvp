@@ -1,0 +1,607 @@
+diff --git a/ui-dashboard/src/components/PredictionPanel.tsx b/ui-dashboard/src/components/PredictionPanel.tsx
+index ddf3c29b1..d74ac1a80 100644
+--- a/ui-dashboard/src/components/PredictionPanel.tsx
++++ b/ui-dashboard/src/components/PredictionPanel.tsx
+@@ -19,6 +19,8 @@ export default function PredictionPanel({ prediction, currentLoad, onError }: Pr
+   const roast = getDynamicRoast('15-min Prediction', prediction ?? null);
+   const [isCopied, setIsCopied] = useState(false);
+   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
++  const currentPredictionRef = useRef(prediction);
++  currentPredictionRef.current = prediction;
+ 
+   const isTrendingUp = hasPrediction && typeof currentLoad === 'number' ? prediction > currentLoad : true;
+   const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;
+@@ -30,8 +32,13 @@ export default function PredictionPanel({ prediction, currentLoad, onError }: Pr
+     }
+     if (!hasPrediction) return;
+ 
++    const capturedPrediction = prediction;
++
+     try {
+       await navigator.clipboard.writeText(`15-min Forecast: ${value}% (${statusMeta.label}) - ${roast}`);
++      if (currentPredictionRef.current !== capturedPrediction) {
++        return;
++      }
+       setIsCopied(true);
+ 
+       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+@@ -40,10 +47,21 @@ export default function PredictionPanel({ prediction, currentLoad, onError }: Pr
+         copyTimeoutRef.current = null;
+       }, 2000);
+     } catch (err) {
++      if (currentPredictionRef.current !== capturedPrediction) {
++        return;
++      }
+       const errorMsg = err instanceof Error ? err.message : String(err);
+       onError?.(`Failed to copy forecast: ${errorMsg}`);
+     }
+-  }, [hasPrediction, value, statusMeta.label, roast, onError]);
++  }, [hasPrediction, prediction, value, statusMeta.label, roast, onError]);
++
++  useEffect(() => {
++    setIsCopied(false);
++    if (copyTimeoutRef.current) {
++      clearTimeout(copyTimeoutRef.current);
++      copyTimeoutRef.current = null;
++    }
++  }, [prediction]);
+ 
+   useEffect(() => {
+     return () => {
+diff --git a/ui-dashboard/src/components/TaskSequencer.tsx b/ui-dashboard/src/components/TaskSequencer.tsx
+index 7c280411f..19317708d 100644
+--- a/ui-dashboard/src/components/TaskSequencer.tsx
++++ b/ui-dashboard/src/components/TaskSequencer.tsx
+@@ -145,6 +145,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+     return () => clearInterval(interval);
+   }, []);
+ 
++  const currentTaskIdRef = useRef(currentTaskId);
++  currentTaskIdRef.current = currentTaskId;
++
+   useEffect(() => {
+     setTaskTimer(0);
+     setIsTimerRunning(false);
+@@ -153,6 +156,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+       clearTimeout(skipConfirmTimeoutRef.current);
+       skipConfirmTimeoutRef.current = null;
+     }
++    setIsTaskTitleCopied(false);
++    if (copyTaskTitleTimeoutRef.current) {
++      clearTimeout(copyTaskTitleTimeoutRef.current);
++      copyTaskTitleTimeoutRef.current = null;
++    }
+   }, [currentTaskId]);
+ 
+   useEffect(() => {
+@@ -184,10 +192,15 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+   }, [tasks, cognitiveState.status]);
+ 
+   const handleCopyTaskTitle = (title: string) => {
+-    if (!navigator.clipboard?.writeText) return;
++    const capturedTaskId = currentTaskIdRef.current;
++    if (!navigator.clipboard?.writeText) {
++      onError?.('Clipboard API is not supported in this browser or context.');
++      return;
++    }
+     void navigator.clipboard
+       .writeText(title)
+       .then(() => {
++        if (currentTaskIdRef.current !== capturedTaskId) return;
+         setIsTaskTitleCopied(true);
+         if (copyTaskTitleTimeoutRef.current) clearTimeout(copyTaskTitleTimeoutRef.current);
+         copyTaskTitleTimeoutRef.current = setTimeout(() => {
+@@ -195,7 +208,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+           copyTaskTitleTimeoutRef.current = null;
+         }, 2000);
+       })
+-      .catch(() => {});
++      .catch((err) => {
++        if (currentTaskIdRef.current !== capturedTaskId) return;
++        const errorMsg = err instanceof Error ? err.message : String(err);
++        onError?.(`Failed to copy task title: ${errorMsg}`);
++      });
+   };
+ 
+   const startTask = (taskId: string) => {
+@@ -778,6 +795,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+       ) : (
+         <Box
+           role="status"
++          aria-live="polite"
+           aria-label="Ritual Complete: All tasks finished"
+           sx={{
+             mb: 3,
+@@ -1088,7 +1106,29 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
+                           </Tooltip>
+                         )}
+                       </Box>
+-                      <Typography variant="caption" sx={{ color: brandTokens.text.secondary }}>#{index + 1}</Typography>
++                      <Tooltip
++                        title={`Step ${index + 1} of ${optimizedTasks.length} in optimized sequence`}
++                        arrow
++                        describeChild
++                      >
++                        <Typography
++                          variant="caption"
++                          tabIndex={0}
++                          aria-label={`Step ${index + 1} of ${optimizedTasks.length} in optimized ritual sequence`}
++                          sx={{
++                            color: brandTokens.text.secondary,
++                            cursor: 'help',
++                            outline: 'none',
++                            borderRadius: 1,
++                            px: 0.5,
++                            '&:focus-visible': {
++                              boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
++                            },
++                          }}
++                        >
++                          #{index + 1}
++                        </Typography>
++                      </Tooltip>
+                     </Box>
+                   }
+                 />
+diff --git a/ui-dashboard/src/components/__tests__/Accessibility.test.tsx b/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+index d777cfb32..001f28f3a 100644
+--- a/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
++++ b/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+@@ -1,7 +1,7 @@
+ // @vitest-environment jsdom
+ // @ts-nocheck
+-import { expect, test } from 'vitest';
+-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
++import { afterEach, expect, test, vi } from 'vitest';
++import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
+ import '@testing-library/jest-dom/vitest';
+ import React from 'react';
+ import fs from 'fs';
+@@ -10,6 +10,8 @@ import PredictionPanel from '../PredictionPanel';
+ import TaskSequencer from '../TaskSequencer';
+ import TeamDashboard from '../TeamDashboard';
+ 
++afterEach(cleanup);
++
+ const componentsDir = path.resolve(__dirname, '..');
+ 
+ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Tooltip', () => {
+@@ -181,6 +183,9 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator',
+   expect(content).toContain('role="status"');
+   expect(content).toMatch(/aria-label=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks completed\. \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\.\$\{finishTimeLabel\s*\?\s*` Estimated completion: \$\{finishTimeLabel\}`\s*:\s*''\}`\s*\}/);
+   expect(content).toContain('aria-label="Ritual Complete: All tasks finished"');
++  expect(content).toContain('aria-live="polite"');
++  expect(content).toMatch(/aria-label=\{\s*`Step \$\{index \+ 1\} of \$\{optimizedTasks\.length\} in optimized ritual sequence`\s*\}/);
++  expect(content).toMatch(/title=\{\s*`Step \$\{index \+ 1\} of \$\{optimizedTasks\.length\} in optimized sequence`\s*\}/);
+   expect(content).toContain('const headerRef = useRef<HTMLHeadingElement>(null);');
+   expect(content).toContain('ref={headerRef}');
+   expect(content).toContain('tabIndex={-1}');
+@@ -458,3 +463,193 @@ test('TaskSequencer pending Start button renders tooltip on hover and keyboard f
+   fireEvent.mouseOver(hoverStartButton);
+   expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(hoverExpected);
+ });
++
++test('PredictionPanel reset on prediction prop update and ignores pending stale copy promises', async () => {
++  const writeTextMock = vi.fn().mockResolvedValue(undefined);
++  const originalClipboard = navigator.clipboard;
++  Object.defineProperty(navigator, 'clipboard', {
++    value: { writeText: writeTextMock },
++    configurable: true,
++  });
++
++  try {
++    const { rerender } = render(<PredictionPanel prediction={0.4} />);
++    const copyButton = screen.getByRole('button', { name: /15-min prediction roast/i });
++    fireEvent.click(copyButton);
++
++    expect(await screen.findByLabelText('Forecast copied')).toBeInTheDocument();
++
++    // Rerender with a new prediction prop (identity/data change)
++    rerender(<PredictionPanel prediction={0.8} />);
++
++    // isCopied should be reset immediately
++    expect(screen.queryByLabelText('Forecast copied')).not.toBeInTheDocument();
++    expect(screen.getByRole('button', { name: /15-min prediction roast/i })).toBeInTheDocument();
++
++    // Stale promise handling: verify pending copy promise cannot repaint after prediction change
++    let resolveStalePromise: () => void = () => {};
++    const stalePromise = new Promise<void>((resolve) => {
++      resolveStalePromise = resolve;
++    });
++    Object.defineProperty(navigator, 'clipboard', {
++      value: { writeText: vi.fn().mockReturnValue(stalePromise) },
++      configurable: true,
++    });
++
++    rerender(<PredictionPanel prediction={0.5} />);
++    const copyBtn2 = screen.getByRole('button', { name: /15-min prediction roast/i });
++    fireEvent.click(copyBtn2);
++
++    // Prop updates while copy promise is pending
++    rerender(<PredictionPanel prediction={0.9} />);
++
++    // Resolve stale promise inside act() to flush microtasks
++    await act(async () => {
++      resolveStalePromise();
++      await stalePromise;
++    });
++
++    // Stale promise must not have set isCopied
++    expect(screen.queryByLabelText('Forecast copied')).not.toBeInTheDocument();
++  } finally {
++    Object.defineProperty(navigator, 'clipboard', {
++      value: originalClipboard,
++      configurable: true,
++    });
++  }
++});
++
++test('TaskSequencer copy error propagation to onError', async () => {
++  const cognitiveState = {
++    energy: 80,
++    attention: 70,
++    load: 40,
++    status: 'optimal' as const,
++    recommendation: 'Complete tasks.',
++  };
++
++  const originalClipboard = navigator.clipboard;
++
++  // Case 1: Clipboard API unsupported
++  let errorMsg: string | null = null;
++  Object.defineProperty(navigator, 'clipboard', {
++    value: undefined,
++    configurable: true,
++  });
++
++  try {
++    const { unmount } = render(<TaskSequencer cognitiveState={cognitiveState} onError={(msg) => { errorMsg = msg; }} />);
++    const copyBtn = screen.getByRole('button', { name: 'Copy task title to clipboard' });
++    fireEvent.click(copyBtn);
++
++    expect(errorMsg).toBe('Clipboard API is not supported in this browser or context.');
++    unmount();
++
++    // Case 2: Clipboard API rejects
++    let rejectErrorMsg: string | null = null;
++    Object.defineProperty(navigator, 'clipboard', {
++      value: {
++        writeText: vi.fn().mockRejectedValue(new Error('Clipboard write rejected')),
++      },
++      configurable: true,
++    });
++
++    render(<TaskSequencer cognitiveState={cognitiveState} onError={(msg) => { rejectErrorMsg = msg; }} />);
++    const copyBtn2 = screen.getByRole('button', { name: 'Copy task title to clipboard' });
++    fireEvent.click(copyBtn2);
++
++    await vi.waitFor(() => {
++      expect(rejectErrorMsg).toBe('Failed to copy task title: Clipboard write rejected');
++    });
++  } finally {
++    Object.defineProperty(navigator, 'clipboard', {
++      value: originalClipboard,
++      configurable: true,
++    });
++  }
++});
++
++test('TaskSequencer resets isTaskTitleCopied when currentTaskId changes', async () => {
++  const cognitiveState = {
++    energy: 80,
++    attention: 70,
++    load: 40,
++    status: 'optimal' as const,
++    recommendation: 'Complete tasks.',
++  };
++
++  const originalClipboard = navigator.clipboard;
++  Object.defineProperty(navigator, 'clipboard', {
++    value: { writeText: vi.fn().mockResolvedValue(undefined) },
++    configurable: true,
++  });
++
++  try {
++    render(<TaskSequencer cognitiveState={cognitiveState} />);
++    const copyBtn = screen.getByRole('button', { name: 'Copy task title to clipboard' });
++    fireEvent.click(copyBtn);
++
++    expect(await screen.findByRole('button', { name: 'Task title copied' })).toBeInTheDocument();
++
++    // Complete current task to transition to next task
++    const completeBtn = screen.getByRole('button', { name: /^Complete / });
++    fireEvent.click(completeBtn);
++
++    expect(screen.queryByRole('button', { name: 'Task title copied' })).not.toBeInTheDocument();
++    expect(screen.getByRole('button', { name: 'Copy task title to clipboard' })).toBeInTheDocument();
++  } finally {
++    Object.defineProperty(navigator, 'clipboard', {
++      value: originalClipboard,
++      configurable: true,
++    });
++  }
++});
++
++test('TaskSequencer Ritual Complete banner aria-live="polite" and role="status"', () => {
++  const cognitiveState = {
++    energy: 80,
++    attention: 70,
++    load: 40,
++    status: 'optimal' as const,
++    recommendation: 'Complete tasks.',
++  };
++
++  render(<TaskSequencer cognitiveState={cognitiveState} />);
++
++  // Complete all 3 tasks
++  fireEvent.click(screen.getByRole('button', { name: /Complete /i }));
++  fireEvent.click(screen.getByRole('button', { name: /Complete /i }));
++  fireEvent.click(screen.getByRole('button', { name: /Complete /i }));
++
++  const banner = screen.getByRole('status', { name: 'Ritual Complete: All tasks finished' });
++  expect(banner).toBeInTheDocument();
++  expect(banner).toHaveAttribute('aria-live', 'polite');
++  expect(banner).toHaveAttribute('role', 'status');
++});
++
++test('TaskSequencer step index badges accessibility and tooltip attributes', () => {
++  const cognitiveState = {
++    energy: 80,
++    attention: 70,
++    load: 40,
++    status: 'optimal' as const,
++    recommendation: 'Complete tasks.',
++  };
++
++  render(<TaskSequencer cognitiveState={cognitiveState} />);
++
++  const badge1 = screen.getByLabelText('Step 1 of 3 in optimized ritual sequence');
++  expect(badge1).toBeInTheDocument();
++  expect(badge1).toHaveAttribute('tabIndex', '0');
++  expect(badge1).toHaveTextContent('#1');
++
++  const badge2 = screen.getByLabelText('Step 2 of 3 in optimized ritual sequence');
++  expect(badge2).toBeInTheDocument();
++  expect(badge2).toHaveAttribute('tabIndex', '0');
++  expect(badge2).toHaveTextContent('#2');
++
++  const badge3 = screen.getByLabelText('Step 3 of 3 in optimized ritual sequence');
++  expect(badge3).toBeInTheDocument();
++  expect(badge3).toHaveAttribute('tabIndex', '0');
++  expect(badge3).toHaveTextContent('#3');
++});
+diff --git a/ui-dashboard/src/features/repository-planner/PortfolioTable.tsx b/ui-dashboard/src/features/repository-planner/PortfolioTable.tsx
+index 4b59ae201..c8126422d 100644
+--- a/ui-dashboard/src/features/repository-planner/PortfolioTable.tsx
++++ b/ui-dashboard/src/features/repository-planner/PortfolioTable.tsx
+@@ -1,11 +1,126 @@
+-import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
++import { useCallback, useEffect, useRef, useState } from 'react';
++import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
++import { Check, AlertTriangle } from 'lucide-react';
+ 
+ import type { PlannerLane } from './extensionTypes';
+ 
+ const statusColor = { ready: 'success', blocked: 'error', stale: 'warning', unknown: 'default', conflicting: 'warning' } as const;
+ const statusLabel = { ready: 'Ready evidence', blocked: 'Blocked evidence', stale: 'Stale evidence', unknown: 'Unknown: audit', conflicting: 'Conflicting evidence' } as const;
+ 
+-export default function PortfolioTable({ lanes, onInspect }: { lanes: readonly PlannerLane[]; onInspect: (lane: PlannerLane, trigger: HTMLButtonElement) => void }) {
++export interface CandidateShaChipProps {
++  sha: string;
++  onError?: (message: string) => void;
++}
++
++export function CandidateShaChip({ sha, onError }: CandidateShaChipProps) {
++  const shortSha = sha.slice(0, 12);
++  const [isCopied, setIsCopied] = useState(false);
++  const [copyFailed, setCopyFailed] = useState(false);
++  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
++  const activeShaRef = useRef(sha);
++  activeShaRef.current = sha;
++
++  useEffect(() => {
++    setIsCopied(false);
++    setCopyFailed(false);
++    if (copyTimeoutRef.current) {
++      clearTimeout(copyTimeoutRef.current);
++      copyTimeoutRef.current = null;
++    }
++    return () => {
++      if (copyTimeoutRef.current) {
++        clearTimeout(copyTimeoutRef.current);
++        copyTimeoutRef.current = null;
++      }
++    };
++  }, [sha]);
++
++  const handleCopy = useCallback(async () => {
++    const currentSha = activeShaRef.current;
++    if (!navigator.clipboard?.writeText) {
++      setCopyFailed(true);
++      onError?.('Clipboard API is not supported in this browser or context.');
++      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
++      copyTimeoutRef.current = setTimeout(() => {
++        setCopyFailed(false);
++        copyTimeoutRef.current = null;
++      }, 2000);
++      return;
++    }
++
++    try {
++      await navigator.clipboard.writeText(currentSha);
++      if (activeShaRef.current !== currentSha) return;
++      setIsCopied(true);
++      setCopyFailed(false);
++      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
++      copyTimeoutRef.current = setTimeout(() => {
++        setIsCopied(false);
++        copyTimeoutRef.current = null;
++      }, 2000);
++    } catch (err) {
++      if (activeShaRef.current !== currentSha) return;
++      const errorMsg = err instanceof Error ? err.message : String(err);
++      setCopyFailed(true);
++      onError?.(`Failed to copy candidate SHA: ${errorMsg}`);
++      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
++      copyTimeoutRef.current = setTimeout(() => {
++        setCopyFailed(false);
++        copyTimeoutRef.current = null;
++      }, 2000);
++    }
++  }, [onError]);
++
++  const tooltipTitle = isCopied
++    ? 'SHA copied!'
++    : copyFailed
++      ? 'Failed to copy candidate SHA'
++      : `Copy candidate SHA ${shortSha}`;
++
++  const chipLabel = isCopied
++    ? `Candidate SHA ${shortSha} copied`
++    : copyFailed
++      ? `Copy failed: ${shortSha}`
++      : shortSha;
++
++  const ariaLabel = isCopied
++    ? `Candidate SHA ${shortSha} copied`
++    : copyFailed
++      ? `Failed to copy candidate SHA ${shortSha}`
++      : `Copy candidate SHA ${shortSha}`;
++
++  return (
++    <Tooltip title={tooltipTitle} arrow describeChild>
++      <Chip
++        size="small"
++        variant="outlined"
++        onClick={handleCopy}
++        icon={isCopied ? <Check size={14} aria-hidden="true" /> : copyFailed ? <AlertTriangle size={14} aria-hidden="true" /> : undefined}
++        label={chipLabel}
++        aria-label={ariaLabel}
++        color={isCopied ? 'success' : copyFailed ? 'error' : 'default'}
++        sx={{
++          fontFamily: 'monospace',
++          cursor: 'pointer',
++          '@media (prefers-reduced-motion: reduce)': {
++            transition: 'none',
++            animation: 'none',
++          },
++        }}
++      />
++    </Tooltip>
++  );
++}
++
++export default function PortfolioTable({
++  lanes,
++  onInspect,
++  onError,
++}: {
++  lanes: readonly PlannerLane[];
++  onInspect: (lane: PlannerLane, trigger: HTMLButtonElement) => void;
++  onError?: (message: string) => void;
++}) {
+   return (
+     <TableContainer>
+       <Table aria-label="Repository planning portfolio">
+@@ -16,7 +131,7 @@ export default function PortfolioTable({ lanes, onInspect }: { lanes: readonly P
+               <TableCell component="th" scope="row">{lane.projectId}</TableCell>
+               <TableCell>{lane.laneId}</TableCell>
+               <TableCell><Stack spacing={0.5} alignItems="flex-start"><Chip color={lane.states.includes('blocked') ? 'error' : lane.states.includes('stale') || lane.states.includes('conflicting') ? 'warning' : lane.states.includes('unknown') ? 'default' : 'success'} label={lane.recommendation} />{lane.states.map((state) => <Chip size="small" variant="outlined" color={statusColor[state]} label={statusLabel[state]} key={state} />)}</Stack></TableCell>
+-              <TableCell><code>{lane.candidateSha.slice(0, 12)}</code></TableCell>
++              <TableCell><CandidateShaChip sha={lane.candidateSha} onError={onError} /></TableCell>
+               <TableCell><Button onClick={(event) => onInspect(lane, event.currentTarget)} aria-label={`Inspect ${lane.projectId} ${lane.laneId} ${lane.candidateSha}`}>Inspect</Button></TableCell>
+             </TableRow>
+           ))}
+diff --git a/ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx b/ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx
+index 478cbc7a9..bcd7cf8ba 100644
+--- a/ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx
++++ b/ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx
+@@ -153,6 +153,7 @@ interface RepositoryPlannerPageProps {
+ 
+ export default function RepositoryPlannerPage({ state = 'ready', errorMessage = 'Unable to load planner fixtures', sources = fixtures }: RepositoryPlannerPageProps) {
+   const [selected, setSelected] = useState<PlannerLane | null>(null);
++  const [copyError, setCopyError] = useState<string | null>(null);
+   const returnFocus = useRef<HTMLButtonElement | null>(null);
+   const projection = useMemo(() => {
+     try { return { lanes: buildFoundationLanes(sources), error: null }; }
+@@ -162,5 +163,5 @@ export default function RepositoryPlannerPage({ state = 'ready', errorMessage =
+   const inspect = (lane: PlannerLane, trigger: HTMLButtonElement) => { returnFocus.current = trigger; setSelected(lane); };
+   const close = () => { setSelected(null); window.setTimeout(() => returnFocus.current?.focus(), 0); };
+ 
+-  return <ThemeProvider theme={theme}><CssBaseline /><Container maxWidth="xl" component="main" sx={{ py: 4 }}><Stack spacing={3}><Box><Typography variant="h3" component="h1">Repository merge planner</Typography><Typography color="text.secondary">Deterministic projection generated from checked-in foundation fixtures</Typography></Box><Alert severity="info"><strong>Projection only.</strong> Authority: NONE · is_proof: false. Control Tower and repository governance retain all terminal decisions.</Alert>{effectiveState === 'loading' && <Stack role="status" aria-label="Loading repository planner fixtures" alignItems="center"><CircularProgress /><Typography>Loading checked-in fixtures…</Typography></Stack>}{effectiveState === 'error' && <Alert severity="error">{projection.error ?? errorMessage}</Alert>}{effectiveState === 'ready' && <Paper><PortfolioTable lanes={projection.lanes} onInspect={inspect} /></Paper>}{effectiveState === 'ready' && plannerExtensions.map((extension) => <Box key={extension.id}>{extension.render()}</Box>)}</Stack><LaneDetails lane={selected} onClose={close} /></Container></ThemeProvider>;
++  return <ThemeProvider theme={theme}><CssBaseline /><Container maxWidth="xl" component="main" sx={{ py: 4 }}><Stack spacing={3}><Box><Typography variant="h3" component="h1">Repository merge planner</Typography><Typography color="text.secondary">Deterministic projection generated from checked-in foundation fixtures</Typography></Box><Alert severity="info"><strong>Projection only.</strong> Authority: NONE · is_proof: false. Control Tower and repository governance retain all terminal decisions.</Alert>{copyError && <Alert severity="error" onClose={() => setCopyError(null)}>{copyError}</Alert>}{effectiveState === 'loading' && <Stack role="status" aria-label="Loading repository planner fixtures" alignItems="center"><CircularProgress /><Typography>Loading checked-in fixtures…</Typography></Stack>}{effectiveState === 'error' && <Alert severity="error">{projection.error ?? errorMessage}</Alert>}{effectiveState === 'ready' && <Paper><PortfolioTable lanes={projection.lanes} onInspect={inspect} onError={setCopyError} /></Paper>}{effectiveState === 'ready' && plannerExtensions.map((extension) => <Box key={extension.id}>{extension.render()}</Box>)}</Stack><LaneDetails lane={selected} onClose={close} /></Container></ThemeProvider>;
+ }
+diff --git a/ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx b/ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx
+index 40b4ab265..4e777f46b 100644
+--- a/ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx
++++ b/ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx
+@@ -1,7 +1,7 @@
+ // @vitest-environment jsdom
+ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+ import '@testing-library/jest-dom/vitest';
+-import { afterEach, describe, expect, test } from 'vitest';
++import { afterEach, describe, expect, test, vi } from 'vitest';
+ 
+ import RepositoryPlannerPage from '../RepositoryPlannerPage';
+ import { buildFoundationLanes } from '../RepositoryPlannerPage';
+@@ -125,6 +125,60 @@ describe('RepositoryPlannerPage', () => {
+     expect(screen.getByRole('button', { name: new RegExp(`Inspect dopemux-mvp pcp-planner-foundation ${fixture.lanes[0].candidate_sha}`) })).toBeVisible();
+     expect(screen.getByRole('button', { name: /Inspect dopemux-mvp pcp-planner-foundation b{40}/ })).toBeVisible();
+   });
++
++  test('CandidateShaChip copies full candidate SHA to clipboard on click with visual feedback', async () => {
++    const fullSha = dopemuxFixture.lanes[0].candidate_sha;
++    const shortSha = fullSha.slice(0, 12);
++    const writeTextMock = vi.fn().mockResolvedValue(undefined);
++    const originalClipboard = navigator.clipboard;
++    Object.defineProperty(navigator, 'clipboard', {
++      value: { writeText: writeTextMock },
++      configurable: true,
++    });
++
++    try {
++      render(<RepositoryPlannerPage />);
++
++      const chip = screen.getByRole('button', { name: new RegExp(`Copy candidate SHA ${shortSha}`) });
++      expect(chip).toBeVisible();
++
++      fireEvent.click(chip);
++
++      expect(writeTextMock).toHaveBeenCalledWith(fullSha);
++      expect(await screen.findByText(`Candidate SHA ${shortSha} copied`)).toBeVisible();
++    } finally {
++      Object.defineProperty(navigator, 'clipboard', {
++        value: originalClipboard,
++        configurable: true,
++      });
++    }
++  });
++
++  test('CandidateShaChip surfaces copy failure to onError and updates aria-label', async () => {
++    const fullSha = dopemuxFixture.lanes[0].candidate_sha;
++    const shortSha = fullSha.slice(0, 12);
++    const writeTextMock = vi.fn().mockRejectedValue(new Error('Permission denied'));
++    const originalClipboard = navigator.clipboard;
++    Object.defineProperty(navigator, 'clipboard', {
++      value: { writeText: writeTextMock },
++      configurable: true,
++    });
++
++    try {
++      render(<RepositoryPlannerPage />);
++
++      const chip = screen.getByRole('button', { name: new RegExp(`Copy candidate SHA ${shortSha}`) });
++      fireEvent.click(chip);
++
++      expect(await screen.findByRole('button', { name: `Failed to copy candidate SHA ${shortSha}` })).toBeVisible();
++      expect(await screen.findByText(/Failed to copy candidate SHA: Permission denied/)).toBeVisible();
++    } finally {
++      Object.defineProperty(navigator, 'clipboard', {
++        value: originalClipboard,
++        configurable: true,
++      });
++    }
++  });
+ });
+ 
+ describe('extension registry', () => {
