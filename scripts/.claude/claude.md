@@ -42,7 +42,7 @@ scripts/
 └── env_outputs/       # Environment output artifacts
 ```
 
-Note: `deployment/`, `testing/`, `maintenance/` do **not** exist at top level. Start the MCP fleet with `dopemux mcp start`, never raw `docker compose up`.
+Note: `deployment/`, `testing/`, `maintenance/` do **not** exist at top level. Bring up the full stack with `dopemux mcp start-all --verify` (`dopemux mcp start` only starts the project-scoped conport/dope-memory/task-orchestrator sidecars); never raw `docker compose up`.
 
 ---
 

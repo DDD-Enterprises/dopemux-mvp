@@ -41,7 +41,8 @@ make quality                  # All quality checks
 
 # Docker stacks
 scripts/smoke_up.sh                              # Core services only
-dopemux mcp start                                # MCP fleet
+dopemux mcp start-all --verify                   # Full stack (MCP servers, bridge, orchestrator, apps)
+dopemux mcp start                                # Project-scoped sidecars only (conport, dope-memory, task-orchestrator)
 docker compose -f compose.yml up -d leantime mysql_leantime redis_leantime  # non-MCP PM stack only
 docker compose config         # Validate compose file syntax
 
