@@ -1,0 +1,66 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "claude-3.5-sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "auditor_model": "gemini-3.1-pro-high",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "The change introduces 22,777 insertions across 200 files, encompassing major architectural foundations (Control Tower M0, Governed Execution Core). While deterministic tests pass, the sheer volume introduces cognitive load and potential for unforeseen interactions.",
+        "id": "F-001",
+        "severity": "MEDIUM",
+        "status": "ACCEPTED_RISK",
+        "title": "Large Diff Volume and Complexity"
+      },
+      {
+        "body": "100% pass rate on 946 tests. No whitespace errors detected. The governance change contract validation correctly identified the required L2 lane and model audit requirements.",
+        "id": "F-002",
+        "severity": "INFO",
+        "status": "RESOLVED",
+        "title": "Deterministic Verification Complete"
+      },
+      {
+        "body": "The introduction of dispatch/join/freeze lifecycles and new execution schemas within the GEC establishes new bounds of repo authority. These will require observation in live execution to ensure agents strictly adhere to the updated AGENTS.md bounds.",
+        "id": "F-003",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "New State Lifecycles Require Monitoring"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "agy --model gemini-3.1-pro-high --effort high --mode plan --sandbox --disable-slash-commands --output-format json --print <prompt>",
+    "remaining_risks": [
+      "Implicit assumptions in legacy agent workflows might conflict with new Control Tower execution bindings.",
+      "Potential for operator misuse or friction during the initial rollout of the strict supervisor macro packet requirements."
+    ],
+    "report_path": "proof/TP-DMX-PRMERGE-023-GOVERNANCE-CONVERGENCE/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-10-03T04:42:43Z",
+  "head_sha": "c60069175f3ff2471c736ae3097f04a5bc661f2d",
+  "pr_number": 1395,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
