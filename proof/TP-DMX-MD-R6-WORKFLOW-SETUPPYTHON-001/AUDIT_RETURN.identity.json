@@ -1,0 +1,14 @@
+{
+  "packet_id": "TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001",
+  "verdict": "PASS",
+  "auditor": {
+    "runner": "claude-code-cli",
+    "model": "claude-sonnet-5-5",
+    "runtime_family": "claude-code"
+  },
+  "checked_head": "64547395e92d433e821a0790f52a5e257e7dc404",
+  "base_sha": "b2dc31f871bf31dbb6bbea73c5a328b67dfcbb30",
+  "return_path": "proof/TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001/AUDIT_RETURN.json",
+  "report_path": "proof/TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001/AUDITOR_REPORT.md",
+  "authority": "NONE"
+}

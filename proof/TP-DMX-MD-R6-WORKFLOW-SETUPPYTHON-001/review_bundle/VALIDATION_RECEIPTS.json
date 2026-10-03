@@ -1,0 +1,7 @@
+{
+  "git_diff_check": "PASS",
+  "validate_change_contract": "PASS (status=PASS, max_lane=L3, model_audit_required=True)",
+  "workflow_yaml_syntax": "PASS",
+  "base_sha": "b2dc31f871bf31dbb6bbea73c5a328b67dfcbb30",
+  "candidate_head": "64547395e92d433e821a0790f52a5e257e7dc404"
+}

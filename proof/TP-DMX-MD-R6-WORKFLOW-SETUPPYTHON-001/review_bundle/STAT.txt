@@ -1,0 +1,7 @@
+ .github/workflows/ci-complete.yml                  | 22 ++---
+ .github/workflows/clobber-guard.yml                |  2 +-
+ .github/workflows/docs.yml                         |  2 +-
+ .github/workflows/pr-steward.yml                   |  2 +-
+ .github/workflows/preflight.yml                    |  2 +-
+ .../TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001.json     | 96 ++++++++++++++++++++++
+ 6 files changed, 111 insertions(+), 15 deletions(-)

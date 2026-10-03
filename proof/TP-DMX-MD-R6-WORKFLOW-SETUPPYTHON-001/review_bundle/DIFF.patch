@@ -1,0 +1,257 @@
+diff --git a/.github/workflows/ci-complete.yml b/.github/workflows/ci-complete.yml
+index 6dc74db57..2bba18007 100644
+--- a/.github/workflows/ci-complete.yml
++++ b/.github/workflows/ci-complete.yml
+@@ -27,7 +27,7 @@ jobs:
+           fetch-depth: 0
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+@@ -168,7 +168,7 @@ jobs:
+           fetch-depth: 0
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+@@ -236,7 +236,7 @@ jobs:
+           fetch-depth: 0
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+@@ -277,7 +277,7 @@ jobs:
+           fetch-depth: 0
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+@@ -302,7 +302,7 @@ jobs:
+         uses: actions/checkout@v5
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+@@ -324,7 +324,7 @@ jobs:
+           fetch-depth: 0
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+@@ -358,7 +358,7 @@ jobs:
+           fetch-depth: 0
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+@@ -387,7 +387,7 @@ jobs:
+           fetch-depth: 0
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+@@ -417,7 +417,7 @@ jobs:
+         uses: actions/checkout@v5
+ 
+       - name: 🐍 Set up Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.12"
+ 
+@@ -442,7 +442,7 @@ jobs:
+         uses: actions/checkout@v5
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+@@ -473,7 +473,7 @@ jobs:
+           fetch-depth: 0
+ 
+       - name: 🐍 Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+ 
+diff --git a/.github/workflows/clobber-guard.yml b/.github/workflows/clobber-guard.yml
+index 79db5934c..2f66e84d5 100644
+--- a/.github/workflows/clobber-guard.yml
++++ b/.github/workflows/clobber-guard.yml
+@@ -23,7 +23,7 @@ jobs:
+       - uses: actions/checkout@v5
+         with:
+           fetch-depth: 0
+-      - uses: actions/setup-python@v5
++      - uses: actions/setup-python@v7
+         with:
+           python-version: "3.11"
+       - name: Run clobber guard
+diff --git a/.github/workflows/docs.yml b/.github/workflows/docs.yml
+index 822da072f..f056e59aa 100644
+--- a/.github/workflows/docs.yml
++++ b/.github/workflows/docs.yml
+@@ -13,7 +13,7 @@ jobs:
+       - uses: actions/checkout@v5
+         with:
+           fetch-depth: 0
+-      - uses: actions/setup-python@v5
++      - uses: actions/setup-python@v7
+         with: { python-version: "3.11" }
+       - run: pip install pre-commit
+       - run: |
+diff --git a/.github/workflows/pr-steward.yml b/.github/workflows/pr-steward.yml
+index f87d84e80..4babd04fe 100644
+--- a/.github/workflows/pr-steward.yml
++++ b/.github/workflows/pr-steward.yml
+@@ -41,7 +41,7 @@ jobs:
+           persist-credentials: false
+ 
+       - name: Set up Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: '3.11'
+ 
+diff --git a/.github/workflows/preflight.yml b/.github/workflows/preflight.yml
+index 5d58f722a..9b2941542 100644
+--- a/.github/workflows/preflight.yml
++++ b/.github/workflows/preflight.yml
+@@ -12,7 +12,7 @@ jobs:
+       - uses: actions/checkout@v4
+ 
+       - name: Setup Python
+-        uses: actions/setup-python@v5
++        uses: actions/setup-python@v7
+         with:
+           python-version: "3.12"
+ 
+diff --git a/task-packets/TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001.json b/task-packets/TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001.json
+new file mode 100644
+index 000000000..3be041300
+--- /dev/null
++++ b/task-packets/TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001.json
+@@ -0,0 +1,96 @@
++{
++  "id": "TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001",
++  "project": "dopemux-mvp",
++  "target": "deps(ci): replay setup-python v7 on current workflows",
++  "invariants": [
++    "Primary checkout is read-only",
++    "No force/admin/service/credential/PAYG effects"
++  ],
++  "depends_on": [],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": ".dopetaskroot",
++    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "MP-DMX-MERGE-DRAIN-20261002-006",
++    "base_branch": "main",
++    "parent_tp_id": "MP-DMX-MERGE-DRAIN-20261002-006",
++    "final_packet": false
++  },
++  "execution": {
++    "agent": "shell",
++    "branch": "successor/setup-python-v7-r6",
++    "base_branch": "main",
++    "stacked_because": "R6 isolated current-main successor"
++  },
++  "commit": {
++    "message": "deps(ci): replay setup-python v7 on current workflows",
++    "allowlist": [
++      ".github/workflows/ci-complete.yml",
++      ".github/workflows/clobber-guard.yml",
++      ".github/workflows/docs.yml",
++      ".github/workflows/pr-steward.yml",
++      ".github/workflows/preflight.yml",
++      "proof/TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001/",
++      "proof/pr_merge/embedded-audit/",
++      "task-packets/TP-DMX-MD-R6-WORKFLOW-SETUPPYTHON-001.json"
++    ],
++    "verify": [
++      "git diff --check",
++      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
++    ]
++  },
++  "pr": {
++    "title": "deps(ci): replay setup-python v7 on current workflows",
++    "body": "R6 governed merge-drain successor; exact provenance/tests/audit required before finality.",
++    "base": "main"
++  },
++  "steps": [
++    {
++      "id": "S0",
++      "task": "Bind current main, repo identity, existing attempts and clean isolated writer.",
++      "requirements": [
++        "No primary checkout write",
++        "No duplicate active attempt"
++      ],
++      "commands": [
++        "git status --short --branch",
++        "git rev-parse origin/main"
++      ],
++      "validation": [
++        "Exact current main recorded",
++        "Writer worktree clean"
++      ],
++      "context_files": [
++        "AGENTS.md"
++      ]
++    },
++    {
++      "id": "S1",
++      "task": "Replay only still-applicable setup-python v7 action changes from PR #1280; no unrelated workflow edits.",
++      "validation": [
++        "Only allowlisted files change",
++        "Acceptance criteria proven with fresh tests"
++      ]
++    },
++    {
++      "id": "S2",
++      "task": "Freeze exact subject and return for independent audit/finality.",
++      "validation": [
++        "git diff --check passes",
++        "change-contract result recorded",
++        "exact base/head and changed paths recorded"
++      ]
++    }
++  ],
++  "pal_chain": {
++    "enabled": false,
++    "steps": [
++      "deterministic-preflight",
++      "codereview",
++      "precommit"
++    ]
++  }
++}
