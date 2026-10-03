@@ -390,7 +390,7 @@ index c021d063b..92a3dee30 100644
 +    document_plan,
 +    execute_runner_plan,
 +)
- 
+
  __all__ = [
 +    # Runner capability registry (0009 / R6)
 +    "CapabilityRegistryError",

@@ -8,49 +8,93 @@
       "runtime_family": "claude-code-cli"
     },
     "implementer": {
-      "model": "gemini-3.8-flash-high",
+      "model": "gemini",
       "model_family": "google-gemini",
-      "runner": "antigravity-cli",
-      "runtime_family": "antigravity-cli"
+      "runner": "gemini-cli",
+      "runtime_family": "gemini-cli"
     },
     "independence": "PROVEN"
   },
-  "base_sha": "f9ea7d1af4af29cd0862cfeadf348a6ef6ff71c0",
+  "base_sha": "07b21e82a368c29adb96baf09573e03de74d4483",
+  "commit_sha": "d237da2b5892e9640434d292b3a385cfaaa4d2e2",
+  "head_sha": "d237da2b5892e9640434d292b3a385cfaaa4d2e2",
   "branch": "successor/dcp-runner-convergence-r6",
+  "packet_id": "TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
   "embedded_audit": {
-    "auditor_model": "sonnet",
+    "required": true,
+    "status": "PASS_WITH_RISKS",
     "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude-code-cli interactive session (Claude Code; runtime model claude-sonnet-5-5); read-only audit of 07b21e82a..d237da2b5 with deterministic re-runs: uv run --frozen --extra test pytest tests/unit/dcp -q; git diff --check origin/main..HEAD; validate_change_contract.py --base origin/main --head HEAD --format text",
     "exit_code": 0,
+    "report_path": "proof/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001/AUDITOR_REPORT.md",
     "findings": [
       {
-        "body": "tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified fails identically on base f9ea7d1af due to stale base ref in task-packets/TP-DCP-0002.md; pre-existing and unrelated to this candidate.",
         "id": "AUDIT-001",
-        "severity": "INFO",
-        "status": "ACCEPTED_RISK",
-        "title": "Pre-existing failure in test_16"
+        "severity": "LOW",
+        "title": "current-runtime-reconciliation.md pins 'post-#1400' main",
+        "status": "OPEN",
+        "body": "True (b2dc31f87 is an ancestor) but main is now 07b21e82a (post-#1389). Inexact, not wrong. External-state claims (PAL, OpenCode, LiteLLM, GitHub control plane) are not verifiable from the repo and were not verified."
       },
       {
-        "body": "Capability registry loader uses explicit validation; hand validation covers all boolean authorization invariants fail-closed.",
         "id": "AUDIT-002",
+        "severity": "LOW",
+        "title": "runner_capabilities.json is a point-in-time host snapshot",
+        "status": "OPEN",
+        "body": "Pins local CLI versions and ~/ shim paths. Non-authoritative; every authorization flag false; no safety impact but will go stale."
+      },
+      {
+        "id": "AUDIT-003",
+        "severity": "LOW",
+        "title": "Registry loader does not run the JSON schema",
+        "status": "OPEN",
+        "body": "load_runner_capabilities checks false-flags itself; a malformed entry (e.g. missing runner_id) raises KeyError rather than CapabilityRegistryError. Still fails closed. Loader is stricter than schema for the two non-invocation global flags."
+      },
+      {
+        "id": "AUDIT-004",
+        "severity": "LOW",
+        "title": "Default registry path is repo-relative",
+        "status": "OPEN",
+        "body": "_DEFAULT_PATH uses parents[3]; valid for source/editable checkout. Not verified that config/dcp ships in a built wheel. No in-repo caller imports the module today."
+      },
+      {
+        "id": "AUDIT-005",
         "severity": "INFO",
-        "status": "ACCEPTED_RISK",
-        "title": "Capability registry loader hand-validation"
+        "title": "Manifest producer/consumer fields are thin",
+        "status": "OPEN",
+        "body": "DCP_RUNNER_CONTRACT lists runner_contract.py as producer and consumer; DCP_RUNNER_CAPABILITY_REGISTRY has no producer. Consistent with an inert contract."
+      },
+      {
+        "id": "AUDIT-006",
+        "severity": "INFO",
+        "title": "Proof directory was uncommitted at audit start; since committed at tip (see AUDIT-008)",
+        "status": "OPEN",
+        "body": "At audit start proof/TP-.../ was untracked. It was committed at 0021959f4 during the audit; this audit's files are working-tree modifications on top of that commit and are not yet committed."
+      },
+      {
+        "id": "AUDIT-007",
+        "severity": "INFO",
+        "title": "Earlier FAIL audit of b0ea0b03d/16a14779b superseded",
+        "status": "RESOLVED",
+        "body": "Its blocking defects (unfrozen subject, missing frontmatter, trailing blank line) do not exist on d237da2b5. Prior files preserved in prior_audit_16a14779b/."
+      },
+      {
+        "id": "AUDIT-008",
+        "severity": "MEDIUM",
+        "title": "Branch tip 0021959f4 fails git diff --check and commits stale FAIL audit records",
+        "status": "OPEN",
+        "body": "After the audited commit, branch tip 0021959f4 ('proof(dcp): record independent C8 audit PASS', 05:45:19) committed the proof dir. Only proof/TP-.../ changed vs d237da2b5 (code/config/schema/docs/tests byte-identical), so the audit subject is unaffected. But (a) 'git diff --check origin/main..0021959f4' now FAILS (rc=2): review_bundle/DIFF.patch:393 and GIT_DIFF.patch:393 'trailing whitespace' (patch files embed diff context); the same check on d237da2b5 is clean; (b) the committed AUDIT_RETURN.json/PROOF.json record status FAIL for earlier heads (b0ea0b03d/16a14779b), contradicting the commit message's 'PASS'. Finalizer must exclude/normalize the .patch bundle files (e.g. drop GIT_DIFF.patch duplicate and mark patches -whitespace via .gitattributes, or store them outside the check) and commit this audit's files in place of the stale ones, then re-run the diff-check. Also: untracked proof/pr_merge/embedded-audit/pr-1403/PROOF.json (PR #1403 = this branch, written 05:46 by another session) binds head 2ee540d49 / base f9ea7d1af, not d237da2b5 / 07b21e82a, so it is stale against the audited subject and must not be treated as certifying it."
       }
     ],
-    "fixes_applied": [
-      "Fixed frontmatter guard compliance across all 4 DCP docs.",
-      "Normalized manifest.json serialization to preserve literal unicode emoji.",
-      "Genericized absolute host install paths to ~-relative paths in config/dcp/runner_capabilities.json.",
-      "Added test coverage for global flag rejection and authorized_runners integrity checks.",
-      "Eliminated forbidden fragment substring to satisfy control snapshot test_18 gate."
+    "fixes_applied": [],
+    "remaining_risks": [
+      "External-runtime claims in current-runtime-reconciliation.md unverified; base reference is behind current main (AUDIT-001)",
+      "Registry config is a host snapshot and its default path assumes a source checkout (AUDIT-002, AUDIT-004)",
+      "Donor parity (#1156/#1157) checked at file-list level only",
+      "Branch tip 0021959f4 fails git diff --check on committed review_bundle patch files and carries stale FAIL audit records; audited commit d237da2b5 itself is clean (AUDIT-008)"
     ],
-    "invocation": "claude-code-cli interactive session (Claude Code; runtime model claude-sonnet-5-5); read-only audit of f9ea7d1af..2ee540d49 with deterministic re-runs",
-    "remaining_risks": [],
-    "report_path": "proof/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001/AUDITOR_REPORT.md",
-    "required": true,
-    "skip_reason": null,
-    "status": "PASS"
+    "skip_reason": null
   },
-  "head_sha": "2ee540d49dbfaeacf63e30a05a7b39ec32a98181",
-  "packet_id": "TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001"
+  "tip_sha_at_audit_end": "0021959f442eef4946185afdb711635c0630d9e3"
 }

@@ -1,82 +1,75 @@
 {
   "required": true,
-  "status": "FAIL",
+  "status": "PASS_WITH_RISKS",
   "auditor_tool": "claude-code-cli",
   "auditor_model": "sonnet",
-  "invocation": "claude-code-cli interactive session (Claude Code; actual runtime model claude-sonnet-5-5); read-only audit of f9ea7d1af..b0ea0b03d (designated) and 16a14779b (live tip) in detached /tmp worktrees with deterministic re-runs",
-  "exit_code": 1,
+  "invocation": "claude-code-cli interactive session (Claude Code; runtime model claude-sonnet-5-5); read-only audit of 07b21e82a..d237da2b5 with deterministic re-runs: uv run --frozen --extra test pytest tests/unit/dcp -q; git diff --check origin/main..HEAD; validate_change_contract.py --base origin/main --head HEAD --format text",
+  "exit_code": 0,
   "report_path": "proof/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001/AUDITOR_REPORT.md",
   "findings": [
     {
       "id": "AUDIT-001",
-      "severity": "BLOCKING",
-      "title": "Audit subject not frozen; branch amended mid-audit",
+      "severity": "LOW",
+      "title": "current-runtime-reconciliation.md pins 'post-#1400' main",
       "status": "OPEN",
-      "body": "HEAD moved from b0ea0b03d (03:48:09) to 16a14779b (03:52:06) during the audit. Task statement, HEAD_SHA.txt, DIFF.patch, STAT.txt and VALIDATION_RECEIPTS.json still describe b0ea0b03d. Packet S2 requires a frozen subject. Re-freeze on one SHA and regenerate bundle and receipts."
+      "body": "True (b2dc31f87 is an ancestor) but main is now 07b21e82a (post-#1389). Inexact, not wrong. External-state claims (PAL, OpenCode, LiteLLM, GitHub control plane) are not verifiable from the repo and were not verified."
     },
     {
       "id": "AUDIT-002",
-      "severity": "BLOCKING",
-      "title": "Four docs fail docs_frontmatter_guard on designated head b0ea0b03d",
-      "status": "RESOLVED",
-      "body": "Guard reports 'Needs update 4 file(s)' (missing author/date/prelude) on backend-runner-contract, current-runtime-reconciliation, runner-capability-matrix, series-lineage. Resolved only in 16a14779b, where the guard passes; still failing on the designated head."
+      "severity": "LOW",
+      "title": "runner_capabilities.json is a point-in-time host snapshot",
+      "status": "OPEN",
+      "body": "Pins local CLI versions and ~/ shim paths. Non-authoritative; every authorization flag false; no safety impact but will go stale."
     },
     {
       "id": "AUDIT-003",
-      "severity": "BLOCKING",
-      "title": "git diff --check fails on live tip 16a14779b",
+      "severity": "LOW",
+      "title": "Registry loader does not run the JSON schema",
       "status": "OPEN",
-      "body": "tests/unit/dcp/test_runner_capability_registry.py:140: new blank line at EOF (rc=2). Packet-mandated verify step. Absent on b0ea0b03d. One-line fix."
+      "body": "load_runner_capabilities checks false-flags itself; a malformed entry (e.g. missing runner_id) raises KeyError rather than CapabilityRegistryError. Still fails closed. Loader is stricter than schema for the two non-invocation global flags."
     },
     {
       "id": "AUDIT-004",
       "severity": "LOW",
-      "title": "Review bundle stale; AGY prompt cites nonexistent head SHA",
+      "title": "Default registry path is repo-relative",
       "status": "OPEN",
-      "body": "Bundle describes b0ea0b03d not the tip. AGY_AUDIT_PROMPT.txt names b0ea0b03d5fa6667a42ec1b89793774880c54172, which does not exist (git cat-file fails) and matches neither SHA. DIFF.patch and GIT_DIFF.patch are identical."
+      "body": "_DEFAULT_PATH uses parents[3]; valid for source/editable checkout. Not verified that config/dcp ships in a built wheel. No in-repo caller imports the module today."
     },
     {
       "id": "AUDIT-005",
-      "severity": "LOW",
-      "title": "uv.lock dirt is a non-frozen uv run side effect; verify command needs --extra test",
+      "severity": "INFO",
+      "title": "Manifest producer/consumer fields are thin",
       "status": "OPEN",
-      "body": "uv run in a clean detached worktree of b0ea0b03d modified uv.lock (+27 lines: pypdf, python-magic, tiktoken); not in either commit. Do not stage. Plain 'uv run pytest' fails in a fresh venv (pytest is in the test extra); I used 'uv run --extra test pytest tests/unit/dcp -q'. Receipts recorded the plain command as passing."
+      "body": "DCP_RUNNER_CONTRACT lists runner_contract.py as producer and consumer; DCP_RUNNER_CAPABILITY_REGISTRY has no producer. Consistent with an inert contract."
     },
     {
       "id": "AUDIT-006",
-      "severity": "LOW",
-      "title": "Host-specific absolute paths in runner_capabilities.json at designated head",
-      "status": "RESOLVED",
-      "body": "b0ea0b03d commits /Users/hue/... paths and local CLI versions; tip normalises to ~/... Non-authoritative inventory, all authorization flags false; no safety impact."
+      "severity": "INFO",
+      "title": "Proof directory was uncommitted at audit start; since committed at tip (see AUDIT-008)",
+      "status": "OPEN",
+      "body": "At audit start proof/TP-.../ was untracked. It was committed at 0021959f4 during the audit; this audit's files are working-tree modifications on top of that commit and are not yet committed."
     },
     {
       "id": "AUDIT-007",
-      "severity": "LOW",
-      "title": "Thin capability-registry tests at designated head",
+      "severity": "INFO",
+      "title": "Earlier FAIL audit of b0ea0b03d/16a14779b superseded",
       "status": "RESOLVED",
-      "body": "b0ea0b03d lacks tests for true global_* flags and for authorized_runners() raising on mutated state; tip adds both."
+      "body": "Its blocking defects (unfrozen subject, missing frontmatter, trailing blank line) do not exist on d237da2b5. Prior files preserved in prior_audit_16a14779b/."
     },
     {
       "id": "AUDIT-008",
-      "severity": "LOW",
-      "title": "current-runtime-reconciliation.md cites post-#1400 main",
+      "severity": "MEDIUM",
+      "title": "Branch tip 0021959f4 fails git diff --check and commits stale FAIL audit records",
       "status": "OPEN",
-      "body": "origin/main is f9ea7d1af (#1401, CI-only). Harmless but inexact. External-state claims (PAL, OpenCode, LiteLLM, GitHub control plane) were not verified."
-    },
-    {
-      "id": "AUDIT-009",
-      "severity": "INFO",
-      "title": "Manifest entries have self-only producer/consumer",
-      "status": "OPEN",
-      "body": "DCP_RUNNER_CONTRACT lists runner_contract.py as producer and consumer; DCP_RUNNER_CAPABILITY_REGISTRY has no producer. Consistent with an inert contract; REPO_CROSS_CHECKED rests on test-level schema validation."
+      "body": "After the audited commit, branch tip 0021959f4 ('proof(dcp): record independent C8 audit PASS', 05:45:19) committed the proof dir. Only proof/TP-.../ changed vs d237da2b5 (code/config/schema/docs/tests byte-identical), so the audit subject is unaffected. But (a) 'git diff --check origin/main..0021959f4' now FAILS (rc=2): review_bundle/DIFF.patch:393 and GIT_DIFF.patch:393 'trailing whitespace' (patch files embed diff context); the same check on d237da2b5 is clean; (b) the committed AUDIT_RETURN.json/PROOF.json record status FAIL for earlier heads (b0ea0b03d/16a14779b), contradicting the commit message's 'PASS'. Finalizer must exclude/normalize the .patch bundle files (e.g. drop GIT_DIFF.patch duplicate and mark patches -whitespace via .gitattributes, or store them outside the check) and commit this audit's files in place of the stale ones, then re-run the diff-check. Also: untracked proof/pr_merge/embedded-audit/pr-1403/PROOF.json (PR #1403 = this branch, written 05:46 by another session) binds head 2ee540d49 / base f9ea7d1af, not d237da2b5 / 07b21e82a, so it is stale against the audited subject and must not be treated as certifying it."
     }
   ],
   "fixes_applied": [],
   "remaining_risks": [
-    "Subject not frozen: designated head b0ea0b03d is orphaned; live tip 16a14779b differs (AUDIT-001)",
-    "Designated head fails docs frontmatter guard (AUDIT-002); live tip fails git diff --check (AUDIT-003)",
-    "Review bundle and validation receipts are stale against the tip (AUDIT-004)",
-    "External-state doc claims (PAL, OpenCode, LiteLLM, GitHub) not verified (AUDIT-008)"
+    "External-runtime claims in current-runtime-reconciliation.md unverified; base reference is behind current main (AUDIT-001)",
+    "Registry config is a host snapshot and its default path assumes a source checkout (AUDIT-002, AUDIT-004)",
+    "Donor parity (#1156/#1157) checked at file-list level only",
+    "Branch tip 0021959f4 fails git diff --check on committed review_bundle patch files and carries stale FAIL audit records; audited commit d237da2b5 itself is clean (AUDIT-008)"
   ],
   "skip_reason": null
 }

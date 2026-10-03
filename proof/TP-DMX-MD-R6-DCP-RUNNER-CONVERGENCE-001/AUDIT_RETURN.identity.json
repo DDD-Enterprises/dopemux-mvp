@@ -1,20 +1,16 @@
 {
   "packet_id": "TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001",
-  "verdict": "FAIL",
+  "verdict": "PASS_WITH_RISKS",
   "auditor": {
     "runner": "claude-code-cli",
     "model": "claude-sonnet-5-5",
     "runtime_family": "claude-code"
   },
-  "checked_head": "b0ea0b03d27a8d157848b2cedd18dd181c4c225d",
-  "base_sha": "f9ea7d1af4af29cd0862cfeadf348a6ef6ff71c0",
-  "live_tip_at_audit_end": "2fbcfd89a8e71927426cc6ebb8ba787d6819a8a5",
-  "live_tip_amended_at": "2026-10-03T03:52:06-07:00",
-  "checked_head_committed_at": "2026-10-03T03:48:09-07:00",
+  "checked_head": "d237da2b5892e9640434d292b3a385cfaaa4d2e2",
+  "base_sha": "07b21e82a368c29adb96baf09573e03de74d4483",
   "return_path": "proof/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001/AUDIT_RETURN.json",
   "report_path": "proof/TP-DMX-MD-R6-DCP-RUNNER-CONVERGENCE-001/AUDITOR_REPORT.md",
   "authority": "NONE",
-  "supplementary_checked_head": "16a14779b60288585592be087e9a1f4d4b428ffb",
-  "unaudited_later_tip": "2fbcfd89a8e71927426cc6ebb8ba787d6819a8a5",
-  "unaudited_later_tip_amended_at": "2026-10-03T03:53:27-07:00"
+  "live_tip_at_audit_end": "0021959f442eef4946185afdb711635c0630d9e3",
+  "live_tip_note": "proof-only commit on top of checked_head; non-proof content identical"
 }
