@@ -1,0 +1,3 @@
+ ui-dashboard/src/components/PredictionPanel.tsx    | 8 ++++++++
+ ui-dashboard/src/components/__tests__/Accessibility.test.tsx | 15 +++++++++++++++
+ 2 files changed, 23 insertions(+)

@@ -1,0 +1,16 @@
+{
+  "findings": [
+    {
+      "body": "PredictionPanel correctly resets isCopied state on prediction prop change.",
+      "id": "FINDING-1",
+      "severity": "INFO",
+      "status": "OPEN",
+      "title": "Copy state reset on prediction change"
+    }
+  ],
+  "fixes_applied": [],
+  "model_used": "gemini-3.1-pro-high",
+  "remaining_risks": [],
+  "status": "PASS",
+  "summary": "Audited PredictionPanel.tsx and Accessibility.test.tsx."
+}
