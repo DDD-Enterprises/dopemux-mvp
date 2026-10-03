@@ -1,0 +1,115 @@
+{
+  "id": "TP-DMX-CONTROL-TOWER-BINARY-PROOF-VALIDATION-005",
+  "project": "dopemux-mvp",
+  "target": "Repair the trusted change-contract validator so committed opaque proof evidence is classified explicitly without UTF-8 crashes, while required JSON and Markdown remain strict fail-closed text inputs.",
+  "invariants": [
+    "This is an L3 validator-trust repair: one Luna/Codex high-effort implementer and exactly one independent final Grok CLI audit using grok-4.5 at high effort are authorized.",
+    "The extra final-audit dependency is a native L3 gate budget exception required by validator trust, not a retry, fallback, model substitution, or second substantive audit.",
+    "Only scripts/governance/validate_change_contract.py, tests/governance/test_validate_change_contract.py, and this task packet may change during implementation; no workflow, signer, branch-protection, or broad-path allowlist changes are authorized.",
+    "Canonical proof and PR-scoped attestation publication are a separate post-freeze closure obligation: only the new PR's concrete proof/pr_merge/embedded-audit/pr-<number>/PROOF.json and matching .sig may be published after a real PR number and exact audited head exist; no proof artifact is created in this prerequisite worktree.",
+    "Opaque binary evidence is classified with its repository path and remains subject to path, lane, and proof-only policy; it is never treated as missing, deleted, or decoded as text.",
+    "Required JSON and Markdown text with invalid UTF-8 produces a structured error finding and FAIL status; it must not crash, silently skip validation, or be treated as absent.",
+    "The existing proof-only allowlist and public Result/read_blob compatibility remain unchanged unless a narrowly internal helper is required to preserve their behavior."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-CONTROL-TOWER-VALIDATOR-PREREQUISITE-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "codex/control-tower-binary-validator-20260909",
+    "base_branch": "main",
+    "stacked_because": "Prerequisite must land on trusted main before the dependent kit PR can be evaluated by the checked-out trusted evaluator."
+  },
+  "commit": {
+    "message": "fix(governance): classify binary proof evidence in change contract",
+    "allowlist": [
+      "scripts/governance/validate_change_contract.py",
+      "tests/governance/test_validate_change_contract.py",
+      "task-packets/TP-DMX-CONTROL-TOWER-BINARY-PROOF-VALIDATION-005.json"
+    ],
+    "verify": [
+      "python3 -m jsonschema -i task-packets/TP-DMX-CONTROL-TOWER-BINARY-PROOF-VALIDATION-005.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python3 -m pytest -q tests/governance/test_validate_change_contract.py",
+      "python3 -m pytest -q tests/governance",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "git diff --check -- scripts/governance/validate_change_contract.py tests/governance/test_validate_change_contract.py task-packets/TP-DMX-CONTROL-TOWER-BINARY-PROOF-VALIDATION-005.json",
+      "pre-commit run --files scripts/governance/validate_change_contract.py tests/governance/test_validate_change_contract.py task-packets/TP-DMX-CONTROL-TOWER-BINARY-PROOF-VALIDATION-005.json"
+    ]
+  },
+  "pr": {
+    "title": "fix(governance): classify binary proof evidence in change contract",
+    "body": "Prerequisite for the Control Tower kit repair. The trusted evaluator currently decodes every Git blob as UTF-8 and crashes on committed binary proof evidence such as AUDIT_INPUTS.zip, leaving CHANGE_CONTRACT.json empty and causing a fail-closed audit rejection. This bounded L3 repair adds explicit opaque-evidence classification while preserving strict proof-only path closure and structured failures for invalid UTF-8 JSON/Markdown. Implementer: Luna/Codex high. Final independent auditor: Grok CLI grok-4.5 high, exactly once after the frozen change. The Grok audit is an authorized native L3 dependency exception, not a retry or substitution. No workflow, signer, protection, proof artifact, or broad allowlist changes are in scope.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "P005-0",
+      "task": "Inspect validator consumers, Result/read_blob contracts, proof-only closure, and existing governance tests before source mutation.",
+      "requirements": [
+        "Record observed versus inferred behavior for Git blobs, working-tree paths, deleted paths, opaque bytes, and required text files.",
+        "Confirm the proof-only allowlist remains strict and unchanged."
+      ],
+      "validation": [
+        "Consumer and test inventory is recorded in implementation notes or review evidence.",
+        "No source edit occurs before this packet validates against the canonical schema."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        ".claude/PROJECT_INSTRUCTIONS.md",
+        ".claude/PRIMER.md",
+        "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+        "scripts/governance/validate_change_contract.py",
+        "tests/governance/test_validate_change_contract.py"
+      ]
+    },
+    {
+      "id": "P005-1",
+      "task": "Implement the smallest raw-byte read and classification path that preserves existing textual validation and public compatibility.",
+      "requirements": [
+        "Read Git and working-tree content as bytes before decoding.",
+        "Classify non-UTF-8 or explicitly opaque evidence with a structured path-bearing record and do not pass it to JSON/Markdown validators.",
+        "Emit a structured invalid-UTF-8 error for required JSON and Markdown text.",
+        "Preserve deleted-path behavior, proof-only path closure, signature/head checks, lane calculation, and existing Result serialization contracts."
+      ],
+      "expected_files": [
+        "scripts/governance/validate_change_contract.py",
+        "tests/governance/test_validate_change_contract.py"
+      ],
+      "validation": [
+        "A committed temporary Git fixture containing a binary proof ZIP evaluates without UnicodeDecodeError and reports the path as opaque evidence rather than deleted.",
+        "A working-tree binary proof path evaluates without UnicodeDecodeError.",
+        "Invalid UTF-8 JSON and Markdown yield structured FAIL findings with paths.",
+        "Existing governance tests continue to pass and the proof-only allowlist rejects arbitrary binary paths."
+      ]
+    },
+    {
+      "id": "P005-2",
+      "task": "Run deterministic validation, freeze the bounded change, and obtain the required independent final audit before any parent integration decision.",
+      "requirements": [
+        "Run the focused test, governance module tests, change-contract validator, diff check, and applicable pre-commit hooks.",
+        "The final audit must be a separate read-only Grok CLI invocation using grok-4.5 high with no implementation or retry authority.",
+        "After a real PR number exists, publish only the canonical PR-scoped PROOF.json and matching signature for this prerequisite's exact audited head; do not use a wildcard, inherited proof, or unrelated PR path.",
+        "Stop and report FAIL or NEEDS_SUPERVISOR for any new source/security finding, exact-head mismatch, untrusted runner identity, or missing required receipt."
+      ],
+      "expected_files": [
+        "proof/pr_merge/embedded-audit/pr-<new-pr-number>/PROOF.json",
+        "proof/pr_merge/embedded-audit/pr-<new-pr-number>/PROOF.json.sig"
+      ],
+      "validation": [
+        "All required deterministic commands have preserved PASS/FAIL/NOT_RUN receipts.",
+        "Final auditor identity and exact frozen head are recorded truthfully; no merge or push is implied by this packet.",
+        "The changed path inventory is exactly the packet allowlist."
+      ]
+    }
+  ]
+}

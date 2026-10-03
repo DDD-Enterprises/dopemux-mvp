@@ -1,0 +1,131 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-GOVERNED-EXECUTION-CONTRACT-V2-001",
+  "objective": "Freeze Governed Execution Contract v2 terminology and schemas",
+  "repository": "dopemux-mvp",
+  "base_policy": "Repository governance and child Task Packets",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator:2026-09-11"
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate"
+    ],
+    "global_stop_conditions": [
+      "authority_conflict",
+      "global_stop"
+    ]
+  },
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": ".control-tower/state/bindings/team_lead.json",
+      "sha256": "1111111122222222333333334444444455555555666666667777777788888888"
+    },
+    "authority_ceiling": "Child-specific intersection only",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream, fail-closed overlap"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "task-packets/TP-W01.json",
+        "sha256": "1111111122222222333333334444444455555555666666667777777788888888"
+      },
+      "objective": "Bounded child W01",
+      "dependencies": [],
+      "parallel_group": "A",
+      "mutating": true,
+      "write_surface": [
+        "schemas/governed_execution/"
+      ],
+      "canonical_writers": [
+        "w01"
+      ],
+      "semantic_scope": [
+        "w01"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate"
+      ],
+      "rollback_boundary": "Revert W01 commits",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-GEC-V2",
+      "return_contract": [
+        "workstream_id",
+        "packet_id",
+        "status",
+        "subject_sha",
+        "validation_pass"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01",
+      "requires": [
+        "W01"
+      ],
+      "condition": "W01 returns PASS",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit per frozen L2/L3 subject",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop"
+    ]
+  },
+  "execution_authority": "NONE"
+}

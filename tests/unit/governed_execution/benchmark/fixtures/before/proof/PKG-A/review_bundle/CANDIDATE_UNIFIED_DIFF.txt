@@ -1,0 +1,4 @@
+--- a/schemas/foo.json
++++ b/schemas/foo.json
+@@ -1,1 +1,2 @@
++added schema line

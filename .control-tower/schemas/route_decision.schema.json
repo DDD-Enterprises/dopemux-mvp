@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "audit": {
+      "required": [
+        "required"
+      ],
+      "type": "object"
+    },
+    "justification": {
+      "properties": {
+        "alternatives_considered": {
+          "minItems": 1,
+          "type": "array"
+        },
+        "why_effort": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "why_model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "why_runner": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "why_runner",
+        "why_model",
+        "why_effort",
+        "alternatives_considered"
+      ],
+      "type": "object"
+    },
+    "packet_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "risk_lane": {
+      "enum": [
+        "L0",
+        "L1",
+        "L2",
+        "L3"
+      ]
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "selection": {
+      "properties": {
+        "effort": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "runner": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "runner_availability": {
+          "enum": [
+            "PROVEN",
+            "PROPOSED",
+            "UNKNOWN"
+          ]
+        }
+      },
+      "required": [
+        "runner",
+        "runner_availability",
+        "model",
+        "effort"
+      ],
+      "type": "object"
+    },
+    "stage": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "packet_id",
+    "stage",
+    "risk_lane",
+    "selection",
+    "justification",
+    "audit"
+  ],
+  "type": "object"
+}

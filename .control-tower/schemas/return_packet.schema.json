@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "base_sha": {"type": "string", "minLength": 1},
+    "branch": {"type": "string", "minLength": 1},
+    "decision_needed": {"type": "string", "minLength": 1},
+    "head_sha": {"type": "string", "minLength": 1},
+    "packet_id": {"type": "string", "minLength": 1},
+    "project": {"type": "string", "minLength": 1},
+    "reason": {"type": "string", "minLength": 1},
+    "return_id": {"type": "string", "minLength": 1},
+    "risk_lane": {"enum": ["L0", "L1", "L2", "L3"]}
+  },
+  "required": [
+    "return_id",
+    "packet_id",
+    "decision_needed",
+    "reason",
+    "head_sha",
+    "base_sha",
+    "branch",
+    "project",
+    "risk_lane"
+  ],
+  "type": "object"
+}

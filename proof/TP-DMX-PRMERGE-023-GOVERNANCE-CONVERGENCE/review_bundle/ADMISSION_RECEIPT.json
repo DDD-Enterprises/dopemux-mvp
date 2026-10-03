@@ -1,0 +1,9 @@
+{
+  "admitted_at": "2026-10-03T04:42:00Z",
+  "base_sha": "78cf4738d1382c8627bcc415b41ceae2eee3504a",
+  "metapacket_id": "MP-DMX-MERGE-DRAIN-20261002-004",
+  "status": "ADMITTED",
+  "substantive_head": "c60069175f3ff2471c736ae3097f04a5bc661f2d",
+  "task_id": "TP-DMX-PRMERGE-023-GOVERNANCE-CONVERGENCE",
+  "verdict": "PASS_WITH_RISKS"
+}
