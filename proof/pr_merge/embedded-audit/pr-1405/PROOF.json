@@ -1,0 +1,82 @@
+{
+  "packet_id": "TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1405,
+  "head_sha": "66a628dd54e5f007f2684ca6855ea08a53e10546",
+  "executed": true,
+  "mutation_performed": true,
+  "github_mutation_route_added": false,
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude -p --model sonnet --dangerously-skip-permissions",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MD-R6-ROUTING-PAL-AGENTS-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUDIT-001",
+        "severity": "INFO",
+        "title": "Model IDs unverifiable offline",
+        "status": "ACCEPTED_RISK",
+        "body": "Model IDs (gpt-6-luna, gpt-6.1-sol, claude-sonnet-5-5, claude-opus-5-5, gemini-3.8-flash) are unverifiable offline and hard-pinned in .codex config/role TOMLs; availability and actual identity remain UNKNOWN/NOT_RUN per cost-first guidance."
+      },
+      {
+        "id": "AUDIT-002",
+        "severity": "INFO",
+        "title": "dmx_worker and dmx_reviewer role pin tiers",
+        "status": "ACCEPTED_RISK",
+        "body": "dmx_worker moved to gpt-6.1-sol, dmx_reviewer to gpt-6.1-sol, and supervisor default to gpt-6.1-sol; matches stated tiers in metapacket routing policy."
+      },
+      {
+        "id": "AUDIT-003",
+        "severity": "INFO",
+        "title": "Role-name underscore vs hyphen formatting",
+        "status": "ACCEPTED_RISK",
+        "body": "Existing role TOML names use underscores while new roles use hyphens; cosmetic, verified by tests."
+      },
+      {
+        "id": "AUDIT-004",
+        "severity": "INFO",
+        "title": "PAL upstream version bump 9.8.2 and conf JSON sync",
+        "status": "ACCEPTED_RISK",
+        "body": "PAL upstream version bump and openai/gemini/openrouter conf JSON refreshes are allowlisted and test-pinned."
+      },
+      {
+        "id": "AUDIT-005",
+        "severity": "INFO",
+        "title": "ensure-pal.sh image rebuild lifecycle",
+        "status": "ACCEPTED_RISK",
+        "body": "ensure-pal.sh builds only when the image is absent, preserving running container lifecycle without unnecessary rebuilds."
+      }
+    ],
+    "fixes_applied": [
+      "B1: Restored .claude/agents/*.md to origin/main preserving CCAR-002 SHA catalog integrity",
+      "B2: Restored compose.yml dope-context read-only fail-closed mount (:ro)",
+      "B3: Restored mcp<2 build guard in docker/mcp-servers-source/pal/Dockerfile",
+      "B4: Restored cli_clients/ from origin/main, default temperatures in config.py, and integrated cost-first guidance without clobbering .claude/claude.md"
+    ],
+    "remaining_risks": [
+      "Model IDs unverifiable offline; runtime selector resolution subject to provider credentials and availability",
+      "ensure-pal.sh rebuilds only on missing image"
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "sonnet",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "claude-code-cli"
+    },
+    "implementer": {
+      "model": "gemini-2.5-pro",
+      "model_family": "google-gemini",
+      "runner": "antigravity",
+      "runtime_family": "antigravity"
+    },
+    "independence": "PROVEN"
+  }
+}
