@@ -176,3 +176,7 @@
 ## 2026-07-19 - [Keyboard Dismissal for Soft Confirmations]
 **Learning:** For transient 'Soft Confirmation' patterns (like 3-second 'Confirm Skip' or 'Confirm Reset' states), keyboard users need an immediate, explicit way to cancel the pending destructive state without waiting out the timeout or risking an accidental second activation. Binding the `Escape` key (`onKeyDown`) to reset confirmation states provides an intuitive safety hatch for keyboard navigation.
 **Action:** Always attach an `onKeyDown` handler listening for `Escape` to reset confirmation states on soft confirmation buttons.
+
+## 2026-07-20 - [Scoped Tooltips for Multi-Action Chips]
+**Learning:** In Material-UI `<Chip>` components with an `onDelete` secondary action, wrapping the entire chip in a single `<Tooltip>` causes misleading guidance when hovering over the delete icon. Decoupling the primary copy interaction tooltip from the secondary delete action—and providing explicit `aria-label` on delete controls—ensures precise hover guidance and accessible screen reader controls.
+**Action:** Always scope primary tooltips to specific interactive child regions or provide distinct `aria-label` attributes on secondary action buttons in compound chip components.
