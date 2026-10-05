@@ -4165,8 +4165,11 @@ def native_hooks_register(is_global: bool):
     if not is_global:
         cmd = 'sh "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh"'
     else:
+        # Pin the interpreter running dopemux: a bare `python3` can resolve to
+        # one without dopemux's dependencies (e.g. pydantic) and fail every hook.
+        # The repo wrapper can't be used here: global hooks run in other repos.
         hook_script = Path(__file__).resolve().parent / "claude" / "native_hooks.py"
-        cmd = f"python3 {shlex.quote(str(hook_script))}"
+        cmd = f"{shlex.quote(sys.executable)} {shlex.quote(str(hook_script))}"
     
     # Define hook configuration
     hooks_config = {
