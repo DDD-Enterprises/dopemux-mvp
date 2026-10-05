@@ -1,0 +1,14 @@
+# Exact invocation record -- PR #1412 L2 embedded audit (TP-DMX-PR1412-L2-AUDIT-001)
+# custody OK 2026-10-05T21:53:13Z head=a1b4ea9108f09e2b2c8fb9e753d31f2900a20ba6; dispatched in parallel with CI (operator: merge asap); local unit 2676 pass, pre-commit + diff-check clean
+# exit=0 duration=106s end=2026-10-05T21:54:59Z
+# conversation_id=80f26642-77b2-4c54-9de1-79a551529ca7  status=SUCCESS  duration_seconds=102.906904
+# usage: {'input_tokens': 92902, 'output_tokens': 9265, 'thinking_tokens': 7063, 'cache_read_tokens': 541779, 'total_tokens': 102167}
+# raw output sha256=f593fe9633e2ac312686532ebf4ef0b3d8cbb096dc29232daac00611216d9edd
+# Dispatched in parallel with CI (operator: merge asap); CI outcome recorded in PROOF.json validations.
+# agy CLI version 1.2.15
+
+agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m \
+    --output-format json --add-dir <repo>/.worktrees/native-hooks-register \
+    --print="$(cat AUDIT_INPUT.md)"
+
+# auditor_model gemini-3.1-pro-high is an exact schema enum value; audit_identity.auditor.effort="high" from the model variant.

@@ -1,0 +1,80 @@
+{
+  "packet_id": "TP-DMX-PR1412-L2-AUDIT-001",
+  "branch": "claude/native-hooks-register-wrapper-2026-10-05",
+  "base": "main",
+  "base_sha": "20a4d4b12c68836f70ae1f5c9a6846122f00a136",
+  "head_sha": "a1b4ea9108f09e2b2c8fb9e753d31f2900a20ba6",
+  "kind": "cli_hook_registration_fix_audit",
+  "risk_lane": "L2",
+  "implementer": "Claude Code (claude-opus-5-5 session) authored the PR, the audit prompt and this proof bundle.",
+  "audited_files": [
+    "src/dopemux/cli.py",
+    "tests/unit/test_cli_audit_remediations.py"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "validations": [
+    {
+      "name": "unit tests",
+      "result": "PASS",
+      "detail": "tests/unit: 2676 passed, 2 skipped (local, audited head)."
+    },
+    {
+      "name": "regression test",
+      "result": "PASS",
+      "detail": "test_native_hooks_register_global_uses_running_interpreter fails on base ('python3' != sys.executable), passes on head."
+    },
+    {
+      "name": "end-to-end smoke",
+      "result": "PASS",
+      "detail": "registered --global command run from /tmp exits 0; old command exits 1 (No module named 'pydantic')."
+    },
+    {
+      "name": "pre-commit range + git diff --check",
+      "result": "PASS",
+      "detail": "0 failures; diff-check exit 0."
+    },
+    {
+      "name": "CI on audited head",
+      "result": "NOT_RUN",
+      "detail": "At proof time: 16 checks pass, 0 non-gate failures; Unit Tests, Extractor Full and CodeQL python still pending (audit dispatched in parallel with CI per operator 'merge asap'). Local tests/unit on the same head: 2676 passed."
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m --output-format json --add-dir <repo>/.worktrees/native-hooks-register --print=\"$(cat AUDIT_INPUT.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1412-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Risk of sys.executable in frozen builds",
+        "body": "If dopemux were distributed as a frozen binary (e.g. PyInstaller), sys.executable would be the bootloader, not a Python interpreter able to run native_hooks.py. dopemux is not distributed frozen today (pyproject console scripts / venv installs)."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "F-01 (LOW, accepted): a future frozen-binary distribution of dopemux would make sys.executable the bootloader and break globally registered hooks; non-blocking today (no frozen distribution)."
+    ],
+    "skip_reason": null
+  }
+}

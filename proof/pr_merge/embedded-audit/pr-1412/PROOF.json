@@ -1,0 +1,44 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1412,
+  "head_sha": "a1b4ea9108f09e2b2c8fb9e753d31f2900a20ba6",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini-3.1-pro-high",
+    "invocation": "agy --model gemini-3.1-pro-high --sandbox --mode plan --print-timeout 25m --output-format json --add-dir <repo>/.worktrees/native-hooks-register --print=\"$(cat AUDIT_INPUT.md)\"; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1412-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Risk of sys.executable in frozen builds",
+        "body": "If dopemux were distributed as a frozen binary (e.g. PyInstaller), sys.executable would be the bootloader, not a Python interpreter able to run native_hooks.py. dopemux is not distributed frozen today (pyproject console scripts / venv installs)."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "F-01 (LOW, accepted): a future frozen-binary distribution of dopemux would make sys.executable the bootloader and break globally registered hooks; non-blocking today (no frozen distribution)."
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini-3.1-pro-high",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}

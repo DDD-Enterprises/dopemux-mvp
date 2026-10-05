@@ -194,6 +194,30 @@ def test_native_hooks_register_refuses_invalid_settings_json():
         assert settings_path.read_text(encoding="utf-8") == "{not-json"
 
 
+def test_native_hooks_register_global_uses_running_interpreter(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Bare `python3` can resolve to an interpreter without dopemux's deps
+    # (e.g. no pydantic), failing every hook. --global must pin the interpreter
+    # that is running dopemux, with the absolute native_hooks.py path.
+    import json
+    import shlex
+    import sys
+
+    monkeypatch.setenv("HOME", str(tmp_path))
+    result = CliRunner().invoke(cli, ["native-hooks", "register", "--global"])
+
+    assert result.exit_code == 0, result.output
+    settings = json.loads((tmp_path / ".claude" / "settings.json").read_text())
+    commands = [entry["command"] for entry in settings["hooks"]["command"]]
+    assert len(commands) == 1
+    argv = shlex.split(commands[0])
+    assert argv[0] == sys.executable
+    assert not commands[0].startswith("python3 ")
+    assert argv[1].endswith("/dopemux/claude/native_hooks.py")
+    assert Path(argv[1]).is_file()
+
+
 def test_audit_wizard_rejects_unknown_routing_policy_before_runner(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
