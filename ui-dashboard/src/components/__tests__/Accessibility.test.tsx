@@ -351,7 +351,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
   expect(appContent).toContain('Waiting for signals...');
   expect(appContent).toContain('animation: \'emptyListeningPulse 1.4s infinite ease-in-out both\'');
-  expect(appContent).toContain('useEffect(() => {\n    if (notifications.length === 0) {\n      setIsConfirmingClear(false);');
+  expect(appContent).toMatch(/if\s*\(\s*notifications\.length\s*===\s*0\s*\)\s*\{\s*setIsConfirmingClear\(false\);/);
   expect(appContent).toContain('severity="error"');
   expect(appContent).toContain('closeText="Dismiss error notification"');
   expect(appContent).toContain("'aria-label': 'Dismiss error notification'");
