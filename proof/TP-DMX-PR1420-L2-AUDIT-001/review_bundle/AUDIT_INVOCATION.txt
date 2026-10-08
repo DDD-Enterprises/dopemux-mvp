@@ -1,0 +1,27 @@
+# Exact invocation record -- PR #1420 L2 embedded audit (TP-DMX-PR1420-L2-AUDIT-001)
+# custody OK 2026-10-08T14:00:04Z head=d7bb1e1462a6d0233b3d97beac7fbe43055a6d0e (checked with git -C before launch)
+# exit=0 start=2026-10-08T14:00:04Z end=2026-10-08T14:03:09Z
+# grok 1.0.46 (2765805b9442) [stable]; session_id=01a11bd0-6669-78c3-b741-7b2447924f12 request_id=d278bf6e-c0ba-45f1-b7f4-4f251bb9e0b2
+# stopReason=end_turn num_turns=9 total_cost_usd=0.105534912
+# usage: input 64374, cache_read 363136, output 12118, reasoning 3394, total 439628
+# raw output sha256=9edfe8bdb12e600eab22820dacae318ecae619c2452482f6d54a153922c19b63
+#
+# Route: AGY gemini-3.1-pro-high was unavailable (Gemini weekly quota 0%, reset 2026-10-08T14:41Z,
+# zero-turn `/usage` snapshot at 13:41Z) and its post-reset quota is reserved for another session's
+# gated audit, so the operator chose the admitted grok-cli/grok-4.5 route.
+#
+# Launched in the operator's Terminal panel (grok auth is not visible from the Claude Code sandbox).
+# First attempt with `--sandbox read-only` refused to start before any model call:
+#   "could not resolve runtime-socket deny path /var/run/docker.sock: endpoint is a symlink"
+# Second attempt (this audit) used `--sandbox workspace` with cwd = an empty scratch directory, so the
+# auditor could read everywhere but write only to that scratch dir, /tmp and ~/.grok. The worktree was
+# verified clean and at the same HEAD after the run.
+
+cd <scratch>/grok-cwd && grok -m grok-4.5 --effort high --sandbox workspace --cwd <scratch>/grok-cwd \
+    --always-approve --disallowed-tools "search_replace,web_search,web_fetch,Agent" --max-turns 80 \
+    --output-format json --prompt-file AUDIT_INPUT.md > AUDIT_OUTPUT_RAW.json
+
+# Requested model: grok-4.5 (exact schema enum value; -m given explicitly because the CLI default grok-4.6 is not admitted).
+# Observed identity: ~/.grok/sessions/<cwd>/01a11bd0-6669-78c3-b741-7b2447924f12/summary.json
+#   current_model_id="grok-4.5", reasoning_effort="high"; signals.json primaryModelId="grok-4.5".
+#   Raw output modelUsage key "grok-4.5-build" is the CLI's telemetry label for grok-4.5.
