@@ -1,0 +1,53 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1420,
+  "head_sha": "d7bb1e1462a6d0233b3d97beac7fbe43055a6d0e",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <scratch>/grok-cwd --always-approve --disallowed-tools \"search_replace,web_search,web_fetch,Agent\" --max-turns 80 --output-format json --prompt-file AUDIT_INPUT.md; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1420-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Pull/merge friction on dirty local copies of the former tracked caches",
+        "body": "Worktrees with a locally modified copy of either file must `git checkout -- <file>` before the deletion applies cleanly; disclosed in the PR body; does not affect runtime hooks."
+      },
+      {
+        "id": "F-02",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Historical #1273 blobs retain machine-local path/port snapshot",
+        "body": "The advisor-cache blob from 6aeb25001 stays reachable in history (local absolute paths, ports, instance id; no secrets). History rewrite is a separate decision; out of scope."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "F-01 (LOW, accepted): one-time checkout/pull conflict on worktrees where either cache is still dirty against the old tracked blob.",
+      "The advisor-cache writer lives outside the repo (~/.claude/hooks/dopemux_mcp_advisor.py); a future rename of its cache file would not be covered by the exact-path ignore rule.",
+      "F-02 (INFO, accepted): git history keeps the accidental #1273 cache blobs."
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}
