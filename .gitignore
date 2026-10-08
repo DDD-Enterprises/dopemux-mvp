@@ -420,6 +420,8 @@ LIVE_LOG*.txt
 .claude/.surface-guard-warned.json
 .claude/.denylist-nudge-cache.json
 .claude/.activity-heartbeat-cache.json
+.claude/.untracked-work-probe-cache.json
+.claude/.dopemux-advisor-cache.json
 .antigravitycli/
 
 # Local AI tool workspaces (not repo state)
