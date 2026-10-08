@@ -1,0 +1,66 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1282,
+  "head_sha": "79404f3929c47fe09434ac07a36b936190282b56",
+  "generated_at": "2026-08-28T06:40:27Z",
+  "subject_identity": {
+    "audited_content_sha": "79404f3929c47fe09434ac07a36b936190282b56",
+    "audited_content_tree": "324348b70013207d908e3f5af66302336dfd99e9",
+    "canonical_proof_commit": "3cec493b7c51d6fac84c2b27a085050e910a92e9",
+    "local_attestation_role": "Binds frozen substantive content before proof-only successors.",
+    "trusted_finality_role": "Exact pushed PR head is bound by trusted CI output and PR Steward, retaining local audited_sha provenance."
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "copilot-cli",
+    "auditor_model": "claude-sonnet-4.6",
+    "invocation": "copilot-cli 1.0.82-0 noninteractive prompt mode; exact --model claude-sonnet-4.6; JSON output; all MCP servers disabled; available-tools restricted to an impossible sentinel; one plan-backed inference against trusted control plus frozen base-to-content diff",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "NB-01",
+        "severity": "LOW",
+        "title": "Historical G0 packet SHA split in R1 audit receipts",
+        "status": "ACCEPTED_RISK",
+        "body": "R1 audit bundle records g0_packet_sha256=cf3370d... while current authority record, TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json, and SUBJECT_BINDING.md record 6d6e9d5e... Properly labeled as historical R1 audit lineage in AUDITOR_REPORT finding F1 (RESOLVED). Late-repair-closure framework explicitly acknowledges this split."
+      },
+      {
+        "id": "NB-02",
+        "severity": "LOW",
+        "title": "Authority record SHA split between R1 and R2 proof bundles",
+        "status": "ACCEPTED_RISK",
+        "body": "R1 receipts record authority_record_blob=d43488cb... (pre-repair); R2 proof records blob ae03821e... (current, matches diff). Consistent with late-repair lineage semantics."
+      },
+      {
+        "id": "NB-03",
+        "severity": "INFO",
+        "title": "R2 final independent audit deferred pending early review stabilization",
+        "status": "ACCEPTED_RISK",
+        "body": "remaining_risks explicitly states R2 substantive changes not covered by R1 receipt. TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002.json S2 requires early Codex and Copilot review routes to stabilize before final R2 audit. Not a defect for this audit-evidence-recovery subject. This describes the audited pre-replacement proof state; the replacement audit recorded here now supplies the final independent judgment."
+      },
+      {
+        "id": "NB-04",
+        "severity": "INFO",
+        "title": "Proxy-reported and provider-attested auditor model identities remain UNKNOWN",
+        "status": "ACCEPTED_RISK",
+        "body": "proxy_reported_model and provider_attested_model are UNKNOWN in the R1 audit receipt. Consistently recorded across PROOF.json, COPILOT_RUN_RECEIPT.json, and AUDITOR_REPORT. Governance accepts this when other identity layers are confirmed. This is historical R1 evidence only; the replacement audit proxy reports claude-sonnet-4.6 while provider attestation remains allowed UNKNOWN."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "NB-01 ACCEPTED_RISK: Historical G0 packet SHA split in R1 audit receipts.",
+      "NB-02 ACCEPTED_RISK: Authority record SHA split between R1 and R2 proof bundles.",
+      "NB-03 ACCEPTED_RISK: Audited pre-replacement proof deferred final R2 audit; this replacement receipt supplies it.",
+      "NB-04 ACCEPTED_RISK: Historical R1 proxy/provider identities remain UNKNOWN; replacement proxy model is proven and provider attestation remains UNKNOWN."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
