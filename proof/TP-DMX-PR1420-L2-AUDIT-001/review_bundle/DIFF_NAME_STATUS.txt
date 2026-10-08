@@ -1,0 +1,3 @@
+D	.claude/.dopemux-advisor-cache.json
+D	.claude/.untracked-work-probe-cache.json
+M	.gitignore

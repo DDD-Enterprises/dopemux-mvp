@@ -1,0 +1,90 @@
+{
+  "packet_id": "TP-DMX-PR1420-L2-AUDIT-001",
+  "branch": "claude/untrack-hook-caches-2026-10-08",
+  "base": "main",
+  "base_sha": "e47602a192e5dd245ba0264decbd5e51b269b44e",
+  "head_sha": "d7bb1e1462a6d0233b3d97beac7fbe43055a6d0e",
+  "kind": "untrack_hook_cache_files_audit",
+  "risk_lane": "L2",
+  "implementer": "Claude Code (claude-opus-5-5 session) authored the PR, the audit prompt and this proof bundle.",
+  "audited_files": [
+    ".claude/.dopemux-advisor-cache.json",
+    ".claude/.untracked-work-probe-cache.json",
+    ".gitignore"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "validations": [
+    {
+      "name": "git diff --check",
+      "result": "PASS",
+      "detail": "Staged diff clean."
+    },
+    {
+      "name": "ignore rules",
+      "result": "PASS",
+      "detail": "git check-ignore -v matches .gitignore:423 (probe cache) and :424 (advisor cache)."
+    },
+    {
+      "name": "hook-rewrite simulation",
+      "result": "PASS",
+      "detail": "After commit, rewriting .claude/.untracked-work-probe-cache.json leaves `git status --short` clean."
+    },
+    {
+      "name": "risk lane",
+      "result": "PASS",
+      "detail": "validate_change_contract.py --paths: all 3 paths L2 (default lane for unmatched paths); model_audit_required."
+    },
+    {
+      "name": "CI on audited head",
+      "result": "PASS",
+      "detail": "All checks on d7bb1e146 pass or skip except the two audit-dependent gates (independent embedded audit, PR Steward final readiness), which wait for this proof."
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <scratch>/grok-cwd --always-approve --disallowed-tools \"search_replace,web_search,web_fetch,Agent\" --max-turns 80 --output-format json --prompt-file AUDIT_INPUT.md; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1420-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Pull/merge friction on dirty local copies of the former tracked caches",
+        "body": "Worktrees with a locally modified copy of either file must `git checkout -- <file>` before the deletion applies cleanly; disclosed in the PR body; does not affect runtime hooks."
+      },
+      {
+        "id": "F-02",
+        "severity": "INFO",
+        "status": "ACCEPTED_RISK",
+        "title": "Historical #1273 blobs retain machine-local path/port snapshot",
+        "body": "The advisor-cache blob from 6aeb25001 stays reachable in history (local absolute paths, ports, instance id; no secrets). History rewrite is a separate decision; out of scope."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "F-01 (LOW, accepted): one-time checkout/pull conflict on worktrees where either cache is still dirty against the old tracked blob.",
+      "The advisor-cache writer lives outside the repo (~/.claude/hooks/dopemux_mcp_advisor.py); a future rename of its cache file would not be covered by the exact-path ignore rule.",
+      "F-02 (INFO, accepted): git history keeps the accidental #1273 cache blobs."
+    ],
+    "skip_reason": null
+  }
+}
