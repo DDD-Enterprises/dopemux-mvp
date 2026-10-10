@@ -437,4 +437,3 @@ Still open, each needing a decision or an author rather than a file move:
 4. The manifest's 1,420 `delete-later` and the W2 `export-later` candidates (operator decision package; no action taken).
 5. 116 residual broken links with no unique target.
 6. A `docs_index.yaml` generator and the three-way skill mirror collapse (tooling owners).
-
