@@ -687,14 +687,33 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
             </Box>
           </Tooltip>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
+            <Tooltip
+              title={
+                currentTask
+                  ? isTimerRunning
+                    ? `Pause task: ${currentTask.title}`
+                    : `Start task: ${currentTask.title}`
+                  : isTimerRunning
+                    ? 'Pause task'
+                    : 'Start task'
+              }
+              arrow
+            >
               <Button
                 ref={primaryActionRef}
                 size="small"
                 variant="contained"
                 startIcon={isTimerRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
                 onClick={() => setIsTimerRunning(!isTimerRunning)}
-                aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}
+                aria-label={
+                  currentTask
+                    ? isTimerRunning
+                      ? `Pause task: ${currentTask.title}`
+                      : `Start task: ${currentTask.title}`
+                    : isTimerRunning
+                      ? 'Pause task'
+                      : 'Start task'
+                }
               >
                 {isTimerRunning ? 'Pause' : 'Start'}
               </Button>
