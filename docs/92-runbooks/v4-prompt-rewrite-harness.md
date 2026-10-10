@@ -1,3 +1,14 @@
+---
+id: v4-prompt-rewrite-harness
+title: v4 Prompt Rewrite Batch Harness Runbook
+type: runbook
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-10-10'
+last_review: '2026-10-10'
+next_review: '2027-04-10'
+prelude: Operator runbook for the v4 prompt rewrite batch harness under tools/prompt_rewrite_v4; relocated from the repository root in consolidation W5.
+---
 # Claude Automation Instructions
 
 Operator runbook for the v4 prompt rewrite batch harness.

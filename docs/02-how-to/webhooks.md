@@ -1,3 +1,14 @@
+---
+id: webhooks
+title: Dopemux Webhooks
+type: how-to
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-10-10'
+last_review: '2026-10-10'
+next_review: '2027-04-10'
+prelude: Configure and verify the Cloudflare Tunnel and webhook receiver for Dopemux; relocated from the repository root in consolidation W5.
+---
 # Dopemux Webhooks
 
 This document describes how to configure and verify the Cloudflare Tunnel and Webhook Receiver for Dopemux.

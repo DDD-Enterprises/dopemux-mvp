@@ -16,7 +16,7 @@ prelude: Docs Audit (explanation) for dopemux documentation and developer workfl
 **Target:** Dopemux MVP User-Facing Documentation
 
 ## Objective
-To align user-facing documentation with the strict repository truth established by `ARCHITECTURE.md`, `PM_PLANE.md`, `PROJECT.md`, `BRAND_SYSTEM.md`, `SERVICE_CATALOG.md`, and `SYSTEM_BOUNDARIES.md`.
+To align user-facing documentation with the strict repository truth established by `ARCHITECTURE.md`, `PM_PLANE.md`, `PROJECT.md`, `docs/04-explanation/product/brand-system.md`, `SERVICE_CATALOG.md`, and `SYSTEM_BOUNDARIES.md`.
 
 ## Summary of Changes
 
@@ -44,7 +44,7 @@ To align user-facing documentation with the strict repository truth established 
 During the audit, the following contradictions were identified between the old documentation and the runtime truth:
 - **Monolith Illusion:** Old docs implied a single unified Dopemux engine. Truth: Dopemux is a composed workspace with fragmented authority (PM is split across Leantime, task-orchestrator, ConPort).
 - **Dopecon-Bridge Authority:** Old docs sometimes treated the bridge as the source of truth for custom data. Truth: It is an adapter/proxy only.
-- **Statusline Fluff:** Old README contained extensive, overly conversational breakdowns of statusline icons. This violated the `BRAND_SYSTEM.md` mandate for precise, technical language.
+- **Statusline Fluff:** Old README contained extensive, overly conversational breakdowns of statusline icons. This violated the `docs/04-explanation/product/brand-system.md` mandate for precise, technical language.
 - **Extractor Reality:** Old docs pointed to `dopemux truth` as the primary path. Truth: `run_extraction_v5.py` is the canonical extractor runtime; `dopemux truth` relies on legacy `PipelineRunner`.
 
 ## Unresolved Truth Gaps (Requires Human Adjudication)

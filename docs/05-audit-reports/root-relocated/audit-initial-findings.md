@@ -1,3 +1,14 @@
+---
+id: audit-initial-findings
+title: Initial Audit Findings (2026-02)
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-10-10'
+last_review: '2026-10-10'
+next_review: '2027-04-10'
+prelude: Point-in-time preliminary codebase audit using PAL tools; relocated from the repository root in consolidation W5.
+---
 # Initial Audit Findings - Dopemux-MVP Codebase
 
 ## Summary of Preliminary Analysis
@@ -5,7 +16,7 @@ This document contains the initial findings from a surface-level review using PA
 
 ## Tools Used in Initial Pass
 - `thinkdeep`: Strategic planning
-- `planner`: Execution planning  
+- `planner`: Execution planning
 - `analyze`: Architectural analysis
 - `codereview`: Code quality assessment
 - `consensus`: Findings validation

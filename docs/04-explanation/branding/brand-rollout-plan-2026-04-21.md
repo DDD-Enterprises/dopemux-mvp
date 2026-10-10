@@ -64,7 +64,7 @@ Acceptance criteria:
 - `DOPEMUX_THEME=pastel-neon-dreamscape npm run build -- ui-dashboard` produces a dashboard with the dreamscape palette.
 - `source scripts/lib/brand.sh && brand::chip LIVE "hello"` prints the expected ANSI sequence.
 - `scripts/brand_lint.py --warn-only` runs end-to-end with new checks emitting warnings.
-- `docs/02-how-to/brand-a-new-surface.md` exists and links from [BRAND_SYSTEM.md](../BRAND_SYSTEM.md).
+- `docs/02-how-to/brand-a-new-surface.md` exists and links from [docs/04-explanation/product/brand-system.md](../BRAND_SYSTEM.md).
 
 Risks:
 
@@ -258,7 +258,7 @@ Rollback: trivial; delete `ui_output.py` and revert the runner wiring.
 Tasks:
 1. Flip `scripts/brand_lint.py` from warn-only to fail-on-error for the new checks introduced in Wave 0. Add a CI step `make brand-lint` (or equivalent) that runs it and fails the build on violations.
 2. Add a focused visual-regression smoke test for the main React dashboard (Playwright): loads the dashboard, screenshots the hero, diffs against a committed baseline.
-3. Extend [BRAND_SYSTEM.md](../BRAND_SYSTEM.md) with a "Surfaces" section listing every operator surface and the primitive it uses. Cross-link `docs/02-how-to/brand-a-new-surface.md`.
+3. Extend [docs/04-explanation/product/brand-system.md](../BRAND_SYSTEM.md) with a "Surfaces" section listing every operator surface and the primitive it uses. Cross-link `docs/02-how-to/brand-a-new-surface.md`.
 4. Add a "new surface" PR template under `.github/PULL_REQUEST_TEMPLATE/new-surface.md` that enforces the checklist (imports tokens? uses StatusChip? lint passes? screenshots attached?).
 5. Metrics — emit a weekly `brand-coverage.json` in CI with:
    - % of files matching `scripts/brand_lint.py` allow-lists
@@ -272,7 +272,7 @@ Effort: M — 1 day.
 Acceptance:
 - CI fails on a deliberately introduced hex literal.
 - Visual regression test runs in <60s on the main React dashboard.
-- `BRAND_SYSTEM.md` lists every surface and its primitive.
+- `docs/04-explanation/product/brand-system.md` lists every surface and its primitive.
 
 Risks: false-positive noise from the lint flip. Mitigation: run in warn-only for one week before flipping.
 

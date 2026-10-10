@@ -48,7 +48,7 @@ This file is intentionally small. It points humans and AI tools to maintained do
 
 ## Optional Supporting Context
 
-- [Brand System](BRAND_SYSTEM.md): Operator voice, naming, and anti-hype rules.
+- [Brand System](docs/04-explanation/product/brand-system.md): Operator voice, naming, and anti-hype rules.
 - [Agents Guide](AGENTS.md): Repo workflow constraints, truth order, and boundary rules.
 - [PM Plane](PM_PLANE.md): PM authority split across metadata, workflow, decisions/progress/context, and historical receipts.
 

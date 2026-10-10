@@ -1,3 +1,14 @@
+---
+id: chatgpt-supervisor
+title: ChatGPT Supervisor Instructions
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-10-10'
+last_review: '2026-10-10'
+next_review: '2027-04-10'
+prelude: Role brief for a ChatGPT supervisor session over dopemux-mvp; relocated from the repository root in consolidation W5.
+---
 # 🤖 ChatGPT Supervisor Instructions for dopemux-mvp
 
 ## 🎯 Project Context
@@ -97,7 +108,7 @@ pytest tests/arch/test_dopetask_submodule_contract.py tests/unit/test_dopetask_w
 ### File Renames
 ```bash
 # Documentation
-TASKX_INTEGRATION_ANALYSIS.md → DOPETASK_INTEGRATION_ANALYSIS.md
+TASKX_INTEGRATION_ANALYSIS.md → docs/archive/w5-root/DOPETASK_INTEGRATION_ANALYSIS.md
 docs/TASKX_KERNEL_INTEGRATION.md → docs/DOPETASK_KERNEL_INTEGRATION.md
 docs/03-reference/planes/pm/dopemux/07_TASKX_INTEGRATION.md → docs/03-reference/planes/pm/dopemux/07-dopetask-integration.md
 

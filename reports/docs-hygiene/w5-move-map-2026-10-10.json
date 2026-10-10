@@ -1,0 +1,13 @@
+{
+ "AUDIT_INITIAL_FINDINGS.md": "docs/05-audit-reports/root-relocated/audit-initial-findings.md",
+ "BRAND_SYSTEM.md": "docs/04-explanation/product/brand-system.md",
+ "CLAUDE_AUTOMATION_INSTRUCTIONS.md": "docs/92-runbooks/v4-prompt-rewrite-harness.md",
+ "KNOWN_GAPS.md": "docs/03-reference/governance/known-gaps.md",
+ "README_WEBHOOKS.md": "docs/02-how-to/webhooks.md",
+ "SUPERVISOR_INSTRUCTIONS_CHATGPT.md": "docs/03-reference/instructions/chatgpt-supervisor.md",
+ "TASK_ORCH_INTEGRATION_REPO_INVENTORY.md": "docs/05-audit-reports/task-orchestrator/task-orch-integration-repo-inventory.md",
+ "TASK_ORCH_MCP_PLUGIN_SURFACE.md": "docs/05-audit-reports/task-orchestrator/task-orch-mcp-plugin-surface.md",
+ "DOPETASK_INTEGRATION_ANALYSIS.md": "docs/archive/w5-root/DOPETASK_INTEGRATION_ANALYSIS.md",
+ "RECOVERY_INVENTORY.md": "docs/archive/w5-root/RECOVERY_INVENTORY.md",
+ "DOPE_MEMORY_INTEGRATION.md": "docs/04-explanation/integrations/dope-memory-integration.md"
+}

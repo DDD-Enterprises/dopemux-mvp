@@ -95,7 +95,7 @@ The packet-001 source map was built from these repo sources:
 - `ARCHITECTURE.md`
 - `PM_PLANE.md`
 - `SERVICE_CATALOG.md`
-- `BRAND_SYSTEM.md`
+- `docs/04-explanation/product/brand-system.md`
 - `compose.yml`
 - `services/registry.yaml`
 - `config/docs_hygiene/docs_placement_policy.yaml`

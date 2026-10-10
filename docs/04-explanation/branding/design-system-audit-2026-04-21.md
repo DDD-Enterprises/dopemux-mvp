@@ -27,7 +27,7 @@ Audited against HEAD `491c981de` (main, fast-forwarded from worktree `claude/bol
 
 | Layer | File | Role |
 |---|---|---|
-| Operator voice & tone | [BRAND_SYSTEM.md](../BRAND_SYSTEM.md) | Authoritative voice, naming, error style, dashboard visual language |
+| Operator voice & tone | [docs/04-explanation/product/brand-system.md](../BRAND_SYSTEM.md) | Authoritative voice, naming, error style, dashboard visual language |
 | Python CLI/TUI tokens | [src/dopemux/ui/theme.py](../src/dopemux/ui/theme.py) | `DOPEMUX_THEME`, `StatusChip`, `Glyphs`, `styled_table/panel/gauge`, `RenderMode`, three palettes (mint-mojo default, pastel-neon-dreamscape, pastel-neon-dreams) |
 | React/MUI tokens | [ui-dashboard/src/theme.ts](../ui-dashboard/src/theme.ts) | `brandTokens`, `statusStyles`, MUI theme |
 | CSS custom properties | [ui-dashboard/src/index.css](../ui-dashboard/src/index.css) | `--ritual-cyan`, `--serum-mint`, `--gremlin-pink`, etc. |
@@ -162,11 +162,11 @@ Net: passing brand_lint is necessary but not sufficient evidence of brand compli
 
 ## Documentation Gaps
 
-- [BRAND_SYSTEM.md](../BRAND_SYSTEM.md) defines voice, tone, naming, CLI interaction, error style, and dashboard visual language, but says nothing about token names, palette switching, glyph sets, or the `brand_voice.py` helper contracts.
+- [docs/04-explanation/product/brand-system.md](../BRAND_SYSTEM.md) defines voice, tone, naming, CLI interaction, error style, and dashboard visual language, but says nothing about token names, palette switching, glyph sets, or the `brand_voice.py` helper contracts.
 - No "how to brand a new surface" guide exists. The nearest artefacts are `llm-plans/BRAND_SYSTEM_IMPLEMENTATION.md` and `llm-plans/UX_UI_BRANDING_EXPANSION_PLAN.md`, both historical planning docs — not operator how-tos.
 - `components/` has no README explaining the "primitives stay theme-agnostic" rule, which is a load-bearing convention for the whole dashboard.
-- Authoritative brand docs referenced by brand_lint (`docs/04-explanation/branding/cli-ux-design-spec.md`, `docs/03-reference/brand-compliance-checklist.md`, `docs/04-explanation/branding/dopemux-brand-system.md`, `docs/04-explanation/ux/ux-style-guide.md`, `docs/ux/ux-style-guide.md`) exist and are merge-marker-free, but their relationship to BRAND_SYSTEM.md is not cross-linked.
-- `dopemux_voice_branding_bundle/BRAND_VOICE_BIBLE.md` and [BRAND_SYSTEM.md](../BRAND_SYSTEM.md) are not cross-referenced. Confirm which is authoritative for voice.
+- Authoritative brand docs referenced by brand_lint (`docs/04-explanation/branding/cli-ux-design-spec.md`, `docs/03-reference/brand-compliance-checklist.md`, `docs/04-explanation/branding/dopemux-brand-system.md`, `docs/04-explanation/ux/ux-style-guide.md`, `docs/ux/ux-style-guide.md`) exist and are merge-marker-free, but their relationship to docs/04-explanation/product/brand-system.md is not cross-linked.
+- `dopemux_voice_branding_bundle/BRAND_VOICE_BIBLE.md` and [docs/04-explanation/product/brand-system.md](../BRAND_SYSTEM.md) are not cross-referenced. Confirm which is authoritative for voice.
 
 ## Priority Issues (top 5)
 

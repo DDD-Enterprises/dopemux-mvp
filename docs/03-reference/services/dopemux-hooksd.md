@@ -166,6 +166,6 @@ This local adapter is hook-related, but it is not served by the webhook sidecar 
 ## Related docs
 
 - `docs/02-how-to/extraction/openai-webhook-local-setup.md`
-- `README_WEBHOOKS.md`
+- `docs/02-how-to/webhooks.md`
 - `services/webhook_receiver/README.md`
 - `docs/03-reference/services/server-registry.md`

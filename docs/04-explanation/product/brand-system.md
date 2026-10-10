@@ -1,3 +1,14 @@
+---
+id: brand-system
+title: Dopemux Brand System
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-10-10'
+last_review: '2026-10-10'
+next_review: '2027-04-10'
+prelude: Voice, naming, interaction style, and operator-facing presentation rules for the dopemux experience layer; relocated from the repository root in consolidation W5.
+---
 # BRAND_SYSTEM
 
 ## 1. Purpose

@@ -49,7 +49,7 @@ codebase. Readers without access can still use the tokens and rules here —
 nothing in this folder requires the source to render.
 
 - **Repo:** `DDD-Enterprises/dopemux-mvp` @ `main`
-- **Brand bible:** `BRAND_SYSTEM.md`
+- **Brand bible:** `docs/04-explanation/product/brand-system.md`
 - **Theme (Rich/Textual):** `src/dopemux/ui/theme.py`
 - **Cockpit renderer:** `src/dopemux/ui/cockpit/{tokens.py, frame.py, render.py, model.py}`
 - **Reference screenshots:** `uploads/Screenshot 2026-04-24 at *.png`
@@ -96,7 +96,7 @@ fonts/                      Dopemux Term / Editor build and substitution notes
 
 ## Content fundamentals
 
-The brand voice is set by `BRAND_SYSTEM.md`. The TUI inherits it directly.
+The brand voice is set by `docs/04-explanation/product/brand-system.md`. The TUI inherits it directly.
 
 **Audience.** Operators, not spectators. Assume they know the system.
 Lead with result, then minimum context. Skip explanation.
@@ -185,7 +185,7 @@ gradients, no texture. Inset rows get a one-token background tint
 renderer** by design (`render.py` is pure). The only moving things in
 the larger CLI are: spinners during in-flight operations, gauge fills,
 and the WS stream indicator (`*WS STREAM`). Motion indicates "refresh,
-transition, or changed state only" (`BRAND_SYSTEM.md §6`). No fades, no
+transition, or changed state only" (`docs/04-explanation/product/brand-system.md §6`). No fades, no
 bounces, no easing — single-frame state changes.
 
 **Hover / press.** Not applicable. Mouse is forbidden. Selection is
