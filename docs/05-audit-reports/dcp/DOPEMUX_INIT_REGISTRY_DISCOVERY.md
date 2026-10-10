@@ -12,7 +12,7 @@ prelude: Static inspection of dopemux init and workspace-identity markers ground
 
 # Dopemux Init & Registry Discovery
 
-> **Purpose.** TP-DCP-MCP-RO-0002 left the `dopemux init` / workspace-identity marker contract as `UNKNOWN`. This packet (TP-DCP-MCP-RO-0003) resolves it by **read-only static inspection** of the actual runtime code and repo markers, so the facade's [`MULTI_PROJECT_REGISTRY_CONTRACT.md`](MULTI_PROJECT_REGISTRY_CONTRACT.md) rests on evidence, not assumption. No code, init behavior, or `.dopemux` state was modified. Every claim is labelled `OBSERVED` (verified in the working tree at the cited `file:line`), `CONFLICTING`, or `UNKNOWN`.
+> **Purpose.** TP-DCP-MCP-RO-0002 left the `dopemux init` / workspace-identity marker contract as `UNKNOWN`. This packet (TP-DCP-MCP-RO-0003) resolves it by **read-only static inspection** of the actual runtime code and repo markers, so the facade's [`MULTI_PROJECT_REGISTRY_CONTRACT.md`](../../03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md) rests on evidence, not assumption. No code, init behavior, or `.dopemux` state was modified. Every claim is labelled `OBSERVED` (verified in the working tree at the cited `file:line`), `CONFLICTING`, or `UNKNOWN`.
 
 ## 1. `dopemux init` Behavior (`OBSERVED`)
 
@@ -83,7 +83,7 @@ Grounded in §1–§4, the facade's project resolution is:
    - its **`.repo_id`** `project=` matches the registry entry's required `identity.project`, and its `owner=` matches `identity.owner` only when that field is declared (conditional, always satisfiable), per the DCP schema convention (§3).
 3. Any check failing → `BLOCKED`; a partially-bound project → `PARTIAL`; never fabricated data.
 
-This is reflected in [`MULTI_PROJECT_REGISTRY_CONTRACT.md`](MULTI_PROJECT_REGISTRY_CONTRACT.md) §4–§5.
+This is reflected in [`MULTI_PROJECT_REGISTRY_CONTRACT.md`](../../03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md) §4–§5.
 
 ## 6. Remaining UNKNOWNs / Open Items
 

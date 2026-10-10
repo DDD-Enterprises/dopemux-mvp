@@ -113,7 +113,6 @@ Feature specifications and capabilities.
 - **[Serena V2 Validation Report](../archive/test-reports/serena-v2-validation-report.md)** - Production validation archive
 
 ### Design Principles
-- **[ADHD Theme Design Principles](adhd-theme-design-principles.md)** - UI/UX guidelines
 
 ---
 

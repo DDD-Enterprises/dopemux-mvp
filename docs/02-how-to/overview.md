@@ -28,7 +28,6 @@ Step-by-step guides for deploying Dopemux in various environments.
 ### Production Deployment
 - **[Production Deployment Guide](deployment-guide.md)** - Deploy to production environment
 - **[Deployment Checklist](deployment-guide.md#pre-deployment-checklist)** - Pre-flight checklist and verification
-- **[Worktree Deployment](deployment-worktree.md)** - Deploy using git worktrees
 
 ### Development Environment
 - **[Instance State Persistence](instance-state-persistence.md)** - Maintain state across restarts

@@ -41,7 +41,6 @@ filename_exemptions:
   - docs/06-research/mcp-customization/**
   - docs/05-audit-reports/*
   - docs/03-reference/Dopemux Cockpit TUI Design System/*
-  - docs/03-reference/gpt55_pm_implementer_redesign.md
   - docs/archive/*
   - docs/archive/w1-history-sourcefiles/*
   - docs/05-audit-reports/root-relocated/rgoutput-2.md
@@ -126,7 +125,6 @@ root_overrides:
   docs/thread-primer-taskx.md: docs/04-explanation/root-relocated/thread-primer-taskx.md
   docs/tp-routing-global-0001-commit1-summary-2.md: docs/05-audit-reports/root-relocated/tp-routing-global-0001-commit1-summary-2.md
   docs/worktree-switching-guide.md: docs/04-explanation/concepts/worktree-switching-guide.md
-  docs/pr-description.md: docs/03-reference/templates/pr-description.md
   docs/rgoutput-2.md: docs/05-audit-reports/root-relocated/rgoutput-2.md
 
 root_type_targets:

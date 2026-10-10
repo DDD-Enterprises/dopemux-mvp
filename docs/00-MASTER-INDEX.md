@@ -47,7 +47,6 @@ Status: [LOGGED] Topology Complete
 ### Deployment
 - [Production Deployment](02-how-to/deployment-guide.md)
 - [Docker Setup](02-how-to/deployment-guide.md)
-- [Worktree Deployment](02-how-to/deployment-worktree.md)
 
 ### Integrations
 - [Leantime Setup](02-how-to/integrations/leantime-integration-guide.md)
