@@ -353,7 +353,7 @@ Loaded by `CopyLibrary` from `src/dopemux/ui/voice.py`.
 | **TMUX** | `configs/tmux*` | Generic colors | Brand tokens |
 | **Agent prompts** | `services/agents/*.py` | No voice headers | Voice header injection |
 | **Notifications** | `services/adhd-notifier/*.py` | Unbranded | StatusChip + branded copy |
-| **Docs** | `docs/flight_deck/` | Inconsistent formatting | Brand headers, StatusChip notation |
+| **Docs** | `docs/03-reference/governance/flight-deck/` | Inconsistent formatting | Brand headers, StatusChip notation |
 
 ---
 

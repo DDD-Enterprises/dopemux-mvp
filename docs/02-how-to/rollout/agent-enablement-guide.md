@@ -32,10 +32,10 @@ prelude: Agent Enablement Guide (explanation) for dopemux documentation and deve
 
 ### Gemini
 - CLI: Point the agent to `GEMINI.md`.
-- Code Assist: Add custom commands from `docs/skills/pr-merge-specialist/gemini/custom-commands.md`.
+- Code Assist: Add custom commands from `docs/03-reference/skills/pr-merge-specialist/gemini/custom-commands.md`.
 
 ### Mistral Vibe
 - Load the agent instructions from `.vibe/agents/pr-merge-specialist.md`.
 
 ### Jules
-- Use `docs/skills/pr-merge-specialist/jules/task-template.md` for autonomous task creation.
+- Use `docs/03-reference/skills/pr-merge-specialist/jules/task-spec.md` for autonomous task creation.

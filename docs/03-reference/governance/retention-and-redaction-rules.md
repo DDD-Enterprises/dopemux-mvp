@@ -40,7 +40,7 @@ Define retention periods and redaction requirements for proof artifacts to preve
 **Governance Artifacts**:
 - Retention: Indefinite
 - Rationale: Governance decisions are permanent
-- Location: `proof/governance/` and `docs/governance/`
+- Location: `proof/governance/` and `docs/03-reference/governance/`
 
 ### Handoff Bundle Retention
 

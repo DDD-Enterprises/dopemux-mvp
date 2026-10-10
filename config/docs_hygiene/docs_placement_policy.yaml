@@ -30,51 +30,6 @@ legacy_roots:
   - name: systems
     planned_target: docs/03-reference/systems/
     wave: W3
-  - name: arbitration
-    planned_target: docs/03-reference/governance/arbitration/
-    wave: W3
-  - name: flight_deck
-    planned_target: docs/03-reference/governance/flight-deck/
-    wave: W3
-  - name: governance
-    planned_target: docs/03-reference/governance/
-    wave: W3
-  - name: policy
-    planned_target: docs/03-reference/governance/policy/
-    wave: W3
-  - name: research
-    planned_target: docs/06-research/
-    wave: W3
-  - name: audit
-    planned_target: docs/05-audit-reports/
-    wave: W3
-  - name: integrations
-    planned_target: docs/02-how-to/integrations/
-    wave: W3
-  - name: learning
-    planned_target: docs/01-tutorials/learning/
-    wave: W3
-  - name: mobile
-    planned_target: docs/02-how-to/mobile/
-    wave: W3
-  - name: packaging
-    planned_target: docs/02-how-to/packaging/
-    wave: W3
-  - name: pr_template
-    planned_target: docs/03-reference/pr-pipeline/templates/
-    wave: W3
-  - name: releases
-    planned_target: docs/03-reference/releases/
-    wave: W3
-  - name: rollout
-    planned_target: docs/02-how-to/rollout/
-    wave: W3
-  - name: skills
-    planned_target: docs/03-reference/skills/
-    wave: W3
-  - name: ux
-    planned_target: docs/04-explanation/ux/
-    wave: W3
   - name: spec
     planned_target: docs/03-reference/spec/
     wave: W3
@@ -92,7 +47,7 @@ quarantine_prefixes:
 
 filename_exemptions:
   - docs/03-reference/dcp/**
-  - docs/research/mcp-customization/**
+  - docs/06-research/mcp-customization/**
   - docs/05-audit-reports/*
   - docs/03-reference/Dopemux Cockpit TUI Design System/*
   - docs/03-reference/gpt55_pm_implementer_redesign.md
