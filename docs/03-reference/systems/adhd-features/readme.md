@@ -40,8 +40,8 @@ All 11 ADHD accommodation features with detailed technical documentation.
 - [ADHD Engine API Reference](../../adhd-engine-api.md)
 
 **Technical Documentation**:
-- [ADHD Engine README](../../../services/adhd_engine/README.md)
-- [Source Code](../../../services/adhd_engine)
+- [ADHD Engine README](../../../../services/adhd_engine/README.md)
+- [Source Code](../../../../services/adhd_engine)
 
 ---
 

@@ -14,4 +14,4 @@ prelude: ADHD Engine Deep Dive Part 2 (reference) for dopemux documentation and 
 
 This document is maintained under the ADHD Intelligence system docs.
 
-See [ADHD-ENGINE-DEEP-DIVE-PART2.md](../../03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART2.md).
+See [ADHD-ENGINE-DEEP-DIVE-PART2.md](adhd-engine-deep-dive-part2.md).

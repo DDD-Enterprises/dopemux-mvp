@@ -21,17 +21,17 @@ This directory contains instructions and file-upload sets for configuring ChatGP
 
 We define four distinct ChatGPT Projects to support development and verification:
 
-1. **[DCP Core Supervisor](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/dcp-core-supervisor.md)**: Generic, contract-locking coordinator. Focuses on core schemas, universal red lanes, and provenance metadata.
-2. **[Dopemux Supervisor](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/dopemux-supervisor.md)**: Dopemux-specific coordinator. Understands split-authority, PM writes, and task-orchestrator boundary limits.
-3. **[dNh-CRM Supervisor](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/dnh-crm-supervisor.md)**: CRM-specific coordinator. Operates in isolation from Dopemux; dNh paths and red lanes are treated as UNKNOWN until repo-truth TP completes.
-4. **[DCP Packet Lab](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/dcp-packet-lab.md)**: A temporary, ultra-lean workspace focused on a single active task packet + audit verification.
+1. **[DCP Core Supervisor](dcp-core-supervisor.md)**: Generic, contract-locking coordinator. Focuses on core schemas, universal red lanes, and provenance metadata.
+2. **[Dopemux Supervisor](dopemux-supervisor.md)**: Dopemux-specific coordinator. Understands split-authority, PM writes, and task-orchestrator boundary limits.
+3. **[dNh-CRM Supervisor](dnh-crm-supervisor.md)**: CRM-specific coordinator. Operates in isolation from Dopemux; dNh paths and red lanes are treated as UNKNOWN until repo-truth TP completes.
+4. **[DCP Packet Lab](dcp-packet-lab.md)**: A temporary, ultra-lean workspace focused on a single active task packet + audit verification.
 
 ---
 
 ## Directory Contents
 
-- **[Upload Sets](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/upload-sets.md)**: Details the contents of each project's file-upload manifest.
-- **[Project Instructions](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/project-instructions.md)**: The exact prompt blocks to paste into the Custom Instructions for each project.
+- **[Upload Sets](upload-sets.md)**: Details the contents of each project's file-upload manifest.
+- **[Project Instructions](project-instructions.md)**: The exact prompt blocks to paste into the Custom Instructions for each project.
 
 ## Invariants and Safety
 - **No Secrets**: Never upload credentials, keys, or `.env` files.

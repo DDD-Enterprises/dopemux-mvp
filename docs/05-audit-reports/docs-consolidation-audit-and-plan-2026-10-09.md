@@ -34,9 +34,9 @@ Status: [LOGGED] Audit complete, plan awaiting operator authorization
 | `docs/` top-level directories | 33 | 13 after W7 (Diataxis 01–06, 90–92, `archive`, plus pinned `ops`, `pr_prep`, `pr_merge`; 14 while `planes/` awaits its rename) | 14 directories: the 13 planned plus `94-architecture` (kept) and `instructions/` holding one tracked YAML; `planes/` rename completed |
 | Exact byte-duplicate groups (repo-wide md) | 1,147 (2,007 redundant copies) | 0 in the active tree; archive duplicates listed in the manifest as candidates | 35 in the active tree, all explained: 19 test-pinned `pr_prep`/`pr_merge` compat copies, 10 inside the `06-research/mcp-customization` data pack, 5 ADR variant pairs left for the ADR owner |
 | `name-N.md` suffix variants in active docs | 328 | 0 | 4 (the `adr-201`/`adr-202` pairs, deferred to the ADR owner); `pr_prep`/`pr_merge` excluded as pinned |
-| Broken relative links (repo-wide md) | 2,435 | < 50 outside `docs/archive/`; archive links stay as-is and stay gate-excluded | 116 in active docs plus root markdown (108 point at targets that exist nowhere in the repo, 8 ambiguous); list in `reports/docs-hygiene/w7-broken-links-2026-10-10.json` |
+| Broken relative links (repo-wide md) | 2,435 | < 50 outside `docs/archive/`; archive links stay as-is and stay gate-excluded | 0 in active docs, root markdown, and task-packets (strict, case-sensitive, tracked-files-only check; lychee offline 0 errors) |
 | Active docs with `next_review` overdue | ≈ 95 % | field retired or cadence enforced | unchanged; decision recorded in W7: keep the field, no CI cadence (see below) |
-| Docs gate coverage (pre-commit + CI) | advisory only, 63 % of `docs/` excluded | blocking, 100 % of the active tree; `docs/archive/` is the single declared exclusion | graph validator re-enabled in CI with 0 errors over 1,155 active docs; `docs/archive/` is the only docs exclusion in pre-commit; lychee excludes shrunk to archive and evidence roots but still `fail: false` because 116 pre-existing broken links remain |
+| Docs gate coverage (pre-commit + CI) | advisory only, 63 % of `docs/` excluded | blocking, 100 % of the active tree; `docs/archive/` is the single declared exclusion | graph validator re-enabled in CI with 0 errors over 1,155 active docs; `docs/archive/` is the only docs exclusion in pre-commit; lychee runs offline over `docs/**` and `task-packets/**` with `fail: true` |
 
 The three structural problems, in order of leverage:
 
@@ -435,5 +435,16 @@ Still open, each needing a decision or an author rather than a file move:
 2. The W6 content merges listed above (MCP, RTE, install, instructions, orchestrator thin pages, multi-instance, ADHD quick reference, rollout/learning, FAILURE_RUNBOOK, model-routing, fast-dev-os vs development-factory, Task-Master/Leantime stale text, the task-orchestrator port ruling).
 3. `adr-201`/`adr-202` variant pairs (ADR owner).
 4. The manifest's 1,420 `delete-later` and the W2 `export-later` candidates (operator decision package; no action taken).
-5. 116 residual broken links with no unique target.
-6. A `docs_index.yaml` generator and the three-way skill mirror collapse (tooling owners).
+5. A `docs_index.yaml` generator and the three-way skill mirror collapse (tooling owners).
+
+### 2026-10-10 — W7b: residual links closed, link check made blocking
+
+Operator asked for the remaining broken links to be fixed. Three passes, all recorded in `reports/docs-hygiene/w7b-link-fixes-2026-10-10.json`:
+
+- **Depth and case repairs (87 links)**: most "no target" links were relative paths to source code written from the wrong directory depth (for example `../ui-dashboard/src/theme.ts` from `docs/04-explanation/branding/`), plus eight case-mismatched names that pass on macOS and fail on Linux, nine links into files this workstream moved (resolved through the archive manifest and wave move maps), and `<dir>/_index.md` links that meant `<dir>.md`. Line suffixes such as `theme.py:330` became `#L330` anchors.
+- **Dead targets (25 links)**: files that exist nowhere in the repository (`troubleshooting-playbook.md`, `CI_CONTRACT.md`, `RUNTIME_CONTRACT.md`, the removed `services/monitoring-dashboard/`, `DASHBOARD_DAY9_*`, an absolute path into a local `~/.claude/plans/` file, and similar) were unlinked: the link text stays and the cited path follows in backticks, so no information was lost.
+- **Machine-specific `file:` links (72 links)**: `file:///Users/hue/code/<checkout>/…` and `file:/Users/hue/code/…` links in the DCP shelf, the planes index, orchestrator-integration, the auditor-fleet reports, and two tmux research docs now point at repository-relative paths (one `07_TASKX_INTEGRATION.md` reference mapped to `07-dopetask-integration.md`); three that named untracked files were unlinked the same way. These had been passing locally because the author's checkout exists on this machine.
+- Also fixed two W5 artefacts: double-prefixed `archive/w5-root/docs/archive/w5-root/…` links in the two relocated task-orchestrator audits.
+- The link checker's own blind spot is recorded: `os.path.exists` is case-insensitive on macOS, so the earlier counts used it only as a fallback; the closing count uses tracked paths only.
+- `.github/workflows/docs.yml`: lychee now runs `--offline` (local links only; external URLs are not this job's concern) with `fail: true`. Verified locally with lychee 0.24.2: 1,279 links, 0 errors, 155 excluded (archive and evidence roots).
+

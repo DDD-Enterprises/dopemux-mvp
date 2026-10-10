@@ -41,7 +41,7 @@ Unverified shapes carry a validation state of `PROVISIONAL_UNVERIFIED_ENFORCEMEN
 - No mutation of schemas/contracts without explicit task packets.
 
 ## Upload List
-See [Upload Sets](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/upload-sets.md#dcp-core-supervisor-bundle) for the full list of files to upload.
+See [Upload Sets](upload-sets.md#dcp-core-supervisor-bundle) for the full list of files to upload.
 
 ## Project Custom Instructions
 ```text

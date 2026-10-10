@@ -21,14 +21,14 @@ prelude: Explanation of Dashboard_Day9_Index.
 ## 📖 QUICK NAVIGATION
 
 ### Start Here (5 minutes)
-👉 **[DASHBOARD_DAY9_SUMMARY.md](../../DASHBOARD_DAY9_SUMMARY.md)**
+👉 **DASHBOARD_DAY9_SUMMARY.md (`../../DASHBOARD_DAY9_SUMMARY.md`)**
 - 5-minute overview
 - What we're building
 - Why it matters
 - Quick start guide
 
 ### Implementation Guide (15 minutes)
-👉 **[DASHBOARD_DAY9_READY.md](DASHBOARD_DAY9_READY.md)**
+👉 **DASHBOARD_DAY9_READY.md**
 - What already exists (no rebuilding!)
 - 3 clear tasks with code examples
 - Acceptance criteria
@@ -416,10 +416,10 @@ git push origin feature/day9-sparklines-keyboard
 
 ### Read First (5 minutes)
 1. This index (you're here!)
-1. [DASHBOARD_DAY9_SUMMARY.md](../../DASHBOARD_DAY9_SUMMARY.md)
+1. DASHBOARD_DAY9_SUMMARY.md (`../../DASHBOARD_DAY9_SUMMARY.md`)
 
 ### Code With (During implementation)
-1. [DASHBOARD_DAY9_READY.md](DASHBOARD_DAY9_READY.md)
+1. DASHBOARD_DAY9_READY.md
 
 ### Reference When Needed
 1. [DASHBOARD_DAY9_DEEP_RESEARCH.md](dashboard-day9-deep-research.md)

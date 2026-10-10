@@ -1222,10 +1222,10 @@ rm -rf dopemux-mvp
 
 ## 📚 Additional Resources
 
-- **[README.md](README.md)** - Feature overview and usage guide
-- **[docs/INDEX.md](docs/INDEX.md)** - Complete documentation index
-- **[CHANGELOG.md](CHANGELOG.md)** - Version history and updates
-- **[scripts/](scripts/)** - Additional utility scripts
+- **[README.md](../../README.md)** - Feature overview and usage guide
+- **[docs/INDEX.md](../INDEX.md)** - Complete documentation index
+- **[CHANGELOG.md](../../CHANGELOG.md)** - Version history and updates
+- **[scripts/](../../scripts)** - Additional utility scripts
 
 ## 🙏 Support
 

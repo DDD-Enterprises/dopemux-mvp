@@ -48,7 +48,7 @@ prelude: "Dopemux Brand Rollout Plan \u2014 2026-04-21 (explanation) for dopemux
 
 Tasks:
 
-1. **React palette parity.** Refactor [ui-dashboard/src/theme.ts](../ui-dashboard/src/theme.ts) so `brandTokens` becomes `brandPalettes[paletteName]` and the exported `brandTokens` resolves against `DOPEMUX_THEME` (env var or app setting). Emit CSS custom properties for each palette in [ui-dashboard/src/index.css](../ui-dashboard/src/index.css) under `[data-palette="..."]` selectors. Add `--saint-gold` (currently missing). Update [scripts/sync_brand_tokens.py](../scripts/sync_brand_tokens.py) to sync all three palettes.
+1. **React palette parity.** Refactor [ui-dashboard/src/theme.ts](../../../ui-dashboard/src/theme.ts) so `brandTokens` becomes `brandPalettes[paletteName]` and the exported `brandTokens` resolves against `DOPEMUX_THEME` (env var or app setting). Emit CSS custom properties for each palette in [ui-dashboard/src/index.css](../../../ui-dashboard/src/index.css) under `[data-palette="..."]` selectors. Add `--saint-gold` (currently missing). Update [scripts/sync_brand_tokens.py](../../../scripts/sync_brand_tokens.py) to sync all three palettes.
 2. **Ink theme helper.** Create `services/conport_kg_ui/src/theme.ts` that re-exports the same anchor hexes and a typed `InkColor` helper (`ink('ritualCyan')`). Matches the mint-mojo palette by default; downstream surfaces never import hex.
 3. **Bash brand helper.** Add `scripts/lib/brand.sh` with named ANSI color variables matching the mint-mojo palette (`BRAND_CYAN`, `BRAND_MINT`, `BRAND_GOLD`, `BRAND_PINK`, `BRAND_VIOLET`, `BRAND_RESET`), a `brand::chip LIVE "message"` function, and a `brand::section "title"` helper. Respect `NO_COLOR`.
 4. **Shared brand CSS partial.** Add `docs/templates/brand.css` that declares the same custom properties as `ui-dashboard/src/index.css` but stand-alone (no dashboard coupling). Used by monitoring-dashboard, Leantime, and any future HTML surface. Include a minimal typography scale and chip utility classes.
@@ -64,7 +64,7 @@ Acceptance criteria:
 - `DOPEMUX_THEME=pastel-neon-dreamscape npm run build -- ui-dashboard` produces a dashboard with the dreamscape palette.
 - `source scripts/lib/brand.sh && brand::chip LIVE "hello"` prints the expected ANSI sequence.
 - `scripts/brand_lint.py --warn-only` runs end-to-end with new checks emitting warnings.
-- `docs/02-how-to/brand-a-new-surface.md` exists and links from [docs/04-explanation/product/brand-system.md](../BRAND_SYSTEM.md).
+- `docs/02-how-to/brand-a-new-surface.md` exists and links from [docs/04-explanation/product/brand-system.md](../product/brand-system.md).
 
 Risks:
 
@@ -79,12 +79,12 @@ Rollback: each enabler lives behind its own PR; revert in reverse order.
 
 Targets & tasks:
 
-- [scripts/dopemux_dashboard.py](../scripts/dopemux_dashboard.py) — delete the `THEMES` dict (Catppuccin/Nord). Import `from dopemux.ui.theme import DOPEMUX_THEME, styled_panel, styled_gauge, StatusChip`. Replace raw `console.print(..., style="#xxxxxx")` with theme style names. (~27 hex literals to remove.)
+- [scripts/dopemux_dashboard.py](../../../scripts/dopemux_dashboard.py) — delete the `THEMES` dict (Catppuccin/Nord). Import `from dopemux.ui.theme import DOPEMUX_THEME, styled_panel, styled_gauge, StatusChip`. Replace raw `console.print(..., style="#xxxxxx")` with theme style names. (~27 hex literals to remove.)
 - `scripts/ui/realtime_status_updater.py` — same treatment; use `StatusChip.LIVE.render(...)` for status lines.
 - `scripts/ui/metamcp_status.py` — same treatment.
-- [services/serena/metrics_dashboard.py](../services/serena/metrics_dashboard.py) — keep the dict-based data path, but add an optional `render()` that wraps the dict in `styled_table("Serena Metrics", ...)`. CLI consumers get branding; programmatic consumers get the same dict.
-- [services/serena/multi_session_dashboard.py](../services/serena/multi_session_dashboard.py) — replace `─` line-drawing and emoji literals with `styled_panel` + `Glyphs`.
-- [services/task-orchestrator/observability/adhd_dashboard.py](../services/task-orchestrator/observability/adhd_dashboard.py) — generates Grafana JSON. Replace literal panel colors with constants sourced from `brandTokens` (export a machine-readable JSON of the palette from sync_brand_tokens.py if needed).
+- [services/serena/metrics_dashboard.py](../../../services/serena/metrics_dashboard.py) — keep the dict-based data path, but add an optional `render()` that wraps the dict in `styled_table("Serena Metrics", ...)`. CLI consumers get branding; programmatic consumers get the same dict.
+- [services/serena/multi_session_dashboard.py](../../../services/serena/multi_session_dashboard.py) — replace `─` line-drawing and emoji literals with `styled_panel` + `Glyphs`.
+- [services/task-orchestrator/observability/adhd_dashboard.py](../../../services/task-orchestrator/observability/adhd_dashboard.py) — generates Grafana JSON. Replace literal panel colors with constants sourced from `brandTokens` (export a machine-readable JSON of the palette from sync_brand_tokens.py if needed).
 
 Effort: M — 45–90 min per file, 5–6 files, one PR per file.
 
@@ -121,13 +121,13 @@ Rollback: revert the one file.
 
 ## Wave 3 — FastAPI inline HTML
 
-**Scope:** [services/monitoring-dashboard/server.py](../services/monitoring-dashboard/server.py) and any sibling service shipping inline HTML.
+**Scope:** services/monitoring-dashboard/server.py (`../services/monitoring-dashboard/server.py`) and any sibling service shipping inline HTML.
 
 Tasks:
 - Move the inline HTML out of `server.py` into `services/monitoring-dashboard/templates/dashboard.html` (Jinja or f-string, whichever is already in use).
 - `<link rel="stylesheet" href="/static/brand.css">` — served from `docs/templates/brand.css` (Wave 0) copied or mounted into the service's `static/` directory at build time.
 - Replace literal `#667eea`, `#764ba2`, `#e1f5fe`, `#0277bd`, `#f9f9f9` with `var(--ritual-cyan)`, `var(--serum-mint)`, etc. Map the old gradient to `linear-gradient(135deg, var(--ritual-cyan), var(--aftercare-violet))` for closest intent match.
-- Wrap error strings in `brand_error()` from [services/shared/brand_voice.py](../services/shared/brand_voice.py) to align with BRAND_SYSTEM error style.
+- Wrap error strings in `brand_error()` from [services/shared/brand_voice.py](../../../services/shared/brand_voice.py) to align with BRAND_SYSTEM error style.
 
 Effort: M — 3–5h.
 
@@ -142,7 +142,7 @@ Rollback: single revert.
 
 ## Wave 4 — Leantime plugin
 
-**Scope:** [plugins/Dopemux/Views/dashboard.tpl](../plugins/Dopemux/Views/dashboard.tpl) + `docker/leantime/app/Plugins/Dopemux/Views/dashboard.tpl` + `docker/leantime/docker/leantime/plugins/Dopemux/Views/dashboard.tpl` + three copies of `dopemux-adhd.css`.
+**Scope:** [plugins/Dopemux/Views/dashboard.tpl](../../../plugins/Dopemux/Views/dashboard.tpl) + `docker/leantime/app/Plugins/Dopemux/Views/dashboard.tpl` + `docker/leantime/docker/leantime/plugins/Dopemux/Views/dashboard.tpl` + three copies of `dopemux-adhd.css`.
 
 Phase 4a — dedupe:
 - Establish `plugins/Dopemux/` as canonical.
@@ -187,7 +187,7 @@ Rollback: single revert of the wave PR.
 
 ## Wave 6 — proof/epic-rte/ triage
 
-**Scope:** [proof/epic-rte/](../proof/epic-rte/).
+**Scope:** [proof/epic-rte/](../../../proof/epic-rte).
 
 Tasks:
 - Confirm with the extraction owner that the directory is an archive of proof runs, not a planned TUI surface.
@@ -202,7 +202,7 @@ Risks: trivial.
 
 ## Wave 7 — RTE (repo-truth-extractor) greenfield
 
-**Scope:** [services/repo-truth-extractor/](../services/repo-truth-extractor/).
+**Scope:** [services/repo-truth-extractor/](../../../services/repo-truth-extractor).
 
 **Design proposal (greenfield, branded from day one):**
 
@@ -258,7 +258,7 @@ Rollback: trivial; delete `ui_output.py` and revert the runner wiring.
 Tasks:
 1. Flip `scripts/brand_lint.py` from warn-only to fail-on-error for the new checks introduced in Wave 0. Add a CI step `make brand-lint` (or equivalent) that runs it and fails the build on violations.
 2. Add a focused visual-regression smoke test for the main React dashboard (Playwright): loads the dashboard, screenshots the hero, diffs against a committed baseline.
-3. Extend [docs/04-explanation/product/brand-system.md](../BRAND_SYSTEM.md) with a "Surfaces" section listing every operator surface and the primitive it uses. Cross-link `docs/02-how-to/brand-a-new-surface.md`.
+3. Extend [docs/04-explanation/product/brand-system.md](../product/brand-system.md) with a "Surfaces" section listing every operator surface and the primitive it uses. Cross-link `docs/02-how-to/brand-a-new-surface.md`.
 4. Add a "new surface" PR template under `.github/PULL_REQUEST_TEMPLATE/new-surface.md` that enforces the checklist (imports tokens? uses StatusChip? lint passes? screenshots attached?).
 5. Metrics — emit a weekly `brand-coverage.json` in CI with:
    - % of files matching `scripts/brand_lint.py` allow-lists

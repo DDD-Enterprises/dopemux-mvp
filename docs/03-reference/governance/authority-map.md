@@ -29,8 +29,8 @@ prelude: Authority Map (reference) for dopemux documentation and developer workf
 - **ADRs as Overrides**: ADRs in `docs/90-adr/` can explicitly override conflicts between documentation and code/CI.
 
 ## References
-- **CI Contract**: See [CI_CONTRACT.md](CI_CONTRACT.md) for CI/CD expectations.
-- **Runtime Contract**: See [RUNTIME_CONTRACT.md](RUNTIME_CONTRACT.md) for runtime expectations.
+- **CI Contract**: See CI_CONTRACT.md for CI/CD expectations.
+- **Runtime Contract**: See RUNTIME_CONTRACT.md for runtime expectations.
 
 These sources define the definitive behavior of the system:
 

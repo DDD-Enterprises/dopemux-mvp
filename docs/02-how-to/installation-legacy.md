@@ -228,7 +228,7 @@ PYTEST_ADDOPTS=--no-cov pytest -q
 - HTML coverage report: `htmlcov/index.html`
 - XML coverage: `coverage.xml`
 
-For detailed testing guide, see [docs/03-testing.md](./03-testing.md).
+For detailed testing guide, see docs/03-testing.md (`./03-testing.md`).
 
 ---
 
@@ -564,10 +564,10 @@ python tools/import_smoke_tier.py
 
 ## Next Steps
 
-- **Explore the codebase:** See [docs/00-repo-map.md](./00-repo-map.md)
-- **Run tests:** See [docs/03-testing.md](./03-testing.md)
-- **Understand architecture:** See [docs/94-architecture/](./94-architecture/)
-- **Review refactor gates:** See [docs/engineering/refactor_gates.md](./engineering/refactor_gates.md)
+- **Explore the codebase:** See docs/00-repo-map.md (`./00-repo-map.md`)
+- **Run tests:** See docs/03-testing.md (`./03-testing.md`)
+- **Understand architecture:** See [docs/94-architecture/](../94-architecture)
+- **Review refactor gates:** See docs/engineering/refactor_gates.md (`./engineering/refactor_gates.md`)
 
 ---
 

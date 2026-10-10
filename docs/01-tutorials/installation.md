@@ -298,7 +298,7 @@ dopemux decisions patterns tags            # See auto-detected patterns
 - **User Guide**: [MULTI_PROJECT.md](multi-project.md)
 - **Profile Reference**: [PROFILES.md](profiles.md)
 - **Architecture**: [System Bible](../04-explanation/architecture/system-bible.md)
-- **Troubleshooting**: [Troubleshooting Playbook](../troubleshooting-playbook.md)
+- **Troubleshooting**: Troubleshooting Playbook (`../troubleshooting-playbook.md`)
 
 ---
 
