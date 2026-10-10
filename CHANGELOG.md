@@ -3,6 +3,10 @@
 All notable changes to Dopemux (including the PR Merge Specialist) will be documented in this file.
 
 ## [Unreleased]
+
+### Changed
+- docs: consolidation W0+W1 (plan: `docs/05-audit-reports/docs-consolidation-audit-and-plan-2026-10-09.md`). Placement policy now names the Diataxis target roots and tolerates the remaining trees as `legacy_roots`; `docs/archive/` is frozen behind `docs/archive/MANIFEST.jsonl` and a new `docs-archive-manifest-guard` pre-commit hook, with `scripts/docs_archive_move.py` as the only writer. The 694-file research quarantine moved from `docs/04-explanation/history/sourceFiles/` to `docs/archive/w1-history-sourcefiles/`; nothing was deleted. Four unreferenced docs scripts moved to `scripts/legacy/`.
+
 ### Added
 - Economical Codex subagent defaults and explicit role models, with shared cost-first delegation guidance, bounded escalation, and preserved independent audit gates.
 - Autoreview platform integration stack: task packets, PAL clink audit verdict capture, read-only PR Action Bridge CLI, Copilot repair packet rendering, embedded-audit provenance workflow, offline autoreview loop fixtures, PR steward merge gates, PR steward CLI/package/scaffold/doctor flows, and final ops hardening docs.
