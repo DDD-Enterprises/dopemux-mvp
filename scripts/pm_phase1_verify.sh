@@ -3,8 +3,8 @@ set -euo pipefail
 
 EVD_DIR="docs/03-reference/planes/pm/_evidence/PM-FRIC-01.outputs"
 TELEM_EVD_DIR="docs/03-reference/planes/pm/_evidence/PM-TELEM-01.outputs"
-FRIC="docs/03-reference/planes/pm/pm-friction-map-2.md"
-SNSA="docs/03-reference/planes/pm/signal-vs-noise-analysis-2.md"
+FRIC="docs/03-reference/planes/pm/pm-friction-map.md"
+SNSA="docs/03-reference/planes/pm/signal-vs-noise-analysis.md"
 
 fail() { echo "FAIL: $1" >&2; exit 1; }
 

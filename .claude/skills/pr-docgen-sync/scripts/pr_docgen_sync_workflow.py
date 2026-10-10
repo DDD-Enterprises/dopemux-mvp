@@ -33,11 +33,11 @@ DEFAULT_LAYOUT_REPORT_PATH = "reports/docs-hygiene/pr-docgen-sync-layout-finding
 
 INSTRUCTION_PATH_CANDIDATES: Dict[str, Tuple[str, ...]] = {
     "codex": (
-        "docs/03-reference/instructions/codex-3.md",
+        "docs/03-reference/instructions/codex.md",
         "docs/instructions/CODEX.md",
     ),
     "claude": (
-        "docs/03-reference/instructions/claude-3.md",
+        "docs/03-reference/instructions/claude.md",
         "docs/instructions/CLAUDE.md",
     ),
     "gemini": (
@@ -68,8 +68,8 @@ SUBSYSTEM_RULES: List[Dict[str, Any]] = [
             "docs/02-how-to/DOCKER_SETUP.md",
             "docs/03-reference/ports-and-registry-truth.md",
             "docs/03-reference/service-env-contract.md",
-            "docs/03-reference/services/server-registry-2.md",
-            "docs/03-reference/services/performance-baseline-2.md",
+            "docs/03-reference/services/server-registry.md",
+            "docs/03-reference/services/performance-baseline.md",
         ),
         "system_hubs": (),
         "user_workflow_signal": True,
@@ -91,7 +91,7 @@ SUBSYSTEM_RULES: List[Dict[str, Any]] = [
             "docs/02-how-to/integrations/leantime-integration-guide.md",
             "docs/02-how-to/operations/workflow-idea-epic-lifecycle.md",
             "docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md",
-            "docs/03-reference/planes/pm/hub-3.md",
+            "docs/03-reference/planes/pm/hub.md",
         ),
         "system_hubs": (),
         "user_workflow_signal": True,
@@ -161,7 +161,7 @@ SUBSYSTEM_RULES: List[Dict[str, Any]] = [
             "README.md",
             "docs/04-explanation/dopemux-overview.md",
             "docs/04-explanation/architecture/adhd-architecture-diagram.md",
-            "docs/03-reference/planes/pm/hub-3.md",
+            "docs/03-reference/planes/pm/hub.md",
         ),
         "system_hubs": (
             "docs/03-reference/systems/dopecon-bridge/readme.md",
@@ -353,7 +353,7 @@ def build_impact(changed: List[Dict[str, str]], repo_root: Path) -> Dict[str, An
         doc_targets.update(("README.md", "CHANGELOG.md"))
 
     if _has_any_prefix(changed_paths, ("services/task-orchestrator/", "docs/03-reference/planes/pm/", "docs/02-how-to/integrations/")):
-        doc_targets.add("docs/03-reference/planes/pm/hub-3.md")
+        doc_targets.add("docs/03-reference/planes/pm/hub.md")
 
     doc_targets.update(system_hubs)
 
@@ -400,7 +400,7 @@ def build_impact(changed: List[Dict[str, str]], repo_root: Path) -> Dict[str, An
     for target in sorted(doc_targets):
         if target in CANONICAL_INDEXES:
             reason = "Active canonical index/list"
-        elif target == "docs/03-reference/planes/pm/hub-3.md":
+        elif target == "docs/03-reference/planes/pm/hub.md":
             reason = "PM hub impacted by task-orchestrator/leantime surface"
         elif target.startswith("docs/03-reference/systems/"):
             reason = "Impacted subsystem hub"
@@ -409,7 +409,7 @@ def build_impact(changed: List[Dict[str, str]], repo_root: Path) -> Dict[str, An
         index_checklist.append(
             {
                 "path": target,
-                "required": target in CANONICAL_INDEXES or target == "docs/03-reference/planes/pm/hub-3.md" or target.startswith("docs/03-reference/systems/"),
+                "required": target in CANONICAL_INDEXES or target == "docs/03-reference/planes/pm/hub.md" or target.startswith("docs/03-reference/systems/"),
                 "reason": reason,
                 "updated_in_baseline": target in changed_set,
             }

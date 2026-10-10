@@ -1,0 +1,1856 @@
+[
+ {
+  "variant": "docs/01-tutorials/examples-2.md",
+  "base": "docs/01-tutorials/examples.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/01-tutorials/installation-2.md",
+  "base": "docs/01-tutorials/installation.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/01-tutorials/installation-3.md",
+  "base": "docs/01-tutorials/installation.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-10-03",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/01-tutorials/multi-project-2.md",
+  "base": "docs/01-tutorials/multi-project.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/01-tutorials/profiles-2.md",
+  "base": "docs/01-tutorials/profiles.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/01-tutorials/profiles-3.md",
+  "base": "docs/01-tutorials/profiles.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/01-tutorials/start-here-2.md",
+  "base": "docs/01-tutorials/start-here.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-07-28",
+  "base_date": "2026-07-28",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/01-tutorials/start-here-3.md",
+  "base": "docs/01-tutorials/start-here.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-07-28",
+  "base_date": "2026-07-28",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/02-how-to/developing-zen-2.md",
+  "base": "docs/02-how-to/developing-zen.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-08-24",
+  "base_date": "2026-08-24",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/02-how-to/development-setup-2.md",
+  "base": "docs/02-how-to/development-setup.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/02-how-to/docker-setup-moved-2.md",
+  "base": "docs/02-how-to/docker-setup.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/02-how-to/docker-setup-moved.md",
+  "base": "docs/02-how-to/docker-setup.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/02-how-to/profile-usage-2.md",
+  "base": "docs/02-how-to/profile-usage.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/02-how-to/profile-usage-3.md",
+  "base": "docs/02-how-to/profile-usage.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/02-how-to/root-relocated/checklist-2.md",
+  "base": "docs/02-how-to/root-relocated/checklist.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/best-practices/mcp-token-management-moved-2.md",
+  "base": "docs/03-reference/best-practices/mcp-token-management.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/best-practices/mcp-token-management-moved.md",
+  "base": "docs/03-reference/best-practices/mcp-token-management.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/configuration/profile-yaml-schema-2.md",
+  "base": "docs/03-reference/configuration/profile-yaml-schema.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/configuration/profile-yaml-schema-3.md",
+  "base": "docs/03-reference/configuration/profile-yaml-schema.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1-2.md",
+  "base": "docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1-2.md",
+  "base": "docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/extraction/pipeline-reliability-2.md",
+  "base": "docs/03-reference/extraction/pipeline-reliability.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-08-23",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/extraction/pipeline-transport-layer-2.md",
+  "base": "docs/03-reference/extraction/pipeline-transport-layer.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/f001-enhanced-untracked-work-system-2.md",
+  "base": "docs/03-reference/f001-enhanced-untracked-work-system.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/f001-enhanced-untracked-work-system-3.md",
+  "base": "docs/03-reference/f001-enhanced-untracked-work-system.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/f002-multi-session-support-2.md",
+  "base": "docs/03-reference/f002-multi-session-support.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/f002-multi-session-support-3.md",
+  "base": "docs/03-reference/f002-multi-session-support.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/g3-framework-migration-guide-2.md",
+  "base": "docs/03-reference/g3-framework-migration-guide.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/governance/authority-map-2.md",
+  "base": "docs/03-reference/governance/authority-map.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/governance/conflict-ledger-2.md",
+  "base": "docs/03-reference/governance/conflict-ledger.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/governance/rules-2.md",
+  "base": "docs/03-reference/governance/rules.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-08-03",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/instructions/claude-2.md",
+  "base": "docs/03-reference/instructions/claude.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-05-01",
+  "base_date": null,
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/instructions/claude-3.md",
+  "base": "docs/03-reference/instructions/claude.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-05-01",
+  "base_date": null,
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/instructions/codex-3.md",
+  "base": "docs/03-reference/instructions/codex.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-08",
+  "base_date": "2026-05-08",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/00-index-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/00-index.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/01-system-architecture-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/01-system-architecture.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/02-memory-and-state-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/02-memory-and-state.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/03-mcp-lifecycle-and-reliability.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/04-routing-policy-and-cost-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/04-routing-policy-and-cost.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-08-24",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/05-adhd-execution-model-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/05-adhd-execution-model.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/06-instance-and-worktree-isolation-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/06-instance-and-worktree-isolation.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/07-dopetask-integration-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/07-dopetask-integration.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/08-supervisor-packet-format-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/08-supervisor-packet-format.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/09-usage-limits-and-resets-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/09-usage-limits-and-resets.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/10-playbooks-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/10-playbooks.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/deep-research-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/deep-research.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/doc-gate-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/doc-gate.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/opus-cross-plane-audit-2.md",
+  "base": "docs/03-reference/planes/pm/dopemux/opus-cross-plane-audit.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-10-10",
+  "base_date": null,
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/dopemux/opus-cross-plane-audit-3.md",
+  "base": "docs/03-reference/planes/pm/dopemux/opus-cross-plane-audit.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-10-10",
+  "base_date": null,
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/hub-2.md",
+  "base": "docs/03-reference/planes/pm/hub.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/hub-3.md",
+  "base": "docs/03-reference/planes/pm/hub.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-adhd-requirements-2.md",
+  "base": "docs/03-reference/planes/pm/pm-adhd-requirements.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-architecture-2.md",
+  "base": "docs/03-reference/planes/pm/pm-architecture.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-friction-map-2.md",
+  "base": "docs/03-reference/planes/pm/pm-friction-map.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-output-boundaries-2.md",
+  "base": "docs/03-reference/planes/pm/pm-output-boundaries.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-phase0-action-items-2.md",
+  "base": "docs/03-reference/planes/pm/pm-phase0-action-items.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-phase0-claims-ledger-2.md",
+  "base": "docs/03-reference/planes/pm/pm-phase0-claims-ledger.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-phase2-claims-ledger-2.md",
+  "base": "docs/03-reference/planes/pm/pm-phase2-claims-ledger.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-plane-gaps-2.md",
+  "base": "docs/03-reference/planes/pm/pm-plane-gaps.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-10-10",
+  "base_date": null,
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-plane-inventory-2.md",
+  "base": "docs/03-reference/planes/pm/pm-plane-inventory.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-plane-phase0-scope-lock-opus-2.md",
+  "base": "docs/03-reference/planes/pm/pm-plane-phase0-scope-lock-opus.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/pm-workflows-derived-2.md",
+  "base": "docs/03-reference/planes/pm/pm-workflows-derived.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/readme-2.md",
+  "base": "docs/03-reference/planes/pm/readme.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/readme-3.md",
+  "base": "docs/03-reference/planes/pm/readme.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/signal-vs-noise-analysis-2.md",
+  "base": "docs/03-reference/planes/pm/signal-vs-noise-analysis.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/start-here-2.md",
+  "base": "docs/03-reference/planes/pm/start-here.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/supervisor-2.md",
+  "base": "docs/03-reference/planes/pm/supervisor.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-10-10",
+  "base_date": null,
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/planes/pm/supervisor-3.md",
+  "base": "docs/03-reference/planes/pm/supervisor.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-10-10",
+  "base_date": null,
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/services/performance-baseline-2.md",
+  "base": "docs/03-reference/services/performance-baseline.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/services/server-registry-2.md",
+  "base": "docs/03-reference/services/server-registry.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-07-28",
+  "base_date": "2026-07-28",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/00-overview-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/00-overview.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/01-architecture-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/01-architecture.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-08",
+  "base_date": "2026-05-08",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/02-data-model-sqlite-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/02-data-model-sqlite.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/02-derived-memory-pipeline-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/02-derived-memory-pipeline.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/03-data-model-postgres-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/03-data-model-postgres.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/04-event-taxonomy-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/04-event-taxonomy.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/05-promotion-redaction-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/05-promotion-redaction.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/06-retrieval-ranking-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/06-retrieval-ranking.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/07-mcp-contracts-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/07-mcp-contracts.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/08-phased-roadmap-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/08-phased-roadmap.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/09-test-plan-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/09-test-plan.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/10-risk-register-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/10-risk-register.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/readme-2-moved-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/readme-2.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/readme-2-moved.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/readme-2.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/readme-2.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/readme.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/spec/dope-memory/v1/readme-3.md",
+  "base": "docs/03-reference/spec/dope-memory/v1/readme.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/03-reference/spec/uberslicer/design-2.md",
+  "base": "docs/03-reference/spec/uberslicer/design.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/architecture/architecture-3-0-complete-2.md",
+  "base": "docs/04-explanation/architecture/architecture-3-0-complete.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/architecture/architecture-3-0-implementation-2.md",
+  "base": "docs/04-explanation/architecture/architecture-3-0-implementation.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/architecture/architecture-consolidation-synthesis-2.md",
+  "base": "docs/04-explanation/architecture/architecture-consolidation-synthesis.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/architecture/architecture-consolidation-synthesis-3.md",
+  "base": "docs/04-explanation/architecture/architecture-consolidation-synthesis.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/architecture/dopemux-architecture-overview-2.md",
+  "base": "docs/04-explanation/architecture/dopemux-architecture-overview.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-08-24",
+  "base_date": "2026-08-24",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/architecture/dopemux-architecture-overview-3.md",
+  "base": "docs/04-explanation/architecture/dopemux-architecture-overview.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-08-24",
+  "base_date": "2026-08-24",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/architecture/ultra-deep-architecture-analysis-2.md",
+  "base": "docs/04-explanation/architecture/ultra-deep-architecture-analysis.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/architecture/ultra-deep-architecture-analysis-3.md",
+  "base": "docs/04-explanation/architecture/ultra-deep-architecture-analysis.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/branding/implementation-plan-2.md",
+  "base": "docs/04-explanation/branding/implementation-plan.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/concepts/worktree-switching-guide-moved-2.md",
+  "base": "docs/04-explanation/concepts/worktree-switching-guide.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/concepts/worktree-switching-guide-moved.md",
+  "base": "docs/04-explanation/concepts/worktree-switching-guide.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/cross-component-analysis-2.md",
+  "base": "docs/04-explanation/cross-component-analysis.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/cross-component-analysis-3.md",
+  "base": "docs/04-explanation/cross-component-analysis.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/design-decisions/dopemux-multi-ai-orchestrator-design-2.md",
+  "base": "docs/04-explanation/design-decisions/dopemux-multi-ai-orchestrator-design.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/design-decisions/dopemux-multi-ai-orchestrator-design-3.md",
+  "base": "docs/04-explanation/design-decisions/dopemux-multi-ai-orchestrator-design.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/design-decisions/dopemux-unified-design-philosophy-2.md",
+  "base": "docs/04-explanation/design-decisions/dopemux-unified-design-philosophy.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/design-decisions/dopemux-unified-design-philosophy-3.md",
+  "base": "docs/04-explanation/design-decisions/dopemux-unified-design-philosophy.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/design-decisions/profile-manager-design-2.md",
+  "base": "docs/04-explanation/design-decisions/profile-manager-design.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/design-decisions/profile-manager-design-3.md",
+  "base": "docs/04-explanation/design-decisions/profile-manager-design.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/design-decisions/ui-implementation-roadmap-2.md",
+  "base": "docs/04-explanation/design-decisions/ui-implementation-roadmap.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
+  "base": "docs/04-explanation/design-decisions/ui-implementation-roadmap.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/dopemux-orchestrator-final-spec-2.md",
+  "base": "docs/04-explanation/dopemux-orchestrator-final-spec.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/dopemux-orchestrator-final-spec-3.md",
+  "base": "docs/04-explanation/dopemux-orchestrator-final-spec.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/dopemux-ui-complete-master-plan-2.md",
+  "base": "docs/04-explanation/dopemux-ui-complete-master-plan.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/dopemux-ui-complete-master-plan-3.md",
+  "base": "docs/04-explanation/dopemux-ui-complete-master-plan.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/history/project-archaeology-report-2.md",
+  "base": "docs/04-explanation/history/project-archaeology-report.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/history/unbuilt-features-and-roadmap-2.md",
+  "base": "docs/04-explanation/history/unbuilt-features-and-roadmap.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/implementation-plans/dashboard-day9-deep-research-2.md",
+  "base": "docs/04-explanation/implementation-plans/dashboard-day9-deep-research.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/implementation-plans/dashboard-day9-index-2.md",
+  "base": "docs/04-explanation/implementation-plans/dashboard-day9-index.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/integrations/dopetask-kernel-integration-moved-2.md",
+  "base": "docs/04-explanation/integrations/dopetask-kernel-integration.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/integrations/dopetask-kernel-integration-moved.md",
+  "base": "docs/04-explanation/integrations/dopetask-kernel-integration.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/migrations/migration-taskx-to-dopetask-moved-2.md",
+  "base": "docs/04-explanation/migrations/migration-taskx-to-dopetask.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/migrations/migration-taskx-to-dopetask-moved.md",
+  "base": "docs/04-explanation/migrations/migration-taskx-to-dopetask.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/root-relocated/claude-2.md",
+  "base": "docs/04-explanation/root-relocated/claude.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-05-01",
+  "base_date": null,
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/root-relocated/codex-2.md",
+  "base": "docs/04-explanation/root-relocated/codex.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-05-01",
+  "base_date": null,
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/activity-capture-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/activity-capture-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/activity-capture-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/activity-capture-deep-dive.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-dashboard-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-dashboard-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-dashboard-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-dashboard-deep-dive.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part2-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part2.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part2-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part2.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part3-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part3.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part3-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part3.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part4-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part4.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part4-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part4.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-notifier-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-notifier-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/adhd-notifier-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/adhd-notifier-deep-dive.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/dope-memory-deep-dive.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/dope-memory-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/leantime-bridge-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/leantime-bridge-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/leantime-bridge-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/leantime-bridge-deep-dive.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/litellm-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/litellm-deep-dive.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/plane-coordinator-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/plane-coordinator-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/plane-coordinator-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/plane-coordinator-deep-dive.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/research-leaderboard-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/research-leaderboard.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/voice-commands-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/voice-commands-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/voice-commands-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/voice-commands-deep-dive.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/workspace-watcher-deep-dive-2.md",
+  "base": "docs/04-explanation/technical-deep-dives/workspace-watcher-deep-dive.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/04-explanation/technical-deep-dives/workspace-watcher-deep-dive-3.md",
+  "base": "docs/04-explanation/technical-deep-dives/workspace-watcher-deep-dive.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/06-research/act-pack-claude-mem-2.md",
+  "base": "docs/06-research/act-pack-claude-mem.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/06-research/investigations/deep-research-report-1-2.md",
+  "base": "docs/06-research/investigations/deep-research-report-1.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/06-research/investigations/deep-research-report-7.md",
+  "base": "docs/06-research/investigations/deep-research-report.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-05-01",
+  "base_date": null,
+  "n_variants": 3
+ },
+ {
+  "variant": "docs/06-research/investigations/deep-research-report-8.md",
+  "base": "docs/06-research/investigations/deep-research-report.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-05-01",
+  "base_date": null,
+  "n_variants": 3
+ },
+ {
+  "variant": "docs/06-research/investigations/deep-research-report-9.md",
+  "base": "docs/06-research/investigations/deep-research-report.md",
+  "class": "NO_BASE",
+  "base_exists": false,
+  "variant_date": "2026-05-01",
+  "base_date": null,
+  "n_variants": 3
+ },
+ {
+  "variant": "docs/06-research/investigations/integration-surfaces-master-2.md",
+  "base": "docs/06-research/investigations/integration-surfaces-master.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/06-research/p1-port-act-packet-2.md",
+  "base": "docs/06-research/p1-port-act-packet.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/90-adr/adr-180-automatic-instance-resume-2.md",
+  "base": "docs/90-adr/adr-180-automatic-instance-resume.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-180-automatic-instance-resume-3.md",
+  "base": "docs/90-adr/adr-180-automatic-instance-resume.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-197-task-epic-workflow-system-2.md",
+  "base": "docs/90-adr/adr-197-task-epic-workflow-system.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-197-task-epic-workflow-system-3.md",
+  "base": "docs/90-adr/adr-197-task-epic-workflow-system.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-201-conport-kg-security-hardening-2.md",
+  "base": "docs/90-adr/adr-201-conport-kg-security-hardening.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-201-conport-kg-security-hardening-3.md",
+  "base": "docs/90-adr/adr-201-conport-kg-security-hardening.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-202-serena-v2-production-validation-2.md",
+  "base": "docs/90-adr/adr-202-serena-v2-production-validation.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-202-serena-v2-production-validation-3.md",
+  "base": "docs/90-adr/adr-202-serena-v2-production-validation.md",
+  "class": "SUBST",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-203-task-orchestrator-un-deprecation-2.md",
+  "base": "docs/90-adr/adr-203-task-orchestrator-un-deprecation.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-203-task-orchestrator-un-deprecation-3.md",
+  "base": "docs/90-adr/adr-203-task-orchestrator-un-deprecation.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-204-ml-risk-assessment-extraction-2.md",
+  "base": "docs/90-adr/adr-204-ml-risk-assessment-extraction.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-204-ml-risk-assessment-extraction-3.md",
+  "base": "docs/90-adr/adr-204-ml-risk-assessment-extraction.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-205-systematic-audit-methodology-2.md",
+  "base": "docs/90-adr/adr-205-systematic-audit-methodology.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-205-systematic-audit-methodology-3.md",
+  "base": "docs/90-adr/adr-205-systematic-audit-methodology.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-207-architecture-3-0-three-layer-integration-2.md",
+  "base": "docs/90-adr/adr-207-architecture-3-0-three-layer-integration.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/90-adr/adr-207-leantime-api-research-2.md",
+  "base": "docs/90-adr/adr-207-leantime-api-research.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-207-leantime-api-research-3.md",
+  "base": "docs/90-adr/adr-207-leantime-api-research.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-207-phase-1-implementation-plan-2.md",
+  "base": "docs/90-adr/adr-207-phase-1-implementation-plan.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-207-phase-1-implementation-plan-3.md",
+  "base": "docs/90-adr/adr-207-phase-1-implementation-plan.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-207-session-summary-2.md",
+  "base": "docs/90-adr/adr-207-session-summary.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-207-session-summary-3.md",
+  "base": "docs/90-adr/adr-207-session-summary.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-207-task-orchestrator-capabilities-2.md",
+  "base": "docs/90-adr/adr-207-task-orchestrator-capabilities.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-207-task-orchestrator-capabilities-3.md",
+  "base": "docs/90-adr/adr-207-task-orchestrator-capabilities.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-208-mcp-config-drift-prevention-2.md",
+  "base": "docs/90-adr/adr-208-mcp-config-drift-prevention.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
+  "base": "docs/90-adr/adr-208-mcp-config-drift-prevention.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-213-capture-adapters-single-ledger-2.md",
+  "base": "docs/90-adr/adr-213-capture-adapters-single-ledger.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-213-capture-adapters-single-ledger-3.md",
+  "base": "docs/90-adr/adr-213-capture-adapters-single-ledger.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-213-dual-capture-canonical-ledger-2.md",
+  "base": "docs/90-adr/adr-213-dual-capture-canonical-ledger.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-213-dual-capture-canonical-ledger-3.md",
+  "base": "docs/90-adr/adr-213-dual-capture-canonical-ledger.md",
+  "class": "NEAR",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-07-21",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-214-mcp-leantime-decoupling-2.md",
+  "base": "docs/90-adr/adr-214-mcp-leantime-decoupling.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
+  "base": "docs/90-adr/adr-214-mcp-leantime-decoupling.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-215-upgrades-v4-prompt-artifact-contracts-2.md",
+  "base": "docs/90-adr/adr-215-upgrades-v4-prompt-artifact-contracts.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-215-upgrades-v4-prompt-artifact-contracts-3.md",
+  "base": "docs/90-adr/adr-215-upgrades-v4-prompt-artifact-contracts.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-216-upgrades-v4-runner-layout-and-cli-entrypoint-2.md",
+  "base": "docs/90-adr/adr-216-upgrades-v4-runner-layout-and-cli-entrypoint.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-216-upgrades-v4-runner-layout-and-cli-entrypoint-3.md",
+  "base": "docs/90-adr/adr-216-upgrades-v4-runner-layout-and-cli-entrypoint.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-217-upgrades-v4-all-services-deep-extraction-2.md",
+  "base": "docs/90-adr/adr-217-upgrades-v4-all-services-deep-extraction.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-217-upgrades-v4-all-services-deep-extraction-3.md",
+  "base": "docs/90-adr/adr-217-upgrades-v4-all-services-deep-extraction.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-218-repo-truth-extractor-hard-cutover-namespace-2.md",
+  "base": "docs/90-adr/adr-218-repo-truth-extractor-hard-cutover-namespace.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-218-repo-truth-extractor-hard-cutover-namespace-3.md",
+  "base": "docs/90-adr/adr-218-repo-truth-extractor-hard-cutover-namespace.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-219-universal-extractor-sync-pipeline-2.md",
+  "base": "docs/90-adr/adr-219-universal-extractor-sync-pipeline.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-05-01",
+  "base_date": "2026-05-01",
+  "n_variants": 1
+ },
+ {
+  "variant": "docs/90-adr/adr-pm-001-canonical-task-object-2.md",
+  "base": "docs/90-adr/adr-pm-001-canonical-task-object.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-pm-001-canonical-task-object-3.md",
+  "base": "docs/90-adr/adr-pm-001-canonical-task-object.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-pm-002-pm-event-taxonomy-2.md",
+  "base": "docs/90-adr/adr-pm-002-pm-event-taxonomy.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-pm-002-pm-event-taxonomy-3.md",
+  "base": "docs/90-adr/adr-pm-002-pm-event-taxonomy.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-pm-003-storage-derived-mirrored-2.md",
+  "base": "docs/90-adr/adr-pm-003-storage-derived-mirrored.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ },
+ {
+  "variant": "docs/90-adr/adr-pm-003-storage-derived-mirrored-3.md",
+  "base": "docs/90-adr/adr-pm-003-storage-derived-mirrored.md",
+  "class": "FM_ONLY",
+  "base_exists": true,
+  "variant_date": "2026-10-10",
+  "base_date": "2026-10-10",
+  "n_variants": 2
+ }
+]

@@ -60,7 +60,7 @@ architecture:
   pipeline_readme: services/repo-truth-extractor/README.md
   adr_index: docs/90-adr/adr-index.md
   rfc_index: docs/91-rfc/
-  pm_plane_hub: docs/03-reference/planes/pm/hub-2.md
+  pm_plane_hub: docs/03-reference/planes/pm/hub.md
   pm_plane_write_adjudication: docs/03-reference/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_tool_surface: docs/03-reference/planes/pm/pm-plane-normalized-tool-surface.md
   pm_authority_reconciliation: docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md
@@ -124,9 +124,9 @@ explanation:
   repo_truth_extractor_deep_analysis: docs/04-explanation/technical-deep-dives/repo-truth-extractor-structure-architecture-and-optimal-design.md
   serena_v2: docs/04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md
   conport: docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md
-  dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md
-  adhd_engine: docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md
-  dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
+  dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive.md
+  adhd_engine: docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1.md
+  dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive.md
   workflow_kit_architecture: docs/04-explanation/workflow-kit-architecture.md
   pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
   repo_truth_extractor_v5_upgrade_design: docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md

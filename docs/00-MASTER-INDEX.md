@@ -147,8 +147,8 @@ Status: [LOGGED] Topology Complete
 
 ### PM Plane Contracts
 **Location:** `planes/pm/`
-- [PM Plane Hub](03-reference/planes/pm/hub-2.md)
-- [PM Plane Evidence Hub](03-reference/planes/pm/readme-2.md)
+- [PM Plane Hub](03-reference/planes/pm/hub.md)
+- [PM Plane Evidence Hub](03-reference/planes/pm/readme.md)
 - [PM Plane Write Adjudication Model](03-reference/planes/pm/pm-plane-write-adjudication-model.md)
 - [PM Plane Write Matrix](03-reference/planes/pm/pm-plane-write-matrix.md)
 - [PM Plane Normalized Tool Surface](03-reference/planes/pm/pm-plane-normalized-tool-surface.md)
@@ -230,9 +230,9 @@ Status: [LOGGED] Topology Complete
 - [Repo Truth Extractor — Structure, Architecture & Optimal Design](04-explanation/technical-deep-dives/repo-truth-extractor-structure-architecture-and-optimal-design.md)
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)
 - [ConPort Technical Deep Dive](04-explanation/technical-deep-dives/conport-technical-deep-dive.md)
-- [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md)
-- [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md)
-- [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md)
+- [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive.md)
+- [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1.md)
+- [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/dopemux-context-deep-dive.md)
 - [Workflow Kit Architecture](04-explanation/workflow-kit-architecture.md)
 - [PR Merge Queue Orchestration](04-explanation/pr-merge-queue-orchestration.md)
 

@@ -155,7 +155,7 @@ flowchart LR
 
 - The dope-memory spec positioned the service as the “temporal spine” beside DopeQuery/ConPort and DopeContext, with SQLite canonical storage, Postgres mirror, EventBus ingestion, and deterministic promotion.
 - Earlier deep dives and specs also described dope-memory as the authoritative successor to ad-hoc memory and partially to WMA’s broader working-memory ambition.
-- Sources: `docs/03-reference/spec/dope-memory/v1/readme.md`, `docs/03-reference/spec/dope-memory/v1/01-architecture.md`, `docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md`.
+- Sources: `docs/03-reference/spec/dope-memory/v1/readme.md`, `docs/03-reference/spec/dope-memory/v1/01-architecture.md`, `docs/04-explanation/technical-deep-dives/dope-memory-deep-dive.md`.
 
 ### Target / planned
 
@@ -538,7 +538,7 @@ Primary sources: `docs/03-reference/planes/pm/pm-plane-read-matrix.md`, `docs/03
 - `task-packets/TP-PM-ARCH-04B.md`
 - `task-packets/README.md`
 - `docs/03-reference/systems/dopecon-bridge/readme.md`
-- `docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md`
+- `docs/04-explanation/technical-deep-dives/dope-memory-deep-dive.md`
 
 ### Index and placement surfaces updated or consulted
 

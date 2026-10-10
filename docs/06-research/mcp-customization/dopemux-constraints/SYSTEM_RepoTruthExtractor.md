@@ -61,7 +61,7 @@ It is not the operator CLI control plane, not PM authority, not memory authority
   Evidence: PM, memory, and retrieval authorities are assigned in their respective system/plane docs. The extractor only emits analysis artifacts about those systems.
 
 - Repo Truth Extractor does not make extracted artifacts equal to live system truth.
-  Evidence: `docs/03-reference/governance/rules-2.md` puts runtime code/config/tests above truth artifacts in the truth hierarchy.
+  Evidence: `docs/03-reference/governance/rules.md` puts runtime code/config/tests above truth artifacts in the truth hierarchy.
 
 ## 4. Key Surfaces
 

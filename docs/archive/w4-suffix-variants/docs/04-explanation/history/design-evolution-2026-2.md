@@ -65,8 +65,8 @@ Clickable index of deep-dive history for every service component.
 
 | Report | Description |
 |:-------|:------------|
-| [Unbuilt Features](unbuilt-features-and-roadmap-2.md) | The "Lost Futures" (Agents, Workflow, Auto-Resume). |
-| [Project Archaeology](project-archaeology-report-2.md) | The "Deleted Civilizations" (Zen Server, Personas). |
+| [Unbuilt Features](unbuilt-features-and-roadmap.md) | The "Lost Futures" (Agents, Workflow, Auto-Resume). |
+| [Project Archaeology](project-archaeology-report.md) | The "Deleted Civilizations" (Zen Server, Personas). |
 
 ## 🏗️ Architecture Evolution
 

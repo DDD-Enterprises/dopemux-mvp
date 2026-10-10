@@ -20,7 +20,7 @@ echo "[verify] profile week2 integration: docs parity checks"
 python scripts/docs_validator.py \
   docs/01-tutorials/profile-user-guide.md \
   docs/01-tutorials/profile-migration-guide.md \
-  docs/02-how-to/profile-usage-3.md \
+  docs/02-how-to/profile-usage.md \
   docs/03-reference/profile-developer-guide.md \
   docs/05-audit-reports/dope-context-decision-auto-index-unified-search-verification-2026-02-06-2.md \
   docs/05-audit-reports/profile-optimization-suggestions-verification-2026-02-06-2.md \

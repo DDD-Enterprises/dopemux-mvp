@@ -102,7 +102,7 @@ Feature specifications and capabilities.
 ### Feature Specifications
 - **[F001: Untracked Work Detection](f001-enhanced-untracked-work-system.md)** - Enhanced work tracking
 - **[F001: Basic Untracked Work (Historical)](../archive/sessions/serena/v2/f001-usage-examples.md)** - Early implementation notes
-- **[F002: Multi-Session Support](f002-multi-session-support-2.md)** - Multiple session handling
+- **[F002: Multi-Session Support](f002-multi-session-support.md)** - Multiple session handling
 - **[PR Merge Flight Dashboard Reference](systems/dashboard/overview.md)** - Technical architecture for the PR merge TUI
 
 ### Research & Background

@@ -99,7 +99,7 @@ pytest tests/arch/test_dopetask_submodule_contract.py tests/unit/test_dopetask_w
 # Documentation
 TASKX_INTEGRATION_ANALYSIS.md → DOPETASK_INTEGRATION_ANALYSIS.md
 docs/TASKX_KERNEL_INTEGRATION.md → docs/DOPETASK_KERNEL_INTEGRATION.md
-docs/03-reference/planes/pm/dopemux/07_TASKX_INTEGRATION.md → docs/03-reference/planes/pm/dopemux/07-dopetask-integration-2.md
+docs/03-reference/planes/pm/dopemux/07_TASKX_INTEGRATION.md → docs/03-reference/planes/pm/dopemux/07-dopetask-integration.md
 
 # Configuration
 .taskx-pin → .dopetask-pin

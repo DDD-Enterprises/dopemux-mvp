@@ -36,7 +36,7 @@ VALID_DOC_TYPES = {'adr', 'rfc', 'caveat', 'pattern', 'runbook', 'tutorial', 'ho
 
 # Valid status values
 VALID_STATUSES = {
-    'adr': {'proposed', 'accepted', 'rejected', 'superseded'},
+    'adr': {'proposed', 'accepted', 'rejected', 'superseded', 'deprecated'},
     'rfc': {'draft', 'review', 'accepted', 'rejected', 'superseded'},
     'caveat': {'active', 'resolved', 'superseded'},
     'pattern': {'draft', 'accepted', 'deprecated'},

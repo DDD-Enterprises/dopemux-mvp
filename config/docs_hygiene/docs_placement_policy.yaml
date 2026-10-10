@@ -101,7 +101,7 @@ root_overrides:
   docs/adhd-dashboard-session-summary-2.md: docs/05-audit-reports/root-relocated/adhd-dashboard-session-summary-2.md
   docs/ag-master-plan.md: docs/04-explanation/root-relocated/ag-master-plan.md
   docs/AUDIT_INITIAL_FINDINGS.md: docs/05-audit-reports/root-relocated/audit-initial-findings.md
-  docs/checklist-2.md: docs/02-how-to/root-relocated/checklist-2.md
+  docs/checklist-2.md: docs/02-how-to/root-relocated/checklist.md
   docs/codex-desktop-bootstrap-prompt.md: docs/03-reference/instructions/codex-desktop-bootstrap-prompt.md
   docs/compact-dashboard-complete-2.md: docs/05-audit-reports/root-relocated/compact-dashboard-complete-2.md
   docs/contributing-zen.md: docs/03-reference/instructions/contributing-zen.md
@@ -119,8 +119,8 @@ root_overrides:
   docs/PHASE0_DETERMINISM_REPORT.md: docs/05-audit-reports/root-relocated/phase0-determinism-report.md
   docs/PHASE0_DETERMINISM_REPORT_PROCESSPOOL.md: docs/05-audit-reports/root-relocated/phase0-determinism-report-processpool.md
   docs/PHASE0_SERIALIZATION_REPORT.md: docs/05-audit-reports/root-relocated/phase0-serialization-report.md
-  docs/pipeline-reliability.md: docs/03-reference/extraction/pipeline-reliability-2.md
-  docs/pipeline-transport-layer.md: docs/03-reference/extraction/pipeline-transport-layer-2.md
+  docs/pipeline-reliability.md: docs/03-reference/extraction/pipeline-reliability.md
+  docs/pipeline-transport-layer.md: docs/03-reference/extraction/pipeline-transport-layer.md
   docs/PROCESSPOOL_STABILITY_REPORT.md: docs/05-audit-reports/root-relocated/processpool-stability-report.md
   docs/stateless-operator-mode-prompt.md: docs/03-reference/instructions/stateless-operator-mode-prompt.md
   docs/thread-primer-taskx.md: docs/04-explanation/root-relocated/thread-primer-taskx.md
