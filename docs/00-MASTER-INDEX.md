@@ -103,8 +103,8 @@ Status: [LOGGED] Topology Complete
 - [Enhancement Plans](03-reference/systems/dashboard/dashboard-enhancements.md)
 
 ### Execution Plane System
-**Location:** `docs/planes/execution/`
-- **[Agent Leasing Contract](planes/execution/agent-leasing-contract.md)** - Authoritative "Rules of Engagement" for AI agent execution, heartbeats, and handoffs.
+**Location:** `docs/03-reference/planes/execution/`
+- **[Agent Leasing Contract](03-reference/planes/execution/agent-leasing-contract.md)** - Authoritative "Rules of Engagement" for AI agent execution, heartbeats, and handoffs.
 
 ---
 
@@ -147,13 +147,13 @@ Status: [LOGGED] Topology Complete
 
 ### PM Plane Contracts
 **Location:** `planes/pm/`
-- [PM Plane Hub](planes/pm/hub-2.md)
-- [PM Plane Evidence Hub](planes/pm/readme-2.md)
-- [PM Plane Write Adjudication Model](planes/pm/pm-plane-write-adjudication-model.md)
-- [PM Plane Write Matrix](planes/pm/pm-plane-write-matrix.md)
-- [PM Plane Normalized Tool Surface](planes/pm/pm-plane-normalized-tool-surface.md)
-- [PM Plane Read Matrix](planes/pm/pm-plane-read-matrix.md)
-- [PM Plane Write Surface Policy](planes/pm/pm-plane-write-surface-policy.md)
+- [PM Plane Hub](03-reference/planes/pm/hub-2.md)
+- [PM Plane Evidence Hub](03-reference/planes/pm/readme-2.md)
+- [PM Plane Write Adjudication Model](03-reference/planes/pm/pm-plane-write-adjudication-model.md)
+- [PM Plane Write Matrix](03-reference/planes/pm/pm-plane-write-matrix.md)
+- [PM Plane Normalized Tool Surface](03-reference/planes/pm/pm-plane-normalized-tool-surface.md)
+- [PM Plane Read Matrix](03-reference/planes/pm/pm-plane-read-matrix.md)
+- [PM Plane Write Surface Policy](03-reference/planes/pm/pm-plane-write-surface-policy.md)
 - [Supervisor PM and Memory MCP Server Matrix](05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md)
 - [Supervisor PM and Memory Evidence Packet](05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md)
 - [Supervisor Memory and PM Authority Reconciliation](05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md)

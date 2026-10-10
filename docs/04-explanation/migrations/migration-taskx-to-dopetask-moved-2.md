@@ -73,7 +73,7 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 
 ### 5. Documentation Updates
 
-#### `docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md` → `docs/planes/pm/dopemux/07-dopetask-integration-2.md`
+#### `docs/03-reference/planes/pm/dopemux/07_TASKX_INTEGRATION.md` → `docs/03-reference/planes/pm/dopemux/07-dopetask-integration-2.md`
 - Updated all references from TaskX to dopeTask
 - Updated invariant IDs (INV-TX-001 → INV-DT-001)
 - Updated code examples and file paths
@@ -187,5 +187,5 @@ git checkout scripts/taskx
 
 For migration issues, refer to:
 - dopeTask documentation: https://github.com/hu3mann/dopetask
-- dopemux-mvp integration docs: `docs/planes/pm/dopemux/07-dopetask-integration-2.md`
+- dopemux-mvp integration docs: `docs/03-reference/planes/pm/dopemux/07-dopetask-integration-2.md`
 - Test suites: `tests/arch/test_dopetask_submodule_contract.py`

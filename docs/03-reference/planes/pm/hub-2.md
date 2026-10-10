@@ -37,11 +37,11 @@ This plane follows strict phases. Do not skip phases.
 
 ## Current PM-plane contracts
 
-- `docs/planes/pm/pm-plane-write-adjudication-model.md`
-- `docs/planes/pm/pm-plane-write-matrix.md`
-- `docs/planes/pm/pm-plane-normalized-tool-surface.md`
-- `docs/planes/pm/pm-plane-read-matrix.md`
-- `docs/planes/pm/pm-plane-write-surface-policy.md`
+- `docs/03-reference/planes/pm/pm-plane-write-adjudication-model.md`
+- `docs/03-reference/planes/pm/pm-plane-write-matrix.md`
+- `docs/03-reference/planes/pm/pm-plane-normalized-tool-surface.md`
+- `docs/03-reference/planes/pm/pm-plane-read-matrix.md`
+- `docs/03-reference/planes/pm/pm-plane-write-surface-policy.md`
 
 ## Current supervisor authority packet set
 
@@ -52,20 +52,20 @@ This plane follows strict phases. Do not skip phases.
 
 ## Current runtime-truth evidence companions
 
-- `docs/planes/pm/_evidence/PM-AUTH-01.outputs/`
-- `docs/planes/pm/_evidence/PM-AUTH-01.commands.txt`
-- `docs/planes/pm/_evidence/task-orchestrator-runtime-truth/`
-- `docs/planes/pm/_evidence/leantime-runtime-truth/`
-- `docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/`
+- `docs/03-reference/planes/pm/_evidence/PM-AUTH-01.outputs/`
+- `docs/03-reference/planes/pm/_evidence/PM-AUTH-01.commands.txt`
+- `docs/03-reference/planes/pm/_evidence/task-orchestrator-runtime-truth/`
+- `docs/03-reference/planes/pm/_evidence/leantime-runtime-truth/`
+- `docs/03-reference/planes/pm/_evidence/dopecon-bridge-runtime-truth/`
 
 ## Active Follow-up Queue
 
-- `docs/planes/pm/task-orchestrator-leantime-followups.md`
+- `docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md`
 
 ## How to Run
 
 1. Open Claude Code in Supervisor Mode.
-1. Paste: `docs/planes/pm/supervisor-2.md`
+1. Paste: `docs/03-reference/planes/pm/supervisor-2.md`
 1. Execute Phase 0 commands locally and paste outputs back verbatim.
 1. Produce deliverables into this folder.
 

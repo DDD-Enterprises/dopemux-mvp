@@ -15,8 +15,8 @@ prelude: Doc Gate (explanation) for dopemux documentation and developer workflow
 Define a mechanical gate that prevents doc drift, broken references, and responsibility leakage across the TaskX vs Dopemux Supervisor boundary.
 
 ## Scope
-- Verifies the doc bundle under: docs/planes/pm/dopemux/
-- Enforces research requirements in: docs/planes/pm/dopemux/research/
+- Verifies the doc bundle under: docs/03-reference/planes/pm/dopemux/
+- Enforces research requirements in: docs/03-reference/planes/pm/dopemux/research/
 - Enforces headings, links, UNKNOWN discipline, and boundary rules
 - Does not attempt semantic correctness beyond simple regex rules in v0
 
@@ -26,8 +26,8 @@ Define a mechanical gate that prevents doc drift, broken references, and respons
 - TaskX remains deterministic and "boring" (no policy/memory/MCP intelligence ownership).
 
 ## Inputs
-- Docs in docs/planes/pm/dopemux/
-- Optional config (future): docs/planes/pm/dopemux/doc_gate_rules.json
+- Docs in docs/03-reference/planes/pm/dopemux/
+- Optional config (future): docs/03-reference/planes/pm/dopemux/doc_gate_rules.json
 
 ## Checks
 
@@ -50,7 +50,7 @@ Every doc must include:
 ### 4) Link integrity
 - Parse markdown links in 00_INDEX.md
 - Every relative link resolves to an existing file
-- No link points outside docs/planes/pm/dopemux/ unless explicitly allowed in allowlist
+- No link points outside docs/03-reference/planes/pm/dopemux/ unless explicitly allowed in allowlist
 
 ### 5) UNKNOWN discipline
 - "UNKNOWN" may appear only under:
@@ -92,7 +92,7 @@ Exception: 07_TASKX_INTEGRATION.md may mention these only to explicitly deny own
 - Failed checks list
 - File/heading that failed
 - Machine output (future):
-- docs/planes/pm/dopemux/DOC_GATE_REPORT.json (canonical JSON)
+- docs/03-reference/planes/pm/dopemux/DOC_GATE_REPORT.json (canonical JSON)
 
 ## Stop conditions
 - If presence or headings fail: stop immediately.

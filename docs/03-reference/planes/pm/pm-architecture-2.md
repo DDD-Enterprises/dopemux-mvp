@@ -17,23 +17,23 @@ Scope: architecture and ADR decisions only; no implementation or schema changes 
 ## Observed Current State (Evidence)
 
 - Task-orchestrator has an explicit task model and status enum, plus sync metadata and ADHD-specific fields in the orchestration object.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt:L13-L22`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt:L33-L63`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt:L13-L22`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt:L33-L63`.
 - Task-orchestrator also has an explicit ConPort MCP wrapper for progress, decisions, linking, and search operations.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L7-L8`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L70-L210`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L298-L392`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L7-L8`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L70-L210`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L298-L392`.
 - Coordination logic is event-driven with task lifecycle processors and suppression telemetry; telemetry is a report layer, not canonical task state.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L188-L207`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L385-L430`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L889-L929`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L188-L207`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L385-L430`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L889-L929`.
 - Dopemux provides an event bus abstraction (in-memory and Redis adapters) and typed event models.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L68-L82`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L127-L175`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_events_types.py.txt:L23-L34`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L68-L82`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L127-L175`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_events_types.py.txt:L23-L34`.
 - Current Redis event bus path uses local fan-out fallback when disconnected, so event delivery guarantees are weak by default.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L140-L156`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L140-L156`.
 - Taskmaster is currently thin: `server.py` wrapper + `bridge_adapter.py`, with entrypoint `taskmaster = taskmaster.server:main`; no separate `models.py` or `main.py` module exists.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/12_taskmaster_find_files.txt:L3-L10`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/99_missing_expected_files.txt:L1-L3`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_server.py.txt:L44-L53`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_src_dopemux_taskmaster.egg-info_entry_points.txt.txt:L1-L2`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/12_taskmaster_find_files.txt:L3-L10`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/99_missing_expected_files.txt:L1-L3`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_server.py.txt:L44-L53`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_src_dopemux_taskmaster.egg-info_entry_points.txt.txt:L1-L2`.
 - Taskmaster bridge adapter currently creates ConPort/DopeconBridge progress entries and emits status-update events; it explicitly notes update-by-new-entry behavior is provisional.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L57-L79`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L122-L140`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L57-L79`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L122-L140`.
 - CLI has task capture/listing commands and status panels, but defaults to broad multi-panel output when no status flags are set.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_cli.py.txt:L2220-L2241`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_cli.py.txt:L2455-L2501`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_cli.py.txt:L2220-L2241`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_cli.py.txt:L2455-L2501`.
 - Leantime and taskmaster integration surfaces exist under `src/integrations/` and include bidirectional sync routines.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L2-L20`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L38-L110`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L2-L20`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L38-L110`.
 
 ## Canonical Task Object (Proposal)
 
@@ -64,7 +64,7 @@ Canonical invariants:
 1. Every transition request carries an idempotency key; duplicate keys are replay-safe no-ops.
 1. Canonical write occurs at most once per accepted transition.
 1. Default user output remains minimal with progressive disclosure gates (`--more`, `--why`, `--evidence`).
-   Evidence: `docs/planes/pm/pm-output-boundaries.md:L16-L33`.
+   Evidence: `docs/03-reference/planes/pm/pm-output-boundaries-2.md:L16-L33`.
 
 Status dialect mapping into canonical enum:
 
@@ -75,7 +75,7 @@ Status dialect mapping into canonical enum:
 - `cancelled`, `canceled` -> `CANCELED`
 - `needs_break`, `context_switch`, `paused` remain non-canonical advisory context (not lifecycle end-states).
 
-Evidence for dialect drift requiring mapping: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt:L13-L22`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L69-L70`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_models.py.txt:L25-L32`.
+Evidence for dialect drift requiring mapping: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt:L13-L22`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L69-L70`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_models.py.txt:L25-L32`.
 
 ## Task Lifecycle
 
@@ -108,11 +108,9 @@ Refusal rules:
 1. Reject transitions without idempotency key.
 1. Reject source updates that cannot be mapped to canonical enum.
 
-Evidence basis for current multi-surface lifecycle operations: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L191-L207`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L122-L146`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L58-L110`.
+Evidence basis for current multi-surface lifecycle operations: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L191-L207`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L122-L146`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L58-L110`.
 
 ## Storage, Derived, Mirrored
-
-For a detailed breakdown of how task fields are classified and how bidirectional sync loops are prevented using the reflection pattern, see [PM Metadata vs Workflow Authority](pm-metadata-vs-workflow.md).
 
 | Classification | Owner | Content | Write Contract |
 |---|---|---|---|
@@ -124,9 +122,9 @@ For a detailed breakdown of how task fields are classified and how bidirectional
 
 Evidence:
 
-- ConPort decision/progress write surfaces: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L70-L210`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L298-L392`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_shared_conport_client_client.py.txt:L66-L137`.
-- Telemetry as measurement surface: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L889-L929`.
-- Existing sync projections: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L58-L110`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_services_task_integration.py.txt:L125-L154`.
+- ConPort decision/progress write surfaces: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L70-L210`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L298-L392`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_shared_conport_client_client.py.txt:L66-L137`.
+- Telemetry as measurement surface: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L889-L929`.
+- Existing sync projections: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L58-L110`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_services_task_integration.py.txt:L125-L154`.
 
 UNKNOWN (evidence needed):
 
@@ -163,7 +161,7 @@ Idempotency contract:
 - Duplicate `idempotency_key` for same `task_id` is a no-op.
 - Consumers must be replay-safe.
 
-Evidence for current fragmented event naming/surfaces: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L22-L47`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L82-L90`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L131-L140`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_events_types.py.txt:L23-L34`.
+Evidence for current fragmented event naming/surfaces: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L22-L47`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L82-L90`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L131-L140`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_events_types.py.txt:L23-L34`.
 
 ## Failure Modes and Degraded Mode
 
@@ -174,7 +172,7 @@ Evidence for current fragmented event naming/surfaces: `docs/planes/pm/_evidence
 - No fabricated `conport_progress_entry_id` or decision links.
 
 Evidence: ConPort operations are explicit and can throw/fail at call boundary.
-`docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L121-L123`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L165-L167`.
+`docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L121-L123`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L165-L167`.
 
 ### EventBus unavailable
 
@@ -182,7 +180,7 @@ Evidence: ConPort operations are explicit and can throw/fail at call boundary.
 - Fail-closed requirement: no silent success for downstream fan-out.
 
 Evidence: current bus path already warns and falls back locally when disconnected, so explicit degraded signaling is required to avoid silent drift.
-`docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L141-L156`.
+`docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L141-L156`.
 
 ### Taskmaster process unavailable
 
@@ -190,7 +188,7 @@ Evidence: current bus path already warns and falls back locally when disconnecte
 - Fail-closed requirement: do not infer taskmaster completion/state when wrapper process failed to start.
 
 Evidence: wrapper starts external process and exits on startup failure.
-`docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_server.py.txt:L95-L131`.
+`docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_server.py.txt:L95-L131`.
 
 ### Telemetry missing
 
@@ -198,7 +196,7 @@ Evidence: wrapper starts external process and exits on startup failure.
 - Guardrail: telemetry never used as canonical truth.
 
 Evidence: telemetry reported via `get_suppression_report`, separate from lifecycle writes.
-`docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L889-L929`.
+`docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L889-L929`.
 
 ## Interfaces to Existing Components
 
@@ -208,21 +206,21 @@ Evidence: telemetry reported via `get_suppression_report`, separate from lifecyc
 - Consumes/emits PM events and maps existing status dialects into canonical enum.
 - ConPort interactions remain adapter-based through MCP client wrappers.
 
-Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L188-L207`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L70-L210`.
+Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L188-L207`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L70-L210`.
 
 ### Taskmaster compatibility
 
 - Treated as tool-wrapper and adapter surface, not canonical task authority.
 - Wrapper keeps process proxy role; adapter emits integration events and routes to PM plane.
 
-Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_server.py.txt:L44-L53`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_server.py.txt:L95-L131`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L57-L94`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_src_dopemux_taskmaster.egg-info_entry_points.txt.txt:L1-L2`.
+Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_server.py.txt:L44-L53`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_server.py.txt:L95-L131`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L57-L94`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_src_dopemux_taskmaster.egg-info_entry_points.txt.txt:L1-L2`.
 
 ### CLI compatibility
 
 - CLI remains capture/shell surface for user actions and views.
 - CLI does not become canonical task state holder in this design; it sends canonical transition requests and renders minimal output by default.
 
-Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_cli.py.txt:L2220-L2241`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_cli.py.txt:L2455-L2501`; `docs/planes/pm/pm-output-boundaries.md:L16-L33`.
+Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_cli.py.txt:L2220-L2241`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_cli.py.txt:L2455-L2501`; `docs/03-reference/planes/pm/pm-output-boundaries-2.md:L16-L33`.
 
 ## Open Questions
 
@@ -240,4 +238,4 @@ Evidence needed: cross-service event normalization spec covering CLI, task-orche
 
 1. Is dopecon-bridge `tasks` table a PM projection or a competing source of truth in current deployments?
 Evidence needed: runtime ownership contract between PM plane and dopecon-bridge task integration path.
-Evidence surface: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_models.py.txt:L46-L65`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_services_task_integration.py.txt:L47-L68`.
+Evidence surface: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_models.py.txt:L46-L65`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_services_task_integration.py.txt:L47-L68`.

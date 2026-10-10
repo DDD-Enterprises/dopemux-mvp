@@ -40,7 +40,7 @@ The seam between deterministic engine and stateful runtime. This defines the API
 **Violation Mode**: Bidirectional coupling — dopeTask starts making decisions that belong to Supervisor (policy leak).
 **Detection Method**:
 - Code audit: dopeTask codebase must contain zero HTTP client calls to Supervisor or task-orchestrator endpoints.
-- `grep -r "localhost:8000\|SUPERVISOR_URL\|callback" .dopetask_venv/` must return zero matches in dopeTask code.
+- `grep -r "localhost:8000\|localhost:7890\|SUPERVISOR_URL\|callback" .dopetask_venv/` must return zero matches in dopeTask code. (Port `8000` is the FastAPI task-orchestrator shadow twin; port `7890` is the canonical task-orchestrator MCP — check both.)
 **Recovery Strategy**: If bidirectional call detected, it is a design violation. Remove the call path. dopeTask must communicate only via artifacts.
 **Evidence**:
 - `scripts/dopetask` (lines 1-23): Pure wrapper. Activates venv, execs `dopetask` binary. No callbacks.

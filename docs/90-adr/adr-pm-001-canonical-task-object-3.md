@@ -20,11 +20,11 @@ graph_metadata:
 PM task state is currently spread across multiple surfaces with incompatible status dialects and field sets.
 
 - Task-orchestrator has `TaskStatus` with `pending/in_progress/completed/blocked` plus ADHD-only states (`needs_break`, `context_switch`, `paused`).
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt:L13-L22`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt:L13-L22`.
 - Taskmaster bridge writes `TODO` status into progress metadata and emits status events, but does not implement robust in-place update semantics.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L57-L79`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L129-L131`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L57-L79`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L129-L131`.
 - Taskmaster runtime is wrapper-centric (`server.py` + adapter + console entrypoint) and does not expose a separate domain model module.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/12_taskmaster_find_files.txt:L3-L10`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_src_dopemux_taskmaster.egg-info_entry_points.txt.txt:L1-L2`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/99_missing_expected_files.txt:L1-L3`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/12_taskmaster_find_files.txt:L3-L10`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_src_dopemux_taskmaster.egg-info_entry_points.txt.txt:L1-L2`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/99_missing_expected_files.txt:L1-L3`.
 
 Without one canonical object, idempotent transitions and deterministic reconciliation cannot be enforced.
 
@@ -61,7 +61,7 @@ Invariants:
 
 1. Use dopecon-bridge `TaskRecord` as canonical PM model.
 - Rejected: integration service model is useful but not currently the PM-plane-wide contract.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_models.py.txt:L46-L65`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_models.py.txt:L46-L65`.
 
 # Acceptance Tests
 

@@ -12,7 +12,7 @@ prelude: PM plane friction analysis documenting cognitive load, state drift, and
 # PM Friction Map (Phase 1, Critiqued)
 
 Status: Tightened for citation integrity, ADHD severity calibration, and Trinity boundaries.
-Evidence root: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
+Evidence root: `docs/03-reference/planes/pm/_evidence/PM-FRIC-01.outputs/`
 
 ## Friction Table
 

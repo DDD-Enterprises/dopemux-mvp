@@ -67,7 +67,7 @@ Options:
 
 | Class | Description | Examples |
 |-------|-------------|---------|
-| `canonical` | Active architecture, current configs, live specs | `docs/planes/`, ADRs, RFCs, `model_map_v2_tp008.yaml` |
+| `canonical` | Active architecture, current configs, live specs | `docs/03-reference/planes/`, ADRs, RFCs, `model_map_v2_tp008.yaml` |
 | `historical` | Archived plans, past decisions (valuable, not noise) | `docs/archive/`, `SYSTEM_ARCHIVE/` |
 | `operational` | Runbooks, how-tos, setup guides | `docs/02-how-to/`, `README.md`, `INSTALL.md` |
 | `audit` | Reports, analysis outputs, proof bundles | `reports/`, `proof/` |

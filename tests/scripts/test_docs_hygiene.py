@@ -108,10 +108,12 @@ def test_root_token_rule_applies_when_no_override():
 
 
 def test_legacy_root_is_tolerated_and_labelled():
+    policy = dict(_policy())
+    policy["legacy_roots"] = [{"name": "old-tree", "planned_target": "docs/03-reference/old-tree/", "wave": "W3"}]
     record = MODULE.classify_path(
-        rel_path="docs/planes/pm/hub.md",
+        rel_path="docs/old-tree/pm/hub.md",
         frontmatter_type=None,
-        policy=_policy(),
+        policy=policy,
     )
     assert record.zone == "active"
     assert record.status == "ok"

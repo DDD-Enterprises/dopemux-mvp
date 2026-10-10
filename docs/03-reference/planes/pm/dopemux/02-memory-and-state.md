@@ -318,7 +318,7 @@ What state exists, where it lives, and how it is written/read without cross-work
 - **Chronicle Ledger**: `.dopemux/chronicle.sqlite` (via dope-memory service).
 
 ### Project (per repo)
-- **Canonical Repo-level Stores**: `docs/planes/` (PM/Arch/Eng/Compliance).
+- **Canonical Repo-level Stores**: `docs/03-reference/planes/` (PM/Arch/Eng/Compliance).
 - **ConPort**: PostgreSQL AGE database (port 5432) exposed via MCP (port 3004) tracking decisions, risks, and packets.
 - **Shared Read Paths**: Config files in `config/` checked into git.
 

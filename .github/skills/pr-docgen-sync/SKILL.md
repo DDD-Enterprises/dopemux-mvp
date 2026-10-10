@@ -43,7 +43,7 @@ Run all phases in order.
 4. Ticket Progress Sync
 - If `sync_tickets != off`, probe task-orchestrator health.
 - Attempt live progress updates when reachable.
-- Always ensure ledger fallback entries in `docs/planes/pm/task-orchestrator-leantime-followups.md`.
+- Always ensure ledger fallback entries in `docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md`.
 - If mode is `required`, fail closed when live sync fails.
 
 5. Verification

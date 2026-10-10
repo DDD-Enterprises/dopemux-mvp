@@ -116,7 +116,7 @@ prelude: Action items derived from PM-INV-00 evidence analysis
 ### GAP-4: PM Test Layout and CI Wiring Gap
 **Problem**: No standard `services/*/tests/` layout for PM components; task-orchestrator tests currently exist as root-level `test_*.py` files and may not be consistently discovered/executed in CI
 **Impact**: Test presence is real, but discovery/execution drift can still block safe refactoring
-**Evidence**: Root-level PM tests are present in task-orchestrator (`docs/planes/pm/_evidence/PM-INV-00.outputs/11_task_orchestrator_files.txt.nl.txt:L129-L134`; `docs/planes/pm/_evidence/PM-INV-00.outputs/12_services_task-orchestrator_test_conport_sync.py.nl.txt:L1-L10`)
+**Evidence**: Root-level PM tests are present in task-orchestrator (`docs/03-reference/planes/pm/_evidence/PM-INV-00.outputs/11_task_orchestrator_files.txt.nl.txt:L129-L134`; `docs/03-reference/planes/pm/_evidence/PM-INV-00.outputs/12_services_task-orchestrator_test_conport_sync.py.nl.txt:L1-L10`)
 
 **Action Items**:
 - [ ] **GAP-4.1**: Standardize task-orchestrator test layout and discovery

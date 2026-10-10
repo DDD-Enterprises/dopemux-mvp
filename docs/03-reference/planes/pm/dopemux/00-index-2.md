@@ -39,16 +39,16 @@ TODO: Insert the short boundary bullets from the Brain Dump, verbatim where poss
 ## How to navigate these docs
 
 Read order:
-1. [01_SYSTEM_ARCHITECTURE.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/01-system-architecture-2.md)
-1. [07_TASKX_INTEGRATION.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md)
-1. [02_MEMORY_AND_STATE.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/02-memory-and-state-2.md)
-1. [03_MCP_LIFECYCLE_AND_RELIABILITY.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md)
-1. [04_ROUTING_POLICY_AND_COST.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/04-routing-policy-and-cost-2.md)
-1. [05_ADHD_EXECUTION_MODEL.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/05-adhd-execution-model-2.md)
-1. [06_INSTANCE_AND_WORKTREE_ISOLATION.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/06-instance-and-worktree-isolation-2.md)
-1. [08_SUPERVISOR_PACKET_FORMAT.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/08-supervisor-packet-format-2.md)
-1. [09_USAGE_LIMITS_AND_RESETS.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/09-usage-limits-and-resets-2.md)
-1. [10_PLAYBOOKS.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/10-playbooks-2.md)
+1. [01_SYSTEM_ARCHITECTURE.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/01-system-architecture-2.md)
+1. [07_TASKX_INTEGRATION.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/07_TASKX_INTEGRATION.md)
+1. [02_MEMORY_AND_STATE.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/02-memory-and-state-2.md)
+1. [03_MCP_LIFECYCLE_AND_RELIABILITY.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md)
+1. [04_ROUTING_POLICY_AND_COST.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/04-routing-policy-and-cost-2.md)
+1. [05_ADHD_EXECUTION_MODEL.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/05-adhd-execution-model-2.md)
+1. [06_INSTANCE_AND_WORKTREE_ISOLATION.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/06-instance-and-worktree-isolation-2.md)
+1. [08_SUPERVISOR_PACKET_FORMAT.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/08-supervisor-packet-format-2.md)
+1. [09_USAGE_LIMITS_AND_RESETS.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/09-usage-limits-and-resets-2.md)
+1. [10_PLAYBOOKS.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/10-playbooks-2.md)
 
 ## Glossary
 
@@ -63,17 +63,17 @@ TODO: Create a small glossary section with pointers:
 - Promotion
 
 ## Doc set index
-- [01_SYSTEM_ARCHITECTURE.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/01-system-architecture-2.md)
-- [02_MEMORY_AND_STATE.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/02-memory-and-state-2.md)
-- [03_MCP_LIFECYCLE_AND_RELIABILITY.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md)
-- [04_ROUTING_POLICY_AND_COST.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/04-routing-policy-and-cost-2.md)
-- [05_ADHD_EXECUTION_MODEL.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/05-adhd-execution-model-2.md)
-- [06_INSTANCE_AND_WORKTREE_ISOLATION.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/06-instance-and-worktree-isolation-2.md)
-- [07_TASKX_INTEGRATION.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md)
-- [08_SUPERVISOR_PACKET_FORMAT.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/08-supervisor-packet-format-2.md)
-- [09_USAGE_LIMITS_AND_RESETS.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/09-usage-limits-and-resets-2.md)
-- [10_PLAYBOOKS.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/10-playbooks-2.md)
-- [DEEP_RESEARCH.md](file:/Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/deep-research-2.md)
+- [01_SYSTEM_ARCHITECTURE.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/01-system-architecture-2.md)
+- [02_MEMORY_AND_STATE.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/02-memory-and-state-2.md)
+- [03_MCP_LIFECYCLE_AND_RELIABILITY.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md)
+- [04_ROUTING_POLICY_AND_COST.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/04-routing-policy-and-cost-2.md)
+- [05_ADHD_EXECUTION_MODEL.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/05-adhd-execution-model-2.md)
+- [06_INSTANCE_AND_WORKTREE_ISOLATION.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/06-instance-and-worktree-isolation-2.md)
+- [07_TASKX_INTEGRATION.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/07_TASKX_INTEGRATION.md)
+- [08_SUPERVISOR_PACKET_FORMAT.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/08-supervisor-packet-format-2.md)
+- [09_USAGE_LIMITS_AND_RESETS.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/09-usage-limits-and-resets-2.md)
+- [10_PLAYBOOKS.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/10-playbooks-2.md)
+- [DEEP_RESEARCH.md](file:/Users/hue/code/dopemux-mvp/docs/03-reference/planes/pm/dopemux/deep-research-2.md)
 
 ## Self-verification
 TODO: Link to docs gate script location once implemented.
@@ -129,6 +129,6 @@ Each doc must contain these headings (exact text):
 - [ ] 10_PLAYBOOKS.md contains: MCP down, limits low, fatigue/ADHD, and tests-fail RCA loops.
 
 ### Research Bundle Hygiene
-- [ ] `docs/planes/pm/dopemux/research/` contains only structured bundles.
+- [ ] `docs/03-reference/planes/pm/dopemux/research/` contains only structured bundles.
 - [ ] Each bundle contains required files (`BUNDLE_INDEX.json` or lightweight set).
 - [ ] `DEEP_RESEARCH.md` rules followed for all claims.

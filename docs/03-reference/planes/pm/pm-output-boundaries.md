@@ -77,7 +77,7 @@ Evidence: `services/task-orchestrator/SUPPRESSION_TELEMETRY.md:L159-L165`; `serv
 - PM may reference Search outputs (evidence pointers) but does not own search indexing/noise tooling internals.
 - PM owns action selection and output suppression policy.
 
-Evidence: `docs/planes/pm/pm-friction-map.md:L39-L63`; `docs/planes/pm/signal-vs-noise-analysis.md:L105-L120`.
+Evidence: `docs/03-reference/planes/pm/pm-friction-map.md:L39-L63`; `docs/03-reference/planes/pm/signal-vs-noise-analysis.md:L105-L120`.
 
 ## Current CLI reality (for Phase 2 tracking)
 

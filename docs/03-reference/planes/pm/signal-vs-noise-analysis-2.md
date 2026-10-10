@@ -12,7 +12,7 @@ prelude: ADHD-first event classification for PM plane distinguishing actionable 
 # Signal vs Noise Analysis (Phase 1, Critiqued)
 
 Status: Tightened for citation integrity, evidence quality tagging, and Trinity boundaries.
-Evidence roots: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`; `docs/planes/pm/_evidence/PM-TELEM-01.outputs/`
+Evidence roots: `docs/03-reference/planes/pm/_evidence/PM-FRIC-01.outputs/`; `docs/03-reference/planes/pm/_evidence/PM-TELEM-01.outputs/`
 
 ## Signal Events (Show by Default)
 

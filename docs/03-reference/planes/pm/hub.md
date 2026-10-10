@@ -37,20 +37,20 @@ This plane follows strict phases. Do not skip phases.
 
 ## Current PM-plane contracts
 
-- `docs/planes/pm/pm-plane-write-adjudication-model.md`
-- `docs/planes/pm/pm-plane-write-matrix.md`
-- `docs/planes/pm/pm-plane-normalized-tool-surface.md`
-- `docs/planes/pm/pm-plane-read-matrix.md`
-- `docs/planes/pm/pm-plane-write-surface-policy.md`
+- `docs/03-reference/planes/pm/pm-plane-write-adjudication-model.md`
+- `docs/03-reference/planes/pm/pm-plane-write-matrix.md`
+- `docs/03-reference/planes/pm/pm-plane-normalized-tool-surface.md`
+- `docs/03-reference/planes/pm/pm-plane-read-matrix.md`
+- `docs/03-reference/planes/pm/pm-plane-write-surface-policy.md`
 
 ## Active Follow-up Queue
 
-- `docs/planes/pm/task-orchestrator-leantime-followups.md`
+- `docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md`
 
 ## How to Run
 
 1. Open Claude Code in Supervisor Mode.
-1. Paste: `docs/planes/pm/supervisor-2.md`
+1. Paste: `docs/03-reference/planes/pm/supervisor-2.md`
 1. Execute Phase 0 commands locally and paste outputs back verbatim.
 1. Produce deliverables into this folder.
 

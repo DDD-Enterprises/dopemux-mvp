@@ -22,31 +22,31 @@ Purpose: evidence-first audit, redesign constraints, and deterministic rails for
 ## Pass Workflow (A/B/C)
 
 1. Pass A (`pm-plane/fric-01`)
-- Capture Phase 1 evidence in `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`.
+- Capture Phase 1 evidence in `docs/03-reference/planes/pm/_evidence/PM-FRIC-01.outputs/`.
 - Draft:
-- `docs/planes/pm/pm-friction-map-2.md`
-- `docs/planes/pm/signal-vs-noise-analysis-2.md`
+- `docs/03-reference/planes/pm/pm-friction-map-2.md`
+- `docs/03-reference/planes/pm/signal-vs-noise-analysis-2.md`
 - Create handoff:
-- `docs/planes/pm/_handoff/pm-fric-01-handoff-2.md`
+- `docs/03-reference/planes/pm/_handoff/pm-fric-01-handoff-2.md`
 
 1. Pass B (`pm-plane/fric-02-critique`)
 - Tighten the two Phase 1 docs for citation integrity and PM/Memory/Search boundaries.
 - Add handoff:
-- `docs/planes/pm/_handoff/pm-fric-02-handoff-2.md`
+- `docs/03-reference/planes/pm/_handoff/pm-fric-02-handoff-2.md`
 
 1. Pass C (`pm-plane/rails-01`)
 - Add deterministic verifier rails:
 - `scripts/pm_phase1_verify.sh`
 - Add harness/evidence note:
-- `docs/planes/pm/_evidence/PM-RAILS-01.outputs/test_discovery_plan.txt`
+- `docs/03-reference/planes/pm/_evidence/PM-RAILS-01.outputs/test_discovery_plan.txt`
 - Keep this README aligned with the workflow and verifier usage.
 
 ## Evidence Locations
-- Phase 0 evidence: `docs/planes/pm/_evidence/PM-INV-00.outputs/`
-- Phase 1 friction evidence: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
-- Phase 1 telemetry evidence: `docs/planes/pm/_evidence/PM-TELEM-01.outputs/`
-- Rails notes: `docs/planes/pm/_evidence/PM-RAILS-01.outputs/`
-- Handoffs: `docs/planes/pm/_handoff/`
+- Phase 0 evidence: `docs/03-reference/planes/pm/_evidence/PM-INV-00.outputs/`
+- Phase 1 friction evidence: `docs/03-reference/planes/pm/_evidence/PM-FRIC-01.outputs/`
+- Phase 1 telemetry evidence: `docs/03-reference/planes/pm/_evidence/PM-TELEM-01.outputs/`
+- Rails notes: `docs/03-reference/planes/pm/_evidence/PM-RAILS-01.outputs/`
+- Handoffs: `docs/03-reference/planes/pm/_handoff/`
 
 ## Verification Commands
 - Phase 0 verifier:

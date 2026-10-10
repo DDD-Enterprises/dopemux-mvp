@@ -79,7 +79,6 @@ ALLOWED_PATHS = [
     'docs/03-reference/',
     'docs/04-explanation/',
     'docs/05-audit-reports/',
-    'docs/planes/',
     'task-packets/',
     'docs/'
 ]

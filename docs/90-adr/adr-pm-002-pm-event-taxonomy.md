@@ -20,11 +20,11 @@ graph_metadata:
 Current PM-related event surfaces are fragmented:
 
 - Task-orchestrator coordinator uses internal event types like `task_created`, `task_updated`, and `task_completed`.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L22-L29`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L191-L194`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L22-L29`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L191-L194`.
 - Taskmaster adapter emits namespaced events such as `taskmaster.task.created` and `taskmaster.task.status_updated`.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L82-L90`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L131-L140`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L82-L90`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L131-L140`.
 - Event bus transport can continue with local fan-out fallback while disconnected, which risks silent coordination drift unless callers get explicit degraded results.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L141-L156`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_event_bus.py.txt:L141-L156`.
 
 # Decision
 

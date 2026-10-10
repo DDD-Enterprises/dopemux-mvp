@@ -23,13 +23,7 @@ canonical_roots:
   - pr_prep
   - pr_merge
 
-legacy_roots:
-  - name: planes
-    planned_target: docs/03-reference/planes/
-    wave: W3
-  - name: spec
-    planned_target: docs/03-reference/spec/
-    wave: W3
+legacy_roots: []
 
 # Files under docs/archive/ must have a row in this manifest (written by
 # scripts/docs_archive_move.py). The archive is frozen: nothing is deleted,
@@ -79,7 +73,7 @@ relocation_rules:
     to: docs/06-research/investigations/
   - id: map-pm
     from: docs/pm/
-    to: docs/planes/pm/
+    to: docs/03-reference/planes/pm/
   - id: map-projects
     from: docs/projects/
     to: docs/03-reference/systems/

@@ -20,11 +20,11 @@ graph_metadata:
 Current code shows multiple storage-adjacent surfaces:
 
 - ConPort surfaces support decision and progress logging/retrieval through explicit client APIs.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L70-L210`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_shared_conport_client_client.py.txt:L66-L137`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt:L70-L210`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_shared_conport_client_client.py.txt:L66-L137`.
 - Task-orchestrator telemetry is explicitly reported as suppression metrics and ADHD state snapshots.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L889-L929`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L889-L929`.
 - Integration paths project tasks into Leantime and other bridges.
-  Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L58-L110`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_services_task_integration.py.txt:L125-L154`.
+  Evidence: `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L58-L110`; `docs/03-reference/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_services_task_integration.py.txt:L125-L154`.
 
 PM requires a strict boundary to remain Trinity-correct and avoid duplicate truth stores.
 

@@ -37,8 +37,8 @@ Do NOT propose a redesign yet.
 
 Write these files:
 
-- `docs/planes/pm/pm-plane-inventory-2.md`
-- `docs/planes/pm/pm-plane-gaps-2.md`
+- `docs/03-reference/planes/pm/pm-plane-inventory-2.md`
+- `docs/03-reference/planes/pm/pm-plane-gaps-2.md`
 
 ## PHASE 0 METHOD
 

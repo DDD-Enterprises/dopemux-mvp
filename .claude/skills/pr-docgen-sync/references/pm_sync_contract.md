@@ -2,7 +2,7 @@
 
 ## Canonical Ledger
 
-Use `docs/planes/pm/task-orchestrator-leantime-followups.md` as the canonical human-readable queue and fallback audit log.
+Use `docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md` as the canonical human-readable queue and fallback audit log.
 
 ## Sync Modes
 

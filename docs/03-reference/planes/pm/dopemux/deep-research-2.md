@@ -20,8 +20,8 @@ Resolve Open Questions into a structured, evidence-anchored bundle. Research hap
 
 ## Scope
 - Triggered when FACT ANCHORS expose UNKNOWNs or external info (pricing, limits, undocumented MCP behavior) is needed.
-- Operates on docs in `docs/planes/pm/dopemux/*`.
-- Outputs to `docs/planes/pm/dopemux/research/`.
+- Operates on docs in `docs/03-reference/planes/pm/dopemux/*`.
+- Outputs to `docs/03-reference/planes/pm/dopemux/research/`.
 
 ## Non-negotiable invariants
 - Every claim must be labeled: Observed / Inferred / Assumption / Unknown.
@@ -31,7 +31,7 @@ Resolve Open Questions into a structured, evidence-anchored bundle. Research hap
 
 ## FACT ANCHORS (Repo-derived)
 - **Doc Gate**: `scripts/doc_gate.py` (verifies structure).
-- **Research Root**: `docs/planes/pm/dopemux/research/`.
+- **Research Root**: `docs/03-reference/planes/pm/dopemux/research/`.
 - **Grok Integration**: `services/session-manager/tui/test_day5_integration.py` (References `grok`).
 
 ## Open questions

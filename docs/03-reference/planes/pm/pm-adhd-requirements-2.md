@@ -19,7 +19,7 @@ Scope: contracts only; no PM architecture redesign.
 
 - Context loss: PM task flows still depend on remembering exact task IDs and fail closed (`Task {task_id} not found`) when IDs are lost after interruption; ADHD modules explicitly add context snapshot and restoration to reduce this failure mode. Evidence: `services/taskmaster/bridge_adapter.py:L148-L160`; `src/dopemux/cli.py:L2496-L2501`; `services/adhd_engine/domains/attention/context_preserver.py:L146-L182`; `services/adhd_engine/domains/task_enablement/working_memory_support.py:L6-L18`.
 - Task pile-up: coordinator implements flood suppression for high-volume repeated events and overwhelm detection models rapid switching plus long no-progress windows as risk signals, showing pile-up is a first-class ADHD risk. Evidence: `services/task-orchestrator/event_coordinator.py:L428-L433`; `services/adhd_engine/domains/attention/overwhelm_detector.py:L6-L11`; `services/adhd_engine/domains/attention/overwhelm_detector.py:L118-L186`.
-- Phase confusion: task status semantics are split across dialects (`pending/in_progress/completed/...` in orchestrator, `TODO/IN_PROGRESS/DONE/BLOCKED` in ConPort-facing client, and separate CLI status enum), increasing translation overhead across PM surfaces. Evidence: `services/task-orchestrator/task_orchestrator/models.py:L13-L21`; `services/task-orchestrator/conport_mcp_client.py:L85-L86`; `src/dopemux/adhd/task_decomposer.py:L31-L37`; `docs/planes/pm/pm-friction-map-2.md:L21-L23`.
+- Phase confusion: task status semantics are split across dialects (`pending/in_progress/completed/...` in orchestrator, `TODO/IN_PROGRESS/DONE/BLOCKED` in ConPort-facing client, and separate CLI status enum), increasing translation overhead across PM surfaces. Evidence: `services/task-orchestrator/task_orchestrator/models.py:L13-L21`; `services/task-orchestrator/conport_mcp_client.py:L85-L86`; `src/dopemux/adhd/task_decomposer.py:L31-L37`; `docs/03-reference/planes/pm/pm-friction-map-2.md:L21-L23`.
 - False urgency: deep-focus suppression rules intentionally block lower-priority and non-interrupting events, and low-energy mode suppresses high cognitive-load events, which defines a concrete anti-urgency guardrail PM must preserve. Evidence: `services/task-orchestrator/event_coordinator.py:L410-L426`; `services/task-orchestrator/event_coordinator.py:L453-L471`; `services/task-orchestrator/tests/test_suppression_telemetry.py:L330-L345`.
 
 ## PM responsibilities vs Memory vs Search (Trinity)
@@ -28,7 +28,7 @@ Scope: contracts only; no PM architecture redesign.
 |---|---|---|
 | PM | Decide what action to show now, apply suppression policy, and expose minimal next-step output. Evidence: `services/task-orchestrator/event_coordinator.py:L385-L437`; `services/task-orchestrator/event_coordinator.py:L889-L929`. | PM must not persist full memory substrate or duplicate search pipeline internals. |
 | Memory | Persist and restore working context, decisions, and interruption breadcrumbs that PM can reference. Evidence: `services/adhd_engine/domains/attention/context_preserver.py:L54-L62`; `services/adhd_engine/domains/task_enablement/working_memory_support.py:L150-L160`. | Memory must not own PM display policy or output suppression semantics. |
-| Search | Produce evidence retrieval/scanning quality, including noise filtering in scans. Evidence: `docs/planes/pm/pm-friction-map-2.md:L57-L63`. | Search must not own PM task-lifecycle semantics. |
+| Search | Produce evidence retrieval/scanning quality, including noise filtering in scans. Evidence: `docs/03-reference/planes/pm/pm-friction-map-2.md:L57-L63`. | Search must not own PM task-lifecycle semantics. |
 
 ## Minimum viable PM signals
 
@@ -50,9 +50,9 @@ Derived PM signals MUST come from telemetry or ADHD engine outputs, not from dup
 
 ## Evidence index (Phase 2 bundle)
 
-- Telemetry core: `docs/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_task-orchestrator_event_coordinator.py.txt`.
-- Telemetry rationale and open measurement limits: `docs/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_task-orchestrator_SUPPRESSION_TELEMETRY.md.txt`.
-- Telemetry tests: `docs/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt`.
-- ADHD context and overwhelm surfaces: `docs/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_adhd_engine_domains_attention_context_preserver.py.txt`; `docs/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_adhd_engine_domains_attention_overwhelm_detector.py.txt`; `docs/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_adhd_engine_domains_task_enablement_working_memory_support.py.txt`.
-- PM CLI surface: `docs/planes/pm/_evidence/PM-ADHD-02.outputs/nl_src_dopemux_cli.py.txt`.
-- Supporting targeted scan: `docs/planes/pm/_evidence/PM-ADHD-02.outputs/10_adhd_pm_search.txt`.
+- Telemetry core: `docs/03-reference/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_task-orchestrator_event_coordinator.py.txt`.
+- Telemetry rationale and open measurement limits: `docs/03-reference/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_task-orchestrator_SUPPRESSION_TELEMETRY.md.txt`.
+- Telemetry tests: `docs/03-reference/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt`.
+- ADHD context and overwhelm surfaces: `docs/03-reference/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_adhd_engine_domains_attention_context_preserver.py.txt`; `docs/03-reference/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_adhd_engine_domains_attention_overwhelm_detector.py.txt`; `docs/03-reference/planes/pm/_evidence/PM-ADHD-02.outputs/nl_services_adhd_engine_domains_task_enablement_working_memory_support.py.txt`.
+- PM CLI surface: `docs/03-reference/planes/pm/_evidence/PM-ADHD-02.outputs/nl_src_dopemux_cli.py.txt`.
+- Supporting targeted scan: `docs/03-reference/planes/pm/_evidence/PM-ADHD-02.outputs/10_adhd_pm_search.txt`.
