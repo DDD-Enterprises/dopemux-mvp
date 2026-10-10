@@ -17,4 +17,4 @@ Profiles capture personal defaults for Dopemux workflows.
 - Keep API keys and model preferences in your workspace config.
 - Store repeatable CLI preferences in `.dopemux/config.yaml`.
 
-See the [Quick Start](quick-start.md) for a baseline setup.
+See the [Quick Start](../03-reference/systems/agents/quick-start.md) for a baseline setup.

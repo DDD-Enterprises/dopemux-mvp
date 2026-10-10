@@ -1,19 +1,9 @@
 # Paths to exclude from link checking
 exclude_path = [
-  "docs/94-architecture/c4/",
-  "docs/06-research/",
   "docs/archive/",
-  "docs/04-explanation/archive/",
-  "docs/04-explanation/implementation-plans/",
-  "docs/04-explanation/technical-deep-dives/",
   "docs/05-audit-reports/",
-  "docs/troubleshooting/",
-  "docs/01-tutorials/",
-  "docs/02-how-to/",
-  "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
-  "docs/90-adr/adr-207-leantime-api-research.md",
-  "docs/WORKTREE_SWITCHING_GUIDE.md",
-  "docs/CONTRIBUTING_ZEN.md",
+  "docs/06-research/",
+  "docs/94-architecture/c4/",
   "README.md"
 ]
 

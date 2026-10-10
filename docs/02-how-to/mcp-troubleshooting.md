@@ -219,7 +219,7 @@ exec docker exec -i -e DOPEMUX_WORKSPACE_ID="$workspace_id" \
 ## Related Documentation
 
 - [MCP Servers Overview](../01-reference/mcp-servers.md)
-- [Docker Configuration](../01-reference/docker-setup.md)
+- [Docker Configuration](docker-setup.md)
 - [Dopemux Architecture](../01-reference/architecture.md)
 
 ---

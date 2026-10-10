@@ -18,7 +18,7 @@ This file preserves the legacy audit-report path used by docs indexes.
 
 - [truth-systems.md](../03-reference/truth/truth-systems.md)
 - [truth-gaps.md](../03-reference/truth/truth-gaps.md)
-- [PM task-orchestrator + Leantime follow-up queue](../planes/pm/task-orchestrator-leantime-followups.md)
+- [PM task-orchestrator + Leantime follow-up queue](../03-reference/planes/pm/task-orchestrator-leantime-followups.md)
 
 ## Enforcement note
 

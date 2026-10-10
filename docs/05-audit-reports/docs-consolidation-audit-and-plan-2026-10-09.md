@@ -25,18 +25,18 @@ Status: [LOGGED] Audit complete, plan awaiting operator authorization
 
 ## 1. Headline findings
 
-| Metric | Baseline | Target after plan |
-|---|---|---|
-| Git-tracked `*.md` files (whole repo) | 7,897 | 7,897 (nothing deleted or exported; files move within the repo) |
-| Active docs outside `docs/archive/` | 1,678 | ≈ 1,000 (W3 −300; W4 −275; W6 −110 all relocated into `docs/archive/`) |
-| `docs/archive/` files | 2,163 (plus 694 quarantined under `04-explanation/history/`) | ≈ 3,550 in one tree, manifest-indexed, frozen |
-| `docs/` tracked files, all types | 4,539 md / 143 MB | 4,539 md / ≈ 55 MB (evidence blobs move to `reports/`, nothing else leaves `docs/`) |
-| `docs/` top-level directories | 33 | 13 after W7 (Diataxis 01–06, 90–92, `archive`, plus pinned `ops`, `pr_prep`, `pr_merge`; 14 while `planes/` awaits its rename) |
-| Exact byte-duplicate groups (repo-wide md) | 1,147 (2,007 redundant copies) | 0 in the active tree; archive duplicates listed in the manifest as candidates |
-| `name-N.md` suffix variants in active docs | 328 | 0 |
-| Broken relative links (repo-wide md) | 2,435 | < 50 outside `docs/archive/`; archive links stay as-is and stay gate-excluded |
-| Active docs with `next_review` overdue | ≈ 95 % | field retired or cadence enforced |
-| Docs gate coverage (pre-commit + CI) | advisory only, 63 % of `docs/` excluded | blocking, 100 % of the active tree; `docs/archive/` is the single declared exclusion |
+| Metric | Baseline | Target after plan | Achieved 2026-10-10 (branch `docs/consolidation-w0-w1`) |
+|---|---|---|---|
+| Git-tracked `*.md` files (whole repo) | 7,897 | 7,897 (nothing deleted or exported; files move within the repo) | 7,898 (plus this plan); nothing deleted |
+| Active docs outside `docs/archive/` | 1,678 | ≈ 1,000 (W3 −300; W4 −275; W6 −110 all relocated into `docs/archive/`) | 1,155 |
+| `docs/archive/` files | 2,163 (plus 694 quarantined under `04-explanation/history/`) | ≈ 3,550 in one tree, manifest-indexed, frozen | 3,456 files, 3,455 manifest rows (2,035 `keep`, 1,420 `delete-later` candidates), frozen by hook |
+| `docs/` tracked files, all types | 4,539 md / 143 MB | 4,539 md / ≈ 55 MB (evidence blobs move to `reports/`, nothing else leaves `docs/`) | 4,483 md / 89 MB (the 43 MB duplicate evidence copy stays in the archive by rule) |
+| `docs/` top-level directories | 33 | 13 after W7 (Diataxis 01–06, 90–92, `archive`, plus pinned `ops`, `pr_prep`, `pr_merge`; 14 while `planes/` awaits its rename) | 14 directories: the 13 planned plus `94-architecture` (kept) and `instructions/` holding one tracked YAML; `planes/` rename completed |
+| Exact byte-duplicate groups (repo-wide md) | 1,147 (2,007 redundant copies) | 0 in the active tree; archive duplicates listed in the manifest as candidates | 35 in the active tree, all explained: 19 test-pinned `pr_prep`/`pr_merge` compat copies, 10 inside the `06-research/mcp-customization` data pack, 5 ADR variant pairs left for the ADR owner |
+| `name-N.md` suffix variants in active docs | 328 | 0 | 4 (the `adr-201`/`adr-202` pairs, deferred to the ADR owner); `pr_prep`/`pr_merge` excluded as pinned |
+| Broken relative links (repo-wide md) | 2,435 | < 50 outside `docs/archive/`; archive links stay as-is and stay gate-excluded | 116 in active docs plus root markdown (108 point at targets that exist nowhere in the repo, 8 ambiguous); list in `reports/docs-hygiene/w7-broken-links-2026-10-10.json` |
+| Active docs with `next_review` overdue | ≈ 95 % | field retired or cadence enforced | unchanged; decision recorded in W7: keep the field, no CI cadence (see below) |
+| Docs gate coverage (pre-commit + CI) | advisory only, 63 % of `docs/` excluded | blocking, 100 % of the active tree; `docs/archive/` is the single declared exclusion | graph validator re-enabled in CI with 0 errors over 1,155 active docs; `docs/archive/` is the only docs exclusion in pre-commit; lychee excludes shrunk to archive and evidence roots but still `fail: false` because 116 pre-existing broken links remain |
 
 The three structural problems, in order of leverage:
 
@@ -415,4 +415,26 @@ Actions recorded in `reports/docs-hygiene/w6-actions-2026-10-10.json`. Nothing d
 - Dead index lines for the archived files removed from `03-reference/overview.md`, `02-how-to/overview.md`, `00-MASTER-INDEX.md`, and `worktree-comprehensive-guide.md`; obsolete `root_overrides` and the RTF filename exemption removed from the placement policy.
 
 **Deferred to a reviewer with the files open** (content authoring, not file hygiene; the plan's own W6 rated these medium confidence): MCP setup how-to merge into `mcp-integration-guide.md`; Repo Truth Extractor how-to fold into the user guide and the `pipeline-phases` vs `phase-interaction-design` phase-list conflict; `installation-legacy` / tutorials `installation` fold into `install.md`; TaskX-era `instructions/*` fold into `codex.md`; the 11 thin `orchestrator-integration` sub-pages; `instance-state-persistence.md` retirement (waits on design packet P-04); the ADHD quick-reference regeneration (11 vs 15 features); `rollout/` + `learning/` + `packaging/` collapse; `FAILURE_RUNBOOK` → `DISABLE_AND_ROLLBACK`; model-routing fold; `fast-dev-os` vs `development-factory`; the Task-Master and Leantime stale-content rewrites; the task-orchestrator port ruling (3014 / 7890 / 8000); and the `adr-201`/`adr-202` variant pairs for the ADR owner.
+
+### 2026-10-10 — W7 executed (indexes, links, gates); workstream complete pending audit
+
+- **Links**: 27 broken relative links whose target basename exists at exactly one active path were repointed across 13 files. The 116 that remain either name files that exist nowhere in the repository (108) or have several same-named candidates (8); the full list with candidates is `reports/docs-hygiene/w7-broken-links-2026-10-10.json` for a reviewer. No link in the active tree points at a suffix-variant or archived name.
+- **Indexes**: `docs_index.yaml` references resolve (the one dead `service-maturity-gap-analysis` entry, already dead on `main`, removed); `INDEX.md`, `00-MASTER-INDEX.md`, and both section overviews resolve. `docs_index.yaml` remains hand-maintained; writing a generator was out of this workstream's reach and is listed below.
+- **Gates**: `.lychee.toml` `exclude_path` shrunk from 16 entries to `docs/archive/`, `docs/05-audit-reports/`, `docs/06-research/`, `docs/94-architecture/c4/`, `README.md`; the job stays `fail: false` until the 116 residual links are resolved. The graph validator runs in CI again (W4). Every docs hook excludes only `docs/archive/`.
+- **`next_review` decision**: keep the field (the validator requires it for runbooks) and do not add a CI cadence; a quarterly overdue report is cheap to add later, while deleting the field from ≈ 1,100 frontmatters would be diff noise for no behaviour.
+- **Skill mirrors**: `.claude/skills`, `.github/skills`, and `templates/skills` were kept byte-identical through every edit (verified with `cmp`); collapsing them to one source needs the owner of the `BUILD.md` sync process, so it is listed below.
+- **Residual exact duplicates in the active tree** (35 groups): 19 are the test-pinned `docs/pr_prep/`/`docs/pr_merge/` compatibility copies, 10 are inside the frozen `06-research/mcp-customization` data pack, 5 are the ADR variant pairs left for the ADR owner.
+
+## 11. Closing state and hand-off
+
+Branch `docs/consolidation-w0-w1`, PR #1423, eleven commits, 1,685 files changed of which about 1,500 are renames. Every wave is one commit and reverts independently. Nothing was deleted or exported; 3,455 manifest rows record every archive move.
+
+Still open, each needing a decision or an author rather than a file move:
+
+1. AGENTS.md §9.1 embedded audit of this PR (hook and policy packet) before readiness. NOT_RUN; needs an operator-authorised auditor route.
+2. The W6 content merges listed above (MCP, RTE, install, instructions, orchestrator thin pages, multi-instance, ADHD quick reference, rollout/learning, FAILURE_RUNBOOK, model-routing, fast-dev-os vs development-factory, Task-Master/Leantime stale text, the task-orchestrator port ruling).
+3. `adr-201`/`adr-202` variant pairs (ADR owner).
+4. The manifest's 1,420 `delete-later` and the W2 `export-later` candidates (operator decision package; no action taken).
+5. 116 residual broken links with no unique target.
+6. A `docs_index.yaml` generator and the three-way skill mirror collapse (tooling owners).
 

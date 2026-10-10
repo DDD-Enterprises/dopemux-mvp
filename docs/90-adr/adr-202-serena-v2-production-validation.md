@@ -43,6 +43,6 @@ Current repo truth:
 
 ## Current authority
 
-- [capability-manifest.md](../systems/serena/capability-manifest.md)
-- [deployment-alignment-and-sanctioned-contract.md](../systems/serena/deployment-alignment-and-sanctioned-contract.md)
-- [runtime-candidate-inventory.md](../systems/serena/runtime-candidate-inventory.md)
+- [capability-manifest.md](../03-reference/systems/serena/capability-manifest.md)
+- [deployment-alignment-and-sanctioned-contract.md](../03-reference/systems/serena/deployment-alignment-and-sanctioned-contract.md)
+- [runtime-candidate-inventory.md](../03-reference/systems/serena/runtime-candidate-inventory.md)

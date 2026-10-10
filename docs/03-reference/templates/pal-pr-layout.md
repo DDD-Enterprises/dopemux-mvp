@@ -54,7 +54,7 @@ Please provide a clear and concise description of what this PR does.
 
 ## Testing
 
-**Please review our [Testing Guide](../../docs/testing.md) before submitting.**
+**Please review our [Testing Guide](../../../docker/mcp-servers-source/pal/pal-mcp-server/docs/testing.md) before submitting.**
 
 ### Run all linting and tests (required):
 ```bash

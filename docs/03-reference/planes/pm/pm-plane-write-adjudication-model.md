@@ -11,7 +11,7 @@ prelude: Canonical PM-plane write model for adjudicating mutations across Leanti
 ---
 # PM Plane Write Adjudication Model
 
-This document defines how PM-plane writes are adjudicated so runtime implementations can enforce the authority split frozen by the ADR set in [`docs/90-adr/adr-index.md`](../../90-adr/adr-index.md).
+This document defines how PM-plane writes are adjudicated so runtime implementations can enforce the authority split frozen by the ADR set in [`docs/90-adr/adr-index.md`](../../../90-adr/adr-index.md).
 
 ## Canonical authority spine
 
@@ -157,8 +157,8 @@ Any surviving local bridge table is transitional and non-canonical. Bridge-local
 
 ## Related ADRs
 
-- [`docs/90-adr/adr-pm-plane-authority-boundaries.md`](../../90-adr/adr-pm-plane-authority-boundaries.md)
-- [`docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`](../../90-adr/adr-task-orchestrator-as-workflow-authority.md)
-- [`docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md`](../../90-adr/adr-conport-as-decision-progress-and-context-authority.md)
-- [`docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md`](../../90-adr/adr-dope-memory-as-chronicle-memory-authority.md)
-- [`docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md`](../../90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md)
+- [`docs/90-adr/adr-pm-plane-authority-boundaries.md`](../../../90-adr/adr-pm-plane-authority-boundaries.md)
+- [`docs/90-adr/adr-task-orchestrator-as-workflow-authority.md`](../../../90-adr/adr-task-orchestrator-as-workflow-authority.md)
+- [`docs/90-adr/adr-conport-as-decision-progress-and-context-authority.md`](../../../90-adr/adr-conport-as-decision-progress-and-context-authority.md)
+- [`docs/90-adr/adr-dope-memory-as-chronicle-memory-authority.md`](../../../90-adr/adr-dope-memory-as-chronicle-memory-authority.md)
+- [`docs/90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md`](../../../90-adr/adr-dopecon-bridge-narrowing-to-adapter-only-role.md)
