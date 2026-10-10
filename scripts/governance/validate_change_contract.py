@@ -609,9 +609,20 @@ def validate_proof_only_closure(
         )
 
 
+# Mirrors the docs-frontmatter-guard pre-commit exclusion: the frozen archive is
+# never frontmatter-normalized (docs/archive/ is manifest-governed, see
+# config/docs_hygiene/docs_placement_policy.yaml).
+_FM_EXEMPT_PREFIXES = ("docs/archive/",)
+
+
+def frontmatter_exempt(path: str) -> bool:
+    normalized = path.replace("\\", "/")
+    return normalized.startswith(_FM_EXEMPT_PREFIXES)
+
+
 def detect_hook_would_modify(path: str, text: str, result: Result) -> None:
     """Simulate docs-frontmatter-guard check mode (no write)."""
-    if not path.endswith(".md"):
+    if not path.endswith(".md") or frontmatter_exempt(path):
         return
     if not (
         path.startswith("docs/")
@@ -742,8 +753,10 @@ def evaluate(
             continue
         text = content.text
         assert text is not None
-        if path.endswith(".md") and (
-            path.startswith("docs/") or path.startswith("task-packets/")
+        if (
+            path.endswith(".md")
+            and (path.startswith("docs/") or path.startswith("task-packets/"))
+            and not frontmatter_exempt(path)
         ):
             validate_frontmatter(path, text, result)
             detect_hook_would_modify(path, text, result)

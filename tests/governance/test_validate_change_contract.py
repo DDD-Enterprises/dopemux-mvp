@@ -85,6 +85,14 @@ def test_missing_frontmatter_fails() -> None:
     assert "frontmatter_missing" in codes or "hook_would_modify" in codes
 
 
+def test_archive_markdown_is_exempt_from_frontmatter_checks() -> None:
+    path = "docs/archive/w1-history-sourcefiles/docs/04-explanation/history/sourceFiles/raw.md"
+    r = evaluate(paths=[path], cwd=ROOT, file_text={path: "# raw research input, no frontmatter\n"})
+    codes = {f.code for f in r.findings}
+    assert "frontmatter_missing" not in codes
+    assert "hook_would_modify" not in codes
+
+
 def test_invalid_packet_json() -> None:
     r = evaluate(
         paths=["task-packets/BAD.json"],
