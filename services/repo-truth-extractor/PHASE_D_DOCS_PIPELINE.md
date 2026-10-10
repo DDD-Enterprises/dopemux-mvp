@@ -36,7 +36,7 @@ P2_CORE_ARCH =
   docs/architecture/** +
   docs/90-adr/** +
   docs/91-rfc/** +
-  docs/systems/**
+  docs/03-reference/systems/**
 
 P3_PLANES_ACTIVE =
   docs/planes/** excluding any "/_evidence/" "/_handoff/" "/_opus_inputs/"

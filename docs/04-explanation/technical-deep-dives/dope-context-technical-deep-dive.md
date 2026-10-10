@@ -21,7 +21,7 @@ prelude: Dope Context Technical Deep Dive (explanation) for dopemux documentatio
 
 ## 2. Architecture: Claims vs. Reality
 
-### The Claim (`docs/systems/dope-context/architecture.md`)
+### The Claim (`docs/03-reference/systems/dope-context/architecture.md`)
 The documentation describes a "Multi-Project Semantic Search Architecture" featuring:
 - **Vector Database**: Qdrant
 - **Embeddings**: Voyage AI (`voyage-code-3`, `voyage-context-3`)

@@ -110,7 +110,7 @@ Clickable index of deep-dive history for every service component.
 - Implemented **Intelligent TTL Strategy** for caching.
 - Introduced **Embedding Pipeline** processing 50 texts/sec with batching.
 - **Multi-Workspace**: Added `DOPE_CONTEXT_WORKSPACES` support for unified querying across projects.
-- **Evolution Source**: `docs/systems/conport/v2-architecture.md`, `dope-query/MULTI_WORKSPACE_GUIDE.md`.
+- **Evolution Source**: `docs/03-reference/systems/conport/v2-architecture.md`, `dope-query/MULTI_WORKSPACE_GUIDE.md`.
 
 ### 2. The ADHD Dashboard
 *From status bar to command center.*

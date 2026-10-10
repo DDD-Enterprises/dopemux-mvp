@@ -16,10 +16,10 @@ systems:
     integration: docs/02-how-to/mcp-service-discovery-guide.md
     comparison: docs/05-audit-reports/service-maturity-gap-analysis.md
     readme: docs/03-reference/systems/conport/conport-kg-status.md
-    surface_inventory: docs/systems/conport/callable-surface-inventory.md
-    surface_drift: docs/systems/conport/surface-equivalence-and-drift.md
-    preferred_surface: docs/systems/conport/preferred-canonical-surface.md
-    authority_invariants: docs/systems/conport/authority-invariants-and-dark-methods.md
+    surface_inventory: docs/03-reference/systems/conport/callable-surface-inventory.md
+    surface_drift: docs/03-reference/systems/conport/surface-equivalence-and-drift.md
+    preferred_surface: docs/03-reference/systems/conport/preferred-canonical-surface.md
+    authority_invariants: docs/03-reference/systems/conport/authority-invariants-and-dark-methods.md
   dashboard:
     overview: docs/03-reference/systems/dashboard/tmux-dashboard-readme.md
     design: docs/03-reference/systems/dashboard/tmux-dashboard-design.md
@@ -36,11 +36,11 @@ services:
   task-orchestrator:
     readme: docs/03-reference/services/task-orchestrator.md
     followups: docs/planes/pm/task-orchestrator-leantime-followups.md
-    runtime_truth: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
+    runtime_truth: reports/pm-inventory/_evidence/task-orchestrator-runtime-truth/executive-summary.md
     docs_dir: services/task-orchestrator/docs/
   dopecon-bridge:
     readme: services/dopecon-bridge/README.md
-    runtime_truth: docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
+    runtime_truth: reports/pm-inventory/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
     docs_dir: services/dopecon-bridge/
   adhd-engine:
     readme: services/adhd_engine/README.md
@@ -138,9 +138,9 @@ explanation:
   product_faq: docs/04-explanation/product/faq.md
   pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
   pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
-  pm_runtime_truth_task_orchestrator: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
-  pm_runtime_truth_leantime: docs/planes/pm/_evidence/leantime-runtime-truth/executive-summary.md
-  pm_runtime_truth_dopecon_bridge: docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
+  pm_runtime_truth_task_orchestrator: reports/pm-inventory/_evidence/task-orchestrator-runtime-truth/executive-summary.md
+  pm_runtime_truth_leantime: reports/pm-inventory/_evidence/leantime-runtime-truth/executive-summary.md
+  pm_runtime_truth_dopecon_bridge: reports/pm-inventory/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
 supervisor_packets:
   pm_server_matrix: docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md
   pm_evidence_packet: docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md

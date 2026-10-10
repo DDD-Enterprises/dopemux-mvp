@@ -89,10 +89,10 @@ Status: [LOGGED] Topology Complete
 - [Integration Quickstart](02-how-to/mcp-service-discovery-guide.md)
 - [Supervisor PM and Memory MCP Server Matrix](05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md)
 - [Full Documentation](03-reference/systems/conport/conport-kg-status.md)
-- [Callable Surface Inventory](systems/conport/callable-surface-inventory.md)
-- [Surface Equivalence and Drift](systems/conport/surface-equivalence-and-drift.md)
-- [Preferred Canonical Surface](systems/conport/preferred-canonical-surface.md)
-- [Authority Invariants and Dark Methods](systems/conport/authority-invariants-and-dark-methods.md)
+- [Callable Surface Inventory](03-reference/systems/conport/callable-surface-inventory.md)
+- [Surface Equivalence and Drift](03-reference/systems/conport/surface-equivalence-and-drift.md)
+- [Preferred Canonical Surface](03-reference/systems/conport/preferred-canonical-surface.md)
+- [Authority Invariants and Dark Methods](03-reference/systems/conport/authority-invariants-and-dark-methods.md)
 
 ### Dashboard System
 **Location:** `03-reference/systems/dashboard/`

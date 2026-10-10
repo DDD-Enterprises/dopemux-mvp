@@ -164,8 +164,8 @@ SUBSYSTEM_RULES: List[Dict[str, Any]] = [
             "docs/planes/pm/hub-3.md",
         ),
         "system_hubs": (
-            "docs/systems/dopecon-bridge/readme-3.md",
-            "docs/systems/production/readme-3.md",
+            "docs/03-reference/systems/dopecon-bridge/readme.md",
+            "docs/03-reference/systems/production/readme.md",
         ),
         "user_workflow_signal": False,
         "architecture_policy_signal": True,
@@ -402,14 +402,14 @@ def build_impact(changed: List[Dict[str, str]], repo_root: Path) -> Dict[str, An
             reason = "Active canonical index/list"
         elif target == "docs/planes/pm/hub-3.md":
             reason = "PM hub impacted by task-orchestrator/leantime surface"
-        elif target.startswith("docs/systems/"):
+        elif target.startswith("docs/03-reference/systems/"):
             reason = "Impacted subsystem hub"
         else:
             reason = "Impacted documentation target"
         index_checklist.append(
             {
                 "path": target,
-                "required": target in CANONICAL_INDEXES or target == "docs/planes/pm/hub-3.md" or target.startswith("docs/systems/"),
+                "required": target in CANONICAL_INDEXES or target == "docs/planes/pm/hub-3.md" or target.startswith("docs/03-reference/systems/"),
                 "reason": reason,
                 "updated_in_baseline": target in changed_set,
             }
@@ -440,7 +440,6 @@ def _expected_prefixes_for_type(doc_type: str) -> Sequence[str]:
         return (
             "docs/03-reference/",
             "docs/05-audit-reports/",
-            "docs/systems/",
             "docs/planes/",
             "docs/spec/",
         )

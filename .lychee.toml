@@ -7,7 +7,6 @@ exclude_path = [
   "docs/04-explanation/implementation-plans/",
   "docs/04-explanation/technical-deep-dives/",
   "docs/05-audit-reports/",
-  "docs/systems/",
   "docs/troubleshooting/",
   "docs/01-tutorials/",
   "docs/02-how-to/",

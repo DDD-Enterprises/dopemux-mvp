@@ -27,9 +27,6 @@ legacy_roots:
   - name: planes
     planned_target: docs/03-reference/planes/
     wave: W3
-  - name: systems
-    planned_target: docs/03-reference/systems/
-    wave: W3
   - name: spec
     planned_target: docs/03-reference/spec/
     wave: W3
