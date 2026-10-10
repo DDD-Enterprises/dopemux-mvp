@@ -447,4 +447,3 @@ Operator asked for the remaining broken links to be fixed. Three passes, all rec
 - Also fixed two W5 artefacts: double-prefixed `archive/w5-root/docs/archive/w5-root/…` links in the two relocated task-orchestrator audits.
 - The link checker's own blind spot is recorded: `os.path.exists` is case-insensitive on macOS, so the earlier counts used it only as a fallback; the closing count uses tracked paths only.
 - `.github/workflows/docs.yml`: lychee now runs `--offline` (local links only; external URLs are not this job's concern) with `fail: true`. Verified locally with lychee 0.24.2: 1,279 links, 0 errors, 155 excluded (archive and evidence roots).
-
