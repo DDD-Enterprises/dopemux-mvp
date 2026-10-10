@@ -1,0 +1,1642 @@
+[
+ [
+  "docs/01-tutorials/examples-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/01-tutorials/installation-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/01-tutorials/installation-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-10-03"
+ ],
+ [
+  "docs/01-tutorials/multi-project-2.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/01-tutorials/profiles-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/01-tutorials/profiles-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/01-tutorials/start-here-2.md",
+  "frontmatter-only",
+  "base=2026-07-28 variant=2026-07-28"
+ ],
+ [
+  "docs/01-tutorials/start-here-3.md",
+  "frontmatter-only",
+  "base=2026-07-28 variant=2026-07-28"
+ ],
+ [
+  "docs/02-how-to/developing-zen-2.md",
+  "substantive-near",
+  "base=2026-08-24 variant=2026-08-24"
+ ],
+ [
+  "docs/02-how-to/development-setup-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/02-how-to/docker-setup-moved-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/02-how-to/profile-usage-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/02-how-to/profile-usage-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/02-how-to/root-relocated/checklist-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/architecture/air-dmx-pcp-dcp-architecture-0001.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/architecture/air-dmx-pcp-dcp-routing-architecture-0001.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/best-practices/mcp-token-management-moved-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/configuration/profile-yaml-schema-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/configuration/profile-yaml-schema-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/extraction/pipeline-reliability-2.md",
+  "substantive",
+  "base=2026-08-23 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/extraction/pipeline-transport-layer-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/f001-enhanced-untracked-work-system-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/f001-enhanced-untracked-work-system-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/f002-multi-session-support-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/f002-multi-session-support-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/g3-framework-migration-guide-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/governance/authority-map-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/governance/conflict-ledger-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/governance/rules-2.md",
+  "substantive",
+  "base=2026-08-03 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/instructions/claude-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/instructions/claude-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/instructions/codex-3.md",
+  "substantive",
+  "base=2026-05-08 variant=2026-05-08"
+ ],
+ [
+  "docs/03-reference/mcp-runtime/stack-landing-disposition-ledger-20260710.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/orchestrator-integration/db-defragmentation-2026-08-01.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/releases/release-notes-v0-1-0.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/services/performance-baseline-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/services/server-registry-2.md",
+  "substantive-near",
+  "base=2026-07-28 variant=2026-07-28"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/00-overview-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/01-architecture-2.md",
+  "frontmatter-only",
+  "base=2026-05-08 variant=2026-05-08"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/02-data-model-sqlite-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/02-derived-memory-pipeline-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/03-data-model-postgres-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/04-event-taxonomy-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/05-promotion-redaction-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/06-retrieval-ranking-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/07-mcp-contracts-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/08-phased-roadmap-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/09-test-plan-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/10-risk-register-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/readme-2-moved-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/readme-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/dope-memory/v1/readme-3.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/spec/uberslicer/design-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/systems/conport/db-project-wall-and-corpus-recovery-2026-08-02.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/systems/dope-context/modernization-audit-2026-07-22.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/systems/dope-context/postmerge-audit-pr-1112-2026-07-26.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/task-packets/tp-cloudflare-webhooks-0001-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/task-packets/tp-cloudflare-webhooks-0001-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/03-reference/task-packets/tp-cloudflare-webhooks-0001.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/03-reference/testing/required-tests-v0-1.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/04-explanation/architecture/architecture-3-0-complete-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/architecture/architecture-3-0-implementation-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/architecture/architecture-consolidation-synthesis-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/architecture/architecture-consolidation-synthesis-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/architecture/dopemux-architecture-overview-2.md",
+  "substantive-near",
+  "base=2026-08-24 variant=2026-08-24"
+ ],
+ [
+  "docs/04-explanation/architecture/dopemux-architecture-overview-3.md",
+  "substantive-near",
+  "base=2026-08-24 variant=2026-08-24"
+ ],
+ [
+  "docs/04-explanation/architecture/ultra-deep-architecture-analysis-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/architecture/ultra-deep-architecture-analysis-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/04-explanation/branding/implementation-plan-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/concepts/worktree-switching-guide-moved-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/cross-component-analysis-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/cross-component-analysis-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/design-decisions/dopemux-multi-ai-orchestrator-design-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/design-decisions/dopemux-multi-ai-orchestrator-design-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/design-decisions/dopemux-unified-design-philosophy-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/design-decisions/dopemux-unified-design-philosophy-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/design-decisions/profile-manager-design-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/design-decisions/profile-manager-design-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/design-decisions/ui-implementation-roadmap-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/design-decisions/ui-implementation-roadmap-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/dopemux-orchestrator-final-spec-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/dopemux-orchestrator-final-spec-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/dopemux-ui-complete-master-plan-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/dopemux-ui-complete-master-plan-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/history/design-evolution-2026-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/history/design-evolution-2026.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/04-explanation/history/project-archaeology-report-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/history/sourceFiles/MCP_DEPLOYMENT_SUMMARY_2025-09-24.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/04-explanation/history/sourceFiles/docs__HISTORICAL__preliminary-docs-normalized__research__findings__Uberslicer - from v0-1.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/04-explanation/history/unbuilt-features-and-roadmap-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/implementation-plans/dashboard-day9-deep-research-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/implementation-plans/dashboard-day9-index-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/integrations/dopetask-kernel-integration-moved-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/migrations/migration-taskx-to-dopetask-moved-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/root-relocated/claude-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/04-explanation/root-relocated/codex-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/activity-capture-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/activity-capture-deep-dive-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-dashboard-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-dashboard-deep-dive-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part2-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part2-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part3-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part3-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part4-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part4-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-notifier-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/adhd-notifier-deep-dive-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/desktop-commander-deep-dive-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/leantime-bridge-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/leantime-bridge-deep-dive-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/litellm-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/litellm-deep-dive-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/plane-coordinator-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/plane-coordinator-deep-dive-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/research-leaderboard-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/voice-commands-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/voice-commands-deep-dive-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/workspace-watcher-deep-dive-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/04-explanation/technical-deep-dives/workspace-watcher-deep-dive-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/05-audit-reports/cockpit-adhd-lifestyle-feature-map-2026-04-24.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/cockpit-archive-intent-pack-2026-04-24.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/cockpit-design-input-merged-brief-2026-04-24.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/cockpit-pm-implementer-callable-inventory-2026-04-24.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/cockpit-pm-implementer-design-brief-2026-04-24.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/cockpit-pm-implementer-processing-pack-2026-04-24.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/orchestrator-audit-2026-05-28.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/pcp-dcp-conformance-2026-06-23.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/repo-branch-worktree-audit-2026-04-23.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/repo-branch-worktree-stash-audit-2026-05-02.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/repo-cli-system-recovery-tranche-2026-05-02.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/repo-deep-remaining-work-audit-2026-05-02.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/repo-remaining-work-disposition-2026-05-02.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/rte-branch-integration-audit-2026-04-23.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/rte-canonical-entrypoint-implementation-2026-04-23.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/rte-gemini-deep-pal-audit-2026-04-23.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/rte-prelive-audit-pack-2026-04-23.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/rte-production-certification-audit-20260414.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/rte-state-of-work-audit-20260410.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/task-orchestrator/coldstart-reconciliation-20260622.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/task-orchestrator/to-canon-000-adjudication-20260622.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/05-audit-reports/task-orchestrator/to-canon-004-dry-run-20260622.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/act-pack-claude-mem-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/06-research/extraction/rte-cost-profile-redesign/routing-consensus-2026-05.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/extraction/rte-cost-profile-redesign/routing-design-2026-05.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/extraction/rte-cost-profile-redesign/step-complexity-analysis-2026-05.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/extraction/rte-cost-profile-redesign/verified-model-inventory-2026-05.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/deep-research-report-1-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/06-research/investigations/deep-research-report-1.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/deep-research-report-10.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/deep-research-report-11.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/deep-research-report-12.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/deep-research-report-13.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/deep-research-report-7.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/deep-research-report-8.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/deep-research-report-9.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/integration-surfaces-master-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/06-research/investigations/multi-agent-ai-systems-research-2025-10-15.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/research-adhd-interface-optimization-20251015.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/research-knowledge-graph-agent-memory-20251023.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/investigations/research-multi-pane-layout-patterns-2025-10-15.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/multi-agent-ai-systems-research-2025-10-15.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/p1-port-act-packet-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/06-research/queue-drain-evidence-20260329.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/queue-drain-evidence-postfix-20260329.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/research-adhd-interface-optimization-20251015.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/research-knowledge-graph-agent-memory-20251023.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/06-research/research-multi-pane-layout-patterns-2025-10-15.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/90-adr/adr-180-automatic-instance-resume-2.md",
+  "substantive-near",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-180-automatic-instance-resume-3.md",
+  "substantive-near",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-197-task-epic-workflow-system-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-197-task-epic-workflow-system-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-201-conport-kg-security-hardening-2.md",
+  "substantive",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-201-conport-kg-security-hardening-3.md",
+  "substantive",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-202-serena-v2-production-validation-2.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-202-serena-v2-production-validation-3.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-203-task-orchestrator-un-deprecation-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-203-task-orchestrator-un-deprecation-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-204-ml-risk-assessment-extraction-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-204-ml-risk-assessment-extraction-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-205-systematic-audit-methodology-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-205-systematic-audit-methodology-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-206-code-audit-results-2025-10-16.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/90-adr/adr-207-architecture-3-0-three-layer-integration-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-207-leantime-api-research-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-207-leantime-api-research-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-207-phase-1-implementation-plan-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-207-phase-1-implementation-plan-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-207-session-summary-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-207-session-summary-3.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-207-task-orchestrator-capabilities-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-207-task-orchestrator-capabilities-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-208-mcp-config-drift-prevention-2.md",
+  "substantive-near",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-208-mcp-config-drift-prevention-3.md",
+  "substantive-near",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-213-capture-adapters-single-ledger-2.md",
+  "substantive-near",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-213-capture-adapters-single-ledger-3.md",
+  "substantive-near",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-213-dual-capture-canonical-ledger-2.md",
+  "substantive-near",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-213-dual-capture-canonical-ledger-3.md",
+  "substantive-near",
+  "base=2026-07-21 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-214-mcp-leantime-decoupling-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-214-mcp-leantime-decoupling-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-215-upgrades-v4-prompt-artifact-contracts-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-215-upgrades-v4-prompt-artifact-contracts-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-216-upgrades-v4-runner-layout-and-cli-entrypoint-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-216-upgrades-v4-runner-layout-and-cli-entrypoint-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-217-upgrades-v4-all-services-deep-extraction-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-217-upgrades-v4-all-services-deep-extraction-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-218-repo-truth-extractor-hard-cutover-namespace-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-218-repo-truth-extractor-hard-cutover-namespace-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-219-universal-extractor-sync-pipeline-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-dmx-mcp-multiproject-identity-sharing-contract-001.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/90-adr/adr-dmx-mcp-peer-project-preflight-001.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/90-adr/adr-dmx-mcp-project-scoped-task-orchestrator-001.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/90-adr/adr-dmx-prsteward-org-app-001.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/90-adr/adr-dmx-prsteward-soloowner-001.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/90-adr/adr-pm-001-canonical-task-object-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-pm-001-canonical-task-object-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-pm-002-pm-event-taxonomy-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-pm-002-pm-event-taxonomy-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-pm-003-storage-derived-mirrored-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/90-adr/adr-pm-003-storage-derived-mirrored-3.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/94-architecture/universal-router/ur-arch-001.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/governance/tp-gov-001-proof-and-handoff-contract-hardening-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/integrations/dopetask/upstream-contract-probe-2026-03-26.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/mobile/implementation-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/mobile/setup-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/packaging/configuration-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/packaging/install-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/_evidence/pm-inv-01-task-schema-analysis-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/_evidence/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/_evidence/readme-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/_handoff/pm-fric-01-handoff-2.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/_handoff/pm-fric-02-handoff-2.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/00-index-2.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/01-system-architecture-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/02-memory-and-state-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/03-mcp-lifecycle-and-reliability-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/04-routing-policy-and-cost-2.md",
+  "frontmatter-only",
+  "base=2026-08-24 variant=2026-08-24"
+ ],
+ [
+  "docs/planes/pm/dopemux/05-adhd-execution-model-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/06-instance-and-worktree-isolation-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/07-dopetask-integration-2.md",
+  "substantive-near",
+  "base=2026-07-28 variant=2026-07-28"
+ ],
+ [
+  "docs/planes/pm/dopemux/08-supervisor-packet-format-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/09-usage-limits-and-resets-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/10-playbooks-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/14-doc-roots-and-memory-corpus-map-2.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/15-missing-contract-relevant-docs-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/00-bundle-index-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/01-global-service-inventory-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/02-topology-and-stores-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/03-store-write-ownership-matrix-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04-event-envelope-streams-and-schema-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/05-conport-authority-surfaces-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06-dope-memory-promotion-retention-provenance-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/07-pm-plane-bypass-and-execution-surfaces-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/08-adhd-cognitive-plane-surfaces-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/09-search-plane-surfaces-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/10-determinism-leaks-and-enforcement-points-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/11-unknowns-and-required-evidence-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/12-opus-prompts-ready-2.md",
+  "substantive",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/comprehensive-set-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/01-system-architecture-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/02-memory-and-state-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/04-routing-policy-and-cost-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/05-adhd-execution-model-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/08-supervisor-packet-format-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/pm_docs_snapshot/09-usage-limits-and-resets-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/deep-research-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/doc-gate-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/dopemux/opus-cross-plane-audit-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/dopemux/opus-cross-plane-audit-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/hub-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/hub-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/pm-adhd-requirements-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/pm-architecture-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/pm-friction-map-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/pm-output-boundaries-2.md",
+  "substantive-near",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/pm-phase0-action-items-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/pm-phase0-claims-ledger-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/pm-phase2-claims-ledger-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/pm-plane-gaps-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/pm-plane-inventory-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/pm-plane-phase0-scope-lock-opus-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/pm-workflows-derived-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/readme-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/signal-vs-noise-analysis-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/start-here-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/planes/pm/supervisor-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/planes/pm/supervisor-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_merge/flight_deck/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_merge/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_prep/adapters/claude/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_prep/adapters/codex/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_prep/adapters/copilot/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_prep/adapters/cursor/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_prep/adapters/gemini/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_prep/adapters/jules/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_prep/adapters/vibe/guardrails-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/pr_prep/adapters/vibe/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/releases/release-notes-v0-1-0.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/skills/pr-merge-specialist/skill-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/adhd-features/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/adhd-features/readme-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/adhd-intelligence/adhd-engine-deep-dive-part2-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/adhd-intelligence/adhd-engine-deep-dive-part2-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/conport/v0-2-4-update-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/systems/dopecon-bridge/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/dopecon-bridge/readme-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/multi-workspace/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/multi-workspace/readme-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/production/readme-2.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/production/readme-3.md",
+  "NO_BASE",
+  ""
+ ],
+ [
+  "docs/systems/suppression-telemetry/conport-summary-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ],
+ [
+  "docs/systems/suppression-telemetry/next-steps-2.md",
+  "frontmatter-only",
+  "base=2026-05-01 variant=2026-05-01"
+ ]
+]

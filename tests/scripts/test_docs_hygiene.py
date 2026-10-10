@@ -37,7 +37,7 @@ def test_canonical_path_is_ok():
 
 def test_quarantine_path_is_quarantine_zone():
     record = MODULE.classify_path(
-        rel_path="docs/04-explanation/history/sourceFiles/legacy.md",
+        rel_path="docs/archive/w1-history-sourcefiles/legacy.md",
         frontmatter_type=None,
         policy=_policy(),
     )
@@ -105,3 +105,28 @@ def test_root_token_rule_applies_when_no_override():
     assert record.status == "needs_relocation"
     assert record.rule_id == "root-token-audit-report"
     assert record.target_path == "docs/05-audit-reports/root-relocated/DEPLOYMENT_STATUS_NOTE.md"
+
+
+def test_legacy_root_is_tolerated_and_labelled():
+    record = MODULE.classify_path(
+        rel_path="docs/planes/pm/hub.md",
+        frontmatter_type=None,
+        policy=_policy(),
+    )
+    assert record.zone == "active"
+    assert record.status == "ok"
+    assert record.rule_id == "legacy-root"
+
+
+def test_archive_manifest_check_flags_unrecorded_archive_file(tmp_path):
+    policy = _policy()
+    (tmp_path / "docs" / "archive").mkdir(parents=True)
+    (tmp_path / "docs" / "archive" / "MANIFEST.jsonl").write_text(
+        '{"archive_path": "docs/archive/w1/a.md"}\n', encoding="utf-8"
+    )
+    (tmp_path / "docs" / "archive" / "w1").mkdir()
+    (tmp_path / "docs" / "archive" / "w1" / "a.md").write_text("x", encoding="utf-8")
+    (tmp_path / "docs" / "archive" / "w1" / "b.md").write_text("y", encoding="utf-8")
+    assert MODULE.run_check_archive_manifest(tmp_path, policy, ["docs/archive/w1/a.md"]) == 0
+    assert MODULE.run_check_archive_manifest(tmp_path, policy, ["docs/archive/w1/b.md"]) == 1
+    assert MODULE.run_check_archive_manifest(tmp_path, policy, ["docs/archive/overview.md"]) == 0

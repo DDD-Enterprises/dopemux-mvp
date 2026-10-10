@@ -185,13 +185,13 @@
     ".dockerignore",
     ".python-version",
     "KNOWN_GAPS.md",
-    "opencode.jsonc"
+    "opencode.jsonc",
+    "PROJECT.md",
+    "ARCHITECTURE.md",
+    "PM_PLANE.md"
   ],
   "legacy_root_files": [
-    "ARCHITECTURE.md",
     "BRAND_SYSTEM.md",
-    "PM_PLANE.md",
-    "PROJECT.md",
     "SERVICE_CATALOG.md"
   ],
   "blocked_root_file_patterns": [

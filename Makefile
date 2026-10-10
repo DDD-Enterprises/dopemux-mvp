@@ -138,16 +138,19 @@ pre-commit: format lint type-check test-fast
 ci: quality test-coverage
 	@echo "✓ CI checks passed"
 
-# Documentation (placeholder for future)
+# Documentation
 docs:
 	@echo "Documentation build not yet implemented"
+
+docs-lint:
+	bash scripts/lint-docs.sh docs
 
 serve-docs:
 	@echo "Documentation server not yet implemented"
 
 # ---- Docs Audit helpers ----
 docs-audit:
-	python3 scripts/docs_audit/audit_docs.py scan --roots docs CCDOCS CHECKPOINT archive --out reports/docs-audit
+	python3 scripts/docs_audit/audit_docs.py scan --roots docs --out reports/docs-audit
 	python3 scripts/docs_audit/audit_docs.py report --out reports/docs-audit
 	python3 scripts/docs_audit/audit_docs.py triage-template --out reports/docs-audit
 	python3 scripts/docs_audit/audit_docs.py plan-rename --out reports/docs-audit --template "{date} - {title}.md"

@@ -13,7 +13,7 @@ for file in "$@"; do
   case "$file" in
     docs/*|task-packets/*)
       # Skip quarantined files
-      if [[ "$file" =~ ^docs/04-explanation/history/sourceFiles/ ]]; then
+      if [[ "$file" =~ ^docs/archive/ ]]; then
         continue
       fi
 

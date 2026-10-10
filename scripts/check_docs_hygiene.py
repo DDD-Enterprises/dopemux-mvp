@@ -80,9 +80,22 @@ def _load_policy(policy_path: Path) -> Dict[str, Any]:
     policy.setdefault("root_type_targets", {})
     policy.setdefault("root_token_rules", [])
     policy.setdefault("default_root_target_dir", "docs/04-explanation/root-relocated")
-    policy.setdefault("unknown_top_level_fallback_dir", "docs/archive/unclassified-top-level")
+    policy.setdefault("unknown_top_level_fallback_dir", "docs/04-explanation/root-relocated")
     policy.setdefault("audit_output", DEFAULT_AUDIT_PATH)
+    policy.setdefault("legacy_roots", [])
+    policy.setdefault("archive_manifest", "docs/archive/MANIFEST.jsonl")
+    policy.setdefault("archive_manifest_exempt", [])
     return policy
+
+
+def _legacy_root_names(policy: Dict[str, Any]) -> set[str]:
+    names: set[str] = set()
+    for entry in policy.get("legacy_roots", []):
+        if isinstance(entry, dict) and entry.get("name"):
+            names.add(str(entry["name"]))
+        elif isinstance(entry, str):
+            names.add(entry)
+    return names
 
 
 def _parse_frontmatter_type(path: Path) -> Optional[str]:
@@ -252,6 +265,15 @@ def classify_path(
             status="ok",
             target_path=None,
             rule_id="canonical",
+        )
+
+    if top_level in _legacy_root_names(policy):
+        return PlacementRecord(
+            path=rel_path,
+            zone="active",
+            status="ok",
+            target_path=None,
+            rule_id="legacy-root",
         )
 
     suffix = rel_path[len(f"{docs_root}/{top_level}/") :]
@@ -633,12 +655,58 @@ def run_apply(repo_root: Path, policy: Dict[str, Any], audit_path: Path, request
     return 0
 
 
+def _manifest_archive_paths(repo_root: Path, policy: Dict[str, Any]) -> set[str]:
+    manifest = repo_root / _normalize_relpath(str(policy.get("archive_manifest", "")))
+    paths: set[str] = set()
+    if not manifest.exists():
+        return paths
+    for line in manifest.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(row, dict) and row.get("archive_path"):
+            paths.add(_normalize_relpath(str(row["archive_path"])))
+    return paths
+
+
+def run_check_archive_manifest(repo_root: Path, policy: Dict[str, Any], requested_paths: List[str]) -> int:
+    """Fail if a file under docs/archive/ has no manifest row (archive freeze)."""
+    archive_root = _normalize_relpath(f"{policy.get('docs_root', 'docs')}/archive")
+    exempt = {_normalize_relpath(str(p)) for p in policy.get("archive_manifest_exempt", [])}
+    recorded = _manifest_archive_paths(repo_root, policy)
+    missing = []
+    for raw in requested_paths:
+        rel = _normalize_relpath(raw)
+        if not rel.startswith(archive_root + "/") or rel in exempt:
+            continue
+        if not (repo_root / rel).exists():
+            continue
+        if rel not in recorded:
+            missing.append(rel)
+    if not missing:
+        print(f"docs-archive-manifest: checked {len(requested_paths)} files, OK")
+        return 0
+    print("docs-archive-manifest: FAILED (archive is frozen; use scripts/docs_archive_move.py)")
+    for index, rel in enumerate(missing, start=1):
+        print(f"{index}. {rel}")
+    return 1
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Audit and enforce docs placement hygiene.")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--audit", action="store_true", help="Write per-file audit JSON and exit.")
     mode.add_argument("--check", action="store_true", help="Fail if any file needs relocation.")
     mode.add_argument("--apply", action="store_true", help="Apply relocation and link/index rewrites.")
+    mode.add_argument(
+        "--check-archive-manifest",
+        action="store_true",
+        help="Fail if any given docs/archive/ file lacks a MANIFEST.jsonl row.",
+    )
     parser.add_argument(
         "--policy",
         default=DEFAULT_POLICY_PATH,
@@ -682,6 +750,8 @@ def main() -> int:
         return run_check(repo_root=repo_root, policy=policy, requested_paths=requested_paths)
     if args.apply:
         return run_apply(repo_root=repo_root, policy=policy, audit_path=audit_path, requested_paths=requested_paths)
+    if args.check_archive_manifest:
+        return run_check_archive_manifest(repo_root=repo_root, policy=policy, requested_paths=list(args.filenames))
     return 2
 
 

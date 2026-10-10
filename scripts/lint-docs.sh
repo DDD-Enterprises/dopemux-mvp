@@ -37,7 +37,7 @@ fi
 # scripts/check_docs_filename_hygiene.py is the authoritative checker.
 # It consumes config/docs_hygiene/docs_placement_policy.yaml exemptions
 # (research/mcp-customization/**, Dopemux Cockpit TUI Design System/*,
-# docs/archive/*, history/sourceFiles/*, etc.). lint-docs.sh historically
+# docs/archive/*, etc.). lint-docs.sh historically
 # used a naive `find` with only an archive/ exclusion and produced
 # thousands of false-positives for content explicitly exempted by policy.
 log_check "Filename hygiene (policy-aware)"
@@ -68,7 +68,7 @@ while IFS= read -r d; do
     log_fail "$d has $count files (max 200)"
     over_limit=$((over_limit + 1))
   fi
-done < <(find "$DOCS_DIR" -type d -not -path "*/archive/*" -not -path "*/history/sourceFiles*" 2>/dev/null)
+done < <(find "$DOCS_DIR" -type d -not -path "*/archive/*" 2>/dev/null)
 
 if [ "$over_limit" -eq 0 ]; then
   log_pass "All directories within 200-file limit"
@@ -86,7 +86,7 @@ while IFS= read -r f; do
     if [ $no_fm -lt 5 ]; then echo "    Missing frontmatter: $f"; fi
     no_fm=$((no_fm + 1))
   fi
-done < <(find "$DOCS_DIR" -type f -name "*.md" -not -path "*/archive/*" -not -path "*/history/sourceFiles/*" -not -name "00-MASTER-INDEX.md" -not -name "INDEX.md" -not -name "" 2>/dev/null)
+done < <(find "$DOCS_DIR" -type f -name "*.md" -not -path "*/archive/*" -not -name "00-MASTER-INDEX.md" -not -name "INDEX.md" -not -name "" 2>/dev/null)
 
 if [ "$no_fm" -eq 0 ]; then
   log_pass "All $total_checked active docs have frontmatter"

@@ -111,7 +111,7 @@ class DocumentValidator:
 
         # Check if file is quarantined
         rel_path = os.path.relpath(file_path, self.project_root)
-        if rel_path.startswith('docs/04-explanation/history/sourceFiles/'):
+        if rel_path.startswith('docs/archive/'):
             return True
 
         # Check if file is in allowed location
