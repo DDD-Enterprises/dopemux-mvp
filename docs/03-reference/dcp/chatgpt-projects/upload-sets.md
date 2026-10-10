@@ -19,7 +19,7 @@ This document maps out the specific sets of files to upload when creating or upd
 ---
 
 ## 1. The Dopemux Top 40 Baseline
-This is the standard baseline context pack for understanding `dopemux-mvp`. It is stored at [out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/):
+This is the standard baseline context pack for understanding `dopemux-mvp`. It is stored at [out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES/](../../../../out/chatgpt-project-upload-set/TP-DMX-FDOS-003-CHATGPT-PROJECT-UPLOAD-SET-THREADS-REPO-MAP/UPLOAD_FILES):
 
 1. `01_RULES.md`
 2. `02_PROJECT.md` (Root `PROJECT.md`)
@@ -67,27 +67,27 @@ This is the standard baseline context pack for understanding `dopemux-mvp`. It i
 ## 2. Project-Specific Upload Bundles
 
 ### DCP Core Supervisor Bundle
-- [dcp-core-supervisor.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/dcp-core-supervisor.md)
+- [dcp-core-supervisor.md](dcp-core-supervisor.md)
 - `dopetask-canonical-spec.json`
 - `docs/03-reference/dcp/README.md`
 - `docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md`
 - `docs/03-reference/dcp/artifacts/DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md`
 
 ### Dopemux Supervisor Bundle
-- [dopemux-supervisor.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/dopemux-supervisor.md)
+- [dopemux-supervisor.md](dopemux-supervisor.md)
 - The Top 40 Baseline Files.
 - The 6 DCP artifacts in `docs/03-reference/dcp/artifacts/`.
 - `docs/03-reference/dcp/README.md`.
 
 ### dNh-CRM Supervisor Bundle
-- [dnh-crm-supervisor.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/dnh-crm-supervisor.md)
+- [dnh-crm-supervisor.md](dnh-crm-supervisor.md)
 - dNh-CRM local authority documents (RULES, PROJECT, ARCHITECTURE if they exist).
 - `docs/03-reference/dcp/README.md`.
 - `docs/03-reference/dcp/artifacts/DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md`.
 - `docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md`.
 
 ### DCP Packet Lab Bundle
-- [dcp-packet-lab.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/dcp-packet-lab.md)
+- [dcp-packet-lab.md](dcp-packet-lab.md)
 - `AGENTS.md`
 - `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json`
 - The specific `TP-XXXX-XXX.json` Task Packet.

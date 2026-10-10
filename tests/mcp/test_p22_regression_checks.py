@@ -26,8 +26,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 _INSTALL_DOCS = [
     "docs/01-tutorials/installation.md",
-    "docs/01-tutorials/installation-2.md",
-    "docs/01-tutorials/installation-3.md",
+    "docs/01-tutorials/installation.md",
+    "docs/01-tutorials/installation.md",
     "INSTALL.md",
     "QUICK_START.md",
     "README.md",

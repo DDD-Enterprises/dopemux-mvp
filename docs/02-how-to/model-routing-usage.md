@@ -19,7 +19,7 @@ next_review: '2026-09-04'
 ---
 # How to Use the Model Routing Policy
 
-Reference: [`config/ai/model-routing.policy.yaml`](../../03-reference/governance/model-routing.md)
+Reference: [`config/ai/model-routing.policy.yaml`](../03-reference/governance/model-routing.md)
 
 This guide explains how operators and agents apply the stage-based routing policy
 in each supported tool. The policy is **advisory governance** — it tells you which

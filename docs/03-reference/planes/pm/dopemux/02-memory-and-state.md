@@ -196,7 +196,7 @@ What state exists, where it lives, and how it is written/read without cross-work
 - **OBSERVED: TaskX Guard**: `scripts/taskx` refuses without `.taskxroot` and `.taskx-pin` in repo root.
 - **OBSERVED: TaskX Pin**: `.taskx-pin` pins to `repo=https://github.com/hu3mann/taskX.git ref=v0.1.2`.
 - **OBSERVED: Persistence Layer**: `services/adhd_engine/core/activity_tracker.py` uses direct SQLite access to `conport.db`.
-- **OBSERVED: ConPort Authority**: Confirmed as an HTTP-first write interface in [enhanced_server.py](file:/Users/hue/code/dopemux-mvp/docker/mcp-servers/conport/enhanced_server.py).
+- **OBSERVED: ConPort Authority**: Confirmed as an HTTP-first write interface in enhanced_server.py (`docker/mcp-servers/conport/enhanced_server.py`).
 - **OBSERVED: EventBus Model**: `Event` dataclass with `type`, `data`, `source`, `timestamp` in `event_bus.py`.
 - **OBSERVED: Stream Naming**: Redis stream `dopemux:events` used for cross-service signaling.
 - **OBSERVED: Dope-Memory**: `compose.yml` defines `dope-memory` service with `DOPEMUX_CAPTURE_LEDGER_PATH=/data/chronicle.sqlite`.
@@ -318,7 +318,7 @@ What state exists, where it lives, and how it is written/read without cross-work
 - **Chronicle Ledger**: `.dopemux/chronicle.sqlite` (via dope-memory service).
 
 ### Project (per repo)
-- **Canonical Repo-level Stores**: `docs/planes/` (PM/Arch/Eng/Compliance).
+- **Canonical Repo-level Stores**: `docs/03-reference/planes/` (PM/Arch/Eng/Compliance).
 - **ConPort**: PostgreSQL AGE database (port 5432) exposed via MCP (port 3004) tracking decisions, risks, and packets.
 - **Shared Read Paths**: Config files in `config/` checked into git.
 

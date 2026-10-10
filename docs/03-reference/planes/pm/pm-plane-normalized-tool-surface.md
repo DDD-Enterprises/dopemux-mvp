@@ -5,7 +5,7 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-12'
-last_review: '2026-03-26'
+last_review: '2026-03-27'
 next_review: '2026-06-10'
 prelude: Normalized PM-plane tool contract that routes agents through canonical backends instead of subsystem-native seams.
 ---
@@ -74,18 +74,18 @@ Whenever a tool pulls from more than one plane, the response must preserve:
 
 The current runtime now differs from the older March 22 ledger in a more specific way:
 
-- `pm_get_priority_queue`, `pm_get_blockers`, and `pm_get_workflow_state` are implemented in `src/dopemux/pm/reads.py` and route to Task Orchestrator-backed envelopes, but those envelopes are still fail-closed and currently carry unavailable/empty workflow data
+- `pm_get_priority_queue`, `pm_get_blockers`, and `pm_get_workflow_state` are implemented in `src/dopemux/pm/reads.py` and now route to Task Orchestrator-backed runtime data through `services/task-orchestrator/app/api/project_workflow.py`
 - `pm_update_work_item`, `pm_transition_work_item`, and `pm_log_progress` are implemented in `src/dopemux/pm/writes.py`
 - `pm_get_work_chronicle` is implemented in `src/dopemux/pm/chronicle.py`
-- `pm_get_project_context` and `pm_get_sprint_snapshot` exist only as fail-closed Leantime-backed envelopes, so they do not yet satisfy the richer target contract in the table above
-- `pm_transition_work_item` exists as a canonical helper, but the project-scoped Task Orchestrator transition route still returns an explicit unavailable result until a canonical runtime binding is added
-- `pm_search_project_knowledge` and `pm_get_technical_context` are still missing from runtime code
+- `pm_get_project_context` now reads ConPort active context and `pm_get_sprint_snapshot` now reads Leantime project/ticket data, but both remain thinner than the full multi-source enrichment target in the table above
+- `pm_transition_work_item` now binds to the project-scoped Task Orchestrator transition route and returns real legality/result envelopes for supported transitions
+- `pm_search_project_knowledge` and `pm_get_technical_context` now exist in runtime code, but currently expose canonical backend results without richer supporting-source joins
 
 Implications:
 
 - bridge implementations must fail closed or return an explicit unavailable/deferred result rather than invent local workflow truth
-- no Leantime or bridge-local surface may claim to replace the missing Task Orchestrator transition binding
-- workflow queue/blocker/state reads should be treated as partial until authoritative project-scoped data is returned
+- no Leantime or bridge-local surface may claim to replace the Task Orchestrator workflow authority
+- workflow queue/blocker/state reads are authoritative for workflow state, but project scoping remains coarse until all workflow items carry explicit project linkage
 - the implementation ledger should be used for current runtime status, while this document remains the contract target
 
 ## Never treat these as the long-term agent contract

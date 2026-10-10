@@ -23,7 +23,7 @@ graph_metadata:
 
 ## Status
 
-Accepted (2026-05-23). Implementation landed under [Plan: Research current LLM models + redesign RTE cost profiles & routing](/Users/hue/.claude/plans/use-gpt-researcher-to-research-parallel-nest.md).
+Accepted (2026-05-23). Implementation landed under Plan: Research current LLM models + redesign RTE cost profiles & routing (`/Users/hue/.claude/plans/use-gpt-researcher-to-research-parallel-nest.md`).
 
 > **2026-08-24 addendum**: The machine-wide broker is migrating from OpenRouter to cheaperinference.com. As of this addendum the RTE runner (`services/repo-truth-extractor/`, `config/pricing.yaml`) has not been migrated — the `openrouter`/`balanced_openrouter` routing-policy names and OpenRouter dependency described below remain the current runtime contract until that code is migrated under its own packet.
 
@@ -112,14 +112,14 @@ Per Phase B.5 step-complexity analysis (136 v4 prompts classified along 7 dimens
 
 | File | Change |
 |---|---|
-| [config/pricing.yaml](config/pricing.yaml) | 40+ models + optimizer fields: `service_tier` multipliers, `cache_*_multiplier`, `prompt_cache_min_tokens`, `tiered_*_above_cost_per_m`, `data_residency_us_multiplier`, `supports_json_schema_strict`, `supports_reasoning_toggle` |
-| [services/repo-truth-extractor/benchmarking/pricing/normalization.py](services/repo-truth-extractor/benchmarking/pricing/normalization.py) | Normalize all new optimizer fields from yaml |
-| [services/repo-truth-extractor/lib/spend_ledger.py](services/repo-truth-extractor/lib/spend_ledger.py) | `compute_optimized_cost()` (service_tier × batch × cache × tiered × residency math); `make_projected_cost_check()`; `_OPTIMIZER_PASSTHROUGH_KEYS` |
-| [services/repo-truth-extractor/llm_runtime.py](services/repo-truth-extractor/llm_runtime.py) | `call_llm()` accepts `service_tier`/`prompt_cache_directives`/`disabled_providers`; injects `service_tier` into OpenAI/OR SDK calls; captures `cached_tokens` from response usage |
-| [services/repo-truth-extractor/lib/batch_clients.py](services/repo-truth-extractor/lib/batch_clients.py) | `_metadata_field()` helper; service_tier in batch payload |
-| [services/repo-truth-extractor/run_extraction_v5.py](services/repo-truth-extractor/run_extraction_v5.py) | `COST_PROFILES` dict; `LEGACY_ROUTING_POLICY_TO_COST_PROFILE` map; `resolve_cost_profile()`; `resolve_cell_alias()`; CLI flags `--cost-profile`, `--disable-provider`, `--model-alias`; RunnerConfig extensions |
-| [services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py](services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py) | 13 tests for optimizer math |
-| [services/repo-truth-extractor/tests/test_cost_profiles.py](services/repo-truth-extractor/tests/test_cost_profiles.py) | 16 tests for cost profile registry + CLI |
+| [config/pricing.yaml](../../config/pricing.yaml) | 40+ models + optimizer fields: `service_tier` multipliers, `cache_*_multiplier`, `prompt_cache_min_tokens`, `tiered_*_above_cost_per_m`, `data_residency_us_multiplier`, `supports_json_schema_strict`, `supports_reasoning_toggle` |
+| [services/repo-truth-extractor/benchmarking/pricing/normalization.py](../../services/repo-truth-extractor/benchmarking/pricing/normalization.py) | Normalize all new optimizer fields from yaml |
+| [services/repo-truth-extractor/lib/spend_ledger.py](../../services/repo-truth-extractor/lib/spend_ledger.py) | `compute_optimized_cost()` (service_tier × batch × cache × tiered × residency math); `make_projected_cost_check()`; `_OPTIMIZER_PASSTHROUGH_KEYS` |
+| [services/repo-truth-extractor/llm_runtime.py](../../services/repo-truth-extractor/llm_runtime.py) | `call_llm()` accepts `service_tier`/`prompt_cache_directives`/`disabled_providers`; injects `service_tier` into OpenAI/OR SDK calls; captures `cached_tokens` from response usage |
+| [services/repo-truth-extractor/lib/batch_clients.py](../../services/repo-truth-extractor/lib/batch_clients.py) | `_metadata_field()` helper; service_tier in batch payload |
+| [services/repo-truth-extractor/run_extraction_v5.py](../../services/repo-truth-extractor/run_extraction_v5.py) | `COST_PROFILES` dict; `LEGACY_ROUTING_POLICY_TO_COST_PROFILE` map; `resolve_cost_profile()`; `resolve_cell_alias()`; CLI flags `--cost-profile`, `--disable-provider`, `--model-alias`; RunnerConfig extensions |
+| [services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py](../../services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py) | 13 tests for optimizer math |
+| [services/repo-truth-extractor/tests/test_cost_profiles.py](../../services/repo-truth-extractor/tests/test_cost_profiles.py) | 16 tests for cost profile registry + CLI |
 
 ## Research artifacts
 

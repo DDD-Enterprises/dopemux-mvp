@@ -54,7 +54,7 @@ def test_list_changed_files_main_baseline(tmp_path: Path):
 
 
 def test_sync_tickets_best_effort_writes_ledger_fallback(tmp_path: Path):
-    ledger = tmp_path / "docs" / "planes" / "pm" / "task-orchestrator-leantime-followups.md"
+    ledger = tmp_path / "docs" / "03-reference" / "planes" / "pm" / "task-orchestrator-leantime-followups.md"
     ledger.parent.mkdir(parents=True, exist_ok=True)
     ledger.write_text("- `PM-TO-001`\n", encoding="utf-8")
 
@@ -65,7 +65,7 @@ def test_sync_tickets_best_effort_writes_ledger_fallback(tmp_path: Path):
             mode="best-effort",
             task_orchestrator_url="http://localhost:8000",
             ticket_ids=[],
-            ledger_path="docs/planes/pm/task-orchestrator-leantime-followups.md",
+            ledger_path="docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md",
             write_ledger=True,
         )
 
@@ -85,7 +85,7 @@ def test_sync_tickets_required_blocks_on_live_failure(tmp_path: Path):
             mode="required",
             task_orchestrator_url="http://localhost:8000",
             ticket_ids=[],
-            ledger_path="docs/planes/pm/task-orchestrator-leantime-followups.md",
+            ledger_path="docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md",
             write_ledger=False,
         )
 
@@ -101,7 +101,7 @@ def test_sync_tickets_records_retry_metadata_when_ids_missing(tmp_path: Path):
             mode="best-effort",
             task_orchestrator_url="http://localhost:8000",
             ticket_ids=[],
-            ledger_path="docs/planes/pm/task-orchestrator-leantime-followups.md",
+            ledger_path="docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md",
             write_ledger=False,
         )
 
@@ -134,7 +134,7 @@ def test_layout_followups_append_ledger_entries(tmp_path: Path):
 
     followups = workflow.append_layout_followups(
         repo_root=tmp_path,
-        ledger_path="docs/planes/pm/task-orchestrator-leantime-followups.md",
+        ledger_path="docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md",
         layout={
             "touched_or_new_misplacements": [],
             "existing_misplacements": [
@@ -151,7 +151,7 @@ def test_layout_followups_append_ledger_entries(tmp_path: Path):
         write_ledger=True,
     )
 
-    ledger = tmp_path / "docs" / "planes" / "pm" / "task-orchestrator-leantime-followups.md"
+    ledger = tmp_path / "docs" / "03-reference" / "planes" / "pm" / "task-orchestrator-leantime-followups.md"
     assert followups["ledger_written"] is True
     assert ledger.exists()
     text = ledger.read_text(encoding="utf-8")

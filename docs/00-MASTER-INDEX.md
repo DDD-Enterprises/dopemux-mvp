@@ -47,7 +47,6 @@ Status: [LOGGED] Topology Complete
 ### Deployment
 - [Production Deployment](02-how-to/deployment-guide.md)
 - [Docker Setup](02-how-to/deployment-guide.md)
-- [Worktree Deployment](02-how-to/deployment-worktree.md)
 
 ### Integrations
 - [Leantime Setup](02-how-to/integrations/leantime-integration-guide.md)
@@ -89,10 +88,10 @@ Status: [LOGGED] Topology Complete
 - [Integration Quickstart](02-how-to/mcp-service-discovery-guide.md)
 - [Supervisor PM and Memory MCP Server Matrix](05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md)
 - [Full Documentation](03-reference/systems/conport/conport-kg-status.md)
-- [Callable Surface Inventory](systems/conport/callable-surface-inventory.md)
-- [Surface Equivalence and Drift](systems/conport/surface-equivalence-and-drift.md)
-- [Preferred Canonical Surface](systems/conport/preferred-canonical-surface.md)
-- [Authority Invariants and Dark Methods](systems/conport/authority-invariants-and-dark-methods.md)
+- [Callable Surface Inventory](03-reference/systems/conport/callable-surface-inventory.md)
+- [Surface Equivalence and Drift](03-reference/systems/conport/surface-equivalence-and-drift.md)
+- [Preferred Canonical Surface](03-reference/systems/conport/preferred-canonical-surface.md)
+- [Authority Invariants and Dark Methods](03-reference/systems/conport/authority-invariants-and-dark-methods.md)
 
 ### Dashboard System
 **Location:** `03-reference/systems/dashboard/`
@@ -103,8 +102,8 @@ Status: [LOGGED] Topology Complete
 - [Enhancement Plans](03-reference/systems/dashboard/dashboard-enhancements.md)
 
 ### Execution Plane System
-**Location:** `docs/planes/execution/`
-- **[Agent Leasing Contract](planes/execution/agent-leasing-contract.md)** - Authoritative "Rules of Engagement" for AI agent execution, heartbeats, and handoffs.
+**Location:** `docs/03-reference/planes/execution/`
+- **[Agent Leasing Contract](03-reference/planes/execution/agent-leasing-contract.md)** - Authoritative "Rules of Engagement" for AI agent execution, heartbeats, and handoffs.
 
 ---
 
@@ -147,21 +146,21 @@ Status: [LOGGED] Topology Complete
 
 ### PM Plane Contracts
 **Location:** `planes/pm/`
-- [PM Plane Hub](planes/pm/hub-2.md)
-- [PM Plane Evidence Hub](planes/pm/readme-2.md)
-- [PM Plane Write Adjudication Model](planes/pm/pm-plane-write-adjudication-model.md)
-- [PM Plane Write Matrix](planes/pm/pm-plane-write-matrix.md)
-- [PM Plane Normalized Tool Surface](planes/pm/pm-plane-normalized-tool-surface.md)
-- [PM Plane Read Matrix](planes/pm/pm-plane-read-matrix.md)
-- [PM Plane Write Surface Policy](planes/pm/pm-plane-write-surface-policy.md)
+- [PM Plane Hub](03-reference/planes/pm/hub.md)
+- [PM Plane Evidence Hub](03-reference/planes/pm/readme.md)
+- [PM Plane Write Adjudication Model](03-reference/planes/pm/pm-plane-write-adjudication-model.md)
+- [PM Plane Write Matrix](03-reference/planes/pm/pm-plane-write-matrix.md)
+- [PM Plane Normalized Tool Surface](03-reference/planes/pm/pm-plane-normalized-tool-surface.md)
+- [PM Plane Read Matrix](03-reference/planes/pm/pm-plane-read-matrix.md)
+- [PM Plane Write Surface Policy](03-reference/planes/pm/pm-plane-write-surface-policy.md)
 - [Supervisor PM and Memory MCP Server Matrix](05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md)
 - [Supervisor PM and Memory Evidence Packet](05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md)
 - [Supervisor Memory and PM Authority Reconciliation](05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md)
 - [Supervisor PM and Memory Authority Enforcement Packet](05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md)
 - Runtime-truth executive summaries:
-  - [Task Orchestrator](planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md)
-  - [Leantime](planes/pm/_evidence/leantime-runtime-truth/executive-summary.md)
-  - [dopecon-bridge](planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md)
+  - [Task Orchestrator](../reports/pm-inventory/_evidence/task-orchestrator-runtime-truth/executive-summary.md)
+  - [Leantime](../reports/pm-inventory/_evidence/leantime-runtime-truth/executive-summary.md)
+  - [dopecon-bridge](../reports/pm-inventory/_evidence/dopecon-bridge-runtime-truth/executive-summary.md)
 
 ---
 
@@ -230,9 +229,9 @@ Status: [LOGGED] Topology Complete
 - [Repo Truth Extractor — Structure, Architecture & Optimal Design](04-explanation/technical-deep-dives/repo-truth-extractor-structure-architecture-and-optimal-design.md)
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)
 - [ConPort Technical Deep Dive](04-explanation/technical-deep-dives/conport-technical-deep-dive.md)
-- [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md)
-- [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md)
-- [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md)
+- [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/dope-memory-deep-dive.md)
+- [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1.md)
+- [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/dopemux-context-deep-dive.md)
 - [Workflow Kit Architecture](04-explanation/workflow-kit-architecture.md)
 - [PR Merge Queue Orchestration](04-explanation/pr-merge-queue-orchestration.md)
 

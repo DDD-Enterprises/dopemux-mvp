@@ -1,7 +1,7 @@
 Goal: identify APIs, constraints, and pitfalls.
 - WebSearch: fetch authoritative docs for <topic>; cite sections.
 - WebSearch: 5 high-signal sources; rank by authority; extract non-obvious pitfalls.
-- Output: Requirements, Risks, Unknowns. Commit to repo docs (`docs/**`) + ConPort decision/progress:/docs/research/<topic>.md
+- Output: Requirements, Risks, Unknowns. Commit to repo docs (`docs/**`) + ConPort decision/progress:/docs/06-research/<topic>.md
 
 > Token thrift:
 - **WebSearch**: avoid broad/generic queries; include specific lib, function, or exact error text.

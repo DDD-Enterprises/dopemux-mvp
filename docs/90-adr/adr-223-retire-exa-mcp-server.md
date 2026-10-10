@@ -51,7 +51,7 @@ Synthetic test fixtures that merely use the string `"exa"` to name a server in a
 - Exa-brand neural web search is no longer available via MCP in this repository. `WebSearch` remains the documented fallback for web lookups when a dedicated search MCP is absent.
 - The fleet-audit "decision-required" backlog shrinks by one; only `desktop-commander` remains pending its own wire-or-retire decision.
 - Re-introducing Exa (or any neural-search MCP) in the future requires: a fresh catalog entry with a verified (not just declared) docker-exec or HTTP target, a personality-contract pin if it should be tracked, compose wiring with a working healthcheck, and this ADR should be marked superseded by the new one.
-- Several documentation and archived-audit surfaces still mention Exa (e.g. `INSTALL.md`, `TASK_ORCH_MCP_PLUGIN_SURFACE.md`, `docker/mcp-servers-source/*.md`, `.claude/commands/docs/find.md`, `.claude/commands/web/triage.md`, `mcp-proxy-config.*`). These are historical/dormant references, not live fleet wiring, and are left for a follow-up documentation pass rather than blocking this retirement.
+- Several documentation and archived-audit surfaces still mention Exa (e.g. `INSTALL.md`, `docs/05-audit-reports/task-orchestrator/task-orch-mcp-plugin-surface.md`, `docker/mcp-servers-source/*.md`, `.claude/commands/docs/find.md`, `.claude/commands/web/triage.md`, `mcp-proxy-config.*`). These are historical/dormant references, not live fleet wiring, and are left for a follow-up documentation pass rather than blocking this retirement.
 
 ## Alternatives Considered
 

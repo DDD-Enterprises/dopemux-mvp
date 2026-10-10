@@ -82,7 +82,7 @@ def test_mixed_batch_flags_only_the_forbidden_file() -> None:
 
 
 def test_quarantined_history_source_files_are_skipped() -> None:
-    result = _run("docs/04-explanation/history/sourceFiles/temp-old-notes.md")
+    result = _run("docs/archive/w1-history-sourcefiles/temp-old-notes.md")
     assert result.returncode == 0
     assert "❌" not in result.stdout
 

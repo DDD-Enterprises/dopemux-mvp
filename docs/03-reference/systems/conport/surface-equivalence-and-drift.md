@@ -42,6 +42,22 @@ prelude: Equivalence map and drift matrix across ConPort REST, JSON-RPC, and Fas
 | unauthenticated access posture | REST, JSON-RPC, FastMCP | no repo-evidenced auth gate on active ConPort callable surfaces | document as hardening risk; PM-plane adapters must treat it as a boundary concern |
 | AGE / `ag_catalog` dependency ambiguity | REST and JSON-RPC implementation | enhanced server initializes graph/query logic against `ag_catalog`, but deployment assumptions remain environment-sensitive | document as operational dependency risk until deployment evidence is tighter |
 
+## Search Delegation
+
+ConPort search is bounded to structured decision and progress records. The REST
+endpoint `GET /api/search/{workspace_id}` accepts `q` plus an optional `type`
+query parameter:
+
+- `type=decisions` searches decision rows only.
+- `type=progress` searches progress rows only.
+- `type=all` searches both decision and progress rows.
+- omitted `type` defaults to `all`.
+
+Unknown `type` values fail closed with HTTP 422. Semantic/vector retrieval and
+ranking over indexed code, docs, or artifacts belongs to dope-context, not
+ConPort, per
+`docs/90-adr/adr-memory-trinity-authority-and-interaction-model.md`.
+
 ## Summary
 
 - **Drift cases identified:** 6

@@ -11,7 +11,7 @@ prelude: Inventory of active ConPort REST, JSON-RPC, and FastMCP callable surfac
 ---
 # ConPort Callable Surface Inventory
 
-This inventory captures the active callable surfaces in the ConPort runtime under [`docker/mcp-servers-source/conport/`](../../../docker/mcp-servers-source/conport/).
+This inventory captures the active callable surfaces in the ConPort runtime under [`docker/mcp-servers-source/conport/`](../../../../docker/mcp-servers-source/conport).
 
 ## Surface inventory
 

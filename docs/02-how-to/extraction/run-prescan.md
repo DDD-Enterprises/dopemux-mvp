@@ -283,5 +283,5 @@ After prescan completes:
 ## See Also
 
 - [Prescan Pipeline Reference](../../03-reference/extraction/prescan-pipeline.md) — Full technical docs
-- [Extraction Pipeline](../../03-reference/extraction/extraction-pipeline.md) — Pre/post-extraction workflow
-- [Cost Estimation](../../03-reference/extraction/cost-estimation.md) — Understanding prescan costs
+- Extraction Pipeline (`../../03-reference/extraction/extraction-pipeline.md`) — Pre/post-extraction workflow
+- Cost Estimation (`../../03-reference/extraction/cost-estimation.md`) — Understanding prescan costs

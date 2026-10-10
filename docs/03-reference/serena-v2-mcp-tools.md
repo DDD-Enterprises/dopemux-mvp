@@ -20,9 +20,9 @@ prelude: Current local Serena MCP tool reference for the repo-hosted implementat
 
 Current deployment/runtime authority:
 
-- [capability-manifest.md](../systems/serena/capability-manifest.md)
-- [deployment-alignment-and-sanctioned-contract.md](../systems/serena/deployment-alignment-and-sanctioned-contract.md)
-- [runtime-candidate-inventory.md](../systems/serena/runtime-candidate-inventory.md)
+- [capability-manifest.md](systems/serena/capability-manifest.md)
+- [deployment-alignment-and-sanctioned-contract.md](systems/serena/deployment-alignment-and-sanctioned-contract.md)
+- [runtime-candidate-inventory.md](systems/serena/runtime-candidate-inventory.md)
 
 ## Local MCP tool groups
 

@@ -1,0 +1,741 @@
+{
+ "fixed": 27,
+ "remaining": [
+  {
+   "file": "docs/01-tutorials/installation.md",
+   "target": "../troubleshooting-playbook.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/extraction/run-prescan.md",
+   "target": "../../03-reference/extraction/extraction-pipeline.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/extraction/run-prescan.md",
+   "target": "../../03-reference/extraction/cost-estimation.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/install.md",
+   "target": "README.md",
+   "candidates": [
+    "services/webhook_receiver/README.md",
+    "vendor/dopetask/README.md",
+    "tests/fixtures/dcp/routing_corpus/README.md",
+    "src/dopemux/templates/init/.claude/README.md",
+    "docker/mcp-servers-source/pal-stdio/README.md",
+    "src/dopemux/embeddings/README.md",
+    "services/adhd_engine/README.md",
+    "examples/multi-workspace/README.md",
+    "services/repo-truth-extractor/promptsets/generated/README.md",
+    "scripts/migration/README.md",
+    "services/dopemux-gpt-researcher/mcp-server/README.md",
+    "scripts/external-references/README.md",
+    "docker/mcp-servers-source/README.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+    "docker/conport-kg/README.md",
+    "services/copilot_transcript_ingester/README.md",
+    "docs/03-reference/dcp/README.md",
+    "schemas/dcp/README.md",
+    "services/agents/README.md",
+    "services/mcp-capture/README.md",
+    "services/shared/dopecon_bridge_client/README.md",
+    "docker/mcp-servers-source/claude-context/README.md",
+    "scripts/README.md",
+    "services/complexity_coordinator/README.md",
+    "services/dope-context/eval/README.md",
+    "services/shared/conport_client/README.md",
+    "tests/security/README.md",
+    "qa/README.md",
+    "services/dcp-readonly-facade/README.md",
+    ".vibe/README.md",
+    "services/dopecon-bridge/README.md",
+    "services/adhd-dashboard/README.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/README.md",
+    "services/claude_brain/README.md",
+    "services/adhd_engine/domains/roast-engine/README.md",
+    "docker/mcp-servers-source/litellm/README.md",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/README.md",
+    "contracts/openclaw-dcp-routing/README.md",
+    "ui-dashboard-backend/README.md",
+    "docs/03-reference/dcp/openclaw-routing/README.md",
+    "tools/prompt_rewrite_v4/README.md",
+    "docker/mcp-servers-source/conport/migrations/README.md",
+    "services/conport_kg_ui/README.md",
+    "services/repo-truth-extractor/README.md",
+    "UPGRADES/README.md",
+    "docker/mcp-servers-source/pal/pal-mcp-server/README.md",
+    "docker/mcp-servers-source/pal/pal-mcp-server/docker/README.md",
+    "docker/mcp-servers-source/conport-bridge/README.md",
+    "services/working-memory-assistant/README.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md",
+    "services/adhd_engine/domains/break-suggester/README.md",
+    "docs/03-reference/dcp/chatgpt-projects/README.md",
+    "src/dopemux/templates/init/task-packets/README.md",
+    "src/dopemux_github_specialist/README.md",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schemas/dcp/README.md",
+    ".control-tower/README.md",
+    "docker/mcp-servers-source/leantime-bridge/README.md",
+    "src/dopemux/templates/init/docs/task-packets/README.md",
+    ".claude/README.md",
+    "services/repo-truth-extractor/tests/fixtures/golden_repo_min/README.md",
+    "README.md",
+    "docker/mcp-servers-source/serena/README.md",
+    "shared/README.md",
+    "services/shared/complexity_coordinator/README.md",
+    "services/dope-context/README.md",
+    "docker/mcp-servers-source/desktop-commander/README.md"
+   ]
+  },
+  {
+   "file": "docs/02-how-to/install.md",
+   "target": "docs/INDEX.md",
+   "candidates": [
+    "src/dopemux/templates/init/docs/task-packets/INDEX.md",
+    "docs/06-research/mcp-customization/dopemux-constraints/INDEX.md",
+    "src/dopemux/templates/init/task-packets/INDEX.md",
+    "docs/INDEX.md"
+   ]
+  },
+  {
+   "file": "docs/02-how-to/install.md",
+   "target": "CHANGELOG.md",
+   "candidates": [
+    "CHANGELOG.md",
+    "docker/mcp-servers-source/pal/pal-mcp-server/CHANGELOG.md"
+   ]
+  },
+  {
+   "file": "docs/02-how-to/install.md",
+   "target": "scripts/",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/installation-legacy.md",
+   "target": "./03-testing.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/installation-legacy.md",
+   "target": "./00-repo-map.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/installation-legacy.md",
+   "target": "./03-testing.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/installation-legacy.md",
+   "target": "./94-architecture/",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/installation-legacy.md",
+   "target": "./engineering/refactor_gates.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/mcp-troubleshooting.md",
+   "target": "../01-reference/mcp-servers.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/02-how-to/mcp-troubleshooting.md",
+   "target": "../01-reference/architecture.md",
+   "candidates": [
+    "docs/03-reference/systems/dope-context/architecture.md",
+    "docs/03-reference/development-factory/architecture.md"
+   ]
+  },
+  {
+   "file": "docs/02-how-to/model-routing-usage.md",
+   "target": "../../03-reference/governance/model-routing.md",
+   "candidates": [
+    "docs/03-reference/governance/model-routing.md",
+    "docs/03-reference/development-factory/model-routing.md"
+   ]
+  },
+  {
+   "file": "docs/03-reference/governance/authority-map.md",
+   "target": "CI_CONTRACT.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/governance/authority-map.md",
+   "target": "RUNTIME_CONTRACT.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/instructions/contributing-zen.md",
+   "target": "../../04-explanation/design-decisions/DEV_MODE_DESIGN.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/orchestrator-integration/index.md",
+   "target": "github/_index.md",
+   "candidates": [
+    ".claude/agents/_index.md",
+    ".claude/modules/_index.md"
+   ]
+  },
+  {
+   "file": "docs/03-reference/orchestrator-integration/index.md",
+   "target": "memory/_index.md",
+   "candidates": [
+    ".claude/agents/_index.md",
+    ".claude/modules/_index.md"
+   ]
+  },
+  {
+   "file": "docs/03-reference/spec/dope-memory/v1/readme.md",
+   "target": "11-authoritative-working-memory-assistant-spec.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/spec/dope-memory/v1/readme.md",
+   "target": "12-memory-trinity-authority-and-interaction-spec.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/adhd-engine/interruption-shield/quickstart.md",
+   "target": "../../../archive/sessions/adhd-engine/phase1-sprint-plan.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/adhd-engine/interruption-shield/quickstart.md",
+   "target": "../../../archive/component-implementations/component-7-environmental-interruption-shield.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/adhd-engine/interruption-shield/quickstart.md",
+   "target": "../../../archive/sessions/adhd-engine/phase1-sprint-plan.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/adhd-features/readme.md",
+   "target": "../../../services/adhd_engine/README.md",
+   "candidates": [
+    "services/webhook_receiver/README.md",
+    "vendor/dopetask/README.md",
+    "tests/fixtures/dcp/routing_corpus/README.md",
+    "src/dopemux/templates/init/.claude/README.md",
+    "docker/mcp-servers-source/pal-stdio/README.md",
+    "src/dopemux/embeddings/README.md",
+    "services/adhd_engine/README.md",
+    "examples/multi-workspace/README.md",
+    "services/repo-truth-extractor/promptsets/generated/README.md",
+    "scripts/migration/README.md",
+    "services/dopemux-gpt-researcher/mcp-server/README.md",
+    "scripts/external-references/README.md",
+    "docker/mcp-servers-source/README.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/README.md",
+    "docker/conport-kg/README.md",
+    "services/copilot_transcript_ingester/README.md",
+    "docs/03-reference/dcp/README.md",
+    "schemas/dcp/README.md",
+    "services/agents/README.md",
+    "services/mcp-capture/README.md",
+    "services/shared/dopecon_bridge_client/README.md",
+    "docker/mcp-servers-source/claude-context/README.md",
+    "scripts/README.md",
+    "services/complexity_coordinator/README.md",
+    "services/dope-context/eval/README.md",
+    "services/shared/conport_client/README.md",
+    "tests/security/README.md",
+    "qa/README.md",
+    "services/dcp-readonly-facade/README.md",
+    ".vibe/README.md",
+    "services/dopecon-bridge/README.md",
+    "services/adhd-dashboard/README.md",
+    "docs/03-reference/dcp/chatgpt-mcp-readonly/README.md",
+    "services/claude_brain/README.md",
+    "services/adhd_engine/domains/roast-engine/README.md",
+    "docker/mcp-servers-source/litellm/README.md",
+    "tests/dcp/fixtures/tp_dcp_0004_valid_snapshot_inputs/schemas/dcp/README.md",
+    "contracts/openclaw-dcp-routing/README.md",
+    "ui-dashboard-backend/README.md",
+    "docs/03-reference/dcp/openclaw-routing/README.md",
+    "tools/prompt_rewrite_v4/README.md",
+    "docker/mcp-servers-source/conport/migrations/README.md",
+    "services/conport_kg_ui/README.md",
+    "services/repo-truth-extractor/README.md",
+    "UPGRADES/README.md",
+    "docker/mcp-servers-source/pal/pal-mcp-server/README.md",
+    "docker/mcp-servers-source/pal/pal-mcp-server/docker/README.md",
+    "docker/mcp-servers-source/conport-bridge/README.md",
+    "services/working-memory-assistant/README.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/ui_kits/cockpit/README.md",
+    "docs/03-reference/Dopemux Cockpit TUI Design System/assets/README.md",
+    "services/adhd_engine/domains/break-suggester/README.md",
+    "docs/03-reference/dcp/chatgpt-projects/README.md",
+    "src/dopemux/templates/init/task-packets/README.md",
+    "src/dopemux_github_specialist/README.md",
+    "tests/dcp/fixtures/tp_dcp_0004_missing_tp0002_evidence/schemas/dcp/README.md",
+    ".control-tower/README.md",
+    "docker/mcp-servers-source/leantime-bridge/README.md",
+    "src/dopemux/templates/init/docs/task-packets/README.md",
+    ".claude/README.md",
+    "services/repo-truth-extractor/tests/fixtures/golden_repo_min/README.md",
+    "README.md",
+    "docker/mcp-servers-source/serena/README.md",
+    "shared/README.md",
+    "services/shared/complexity_coordinator/README.md",
+    "services/dope-context/README.md",
+    "docker/mcp-servers-source/desktop-commander/README.md"
+   ]
+  },
+  {
+   "file": "docs/03-reference/systems/adhd-features/readme.md",
+   "target": "../../../services/adhd_engine",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive-part2.md",
+   "target": "../../03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART2.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/conport/callable-surface-inventory.md",
+   "target": "../../../docker/mcp-servers-source/conport/",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/serena/multi-workspace-guide.md",
+   "target": "../../archive/sessions/serena/v2/f002-user-guide.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/serena/multi-workspace-guide.md",
+   "target": "../../../services/serena/multi_workspace_wrapper.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/serena/multi-workspace-guide.md",
+   "target": "../../../services/shared/complexity_coordinator/",
+   "candidates": []
+  },
+  {
+   "file": "docs/03-reference/systems/serena/multi-workspace-guide.md",
+   "target": "../../../services/serena/adhd_features.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../ui-dashboard/src/theme.ts",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../ui-dashboard/src/index.css",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../scripts/sync_brand_tokens.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../BRAND_SYSTEM.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../scripts/dopemux_dashboard.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../services/serena/metrics_dashboard.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../services/serena/multi_session_dashboard.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../services/task-orchestrator/observability/adhd_dashboard.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../services/monitoring-dashboard/server.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../services/shared/brand_voice.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../plugins/Dopemux/Views/dashboard.tpl",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../proof/epic-rte/",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../services/repo-truth-extractor/",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/brand-rollout-plan-2026-04-21.md",
+   "target": "../BRAND_SYSTEM.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/cli-branding.md",
+   "target": "../../src/dopemux/ui/splash.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../BRAND_SYSTEM.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../src/dopemux/ui/theme.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../ui-dashboard/src/theme.ts",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../ui-dashboard/src/index.css",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../src/dopemux/ui/dopemux.tcss",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/shared/brand_voice.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../scripts/brand_lint.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../scripts/sync_brand_tokens.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../ui-dashboard/src/notificationColors.ts",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../src/dopemux/ui/theme.py:330",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../ui-dashboard/src/theme.ts:38",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/shared/brand_voice.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../src/dopemux/ui/theme.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../src/dopemux/ui/theme.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../src/dopemux/ui/",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../src/dopemux_pr_merge_specialist/",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../ui-dashboard/",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../components/",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../ui-dashboard/src/notificationColors.ts",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../task-packets/TP-PRMS-053-GRAND-ORCHESTRATOR-DASHBOARD.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../src/dopemux/ui/dopemux.tcss",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/adhd-dashboard/backend.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/monitoring-dashboard/server.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/conport_kg_ui/",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/serena/metrics_dashboard.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/serena/multi_session_dashboard.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/task-orchestrator/observability/adhd_dashboard.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../scripts/dopemux_dashboard.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../scripts/mobile/status-dashboard.sh",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../plugins/Dopemux/Views/dashboard.tpl",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../plugins/Dopemux/Assets/css/dopemux-adhd.css",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../proof/epic-rte/",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/repo-truth-extractor/",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../scripts/dopemux_dashboard.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../src/dopemux/ui/splash.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../services/monitoring-dashboard/server.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../BRAND_SYSTEM.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/branding/design-system-audit-2026-04-21.md",
+   "target": "../BRAND_SYSTEM.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/implementation-plans/dashboard-day9-index.md",
+   "target": "../../DASHBOARD_DAY9_SUMMARY.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/implementation-plans/dashboard-day9-index.md",
+   "target": "DASHBOARD_DAY9_READY.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/implementation-plans/dashboard-day9-index.md",
+   "target": "../../DASHBOARD_DAY9_SUMMARY.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/implementation-plans/dashboard-day9-index.md",
+   "target": "DASHBOARD_DAY9_READY.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1.md",
+   "target": "systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART1.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part2.md",
+   "target": "systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART2.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part3.md",
+   "target": "systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART3.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part4.md",
+   "target": "systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART4.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-integration-repo-inventory.md",
+   "target": "../../archive/w5-root/docs/archive/w5-root/DOPETASK_INTEGRATION_ANALYSIS.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-integration-repo-inventory.md",
+   "target": "../../archive/w5-root/docs/archive/w5-root/DOPETASK_INTEGRATION_ANALYSIS.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-integration-repo-inventory.md",
+   "target": "../../../services/mcp-integration-bridge/main.py#L58",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-integration-repo-inventory.md",
+   "target": "../../archive/w5-root/docs/archive/w5-root/DOPETASK_INTEGRATION_ANALYSIS.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-integration-repo-inventory.md",
+   "target": "../../../services/mcp-integration-bridge/main.py#L58",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-integration-repo-inventory.md",
+   "target": "../../archive/w5-root/docs/archive/w5-root/DOPETASK_INTEGRATION_ANALYSIS.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-mcp-plugin-surface.md",
+   "target": "../../../services/task-orchestrator/task_orchestrator/mcp/**init**.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-mcp-plugin-surface.md",
+   "target": "../../../docker/mcp-servers-source/exa/exa_server.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-mcp-plugin-surface.md",
+   "target": "../../archive/w5-root/docs/archive/w5-root/DOPETASK_INTEGRATION_ANALYSIS.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-mcp-plugin-surface.md",
+   "target": "../../archive/w5-root/docs/archive/w5-root/DOPETASK_INTEGRATION_ANALYSIS.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-mcp-plugin-surface.md",
+   "target": "../../archive/w5-root/docs/archive/w5-root/DOPETASK_INTEGRATION_ANALYSIS.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-mcp-plugin-surface.md",
+   "target": "../../../services/task-orchestrator/task_orchestrator/mcp/**init**.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/05-audit-reports/task-orchestrator/task-orch-mcp-plugin-surface.md",
+   "target": "../../../docker/mcp-servers-source/exa/exa_server.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+   "target": "/Users/hue/.claude/plans/use-gpt-researcher-to-research-parallel-nest.md",
+   "candidates": []
+  },
+  {
+   "file": "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+   "target": "config/pricing.yaml",
+   "candidates": []
+  },
+  {
+   "file": "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+   "target": "services/repo-truth-extractor/benchmarking/pricing/normalization.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+   "target": "services/repo-truth-extractor/lib/spend_ledger.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+   "target": "services/repo-truth-extractor/llm_runtime.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+   "target": "services/repo-truth-extractor/lib/batch_clients.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+   "target": "services/repo-truth-extractor/run_extraction_v5.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+   "target": "services/repo-truth-extractor/tests/test_spend_ledger_optimizers.py",
+   "candidates": []
+  },
+  {
+   "file": "docs/90-adr/rte-cost-profiles-and-optimizer-wiring.md",
+   "target": "services/repo-truth-extractor/tests/test_cost_profiles.py",
+   "candidates": []
+  }
+ ]
+}

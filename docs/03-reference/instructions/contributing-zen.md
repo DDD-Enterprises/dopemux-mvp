@@ -13,4 +13,4 @@ prelude: Contributing Zen (explanation) for dopemux documentation and developer 
 
 This guide documents the Zen MCP development workflow.
 
-See [Dev Mode Design](../../04-explanation/design-decisions/DEV_MODE_DESIGN.md) for the current design notes.
+See [Dev Mode Design](../../04-explanation/design-decisions/dev-mode-design.md) for the current design notes.

@@ -46,13 +46,13 @@ The proof index shows READY_FOR_REVIEW, VERIFIED, and chain_of_custody: DOCUMENT
 ## Deliverables
 
 ### Contract Documentation
-1. `docs/governance/proof-contract.md` - Proof purpose and minimums
-2. `docs/governance/proof-directory-rules.md` - Path and naming rules
-3. `docs/governance/proof-bundle-schema.md` - Bundle structure contract
-4. `docs/governance/handoff-contract.md` - Handoff requirements
-5. `docs/governance/chain-of-custody-rules.md` - Custody requirements
-6. `docs/governance/manifest-and-index-rules.md` - Manifest requirements
-7. `docs/governance/retention-and-redaction-rules.md` - Retention policies
+1. `docs/03-reference/governance/proof-contract.md` - Proof purpose and minimums
+2. `docs/03-reference/governance/proof-directory-rules.md` - Path and naming rules
+3. `docs/03-reference/governance/proof-bundle-schema.md` - Bundle structure contract
+4. `docs/03-reference/governance/handoff-contract.md` - Handoff requirements
+5. `docs/03-reference/governance/chain-of-custody-rules.md` - Custody requirements
+6. `docs/03-reference/governance/manifest-and-index-rules.md` - Manifest requirements
+7. `docs/03-reference/governance/retention-and-redaction-rules.md` - Retention policies
 
 ### Proof Artifacts
 8. `proof/governance/PROOF_CONTRACT_REPORT.json` - Contract compliance

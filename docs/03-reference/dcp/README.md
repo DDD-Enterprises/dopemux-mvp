@@ -20,7 +20,7 @@ This directory serves as the canonical authority shelf for Declarative Control P
 > This directory and its subdirectories contain documentation and schemas only. No runtime wiring, no event-store append, no CRM writes, no channel sends, no GitHub mutations, and no live adapter bindings are installed or authorized under v1.
 
 ## Authority Order
-Per [AGENTS.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/AGENTS.md) and [PROJECT.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/PROJECT.md), documentation remains advisory and is strictly subordinate to:
+Per [AGENTS.md](../../../AGENTS.md) and [PROJECT.md](../../../PROJECT.md), documentation remains advisory and is strictly subordinate to:
 1. Active Task Packet for the current work slice.
 2. Observed repository runtime code, configuration, tests, compose files, and active entrypoints.
 3. Reference documentation (e.g., `TRUTH_*.md` and this directory).
@@ -49,16 +49,16 @@ The audit and delta recheck highlighted load-bearing architectural and operation
 
 ## Preserved Decision & Audit Artifacts
 
-The following artifacts are stored under [artifacts/](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/):
+The following artifacts are stored under [artifacts/](artifacts):
 
 | Artifact File | Title / Subject | Status / Provenance |
 | --- | --- | --- |
-| [DCP_5_5_SYNTHESIS_INPUT_PACK.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/DCP_5_5_SYNTHESIS_INPUT_PACK.md) | GPT-5.5 Synthesis Input Pack | `EXTERNAL_PROPOSED` |
-| [DCP_PRE_SYNTHESIS_CONTRADICTION_LEDGER.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/DCP_PRE_SYNTHESIS_CONTRADICTION_LEDGER.md) | Pre-Synthesis Contradiction Ledger | `EXTERNAL_PROPOSED` |
-| [DCP_ARCHITECTURE_SYNTHESIS_GPT55.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md) | Architecture Synthesis | `SYNTHESIS_INVENTED` |
-| [DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md) | Adversarial Architecture Audit (Opus) | `EXTERNAL_PROPOSED` |
-| [DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md) | Architecture Synthesis - Revised Delta (REV1) | `SYNTHESIS_INVENTED` |
-| [DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/artifacts/DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md) | External Constraints Ledger | `EXTERNAL_PROPOSED` |
+| [DCP_5_5_SYNTHESIS_INPUT_PACK.md](artifacts/DCP_5_5_SYNTHESIS_INPUT_PACK.md) | GPT-5.5 Synthesis Input Pack | `EXTERNAL_PROPOSED` |
+| [DCP_PRE_SYNTHESIS_CONTRADICTION_LEDGER.md](artifacts/DCP_PRE_SYNTHESIS_CONTRADICTION_LEDGER.md) | Pre-Synthesis Contradiction Ledger | `EXTERNAL_PROPOSED` |
+| [DCP_ARCHITECTURE_SYNTHESIS_GPT55.md](artifacts/DCP_ARCHITECTURE_SYNTHESIS_GPT55.md) | Architecture Synthesis | `SYNTHESIS_INVENTED` |
+| [DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md](artifacts/DCP_ADVERSARIAL_ARCHITECTURE_AUDIT.md) | Adversarial Architecture Audit (Opus) | `EXTERNAL_PROPOSED` |
+| [DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md](artifacts/DCP_ARCHITECTURE_SYNTHESIS_REVISED_DELTA.md) | Architecture Synthesis - Revised Delta (REV1) | `SYNTHESIS_INVENTED` |
+| [DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md](artifacts/DCP_DR_EXTERNAL_CONSTRAINTS_LEDGER.md) | External Constraints Ledger | `EXTERNAL_PROPOSED` |
 | [DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md](artifacts/DCP_PROMPT5_CHAT_HISTORY_EXTRACT.md) | Prompt 5 / pre-Prompt 6 chat-history extraction | `EXTERNAL_CHAT_HISTORY_EXTRACT` |
 
 ## Current Runway Reconciliation

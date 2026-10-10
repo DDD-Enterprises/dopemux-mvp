@@ -21,7 +21,7 @@ The **Dopemux Supervisor** governs the integration of DCP Core and PM-plane adap
 ## Upload List
 - **Top 40 Baseline**: The Dopemux Top 40 upload files bundle.
 - **DCP Artifacts**: The decision, audit, and revised delta artifacts from `docs/03-reference/dcp/artifacts/`.
-- See [Upload Sets](file:///Users/hue/code/dopemux-mvp-wt-dcp-docs-001/docs/03-reference/dcp/chatgpt-projects/upload-sets.md#dopemux-supervisor-bundle) for detail.
+- See [Upload Sets](upload-sets.md#dopemux-supervisor-bundle) for detail.
 
 ## Task Packet Requirements
 - Every change must run through a dedicated Task Packet mapped to `dopetask-canonical-spec.json`.

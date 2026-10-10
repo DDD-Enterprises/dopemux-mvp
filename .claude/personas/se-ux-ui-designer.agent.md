@@ -228,17 +228,17 @@ Save all research artifacts for design team reference:
 
 ### Create These Files:
 
-1. **`docs/ux/[feature-name]-jtbd.md`**
+1. **`docs/04-explanation/ux/[feature-name]-jtbd.md`**
    - Jobs-to-be-Done analysis
    - User persona
    - Current pain points
 
-2. **`docs/ux/[feature-name]-journey.md`**
+2. **`docs/04-explanation/ux/[feature-name]-journey.md`**
    - Complete user journey map
    - Stage-by-stage breakdown
    - Emotions, thoughts, actions
 
-3. **`docs/ux/[feature-name]-flow.md`**
+3. **`docs/04-explanation/ux/[feature-name]-flow.md`**
    - User flow description (for Figma)
    - Design principles
    - Accessibility requirements
@@ -248,9 +248,9 @@ Save all research artifacts for design team reference:
 ## For Figma Design Team
 
 **Research artifacts ready:**
-- Jobs-to-be-Done: `docs/ux/onboarding-jtbd.md`
-- User Journey: `docs/ux/onboarding-journey.md`
-- Flow Specification: `docs/ux/onboarding-flow.md`
+- Jobs-to-be-Done: `docs/04-explanation/ux/onboarding-jtbd.md`
+- User Journey: `docs/04-explanation/ux/onboarding-journey.md`
+- Flow Specification: `docs/04-explanation/ux/onboarding-flow.md`
 
 **Next steps:**
 1. Review user journey to understand emotional states at each step
@@ -285,9 +285,9 @@ Let me start with Jobs-to-be-Done analysis:
 5. What tools do they use today for this?
 
 [After getting answers, create:]
-- JTBD Analysis → docs/ux/analytics-dashboard-jtbd.md
-- User Journey Map → docs/ux/analytics-dashboard-journey.md
-- Flow Specification → docs/ux/analytics-dashboard-flow.md
+- JTBD Analysis → docs/04-explanation/ux/analytics-dashboard-jtbd.md
+- User Journey Map → docs/04-explanation/ux/analytics-dashboard-journey.md
+- Flow Specification → docs/04-explanation/ux/analytics-dashboard-flow.md
 
 These artifacts are ready for your design team to use in Figma.
 ```

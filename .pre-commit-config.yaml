@@ -36,7 +36,7 @@ repos:
         entry: python3 scripts/docs_frontmatter_guard.py --fix
         language: system
         files: ^(docs/|task-packets/|UPGRADES/|services/[^/]+/docs/|docker/[^/]+/docs/).*\.md$
-        exclude: (^docs/archive/|node_modules/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|node_modules/|.*rg[Oo]utput.*\.md)
 
       - id: memory-command-refs-guard
         name: Block deprecated memory backends in slash commands
@@ -58,7 +58,7 @@ repos:
         entry: python3 scripts/docs_validator.py
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md)
         pass_filenames: true
 
       # Prohibited file pattern check
@@ -67,7 +67,7 @@ repos:
         entry: scripts/ci/docs_prohibited_patterns.sh
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md)
         pass_filenames: true
 
       # Prelude token count validation for embeddings
@@ -81,7 +81,7 @@ repos:
             for file in sys.argv[1:]:
                 if not file.endswith('.md'): continue
                 # Skip quarantined files
-                if file.startswith('docs/04-explanation/history/sourceFiles/'):
+                if file.startswith('docs/archive/'):
                     continue
                 try:
                     with open(file, 'r') as f: content = f.read()
@@ -103,7 +103,7 @@ repos:
             print('✅ All preludes within token limit')
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md)
         pass_filenames: true
 
       # Markdown file location enforcement
@@ -123,6 +123,10 @@ repos:
               # OpenClaw/DCP routing contract artifacts are first-class contracts,
               # not docs mirrors. Keep this exception path-specific.
               if [[ "$normalized" =~ ^\./contracts/openclaw-dcp-routing/.*\.md$ ]]; then continue; fi
+
+              # PM inventory evidence packs moved out of docs/ (consolidation W2); evidence root per
+              # src/dopemux/governed_execution/audit_identity/location.py.
+              if [[ "$normalized" =~ ^\./reports/pm-inventory/ ]]; then continue; fi
 
               # Governed-execution benchmark fixtures are synthetic runtime inputs.
               if [[ "$normalized" =~ ^\./tests/unit/governed_execution/benchmark/fixtures/ ]]; then continue; fi
@@ -203,7 +207,14 @@ repos:
         entry: python3 scripts/check_docs_hygiene.py --check
         language: system
         files: ^docs/.*\.md$
-        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md)
+        pass_filenames: true
+
+      - id: docs-archive-manifest-guard
+        name: Enforce frozen docs/archive (manifest row required)
+        entry: python3 scripts/check_docs_hygiene.py --check-archive-manifest
+        language: system
+        files: ^docs/archive/
         pass_filenames: true
 
       - id: docs-filename-hygiene
@@ -211,7 +222,7 @@ repos:
         entry: python3 scripts/check_docs_filename_hygiene.py --check
         language: system
         files: ^docs/.*\.md$
-        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md)
         pass_filenames: true
 
       - id: docs-filename-hygiene
@@ -285,7 +296,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|node_modules/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/|^docs/03-reference/gpt55_pm_implementer_redesign\.md$)
+        exclude: (^docs/archive/|node_modules/|.*rg[Oo]utput.*\.md|^docs/03-reference/gpt55_pm_implementer_redesign\.md$)
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
@@ -300,9 +311,9 @@ repos:
     hooks:
       - id: trailing-whitespace
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md)
       - id: end-of-file-fixer
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md|^docs/04-explanation/history/sourceFiles/)
+        exclude: (^docs/archive/|.*rg[Oo]utput.*\.md)
       - id: check-yaml
         files: ^config/.*\.ya?ml$

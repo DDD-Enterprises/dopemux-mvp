@@ -36,7 +36,7 @@ VALID_DOC_TYPES = {'adr', 'rfc', 'caveat', 'pattern', 'runbook', 'tutorial', 'ho
 
 # Valid status values
 VALID_STATUSES = {
-    'adr': {'proposed', 'accepted', 'rejected', 'superseded'},
+    'adr': {'proposed', 'accepted', 'rejected', 'superseded', 'deprecated'},
     'rfc': {'draft', 'review', 'accepted', 'rejected', 'superseded'},
     'caveat': {'active', 'resolved', 'superseded'},
     'pattern': {'draft', 'accepted', 'deprecated'},
@@ -79,7 +79,6 @@ ALLOWED_PATHS = [
     'docs/03-reference/',
     'docs/04-explanation/',
     'docs/05-audit-reports/',
-    'docs/planes/',
     'task-packets/',
     'docs/'
 ]
@@ -111,7 +110,7 @@ class DocumentValidator:
 
         # Check if file is quarantined
         rel_path = os.path.relpath(file_path, self.project_root)
-        if rel_path.startswith('docs/04-explanation/history/sourceFiles/'):
+        if rel_path.startswith('docs/archive/'):
             return True
 
         # Check if file is in allowed location

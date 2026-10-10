@@ -21,8 +21,8 @@ This section contains canonical documentation for the Task Orchestrator integrat
 1.  **[CLI Reference](cli.md)**: Daily operator status and planning CLI wrapper commands.
 2.  **[MCP Wrapper Surfaces](mcp-wrappers.md)**: Stdio-based and containerized MCP wrappers.
 3.  **[Per-Packet Isolated Validation](perpacket.md)**: Targeted testing and validation mapping.
-4.  **[GitHub PR Integration](github/_index.md)**: Live `gh`-backed subprocess PR queue and comment adapter.
-5.  **[Memory Writers & Mirroring](memory/_index.md)**: Live ConPort writes with dope-memory mirrors.
+4.  **[GitHub PR Integration](github/index.md)**: Live `gh`-backed subprocess PR queue and comment adapter.
+5.  **[Memory Writers & Mirroring](memory/index.md)**: Live ConPort writes with dope-memory mirrors.
 6.  **[DB Defragmentation 2026-08-01](db-defragmentation-2026-08-01.md)**: Per-repo instance scoping, the misfiled-work incident, and the detection recipe for packets loaded into the wrong instance.
 
 ## Invariants & Posture

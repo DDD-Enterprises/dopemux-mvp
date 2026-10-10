@@ -25,7 +25,7 @@ prelude: Readme (reference) for dopemux documentation and developer workflows.
 ## Execution Plane
 
 ### Execution Logic & Safety
-- **[Agent Leasing Contract](../planes/execution/agent-leasing-contract.md)** - Mandatory Rules of Engagement for all AI agents.
+- **[Agent Leasing Contract](planes/execution/agent-leasing-contract.md)** - Mandatory Rules of Engagement for all AI agents.
 
 ---
 
@@ -48,8 +48,8 @@ Detailed reference for Dopemux components.
 *To be organized: Component interfaces, metrics, events*
 
 ### ConPort Surface Contracts
-- **[ConPort Callable Surface Inventory](../systems/conport/callable-surface-inventory.md)** - Active REST, JSON-RPC, and FastMCP surfaces
-- **[ConPort Surface Equivalence and Drift](../systems/conport/surface-equivalence-and-drift.md)** - Evidence-backed surface map and drift matrix
+- **[ConPort Callable Surface Inventory](systems/conport/callable-surface-inventory.md)** - Active REST, JSON-RPC, and FastMCP surfaces
+- **[ConPort Surface Equivalence and Drift](systems/conport/surface-equivalence-and-drift.md)** - Evidence-backed surface map and drift matrix
 
 ### Workflow Kit
 - **[Internal Workflow Kit Reference](internal-workflow-kit.md)** - Phases, state schema, checkpoint tokens, and role assets
@@ -82,9 +82,9 @@ Configuration schemas and references.
 - **Workflow Skill Pack** - `templates/skills/{brief-drafter,task-breakdown,code-researcher,research-reviewer,implementation-planner,plan-reviewer,code-implementer,quality-refactorer}/`
 
 ### PM Plane Contracts
-- **[PM Plane Write Matrix](../planes/pm/pm-plane-write-matrix.md)** - Canonical mutation writers, prechecks, mirrors, and forbidden paths
-- **[PM Plane Read Matrix](../planes/pm/pm-plane-read-matrix.md)** - Canonical read sources, normalization, and provenance expectations
-- **[PM Plane Write Surface Policy](../planes/pm/pm-plane-write-surface-policy.md)** - Tool classification and raw-surface exposure policy
+- **[PM Plane Write Matrix](planes/pm/pm-plane-write-matrix.md)** - Canonical mutation writers, prechecks, mirrors, and forbidden paths
+- **[PM Plane Read Matrix](planes/pm/pm-plane-read-matrix.md)** - Canonical read sources, normalization, and provenance expectations
+- **[PM Plane Write Surface Policy](planes/pm/pm-plane-write-surface-policy.md)** - Tool classification and raw-surface exposure policy
 - **[Dopemux Hooksd](services/dopemux-hooksd.md)** - Hook-facing runtime reference covering the webhook sidecar, poller, local Claude native-hooks adapter, and current naming drift
 - **[Task Orchestrator Service Reference](services/task-orchestrator.md)** - Active runtime endpoints, defaults, persistence substrate, and known authority drift
 - **[Supervisor PM and Memory MCP Server Matrix](../05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md)** - Supervisor-facing matrix of PM, memory, retrieval, and adapter surfaces
@@ -102,7 +102,7 @@ Feature specifications and capabilities.
 ### Feature Specifications
 - **[F001: Untracked Work Detection](f001-enhanced-untracked-work-system.md)** - Enhanced work tracking
 - **[F001: Basic Untracked Work (Historical)](../archive/sessions/serena/v2/f001-usage-examples.md)** - Early implementation notes
-- **[F002: Multi-Session Support](f002-multi-session-support-2.md)** - Multiple session handling
+- **[F002: Multi-Session Support](f002-multi-session-support.md)** - Multiple session handling
 - **[PR Merge Flight Dashboard Reference](systems/dashboard/overview.md)** - Technical architecture for the PR merge TUI
 
 ### Research & Background
@@ -113,7 +113,6 @@ Feature specifications and capabilities.
 - **[Serena V2 Validation Report](../archive/test-reports/serena-v2-validation-report.md)** - Production validation archive
 
 ### Design Principles
-- **[ADHD Theme Design Principles](adhd-theme-design-principles.md)** - UI/UX guidelines
 
 ---
 

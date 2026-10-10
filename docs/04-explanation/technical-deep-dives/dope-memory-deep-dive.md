@@ -67,10 +67,10 @@ Dope-Memory is the "Temporal Spine" of Dopemux, answering "What happened, when, 
 
 ## 4. Critical Findings (Action Required)
 
-### 4.1 Runtime Absence
-The service is **NOT** present in `docker-compose.master.yml`. It is defined in `services/registry.yaml` (Port 3020) but never orchestrated.
-- **Impact**: The system has no memory continuity currently.
-- **Fix**: Add `dope-memory` service definition to `docker-compose.master.yml` pointing to `services/working-memory-assistant` Dockerfile.
+### 4.1 Runtime Status
+The service is present in canonical `compose.yml` as `dope-memory` and is defined in `services/registry.yaml` (Port 3020).
+- **Current focus**: keep runtime wiring aligned with registry + smoke/runtime health tooling.
+- **Operational check**: verify service health under canonical compose and smoke scripts.
 
 ### 4.2 Environment Mismatch (Python 3.10 vs 3.9)
 The source code uses Python 3.10+ syntax (e.g., `str | Path` union types), but the environment/tests are running on Python 3.9.6.
@@ -80,18 +80,12 @@ The source code uses Python 3.10+ syntax (e.g., `str | Path` union types), but t
 ## 5. Next Steps
 1. **Rename Directory**: Move `services/working-memory-assistant` back to `services/dope-memory` to match registry and intent.
 1. **Fix Python Version**: ensure Dockerfile uses python:3.11-slim.
-1. **Orchestrate**: Add to `docker-compose.master.yml`.
+1. **Orchestrate**: Validate canonical `compose.yml` wiring stays aligned with `services/registry.yaml`.
 1. **Verify**: Run `test_dope_memory.py` in the corrected environment.
 
 ---
 
-## 4. Precursor Analysis: Working Memory Assistant
-
-*Investigation in progress: checking `services/working-memory-assistant` for reusable patterns or migration data.*
-
----
-
-## 5. Next Steps
-1. **Scaffold Service**: Create `services/dope-memory` based on `docker/mcp-servers/` templates.
-1. **Schema Migration**: Implement SQLite schema from `02_data_model_sqlite.md`.
-1. **MCP Implementation**: Implement the tools defined in `07_mcp_contracts.md`.
+## 6. Follow-up Maintenance Tasks
+1. **Runtime Validation**: Confirm `dope-memory` health and port mapping under `compose.yml`.
+1. **Contract Verification**: Keep `services/registry.yaml`, compose bindings, and health audit tooling aligned.
+1. **Python Runtime Hygiene**: Maintain Python 3.10+ compatibility in container/runtime targets.

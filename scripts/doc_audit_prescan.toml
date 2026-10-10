@@ -4,6 +4,7 @@ max_corpus_size = "50MB"
 
 # Additional exclude globs (on top of hardcoded excludes)
 exclude_globs = [
+    "docs/archive/**",
     "extraction/repo-truth-extractor/*/runs/**",
     "extraction/runs/**",
     "extraction/**/doctor/**",

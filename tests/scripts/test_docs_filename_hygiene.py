@@ -33,7 +33,7 @@ def test_slugify_stem_basic_cases():
 def test_quarantine_and_keeper_are_exempt_from_rename():
     policy = _policy()
     quarantine = MODULE.classify_filename(
-        rel_path="docs/04-explanation/history/sourceFiles/legacy.md",
+        rel_path="docs/archive/w1-history-sourcefiles/legacy.md",
         policy=policy,
     )
     keeper = MODULE.classify_filename(

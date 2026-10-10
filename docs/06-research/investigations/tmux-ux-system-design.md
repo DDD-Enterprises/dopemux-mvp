@@ -50,7 +50,7 @@ prelude: Tmux Ux System Design (reference) for dopemux documentation and develop
 
 #### Window 1: `agents` — Live Execution
 
-Energy-adaptive via [layouts.py](file:///Users/hue/code/dopemux-mvp/src/dopemux/tmux/layouts.py). Defaults to **medium** energy:
+Energy-adaptive via [layouts.py](../../../src/dopemux/tmux/layouts.py). Defaults to **medium** energy:
 
 ```
 ┌─────────────────┬─────────────────┐
@@ -101,7 +101,7 @@ Energy-adaptive via [layouts.py](file:///Users/hue/code/dopemux-mvp/src/dopemux/
 └──────────────────────┴────────────┘
 ```
 
-- **Pane 0** (`monitor:adhd`): The existing Textual dashboard from [tmux-dashboard-design.md](file:///Users/hue/code/dopemux-mvp/docs/03-reference/systems/dashboard/tmux-dashboard-design.md).
+- **Pane 0** (`monitor:adhd`): The existing Textual dashboard from [tmux-dashboard-design.md](../../03-reference/systems/dashboard/tmux-dashboard-design.md).
 - **Pane 1** (`monitor:services`): Service health grid (ConPort, Redis, LiteLLM, ADHD Engine).
 - **Pane 2** (`monitor:resources`): `btop --utf-force` or a lightweight resource gauge.
 
@@ -387,9 +387,9 @@ Ideal flow: Start in `command` (window 0) → glance at `agents` (window 1) duri
 
 | Existing Component | Role in This Design |
 |---|---|
-| [layouts.py](file:///Users/hue/code/dopemux-mvp/src/dopemux/tmux/layouts.py) | Energy-adaptive pane creation for `agents` window |
-| [theme.py](file:///Users/hue/code/dopemux-mvp/src/dopemux/tmux/theme.py) | All color tokens, pane naming, status bar segments |
-| [controller.py](file:///Users/hue/code/dopemux-mvp/src/dopemux/tmux/controller.py) | Pane/window lifecycle management |
-| [tmux-dopemux-orchestrator.yaml](file:///Users/hue/code/dopemux-mvp/tmux-dopemux-orchestrator.yaml) | Declarative startup config (to be extended with this window map) |
-| [SIA_ARCHITECTURE.md](file:///Users/hue/code/dopemux-mvp/llm-plans/SIA_ARCHITECTURE.md) | Agent roles, event types, task lifecycle FSM |
-| [tmux-dashboard-design.md](file:///Users/hue/code/dopemux-mvp/docs/03-reference/systems/dashboard/tmux-dashboard-design.md) | Textual app for `monitor:adhd` pane, 3-tier display system |
+| [layouts.py](../../../src/dopemux/tmux/layouts.py) | Energy-adaptive pane creation for `agents` window |
+| [theme.py](../../../src/dopemux/tmux/theme.py) | All color tokens, pane naming, status bar segments |
+| [controller.py](../../../src/dopemux/tmux/controller.py) | Pane/window lifecycle management |
+| [tmux-dopemux-orchestrator.yaml](../../../tmux-dopemux-orchestrator.yaml) | Declarative startup config (to be extended with this window map) |
+| SIA_ARCHITECTURE.md (`llm-plans/SIA_ARCHITECTURE.md`) | Agent roles, event types, task lifecycle FSM |
+| [tmux-dashboard-design.md](../../03-reference/systems/dashboard/tmux-dashboard-design.md) | Textual app for `monitor:adhd` pane, 3-tier display system |

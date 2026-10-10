@@ -14,12 +14,11 @@ systems:
     overview: docs/03-reference/systems/conport/conport-kg-status.md
     technical: docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md
     integration: docs/02-how-to/mcp-service-discovery-guide.md
-    comparison: docs/05-audit-reports/service-maturity-gap-analysis.md
     readme: docs/03-reference/systems/conport/conport-kg-status.md
-    surface_inventory: docs/systems/conport/callable-surface-inventory.md
-    surface_drift: docs/systems/conport/surface-equivalence-and-drift.md
-    preferred_surface: docs/systems/conport/preferred-canonical-surface.md
-    authority_invariants: docs/systems/conport/authority-invariants-and-dark-methods.md
+    surface_inventory: docs/03-reference/systems/conport/callable-surface-inventory.md
+    surface_drift: docs/03-reference/systems/conport/surface-equivalence-and-drift.md
+    preferred_surface: docs/03-reference/systems/conport/preferred-canonical-surface.md
+    authority_invariants: docs/03-reference/systems/conport/authority-invariants-and-dark-methods.md
   dashboard:
     overview: docs/03-reference/systems/dashboard/tmux-dashboard-readme.md
     design: docs/03-reference/systems/dashboard/tmux-dashboard-design.md
@@ -35,12 +34,12 @@ systems:
 services:
   task-orchestrator:
     readme: docs/03-reference/services/task-orchestrator.md
-    followups: docs/planes/pm/task-orchestrator-leantime-followups.md
-    runtime_truth: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
+    followups: docs/03-reference/planes/pm/task-orchestrator-leantime-followups.md
+    runtime_truth: reports/pm-inventory/_evidence/task-orchestrator-runtime-truth/executive-summary.md
     docs_dir: services/task-orchestrator/docs/
   dopecon-bridge:
     readme: services/dopecon-bridge/README.md
-    runtime_truth: docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
+    runtime_truth: reports/pm-inventory/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
     docs_dir: services/dopecon-bridge/
   adhd-engine:
     readme: services/adhd_engine/README.md
@@ -60,9 +59,9 @@ architecture:
   pipeline_readme: services/repo-truth-extractor/README.md
   adr_index: docs/90-adr/adr-index.md
   rfc_index: docs/91-rfc/
-  pm_plane_hub: docs/planes/pm/hub-2.md
-  pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
-  pm_plane_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
+  pm_plane_hub: docs/03-reference/planes/pm/hub.md
+  pm_plane_write_adjudication: docs/03-reference/planes/pm/pm-plane-write-adjudication-model.md
+  pm_plane_tool_surface: docs/03-reference/planes/pm/pm-plane-normalized-tool-surface.md
   pm_authority_reconciliation: docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md
   pm_authority_enforcement: docs/05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md
 how_to:
@@ -103,9 +102,9 @@ reference:
   ci_remediation_specialist: docs/03-reference/ci-remediation-specialist.md
   doc_audit_prescan_reference: docs/03-reference/doc-audit-prescan.md
   extraction_wizard_reference: docs/03-reference/extraction-wizard.md
-  pm_plane_write_matrix: docs/planes/pm/pm-plane-write-matrix.md
-  pm_plane_read_matrix: docs/planes/pm/pm-plane-read-matrix.md
-  pm_plane_write_surface_policy: docs/planes/pm/pm-plane-write-surface-policy.md
+  pm_plane_write_matrix: docs/03-reference/planes/pm/pm-plane-write-matrix.md
+  pm_plane_read_matrix: docs/03-reference/planes/pm/pm-plane-read-matrix.md
+  pm_plane_write_surface_policy: docs/03-reference/planes/pm/pm-plane-write-surface-policy.md
   supervisor_pm_server_matrix: docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md
   supervisor_pm_evidence_packet: docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md
   mcp_token_management_best_practices: docs/03-reference/best-practices/mcp-token-management.md
@@ -124,9 +123,9 @@ explanation:
   repo_truth_extractor_deep_analysis: docs/04-explanation/technical-deep-dives/repo-truth-extractor-structure-architecture-and-optimal-design.md
   serena_v2: docs/04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md
   conport: docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md
-  dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive-2.md
-  adhd_engine: docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1-2.md
-  dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
+  dope_memory: docs/04-explanation/technical-deep-dives/dope-memory-deep-dive.md
+  adhd_engine: docs/04-explanation/technical-deep-dives/adhd-engine-deep-dive-part1.md
+  dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive.md
   workflow_kit_architecture: docs/04-explanation/workflow-kit-architecture.md
   pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
   repo_truth_extractor_v5_upgrade_design: docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md
@@ -136,11 +135,11 @@ explanation:
   product_elevator_pitches: docs/04-explanation/product/elevator-pitches.md
   product_features_and_benefits: docs/04-explanation/product/features-and-benefits.md
   product_faq: docs/04-explanation/product/faq.md
-  pm_plane_write_adjudication: docs/planes/pm/pm-plane-write-adjudication-model.md
-  pm_plane_normalized_tool_surface: docs/planes/pm/pm-plane-normalized-tool-surface.md
-  pm_runtime_truth_task_orchestrator: docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md
-  pm_runtime_truth_leantime: docs/planes/pm/_evidence/leantime-runtime-truth/executive-summary.md
-  pm_runtime_truth_dopecon_bridge: docs/planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
+  pm_plane_write_adjudication: docs/03-reference/planes/pm/pm-plane-write-adjudication-model.md
+  pm_plane_normalized_tool_surface: docs/03-reference/planes/pm/pm-plane-normalized-tool-surface.md
+  pm_runtime_truth_task_orchestrator: reports/pm-inventory/_evidence/task-orchestrator-runtime-truth/executive-summary.md
+  pm_runtime_truth_leantime: reports/pm-inventory/_evidence/leantime-runtime-truth/executive-summary.md
+  pm_runtime_truth_dopecon_bridge: reports/pm-inventory/_evidence/dopecon-bridge-runtime-truth/executive-summary.md
 supervisor_packets:
   pm_server_matrix: docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md
   pm_evidence_packet: docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md

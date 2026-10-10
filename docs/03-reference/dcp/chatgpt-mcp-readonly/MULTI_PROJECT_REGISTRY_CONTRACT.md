@@ -12,7 +12,7 @@ prelude: Multi-project registry and resolver contract for the read-only MCP evid
 
 # Multi-Project Registry Contract
 
-> **Status.** Schema/resolver shape remains `PROPOSED` design. The `dopemux init` marker / workspace-identity contract is now **`OBSERVED`** — resolved by the static inspection in TP-DCP-MCP-RO-0003 (see [`DOPEMUX_INIT_REGISTRY_DISCOVERY.md`](DOPEMUX_INIT_REGISTRY_DISCOVERY.md)) and reflected in §2/§4/§5 below. Concrete registry file location and load mechanics are implemented in TP-DCP-MCP-RO-0004.
+> **Status.** Schema/resolver shape remains `PROPOSED` design. The `dopemux init` marker / workspace-identity contract is now **`OBSERVED`** — resolved by the static inspection in TP-DCP-MCP-RO-0003 (see [`DOPEMUX_INIT_REGISTRY_DISCOVERY.md`](../../../05-audit-reports/dcp/DOPEMUX_INIT_REGISTRY_DISCOVERY.md)) and reflected in §2/§4/§5 below. Concrete registry file location and load mechanics are implemented in TP-DCP-MCP-RO-0004.
 
 ## 1. Purpose
 
@@ -91,7 +91,7 @@ Each project advertises capabilities derived from its `service_profiles` (which 
 
 ## 8. Open Questions / UNKNOWNs
 
-- ~~`UNKNOWN`: the concrete `dopemux init` marker(s) and workspace-identity fields~~ → **RESOLVED** in TP-DCP-MCP-RO-0003: init marker = `.dopemux/`; identity = `.repo_id`; detection = `get_workspace_root()`/`validate_workspace()`. See [`DOPEMUX_INIT_REGISTRY_DISCOVERY.md`](DOPEMUX_INIT_REGISTRY_DISCOVERY.md).
+- ~~`UNKNOWN`: the concrete `dopemux init` marker(s) and workspace-identity fields~~ → **RESOLVED** in TP-DCP-MCP-RO-0003: init marker = `.dopemux/`; identity = `.repo_id`; detection = `get_workspace_root()`/`validate_workspace()`. See [`DOPEMUX_INIT_REGISTRY_DISCOVERY.md`](../../../05-audit-reports/dcp/DOPEMUX_INIT_REGISTRY_DISCOVERY.md).
 - ~~`UNKNOWN`: whether dopemux already exposes a project list/registry primitive~~ → **RESOLVED**: no `list_projects` CLI; the global `~/.dopemux/config.json` is an opened-workspaces cache (eligibility, not exposure); the facade keeps its own explicit allowlist. (Discovery §4.)
 - `CONFLICTING` (operator decision, repo-wide): repo-root marker fragmentation — `.repo_id` vs `.dopetaskroot` (`operator_workflows.py:141`) vs the **absent** `.n` (referenced by some task packets). The facade adopts `.repo_id` for identity per `dcp_project_resource_map.schema.json`; repo-wide unification is out of facade scope.
 - `PROPOSED`: exact location and load mechanics of the facade registry file (TP-DCP-MCP-RO-0004).

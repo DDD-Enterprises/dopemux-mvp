@@ -66,9 +66,9 @@ if [[ -f "docs/03-reference/gpt55_pm_implementer_redesign.md" ]]; then
   cp "docs/03-reference/gpt55_pm_implementer_redesign.md" "$OUT_DIR/references/gpt55_pm_implementer_redesign.md"
 fi
 
-if [[ -d "docs/ux" ]]; then
+if [[ -d "docs/04-explanation/ux" ]]; then
   mkdir -p "$OUT_DIR/references/docs-ux"
-  for f in docs/ux/*.md; do
+  for f in docs/04-explanation/ux/*.md; do
     [[ -f "$f" ]] && cp "$f" "$OUT_DIR/references/docs-ux/"
   done
 fi

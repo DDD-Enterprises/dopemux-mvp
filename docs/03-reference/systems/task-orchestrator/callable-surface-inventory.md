@@ -26,7 +26,7 @@ committed `/dx:` command drifts from it (e.g. a read command gaining a write too
 read/write/destructive annotations cross-referenced to
 [`reports/task-orchestratorrepo-truth-pack/MCP_TOOL_MANIFEST.json`](../../../../reports/task-orchestratorrepo-truth-pack/MCP_TOOL_MANIFEST.json).
 See also [`AGENTS.md §6`](../../../../AGENTS.md) (workflow authority) and
-[`dx-command-authoring.md`](../dx-command-authoring.md) (authoring contract).
+[`dx-command-authoring.md`](../../dx-command-authoring.md) (authoring contract).
 
 ## 1. Tool surface classification
 
@@ -124,7 +124,7 @@ Recorded truthfully per governance doctrine (observed vs inferred vs stale):
   surface is **v3 / 14 tools** (adds `claim_item`). The deployed surface is the authority; the
   manifest is used only for the 13 shared tools' read/write annotations. `claim_item`'s
   classification (`write_non_destructive`) is **inferred**, not annotation-sourced.
-- **Stale authoring note.** [`dx-command-authoring.md`](../dx-command-authoring.md) line 72
+- **Stale authoring note.** [`dx-command-authoring.md`](../../dx-command-authoring.md) line 72
   (dated 2026-05-27) states `claim_item` "is not yet exposed in the orchestrator's tool
   surface." This is **stale** — `claim_item` is present in the live v3 surface, but wrapped by
   no `/dx:` command. (Fixing that doc is deferred to a separate doc-fix packet.)

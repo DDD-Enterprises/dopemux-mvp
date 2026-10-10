@@ -44,7 +44,7 @@ Status reconciliation note:
 - This document is an architecture explanation, not the canonical packet-status ledger.
 - For reconciled implementation status after the audit and packet stream, use:
   - `docs/05-audit-reports/rte-state-of-work-audit-20260410.md`
-  - `docs/03-reference/task-packets/rte-05-canon-reconciliation-matrix.md`
+  - `docs/05-audit-reports/rte/rte-05-canon-reconciliation-matrix.md`
   - the Packet `rte-01` through `rte-04` evidence notes
 
 ---

@@ -241,9 +241,9 @@ The following repo markdown files were scanned as primary design inputs:
 - `docs/design/specifications/imessage-extractor.md`
 - `docs/design/specifications/index.md`
 - `docs/interfaces.md`
-- `docs/policy/code-of-conduct.md`
-- `docs/policy/pr.md`
-- `docs/policy/security.md`
+- `docs/03-reference/governance/policy/code-of-conduct.md`
+- `docs/03-reference/governance/policy/pr.md`
+- `docs/03-reference/governance/policy/security.md`
 - `docs/psychology-analysis.md`
 - `docs/reference/changelog.md`
 - `docs/reference/workflow/taskmaster-integration.md`

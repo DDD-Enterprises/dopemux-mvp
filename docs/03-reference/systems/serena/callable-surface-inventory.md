@@ -11,6 +11,8 @@ prelude: Inventory and classification of repo-proven Serena callable surfaces, w
 ---
 # Serena Callable Surface Inventory
 
+For the current merged deployment/local capability view, see [capability-manifest.md](./capability-manifest.md).
+
 ## Active runtime surfaces
 
 | surface | transport | status | classification | notes |

@@ -14,4 +14,4 @@ prelude: ADHD Engine Deep Dive Part 1 (explanation) for dopemux documentation an
 
 The canonical deep dive lives under the ADHD Intelligence system docs.
 
-See [ADHD Engine Deep Dive Part 1](systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART1.md).
+See [ADHD Engine Deep Dive Part 1](adhd-engine-deep-dive-part1.md).

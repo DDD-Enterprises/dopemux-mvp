@@ -72,7 +72,6 @@ AUTHORITATIVE_BRAND_DOCS = [
     "docs/03-reference/brand-compliance-checklist.md",
     "docs/04-explanation/branding/dopemux-brand-system.md",
     "docs/04-explanation/ux/ux-style-guide.md",
-    "docs/ux/ux-style-guide.md",
 ]
 
 OPERATIONAL_UI_FILES = [

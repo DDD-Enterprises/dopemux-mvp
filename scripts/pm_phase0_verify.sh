@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-EVD_DIR="docs/planes/pm/_evidence/PM-INV-00.outputs"
-INV="docs/planes/pm/pm-plane-inventory-2.md"
-GAPS="docs/planes/pm/pm-plane-gaps-2.md"
-LEDGER="docs/planes/pm/pm-phase0-claims-ledger-2.md"
+EVD_DIR="docs/03-reference/planes/pm/_evidence/PM-INV-00.outputs"
+INV="docs/03-reference/planes/pm/pm-plane-inventory.md"
+GAPS="docs/03-reference/planes/pm/pm-plane-gaps.md"
+LEDGER="docs/03-reference/planes/pm/pm-phase0-claims-ledger.md"
 
 fail() { echo "FAIL: $1" >&2; exit 1; }
 

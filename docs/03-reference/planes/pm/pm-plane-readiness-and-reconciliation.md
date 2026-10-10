@@ -27,4 +27,4 @@ Metrics and readiness endpoints strictly align with this model:
 ## Runbooks
 
 When dealing with a degraded PM-plane operation, pending reconciliation queues growing, or rogue runtime environments:
-Please refer to the actionable runbook: [PM-Plane Runtime Recovery](../../02-how-to/operations/pm-plane-runtime-recovery.md)
+Please refer to the actionable runbook: [PM-Plane Runtime Recovery](../../../02-how-to/operations/pm-plane-runtime-recovery.md)

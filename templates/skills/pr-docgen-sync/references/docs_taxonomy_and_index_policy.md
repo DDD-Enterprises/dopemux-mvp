@@ -11,8 +11,8 @@ This skill audits and reconciles active documentation only:
 
 - `tutorial` -> `docs/01-tutorials/`
 - `how-to` -> `docs/02-how-to/`
-- `reference` -> `docs/03-reference/` (also `docs/05-audit-reports/`, `docs/systems/`, `docs/spec/`, `docs/planes/` where applicable)
-- `explanation` -> `docs/04-explanation/` (plus orchestration hubs such as `docs/planes/`, `docs/03-reference/instructions/`, and legacy `docs/instructions/`)
+- `reference` -> `docs/03-reference/` (also `docs/05-audit-reports/`, `docs/spec/`, `docs/03-reference/planes/` where applicable)
+- `explanation` -> `docs/04-explanation/` (plus orchestration hubs such as `docs/03-reference/planes/`, `docs/03-reference/instructions/`, and legacy `docs/instructions/`)
 - `adr` -> `docs/90-adr/`
 - `rfc` -> `docs/91-rfc/`
 - `runbook` -> `docs/92-runbooks/`

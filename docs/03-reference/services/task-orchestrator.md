@@ -109,9 +109,9 @@ This is runtime fact, not intended authority expansion. It means current workflo
 
 ## Evidence companions
 
-- `docs/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md`
-- `docs/planes/pm/_evidence/task-orchestrator-runtime-truth/architecture-and-intended-uses.md`
-- `docs/planes/pm/_evidence/task-orchestrator-runtime-truth/transport-and-runbook.md`
+- `docs/03-reference/planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md`
+- `docs/03-reference/planes/pm/_evidence/task-orchestrator-runtime-truth/architecture-and-intended-uses.md`
+- `docs/03-reference/planes/pm/_evidence/task-orchestrator-runtime-truth/transport-and-runbook.md`
 - `docs/05-audit-reports/supervisor-pm-mcp-server-matrix-2026-03-27.md`
 - `docs/05-audit-reports/supervisor-pm-evidence-packet-2026-03-27.md`
 - `docs/05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md`

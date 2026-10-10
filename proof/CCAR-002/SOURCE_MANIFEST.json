@@ -144,7 +144,7 @@
             "path": ".claude/personas/se-technical-writer.agent.md"
         },
         "se-ux-ui-designer.agent": {
-            "sha256": "64faf994be782b69f3cdec1d0ca847d943af3ecfa5a22b0ace0fd036d45ce220",
+            "sha256": "cef2d173e37c05c718fbd68c8908ae65a63ab92685d2db112924797762e38eef",
             "path": ".claude/personas/se-ux-ui-designer.agent.md"
         },
         "search-ai-optimization-expert.agent": {

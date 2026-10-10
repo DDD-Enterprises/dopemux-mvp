@@ -50,7 +50,7 @@ Dopemux has **two distinct voice registers**. Every surface picks one.
 
 ### 2A. Operator-Production Register (default, load-bearing)
 
-Authority: [`BRAND_SYSTEM.md`](../BRAND_SYSTEM.md) + [`VOICE_GATES.yaml`](../dopemux_voice_branding_bundle/VOICE_GATES.yaml) + [`scripts/brand_lint.py`](../scripts/brand_lint.py)
+Authority: [`docs/04-explanation/product/brand-system.md`](../docs/04-explanation/product/brand-system.md) + [`VOICE_GATES.yaml`](../dopemux_voice_branding_bundle/VOICE_GATES.yaml) + [`scripts/brand_lint.py`](../scripts/brand_lint.py)
 
 **Use for**: CLI output, logs, dashboards, HTTP error messages, TUI, any surface a non-dev user might read.
 
@@ -375,7 +375,7 @@ Ready-to-use prompt scaffolds for agents/LLMs. Inject these when generating copy
 
 1. **Runtime code** (`brand_voice.py`, `voice.py`, `brand_lint.py`) — ground truth for production behavior.
 2. [`cli-ux-design-spec.md`](../docs/04-explanation/branding/cli-ux-design-spec.md) — visual/layout authority for operator surfaces.
-3. [`BRAND_SYSTEM.md`](../BRAND_SYSTEM.md) — operator-tone rulebook (register 2A).
+3. [`docs/04-explanation/product/brand-system.md`](../docs/04-explanation/product/brand-system.md) — operator-tone rulebook (register 2A).
 4. [`BRAND_VOICE_BIBLE.md`](../dopemux_voice_branding_bundle/BRAND_VOICE_BIBLE.md) + [`VOICE_GATES.yaml`](../dopemux_voice_branding_bundle/VOICE_GATES.yaml) — personality mode system (register 2B).
 5. [`brand-resource-pack.md`](../docs/04-explanation/branding/brand-resource-pack.md) — single-page consolidation; if it disagrees with (1)–(4), it's stale.
 6. [`brand-compliance-checklist.md`](../docs/03-reference/brand-compliance-checklist.md) — release gate checklist; use before PRs.

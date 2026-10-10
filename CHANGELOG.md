@@ -3,6 +3,10 @@
 All notable changes to Dopemux (including the PR Merge Specialist) will be documented in this file.
 
 ## [Unreleased]
+
+### Changed
+- docs: consolidation workstream W0–W7 (plan and execution log: `docs/05-audit-reports/docs-consolidation-audit-and-plan-2026-10-09.md`). Nothing deleted or exported. `docs/archive/` is one frozen, manifest-indexed tree (`docs/archive/MANIFEST.jsonl`, 3,455 rows) guarded by the new `docs-archive-manifest-guard` hook, written only by `scripts/docs_archive_move.py`. The placement policy names the Diataxis roots and `legacy_roots` is empty: `planes`, `systems`, `arbitration`, `flight_deck`, `governance`, `policy`, `research`, `audit`, `integrations`, `learning`, `mobile`, `packaging`, `pr_template`, `releases`, `rollout`, `skills`, `ux`, and the root `runbooks/` folded into `01`–`06`/`90`–`92`; PM inventory evidence moved to `reports/pm-inventory/`; 195 suffix variants collapsed; eleven root markdown files relocated (`SERVICE_CATALOG.md` stays as a Truth Order anchor); the docs graph validator runs in CI again with 0 errors; `scripts/governance/validate_change_contract.py` mirrors the archive exemption. Active docs went from 1,678 to 1,155 files and `docs/` from 143 MB to 89 MB.
+
 ### Added
 - Economical Codex subagent defaults and explicit role models, with shared cost-first delegation guidance, bounded escalation, and preserved independent audit gates.
 - Autoreview platform integration stack: task packets, PAL clink audit verdict capture, read-only PR Action Bridge CLI, Copilot repair packet rendering, embedded-audit provenance workflow, offline autoreview loop fixtures, PR steward merge gates, PR steward CLI/package/scaffold/doctor flows, and final ops hardening docs.

@@ -81,7 +81,7 @@ graph_metadata:
 ---
 
 #### ADR-207 Appendix: Leantime API Research
-**File**: `docs/90-adr/adr-207-leantime-api-research-2.md`
+**File**: `docs/90-adr/adr-207-leantime-api-research.md`
 **Commit**: `df44f12a`
 **Size**: 16,640 bytes
 
@@ -94,7 +94,7 @@ graph_metadata:
 ---
 
 #### ADR-207 Appendix: 37 Tools Capabilities Inventory
-**File**: `docs/90-adr/adr-207-task-orchestrator-capabilities-2.md`
+**File**: `docs/90-adr/adr-207-task-orchestrator-capabilities.md`
 **Commit**: `02c6894b`
 **Size**: 27,602 bytes
 
@@ -111,7 +111,7 @@ graph_metadata:
 ---
 
 #### ADR-207 Appendix: Phase 1 Implementation Plan
-**File**: `docs/90-adr/adr-207-phase-1-implementation-plan-2.md`
+**File**: `docs/90-adr/adr-207-phase-1-implementation-plan.md`
 **Commit**: `0d3f46ba`
 **Size**: 1,066 lines
 
