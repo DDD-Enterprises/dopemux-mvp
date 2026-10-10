@@ -78,7 +78,7 @@ Active docs are maintained in Diataxis-aligned folders under `docs/`.
 Active subsystem and plane hubs that should be reconciled when impacted:
 - `docs/planes/pm/hub-2.md`
 - `docs/planes/pm/readme-2.md`
-- `docs/planes/pm/_evidence/readme-3.md`
+- `reports/pm-inventory/_evidence/readme-3.md` (PM inventory evidence, moved out of `docs/` in consolidation W2)
 
 Exclude these trees from mandatory active index reconciliation unless directly touched:
 - `docs/archive/**`

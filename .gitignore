@@ -278,7 +278,7 @@ services/conport_kg/auth/keys/*.pem
 dopemux-mvp-llm-*.zip
 *.zip
 !audit_inputs/**/*.zip
-!docs/planes/pm/dopemux/_opus_inputs/bundle_20260213.zip
+!reports/pm-inventory/_opus_inputs/bundle_20260213.zip
 proof/TP-DCP-MCP-RO-0001/COMMAND_LOG.md
 audit_inputs/dcp-runner-recon/REPO_SURFACE_RECON.txt
 audit_inputs/multi_model_orchestration_evidence/**/routing_model_raw.txt
@@ -368,7 +368,7 @@ out/dopetask_project_upgrade/
 .claude/*.bak_*
 
 # PM generated evidence outputs
-docs/planes/pm/_evidence/**.outputs/
+reports/pm-inventory/_evidence/**.outputs/
 
 # Local/transient output
 pbcopy

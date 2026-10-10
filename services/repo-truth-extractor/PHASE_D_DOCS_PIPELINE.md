@@ -42,9 +42,10 @@ P3_PLANES_ACTIVE =
   docs/planes/** excluding any "/_evidence/" "/_handoff/" "/_opus_inputs/"
 
 P4_PLANES_EVIDENCE =
-  docs/planes/**/_evidence/** +
-  docs/planes/**/_handoff/** +
-  docs/planes/**/_opus_inputs/**
+  reports/pm-inventory/_evidence/** +
+  reports/pm-inventory/_handoff/** +
+  reports/pm-inventory/_opus_inputs/**
+  (moved out of docs/planes/pm/ in consolidation W2, 2026-10-10)
 
 P5_TASK_PACKETS_PM_INV =
   docs/task-packets/** +

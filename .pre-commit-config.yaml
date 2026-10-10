@@ -124,6 +124,10 @@ repos:
               # not docs mirrors. Keep this exception path-specific.
               if [[ "$normalized" =~ ^\./contracts/openclaw-dcp-routing/.*\.md$ ]]; then continue; fi
 
+              # PM inventory evidence packs moved out of docs/ (consolidation W2); evidence root per
+              # src/dopemux/governed_execution/audit_identity/location.py.
+              if [[ "$normalized" =~ ^\./reports/pm-inventory/ ]]; then continue; fi
+
               # Governed-execution benchmark fixtures are synthetic runtime inputs.
               if [[ "$normalized" =~ ^\./tests/unit/governed_execution/benchmark/fixtures/ ]]; then continue; fi
 

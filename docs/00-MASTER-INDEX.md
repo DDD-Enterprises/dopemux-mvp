@@ -159,9 +159,9 @@ Status: [LOGGED] Topology Complete
 - [Supervisor Memory and PM Authority Reconciliation](05-audit-reports/supervisor-memory-pm-authority-reconciliation-2026-03-27.md)
 - [Supervisor PM and Memory Authority Enforcement Packet](05-audit-reports/supervisor-pm-memory-authority-enforcement-packet-2026-04-01.md)
 - Runtime-truth executive summaries:
-  - [Task Orchestrator](planes/pm/_evidence/task-orchestrator-runtime-truth/executive-summary.md)
-  - [Leantime](planes/pm/_evidence/leantime-runtime-truth/executive-summary.md)
-  - [dopecon-bridge](planes/pm/_evidence/dopecon-bridge-runtime-truth/executive-summary.md)
+  - [Task Orchestrator](../reports/pm-inventory/_evidence/task-orchestrator-runtime-truth/executive-summary.md)
+  - [Leantime](../reports/pm-inventory/_evidence/leantime-runtime-truth/executive-summary.md)
+  - [dopecon-bridge](../reports/pm-inventory/_evidence/dopecon-bridge-runtime-truth/executive-summary.md)
 
 ---
 
