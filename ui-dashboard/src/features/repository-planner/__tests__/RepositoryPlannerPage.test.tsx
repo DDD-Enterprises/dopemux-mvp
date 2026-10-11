@@ -179,6 +179,37 @@ describe('RepositoryPlannerPage', () => {
       });
     }
   });
+
+  test('ProvenancePanel renders copyable observed head SHA chip with interaction feedback', async () => {
+    const observedSha = adopsFixture.observed_head;
+    const shortSha = observedSha.slice(0, 12);
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      configurable: true,
+    });
+
+    try {
+      render(<RepositoryPlannerPage />);
+
+      const inspectButton = screen.getByRole('button', { name: /Inspect adOps legacy-corpus-rating-002/ });
+      fireEvent.click(inspectButton);
+
+      const observedHeadChip = screen.getByRole('button', { name: new RegExp(`Copy observed head SHA ${shortSha}`) });
+      expect(observedHeadChip).toBeVisible();
+
+      fireEvent.click(observedHeadChip);
+
+      expect(writeTextMock).toHaveBeenCalledWith(observedSha);
+      expect(await screen.findByText(`Observed head SHA ${shortSha} copied`)).toBeVisible();
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        configurable: true,
+      });
+    }
+  });
 });
 
 describe('extension registry', () => {
