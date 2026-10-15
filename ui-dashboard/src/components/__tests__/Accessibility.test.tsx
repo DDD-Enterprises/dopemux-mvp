@@ -9,6 +9,7 @@ import path from 'path';
 import PredictionPanel from '../PredictionPanel';
 import TaskSequencer from '../TaskSequencer';
 import TeamDashboard from '../TeamDashboard';
+import App from '../../App';
 
 afterEach(cleanup);
 
@@ -625,6 +626,23 @@ test('TaskSequencer Ritual Complete banner aria-live="polite" and role="status"'
   expect(banner).toBeInTheDocument();
   expect(banner).toHaveAttribute('aria-live', 'polite');
   expect(banner).toHaveAttribute('role', 'status');
+});
+
+test('App.tsx clears soft confirmation state on Escape key press and on empty notifications', () => {
+  const appContent = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
+
+  // Verify useEffect auto-resets confirmation when notifications are cleared
+  expect(appContent).toContain('useEffect(() => {');
+  expect(appContent).toContain('if (notifications.length === 0) {');
+  expect(appContent).toContain('setIsConfirmingClear(false);');
+  expect(appContent).toContain('if (clearConfirmTimeoutRef.current) {');
+  expect(appContent).toContain('clearTimeout(clearConfirmTimeoutRef.current);');
+
+  // Verify Escape key handler on Clear chip
+  expect(appContent).toContain("if (isConfirmingClear && e.key === 'Escape')");
+  expect(appContent).toContain('e.preventDefault();');
+  expect(appContent).toContain('e.stopPropagation();');
+  expect(appContent).toContain('setIsConfirmingClear(false);');
 });
 
 test('TaskSequencer step index badges accessibility and tooltip attributes', () => {
