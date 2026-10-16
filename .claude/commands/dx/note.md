@@ -7,7 +7,7 @@ allowed-tools: [
   "mcp__task-orchestrator__manage_notes",
   "mcp__task-orchestrator__query_notes"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:note — Fill or Read a Work-Item Note

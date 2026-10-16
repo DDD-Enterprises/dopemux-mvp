@@ -2,7 +2,7 @@
 description: "MCP fleet health: wraps `dopemux mcp doctor`, probes singletons, detects leaked task-orchestrator containers, offers safe prune"
 arguments: "[--prune] [--json]"
 allowed-tools: ["Bash", "Read", "Grep"]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /mcp:doctor — MCP Fleet Health Sweep

@@ -7,7 +7,7 @@ allowed-tools: [
   "mcp__task-orchestrator__complete_tree",
   "mcp__task-orchestrator__advance_item"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:complete-tree — Complete a Subtree (complete_tree)

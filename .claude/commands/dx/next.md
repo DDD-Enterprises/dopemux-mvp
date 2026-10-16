@@ -7,7 +7,7 @@ allowed-tools: [
   "mcp__task-orchestrator__get_context",
   "mcp__conport__get_context"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:next — Pick the Next Work Item

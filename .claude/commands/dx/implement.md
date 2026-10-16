@@ -8,7 +8,7 @@ allowed-tools: [
   "mcp__pal__apilookup",
   "mcp__pal__thinkdeep", "mcp__pal__debug", "mcp__pal__codereview"
 ]
-model: "claude-sonnet-4-5-20250929"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:implement - ADHD Implementation Session

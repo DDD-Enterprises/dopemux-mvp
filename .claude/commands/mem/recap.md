@@ -5,7 +5,7 @@ allowed-tools: [
   "Read", "Bash",
   "mcp__dope-memory__*"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /mem:recap — Chronicle Recap (dope-memory)

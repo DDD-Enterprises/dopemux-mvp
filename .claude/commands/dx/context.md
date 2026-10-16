@@ -7,7 +7,7 @@ allowed-tools: [
   "mcp__task-orchestrator__query_notes",
   "mcp__conport__get_context"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:context — Orchestrator Context Snapshot

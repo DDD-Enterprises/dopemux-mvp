@@ -6,7 +6,7 @@ allowed-tools: [
   "mcp__task-orchestrator__get_context",
   "mcp__task-orchestrator__advance_item"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:block — Pause a Work-Item (block trigger)
