@@ -81,5 +81,5 @@ Grok, AGY, Command Code and OpenCode require separately verified supported inter
 this candidate assumes no undocumented API for any of them.
 
 Use [interfaces](interfaces.md), [migration](migration.md) and [runbook](runbook.md)
-for precise current contracts. The [adoption record](../../architecture/full-system-r2/adoption.md)
+for precise current contracts. The [adoption record](../../04-explanation/architecture/full-system-r2/adoption.md)
 binds this candidate's source and known review history.

@@ -15,7 +15,7 @@ Use this local candidate only for trusted, reviewed deterministic commands under
 already approved outcome. Current canonical MacroPackets, child Task Packets and
 ExecutionBindings remain required upstream. A manifest or authorization reference does
 not authenticate them. See [architecture](../systems/supervisor/architecture.md) for actual
-mechanisms and [adoption](../architecture/full-system-r2/adoption.md) for review history.
+mechanisms and [adoption](../04-explanation/architecture/full-system-r2/adoption.md) for review history.
 
 ## Prepare one finite outcome
 

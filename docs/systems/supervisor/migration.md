@@ -52,7 +52,7 @@ W04 must repair PM transition success/version/SYNCED handling and the synchronou
 of async ConPort progress before those paths can provide trustworthy acceptance evidence.
 These are runtime dependencies, not wording fixes. This wave changes no PM/TO/MCP service
 state or adapter source. W02/W03/W06/W08/W09 retain the deferred custody, control, closure,
-evidence, drift, ACK and queue work listed in the [adoption record](../../architecture/full-system-r2/adoption.md).
+evidence, drift, ACK and queue work listed in the [adoption record](../../04-explanation/architecture/full-system-r2/adoption.md).
 
 ## Rollback
 

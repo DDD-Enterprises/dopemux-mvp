@@ -43,8 +43,8 @@ is part of this wave.
 
 ## Current result and proposed target
 
-The [S1 architecture](../../systems/supervisor/architecture.md) and
-[interfaces](../../systems/supervisor/interfaces.md) identify implemented symbols and tests.
+The [S1 architecture](../../../systems/supervisor/architecture.md) and
+[interfaces](../../../systems/supervisor/interfaces.md) identify implemented symbols and tests.
 The portable contract bundle is adopted as this candidate's schema input, not as enabled
 v2 runtime execution. Only a synthetic owner port is supplied; real owner integration
 fails closed until its actual native binding exists. Local same-account narrowing and
@@ -98,4 +98,4 @@ can discard an async ConPort call. W06/W08/W09 own harness/process qualification
 identity and integrity. This first wave does not repair those runtime paths through prose.
 Model adapters, actual cash meters, durable runner checkpoints and production v2 dispatch
 remain unimplemented. Separately authorized exact-subject review and owner integration
-approval are required before landing/activation. See the [migration procedure](../../systems/supervisor/migration.md).
+approval are required before landing/activation. See the [migration procedure](../../../systems/supervisor/migration.md).

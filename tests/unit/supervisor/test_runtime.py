@@ -204,16 +204,18 @@ class RuntimeTests(unittest.TestCase):
         )
 
     def test_admission_rejects_unknown_fields_paths_denials_and_route_bypass(self):
-        for mutate in [
-            lambda m: m.update(unexpected=True),
-            lambda m: m["steps"][0].update(write_paths=["../outside"]),
-            lambda m: m["gates"].update(security="UNKNOWN"),
-            lambda m: m["route"].update(kind="provider_api"),
-            lambda m: m["steps"][0].update(
-                argv=["claude", "--dangerously-skip-permissions"]
-            ),
-        ]:
-            with self.subTest(mutate=mutate):
+        for case_index, mutate in enumerate(
+            [
+                lambda m: m.update(unexpected=True),
+                lambda m: m["steps"][0].update(write_paths=["../outside"]),
+                lambda m: m["gates"].update(security="UNKNOWN"),
+                lambda m: m["route"].update(kind="provider_api"),
+                lambda m: m["steps"][0].update(
+                    argv=["claude", "--dangerously-skip-permissions"]
+                ),
+            ]
+        ):
+            with self.subTest(case_index=case_index):
                 m = self.manifest()
                 mutate(m)
                 with self.assertRaises(ValueError):
