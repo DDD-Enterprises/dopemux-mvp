@@ -3007,6 +3007,10 @@ from .commands.kernel_commands import kernel
 
 cli.add_command(kernel)
 
+from .commands.supervisor_commands import supervise
+
+cli.add_command(supervise)
+
 
 @cli.command()
 @click.argument("description", required=False)
