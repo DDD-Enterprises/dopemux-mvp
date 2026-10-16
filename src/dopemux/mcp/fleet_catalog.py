@@ -31,28 +31,30 @@ _ENV_RE = re.compile(r"\$\{[^}]+\}")
 _MCP_TOOL_SURFACE_RE = re.compile(r"\bmcp__([A-Za-z0-9_-]+)__([A-Za-z0-9_-]+|\*)")
 _CODEX_SERVER_HEADING_RE = re.compile(r'^\[mcp_servers\."([^"]+)"\]$', re.MULTILINE)
 
-# Snapshot of the ConPort JSON-RPC dispatch map in
-# docker/mcp-servers-source/conport/enhanced_server.py. Keep this static gate
-# offline and deterministic; updating the runtime surface requires updating the
-# snapshot deliberately in the same change.
+# Snapshot of the ConPort MCP SSE surface served by
+# docker/mcp-servers-source/conport/server.py on :3005 (the surface .mcp.json
+# connects Claude to; mirrored by mcp_tool_surfaces.json). Keep this static
+# gate offline and deterministic; updating the runtime surface requires
+# updating the snapshot deliberately in the same change.
 _CONPORT_TOOL_SNAPSHOT = frozenset(
     {
-        "conport_get_context",
-        "conport_update_context",
-        "conport_log_decision",
-        "conport_get_decisions",
-        "conport_log_progress",
-        "conport_get_progress",
-        "conport_update_progress",
-        "conport_get_recent_activity",
-        "conport_get_active_work",
-        "conport_get_custom_data",
-        "conport_save_custom_data",
-        "conport_delete_custom_data",
-        "conport_search_content",
-        "conport_fork_instance",
-        "conport_promote",
-        "conport_promote_all",
+        "delete_custom_data",
+        "fork_instance",
+        "get_active_work",
+        "get_context",
+        "get_custom_data",
+        "get_decisions",
+        "get_progress",
+        "get_recent_activity",
+        "log_decision",
+        "log_progress",
+        "promote",
+        "promote_all",
+        "save_custom_data",
+        "search_content",
+        "update_context",
+        "update_progress",
+        "workspace_summary",
     }
 )
 _MCP_TOOL_SNAPSHOTS = {"conport": _CONPORT_TOOL_SNAPSHOT}
