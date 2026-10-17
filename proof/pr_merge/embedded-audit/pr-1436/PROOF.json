@@ -1,0 +1,36 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1436,
+  "head_sha": "847cfe358615610d3b89a192fb328e05c10ef77a",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "opus",
+    "invocation": "claude audit --pr 1436",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1436-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Local audit attestation by allow-listed operator key"
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "claude-3-7-sonnet",
+      "model_family": "claude-3-7",
+      "runtime_family": "anthropic-api"
+    },
+    "auditor": {
+      "runner": "claude-code-cli",
+      "model": "claude-3-opus",
+      "model_family": "claude-3-opus",
+      "runtime_family": "anthropic-api",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}
