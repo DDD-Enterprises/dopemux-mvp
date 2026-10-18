@@ -154,7 +154,7 @@ archive:
   deprecated: docs/archive/deprecated/
   overview: docs/archive/overview.md
 ai_tooling:
-  claude_config: .claude/claude.md
+  claude_config: .claude/CLAUDE.md
   mcp_servers: .claude.json
   llm_instructions: .claude/llm.md
   context: .claude/context.md

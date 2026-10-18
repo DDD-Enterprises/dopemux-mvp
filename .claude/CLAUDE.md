@@ -1,9 +1,9 @@
 # Dopemux Development Platform
 
 **Project**: Python-based ADHD-optimized development platform
-**Architecture**: Simplified (ConPort + SuperClaude + Python ADHD Engine)
+**Architecture**: Python CLI (`src/dopemux/`) + services under `services/<name>/` + MCP fleet (task-orchestrator, ConPort, dope-memory, dope-context)
 **Mode**: PLAN/ACT-aware with modular authority boundaries
-**Workspace**: `<workspace_root>`
+**Canonical repo rules**: `AGENTS.md` (not auto-loaded by Claude Code; read it for packet, governance and MCP work)
 
 <!-- CONTROL_TOWER_ENTRY_BEGIN -->
 ## Control Tower Supervision
@@ -96,31 +96,19 @@ make type-check        # mypy src/
 
 ## 🧠 Core ADHD Principles
 
-- **Context Preservation**: Manual `dopemux save` and `/dx:save` support context capture; Stop hooks can perform best-effort saves when the ADHD Engine is running. A background 30-second save loop is planned/configured behavior, not observed Claude runtime support.
+- **Context Preservation**: Manual `dopemux save` and `/save` support context capture; Stop hooks can perform best-effort saves when the ADHD Engine is running. A background 30-second save loop is planned/configured behavior, not observed Claude runtime support.
 - **Gentle Guidance**: Encouraging, supportive language with clear next steps
 - **Progressive Disclosure**: Essential info first, details on request
 - **Decision Reduction**: Maximum 3 options to reduce cognitive overwhelm
 - **Task Chunking**: Use operator-managed 25-minute checkpoints with visual progress; automatic timer enforcement is not observed runtime support.
 
-## ⚡ Simplified Task & Cognitive Architecture
+## Task & memory routing (real tools)
 
-### Task Management (ConPort + SuperClaude + Python ADHD Engine)
-**Authorities**: Task storage, PRD decomposition, ADHD optimization, progress tracking
-- **ConPort (PostgreSQL AGE)**: Task storage via progress_entry, metadata in custom_data, dependencies via link_conport_items, knowledge graph queries for unblocked tasks, decision logging
-- **SuperClaude**: PRD parsing via `/dx:prd-parse` with PAL planner, 25 standard commands, 15 specialized agents, `/dx:` custom commands for ADHD workflows
-- **Python ADHD Engine**: Energy tracking, cognitive load calculation, break monitoring, attention state analysis, smart task routing, and hyperfocus-support modules. Claude-facing timer, break, and forced-pause automation remains not proven wired unless an explicit command/service path is verified.
-- **React Ink Dashboard**: Visual task progress, ADHD metrics, attention-aware UI, real-time updates
-
-### Cognitive Plane
-**Authorities**: Code intelligence, navigation, context preservation, semantic understanding
-- **Serena LSP**: Full LSP server with ADHD accommodations (max 10 results, 3-level context depth), semantic code analysis, navigation caching, Tree-sitter parsing, claude-context MCP integration
-- **ConPort**: Decision logging, knowledge graph, architectural relationship tracking, pattern storage, session persistence
-
-### Integration Layer
-**Event-Driven Coordination**: Redis Streams + EventBus + Integration Bridge
-- **Authority Enforcement**: Tool-level boundaries enforced via MetaMCP role-based filtering
-- **Event Routing**: SuperClaude → Python ADHD Engine → ConPort → Dashboard (all async)
-- **Conflict Resolution**: ConPort is source of truth for tasks, decisions, and ADHD state
+- Workflow items: task-orchestrator via `/dx:next`, `/dx:start`, `/dx:complete`, `/dx:context` (see `.claude/commands/dx/` for the rest: `block`, `blocked`, `cancel`, `depends`, `note`, `notes`, `preview`, `reopen`, `resume`, `search`, `tree`).
+- Decisions/progress: ConPort live tools `log_decision`, `get_decisions`, `log_progress`, `get_progress`, `get_context`, `update_context`, `search_content`, `save_custom_data` (surface captured in `mcp_tool_surfaces.json`).
+- Chronicle: dope-memory `memory_recap` / `memory_search`. Code/docs retrieval: dope-context `search_code` / `docs_search`. Symbols and navigation: Serena.
+- `~/.claude/MCP_*.md` are NOT auto-loaded; live tool names are in `mcp_tool_surfaces.json`.
+- Session context capture: `/save` or `dopemux save`.
 
 ## 🎯 Mode-Aware Operation
 
@@ -137,56 +125,6 @@ make type-check        # mypy src/
 **Mode Detection**: Automatic based on activity type and user context
 
 ## 🚀 Integration Points
-
-### ConPort Memory Management (AUTOMATIC)
-```bash
-# Workspace ID for ALL ConPort calls
-WORKSPACE_ID="<workspace_root>"
-
-# Mandatory session initialization
-mcp__conport__get_active_context --workspace_id "$WORKSPACE_ID"
-mcp__conport__get_recent_activity_summary --workspace_id "$WORKSPACE_ID" --hours_ago 24
-```
-
-### Sprint Management (mem4sprint)
-```bash
-# Set mode and create sprint structure
-mcp__conport__update_active_context --workspace_id "$WORKSPACE_ID" --patch_content '{"mode": "PLAN", "sprint_id": "S-2025.09"}'
-mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_goals" --key "S-2025.09-G1" --value '{"type": "sprint_goal", "content": "Goal description", "sprint_id": "S-2025.09", "status": "planned"}'
-```
-
-### Authority Routing
-- **Task Storage**: ConPort progress_entry + custom_data only (no external orchestrators)
-- **PRD Decomposition**: SuperClaude `/dx:prd-parse` with PAL planner (human review required)
-- **ADHD Optimization**: Python ADHD Engine queries ConPort, no direct task modification
-- **Decisions**: Log in ConPort only (single source of truth)
-- **Code Navigation**: Serena LSP only (LSP protocol + semantic analysis)
-- **Knowledge Graph**: ConPort PostgreSQL AGE only (decisions, patterns, relationships)
-
-## 🎯 SuperClaude Integration (v4.1.5)
-
-**Status**: Fully integrated with Dopemux MCP stack (see ConPort decisions #142–144)
-
-**Available Tools**:
-- **25 Slash Commands**: `/sc:implement`, `/sc:workflow`, `/sc:research`, `/sc:analyze`, etc.
-- **7 Behavioral Modes**: Brainstorming, Deep Research, Task Management, Token Efficiency, Orchestration, Introspection, Business Panel
-- **16 Specialized Agents**: Frontend, Backend, Security, QA, DevOps, Performance, Refactoring, etc.
-
-**MCP Customization**:
-- `sequential` → `pal` (multi-model reasoning: thinkdeep, planner, consensus, debug, codereview; formerly named `zen`)
-- `tavily` → `exa` + `gpt-researcher` (neural search + deep research)
-- Kept: `magic` (UI generation), `playwright` (testing), `context7` (docs), `serena` (code), `morphllm` (transforms)
-
-**Workflow Integration**:
-See `.claude/modules/shared/superclaude-workflows.md` for complete integration patterns, command selection guide, and ADHD session workflows.
-
-**MCP Documentation**:
-All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
-- MCP_PAL.md - Multi-model reasoning suite (6 tools; formerly MCP_Zen)
-- MCP_ConPort.md - Knowledge graph & task management (9 capabilities)
-- MCP_Serena.md - Code intelligence v2 (LSP + semantic analysis)
-- MCP_Exa.md - Neural search for simple queries
-- MCP_GPTResearcher.md - Deep multi-source research
 
 ## 🪝 Lifecycle Hooks
 
@@ -231,14 +169,12 @@ When you need comprehensive details, refer to:
 **Plugins**: `.claude/modules/shared/plugin-integration.md` (installed plugins, auto-use triggers, doctrine overrides, do-not-enable list)
 **Harness features** (Plan mode, advisor, /loop, ToolSearch, Skill): `~/.claude/MODES_AND_TOOLS.md`
 
-## 🎖️ Success Metrics
+## Repo gotchas
 
-**Target Improvements**: 77% token reduction ✅ | 85% ADHD task completion | Sub-2s context switching | Zero authority violations
-
----
-
-**Python Standards**: Type hints, pytest, PEP 8 with Black formatting, src/ layout
-**ADHD Support**: Progressive disclosure, gentle guidance, visual progress indicators active
+- dope-context source is `services/dope-context/src/` (not `src/`); service code lives under `services/<name>/`.
+- `gh pr view --json` has no `reviewThreads` or `merged` field; use `gh api graphql`, or `--json state,mergedAt`. Do not `sleep` in Bash to poll CI (the harness blocks it); use Monitor or `/loop`.
+- Secret scan tool is gitleaks (installed). `detect-secrets` and `semgrep` CLIs are not installed.
+- PR Steward "final readiness" and CodeQL fail until the embedded-audit proof is pinned to the PR head (AGENTS.md §9.1): expected, not a regression.
 
 ## 🔌 MCP Transport and Setup Rules (see AGENTS.md §12)
 

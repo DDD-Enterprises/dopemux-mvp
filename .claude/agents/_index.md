@@ -1,6 +1,6 @@
 # Agent Configuration System
 
-**Purpose**: Curated set of 4 specialized agents used by `/dx:` and `/sc:` flows
+**Purpose**: Curated set of 4 specialized agents used by `/dx:` flows
 **Design**: ADHD-optimized task specialization with clear authority boundaries
 **Fleet truth**: MCP fleet per `mcp_catalog.yaml` (ADR-MCPINT-001); model lanes per `config/ai/model-routing.policy.yaml` (advisory)
 
@@ -10,9 +10,9 @@
 
 | Agent | Mode | Tools | Specialization |
 |---|---|---|---|
-| `developer.md` | ACT | read, edit, write, grep, glob, bash | Code implementation, debugging, testing, task-packet execution |
-| `architect.md` | PLAN | read, grep, glob, web | System design, trade-off analysis, ADRs (read-only) |
-| `researcher.md` | Both | read, grep, glob, web | Investigation, technology evaluation, synthesis (read-only) |
+| `developer.md` | ACT | read, edit, write, grep, glob, bash, serena (find_symbol, get_symbols_overview, find_referencing_symbols) | Code implementation, debugging, testing, task-packet execution |
+| `architect.md` | PLAN | read, grep, glob, web, pal-stdio (thinkdeep, consensus, challenge) | System design, trade-off analysis, ADRs (read-only) |
+| `researcher.md` | Both | read, grep, glob, web, dope-context (search_code, docs_search, search_all) | Investigation, technology evaluation, synthesis (read-only) |
 | `project-manager.md` | PLAN | read, grep, glob | Status, task-packet flow, coordination (read-only) |
 
 ## Selection Matrix
@@ -61,4 +61,4 @@ Agents list no `Skill` tool, so they cannot invoke skills on demand. `skills:` i
 
 ## Model Guidance
 
-Model selection follows `config/ai/model-routing.policy.yaml` stage lanes (advisory governance): cheap lanes for reads/status, standard for implementation, strong for design/audit. Agents never invent model ids; unverifiable ids are removed, not guessed.
+Model selection follows `config/ai/model-routing.policy.yaml` stage lanes (advisory governance): cheap lanes for reads/status, standard for implementation, strong for design/audit. Frontmatter pins aliases only (`researcher`/`project-manager`: `haiku`, `developer`: `sonnet`, `architect`: `inherit`); agents never invent model ids.

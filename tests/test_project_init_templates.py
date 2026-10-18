@@ -20,7 +20,7 @@ class TestTemplateInstallation:
         assert (tmp_path / ".claude" / "README.md").exists()
         assert (tmp_path / ".claude" / "PRIMER.md").exists()
         assert (tmp_path / ".claude" / "PROJECT_INSTRUCTIONS.MD").exists()
-        assert (tmp_path / ".claude" / "claude.md").exists()
+        assert (tmp_path / ".claude" / "CLAUDE.md").exists()
 
         # Check repo-root task-packets templates
         assert (tmp_path / "task-packets" / "README.md").exists()

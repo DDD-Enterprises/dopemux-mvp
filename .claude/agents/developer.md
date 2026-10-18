@@ -1,7 +1,8 @@
 ---
 name: developer
 description: Implementation specialist for code generation, debugging, testing, and scoped task-packet execution. Use for ACT-mode work — writing and fixing code with validation.
-tools: Read, Edit, Write, Grep, Glob, Bash
+tools: Read, Edit, Write, Grep, Glob, Bash, mcp__serena__find_symbol, mcp__serena__get_symbols_overview, mcp__serena__find_referencing_symbols
+model: sonnet
 skills:
   - andrej-karpathy-skills:karpathy-guidelines
   - superpowers:verification-before-completion

@@ -544,3 +544,26 @@ def test_read_tool_never_warns():
         inp = {"file_path": str(_ROOT / "mcp_catalog.yaml")}
         warnings = surface_guard_warnings(tool, inp, _ROOT, "sess-6")
         assert warnings == [], f"Expected no warn for {tool}"
+
+
+# ---------------------------------------------------------------------------
+# MultiEdit parity (audit F-05)
+# ---------------------------------------------------------------------------
+
+def test_blocks_multiedit_on_red_lane_path():
+    inp = {"file_path": str(_ROOT / ".github/workflows/ci-complete.yml"), "edits": []}
+    result = surface_guard_block("MultiEdit", inp, _ROOT)
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_multiedit_on_ordinary_path_not_blocked():
+    inp = {"file_path": str(_ROOT / "README.md"), "edits": []}
+    assert surface_guard_block("MultiEdit", inp, _ROOT) is None
+
+
+def test_multiedit_surface_warning_matches_edit(tmp_path):
+    inp = {"file_path": str(_ROOT / "src/dopemux/dcp/red_lane_rules.py")}
+    edit = surface_guard_warnings("Edit", inp, tmp_path, "s-edit")
+    multi = surface_guard_warnings("MultiEdit", inp, tmp_path, "s-multi")
+    assert bool(edit) == bool(multi)

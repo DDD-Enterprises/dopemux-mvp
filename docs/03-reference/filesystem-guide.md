@@ -20,7 +20,7 @@ prelude: Where things live and where new things should go. Canonical filesystem 
 | `scripts/` | Operator/utility scripts (Bash, Python). Never put one-off scripts in repo root. |
 | `services/` | Service implementations and MCP wrappers (`services/serena/`, `services/dope-context/`, `scripts/mcp-wrappers/`). |
 | `docs/` | All documentation (Diataxis structure, see below). |
-| `.claude/` | Claude Code configuration: tracked `settings.json`, `claude.md`, `modules/`, `statusline.sh`, and optional ignored local overrides such as `settings.local.json`. |
+| `.claude/` | Claude Code configuration: tracked `settings.json`, `CLAUDE.md`, `modules/`, `statusline.sh`, and optional ignored local overrides such as `settings.local.json`. |
 | `claudedocs/` | Reserved destination for Claude-authored analyses, summaries, and reports. Create it when committing durable Claude output there; do not use arbitrary root paths. |
 | `out/` | Generated artifacts (build outputs, audit bundles). Usually ephemeral; committed artifacts must be intentional evidence outputs for the active work scope. |
 | `docker/` | Container build assets (`docker/mcp-servers/`, etc.). |
@@ -81,7 +81,7 @@ Index surfaces: `docs/00-MASTER-INDEX.md`, `docs/INDEX.md`, `docs/docs_index.yam
 
 ## Cross-references
 
-- `.claude/claude.md` (project) — authority routing and high-level structure.
+- `.claude/CLAUDE.md` (project) — authority routing and high-level structure.
 - `.claude/modules/_index.md` — active vs deprecated modules.
 - `docs/03-reference/documentation-catalog.md` — canonical list of active index surfaces and policy files.
 - `~/.claude/RULES.md` — global file-organization and workspace-hygiene rules.
