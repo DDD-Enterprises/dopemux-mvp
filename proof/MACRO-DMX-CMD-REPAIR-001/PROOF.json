@@ -226,13 +226,13 @@
       "response_sha256": "7fbd145b8cfc1896ac953126029957d3dcf19e78f415e06a08313c19748c5660",
       "stream_sha256": "e6fd24c16462330bf65ddb0fc0e1fe3a6c093423c5b5aee9a02d4911080a7684",
       "frozen_diff_sha256": "ec458cc90e56166dc36203a95a881132562ba1356b3f30a7900c9d2d6d4135e6",
-      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT-02/"
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/ (files AUDIT02_*)"
     },
     "audit_01_superseded": {
       "verdict": "FAIL",
       "head": "70eb50363f2cb1ff59758a9321faf9d033684b40",
       "frozen_diff_sha256": "3ed3a84060ece85437cc68f99c46dc9378c473c77b18d237cab046ea62a253cc",
-      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT-01/"
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/ (files AUDIT01_*)"
     }
   },
   "embedded_audit": {
