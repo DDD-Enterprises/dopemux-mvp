@@ -5,8 +5,9 @@ root where repo state is needed) and returns a list of violation strings, so
 the same helpers can be pointed at synthetic or historical command trees.
 
 Checks:
-1. ``mcp__<server>__<tool>`` names a tool in ``mcp_tool_surfaces.json``
-   when the server has a captured (live/seed, non-empty) tool list.
+1. ``mcp__<server>__<tool>`` and ``/mcp <server> <tool>`` name a tool in
+   ``mcp_tool_surfaces.json`` when the server has a captured (live/seed,
+   non-empty) tool list.
    ``mcp__<server>__*`` is a server reference only (no tool check).
 2. Every referenced MCP server (wildcards included) is known to the surfaces
    snapshot, the MCP catalog or ``.mcp.json``; referenced servers with no
@@ -27,7 +28,7 @@ COMMANDS_DIR = REPO_ROOT / ".claude" / "commands"
 # Servers referenced by commands that have no captured tool list, so their tool
 # names cannot be verified. A new unverifiable server must be added here
 # deliberately; a server that gains a captured list must be removed.
-UNVERIFIED_SERVERS = frozenset({"pal", "gpt-researcher"})
+UNVERIFIED_SERVERS = frozenset({"pal-stdio", "gpt-researcher"})
 
 ALLOWED_COMMAND_MODELS = frozenset(
     {
@@ -42,13 +43,18 @@ ALLOWED_COMMAND_MODELS = frozenset(
 )
 
 _CAPTURED_SOURCES = frozenset({"live", "seed"})
-# Tool token: a bare ``*`` (server wildcard) or a full name with optional
-# hyphenated parts, so ``get_context-foo`` is not truncated to ``get_context``.
-_MCP_TOOL = r"(\*|[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*)"
-_MCP_REF = re.compile(r"mcp__([A-Za-z0-9-]+)__" + _MCP_TOOL)
-# NOTE: the ``/mcp <server> <tool>`` prose form is intentionally unchecked.
-# zen.md and zen-continue.md currently reference a nonexistent ``zen`` server
-# (follow-up packet); a prose scan would flag them.
+# Tool token: any run of name characters (or a bare ``*`` server wildcard) up
+# to a non-name character, so malformed tokens such as ``get_context--bad`` or
+# ``*bad`` are captured whole and reported instead of truncating to a valid
+# prefix. Server names may contain single underscores (``MCP_DOCKER``); the
+# ``__`` separator ends the lazy server group.
+_MCP_TOOL = r"([A-Za-z0-9_*-]+)"
+_MCP_SERVER = r"([A-Za-z0-9-]+(?:_[A-Za-z0-9-]+)*?)"
+_MCP_REF = re.compile(r"mcp__" + _MCP_SERVER + r"__" + _MCP_TOOL)
+# Prose form ``/mcp <server> <tool>``.
+_MCP_PROSE_REF = re.compile(
+    r"(?<![\w/])/mcp\s+([A-Za-z0-9_-]+)\s+([A-Za-z0-9_*-]+)"
+)
 # Repo-root ``scripts/`` paths, optionally ``./scripts/`` (not nested).
 _SCRIPT_PATH = r"scripts/[A-Za-z0-9_./-]+\.(?:py|sh)\b"
 _SCRIPT_REF = re.compile(r"(?<![\w/.-])(?:\./)?" + _SCRIPT_PATH)
@@ -60,13 +66,14 @@ def _command_files(commands_dir: Path) -> list[Path]:
 
 
 def _mcp_refs(commands_dir: Path):
-    """Yield (location, server, tool) for every mcp__server__tool mention."""
+    """Yield (location, server, tool) for mcp__s__t or /mcp s t mentions."""
     for path in _command_files(commands_dir):
         rel = path.relative_to(commands_dir)
         text = path.read_text(encoding="utf-8")
         for lineno, line in enumerate(text.splitlines(), start=1):
-            for match in _MCP_REF.finditer(line):
-                yield f"{rel}:{lineno}", match.group(1), match.group(2)
+            for pattern in (_MCP_REF, _MCP_PROSE_REF):
+                for match in pattern.finditer(line):
+                    yield f"{rel}:{lineno}", match.group(1), match.group(2)
 
 
 def _surface_servers(repo_root: Path) -> dict:
@@ -225,21 +232,23 @@ def test_should_report_violation_when_server_is_unknown(tmp_path):
 
 
 def test_should_report_violation_when_unverified_server_unlisted(tmp_path):
-    _write_command(tmp_path, "Use `mcp__pal__thinkdeep` here.")
+    _write_command(tmp_path, "Use `mcp__pal-stdio__thinkdeep` here.")
 
     violations = check_mcp_servers(tmp_path, REPO_ROOT, unverified=frozenset())
 
-    assert any("'pal'" in v and "UNVERIFIED_SERVERS" in v for v in violations)
+    assert any(
+        "'pal-stdio'" in v and "UNVERIFIED_SERVERS" in v for v in violations
+    )
 
 
 def test_should_report_violation_when_unverified_entry_is_stale(tmp_path):
     _write_command(tmp_path, "Use `mcp__conport__get_context` here.")
 
-    stale = frozenset({"pal"})
+    stale = frozenset({"pal-stdio"})
 
     violations = check_mcp_servers(tmp_path, REPO_ROOT, unverified=stale)
 
-    assert any("UNVERIFIED_SERVERS entry 'pal'" in v for v in violations)
+    assert any("UNVERIFIED_SERVERS entry 'pal-stdio'" in v for v in violations)
 
 
 def test_should_report_violation_when_model_pin_is_stale(tmp_path):
@@ -303,11 +312,13 @@ def test_should_accept_wildcard_when_server_is_known_and_captured(tmp_path):
 def test_should_require_unverified_listing_when_wildcard_server_uncaptured(
     tmp_path,
 ):
-    _write_command(tmp_path, "Use `mcp__pal__*` here.")
+    _write_command(tmp_path, "Use `mcp__pal-stdio__*` here.")
 
     violations = check_mcp_servers(tmp_path, REPO_ROOT, unverified=frozenset())
 
-    assert any("'pal'" in v and "UNVERIFIED_SERVERS" in v for v in violations)
+    assert any(
+        "'pal-stdio'" in v and "UNVERIFIED_SERVERS" in v for v in violations
+    )
 
 
 def test_should_report_violation_when_dot_slash_script_is_missing(tmp_path):
@@ -332,3 +343,61 @@ def test_should_ignore_nested_scripts_dir_when_not_repo_root_scripts(tmp_path):
     _write_command(tmp_path, "See foo/scripts/x.py and xscripts/a.py.")
 
     assert check_script_refs(tmp_path, REPO_ROOT) == []
+
+
+# --- Prose scan and regex-edge negative controls (follow-up W08) -----------
+
+
+def test_should_report_violation_when_prose_tool_is_not_captured(tmp_path):
+    _write_command(tmp_path, "Call: /mcp conport no_such_tool {}")
+
+    violations = check_mcp_tool_refs(tmp_path, REPO_ROOT)
+
+    assert len(violations) == 1
+    assert "mcp__conport__no_such_tool" in violations[0]
+
+
+def test_should_report_violation_when_prose_server_is_unknown(tmp_path):
+    _write_command(tmp_path, "Call: /mcp zen execute_workflow {}")
+
+    violations = check_mcp_servers(tmp_path, REPO_ROOT)
+
+    assert any("unknown MCP server 'zen'" in v for v in violations)
+
+
+def test_should_accept_prose_reference_when_tool_is_captured(tmp_path):
+    _write_command(tmp_path, "Call: /mcp conport get_context {}")
+
+    assert check_mcp_tool_refs(tmp_path, REPO_ROOT) == []
+    assert check_mcp_servers(tmp_path, REPO_ROOT, frozenset()) == []
+
+
+def test_should_ignore_slash_mcp_when_embedded_in_a_path(tmp_path):
+    _write_command(tmp_path, "See docs/mcp zen thing and a/mcp zen x.")
+
+    assert list(_mcp_refs(tmp_path)) == []
+
+
+def test_should_report_violation_when_tool_token_is_malformed(tmp_path):
+    _write_command(tmp_path, "Use `mcp__conport__get_context--bad` here.")
+
+    violations = check_mcp_tool_refs(tmp_path, REPO_ROOT)
+
+    assert len(violations) == 1
+    assert "get_context--bad" in violations[0]
+
+
+def test_should_report_violation_when_wildcard_has_trailing_garbage(tmp_path):
+    _write_command(tmp_path, "Use `mcp__conport__*bad` here.")
+
+    violations = check_mcp_tool_refs(tmp_path, REPO_ROOT)
+
+    assert len(violations) == 1
+
+
+def test_should_parse_server_name_when_it_contains_an_underscore(tmp_path):
+    _write_command(tmp_path, "Use `mcp__MCP_DOCKER__some_tool` here.")
+
+    servers = {s for _loc, s, _t in _mcp_refs(tmp_path)}
+
+    assert servers == {"MCP_DOCKER"}
