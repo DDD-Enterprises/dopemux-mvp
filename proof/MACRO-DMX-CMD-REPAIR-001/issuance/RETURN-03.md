@@ -7,7 +7,7 @@
 
 - **Audited content head**: `7c6cfc0370092c6076d227e7eaaf05203d379303`, base `95e95bee88cae5e6c95e6e34f7c28bb423ad9496`.
 - **Size**: 6 commits, 48 files, +454/−107. The audited diff's sha256 is `ec458cc90e56166dc36203a95a881132562ba1356b3f30a7900c9d2d6d4135e6`.
-- **Proof-only successor**: two commits on top add the proof bundle `proof/MACRO-DMX-CMD-REPAIR-001/` and the issuance package under `proof/MACRO-DMX-CMD-REPAIR-001/issuance/` (the package was first committed under `task-packets/`, then moved because the preflight rejects GEC v2 packets and these documents there; see its README). All paths are L0, and no audited content changed. The SHAs are in `git log`.
+- **Proof-only successor**: three commits on top add the proof bundle `proof/MACRO-DMX-CMD-REPAIR-001/` and the issuance package under `proof/MACRO-DMX-CMD-REPAIR-001/issuance/` (the package was first committed under `task-packets/`, then moved because the preflight rejects GEC v2 packets and these documents there; see its README). All paths are L0, and no audited content changed. The SHAs are in `git log` (`4a861a70d`, `571f727a6`, and this correction).
 
 | Commit | WS | Files | Requested → observed model | Advisor |
 |---|---|---|---|---|
@@ -49,11 +49,12 @@
 | `git diff --check` | PASS |
 | black / flake8 on the new test | PASS / PASS |
 | `ct validate-binding` coordinator + W01–W06 | PASS |
-| `embedded_audit` against the schema | PASS (0 errors; a bad-combination control fails as expected). The repo's `validate_audit_proof.py --all` skipped this path: its `proof/.validator_scope.json` doesn't include this id. |
+| `embedded_audit` against the schema | PASS (0 errors; a bad-combination control fails as expected). The repo's pre-commit hook "Validate proof bundle embedded_audit schema" also passed on the final head. Only `validate_audit_proof.py --all` skipped this path, because `proof/.validator_scope.json` doesn't list this id. |
 | `make test` full suite | NOT_RUN |
 | Live ConPort :3005 qualification | NOT_RUN (the July capture is historical; source agrees) |
 | `ct return-pack` | NOT_RUN |
 | `PROOF.json.sig` | NOT_RUN: signing needs the operator's key |
+| Preflight on the final head (`origin/main..HEAD`) | PASS (max lane L2). An earlier proof head failed it because of the `task-packets/` placement; relocated in `571f727a6` |
 
 ## Residual risks and open items
 
@@ -61,7 +62,7 @@
 2. **`pal` vs `pal-stdio` naming**: `plan.md` versus `dx/implement.md` and `dx/note.md`. Pre-existing, out of scope.
 3. **Two minor regex edges** in the drift gate: underscore server names, and malformed tokens like `get_context--bad` truncating to a valid prefix. Only `MCP_DOCKER` has an underscore and no command references it.
 4. **ConPort semantics**: `get_custom_data` fetches whole categories; `search_content` has no limit; `update_context` merge-versus-replace is UNKNOWN.
-5. **PR Steward / CI**: the exact-model gap means PR Steward may not treat the audit as READY. The `proof/.validator_scope.json` omission means CI won't enforce this bundle.
+5. **PR Steward / CI**: the exact-model gap means PR Steward may not treat the audit as READY. The pre-commit schema hook validated this bundle; only the `--all` scope list in `proof/.validator_scope.json` omits this id (corrected from an earlier draft that said CI would not enforce the bundle).
 6. **Docs drift**: `docs/02-how-to/mcp-integration-guide.md:165-167` still describes the old snapshot. It is outside every allowlist.
 7. **Main checkout** still holds another actor's uncommitted doctrine edits, plus the pre-existing untracked files. Untouched.
 

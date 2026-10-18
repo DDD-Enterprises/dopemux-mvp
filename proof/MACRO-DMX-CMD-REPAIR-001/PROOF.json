@@ -7,7 +7,7 @@
   "base_sha": "95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
   "audited_head_sha": "7c6cfc0370092c6076d227e7eaaf05203d379303",
   "head_sha": "7c6cfc0370092c6076d227e7eaaf05203d379303",
-  "commit_sha": "UNKNOWN until this proof-only successor commit is created; the audited content head is 7c6cfc0370092c6076d227e7eaaf05203d379303",
+  "commit_sha": "Audited content head 7c6cfc0370092c6076d227e7eaaf05203d379303; proof-only successors 4a861a70d and 571f727a6 (see git log for the final head)",
   "pr_url_or_blocker": "NO PR: push, PR publication and merge are operator gates and were not authorized",
   "slices": [
     {
@@ -189,6 +189,17 @@
       "exit_code": null,
       "bucket": "NOT_RUN",
       "reason": "requires current binding at package path; local aggregate returns written instead"
+    },
+    {
+      "command": "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD (final proof head)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "max_lane L2; an earlier proof head failed on task-packets/ placement and was fixed by relocation"
+    },
+    {
+      "command": "pre-commit hook: Validate proof bundle embedded_audit schema",
+      "exit_code": 0,
+      "bucket": "PASS"
     }
   ],
   "codereview_status": "Independent final audit AUDIT-02 PASS_WITH_RISKS (agy gemini-4-argon-high, operator-approved fallback); AUDIT-01 FAIL on superseded head 70eb50363, repaired by W06. No PAL codereview run.",
