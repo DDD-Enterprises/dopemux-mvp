@@ -11,7 +11,7 @@
 - **Base**: `95e95bee88cae5e6c95e6e34f7c28bb423ad9496` (fresh `origin/main` at start).
 - **Size**: 5 commits, 48 files, +368/−104. The diff's sha256 is `3ed3a84060ece85437cc68f99c46dc9378c473c77b18d237cab046ea62a253cc`.
 - **Not pushed**: no PR, no merge.
-- **Not in the branch**: the issuance package (`proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/issuance/`) is still untracked in the main checkout.
+- **Not in the branch**: the issuance package (`proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/`) is still untracked in the main checkout.
 
 | Commit | WS | Files | Model (requested → observed) | Advisor |
 |---|---|---|---|---|
