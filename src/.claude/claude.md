@@ -1,8 +1,8 @@
 # Source Code Context
 
-> **TL;DR**: Core `dopemux` package. Type hints required, Pydantic v2 for data, FastAPI patterns. Use Serena (`mcp__serena__*`) for symbol navigation before deep dives.
+> **TL;DR**: Core `dopemux` package. Type hints required, Pydantic v2 for boundary data (config, API payloads, persisted files), FastAPI patterns for API modules. Use Serena (`mcp__serena__*`) for symbol navigation before deep dives.
 
-**Inherits**: Root context (MCP tools, Do/Don't rules)
+**Inherits**: the root `AGENTS.md` and `.claude/claude.md`, which load alongside this file.
 
 ---
 
@@ -57,7 +57,7 @@ Other top-level packages in `src/`: `conport`, `core`, `integrations`, `utils`, 
 
 ### Required
 - **Type hints** on all public functions
-- **Pydantic models** for all data structures
+- **Pydantic models** for data that crosses a boundary (config, API payloads, persisted files); `@dataclass` is the existing norm for internal records
 - **Docstrings** for public APIs
 - **Complexity < 10** per function
 

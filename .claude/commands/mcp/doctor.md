@@ -2,7 +2,7 @@
 description: "MCP fleet health: wraps `dopemux mcp doctor`, probes singletons, detects leaked task-orchestrator containers, offers safe prune"
 arguments: "[--prune] [--json]"
 allowed-tools: ["Bash", "Read", "Grep"]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /mcp:doctor — MCP Fleet Health Sweep
@@ -39,10 +39,7 @@ curl -s -o /dev/null -w '%{http_code}' --max-time 2 <url-from-catalog>
 # desktop-commander exposes a /health endpoint — use it for a cleaner check.
 ```
 
-If a singleton is down, the fix is its `docker_compose_service` from the catalog:
-```bash
-docker compose up -d <service>
-```
+If a singleton is down, name its `docker_compose_service` from the catalog and tell the operator to start it through `dopemux mcp` (fleet services are not started with raw `docker compose up` or `docker run`).
 
 Report each singleton: name / scope / transport / status / fix (if down).
 
@@ -131,9 +128,4 @@ ADHD: list max 3 fix actions prominently with their exact commands; collapse the
 ## Notes for Claude
 
 - **Never run `docker kill` without `--prune`** — without the flag, print commands only.
-- The durable fix for container leaks is the HTTP-singleton transport cutover
-  (`MCP_TRANSPORT=http`, POC-verified 2026-05-31). This doctor command is the mitigation
-  until that cutover packet runs.
-- The leaked-container check belongs inside `dopemux mcp doctor` CLI eventually — this
-  skill validates the check before that promotion.
-- Model: `claude-sonnet-4-5` per routing policy.
+- Leaks come from stdio-launched containers (`task-orchestrator-current-stdio.sh`); the HTTP singleton (`task-orchestrator-http-singleton.sh`, reserved port 7890) is the durable path.

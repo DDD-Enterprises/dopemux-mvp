@@ -86,10 +86,6 @@ Use this file as the root pointer for active documentation navigation and mainte
 ## Skill Templates for Documentation Sync
 
 - Core skill: `templates/skills/pr-docgen-sync/`
-- Wrappers:
-  - `templates/skills/pr-docgen-sync-gemini/`
-  - `templates/skills/pr-docgen-sync-copilot/`
-  - `templates/skills/pr-docgen-sync-claude/`
 - PR Merge Specialist skill: `templates/skills/pr-merge-specialist/`
 - Skill installer script: `scripts/skills/sync_repo_skills.py`
 - Workflow kit skill pack:

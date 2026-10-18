@@ -7,7 +7,7 @@ allowed-tools: [
   "mcp__task-orchestrator__get_context",
   "mcp__conport__conport_get_context"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:next — Pick the Next Work Item
@@ -91,7 +91,7 @@ top candidate unless your energy/focus calls for something else.
 
 Next actions:
   /dx:context <id>       → see full gate status + missing notes
-  /dx:start <id>         → claim + advance to work (when wrapper ships)
+  /dx:start <id>         → advance to work (gate-checked)
   /dx:next --limit 10    → see more candidates
 ```
 

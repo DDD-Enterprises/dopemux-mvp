@@ -2,7 +2,7 @@
 description: "Scaffold, validate, or force-track a proof bundle (AGENTS.md §9 + TP-DMX-PROOF-TRACKING-POLICY-001)"
 arguments: "<scaffold|validate|track> <TP-ID> [--strict]"
 allowed-tools: ["Bash", "Read", "Write", "Edit", "Glob", "Grep"]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /proof:bundle — Proof Bundle Lifecycle
@@ -96,7 +96,7 @@ git add -f proof/<TP-ID>/PROOF.json proof/<TP-ID>/SUMMARY.md proof/<TP-ID>/AUDIT
 
 Check an existing bundle for completeness, CI parity, and git-tracking status.
 
-**3a — Schema layer** (CI parity — same gate as `ci-complete.yml:475`):
+**3a — Schema layer** (CI parity — same gate as the audit-proof step in `.github/workflows/ci-complete.yml`):
 ```bash
 python scripts/audit/validate_audit_proof.py --all proof/<TP-ID>/
 ```
@@ -189,4 +189,3 @@ Print exactly what was staged and what was deliberately skipped (with reason).
   The force-add is the deliberate exception per policy.
 - Haiku is intentionally NOT used here — proof-bundle scaffolding requires judgment about
   AGENTS.md §9 field completeness. Sonnet is the correct tier.
-- Model: `claude-sonnet-4-5` per routing policy.

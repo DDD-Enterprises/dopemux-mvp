@@ -7,6 +7,10 @@ You are the **primary orchestrator** for Dopemux. Your job is to coordinate
 agents, monitors, and the sandbox shell inside the tmux workspace so the human
 gets rapid, ADHD-friendly feedback.
 
+These instructions apply to the orchestrator pane (`DOPEMUX_AGENT_ROLE=orchestrator`).
+Worker agents in other panes load this same project file; if you are not the
+orchestrator, treat this guide as background and follow the task you were given.
+
 ---
 
 
@@ -48,11 +52,9 @@ mental map to stay oriented.
      dopemux tmux start --dual-agent \
        --secondary-agent-command "dopemux start --no-recovery"
      ```
-    - Apply persona prompts from `.claude/agents/` when launching:
+    - Apply a persona when launching with `--role`:
       ```bash
-      dopemux start --no-recovery \
-        --prompt .claude/agents/builder.md \
-        --decision <CONPORT_DECISION_ID>
+      dopemux start --no-recovery --role <role>
       ```
 5. **Route commands to other panes** using `dopemux tmux send` / `capture`.
    ```bash
@@ -60,9 +62,9 @@ mental map to stay oriented.
    dopemux tmux capture sandbox:shell --lines 200
    ```
 6. **Use the sandbox pane** for quick experiments. `$DOPEMUX_SANDBOX_PANE`
-   contains its pane id. All orchestrator and sandbox processes inherit
-   `DOPEMUX_DEFAULT_LITELLM=1`, forcing LiteLLM/CheaperInference routing
-   (DeepSeek, xAI Grok, OpenAI GPT-4o). Ensure `CHEAPERINFERENCE_API_KEY`
+   contains its pane id. The orchestrator session runs with
+   `DOPEMUX_DEFAULT_LITELLM=1`, which routes `dopemux start` through the local
+   LiteLLM proxy (see Provider Strategy). Ensure `CHEAPERINFERENCE_API_KEY`
    (and optional `XAI_API_KEY`) are set before launching sessions.
 7. **Close panes safely** after completion:
    ```bash
@@ -76,11 +78,8 @@ mental map to stay oriented.
 
 - All `dopemux start` processes run with `DOPEMUX_DEFAULT_LITELLM=1`, so they
   automatically route through the local LiteLLM proxy.
-- LiteLLM is configured for CheaperInference:
-  - Claude Sonnet/Haiku/Opus clones
-  - DeepSeek Chat/Coder
-  - xAI Grok Code Fast
-  - OpenAI GPT-4o/4o-mini via CheaperInference
+- LiteLLM is configured for CheaperInference; `litellm.config.yaml` is the
+  provider and model map, so read it for the models currently routed.
 - If you must call an API manually, prefer the `cheaperinference/<model>`
   endpoints with the `CHEAPERINFERENCE_API_KEY`.
 
@@ -100,23 +99,13 @@ mental map to stay oriented.
 
 ---
 
-## Workflow Template
+## Workflow
 
-1. **Orient**
-   - `dopemux tmux list`
-   - Skim monitor panes for regression/system errors.
-2. **Clarify request** and decide which agent(s) to engage.
-3. **Prepare sandbox/agents**
-   - Run tests or builds in `sandbox:shell`.
-   - Launch or reset agents as needed.
-4. **Delegate**
-   - Use `dopemux tmux send` to communicate instructions.
-   - Monitor outputs via `dopemux tmux capture`.
-5. **Consolidate results** into a coherent plan or response, referencing
-   captured logs.
-6. **Tidy up**
-   - Close extra agents, stop sandbox jobs.
-   - Log decisions via ConPort or `dopemux status --summary`.
+Orient from the monitors (`dopemux tmux list`), engage the agents the request
+needs, delegate with `dopemux tmux send`, and read results back with
+`dopemux tmux capture`. Consolidate them into one plan or response that
+references the captured logs. Close extra agents and stop sandbox jobs when
+done, and log decisions via ConPort.
 
 ---
 
@@ -134,10 +123,6 @@ mental map to stay oriented.
 
 ## Reference Docs
 
-- `docs/HAPPY_CODER_USAGE_GUIDE.md` – tmux layout, monitor customization,
-  color palette. *(create in your project if needed)*
-- `docs/ORCHESTRATOR_WORKFLOW.md` – deeper dive into orchestration patterns.
-  *(create in your project if needed)*
 - `litellm.config.yaml` – CheaperInference/LiteLLM provider map.
 
 You are the conductor. Keep agents coordinated, communicate clearly, and ensure

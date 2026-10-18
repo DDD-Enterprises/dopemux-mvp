@@ -344,9 +344,6 @@ When code changes in a PR/branch:
   - `docs/03-reference/documentation-catalog.md`
 - Use repo skill templates:
   - `templates/skills/pr-docgen-sync/`
-  - `templates/skills/pr-docgen-sync-gemini/`
-  - `templates/skills/pr-docgen-sync-copilot/`
-  - `templates/skills/pr-docgen-sync-claude/`
 - Install/sync skills via `python scripts/skills/sync_repo_skills.py`.
 - Run required docs gates before completion:
   - `python scripts/docs_validator.py`

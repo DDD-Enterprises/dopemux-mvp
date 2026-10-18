@@ -9,6 +9,3 @@ Use **ConPort** to attach a structured note to the current workspace.
 3) Return the note id and a brief confirmation.
 
 **Tools**: ConPort only.
-
-> Token thrift:
-- **ConPort**: prefer summaries/search with small `limit` (3–5) before full context.

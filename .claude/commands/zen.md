@@ -1,3 +1,2 @@
-Route instruction to **Zen** for multi-model handling.
-Call: /mcp zen execute_workflow {"instruction":"<multi-step instruction>"}
-Examples: deep code review, long debugging, context-recovery.
+Route instruction to **PAL** (`mcp__pal-stdio__*`) for multi-model handling.
+Pick the tool that fits: `codereview` (deep code review), `debug` (long debugging), `thinkdeep`, `planner`, or `consensus`.

@@ -6,7 +6,7 @@ allowed-tools: [
   "mcp__task-orchestrator__get_context",
   "mcp__task-orchestrator__advance_item"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:cancel — Cancel a Work-Item (cancel trigger)
@@ -38,7 +38,7 @@ Authoring reference: [`docs/03-reference/dx-command-authoring.md`](../../../docs
 ⚠️ Cancelling this may auto-terminal its parent <parent title> (cascade).
    If the parent is a long-running container/series, reopen it afterward.
 ```
-If the item itself has non-terminal children, warn that they are NOT auto-cancelled — cancel them individually first. (A one-shot `/dx:complete-tree <id> --cancel-incomplete` is planned in TP-CS-043 but not yet shipped.)
+If the item itself has non-terminal children, warn that they are NOT auto-cancelled — cancel them individually first, or use `/dx:complete-tree <id> --cancel-incomplete` to complete what can complete and cancel the rest in one pass.
 
 **2d — Confirm (required) + transition.** Cancellation is a deliberate abandonment — confirm before acting, then:
 ```

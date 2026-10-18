@@ -3,4 +3,4 @@ Output a **unified diff (patch)** for the minimal set of changes to implement th
 Rules:
 - Keep it surgical; do not include unrelated files.
 - Ensure the patch applies with: `git apply -p0 < patch.diff` from repo root.
-- After apply, run: `pytest -q`, `ruff check .`, `mypy --ignore-missing-imports .`; then update `/docs` & ADRs and proceed to PR.
+- After apply, run `make test-fast`, `make lint`, and `make type-check`; then update `/docs` & ADRs and proceed to PR.

@@ -2,7 +2,7 @@
 description: "DCP regression gate: red-lane scanner + denied-route token sweep + denylist tests; output paste-ready for COMMAND_LOG.md"
 arguments: "[--files <paths>] [--base <ref>]"
 allowed-tools: ["Bash", "Read", "Grep", "Glob"]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dcp:denylist-check — DCP Regression Gate
@@ -21,7 +21,7 @@ route manifest, or files near the red-lane seam.
 - `--files <paths>` → use exactly those files (space-separated)
 - Otherwise, changed files vs `--base` (default `origin/main`):
   ```bash
-  git diff --name-only $(git merge-base origin/main HEAD)..HEAD
+  git diff --name-only $(git merge-base <base> HEAD)..HEAD   # <base> = --base value, default origin/main
   git status --porcelain   # also include dirty (unstaged) files
   ```
   Combine and deduplicate the two lists.
@@ -139,4 +139,3 @@ result: <N passed / N failed>
   Only flag it as a problem when proof-paths are provided and the scanner still returns
   non-zero.
 - This command is read-only — it never modifies the manifest, adapters, or tests.
-- Model: `claude-sonnet-4-5` per routing policy.

@@ -383,22 +383,6 @@ Never start fleet services outside `dopemux mcp` (compose/docker-run/shell wrapp
 design packet P-22). While ConPort/dope-memory/serena remain worktree-scoped, N worktrees cost 3N containers —
 this is expected, not a bug, until the gates above land.
 
-Respond terse like smart caveman. All technical substance stay. Only fluff die.
-
-Rules:
-- Drop: articles (a/an/the), filler (just/really/basically), pleasantries, hedging
-- Fragments OK. Short synonyms. Technical terms exact. Code unchanged.
-- Pattern: [thing] [action] [reason]. [next step].
-- Not: "Sure! I'd be happy to help you with that."
-- Yes: "Bug in auth middleware. Fix:"
-
-Switch level: /caveman lite|full|ultra|wenyan
-Stop: "stop caveman" or "normal mode"
-
-Auto-Clarity: drop caveman for security warnings, irreversible actions, user confused. Resume after.
-
-Boundaries: code/commits/PRs written normal.
-
 <!-- CONTROL_TOWER_MANAGED_BEGIN -->
 ## Control Tower Supervisor
 For every non-trivial execution request, start with the supervisor-issued MacroPacket required by section 3. Read `.control-tower/contracts/SUPERVISOR_OPERATING_CONTRACT.md`, `.control-tower/contracts/SUPERVISOR_MACROPACKET_CONTRACT.md`, `.control-tower/contracts/ARCHITECTURE_RETURN_PROTOCOL.md`, and `.control-tower/project.json`. After packet validation and before execution, create and validate the coordinator and child ExecutionBindings (runner/model/effort plus justification). Simple direct answers do not synthesize a binding. Use `.control-tower/bin/ct proof-pack` for upload-ready proof bundles and `.control-tower/bin/ct return-pack` whenever a supervisor/advisor return gate fires. Repository authority and live runtime/GitHub truth outrank this pointer.

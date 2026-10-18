@@ -2,7 +2,7 @@
 
 > **TL;DR**: Shared code between services. Minimize dependencies, high test coverage, stable APIs.
 
-**Inherits**: Root context (MCP tools, Do/Don't rules)
+**Inherits**: the root `AGENTS.md` and `.claude/claude.md`, which load alongside this file.
 
 ---
 
