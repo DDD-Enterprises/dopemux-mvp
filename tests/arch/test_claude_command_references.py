@@ -7,9 +7,10 @@ the same helpers can be pointed at synthetic or historical command trees.
 Checks:
 1. ``mcp__<server>__<tool>`` names a tool in ``mcp_tool_surfaces.json``
    when the server has a captured (live/seed, non-empty) tool list.
-2. Every referenced MCP server is known to the surfaces snapshot, the MCP
-   catalog or ``.mcp.json``; referenced servers with no captured tool list must
-   equal ``UNVERIFIED_SERVERS``.
+   ``mcp__<server>__*`` is a server reference only (no tool check).
+2. Every referenced MCP server (wildcards included) is known to the surfaces
+   snapshot, the MCP catalog or ``.mcp.json``; referenced servers with no
+   captured tool list must equal ``UNVERIFIED_SERVERS``.
 3. ``model:`` frontmatter values are in ``ALLOWED_COMMAND_MODELS``.
 4. ``scripts/<path>.py|.sh`` mentions exist in the repo.
 """
@@ -41,8 +42,16 @@ ALLOWED_COMMAND_MODELS = frozenset(
 )
 
 _CAPTURED_SOURCES = frozenset({"live", "seed"})
-_MCP_REF = re.compile(r"mcp__([A-Za-z0-9-]+)__([A-Za-z0-9_]+)")
-_SCRIPT_REF = re.compile(r"(?<![\w/-])scripts/[A-Za-z0-9_./-]+\.(?:py|sh)\b")
+# Tool token: a bare ``*`` (server wildcard) or a full name with optional
+# hyphenated parts, so ``get_context-foo`` is not truncated to ``get_context``.
+_MCP_TOOL = r"(\*|[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*)"
+_MCP_REF = re.compile(r"mcp__([A-Za-z0-9-]+)__" + _MCP_TOOL)
+# NOTE: the ``/mcp <server> <tool>`` prose form is intentionally unchecked.
+# zen.md and zen-continue.md currently reference a nonexistent ``zen`` server
+# (follow-up packet); a prose scan would flag them.
+# Repo-root ``scripts/`` paths, optionally ``./scripts/`` (not nested).
+_SCRIPT_PATH = r"scripts/[A-Za-z0-9_./-]+\.(?:py|sh)\b"
+_SCRIPT_REF = re.compile(r"(?<![\w/.-])(?:\./)?" + _SCRIPT_PATH)
 _MODEL_LINE = re.compile(r"^model:\s*(.*?)\s*$")
 
 
@@ -89,6 +98,8 @@ def check_mcp_tool_refs(commands_dir: Path, repo_root: Path) -> list[str]:
     captured = _captured_tools(repo_root)
     violations = []
     for location, server, tool in _mcp_refs(commands_dir):
+        if tool == "*":  # server wildcard: checked by check_mcp_servers only
+            continue
         if server in captured and tool not in captured[server]:
             violations.append(
                 f"{location}: mcp__{server}__{tool} is not a {server} tool"
@@ -258,4 +269,66 @@ def test_should_report_nothing_when_synthetic_command_is_valid(tmp_path):
 
     assert check_mcp_tool_refs(tmp_path, REPO_ROOT) == []
     assert check_model_pins(tmp_path) == []
+    assert check_script_refs(tmp_path, REPO_ROOT) == []
+
+
+# --- AUDIT-01 negative controls (F2, F3) -----------------------------------
+
+
+def test_should_report_violation_when_tool_token_has_hyphen_suffix(tmp_path):
+    _write_command(tmp_path, "Use `mcp__conport__get_context-foo` here.")
+
+    violations = check_mcp_tool_refs(tmp_path, REPO_ROOT)
+
+    assert len(violations) == 1
+    assert "mcp__conport__get_context-foo" in violations[0]
+
+
+def test_should_report_violation_when_wildcard_server_is_unknown(tmp_path):
+    _write_command(tmp_path, "Use `mcp__no-such-server__*` here.")
+
+    violations = check_mcp_servers(tmp_path, REPO_ROOT)
+
+    assert any("unknown MCP server 'no-such-server'" in v for v in violations)
+
+
+def test_should_accept_wildcard_when_server_is_known_and_captured(tmp_path):
+    _write_command(tmp_path, "Use `mcp__conport__*` here.")
+
+    assert check_mcp_tool_refs(tmp_path, REPO_ROOT) == []
+    violations = check_mcp_servers(tmp_path, REPO_ROOT, unverified=frozenset())
+    assert violations == []
+
+
+def test_should_require_unverified_listing_when_wildcard_server_uncaptured(
+    tmp_path,
+):
+    _write_command(tmp_path, "Use `mcp__pal__*` here.")
+
+    violations = check_mcp_servers(tmp_path, REPO_ROOT, unverified=frozenset())
+
+    assert any("'pal'" in v and "UNVERIFIED_SERVERS" in v for v in violations)
+
+
+def test_should_report_violation_when_dot_slash_script_is_missing(tmp_path):
+    _write_command(tmp_path, "Run `./scripts/set-profile.sh` now.")
+
+    violations = check_script_refs(tmp_path, REPO_ROOT)
+
+    assert len(violations) == 1
+    assert "scripts/set-profile.sh" in violations[0]
+
+
+def test_should_report_violation_when_bare_script_path_is_missing(tmp_path):
+    _write_command(tmp_path, "Run python scripts/x.py now.")
+
+    violations = check_script_refs(tmp_path, REPO_ROOT)
+
+    assert len(violations) == 1
+    assert "scripts/x.py" in violations[0]
+
+
+def test_should_ignore_nested_scripts_dir_when_not_repo_root_scripts(tmp_path):
+    _write_command(tmp_path, "See foo/scripts/x.py and xscripts/a.py.")
+
     assert check_script_refs(tmp_path, REPO_ROOT) == []
