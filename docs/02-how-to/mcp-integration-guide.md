@@ -162,14 +162,17 @@ Dead-name traps (all found live in instruction surfaces during the P0 audit):
 | `mcp__zen__*` | `mcp__pal-stdio__*` | PAL renamed; pal-stdio is the sole PAL surface (the pal `:3003/mcp` URL is fiction) |
 | `serena-v2` / `mcp__serena-v2__*` | `mcp__serena__*` | catalog key is `serena` |
 
-**Drift-gate coverage today**: `find_unknown_command_tool_surfaces` scans
-`.claude/commands/*.md` — server-granular for every `mcp__<server>__<tool>`
-reference, tool-granular for conport (via the static `_CONPORT_TOOL_SNAPSHOT`
-in `fleet_catalog.py`). The full snapshot-backed, all-server, all-surface
-tool-granular gate is MCPINT-FND-DRIFTGATE-003 (pending). Known snapshot holes:
-stdio servers (pal-stdio, gpt-researcher, MCP_DOCKER) are captured as
-`unreachable` with zero tools — their counts (18 / 5) stand on session evidence
-until exec-transport capture lands.
+**Drift-gate coverage today**: two gates scan `.claude/commands/**/*.md`.
+`find_unknown_command_tool_surfaces` (`fleet_catalog.py`) is server-granular for
+every `mcp__<server>__<tool>` reference and tool-granular for conport, via the
+static `_CONPORT_TOOL_SNAPSHOT` — the 17 live ConPort SSE tool names (the old
+`conport_*` names are gone). `tests/arch/test_claude_command_references.py` checks
+`mcp__<server>__<tool>` and `/mcp <server> <tool>` references against every
+captured (live/seed) tool list in `mcp_tool_surfaces.json`, plus model pins and
+`scripts/` paths. The full snapshot-backed, all-server, all-surface gate is
+MCPINT-FND-DRIFTGATE-003 (pending). Known snapshot holes: stdio servers
+(pal-stdio, gpt-researcher, MCP_DOCKER) are captured as `unreachable` with zero
+tools, so their tool names cannot be verified until exec-transport capture lands.
 
 ## 6. Debug runbook
 
