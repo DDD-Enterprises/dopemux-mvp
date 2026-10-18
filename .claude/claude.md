@@ -258,6 +258,8 @@ A `406 Not Acceptable: Client must accept text/event-stream` on `GET /mcp` is
 cd ~/code/target-repo && dopemux mcp init
 source .envrc.dopemux-mcp && dopemux mcp doctor
 ```
+`dopemux mcp start --repo` needs `DOPEMUX_MVP_ROOT` (or `DOPEMUX_PRODUCT_ROOT`) = the dopemux-mvp checkout when
+`dopemux` is installed outside it (e.g. `~/.dopemux/venv`); see AGENTS.md §12.3.
 
 **Debug sequence**: source envrc → `dopemux mcp doctor` → curl probe → tail docker logs
 → `./mcp_server_health_report.sh`
@@ -266,12 +268,13 @@ source .envrc.dopemux-mcp && dopemux mcp doctor
 `gpt-researcher`, `exa`, `desktop-commander`, bridges are host singletons (one process, shared).
 `redis-events` is OBSERVED **host-singleton today and noncompliant** for multi-project use (global container,
 no stream isolation; its events get promoted into canonical work_log) — the REQUIRED target is project-scoped
-(design §10.4, gate P-21, not yet implemented). `conport`, `dope-memory`, `serena`
+(design §10.4, gate P-21, not yet implemented). `conport`, `dope-memory`
 are still **worktree-scoped** (one container per worktree) pending identity gates — expect N worktrees to
-cost 3N containers until those land; ConPort's ruled end-state is **project-scoped**, never host-singleton
+cost 2N containers until those land (`serena` is one container bound to dopemux-mvp, not per worktree); ConPort's ruled end-state is **project-scoped**, never host-singleton
 (§10.3). Never start fleet services outside `dopemux mcp` (no raw `docker compose up` / `docker run`). Full
-sharing-class table + command surface (`init`/`start`/`stop`/`doctor` implemented;
-`reconcile`/`adopt`/`migrate`/`switch-project` PLANNED — `switch-project` transitional only): AGENTS.md §12.6
+sharing-class table + command surface (`init`/`start`/`stop`/`doctor`/`repair-config`/`status`/`ensure`/`up`/`down` and
+more implemented — see AGENTS.md §12.6; `reconcile` exists only as `leases reconcile` / `control-plane reconcile`;
+`adopt`/`migrate`/`switch-project` PLANNED — `switch-project` transitional only): AGENTS.md §12.6
 and `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (ACCEPTED with supervisor rulings 2026-07-28).
 
 **Key docs**:

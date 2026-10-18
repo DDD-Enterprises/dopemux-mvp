@@ -1782,7 +1782,22 @@ def mcp_doctor_cmd(
         # Deterministic JSON to stdout (not through rich logger)
         sys.stdout.write(report.to_json())
     else:
-        summary = format_human_summary(report, verbose=verbose)
+        repair_status = None
+        try:
+            from dopemux.mcp.config_repair import plan_repair
+
+            repair_status = plan_repair(
+                repo,
+                catalog,
+                dry_run=True,
+                catalog_paths=catalog_paths,
+                process_env=dict(os.environ),
+            ).status
+        except Exception:  # advisory only; never break doctor output
+            repair_status = None
+        summary = format_human_summary(
+            report, verbose=verbose, repair_status=repair_status
+        )
         # Color the status line lightly via console, keep body plain for copy/paste
         status = report.status
         if status == "PASS":
