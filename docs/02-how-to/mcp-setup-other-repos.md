@@ -323,19 +323,27 @@ If you are using plain Claude Code without any dopemux tooling:
 
 ### Singleton singletons (already running)
 
-If `pal`, `serena`, or `dope-context` are running as singletons in your global
+If `pal-stdio`, `serena`, or `dope-context` are running as singletons in your global
 `~/.claude.json`, they are available in any project automatically — no per-project
 configuration needed.  Run:
 
 ```bash
+dopemux mcp sync-globals           # dry-run: lists planned changes
 dopemux mcp sync-globals --apply   # adds singletons to ~/.claude.json
 ```
 
-Or add them manually to `~/.claude.json`:
+`sync-globals` also adds `gpt-researcher` and `MCP_DOCKER`, plus the `env` keys each
+entry needs; prefer it over hand-editing. The HTTP `pal` server (`:3003`) is
+`decision-required` in the catalog and is not written — PAL tools come from
+`pal-stdio`. The core entries look like this:
 ```json
 {
   "mcpServers": {
-    "pal":       { "type": "http", "url": "http://localhost:3003/mcp" },
+    "pal-stdio": {
+      "type": "stdio",
+      "command": "docker",
+      "args": ["exec", "-i", "mcp-pal-stdio", "/app/.venv/bin/python", "server.py"]
+    },
     "serena":    { "type": "http", "url": "http://localhost:3006/mcp" },
     "dope-context": { "type": "http", "url": "http://localhost:3010/mcp" }
   }
