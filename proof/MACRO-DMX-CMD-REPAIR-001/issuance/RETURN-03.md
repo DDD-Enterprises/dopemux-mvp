@@ -7,7 +7,7 @@
 
 - **Audited content head**: `7c6cfc0370092c6076d227e7eaaf05203d379303`, base `95e95bee88cae5e6c95e6e34f7c28bb423ad9496`.
 - **Size**: 6 commits, 48 files, +454/−107. The audited diff's sha256 is `ec458cc90e56166dc36203a95a881132562ba1356b3f30a7900c9d2d6d4135e6`.
-- **Proof-only successor**: one commit on top adds `proof/MACRO-DMX-CMD-REPAIR-001/` and `task-packets/MACRO-DMX-CMD-REPAIR-001/`. It is all L0 paths and changes no audited content. Its SHA is in `git log`.
+- **Proof-only successor**: two commits on top add the proof bundle `proof/MACRO-DMX-CMD-REPAIR-001/` and the issuance package under `proof/MACRO-DMX-CMD-REPAIR-001/issuance/` (the package was first committed under `task-packets/`, then moved because the preflight rejects GEC v2 packets and these documents there; see its README). All paths are L0, and no audited content changed. The SHAs are in `git log`.
 
 | Commit | WS | Files | Requested → observed model | Advisor |
 |---|---|---|---|---|

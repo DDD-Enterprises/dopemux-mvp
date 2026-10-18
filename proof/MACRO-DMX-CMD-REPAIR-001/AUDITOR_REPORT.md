@@ -4,8 +4,8 @@
 **Verdict**: `PASS_WITH_RISKS`. Tool `agy`, model recorded as generic `gemini` (ran `gemini-4-argon-high`).
 **Route**: operator-approved packet-specific fallback. The exact model `gemini-3.1-pro-high` was not available, so exact-model evidence is unavailable.
 **Containment**: sealed directory, diff-and-contract input only; stream has no tool steps; the auditor declared `tools_used: none`.
-**History**: AUDIT-01 returned FAIL on the superseded head `70eb50363`; W06 repaired it. See `task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-01/` and `AUDIT-02/`.
-**Coordinator adjudication**: `task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-02/ADJUDICATION.md`.
+**History**: AUDIT-01 returned FAIL on the superseded head `70eb50363`; W06 repaired it. See `proof/MACRO-DMX-CMD-REPAIR-001/issuance/AUDIT-01/` and `AUDIT-02/`.
+**Coordinator adjudication**: `proof/MACRO-DMX-CMD-REPAIR-001/issuance/AUDIT-02/ADJUDICATION.md`.
 
 ## Auditor response (verbatim)
 
