@@ -1,0 +1,287 @@
+{
+  "tp_id": "MACRO-DMX-CMD-REPAIR-001",
+  "tp_path": "task-packets/MACRO-DMX-CMD-REPAIR-001/MACRO_PACKET.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/cmd-repair-001",
+  "branch": "fix/cmd-repair-001",
+  "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git (PASS: origin matches repo_binding.origin_hint DDD-Enterprises/dopemux-mvp; .dopetaskroot present)",
+  "base_sha": "95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "audited_head_sha": "7c6cfc0370092c6076d227e7eaaf05203d379303",
+  "head_sha": "7c6cfc0370092c6076d227e7eaaf05203d379303",
+  "commit_sha": "UNKNOWN until this proof-only successor commit is created; the audited content head is 7c6cfc0370092c6076d227e7eaaf05203d379303",
+  "pr_url_or_blocker": "NO PR: push, PR publication and merge are operator gates and were not authorized",
+  "slices": [
+    {
+      "id": "W01",
+      "commit": "55e4f6cad",
+      "files": 18,
+      "model_requested": "claude-haiku-5-5",
+      "model_observed": "claude-haiku-5-5",
+      "status": "PASS"
+    },
+    {
+      "id": "W03",
+      "commit": "b0c505489",
+      "files": 5,
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS"
+    },
+    {
+      "id": "W02",
+      "commit": "08130eb5c",
+      "files": 26,
+      "model_requested": "claude-haiku-5-5",
+      "model_observed": "claude-haiku-5-5",
+      "status": "PASS"
+    },
+    {
+      "id": "W04",
+      "commit": "9c93afbb7",
+      "files": 1,
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS"
+    },
+    {
+      "id": "W05 (AMENDMENT-01)",
+      "commit": "70eb50363",
+      "files": 1,
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS"
+    },
+    {
+      "id": "W06 (AMENDMENT-02)",
+      "commit": "7c6cfc037",
+      "files": 4,
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS"
+    }
+  ],
+  "files_changed": [
+    ".claude/commands/adr-new.md",
+    ".claude/commands/bootstrap.md",
+    ".claude/commands/caveat.md",
+    ".claude/commands/ctx/index-search.md",
+    ".claude/commands/ctx/search-here.md",
+    ".claude/commands/dcp/denylist-check.md",
+    ".claude/commands/dcp/doctor.md",
+    ".claude/commands/decision.md",
+    ".claude/commands/doc-new.md",
+    ".claude/commands/doc-pull.md",
+    ".claude/commands/dx/backlinks.md",
+    ".claude/commands/dx/block.md",
+    ".claude/commands/dx/blocked.md",
+    ".claude/commands/dx/cancel.md",
+    ".claude/commands/dx/complete-tree.md",
+    ".claude/commands/dx/complete.md",
+    ".claude/commands/dx/context.md",
+    ".claude/commands/dx/depends.md",
+    ".claude/commands/dx/implement.md",
+    ".claude/commands/dx/next.md",
+    ".claude/commands/dx/note.md",
+    ".claude/commands/dx/notes.md",
+    ".claude/commands/dx/preview.md",
+    ".claude/commands/dx/reopen.md",
+    ".claude/commands/dx/resume.md",
+    ".claude/commands/dx/search.md",
+    ".claude/commands/dx/start.md",
+    ".claude/commands/dx/tree.md",
+    ".claude/commands/followup.md",
+    ".claude/commands/mcp/doctor.md",
+    ".claude/commands/mem-query.md",
+    ".claude/commands/mem-search.md",
+    ".claude/commands/mem/recap.md",
+    ".claude/commands/mem/save.md",
+    ".claude/commands/mem/summarize.md",
+    ".claude/commands/pattern.md",
+    ".claude/commands/plan-tasks.md",
+    ".claude/commands/plan.md",
+    ".claude/commands/proof/bundle.md",
+    ".claude/commands/research-deep.md",
+    ".claude/commands/research-report.md",
+    ".claude/commands/runbook-update.md",
+    ".claude/commands/safe.md",
+    ".claude/commands/scratch.md",
+    ".claude/commands/search-decisions.md",
+    ".claude/commands/tp/validate.md",
+    "src/dopemux/mcp/fleet_catalog.py",
+    "tests/arch/test_claude_command_references.py"
+  ],
+  "validations": [
+    {
+      "command": "pytest tests/arch -q",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "202 passed on audited head"
+    },
+    {
+      "command": "pytest tests/arch/test_claude_command_references.py -q",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "18 passed"
+    },
+    {
+      "command": "black --check tests/arch/test_claude_command_references.py",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "flake8 tests/arch/test_claude_command_references.py",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "rg -n 'conport_[a-z]' .claude/commands",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "note": "exit 1 = no matches (gate)"
+    },
+    {
+      "command": "rg -n '_fts\\b' .claude/commands",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "note": "exit 1 = no matches (gate)"
+    },
+    {
+      "command": "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "max_lane L2"
+    },
+    {
+      "command": "git diff --check origin/main..HEAD",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "hooks with matching files"
+    },
+    {
+      "command": ".control-tower/bin/ct validate-macro --file MACRO_PACKET.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "STATIC_VALID"
+    },
+    {
+      "command": ".control-tower/bin/ct validate-binding (coordinator + W01-W06)",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "make test (full suite)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "scope limited to tests/arch plus gates; no runtime code changed beyond a constant"
+    },
+    {
+      "command": "live ConPort :3005 qualification",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "conport/dope-memory/task-orchestrator unreachable at session start; July capture is historical provenance"
+    },
+    {
+      "command": "ct return-pack",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "requires current binding at package path; local aggregate returns written instead"
+    }
+  ],
+  "codereview_status": "Independent final audit AUDIT-02 PASS_WITH_RISKS (agy gemini-4-argon-high, operator-approved fallback); AUDIT-01 FAIL on superseded head 70eb50363, repaired by W06. No PAL codereview run.",
+  "precommit_status": "PASS (pre-commit run --from-ref origin/main --to-ref HEAD, exit 0)",
+  "residual_risks": [
+    "Exact audit model gemini-3.1-pro-high unavailable; operator-approved fallback gemini-4-argon-high; provider-attested model UNKNOWN",
+    "Drift gate does not scan the '/mcp <server> <tool>' prose form or prose tool names (6 command files unguarded); zen.md and zen-continue.md reference a nonexistent zen server (follow-up packet)",
+    "pal vs pal-stdio naming inconsistency (plan.md vs dx/implement.md, dx/note.md) is pre-existing and out of scope",
+    "_MCP_REF ignores server names containing underscores and lacks a trailing token boundary (malformed tokens truncate to a valid prefix); only MCP_DOCKER has an underscore and no command references it",
+    "get_custom_data fetches whole categories and search_content has no limit (client-side truncation only); update_context merge-vs-replace UNKNOWN",
+    "AGY global MCP servers (desktop-commander, serena, dope-context) were reachable during the run; containment was verified from the event stream only (no tool steps), not enforced"
+  ],
+  "unknowns": [
+    "Live ConPort tool surface at :3005 today (NOT_RUN)",
+    "update_context patch-vs-replace semantics",
+    "Provider-attested identity of the auditor model",
+    "Per-child effort level (not settable via the Agent tool; observed UNKNOWN)",
+    "PROOF.json.sig absent: signing needs the operator's key"
+  ],
+  "cleanup_status": "Worktree and branch retained; no running processes; no stash entries; main checkout untouched (another actor's uncommitted doctrine edits remain)",
+  "audit_evidence": {
+    "audit_02": {
+      "prompt_sha256": "94992742f6887fde3771dd5820424f5ee13803fb793c504ce1e01c5af308af74",
+      "response_sha256": "7fbd145b8cfc1896ac953126029957d3dcf19e78f415e06a08313c19748c5660",
+      "stream_sha256": "e6fd24c16462330bf65ddb0fc0e1fe3a6c093423c5b5aee9a02d4911080a7684",
+      "frozen_diff_sha256": "ec458cc90e56166dc36203a95a881132562ba1356b3f30a7900c9d2d6d4135e6",
+      "path": "task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-02/"
+    },
+    "audit_01_superseded": {
+      "verdict": "FAIL",
+      "head": "70eb50363f2cb1ff59758a9321faf9d033684b40",
+      "frozen_diff_sha256": "3ed3a84060ece85437cc68f99c46dc9378c473c77b18d237cab046ea62a253cc",
+      "path": "task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-01/"
+    }
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "cd <sealed dir with only AUDIT_PROMPT.txt and frozen.diff> && /Users/hue/.local/bin/agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\" (agy 1.3.6). OPERATOR-APPROVED PACKET-SPECIFIC FALLBACK: exact model gemini-3.1-pro-high is absent from `agy models`; exact-model evidence is unavailable; auditor_model recorded as generic gemini.",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-CMD-REPAIR-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "MEDIUM",
+        "title": "6 of 23 command files modified in W01/W03 use prose or '/mcp <server> <tool>' syntax and are completely unguarded by the drift gate",
+        "status": "OPEN",
+        "body": "check_mcp_tool_refs and check_mcp_servers (lines 48-51, 97-133) only scan the 'mcp__<server>__<tool>' token form. As a result, 4 W01 files (bootstrap.md:5, doc-pull.md:5, mem/summarize.md:8, and search-decisions.md:2 '/mcp conport search_content') and 2 W03 files (plan.md:1 and plan-tasks.md:2) have zero matches under _mcp_refs. Instead of scanning '/mcp <server> <tool>' with an explicit exemption set for pre-existing 'zen' (analogous to UNVERIFIED_SERVERS), omitting the scan leaves search-decisions.md and the W03 repoints in plan.md and plan-tasks.md unverified against mcp_tool_surfaces.json. | COORDINATOR ADJUDICATION: see task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-02/ADJUDICATION.md"
+      },
+      {
+        "id": "F2",
+        "severity": "LOW",
+        "title": "W03 introduces 'pal-stdio' server name in plan.md while dx/implement.md and UNVERIFIED_SERVERS use 'pal', and plan-tasks.md repoints to 'create_work_tree' in prose without surface verification",
+        "status": "OPEN",
+        "body": "Authority Facts claim F4 ('pal vs pal-stdio naming in dx/implement.md and dx/note.md') is pre-existing, but plan.md:1 was modified in W03 to say 'Use the PAL `planner` tool (MCP server `pal-stdio`)', whereas dx/implement.md:8-9 and test_claude_command_references.py:30 (UNVERIFIED_SERVERS) use 'pal'. Similarly, plan-tasks.md:2 was changed from '/mcp task-master-ai create_tasks' to prose 'Call the `create_work_tree` MCP tool on the `task-orchestrator` server'; had these been written as mcp__pal-stdio__planner and mcp__task-orchestrator__create_work_tree, check_mcp_servers and check_mcp_tool_refs would have enforced server/tool verification. | COORDINATOR ADJUDICATION: see task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-02/ADJUDICATION.md"
+      },
+      {
+        "id": "F3",
+        "severity": "LOW",
+        "title": "_MCP_REF omits underscores in server names and lacks a trailing token boundary on _MCP_TOOL",
+        "status": "OPEN",
+        "body": "At line 47-48, _MCP_TOOL = r'(\\*|[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*)' and _MCP_REF = re.compile(r'mcp__([A-Za-z0-9-]+)__' + _MCP_TOOL). Unlike src/dopemux/mcp/fleet_catalog.py:31 (r'\\bmcp__([A-Za-z0-9_-]+)__([A-Za-z0-9_-]+|\\*)'), _MCP_REF does not match server names containing underscores (e.g. mcp__some_server__tool is silently ignored), and because _MCP_TOOL has no trailing boundary, malformed tool tokens like 'mcp__conport__get_context--bad' or 'mcp__conport__*bad' match the valid prefix ('get_context' or '*') and falsely pass. | COORDINATOR ADJUDICATION: see task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-02/ADJUDICATION.md"
+      },
+      {
+        "id": "F4",
+        "severity": "INFO",
+        "title": "Disclosed ConPort SSE semantic limitations: category-wide custom_data fetches, client-side search truncation, and unverified update_context merge vs overwrite behavior",
+        "status": "OPEN",
+        "body": "(1) bootstrap.md:5, caveat.md:14, mem-query.md:10-12, mem-search.md:8-9, and mem/summarize.md:8 replace FTS custom_data queries with get_custom_data(workspace_id, category='caveats'|'mem'|'scratch'), which returns all entries in the category without server-side query filtering or result limits. (2) search_content has no server-side limit parameter, shifting top-N truncation to the prompt. (3) dx/implement.md:131,283 and research-deep.md:16 pass context_data={...} to update_context instead of patch_content={...}; if the live server replaces rather than merges the context dict, partial updates will overwrite other keys in active context. | COORDINATOR ADJUDICATION: see task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-02/ADJUDICATION.md"
+      }
+    ],
+    "fixes_applied": [
+      "AUDIT-01 (FAIL on 70eb50363) F1: mem-search.md and mem-query.md now read caveats via get_custom_data (commit 7c6cfc037)",
+      "AUDIT-01 F2: _SCRIPT_REF now matches ./scripts/ paths, with negative control (7c6cfc037)",
+      "AUDIT-01 F3 (wildcards, hyphenated tool suffix): _MCP_REF full tool token and wildcard server refs (7c6cfc037)",
+      "AUDIT-01 F5: stale search_content limit advice removed (7c6cfc037)"
+    ],
+    "remaining_risks": [
+      "Exact audit model gemini-3.1-pro-high unavailable; operator-approved fallback gemini-4-argon-high; provider-attested model UNKNOWN",
+      "Drift gate does not scan the '/mcp <server> <tool>' prose form or prose tool names (6 command files unguarded); zen.md and zen-continue.md reference a nonexistent zen server (follow-up packet)",
+      "pal vs pal-stdio naming inconsistency (plan.md vs dx/implement.md, dx/note.md) is pre-existing and out of scope",
+      "_MCP_REF ignores server names containing underscores and lacks a trailing token boundary (malformed tokens truncate to a valid prefix); only MCP_DOCKER has an underscore and no command references it",
+      "get_custom_data fetches whole categories and search_content has no limit (client-side truncation only); update_context merge-vs-replace UNKNOWN",
+      "AGY global MCP servers (desktop-commander, serena, dope-context) were reachable during the run; containment was verified from the event stream only (no tool steps), not enforced"
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
