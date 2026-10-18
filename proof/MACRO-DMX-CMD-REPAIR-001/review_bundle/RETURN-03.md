@@ -7,7 +7,7 @@
 
 - **Audited content head**: `7c6cfc0370092c6076d227e7eaaf05203d379303`, base `95e95bee88cae5e6c95e6e34f7c28bb423ad9496`.
 - **Size**: 6 commits, 48 files, +454/−107. The audited diff's sha256 is `ec458cc90e56166dc36203a95a881132562ba1356b3f30a7900c9d2d6d4135e6`.
-- **Proof-only successor**: three commits on top add the proof bundle `proof/MACRO-DMX-CMD-REPAIR-001/` and the issuance package under `proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/` (the package was first committed under `task-packets/`, then moved because the preflight rejects GEC v2 packets and these documents there; see its README). All paths are L0, and no audited content changed. The SHAs are in `git log` (`4a861a70d`, `571f727a6`, and this correction).
+- **Proof-only successor**: a series of proof-only commits on top add the proof bundle `proof/MACRO-DMX-CMD-REPAIR-001/` and the issuance package under `proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/` (the package was first committed under `task-packets/`, then moved because the preflight rejects GEC v2 packets and these documents there; see its README). All paths are L0, and no audited content changed. The SHAs are in `git log` (the last is the final head; the audited content head is unchanged).
 
 | Commit | WS | Files | Requested → observed model | Advisor |
 |---|---|---|---|---|
@@ -52,7 +52,8 @@
 | `embedded_audit` against the schema | PASS (0 errors; a bad-combination control fails as expected). The repo's pre-commit hook "Validate proof bundle embedded_audit schema" also passed on the final head. Only `validate_audit_proof.py --all` skipped this path, because `proof/.validator_scope.json` doesn't list this id. |
 | `make test` full suite | NOT_RUN |
 | Live ConPort :3005 qualification | NOT_RUN (the July capture is historical; source agrees) |
-| `ct return-pack` | NOT_RUN |
+| `ct return-pack` | BLOCKED (one attempt): `BLOCK_PACKET_IDENTITY_MISSING: JSON packet requires canonical id` (the MacroPacket has `macro_id`, no `id`; exit 3; nothing packaged or written) |
+| Proof-only closure form (`--proof-only --content-head 7c6cfc037 --audited-head 7c6cfc037`) | FAIL on exactly one named gate: `proof_only_missing_signature` (`PROOF.json` needs `PROOF.json.sig`; signing needs the operator's key). Everything else in the successor is inside the proof-only allowlist. |
 | `PROOF.json.sig` | NOT_RUN: signing needs the operator's key |
 | Preflight on the final head (`origin/main..HEAD`) | PASS (max lane L2). An earlier proof head failed it because of the `task-packets/` placement; relocated in `571f727a6` |
 
