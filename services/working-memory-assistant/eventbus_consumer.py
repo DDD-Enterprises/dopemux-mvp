@@ -31,19 +31,8 @@ from trajectory.manager import TrajectoryManager
 logger = logging.getLogger(__name__)
 
 # Configuration
-# compose.yml ships DOPE_MEMORY_WORKSPACE_ID=${...:-default}; that literal is a
-# placeholder, not an identity, so it does not drive the foreign-workspace check.
-_PLACEHOLDER_WORKSPACE_IDS = frozenset({"default"})
-
-
-
-def _workspace_matches(own: str, event_ws: str) -> bool:
-    """Own id with no "/" (launcher basename) matches the event path's last
-    component; an own id containing "/" requires an exact match."""
-    if "/" in own:
-        return event_ws == own
-    return event_ws.rstrip("/").rsplit("/", 1)[-1] == own
-
+from identity_match import PLACEHOLDER_WORKSPACE_IDS as _PLACEHOLDER_WORKSPACE_IDS
+from identity_match import workspace_matches as _workspace_matches
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")

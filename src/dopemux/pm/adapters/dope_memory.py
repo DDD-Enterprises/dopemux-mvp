@@ -7,6 +7,18 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+def _resolve_instance_id() -> Optional[str]:
+    """Instance id for write calls, or None when it cannot be resolved.
+
+    Uses the launcher-exported DOPE_MEMORY_INSTANCE_ID. It is not derived here:
+    PM modules may not import dopemux.mcp (trinity boundary test), so the
+    launcher's formula cannot be reused; the server decides when it is omitted.
+    Never returns "" or the "default" placeholder.
+    """
+    value = os.environ.get("DOPE_MEMORY_INSTANCE_ID", "").strip()
+    return None if not value or value == "default" else value
+
+
 class DopeMemoryAdapter:
     """Adapter for communicating with the dope-memory HTTP API."""
 
@@ -67,6 +79,7 @@ class DopeMemoryAdapter:
         """Call the memory_store endpoint to append a record."""
         payload = {
             "workspace_id": workspace_id,
+            "instance_id": _resolve_instance_id(),
             "entry_type": entry_type,
             "category": category,
             "summary": summary,
@@ -98,6 +111,7 @@ class DopeMemoryAdapter:
         """Call the memory_correct endpoint to correct/supersede a record."""
         payload = {
             "workspace_id": workspace_id,
+            "instance_id": _resolve_instance_id(),
             "entry_id": entry_id,
             "correction_type": correction_type,
             "corrected_summary": corrected_summary,
