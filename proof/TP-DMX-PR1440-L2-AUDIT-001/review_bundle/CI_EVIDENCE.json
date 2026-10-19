@@ -1,0 +1,32 @@
+[
+  {
+    "name": "CI unit tests (GitHub Actions, audited head 6b14dbfd4)",
+    "result": "PASS",
+    "detail": "\ud83e\uddea Unit Tests SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39159293376/job/117769003459"
+  },
+  {
+    "name": "CI code quality & linting",
+    "result": "PASS",
+    "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39159293376/job/117769003508"
+  },
+  {
+    "name": "CI security review",
+    "result": "PASS",
+    "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39159293376/job/117769003433"
+  },
+  {
+    "name": "CI audit proof validator (--all)",
+    "result": "PASS",
+    "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39159293376/job/117769003242"
+  },
+  {
+    "name": "CI documentation check",
+    "result": "PASS",
+    "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39159293376/job/117769003443"
+  },
+  {
+    "name": "CodeQL",
+    "result": "PASS",
+    "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/runs/117769154141"
+  }
+]
