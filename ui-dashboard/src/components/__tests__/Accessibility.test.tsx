@@ -171,6 +171,8 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label={`Progress for task: ${currentTask.title}`}');
+  expect(content).toMatch(/title=\{\s*isOvertime\s*\?\s*`Current task progress: Overtime \(\+\$\{overtimeMinutes\}m\)`\s*:\s*`Current task progress: \$\{progressPercent\}% of estimated duration`\s*\}/);
+  expect(content).toMatch(/title=\{\s*currentTask\s*\?\s*isTimerRunning\s*\?\s*`Pause task: \$\{currentTask\.title\}`\s*:\s*`Start task: \$\{currentTask\.title\}`/);
   // Timer accessibility
   expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
   // Total remaining duration
