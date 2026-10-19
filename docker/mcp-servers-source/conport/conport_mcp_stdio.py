@@ -53,9 +53,9 @@ async def get_progress(workspace_id: str, status: Optional[str] = None, limit: i
 
 
 @mcp.tool()
-async def update_progress(progress_id: str, updates: dict) -> str:
-    """Update an existing progress entry. Pass a dict with fields like status (e.g. COMPLETED), percentage, etc."""
-    url = f"{CONPORT_URL}/api/progress/{progress_id}"
+async def update_progress(progress_id: str, updates: dict, workspace_id: str) -> str:
+    """Update an existing progress entry in a workspace. Pass a dict with fields like status (e.g. COMPLETED), percentage, etc."""
+    url = f"{CONPORT_URL}/api/progress/{quote(progress_id, safe='')}?{urlencode({'workspace_id': workspace_id})}"
     data = await _put_json(url, updates)
     return json.dumps(data, ensure_ascii=False, indent=2)
 
@@ -126,9 +126,9 @@ async def fork_instance(workspace_id: str, source_instance: Optional[str] = None
 
 
 @mcp.tool()
-async def promote(progress_id: str) -> str:
+async def promote(progress_id: str, workspace_id: str) -> str:
     """Promote a progress entry to shared (clear instance_id)."""
-    data = await _post_json(f"{CONPORT_URL}/api/progress/promote", {"progress_id": progress_id})
+    data = await _post_json(f"{CONPORT_URL}/api/progress/promote", {"progress_id": progress_id, "workspace_id": workspace_id})
     return json.dumps(data, ensure_ascii=False, indent=2)
 
 
