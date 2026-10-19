@@ -1,0 +1,191 @@
+{
+  "packet_id": "TP-DMX-PR1439-L2-AUDIT-001",
+  "branch": "claude/ecstatic-payne-3d17da",
+  "base": "main",
+  "base_sha": "95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "head_sha": "34005d6c2967e7a1210fed682a321e16f7aab2e3",
+  "kind": "cli_hook_registration_schema_fix_audit",
+  "risk_lane": "L2",
+  "implementer": "Claude Code (claude-sonnet-5-5 side session) authored the PR; Claude Code (claude-fable-5-1 supervisor session) built the audit prompt with the repo's trusted builder and this proof bundle.",
+  "audited_files": [
+    "src/dopemux/cli.py",
+    "tests/unit/test_cli_audit_remediations.py",
+    "tests/unit/test_native_hooks_register.py"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "fallback_auditor_approval": {
+    "approved_by": "operator",
+    "approval_text": "YES AGY",
+    "approved_at": "2026-10-19",
+    "exact_model": "gemini-4-argon-high",
+    "recorded_auditor_model": "gemini",
+    "bounded_input": "trusted prompt (task, output contract, delimited untrusted metadata + unified diff, repeated trusted trailer) built by scripts/audit/pal_clink_runner.py --build-prompt; no repository checkout, no tools, --sandbox --disable-slash-commands",
+    "no_secret_constraints": "prompt contains only the public PR diff and metadata; no env, tokens, keys or local paths beyond repo-relative file names",
+    "rationale": "Operator-approved packet-specific fallback auditor: user reply 'YES AGY' on 2026-10-19 (Claude Code CLI session 76436141-ff29-41f5-9965-9b025f7f3adf) approving AGY with model gemini-4-argon-high because the docs route #1 exact model gemini-3.1-pro-high is absent from `agy models` (agy 1.4.2). Recorded per docs/ops/embedded-audit.md 'Packet-specific supervisor-approved fallback auditors'."
+  },
+  "auditor_run": {
+    "agy_cli_version": "1.4.2",
+    "conversation_id": "97c42e1c-63e8-42f4-a796-dd5fd189c748",
+    "status": "SUCCESS",
+    "duration_seconds": 39.623883,
+    "num_turns": 1,
+    "usage": {
+      "input_tokens": 30893,
+      "output_tokens": 3260,
+      "thinking_tokens": 2693,
+      "cache_read_tokens": 0,
+      "total_tokens": 34153
+    },
+    "init_model": "gemini-4-argon-high",
+    "init_tools": [
+      "ask_custom_permission",
+      "ask_permission",
+      "ask_question",
+      "browser_click_element",
+      "browser_drag_pixel_to_pixel",
+      "browser_get_dom",
+      "browser_get_network_request",
+      "browser_input",
+      "browser_list_network_requests",
+      "browser_mouse_down",
+      "browser_mouse_up",
+      "browser_move_mouse",
+      "browser_press_key",
+      "browser_refresh_page",
+      "browser_resize_window",
+      "browser_scroll",
+      "browser_scroll_dom",
+      "browser_select_option",
+      "browser_subagent",
+      "call_mcp_tool",
+      "capture_browser_console_logs",
+      "capture_browser_screenshot",
+      "click_browser_pixel",
+      "command_status",
+      "define_subagent",
+      "delete_knowledge",
+      "execute_browser_javascript",
+      "find_by_name",
+      "finish",
+      "generate_image",
+      "grep_search",
+      "invoke_subagent",
+      "list_browser_pages",
+      "list_dir",
+      "list_permissions",
+      "list_plugin_accounts",
+      "list_resources",
+      "manage_inbox",
+      "manage_subagents",
+      "manage_task",
+      "multi_replace_file_content",
+      "notebook_edit",
+      "notebook_execution",
+      "open_browser_url",
+      "read_browser_page",
+      "read_resource",
+      "read_url_content",
+      "replace_file_content",
+      "run_command",
+      "run_workflow",
+      "schedule",
+      "search_marketplace",
+      "search_web",
+      "sed_file",
+      "send_command_input",
+      "send_message",
+      "view_file",
+      "wait",
+      "wait_5_seconds",
+      "write_to_file"
+    ],
+    "init_permission_mode": "always-proceed",
+    "step_types_observed": [
+      "agent_response",
+      "user_input"
+    ],
+    "raw_output_sha256": "6eb333566f718e8388718f39adc0581425972ff33aeba790edf3852175b3a4ae",
+    "prompt_sha256": "92d6ab11fdb82108e3eec49b2d577f5f15d536801379b3b4f0b17a9a5923a53c"
+  },
+  "validations": [
+    {
+      "name": "CI unit tests (GitHub Actions, audited head 34005d6c2)",
+      "result": "PASS",
+      "detail": "\ud83e\uddea Unit Tests SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39179425979/job/117828806922"
+    },
+    {
+      "name": "CI code quality & linting",
+      "result": "PASS",
+      "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39179425979/job/117828806945"
+    },
+    {
+      "name": "CI security review",
+      "result": "PASS",
+      "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39179425979/job/117828807157"
+    },
+    {
+      "name": "CI audit proof validator (--all)",
+      "result": "PASS",
+      "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39179425979/job/117828807116"
+    },
+    {
+      "name": "CI documentation check",
+      "result": "PASS",
+      "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39179425979/job/117828807050"
+    },
+    {
+      "name": "CodeQL",
+      "result": "PASS",
+      "detail": "https://github.com/DDD-Enterprises/dopemux-mvp/runs/117828951044"
+    },
+    {
+      "name": "local targeted unit tests at audited head",
+      "result": "PASS",
+      "detail": "tests/unit/test_native_hooks_register.py + tests/unit/test_cli_audit_remediations.py: 27 passed in 0.66s; PYTHONPATH=<worktree>/src with repo .venv python 3.12; dopemux imported from the worktree (verified by __file__)."
+    },
+    {
+      "name": "auditor validation",
+      "result": "NOT_RUN",
+      "detail": "Sandboxed auditor had no tool or checkout access; validation_status=NOT_RUN in its verdict."
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"  (cwd = sealed dir holding only AUDIT_PROMPT.txt built by scripts/audit/pal_clink_runner.py --build-prompt; conversation_id=97c42e1c-63e8-42f4-a796-dd5fd189c748; exact record in review_bundle/AUDIT_INVOCATION.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1439-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validation tests were not executed during this embedded audit because candidate checkout and tool execution are disabled by policy (validation_status=NOT_RUN).",
+      "Existing settings.json files that were previously written with the legacy hooks.command array key will retain that legacy key alongside the new event-keyed entries unless manually cleaned up.",
+      "Auditor model fallback: AGY ran gemini-4-argon-high (recorded as auditor_model 'gemini', the schema's generic value) under explicit operator approval; exact-model evidence for gemini-3.1-pro-high is unavailable in agy 1.4.2.",
+      "Auditor ran sandboxed with no tool or checkout access (validation_status=NOT_RUN); test and lint evidence at the audited head comes from CI and the local runs recorded in the packet PROOF.json validations."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
