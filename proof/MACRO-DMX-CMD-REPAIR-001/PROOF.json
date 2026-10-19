@@ -301,5 +301,21 @@
       "matches": []
     }
   },
-  "packet_id": "MACRO-DMX-CMD-REPAIR-001"
+  "packet_id": "MACRO-DMX-CMD-REPAIR-001",
+  "audit_identity": {
+    "auditor": {
+      "effort": "high (model variant gemini-4-argon-high; effort not set separately)",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "google-antigravity"
+    },
+    "implementer": {
+      "model": "claude-haiku-5-5 and claude-sonnet-5-5 (workers); coordinator claude-opus-5-5 then claude-sonnet-5-5",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-agent",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  }
 }
