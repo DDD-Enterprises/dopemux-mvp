@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import json
 import re
+import tomllib
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -321,26 +322,69 @@ def render_codex_managed_region(catalog: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _locate_marked_region(text: str, begin: str, end: str) -> tuple[int, int] | None:
+    """Character offsets `(start, stop)` of the inclusive begin→end block, or None.
+
+    Offsets index the original `text` (CRLF files included) so that
+    `text[start:stop]` is always a true substring. `stop` excludes the END
+    line's terminator, matching the block `_extract_marked_region` has always
+    returned for LF input.
+    """
+    offset = 0
+    start: int | None = None
+    for line in text.splitlines(keepends=True):
+        stripped = line.strip()
+        if start is None:
+            if stripped.startswith(begin):
+                start = offset
+        elif stripped.startswith(end):
+            return start, offset + len(line.rstrip("\r\n"))
+        offset += len(line)
+    return None
+
+
 def _extract_marked_region(text: str, begin: str, end: str) -> str | None:
     """Return the inclusive begin→end marked block of `text`, or None."""
-    lines = text.splitlines()
-    start = next(
-        (index for index, line in enumerate(lines) if line.strip().startswith(begin)),
-        None,
-    )
-    if start is None:
+    span = _locate_marked_region(text, begin, end)
+    if span is None:
         return None
-    stop = next(
-        (
-            index
-            for index, line in enumerate(lines[start + 1 :], start=start + 1)
-            if line.strip().startswith(end)
-        ),
-        None,
-    )
-    if stop is None:
-        return None
-    return "\n".join(lines[start : stop + 1])
+    start, stop = span
+    return text[start:stop]
+
+
+def _line_terminator(text: str) -> str:
+    """`"\\r\\n"` when every line break in `text` is CRLF, else `"\\n"`."""
+    if "\r\n" in text and text.count("\r\n") == text.count("\n"):
+        return "\r\n"
+    return "\n"
+
+
+_HAND_AUTHORED_MCP_SERVERS_MESSAGE = (
+    ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed "
+    "markers; remove the hand-authored tables before `--allow-sequenced` apply."
+)
+
+
+def _reject_hand_authored_mcp_servers(toml_text: str) -> None:
+    """Abort when TOML outside the managed region defines a top-level `mcp_servers`.
+
+    Parses with `tomllib` so every spelling (`[ mcp_servers.x ]`, `[mcp_servers]`
+    + dotted keys, `mcp_servers.x = {…}`) is caught while comments or strings that
+    merely mention the marker are not. Unparseable text cannot prove the absence
+    of a declaration, so it fails closed on a conservative substring check.
+    """
+    try:
+        declares_servers = "mcp_servers" in tomllib.loads(toml_text)
+    except tomllib.TOMLDecodeError as exc:
+        if "mcp_servers" not in toml_text:
+            return
+        raise MCPFleetCatalogError(
+            ".codex/config.toml content outside the dopemux-managed markers is not "
+            f"valid TOML ({exc}) and mentions mcp_servers; cannot rule out hand-authored "
+            "tables — fix the file before `--allow-sequenced` apply."
+        ) from exc
+    if declares_servers:
+        raise MCPFleetCatalogError(_HAND_AUTHORED_MCP_SERVERS_MESSAGE)
 
 
 def merge_codex_config_toml(existing_text: str | None, catalog: dict[str, Any]) -> str:
@@ -350,28 +394,24 @@ def merge_codex_config_toml(existing_text: str | None, catalog: dict[str, Any]) 
     …) are preserved verbatim; only the marked region is replaced (or appended
     when absent). Hand-authored `[mcp_servers.*]` tables outside the markers are
     a contract violation (generated files are never hand-edited — ADR-MCPINT-001)
-    and abort the merge.
+    and abort the merge. A uniformly CRLF file receives the region in CRLF so
+    the output keeps a single line-ending style.
     """
-    region = render_codex_managed_region(catalog)
     text = existing_text or ""
-    existing_region = _extract_marked_region(text, CODEX_MANAGED_BEGIN, CODEX_MANAGED_END)
-    if existing_region is not None:
-        remainder = text.replace(existing_region, "", 1)
-        if "[mcp_servers." in remainder:
-            raise MCPFleetCatalogError(
-                ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed "
-                "markers; remove the hand-authored tables before `--allow-sequenced` apply."
-            )
-        merged = text.replace(existing_region, region, 1)
-        return merged if merged.endswith("\n") else merged + "\n"
-    if "[mcp_servers." in text:
-        raise MCPFleetCatalogError(
-            ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed "
-            "markers; remove the hand-authored tables before `--allow-sequenced` apply."
-        )
-    base = text.rstrip("\n")
-    prefix = base + "\n\n" if base else ""
-    return prefix + region + "\n"
+    newline = _line_terminator(text)
+    region = render_codex_managed_region(catalog).replace("\n", newline)
+    span = _locate_marked_region(text, CODEX_MANAGED_BEGIN, CODEX_MANAGED_END)
+    if span is not None:
+        start, stop = span
+        _reject_hand_authored_mcp_servers(text[:start] + text[stop:])
+        merged = text[:start] + region + text[stop:]
+        return merged if merged.endswith("\n") else merged + newline
+    _reject_hand_authored_mcp_servers(text)
+    base = text
+    while base.endswith(newline):
+        base = base[: -len(newline)]
+    prefix = base + newline * 2 if base else ""
+    return prefix + region + newline
 
 
 # ---------------------------------------------------------------------------
