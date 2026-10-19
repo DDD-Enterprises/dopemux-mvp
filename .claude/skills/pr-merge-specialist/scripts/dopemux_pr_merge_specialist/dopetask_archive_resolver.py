@@ -29,7 +29,10 @@ class DopetaskArchiveResolver:
                 note="No supporting artifacts; archive not expected.",
             )
 
-        archive_present = candidate.exists()
+        # Only a regular file counts as an archive. A directory (or any other
+        # non-file entry) that merely carries the expected .zip name must not
+        # produce a false archive-present proof. Contents are never opened.
+        archive_present = candidate.is_file()
         note = (
             f"Archive found: {candidate}"
             if archive_present

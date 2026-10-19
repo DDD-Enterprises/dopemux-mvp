@@ -42,6 +42,11 @@ MODULES = [
     "steward_gate.py",
     "workflow_artifact_verifier.py",
     "validation.py",
+    "dopetask_series_loader.py",
+    "dopetask_bundle_loader.py",
+    "dopetask_archive_resolver.py",
+    "dopetask_compatibility_mode.py",
+    "dopetask_packet_launcher.py",
 ]
 
 
@@ -54,7 +59,12 @@ def test_template_runtime_parity_for_runtime_modules():
         assert (runtime_root / module_name).read_text(encoding="utf-8") == (template_root / module_name).read_text(encoding="utf-8")
     for target in (".claude", ".github"):
         mirror_root = REPO_ROOT / target / "skills" / "pr-merge-specialist" / "scripts" / "dopemux_pr_merge_specialist"
-        for module_name in ("steward_gate.py", "queue_drain.py", "github_api.py", "workflow_artifact_verifier.py"):
+        for module_name in (
+            "steward_gate.py", "queue_drain.py", "github_api.py", "workflow_artifact_verifier.py",
+            "dopetask_series_loader.py", "dopetask_bundle_loader.py",
+            "dopetask_archive_resolver.py", "dopetask_compatibility_mode.py",
+            "dopetask_packet_launcher.py",
+        ):
             assert (runtime_root / module_name).read_bytes() == (mirror_root / module_name).read_bytes()
 
 
