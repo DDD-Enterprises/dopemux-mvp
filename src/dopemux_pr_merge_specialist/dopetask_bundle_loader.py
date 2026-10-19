@@ -75,13 +75,33 @@ class DopetaskBundleLoader:
         Raises:
             FileNotFoundError: if bundle_path does not exist.
             json.JSONDecodeError: if the file is not valid JSON.
-            BundleSchemaError: if required fields are missing.
+            BundleSchemaError: if the JSON is not an object, required fields are
+                missing, ``artifacts`` is not a list of strings, or no string
+                packet identity (``tp_id``/``pr_id``) is present.
         """
         raw = Path(bundle_path).read_text(encoding="utf-8")
         bundle = json.loads(raw)
 
+        # Shape guard: a bundle must be a JSON object, not a list/scalar/null.
+        if not isinstance(bundle, dict):
+            raise BundleSchemaError(
+                f"Bundle must be a JSON object, got {type(bundle).__name__}"
+            )
+
+        # Packet identity: at least one of tp_id/pr_id must be a string.
+        # Present-but-null is tolerated for the *other* field; any other
+        # non-string identity value is rejected.
+        id_values = {k: bundle[k] for k in self.ID_FIELDS if k in bundle}
+        bad_ids = sorted(
+            k for k, v in id_values.items() if v is not None and not isinstance(v, str)
+        )
+        if bad_ids:
+            raise BundleSchemaError(
+                f"Bundle identity fields must be strings: {', '.join(bad_ids)}"
+            )
+        has_id = any(isinstance(v, str) for v in id_values.values())
+
         # Check hard-required fields + at least one ID field
-        has_id = bool(self.ID_FIELDS & set(bundle.keys()))
         missing_required = sorted(self.REQUIRED_FIELDS - set(bundle.keys()))
         if missing_required or not has_id:
             all_missing = list(missing_required)
@@ -89,6 +109,21 @@ class DopetaskBundleLoader:
                 all_missing.append("tp_id|pr_id")
             raise BundleSchemaError(
                 f"Bundle missing required fields: {', '.join(sorted(all_missing))}"
+            )
+
+        # Artifacts must be a list of strings (consumed as relative file names).
+        artifacts = bundle["artifacts"]
+        if not isinstance(artifacts, list):
+            raise BundleSchemaError(
+                f"Bundle field 'artifacts' must be a list, got {type(artifacts).__name__}"
+            )
+        bad_members = [
+            i for i, name in enumerate(artifacts) if not isinstance(name, str)
+        ]
+        if bad_members:
+            raise BundleSchemaError(
+                "Bundle field 'artifacts' must contain only strings; "
+                f"invalid at indices: {', '.join(str(i) for i in bad_members)}"
             )
 
         return bundle
