@@ -1,0 +1,60 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1447,
+  "head_sha": "3a61393607a90cd31f8b6fba0f91f0951e42e2f8",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"  (cwd = sealed dir holding only AUDIT_PROMPT.txt built by scripts/audit/pal_clink_runner.py --build-prompt; conversation_id=ab4e5c51-c792-4053-a833-8fa322a9fd54; exact record in review_bundle/AUDIT_INVOCATION.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1447-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-001",
+        "severity": "LOW",
+        "title": "DopetaskBundleLoader.load validates that identity fields (tp_id/pr_id) and artifact entrie\u2026",
+        "status": "OPEN",
+        "body": "[validation_consistency] src/dopemux_pr_merge_specialist/dopetask_bundle_loader.py:94-127 \u2014 DopetaskBundleLoader.load validates that identity fields (tp_id/pr_id) and artifact entries are strings via isinstance(..., str), but unlike DopetaskSeriesLoader.parse_dict does not reject empty or whitespace-only strings."
+      },
+      {
+        "id": "F-002",
+        "severity": "INFO",
+        "title": "Duplicate top-level `import pytest` statements added in test_docs_filename_hygiene.py",
+        "status": "OPEN",
+        "body": "[code_hygiene] tests/scripts/test_docs_filename_hygiene.py:65,100 \u2014 Duplicate top-level `import pytest` statements added in test_docs_filename_hygiene.py."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Candidate test suite and runtime behavior were not executed inside this embedded audit because tools and code execution are disabled by contract (validation_status=NOT_RUN); CI and supervisor validation gates must verify runtime execution.",
+      "Removing `scripts` from `norecursedirs` and enabling `--import-mode=importlib` in pytest.ini expands default pytest collection to `tests/scripts/`, which could surface latent collection or ordering assumptions in other script tests not modified in this PR.",
+      "Auditor model fallback: AGY ran gemini-4-argon-high (recorded as auditor_model 'gemini', the schema's generic value) under explicit operator approval; exact-model evidence for gemini-3.1-pro-high is unavailable in agy 1.4.2.",
+      "Auditor ran sandboxed with no tool or checkout access (validation_status=NOT_RUN); test and lint evidence at the audited head comes from CI and the local runs recorded in the packet PROOF.json validations."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}
