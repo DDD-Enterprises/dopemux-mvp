@@ -4217,7 +4217,9 @@ def native_hooks_register(is_global: bool):
         )
 
     def _has_cmd(group: object) -> bool:
-        return isinstance(group, dict) and any(
+        # A group under a restrictive matcher (e.g. "Bash") is not a full
+        # registration; only omitted, "" and "*" match every input.
+        return isinstance(group, dict) and group.get("matcher", "") in ("", "*") and any(
             isinstance(h, dict) and h.get("command") == cmd
             for h in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
         )

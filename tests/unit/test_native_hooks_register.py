@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
+from dopemux import cli as cli_module
 from dopemux.cli import cli
 
 EXPECTED_EVENTS = [
@@ -199,3 +200,60 @@ def test_register_adds_only_missing_events_when_partially_registered(
     settings = json.loads(settings_path.read_text())
     for event in EXPECTED_EVENTS:
         assert len(settings["hooks"][event]) == 1
+
+
+def _pinned_command() -> str:
+    hook_script = Path(cli_module.__file__).resolve().parent / "claude" / "native_hooks.py"
+    return f"{shlex.quote(sys.executable)} {shlex.quote(str(hook_script))}"
+
+
+@pytest.mark.parametrize("matcher", ["Bash", "Edit|Write"])
+def test_register_adds_unrestricted_hook_beside_restricted_matcher_group(
+    project_dir: Path, matcher: str
+) -> None:
+    # A Dopemux command that only runs for some tools is not a full registration:
+    # the unrestricted hook must still be added and the restricted group kept.
+    settings_path = project_dir / ".claude" / "settings.json"
+    settings_path.parent.mkdir()
+    restricted = {
+        "matcher": matcher,
+        "hooks": [{"type": "command", "command": _pinned_command()}],
+    }
+    settings_path.write_text(
+        json.dumps({"hooks": {"PreToolUse": [restricted]}}), encoding="utf-8"
+    )
+
+    result = _register()
+
+    assert result.exit_code == 0, result.output
+    groups = json.loads(settings_path.read_text())["hooks"]["PreToolUse"]
+    assert len(groups) == 2
+    assert "matcher" not in groups[0]
+    assert groups[0]["hooks"] == [{"type": "command", "command": _pinned_command()}]
+    assert groups[1] == restricted
+
+    again = _register()
+    assert again.exit_code == 0, again.output
+    assert json.loads(settings_path.read_text())["hooks"]["PreToolUse"] == groups
+
+
+@pytest.mark.parametrize(
+    "matcher_entry",
+    [{}, {"matcher": ""}, {"matcher": "*"}],
+    ids=["omitted", "empty", "star"],
+)
+def test_register_treats_match_all_group_as_registered(
+    project_dir: Path, matcher_entry: dict
+) -> None:
+    settings_path = project_dir / ".claude" / "settings.json"
+    settings_path.parent.mkdir()
+    group = {**matcher_entry, "hooks": [{"type": "command", "command": _pinned_command()}]}
+    settings_path.write_text(
+        json.dumps({"hooks": {"PreToolUse": [group]}}), encoding="utf-8"
+    )
+
+    result = _register()
+
+    assert result.exit_code == 0, result.output
+    groups = json.loads(settings_path.read_text())["hooks"]["PreToolUse"]
+    assert groups == [group]
