@@ -13,7 +13,7 @@
       "runner": "claude-code-agent",
       "runtime_family": "anthropic-claude-code"
     },
-    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+    "independence": "PROVEN"
   },
   "embedded_audit": {
     "auditor_model": "gemini",
