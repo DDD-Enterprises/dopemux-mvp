@@ -41,3 +41,7 @@ Revert only the signing/metadata/handoff commits after 8144c5ca0 using explicit 
 ## Requested Next Step
 
 Supervisor intake and independent PR/CI readiness decision. No further action needed for this authorized local signing slice; publication remains separately authorized.
+
+## Final precommit check
+
+Full governed-range pre-commit (`95e95bee88cae5e6c95e6e34f7c28bb423ad9496..HEAD`) PASS, including proof-schema hook. Signing-slice `git diff --check 8144c5ca0 HEAD` PASS. A proof-only subrange invocation of the generic pre-commit hook failed because the hook does not forward content/audited/proof head arguments; the dedicated parameterized proof-closure command PASS remains the applicable closure evidence. Final head attestation and proof closure rechecked after committing the receipts: ACCEPTED/PASS at c3a936dd99d485003d95f3c61e7ce8edacd4ef64. No signed bytes changed afterward.
