@@ -106,17 +106,18 @@ class DopetaskPacketLauncher:
         context: dict,
     ) -> str:
         """Dispatch to the correct engine and return the bundle path string."""
-        out_dir = self.bundle_root / engine_lane / run_id
-        out_dir.mkdir(parents=True, exist_ok=True)
-
         if engine_lane == "closed_loop":
-            return self._run_closed_loop(tp_id, run_id, context, out_dir)
+            handler = self._run_closed_loop
         elif engine_lane == "patch":
-            return self._run_patch(tp_id, run_id, context, out_dir)
+            handler = self._run_patch
         elif engine_lane == "fusion":
-            return self._run_fusion(tp_id, run_id, context, out_dir)
+            handler = self._run_fusion
         else:
             raise ValueError(f"Unknown engine lane for tp_id={tp_id!r}")
+
+        out_dir = self.bundle_root / engine_lane / run_id
+        out_dir.mkdir(parents=True, exist_ok=True)
+        return handler(tp_id, run_id, context, out_dir)
 
     def _run_closed_loop(
         self,
