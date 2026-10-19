@@ -48,6 +48,7 @@ class FakeConn:
     def __init__(self, rows):
         self.rows = rows
         self.executed = []
+        self.fetched = []
 
     async def fetchrow(self, sql, *args):
         row = self.rows.get(args[0])
@@ -59,6 +60,7 @@ class FakeConn:
         return dict(row)
 
     async def fetch(self, sql, *args):
+        self.fetched.append((sql, args))
         return []
 
     async def execute(self, sql, *args):
@@ -156,9 +158,34 @@ def test_real_formats_accepted(srv):
         assert "error" not in res, res
 
 
-def test_missing_workspace_on_list_still_allowed_f02_held(srv):
-    assert "error" not in run(srv._get_decisions(None, 5))
-    assert "error" not in run(srv._get_progress(None, None, 5))
+@pytest.mark.parametrize("missing", [None, "", "  "])
+def test_f02_reads_require_workspace(srv, missing):
+    for res in (run(srv._get_decisions(missing, 5)), run(srv._get_progress(missing, None, 5))):
+        assert "error" in res, res
+        assert res["error"].startswith(("workspace_id required", "invalid workspace_id"))
+    assert srv.db_pool.conn.fetched == []
+
+
+def test_f02_rest_get_missing_workspace_is_400(srv):
+    for handler in (srv.get_decisions, srv.get_progress):
+        r = run(handler(_req(query={})))
+        assert r.status == 400, r.text
+        assert "workspace_id required" in json.loads(r.text)["error"]
+    assert srv.db_pool.conn.fetched == []
+
+
+def test_f02_read_sql_has_no_null_wildcard(srv):
+    run(srv._get_decisions(WS_A, 5))
+    run(srv._get_progress(WS_A, None, 5))
+    assert len(srv.db_pool.conn.fetched) >= 2
+    for sql, args in srv.db_pool.conn.fetched:
+        assert "$1::text IS NULL" not in sql
+        assert args[0] == WS_A
+
+
+def test_f02_jsonrpc_tools_require_workspace(srv):
+    assert "error" in run(srv._get_decisions_tool({"limit": 3}))
+    assert "error" in run(srv._get_progress_tool({"status": "IN_PROGRESS"}))
 
 
 def test_update_missing_workspace_rejected(srv):

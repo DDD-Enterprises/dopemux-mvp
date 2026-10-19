@@ -23,9 +23,15 @@ def _cap(limit: Optional[int]) -> int:
     return min(limit, MAX_LIMIT)
 
 
+def _require_workspace(workspace_id: object) -> None:
+    if not isinstance(workspace_id, str) or not workspace_id.strip():
+        raise ReadOnlyHttpError("workspace_id is required")
+
+
 def get_decisions(
     client: ReadOnlyHttpClient, base_url: str, workspace_id: str, limit: Optional[int] = MAX_LIMIT
 ) -> HttpResponse:
+    _require_workspace(workspace_id)
     return client.get(
         base_url, "/api/decisions", {"workspace_id": workspace_id, "limit": _cap(limit)}
     )
@@ -63,6 +69,7 @@ def get_progress(
     status: Optional[str] = None,
     limit: Optional[int] = MAX_LIMIT,
 ) -> HttpResponse:
+    _require_workspace(workspace_id)
     params: dict = {"workspace_id": workspace_id, "limit": _cap(limit)}
     if status:
         params["status"] = status

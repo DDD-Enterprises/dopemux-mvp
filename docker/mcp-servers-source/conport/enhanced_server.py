@@ -871,7 +871,7 @@ class EnhancedConPortServer:
 
     async def _get_decisions(self, workspace_id: Optional[str], limit: int = 10) -> Dict[str, Any]:
         """Internal logic for get_decisions"""
-        _e = workspace_id_error(workspace_id, required=False)
+        _e = workspace_id_error(workspace_id, required=True)
         if _e:
             return {'error': _e}
         try:
@@ -893,7 +893,7 @@ class EnhancedConPortServer:
                     SELECT id, workspace_id, summary, rationale, alternatives,
                            tags, confidence_level, decision_type, created_at
                     FROM decisions
-                    WHERE ($1::text IS NULL OR workspace_id = $1)
+                    WHERE workspace_id = $1
                     ORDER BY created_at DESC
                     LIMIT $2
                     """,
@@ -945,7 +945,7 @@ class EnhancedConPortServer:
 
     async def _get_progress(self, workspace_id: Optional[str], status: Optional[str] = None, limit: int = 20) -> Dict[str, Any]:
         """Internal logic for get_progress"""
-        _e = workspace_id_error(workspace_id, required=False)
+        _e = workspace_id_error(workspace_id, required=True)
         if _e:
             return {'error': _e}
         try:
@@ -961,7 +961,7 @@ class EnhancedConPortServer:
                            linked_decision_id, priority, estimated_hours, actual_hours,
                            created_at, updated_at, completed_at
                     FROM progress_entries
-                    WHERE ($1::text IS NULL OR workspace_id = $1)
+                    WHERE workspace_id = $1
                       AND ($2::text IS NULL OR status = $2)
                     ORDER BY created_at DESC
                     LIMIT $3
@@ -995,7 +995,7 @@ class EnhancedConPortServer:
                                    linked_decision_id, priority, estimated_hours, actual_hours,
                                    created_at, updated_at, completed_at
                               FROM progress_entries
-                             WHERE ($1::text IS NULL OR workspace_id = $1)
+                             WHERE workspace_id = $1
                                AND ($2::text IS NULL OR status = $2)
                                AND ($4::text IS NULL OR instance_id = $4)
                              ORDER BY created_at DESC

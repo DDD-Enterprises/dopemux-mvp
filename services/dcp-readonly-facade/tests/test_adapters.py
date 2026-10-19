@@ -71,3 +71,13 @@ def test_dm_adapter_cannot_hit_correct_route(make_client):
     client, _ = make_client()
     with pytest.raises(ReadOnlyHttpError):
         client.post_read(DM, "/tools/memory_correct", {}, dope_memory.DOPE_MEMORY_READ_PATHS)
+
+
+@pytest.mark.parametrize("ws", [None, "", "  "])
+def test_conport_reads_fail_closed_without_workspace(make_client, ws):
+    client, ft = make_client(json_body={})
+    with pytest.raises(ReadOnlyHttpError):
+        conport.get_decisions(client, CONPORT, ws)
+    with pytest.raises(ReadOnlyHttpError):
+        conport.get_progress(client, CONPORT, ws)
+    assert ft.calls == []

@@ -44,8 +44,10 @@ async def _delete_json(url: str):
 @mcp.tool()
 async def get_progress(workspace_id: str, status: Optional[str] = None, limit: int = 20) -> str:
     """Get progress entries for a workspace (optionally filter by status)."""
+    if not isinstance(workspace_id, str) or not workspace_id.strip():
+        raise ValueError("workspace_id is required")
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-        url = f"{CONPORT_URL}/api/progress?workspace_id={workspace_id}&limit={limit}"
+        url = f"{CONPORT_URL}/api/progress?{urlencode({'workspace_id': workspace_id, 'limit': limit})}"
         if status:
             url += f"&status={status}"
         data = await _get_json(session, url)
@@ -61,12 +63,12 @@ async def update_progress(progress_id: str, updates: dict, workspace_id: str) ->
 
 
 @mcp.tool()
-async def get_decisions(workspace_id: Optional[str] = None, limit: int = 10) -> str:
-    """Get recent decisions (optionally filter by workspace)."""
+async def get_decisions(workspace_id: str, limit: int = 10) -> str:
+    """Get recent decisions for a workspace (workspace_id is required)."""
+    if not isinstance(workspace_id, str) or not workspace_id.strip():
+        raise ValueError("workspace_id is required")
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-        url = f"{CONPORT_URL}/api/decisions?limit={limit}"
-        if workspace_id:
-            url += f"&workspace_id={workspace_id}"
+        url = f"{CONPORT_URL}/api/decisions?{urlencode({'workspace_id': workspace_id, 'limit': limit})}"
         data = await _get_json(session, url)
         return json.dumps(data, ensure_ascii=False, indent=2)
 

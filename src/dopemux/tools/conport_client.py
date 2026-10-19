@@ -162,10 +162,14 @@ class ConPortClient:
             logger.error(f"Failed to log progress: {e}")
             return {"error": str(e)}
 
-    async def get_progress(self, status_filter: Optional[str] = None) -> Dict[str, Any]:
-        """Get current progress items"""
+    async def get_progress(self, status_filter: Optional[str] = None,
+                           workspace_id: Optional[str] = None) -> Dict[str, Any]:
+        """Get current progress items for a workspace (workspace_id is required;
+        ConPort GET /api/progress rejects requests without one)."""
+        if not isinstance(workspace_id, str) or not workspace_id.strip():
+            return {"error": "workspace_id is required for get_progress"}
         await self._ensure_session()
-        params = {}
+        params = {"workspace_id": workspace_id}
         if status_filter:
             params["status_filter"] = status_filter
 
