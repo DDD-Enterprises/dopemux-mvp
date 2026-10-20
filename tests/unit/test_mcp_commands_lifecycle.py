@@ -254,7 +254,7 @@ def test_cli_down_dry_run_without_repo_stays_legacy(monkeypatch):
     """--dry-run/--json alone must not divert bare `mcp down` to the reconciler."""
     called = {"legacy": False, "lifecycle": False}
 
-    def fake_run(cmd, check=True):  # noqa: ARG001
+    def fake_run(cmd, check=True, **kwargs):  # noqa: ARG001
         called["legacy"] = True
         return SimpleNamespace(returncode=0)
 
@@ -275,3 +275,115 @@ def test_cli_down_dry_run_without_repo_stays_legacy(monkeypatch):
     assert called["lifecycle"] is False, result.output
     assert called["legacy"] is True, result.output
     assert result.exit_code == 0, result.output
+
+
+def _clear_host_path_env(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.delenv("HOST_CODE_PARENT_DIR", raising=False)
+    monkeypatch.delenv("HOST_PROJECT_RELATIVE_PATH", raising=False)
+    product = tmp_path / "dopemux-mvp"
+    product.mkdir()
+    (product / "compose.yml").write_text("services: {}\n")
+    monkeypatch.setenv("DOPEMUX_MVP_ROOT", str(product))
+
+
+_Call = tuple[list[str], "dict | None"]
+
+
+def _capture_subprocess_envs(monkeypatch) -> list[_Call]:
+    calls: list[_Call] = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append((list(cmd), kwargs.get("env")))
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
+    return calls
+
+
+def _compose_envs(calls, verb: str):
+    prefix = ["docker", "compose", "-f", "compose.yml"]
+    return [env for cmd, env in calls if cmd[:4] == prefix and verb in cmd]
+
+
+def test_cli_down_and_logs_pass_compose_host_path_env(
+    monkeypatch, tmp_path
+):
+    _clear_host_path_env(monkeypatch, tmp_path)
+    calls = _capture_subprocess_envs(monkeypatch)
+    monkeypatch.setattr(mcp_commands, "_compose_services", lambda: {"conport"})
+    monkeypatch.setattr(mcp_commands, "DEFAULT_MCP_SERVICES", {"conport"})
+
+    runner = CliRunner()
+    down = runner.invoke(mcp_commands.mcp, ["down"])
+    logs = runner.invoke(mcp_commands.mcp, ["logs"])
+
+    assert down.exit_code == 0, down.output
+    assert logs.exit_code == 0, logs.output
+    rm_envs = _compose_envs(calls, "rm")
+    log_envs = _compose_envs(calls, "logs")
+    assert len(rm_envs) == 1 and len(log_envs) == 1
+    for env in rm_envs + log_envs:
+        assert env is not None
+        assert env["HOST_CODE_PARENT_DIR"] == str(tmp_path)
+        assert env["HOST_PROJECT_RELATIVE_PATH"] == "dopemux-mvp"
+
+
+def test_cli_up_injects_host_paths_unless_dope_context_started(
+    monkeypatch, tmp_path
+):
+    _clear_host_path_env(monkeypatch, tmp_path)
+    calls = _capture_subprocess_envs(monkeypatch)
+    monkeypatch.setattr(
+        mcp_commands, "_compose_services", lambda: {"postgres", "dope-context"}
+    )
+
+    runner = CliRunner()
+    ok = runner.invoke(mcp_commands.mcp, ["up", "--services", "postgres"])
+    guarded = runner.invoke(
+        mcp_commands.mcp, ["up", "--services", "dope-context"]
+    )
+
+    assert ok.exit_code == 0, ok.output
+    assert guarded.exit_code == 0, guarded.output
+    up_envs = _compose_envs(calls, "up")
+    assert len(up_envs) == 2
+    postgres_env, dope_context_env = up_envs
+    assert postgres_env["HOST_CODE_PARENT_DIR"] == str(tmp_path)
+    assert postgres_env["HOST_PROJECT_RELATIVE_PATH"] == "dopemux-mvp"
+    # dope-context keeps the fail-closed `:?` guard: no derived defaults.
+    assert "HOST_CODE_PARENT_DIR" not in dope_context_env
+    assert "HOST_PROJECT_RELATIVE_PATH" not in dope_context_env
+
+
+def test_cli_start_all_fallback_never_defaults_host_paths(
+    monkeypatch, tmp_path
+):
+    _clear_host_path_env(monkeypatch, tmp_path)
+    calls = _capture_subprocess_envs(monkeypatch)
+    monkeypatch.setattr(mcp_commands.Path, "exists", lambda self: False)
+
+    result = CliRunner().invoke(mcp_commands.mcp, ["start-all"])
+
+    assert result.exit_code == 0, result.output
+    up_envs = _compose_envs(calls, "up")
+    assert len(up_envs) == 2
+    for env in up_envs:
+        assert env is not None
+        assert env["DOPECON_BRIDGE_TOKEN"]
+        assert "HOST_CODE_PARENT_DIR" not in env
+
+
+def test_cli_legacy_status_passes_compose_host_path_env(
+    monkeypatch, tmp_path
+):
+    _clear_host_path_env(monkeypatch, tmp_path)
+    calls = _capture_subprocess_envs(monkeypatch)
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["status", "--legacy-compose"]
+    )
+
+    assert result.exit_code == 0, result.output
+    ps_envs = _compose_envs(calls, "ps")
+    assert len(ps_envs) == 1
+    assert ps_envs[0]["HOST_CODE_PARENT_DIR"] == str(tmp_path)
