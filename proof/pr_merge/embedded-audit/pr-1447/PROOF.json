@@ -1,35 +1,35 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1447,
-  "head_sha": "3a61393607a90cd31f8b6fba0f91f0951e42e2f8",
+  "head_sha": "3db51791c710d21cccefaab9f4ac7b6a21bcd0e9",
   "embedded_audit": {
     "required": true,
     "status": "PASS",
     "auditor_tool": "agy",
     "auditor_model": "gemini",
-    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"  (cwd = sealed dir holding only AUDIT_PROMPT.txt built by scripts/audit/pal_clink_runner.py --build-prompt; conversation_id=ab4e5c51-c792-4053-a833-8fa322a9fd54; exact record in review_bundle/AUDIT_INVOCATION.txt)",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"  (cwd = sealed dir holding only AUDIT_PROMPT.txt built by scripts/audit/pal_clink_runner.py --build-prompt; conversation_id=961766b8-a96c-4804-9f77-e51cba656574; exact record in review_bundle/AUDIT_INVOCATION.txt)",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-PR1447-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-DMX-PR1447-L3-AUDIT-002/AUDITOR_REPORT.md",
     "findings": [
       {
-        "id": "F-001",
-        "severity": "LOW",
-        "title": "DopetaskBundleLoader.load validates that identity fields (tp_id/pr_id) and artifact entrie\u2026",
+        "id": "AUDIT-1447-INFO-1",
+        "severity": "INFO",
+        "title": "_is_valid_identity allows any non-boolean int for pr_id without requiring a positive integ\u2026",
         "status": "OPEN",
-        "body": "[validation_consistency] src/dopemux_pr_merge_specialist/dopetask_bundle_loader.py:94-127 \u2014 DopetaskBundleLoader.load validates that identity fields (tp_id/pr_id) and artifact entries are strings via isinstance(..., str), but unlike DopetaskSeriesLoader.parse_dict does not reject empty or whitespace-only strings."
+        "body": "[uncategorized] src/dopemux_pr_merge_specialist/dopetask_bundle_loader.py \u2014 _is_valid_identity allows any non-boolean int for pr_id without requiring a positive integer (value > 0), though in practice PR numbers supplied by context are positive integers."
       },
       {
-        "id": "F-002",
+        "id": "AUDIT-1447-INFO-2",
         "severity": "INFO",
-        "title": "Duplicate top-level `import pytest` statements added in test_docs_filename_hygiene.py",
+        "title": "apply_moves preflight checks _existing_alias against the pre-move filesystem state even if\u2026",
         "status": "OPEN",
-        "body": "[code_hygiene] tests/scripts/test_docs_filename_hygiene.py:65,100 \u2014 Duplicate top-level `import pytest` statements added in test_docs_filename_hygiene.py."
+        "body": "[uncategorized] scripts/check_docs_hygiene.py \u2014 apply_moves preflight checks _existing_alias against the pre-move filesystem state even if an aliased path is vacated earlier in the same batch; this is an intentional fail-closed design documented in comments to avoid cross-platform filesystem ambiguity."
       }
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "Candidate test suite and runtime behavior were not executed inside this embedded audit because tools and code execution are disabled by contract (validation_status=NOT_RUN); CI and supervisor validation gates must verify runtime execution.",
-      "Removing `scripts` from `norecursedirs` and enabling `--import-mode=importlib` in pytest.ini expands default pytest collection to `tests/scripts/`, which could surface latent collection or ordering assumptions in other script tests not modified in this PR.",
+      "Validation tests were not executed inside the sealed embedded-audit session (validation_status=NOT_RUN); merge readiness relies on CI and steward verification of the test suite.",
+      "Enabling default collection of tests/scripts via pytest.ini (--import-mode=importlib and removing scripts from norecursedirs) increases the default pytest collection surface if other script tests assume standalone execution.",
       "Auditor model fallback: AGY ran gemini-4-argon-high (recorded as auditor_model 'gemini', the schema's generic value) under explicit operator approval; exact-model evidence for gemini-3.1-pro-high is unavailable in agy 1.4.2.",
       "Auditor ran sandboxed with no tool or checkout access (validation_status=NOT_RUN); test and lint evidence at the audited head comes from CI and the local runs recorded in the packet PROOF.json validations."
     ],
