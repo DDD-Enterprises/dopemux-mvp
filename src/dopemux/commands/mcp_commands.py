@@ -2095,6 +2095,60 @@ def mcp_leases_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
             console.logger.info(f"[info]backup: {plan['backup_path']}[/info]")
 
 
+@mcp.group("registry")
+def mcp_registry_group():
+    """📇 Runtime registry: inspect/reconcile ~/.dopemux/mcp/runtime/instances.json"""
+
+
+@mcp_registry_group.command("reconcile")
+@click.option("--dry-run", is_flag=True, help="Plan only; write nothing.")
+@click.option("--apply", is_flag=True, help="Mark stale running instances stopped after backup.")
+@click.option("--json", "json_output", is_flag=True, help="Emit JSON plan/result.")
+def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
+    """
+    Mark registry instances stopped when their containers are not running.
+
+    Lists `running` entries whose containers are absent from `docker ps` and, with
+    --apply, backs the registry up and marks them `stopped` with a NOT_RUNNING
+    probe record. Never deletes entries and never touches containers.
+
+    WARNING: --apply rewrites instances.json without a cross-process lock. Never
+    run it concurrently with `dopemux mcp start/stop/restart/up/down` or another
+    reconcile.
+    """
+    _require_exactly_one_dry_run_or_apply(dry_run, apply)
+    import dopemux.mcp.docker_inspect as docker_inspect
+    from dopemux.mcp.runtime_registry import RegistryError, RuntimeRegistry
+
+    reg = RuntimeRegistry.load()
+    if reg.parse_status == "ERROR":
+        raise click.ClickException(f"Runtime registry unreadable: {reg.error}")
+    inspected = docker_inspect.inspect_running_containers()
+    if not inspected.available:
+        raise click.ClickException(
+            f"Docker unavailable; registry left unchanged: {inspected.error}"
+        )
+    running = {c.name for c in inspected.containers}
+    try:
+        plan = reg.reconcile_stale_running(running, dry_run=not apply)
+    except RegistryError as exc:
+        raise click.ClickException(str(exc)) from exc
+    if json_output:
+        sys.stdout.write(json.dumps(plan, indent=2) + "\n")
+        return
+    click.echo(
+        f"registry reconcile dry_run={plan['dry_run']} "
+        f"stale={plan['stale_count']} applied={plan['applied']}"
+    )
+    for item in plan["stale"]:
+        click.echo(
+            f"  - {item['instance_id']} service={item['service']} "
+            f"root={item['project_root']} containers={','.join(item['container_names'])}"
+        )
+    if plan.get("backup_path"):
+        click.echo(f"backup: {plan['backup_path']}")
+
+
 @mcp.command("repair-config")
 @click.option(
     "--repo",

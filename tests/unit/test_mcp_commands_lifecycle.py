@@ -387,3 +387,135 @@ def test_cli_legacy_status_passes_compose_host_path_env(
     ps_envs = _compose_envs(calls, "ps")
     assert len(ps_envs) == 1
     assert ps_envs[0]["HOST_CODE_PARENT_DIR"] == str(tmp_path)
+
+
+# --- mcp registry reconcile ------------------------------------------------------------
+
+
+def _registry_file(tmp_path: Path) -> Path:
+    path = tmp_path / "instances.json"
+    instances = []
+    for iid, names in (
+        ("alive-svc", ["c-alive"]),
+        ("dead-svc", ["c-dead"]),
+    ):
+        instances.append(
+            {
+                "instance_id": iid,
+                "service": "task-orchestrator",
+                "project_root": "/p",
+                "worktree_root": "/p",
+                "status": "running",
+                "container_names": names,
+                "updated_at": "2026-09-03T10:01:57Z",
+            }
+        )
+    path.write_text(json.dumps({"schema_version": "1.0", "instances": instances}, indent=2) + "\n")
+    return path
+
+
+def _patch_docker(monkeypatch, *, available=True, names=("c-alive",), error=None):
+    import dopemux.mcp.docker_inspect as di
+
+    containers = [di.DockerContainerInfo(id=f"id-{n}", name=n) for n in names]
+    monkeypatch.setattr(
+        di,
+        "inspect_running_containers",
+        lambda **kw: di.DockerInspectResult(
+            available=available, error=error, containers=containers if available else []
+        ),
+    )
+
+
+def test_cli_registry_reconcile_dry_run_json(tmp_path, monkeypatch):
+    reg = _registry_file(tmp_path)
+    before = reg.read_bytes()
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
+    _patch_docker(monkeypatch)
+
+    result = CliRunner().invoke(mcp_commands.mcp, ["registry", "reconcile", "--dry-run", "--json"])
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["dry_run"] is True
+    assert payload["applied"] is False
+    assert payload["stale_count"] == 1
+    assert [s["instance_id"] for s in payload["stale"]] == ["dead-svc"]
+    assert reg.read_bytes() == before
+    assert list(tmp_path.glob("instances.json.backup-*")) == []
+
+
+def test_cli_registry_reconcile_apply(tmp_path, monkeypatch):
+    reg = _registry_file(tmp_path)
+    before = reg.read_bytes()
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
+    _patch_docker(monkeypatch)
+
+    result = CliRunner().invoke(mcp_commands.mcp, ["registry", "reconcile", "--apply", "--json"])
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["applied"] is True
+    backups = list(tmp_path.glob("instances.json.backup-*"))
+    assert len(backups) == 1
+    assert payload["backup_path"] == str(backups[0])
+    assert backups[0].read_bytes() == before
+    statuses = {i["instance_id"]: i["status"] for i in json.loads(reg.read_text())["instances"]}
+    assert statuses == {"alive-svc": "running", "dead-svc": "stopped"}
+
+
+def test_cli_registry_reconcile_human_output(tmp_path, monkeypatch):
+    reg = _registry_file(tmp_path)
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
+    _patch_docker(monkeypatch)
+
+    result = CliRunner().invoke(mcp_commands.mcp, ["registry", "reconcile", "--dry-run"])
+    assert result.exit_code == 0, result.output
+    assert "dead-svc" in result.output
+    assert "alive-svc" not in result.output
+
+
+def test_cli_registry_reconcile_requires_exactly_one_flag(tmp_path, monkeypatch):
+    reg = _registry_file(tmp_path)
+    before = reg.read_bytes()
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
+    _patch_docker(monkeypatch)
+
+    runner = CliRunner()
+    both = runner.invoke(mcp_commands.mcp, ["registry", "reconcile", "--dry-run", "--apply"])
+    neither = runner.invoke(mcp_commands.mcp, ["registry", "reconcile"])
+    assert both.exit_code != 0
+    assert neither.exit_code != 0
+    assert reg.read_bytes() == before
+    assert list(tmp_path.glob("instances.json.backup-*")) == []
+
+
+def test_cli_registry_reconcile_docker_unavailable_fails_closed(tmp_path, monkeypatch):
+    reg = _registry_file(tmp_path)
+    before = reg.read_bytes()
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
+    _patch_docker(monkeypatch, available=False, error="docker binary not found on PATH")
+
+    result = CliRunner().invoke(mcp_commands.mcp, ["registry", "reconcile", "--apply"])
+    assert result.exit_code != 0
+    assert "docker" in result.output.lower()
+    assert reg.read_bytes() == before
+    assert list(tmp_path.glob("instances.json.backup-*")) == []
+
+
+def test_cli_registry_reconcile_unreadable_registry_fails_closed(tmp_path, monkeypatch):
+    reg = tmp_path / "instances.json"
+    reg.write_text("{not-json")
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
+    _patch_docker(monkeypatch)
+
+    result = CliRunner().invoke(mcp_commands.mcp, ["registry", "reconcile", "--apply"])
+    assert result.exit_code != 0
+    assert reg.read_text() == "{not-json"
+    assert list(tmp_path.glob("instances.json.backup-*")) == []
+
+
+def test_cli_registry_reconcile_help_lists_flags_and_warning():
+    result = CliRunner().invoke(mcp_commands.mcp, ["registry", "reconcile", "--help"])
+    assert result.exit_code == 0, result.output
+    for flag in ("--dry-run", "--apply", "--json"):
+        assert flag in result.output
+    assert "concurrently" in result.output
