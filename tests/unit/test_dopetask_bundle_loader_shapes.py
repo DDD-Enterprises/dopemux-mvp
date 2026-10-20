@@ -77,7 +77,17 @@ def test_null_only_identity_raises_schema_error(tmp_path, ident):
         loader.load(path)
 
 
-@pytest.mark.parametrize("ident", [{"tp_id": 123}, {"pr_id": ["77"]}, {"tp_id": {"id": "1"}}, {"tp_id": "1", "pr_id": 77}])
+@pytest.mark.parametrize(
+    "ident",
+    [
+        {"tp_id": 123},
+        {"pr_id": ["77"]},
+        {"tp_id": {"id": "1"}},
+        {"pr_id": True},
+        {"tp_id": "1", "pr_id": False},
+        {"pr_id": 77.0},
+    ],
+)
 def test_non_string_identity_raises_schema_error(tmp_path, ident):
     payload = {"artifacts": []}
     payload.update(ident)
@@ -85,6 +95,48 @@ def test_non_string_identity_raises_schema_error(tmp_path, ident):
     loader = DopetaskBundleLoader(tmp_path)
     with pytest.raises(BundleSchemaError):
         loader.load(path)
+
+
+@pytest.mark.parametrize(
+    "ident",
+    [{"tp_id": ""}, {"tp_id": "   "}, {"pr_id": ""}, {"tp_id": "1", "pr_id": " \t"}],
+)
+def test_blank_identity_raises_schema_error(tmp_path, ident):
+    payload = {"artifacts": []}
+    payload.update(ident)
+    path = _write(tmp_path, "TP-1_PROOF_BUNDLE.json", payload)
+    loader = DopetaskBundleLoader(tmp_path)
+    with pytest.raises(BundleSchemaError):
+        loader.load(path)
+
+
+@pytest.mark.parametrize("artifacts", [[""], ["a.log", "   "]])
+def test_blank_artifact_member_raises_schema_error(tmp_path, artifacts):
+    path = _write(tmp_path, "TP-1_PROOF_BUNDLE.json", {"tp_id": "1", "artifacts": artifacts})
+    loader = DopetaskBundleLoader(tmp_path)
+    with pytest.raises(BundleSchemaError, match="artifacts"):
+        loader.load(path)
+
+
+def test_launcher_bundle_with_numeric_pr_id_loads(tmp_path):
+    # DopetaskPacketLauncher copies context["pr_id"] into its bundle unconverted,
+    # and PR numbers are ints elsewhere in this package (classification.py).
+    payload = {
+        "tp_id": "TP-PRMS-052",
+        "pr_id": 1447,
+        "run_id": "run-1",
+        "status": "VALIDATED",
+        "artifacts": [],
+    }
+    path = _write(tmp_path, "TP-PRMS-052_PROOF_BUNDLE.json", payload)
+    loader = DopetaskBundleLoader(tmp_path)
+    assert loader.load(path)["pr_id"] == 1447
+
+
+def test_numeric_pr_id_alone_satisfies_identity(tmp_path):
+    path = _write(tmp_path, "TP-9_PROOF_BUNDLE.json", {"pr_id": 1447, "artifacts": []})
+    loader = DopetaskBundleLoader(tmp_path)
+    assert loader.load(path)["pr_id"] == 1447
 
 
 def test_load_canonical_rejects_non_object_with_schema_error(tmp_path):

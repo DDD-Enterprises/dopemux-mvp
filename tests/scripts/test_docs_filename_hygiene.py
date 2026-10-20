@@ -4,6 +4,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 
 MODULE_PATH = Path(__file__).resolve().parents[2] / "scripts" / "check_docs_filename_hygiene.py"
 POLICY_PATH = (
@@ -62,8 +64,6 @@ def test_kebab_filename_is_ok():
     assert record.target_path is None
 
 
-import pytest
-
 # Supervisor-reviewed fixture: symlink creation confined to this test's tmp_path.
 # Generated tests receive this capability instead of importing os/importlib/sys.
 @pytest.fixture
@@ -95,9 +95,6 @@ def test_mp023_symlink_fixture_rejects_external_link(tmp_path, mp023_symlink):
 
 def _hygiene_module():
     return MODULE
-
-
-import pytest
 
 
 
