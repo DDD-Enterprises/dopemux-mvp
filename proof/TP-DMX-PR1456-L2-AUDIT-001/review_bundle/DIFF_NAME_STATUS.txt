@@ -1,0 +1,9 @@
+M	.env.example
+M	docs/02-how-to/mcp-transport-and-port-bugs.md
+M	src/dopemux/commands/mcp_commands.py
+M	src/dopemux/mcp/docker_runtime.py
+M	src/dopemux/mcp/runtime_registry.py
+A	tests/arch/test_compose_required_vars.py
+M	tests/unit/test_mcp_commands_lifecycle.py
+M	tests/unit/test_mcp_runtime_launcher.py
+M	tests/unit/test_mcp_runtime_registry.py

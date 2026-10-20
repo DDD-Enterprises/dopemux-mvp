@@ -1,0 +1,225 @@
+{
+  "packet_id": "TP-DMX-PR1456-L2-AUDIT-001",
+  "branch": "fix/mcp-lifecycle-repair-001",
+  "base": "main",
+  "base_sha": "95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "head_sha": "e58d322f1ecc8f97c0cdc61b7a57d9c1ef7bb0f3",
+  "kind": "mcp_lifecycle_compose_env_and_registry_reconcile_audit",
+  "risk_lane": "L2",
+  "implementer": "MACRO-DMX-MCP-LIFECYCLE-REPAIR-001: Claude Code subagents (W01/W02 claude-sonnet-5-5, W03 claude-haiku-5-5; self-reported, not provider-attested) authored the diff; Claude Code (claude-fable-5-1 supervisor session 76436141-ff29-41f5-9965-9b025f7f3adf) verified, committed and built the audit prompt with scripts/audit/pal_clink_runner.py --build-prompt.",
+  "audited_files": [
+    ".env.example",
+    "docs/02-how-to/mcp-transport-and-port-bugs.md",
+    "src/dopemux/commands/mcp_commands.py",
+    "src/dopemux/mcp/docker_runtime.py",
+    "src/dopemux/mcp/runtime_registry.py",
+    "tests/arch/test_compose_required_vars.py",
+    "tests/unit/test_mcp_commands_lifecycle.py",
+    "tests/unit/test_mcp_runtime_launcher.py",
+    "tests/unit/test_mcp_runtime_registry.py"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "fallback_auditor_approval": {
+    "approved_by": "operator",
+    "approval_text": "Run the final independent audit of PR #1456 with AGY model gemini-4-argon-high (same operator-approved fallback as PRs 1439 and 1440).",
+    "approved_at": "2026-10-20",
+    "exact_model": "gemini-4-argon-high",
+    "recorded_auditor_model": "gemini",
+    "bounded_input": "trusted prompt (task, output contract, delimited untrusted metadata + unified diff, repeated trusted trailer) built by scripts/audit/pal_clink_runner.py --build-prompt; sealed run directory containing only AUDIT_PROMPT.txt; --sandbox --disable-slash-commands",
+    "no_secret_constraints": "prompt contains only the public PR diff and metadata; no env values, tokens, keys or local paths beyond repo-relative file names",
+    "rationale": "Operator-approved packet-specific fallback auditor: gemini-3.1-pro-high (schema's exact AGY model) is absent from `agy models` 1.4.3; operator chose gemini-4-argon-high in chat on 2026-10-20 (Claude Code desktop session 76436141-ff29-41f5-9965-9b025f7f3adf), the same fallback approved for PRs 1439 and 1440 on 2026-10-19. Recorded as schema enum auditor_model=gemini; exact selector in invocation and here."
+  },
+  "auditor_run": {
+    "agy_cli_version": "1.4.3",
+    "conversation_id": "7a5db702-53fe-47a0-a576-e46ac1cf5c28",
+    "status": "SUCCESS",
+    "duration_seconds": 63.270001,
+    "num_turns": 1,
+    "usage": {
+      "input_tokens": 26268,
+      "output_tokens": 5158,
+      "thinking_tokens": 3518,
+      "cache_read_tokens": 0,
+      "total_tokens": 31426
+    },
+    "init_model": "gemini-4-argon-high",
+    "init_tools": [
+      "ask_custom_permission",
+      "ask_permission",
+      "ask_question",
+      "browser_click_element",
+      "browser_drag_pixel_to_pixel",
+      "browser_get_dom",
+      "browser_get_network_request",
+      "browser_input",
+      "browser_list_network_requests",
+      "browser_mouse_down",
+      "browser_mouse_up",
+      "browser_move_mouse",
+      "browser_press_key",
+      "browser_refresh_page",
+      "browser_resize_window",
+      "browser_scroll",
+      "browser_scroll_dom",
+      "browser_select_option",
+      "browser_subagent",
+      "call_mcp_tool",
+      "capture_browser_console_logs",
+      "capture_browser_screenshot",
+      "click_browser_pixel",
+      "command_status",
+      "define_subagent",
+      "delete_knowledge",
+      "execute_browser_javascript",
+      "find_by_name",
+      "finish",
+      "generate_image",
+      "grep_search",
+      "invoke_subagent",
+      "list_browser_pages",
+      "list_dir",
+      "list_permissions",
+      "list_plugin_accounts",
+      "list_resources",
+      "manage_inbox",
+      "manage_subagents",
+      "manage_task",
+      "multi_replace_file_content",
+      "notebook_edit",
+      "notebook_execution",
+      "open_browser_url",
+      "read_browser_page",
+      "read_resource",
+      "read_url_content",
+      "replace_file_content",
+      "run_command",
+      "run_workflow",
+      "schedule",
+      "search_marketplace",
+      "search_web",
+      "sed_file",
+      "send_command_input",
+      "send_message",
+      "view_file",
+      "wait",
+      "wait_5_seconds",
+      "write_to_file"
+    ],
+    "init_permission_mode": "always-proceed",
+    "step_types_observed": [
+      "agent_response",
+      "user_input"
+    ],
+    "step_type_counts": {
+      "user_input": 1,
+      "agent_response": 262
+    },
+    "raw_output_sha256": "b797c0f7e2809d5a7c305600da7ff15a0094b00a46e23d129fd9341a94b8eddf",
+    "prompt_sha256": "5a4d1958f39c903f687f009272e76b66ae91d1903e699ae7aca535384bf85b34"
+  },
+  "validations": [
+    {
+      "name": "CI documentation check",
+      "result": "PASS",
+      "detail": "\ud83d\udcda Documentation Check SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39466505094/job/118779523488"
+    },
+    {
+      "name": "CI model routing consistency",
+      "result": "PASS",
+      "detail": "\ud83d\uddfa\ufe0f Model Routing Consistency SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39466505094/job/118779523392"
+    },
+    {
+      "name": "CI audit proof validator (--all)",
+      "result": "PASS",
+      "detail": "\ud83d\udd0d Audit Proof Validator (--all) SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39466505094/job/118779524036"
+    },
+    {
+      "name": "CI auditor router",
+      "result": "PASS",
+      "detail": "\ud83e\uddea Auditor Router SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39466505094/job/118779523227"
+    },
+    {
+      "name": "CI code quality & linting",
+      "result": "PASS",
+      "detail": "\ud83d\udc85 Code Quality & Linting SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39466505094/job/118779523256"
+    },
+    {
+      "name": "CI unit tests (GitHub Actions, audited head e58d322f1)",
+      "result": "PASS",
+      "detail": "\ud83e\uddea Unit Tests SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39466505094/job/118779523524"
+    },
+    {
+      "name": "CI security review",
+      "result": "PASS",
+      "detail": "\ud83d\udd12 Security Review SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39466505094/job/118779523519"
+    },
+    {
+      "name": "CI clobber guard",
+      "result": "PASS",
+      "detail": "\ud83d\udee1\ufe0f Clobber Guard SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39466505010/job/118779192865"
+    },
+    {
+      "name": "supervisor: make test-fast in worktree at audited head",
+      "result": "PASS",
+      "detail": "2698 passed, 2 skipped, exit 0 (2026-10-20)"
+    },
+    {
+      "name": "supervisor: pre-commit run --from-ref origin/main --to-ref HEAD (CI code-quality command)",
+      "result": "PASS",
+      "detail": "all applicable hooks Passed, worktree unchanged"
+    },
+    {
+      "name": "supervisor: packet targeted pytest (arch drift gate + launcher + registry + lifecycle)",
+      "result": "PASS",
+      "detail": "45 passed"
+    },
+    {
+      "name": "supervisor: docker compose config postgres via env_with_compose_interpolation from scrubbed env",
+      "result": "PASS",
+      "detail": "rc 0 (read-only render)"
+    },
+    {
+      "name": "auditor-side validations",
+      "result": "NOT_RUN",
+      "detail": "auditor ran sandboxed with no repo checkout; validation_status in its return: NOT_RUN"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1456-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "RISK-01 (low, src/dopemux/mcp/runtime_registry.py:206-258): RuntimeRegistry.reconcile_stale_running(--apply) rewrites instances.json via save() without a cross-process file lock, so concurrent execution alongside dopemux mcp start/stop/restart/up/down or another reconcile could lose updates. This limitation is explicitly documented in the CLI help, docstring, and troubleshooting docs.",
+      "RISK-02 (low, src/dopemux/mcp/runtime_registry.py:191-204): RuntimeRegistry.find_stale_running() only marks a running instance stale when none of its recorded container_names are present in docker ps (not any(name in running for name in names)). If an instance ever spans multiple containers and experiences a partial container exit, it will remain marked running.",
+      "RISK-03 (low, src/dopemux/commands/mcp_commands.py:1370-1391): CLI unit tests cover compose environment injection for up, down, logs, start-all, and status --legacy-compose, but do not directly exercise mcp_ensure_cmd compose environment forwarding via _run_checked."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
