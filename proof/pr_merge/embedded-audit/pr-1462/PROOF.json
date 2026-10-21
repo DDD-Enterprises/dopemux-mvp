@@ -1,0 +1,80 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high (model variant gemini-4-argon-high; effort not set separately)",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "google-antigravity"
+    },
+    "implementer": {
+      "model": "claude-sonnet-5-5 (supervisor session; no child agents dispatched)",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+  },
+  "embedded_audit": {
+    "auditor_model": "gemini",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "`_MCP_PROSE_REF = re.compile(r'(?<![\\w/])/mcp\\s+([A-Za-z0-9_-]+)\\s+([A-Za-z0-9_*-]+)')` uses `(?<![\\w/])` whereas `_SCRIPT_REF` in the same file uses `(?<![\\w/.-])`. Consequently, relative paths like `./mcp foo bar` or hyphenated paths like `foo-/mcp bar baz` match `_MCP_PROSE_REF` (because `.` and `-` are not in `[\\w/]`). In addition, un-backticked English prose such as `/mcp command to ...` matches as `server='command', tool='to'`, and markdown emphasis around un-backticked references such as `*mcp__conport__get_context*` or `*/mcp conport get_context*` includes the closing `*` in the tool token because `*` is inside `[A-Za-z0-9_*-]+`. | COORDINATOR ADJUDICATION: see proof/MACRO-DMX-CMD-REPAIR-002/review_bundle/AUDIT_ADJUDICATION.md",
+        "id": "F1",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "_MCP_PROSE_REF lookbehind omits '.' and '-' and _MCP_TOOL consumes trailing markdown '*' emphasis"
+      },
+      {
+        "body": "`_MCP_REF = re.compile(r'mcp__' + _MCP_SERVER + r'__' + _MCP_TOOL)` has no leading negative lookbehind (e.g. `(?<![A-Za-z0-9_*-])`), so a malformed token with a prefix like `xmcp__conport__get_context` or `bad-mcp__conport__get_context` matches the valid suffix `mcp__conport__get_context` and false-passes. Conversely, `mcp___conport__get_context` (three underscores after `mcp`) fails `[A-Za-z0-9-]+` at the start of `_MCP_SERVER` and is silently ignored rather than reported. | COORDINATOR ADJUDICATION: see proof/MACRO-DMX-CMD-REPAIR-002/review_bundle/AUDIT_ADJUDICATION.md",
+        "id": "F2",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "_MCP_REF lacks a leading boundary and silently skips triple-underscore after 'mcp'"
+      },
+      {
+        "body": "`test_should_accept_prose_reference_when_tool_is_captured` only asserts that `check_mcp_tool_refs` and `check_mcp_servers` return `[]`, without asserting that `_mcp_refs(tmp_path)` actually extracted `('cmd.md:1', 'conport', 'get_context')`. Both assertions and `test_should_ignore_slash_mcp_when_embedded_in_a_path` (`assert list(_mcp_refs(tmp_path)) == []`) would pass against the pre-change code where `/mcp` was not scanned at all. Also, `test_should_ignore_slash_mcp_when_embedded_in_a_path` only tests word characters before `/mcp` (`docs/mcp`, `a/mcp`) and does not test `//mcp` or `./mcp`. | COORDINATOR ADJUDICATION: see proof/MACRO-DMX-CMD-REPAIR-002/review_bundle/AUDIT_ADJUDICATION.md",
+        "id": "F3",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "Two new W08 prose tests would pass even if _MCP_PROSE_REF were a no-op"
+      },
+      {
+        "body": "As documented in `docs/02-how-to/mcp-integration-guide.md` and the packet facts, `pal-stdio`, `gpt-researcher`, and `MCP_DOCKER` are recorded as `unreachable` with zero tools in `mcp_tool_surfaces.json`, so individual tool names under `mcp__pal-stdio__*` (such as `apilookup`, `thinkdeep`, `debug`, `codereview`, `analyze`) cannot yet be verified against a live/seed tool list, and bare prose tool names without `mcp__` or `/mcp` prefixes remain unscanned pending `MCPINT-FND-DRIFTGATE-003`. | COORDINATOR ADJUDICATION: see proof/MACRO-DMX-CMD-REPAIR-002/review_bundle/AUDIT_ADJUDICATION.md",
+        "id": "F4",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Residual drift-gate gaps remain for unreachable stdio server tool lists and bare prose tool mentions"
+      }
+    ],
+    "fixes_applied": [],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "cd <sealed dir with only the audit prompt and the frozen diff> && /Users/hue/.local/bin/agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\". OPERATOR-APPROVED PACKET-SPECIFIC FALLBACK: exact model gemini-3.1-pro-high is unavailable; exact-model evidence is unavailable; auditor_model recorded as generic gemini.",
+    "remaining_risks": [
+      "Exact audit model gemini-3.1-pro-high unavailable; operator-approved fallback gemini-4-argon-high; provider-attested model UNKNOWN",
+      "Three LOW findings left unrepaired by design (a change would invalidate the audited subject): _MCP_PROSE_REF lookbehind omits '.' and '-' and _MCP_TOOL may consume trailing markdown '*'; _MCP_REF has no leading boundary and skips 'mcp___x__y'; two new prose tests would also pass if the prose scan were a no-op",
+      "Residual drift-gate gaps remain: unreachable stdio server tool lists and bare prose tool mentions (plan.md, plan-tasks.md) are not scanned",
+      "The auditor had no tools: tests, lint and preflight were run by the coordinator, not the auditor (re-run independently before this PR)",
+      "AGY global MCP servers were reachable during the run; containment was verified from the event stream only, not enforced",
+      "This PR is stacked on PR #1445 (base fix/cmd-repair-001); merge order matters"
+    ],
+    "report_path": "proof/MACRO-DMX-CMD-REPAIR-002/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "generated_at": "2026-10-21T20:08:35Z",
+  "github_mutation_route_added": false,
+  "head_sha": "77103da050a573d4ead47cacb3b4f671c1f8a39e",
+  "mutation_performed": false,
+  "packet_id": "MACRO-DMX-CMD-REPAIR-002",
+  "pr_number": 1462,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
