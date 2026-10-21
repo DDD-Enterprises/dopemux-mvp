@@ -1587,6 +1587,10 @@ async def get_adhd_state(
         return {
             "energy": energy_str,
             "attention": attention_str,
+            # Aliases: dashboard, check_energy.sh, tmux status and dope-memory
+            # read these spellings.
+            "energy_level": energy_str,
+            "attention_state": attention_str,
             "session_minutes": session_minutes,
             "user_id": user_id
         }
@@ -1597,6 +1601,8 @@ async def get_adhd_state(
         return {
             "energy": "medium",
             "attention": "focused",
+            "energy_level": "medium",
+            "attention_state": "focused",
             "session_minutes": 0,
             "user_id": user_id
         }
