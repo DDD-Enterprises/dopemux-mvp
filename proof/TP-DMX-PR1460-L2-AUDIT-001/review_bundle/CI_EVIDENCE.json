@@ -1,0 +1,42 @@
+[
+  {
+    "name": "CI documentation check",
+    "result": "PASS",
+    "detail": "\ud83d\udcda Documentation Check SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315508"
+  },
+  {
+    "name": "CI security review",
+    "result": "PASS",
+    "detail": "\ud83d\udd12 Security Review SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321316020"
+  },
+  {
+    "name": "CI code quality & linting",
+    "result": "PASS",
+    "detail": "\ud83d\udc85 Code Quality & Linting SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315853"
+  },
+  {
+    "name": "CI auditor router",
+    "result": "PASS",
+    "detail": "\ud83e\uddea Auditor Router SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321316154"
+  },
+  {
+    "name": "CI clobber guard",
+    "result": "PASS",
+    "detail": "\ud83d\udee1\ufe0f Clobber Guard SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872613/job/119321316858"
+  },
+  {
+    "name": "CI unit tests (GitHub Actions, audited head 7ea96e052)",
+    "result": "PASS",
+    "detail": "\ud83e\uddea Unit Tests SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315870"
+  },
+  {
+    "name": "CI audit proof validator (--all)",
+    "result": "PASS",
+    "detail": "\ud83d\udd0d Audit Proof Validator (--all) SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315963"
+  },
+  {
+    "name": "CI model routing consistency",
+    "result": "PASS",
+    "detail": "\ud83d\uddfa\ufe0f Model Routing Consistency SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315848"
+  }
+]
