@@ -116,6 +116,20 @@ What `mcp start` does:
 - Sets `dopemux.managed=true` + project labels
 - Writes operational registry: `~/.dopemux/mcp/runtime/instances.json`
 - Does **not** adopt unlabeled containers
+- **First start of a project builds its images.** `conport` and `dope-memory` use
+  `build:` with no `image:` in `compose.yml`, so each project needs its own
+  `<project>-<service>` image (about 1.6 GB and 1.9 GB). When that image is absent,
+  `mcp start` runs `docker compose build <service>` before `up` (this takes minutes
+  and shows up as `IMAGE_MISSING_WILL_BUILD` in `--dry-run`). Budgets:
+  `DOPEMUX_MCP_BUILD_TIMEOUT_SECS` (default 1800) for the build and
+  `DOPEMUX_MCP_UP_TIMEOUT_SECS` (default 180) for `up`. A failed build stops that
+  service before `up` (`IMAGE_BUILD_FAILED`).
+- `HOST_CODE_PARENT_DIR` / `HOST_PROJECT_RELATIVE_PATH` (required by `compose.yml`
+  interpolation) default to the dopemux-mvp checkout's parent directory and
+  basename when unset; explicit values are kept. Commands that can start
+  `dope-context` (`mcp up` with it in the service set, `mcp start-all`,
+  `mcp ensure --full`) do not apply the defaults, so its `/workspaces` mount
+  still fails closed until you export both variables.
 
 ```bash
 dopemux mcp status --repo ~/code/your-other-project --json

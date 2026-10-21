@@ -35,19 +35,26 @@ COMPOSE_INTERPOLATION_PLACEHOLDER = "dopemux-compose-interpolation-only"
 # HOST_PROJECT_RELATIVE_PATH is its companion for the dope-context mount.
 COMPOSE_HOST_PATH_VARS = ("HOST_CODE_PARENT_DIR", "HOST_PROJECT_RELATIVE_PATH")
 
+BUILD_TIMEOUT_ENV = "DOPEMUX_MCP_BUILD_TIMEOUT_SECS"
+UP_TIMEOUT_ENV = "DOPEMUX_MCP_UP_TIMEOUT_SECS"
+DEFAULT_BUILD_TIMEOUT_SECS = 1800.0
+DEFAULT_UP_TIMEOUT_SECS = 180.0
+
 
 def env_with_compose_interpolation(
     base: Optional[Mapping[str, str]] = None,
     *,
     host_path_defaults: bool = True,
+    product: Optional[Path] = None,
 ) -> Dict[str, str]:
     """Copy *base* (or os.environ) and fill compose interpolation defaults.
 
     Sets a parse-only bridge token when unset. When *host_path_defaults* is
     true, also derives HOST_CODE_PARENT_DIR / HOST_PROJECT_RELATIVE_PATH from
-    :func:`product_root` for any of them that is unset or blank (a non-blank
-    operator value always wins). If the product root cannot be located both
-    are left untouched so compose fails closed with its own ``:?`` message.
+    *product* (or :func:`product_root`) for any of them that is unset or
+    blank (a non-blank operator value always wins). If the product root
+    cannot be located both are left untouched so compose fails closed with
+    its own ``:?`` message.
 
     Callers that may start ``dope-context`` must pass
     ``host_path_defaults=False``: the defaults are for interpolation only and
@@ -61,7 +68,7 @@ def env_with_compose_interpolation(
         not str(env.get(name) or "").strip() for name in COMPOSE_HOST_PATH_VARS
     ):
         try:
-            root = product_root()
+            root = product if product is not None else product_root()
         except FileNotFoundError:
             return env
         derived = {
@@ -72,6 +79,27 @@ def env_with_compose_interpolation(
             if not str(env.get(name) or "").strip():
                 env[name] = value
     return env
+
+
+def _positive_float_env(
+    name: str, default: float, env: Optional[Mapping[str, str]] = None
+) -> float:
+    raw = (os.environ if env is None else env).get(name)
+    try:
+        value = float(str(raw).strip())
+    except (TypeError, ValueError):
+        return default
+    return value if value > 0 else default
+
+
+def build_timeout_secs(env: Optional[Mapping[str, str]] = None) -> float:
+    """Budget for `compose build` (env DOPEMUX_MCP_BUILD_TIMEOUT_SECS, default 1800)."""
+    return _positive_float_env(BUILD_TIMEOUT_ENV, DEFAULT_BUILD_TIMEOUT_SECS, env)
+
+
+def up_timeout_secs(env: Optional[Mapping[str, str]] = None) -> float:
+    """Budget for `compose up` (env DOPEMUX_MCP_UP_TIMEOUT_SECS, default 180)."""
+    return _positive_float_env(UP_TIMEOUT_ENV, DEFAULT_UP_TIMEOUT_SECS, env)
 
 
 def product_root() -> Path:
@@ -319,8 +347,77 @@ def run_cmd(
         return RuntimeCommandResult(
             command=list(cmd),
             exit_code=124,
-            stderr="command timed out",
+            stderr=f"command timed out after {timeout:.0f}s",
         )
+
+
+def compose_image_name(project_name: str, service: str) -> str:
+    """Compose v2 default image name for a service with `build:` and no `image:`."""
+    return f"{project_name}-{service}"
+
+
+def docker_image_inspect_command(image: str) -> List[str]:
+    """Read-only command that exits 0 iff *image* exists locally."""
+    return ["docker", "image", "inspect", image, "--format", "{{.Id}}"]
+
+
+def docker_image_exists(
+    image: str,
+    *,
+    runner: Optional[Runner] = None,
+    env: Optional[Mapping[str, str]] = None,
+) -> Optional[bool]:
+    """True when the image exists, False when docker says it does not, else None.
+
+    The docker CLI exits 1 both for "No such image" and for daemon errors
+    (unreachable socket, permission denied), so only the former counts as a
+    definite False; every other outcome is unknown.
+    """
+    result = run_cmd(
+        docker_image_inspect_command(image), runner=runner, env=env, timeout=30.0
+    )
+    if result.exit_code == 0:
+        return True
+    if result.exit_code == 1 and "no such image" in (result.stderr or "").lower():
+        return False
+    return None
+
+
+def _compose_prefix(
+    *, product: Path, override_path: Path, env_file: Path, project_name: str
+) -> List[str]:
+    return [
+        "docker",
+        "compose",
+        "-f",
+        str(product / "compose.yml"),
+        "-f",
+        str(override_path),
+        "--env-file",
+        str(env_file),
+        "-p",
+        project_name,
+    ]
+
+
+def compose_build_command(
+    *,
+    product: Path,
+    override_path: Path,
+    env_file: Path,
+    project_name: str,
+    services: Sequence[str],
+) -> List[str]:
+    """`docker compose ... build <services>` with the same prefix as the up command."""
+    cmd = _compose_prefix(
+        product=product,
+        override_path=override_path,
+        env_file=env_file,
+        project_name=project_name,
+    )
+    cmd.append("build")
+    cmd.extend(list(services))
+    return cmd
 
 
 def compose_up_command(
@@ -332,20 +429,13 @@ def compose_up_command(
     services: Sequence[str],
     no_deps: bool = True,
 ) -> List[str]:
-    cmd = [
-        "docker",
-        "compose",
-        "-f",
-        str(product / "compose.yml"),
-        "-f",
-        str(override_path),
-        "--env-file",
-        str(env_file),
-        "-p",
-        project_name,
-        "up",
-        "-d",
-    ]
+    cmd = _compose_prefix(
+        product=product,
+        override_path=override_path,
+        env_file=env_file,
+        project_name=project_name,
+    )
+    cmd.extend(["up", "-d"])
     if no_deps:
         cmd.append("--no-deps")
     cmd.extend(list(services))

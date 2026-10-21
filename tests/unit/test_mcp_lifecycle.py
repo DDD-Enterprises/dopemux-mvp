@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from dopemux.mcp import docker_runtime as dr
 from dopemux.mcp.lifecycle import run_lifecycle
 
@@ -459,3 +461,204 @@ def test_container_naming_never_default_mcp_conport():
     name = dr.container_name_for("dnh-crm", "8d6d", "conport")
     assert name == "dopemux-dnh-crm-8d6d-conport"
     assert name != "mcp-conport"
+
+
+# --- image presence / pre-build (never-started project) -------------------
+
+
+@pytest.fixture(autouse=True)
+def _hermetic_image_probe(monkeypatch):
+    """Existing tests pass no cmd_runner; never let them reach a real docker."""
+    real = dr.docker_image_exists
+
+    def guarded(image, *, runner=None, env=None):
+        if runner is None:
+            runner = lambda *a, **k: SimpleNamespace(  # noqa: E731
+                returncode=0, stdout="sha256:fake\n", stderr=""
+            )
+        return real(image, runner=runner, env=env)
+
+    monkeypatch.setattr(dr, "docker_image_exists", guarded)
+
+
+def _product(tmp_path: Path) -> Path:
+    product = tmp_path / "product"
+    product.mkdir()
+    (product / "compose.yml").write_text("services: {}\n")
+    (product / "scripts" / "mcp-wrappers").mkdir(parents=True)
+    (
+        product / "scripts" / "mcp-wrappers" / "task-orchestrator-http-singleton.sh"
+    ).write_text("#!/bin/bash\n")
+    return product
+
+
+def _recording_runner(*, inspect_rc=0, build_rc=0, up_rc=0, build_stderr=""):
+    """Fake cmd_runner: classifies docker calls and records (kind, svc, timeout)."""
+    calls = []
+
+    def runner(cmd, **kwargs):
+        cmd = list(cmd)
+        if cmd[:3] == ["docker", "image", "inspect"]:
+            # Real docker: exit 1 + "No such image" means absent; other exit-1
+            # errors (daemon unreachable) are inconclusive.
+            kind, rc = "inspect", inspect_rc
+            err = f"Error: No such image: {cmd[3]}" if inspect_rc == 1 else ""
+        elif "build" in cmd:
+            kind, rc, err = "build", build_rc, build_stderr
+        elif "up" in cmd:
+            kind, rc, err = "up", up_rc, ""
+        else:
+            kind, rc, err = "other", 0, ""
+        calls.append(
+            {
+                "kind": kind,
+                "cmd": cmd,
+                "timeout": kwargs.get("timeout"),
+                "env": kwargs.get("env"),
+            }
+        )
+        return SimpleNamespace(returncode=rc, stdout="", stderr=err)
+
+    runner.calls = calls
+    return runner
+
+
+def _start(tmp_path: Path, runner, *, dry_run: bool):
+    repo = _fixture_repo(tmp_path)
+    reg = tmp_path / "reg" / "instances.json"
+    result = run_lifecycle(
+        "start",
+        repo=repo,
+        services=["conport", "dope-memory"],
+        catalog=_catalog(),
+        dry_run=dry_run,
+        registry_path=reg,
+        docker_runner=_docker_empty(),
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=False,
+        port_is_free_fn=lambda p: True,
+    )
+    return result, reg
+
+
+def _svc(result, name):
+    return next(s for s in result.services if s["service"] == name)
+
+
+def _codes(findings):
+    return [f["code"] for f in findings]
+
+
+def test_should_plan_build_then_up_when_image_missing_in_dry_run(tmp_path: Path):
+    # Arrange
+    runner = _recording_runner(inspect_rc=1)
+    # Act
+    result, reg = _start(tmp_path, runner, dry_run=True)
+    # Assert
+    assert result.status == "PLANNED"
+    conport = _svc(result, "conport")
+    assert len(conport["commands"]) == 2
+    assert (
+        " build " in f" {conport['commands'][0]} "
+        and "conport" in conport["commands"][0]
+    )
+    assert "up -d --no-deps" in conport["commands"][1]
+    assert "IMAGE_MISSING_WILL_BUILD" in _codes(conport["preflight_findings"])
+    assert not reg.exists()
+    assert {c["kind"] for c in runner.calls} == {"inspect"}
+
+
+def test_should_plan_only_up_when_image_present_in_dry_run(tmp_path: Path):
+    # Arrange
+    runner = _recording_runner(inspect_rc=0)
+    # Act
+    result, _ = _start(tmp_path, runner, dry_run=True)
+    # Assert
+    conport = _svc(result, "conport")
+    assert len(conport["commands"]) == 1
+    assert "up -d --no-deps" in conport["commands"][0]
+    assert "IMAGE_MISSING_WILL_BUILD" not in _codes(conport["preflight_findings"])
+
+
+def test_should_build_then_up_with_budgets_when_image_missing_in_apply(
+    tmp_path: Path, monkeypatch
+):
+    # Arrange
+    monkeypatch.delenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS", raising=False)
+    monkeypatch.delenv("DOPEMUX_MCP_UP_TIMEOUT_SECS", raising=False)
+    runner = _recording_runner(inspect_rc=1)
+    # Act
+    result, _ = _start(tmp_path, runner, dry_run=False)
+    # Assert
+    conport_calls = [c for c in runner.calls if "conport" in " ".join(c["cmd"])]
+    assert [c["kind"] for c in conport_calls] == ["inspect", "build", "up"]
+    assert conport_calls[1]["timeout"] == 1800.0
+    assert conport_calls[2]["timeout"] == 180.0
+    conport = _svc(result, "conport")
+    assert conport["action"] == "started"
+    assert conport["build_result"]["exit_code"] == 0
+    assert conport["image"].endswith("-conport")
+    assert "IMAGE_BUILT" in _codes(conport["findings"])
+    assert (
+        len(conport["commands"]) >= 1 and "up -d --no-deps" in conport["commands"][-1]
+    )
+
+
+def test_should_honor_build_timeout_env_when_set_in_apply(tmp_path: Path, monkeypatch):
+    # Arrange
+    monkeypatch.setenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS", "42")
+    runner = _recording_runner(inspect_rc=1)
+    # Act
+    _start(tmp_path, runner, dry_run=False)
+    # Assert
+    builds = [c for c in runner.calls if c["kind"] == "build"]
+    assert builds and all(c["timeout"] == 42.0 for c in builds)
+
+
+def test_should_skip_up_and_fail_when_build_fails_in_apply(tmp_path: Path):
+    # Arrange
+    runner = _recording_runner(
+        inspect_rc=1, build_rc=1, build_stderr="boom: pip failed"
+    )
+    # Act
+    result, _ = _start(tmp_path, runner, dry_run=False)
+    # Assert
+    conport = _svc(result, "conport")
+    assert conport["action"] == "failed"
+    assert result.status == "FAIL"
+    assert "IMAGE_BUILD_FAILED" in _codes(conport["findings"])
+    assert "boom: pip failed" in str(conport["findings"])
+    assert conport["build_result"]["exit_code"] == 1
+    assert conport["result"]["exit_code"] == 1
+    conport_kinds = [c["kind"] for c in runner.calls if "conport" in " ".join(c["cmd"])]
+    assert "up" not in conport_kinds
+
+
+def test_should_only_run_up_and_warn_when_image_presence_unknown(tmp_path: Path):
+    # Arrange
+    runner = _recording_runner(inspect_rc=127)
+    # Act
+    result, _ = _start(tmp_path, runner, dry_run=False)
+    # Assert
+    conport = _svc(result, "conport")
+    assert "IMAGE_PRESENCE_UNKNOWN" in _codes(conport["findings"])
+    assert conport["build_result"] is None
+    kinds = [c["kind"] for c in runner.calls if "conport" in " ".join(c["cmd"])]
+    assert "build" not in kinds and "up" in kinds
+
+
+def test_should_pass_host_dir_interpolation_env_when_running_compose(
+    tmp_path: Path, monkeypatch
+):
+    # Arrange
+    runner = _recording_runner(inspect_rc=0)
+    # Act
+    monkeypatch.delenv("HOST_CODE_PARENT_DIR", raising=False)
+    monkeypatch.delenv("HOST_PROJECT_RELATIVE_PATH", raising=False)
+    _start(tmp_path, runner, dry_run=False)
+    # Assert
+    up = next(c for c in runner.calls if c["kind"] == "up")
+    assert up["env"]["HOST_CODE_PARENT_DIR"] == str(tmp_path)
+    assert up["env"]["HOST_PROJECT_RELATIVE_PATH"] == "product"
