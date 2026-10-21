@@ -20,7 +20,7 @@
       "runner": "claude-code-desktop",
       "runtime_family": "anthropic-claude-code"
     },
-    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+    "independence": "PROVEN"
   },
   "audited_head_sha": "77103da050a573d4ead47cacb3b4f671c1f8a39e",
   "base_sha": "f082007ffa11a410db8490afecb5bd92113757d8",
