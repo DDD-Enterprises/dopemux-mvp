@@ -1,0 +1,62 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1459,
+  "head_sha": "fc921797a2e4ad8930f7e9c6882cd2957e9aed0d",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <scratch>/grok-cwd --always-approve --disallowed-tools \"search_replace,web_search,web_fetch,Agent\" --max-turns 80 --output-format json --prompt-file AUDIT_INPUT.md; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1459-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "LOW",
+        "title": "src/dopemux/mcp/docker_runtime.py:docker_image_exists: Absent-image detection depends on stderr containing 'no such image' with exit code 1; other docker CLI/message variants become IMAGE_PRESENCE_UNK",
+        "status": "OPEN",
+        "body": "src/dopemux/mcp/docker_runtime.py:docker_image_exists: Absent-image detection depends on stderr containing 'no such image' with exit code 1; other docker CLI/message variants become IMAGE_PRESENCE_UNKNOWN and skip pre-build."
+      },
+      {
+        "id": "F-02",
+        "severity": "LOW",
+        "title": "src/dopemux/mcp/lifecycle.py:_start_services: Dry-run still executes docker image inspect (read-only side effect) to plan build vs up.",
+        "status": "OPEN",
+        "body": "src/dopemux/mcp/lifecycle.py:_start_services: Dry-run still executes docker image inspect (read-only side effect) to plan build vs up."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "validation_status=NOT_RUN: unit tests and CI were not executed at fc921797a2e4ad8930f7e9c6882cd2957e9aed0d under this embedded audit (candidate not checked out/executed; tools/MCP disabled).",
+      "Remote GitHub PR #1459 head, check runs, and workflow provenance were not re-queried in-session; subject pin rests on frozen scratchpad evidence (HEAD.txt matches trusted head SHA).",
+      "IMAGE_PRESENCE_UNKNOWN and daemon/CLI ambiguity retain the pre-fix failure mode (compose up may build inline under the 180s up budget).",
+      "Per-project image builds (~1.6GB + ~1.9GB) remain operator disk/time cost; documented but not gated beyond build timeout.",
+      "compose_image_name assumes Compose v2 default '{project}-{service}' when build: is set without image:; compose.yml drift would mis-probe.",
+      "build_timeout_secs/up_timeout_secs read os.environ (or an explicit mapping), not lifecycle process_env; hermetic callers must set process env vars for budgets."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}
