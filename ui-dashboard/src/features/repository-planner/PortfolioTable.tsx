@@ -9,10 +9,11 @@ const statusLabel = { ready: 'Ready evidence', blocked: 'Blocked evidence', stal
 
 export interface CandidateShaChipProps {
   sha: string;
+  labelPrefix?: string;
   onError?: (message: string) => void;
 }
 
-export function CandidateShaChip({ sha, onError }: CandidateShaChipProps) {
+export function CandidateShaChip({ sha, labelPrefix = 'candidate SHA', onError }: CandidateShaChipProps) {
   const shortSha = sha.slice(0, 12);
   const [isCopied, setIsCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
@@ -62,32 +63,34 @@ export function CandidateShaChip({ sha, onError }: CandidateShaChipProps) {
       if (activeShaRef.current !== currentSha) return;
       const errorMsg = err instanceof Error ? err.message : String(err);
       setCopyFailed(true);
-      onError?.(`Failed to copy candidate SHA: ${errorMsg}`);
+      onError?.(`Failed to copy ${labelPrefix}: ${errorMsg}`);
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
       copyTimeoutRef.current = setTimeout(() => {
         setCopyFailed(false);
         copyTimeoutRef.current = null;
       }, 2000);
     }
-  }, [onError]);
+  }, [labelPrefix, onError]);
+
+  const formattedPrefix = labelPrefix.charAt(0).toUpperCase() + labelPrefix.slice(1);
 
   const tooltipTitle = isCopied
     ? 'SHA copied!'
     : copyFailed
-      ? 'Failed to copy candidate SHA'
-      : `Copy candidate SHA ${shortSha}`;
+      ? `Failed to copy ${labelPrefix}`
+      : `Copy ${labelPrefix} ${shortSha}`;
 
   const chipLabel = isCopied
-    ? `Candidate SHA ${shortSha} copied`
+    ? `${formattedPrefix} ${shortSha} copied`
     : copyFailed
       ? `Copy failed: ${shortSha}`
       : shortSha;
 
   const ariaLabel = isCopied
-    ? `Candidate SHA ${shortSha} copied`
+    ? `${formattedPrefix} ${shortSha} copied`
     : copyFailed
-      ? `Failed to copy candidate SHA ${shortSha}`
-      : `Copy candidate SHA ${shortSha}`;
+      ? `Failed to copy ${labelPrefix} ${shortSha}`
+      : `Copy ${labelPrefix} ${shortSha}`;
 
   return (
     <Tooltip title={tooltipTitle} arrow describeChild>
