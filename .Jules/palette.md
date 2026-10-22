@@ -176,3 +176,7 @@
 ## 2026-07-19 - [Keyboard Dismissal for Soft Confirmations]
 **Learning:** For transient 'Soft Confirmation' patterns (like 3-second 'Confirm Skip' or 'Confirm Reset' states), keyboard users need an immediate, explicit way to cancel the pending destructive state without waiting out the timeout or risking an accidental second activation. Binding the `Escape` key (`onKeyDown`) to reset confirmation states provides an intuitive safety hatch for keyboard navigation.
 **Action:** Always attach an `onKeyDown` handler listening for `Escape` to reset confirmation states on soft confirmation buttons.
+
+## 2026-07-20 - [Provenance SHA Copy Utility]
+**Learning:** Raw commit SHAs rendered in plain `<code>` elements in modal provenance/details panels create copy friction and lack tactile feedback. Reusing interactive SHA chip components ensures consistent keyboard focus (`tabIndex={0}`), visual feedback (icon swap, tooltips), and global error propagation across both table views and modal details.
+**Action:** Always replace raw `<code>` commit SHAs or hashes in modal detail views with copyable SHA chips connected to global error handlers.

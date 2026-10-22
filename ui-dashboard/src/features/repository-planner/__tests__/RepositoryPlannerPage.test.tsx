@@ -179,6 +179,36 @@ describe('RepositoryPlannerPage', () => {
       });
     }
   });
+
+  test('ProvenancePanel renders copyable Observed Head SHA chip with visual feedback', async () => {
+    const observedHeadSha = dopemuxFixture.observed_head;
+    const shortSha = observedHeadSha.slice(0, 12);
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      configurable: true,
+    });
+
+    try {
+      render(<RepositoryPlannerPage />);
+      const trigger = screen.getByRole('button', { name: /Inspect dopemux-mvp/i });
+      fireEvent.click(trigger);
+
+      const observedChip = screen.getByRole('button', { name: new RegExp(`Copy observed head SHA ${shortSha}`) });
+      expect(observedChip).toBeVisible();
+
+      fireEvent.click(observedChip);
+
+      expect(writeTextMock).toHaveBeenCalledWith(observedHeadSha);
+      expect(await screen.findByText(`Observed head SHA ${shortSha} copied`)).toBeVisible();
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        configurable: true,
+      });
+    }
+  });
 });
 
 describe('extension registry', () => {
