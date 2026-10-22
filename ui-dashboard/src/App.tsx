@@ -243,6 +243,16 @@ function DashboardApp() {
   }, []);
 
   useEffect(() => {
+    if (notifications.length === 0) {
+      setIsConfirmingClear(false);
+      if (clearConfirmTimeoutRef.current) {
+        clearTimeout(clearConfirmTimeoutRef.current);
+        clearConfirmTimeoutRef.current = null;
+      }
+    }
+  }, [notifications.length]);
+
+  useEffect(() => {
     let isMounted = true;
 
     async function loadInitialState() {
@@ -881,9 +891,36 @@ function DashboardApp() {
               })}
             </Box>
           ) : (
-            <Typography variant="body2" color="text.secondary">
-              Waiting for signals...
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                aria-hidden="true"
+                sx={{
+                  display: 'inline-flex',
+                  gap: 0.5,
+                  alignItems: 'center',
+                  '& span': {
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    bgcolor: alpha(brandTokens.colors.ritualCyan, 0.5),
+                    animation: 'emptyListeningPulse 1.4s infinite ease-in-out both',
+                  },
+                  '& span:nth-of-type(1)': { animationDelay: '-0.32s' },
+                  '& span:nth-of-type(2)': { animationDelay: '-0.16s' },
+                  '@keyframes emptyListeningPulse': {
+                    '0%, 80%, 100%': { transform: 'scale(0.6)', opacity: 0.3 },
+                    '40%': { transform: 'scale(1)', opacity: 1 },
+                  },
+                }}
+              >
+                <span />
+                <span />
+                <span />
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Waiting for signals...
+              </Typography>
+            </Box>
           )}
         </Paper>
 
