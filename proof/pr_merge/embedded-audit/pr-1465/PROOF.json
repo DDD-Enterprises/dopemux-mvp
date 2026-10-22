@@ -1,0 +1,47 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1465,
+  "head_sha": "8e9fe0607c3840685892bd4b530e6d55ddf5f50d",
+  "generated_at": "2026-10-22T11:28:45Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <sealed> --system-prompt-override \"<SYSTEM_PROMPT.txt>\" --disallowed-tools \"<DISALLOWED_TOOLS.txt: 45 tool ids incl. use_tool/search_tool/x_search>\" --deny \"Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources\" --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1465-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Profile-plane startable outputs are scanned via existing `_json_mcp_server_names`, while opencode/copilot now record shape/parse errors through `_mapping_server_names`; unparseable profile JSON may fail open (empty name set) rather than appending a parse/shape error, which is weaker than the hardened non-profile paths.",
+      "Quarantine CLI wiring is shown only on the profile generate path in this diff; equivalence of non-profile generate callers is assumed from the pre-existing validator and was not re-verified against full `mcp_commands.py` outside the hunk.",
+      "Static diff-only audit: unit/CLI tests were not executed in this embedded auditor session.",
+      "Auditor route: grok-cli / grok-4.5 is a packet-specific operator-approved fallback (operator selected 'Use Grok' on 2026-10-22) because the operator-approved AGY gemini-4-argon-high route returned HTTP 429 RESOURCE_EXHAUSTED (individual quota, reset ~40h) with no verdict.",
+      "Auditor ran with an empty tool list and a replaced system prompt (validation_status=NOT_RUN); test evidence at the audited head comes from CI and the local runs in this packet's validations."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}
