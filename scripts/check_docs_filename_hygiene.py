@@ -364,6 +364,10 @@ def _rewrite_plain_path_refs(repo_root: Path, path_map: Dict[str, str]) -> Tuple
         ".venv/",
         "node_modules/",
         "reports/docs-hygiene/",
+        # Other sessions' git worktrees checked out inside the repo: never
+        # rewrite their files from this checkout.
+        ".worktrees/",
+        ".claude/worktrees/",
     }
     updated = 0
     skipped_non_utf8: List[str] = []

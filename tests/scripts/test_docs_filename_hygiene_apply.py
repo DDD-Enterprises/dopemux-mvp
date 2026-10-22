@@ -134,6 +134,22 @@ def test_plain_ref_rewrite_applies_chained_keys_exactly_once(tmp_path):
     assert target.read_text(encoding="utf-8") == "docs/C.md docs/D.md\n"
 
 
+@pytest.mark.parametrize("worktree_root", [".worktrees/other", ".claude/worktrees/other"])
+def test_plain_ref_rewrite_never_touches_sibling_worktrees(tmp_path, worktree_root):
+    # Running --apply in the main checkout must not rewrite another session's
+    # worktree checked out inside the repo.
+    own = tmp_path / "refs.txt"
+    own.write_text("see docs/A.md\n", encoding="utf-8")
+    sibling = tmp_path / worktree_root / "refs.txt"
+    sibling.parent.mkdir(parents=True)
+    sibling.write_text("see docs/A.md\n", encoding="utf-8")
+
+    MODULE._rewrite_plain_path_refs(repo_root=tmp_path, path_map={"docs/A.md": "docs/b.md"})
+
+    assert own.read_text(encoding="utf-8") == "see docs/b.md\n"
+    assert sibling.read_text(encoding="utf-8") == "see docs/A.md\n"
+
+
 # --------------------------------------------------------------------------- F3
 
 
