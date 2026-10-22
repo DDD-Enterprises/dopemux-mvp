@@ -5,7 +5,7 @@ allowed-tools: [
   "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__get_blocked_items"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:blocked — Blocked Work-Items
@@ -112,8 +112,7 @@ If only explicit blocks present, omit the dependency section header (and vice ve
 ```
 Next actions:
   /dx:context <id>        → inspect a specific blocker's gate status
-  /dx:resume <id>         → resume an explicitly-held item (when Phase 4 ships)
-                            currently: advance_item(trigger="resume")
+  /dx:resume <id>         → resume an explicitly-held item
   /dx:next [--scope <id>] → pick something else under this tree
 ```
 

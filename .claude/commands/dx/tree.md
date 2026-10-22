@@ -5,7 +5,7 @@ allowed-tools: [
   "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__query_items"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:tree — Work-Item Tree Overview

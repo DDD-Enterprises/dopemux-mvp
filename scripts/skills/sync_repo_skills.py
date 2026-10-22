@@ -14,9 +14,6 @@ FAMILIES: Dict[str, List[str]] = {
     "pr-merge-specialist": ["pr-merge-specialist", "vibe-pr-merge"],
     "pr-docgen-sync": [
         "pr-docgen-sync",
-        "pr-docgen-sync-gemini",
-        "pr-docgen-sync-copilot",
-        "pr-docgen-sync-claude",
     ],
     "workflow-kit": [
         "brief-drafter",

@@ -7,7 +7,7 @@ allowed-tools: [
   "mcp__task-orchestrator__query_notes",
   "mcp__conport__conport_get_context"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:context — Orchestrator Context Snapshot
@@ -17,7 +17,7 @@ Three modes, picked automatically based on arguments:
 | Arguments | Mode | Behavior |
 |---|---|---|
 | `<item-id-or-prefix>` | **Item mode** | Show full gate status + schema + notes for one item |
-| `--since <timestamp>` | **Session resume** | Show items with recent role transitions since timestamp |
+| `--session` | **Session resume** | Show items with recent role transitions since timestamp |
 | (none) | **Health check** | Active items (work/review) + blocked items + stalled items across the workspace |
 
 ---
@@ -178,7 +178,7 @@ If `mcp__conport__conport_get_context` is available, fetch it and compare:
 ```
 ℹ️  No schema loaded. canAdvance always true; no gate enforcement.
   This is expected pre-config or when items have no matching schema tag.
-  Once .taskorchestrator/config.yaml ships and MCP restarts, guidance will surface.
+  Guidance surfaces once `.taskorchestrator/config.yaml` is present and the MCP has restarted.
 ```
 
 ---

@@ -17,7 +17,7 @@ Read `.claude/PROJECT_INSTRUCTIONS.md` and `.claude/PRIMER.md` first; this file 
 
 **Doctrine**: truth over fluency, inspect before editing, minimal correct change, deterministic systems first, fail closed when evidence is missing. This module elaborates the same Truth Order / proof-and-finality regime that [AGENTS.md](../AGENTS.md) mandates for Codex — keep both files in sync.
 
-**Default workflow**: `inspect → analyze → trace → plan → challenge → implement minimally → validate → precommit → summarize truthfully`.
+**Default workflow**: inspect before editing, make the minimal correct change, then validate, run precommit, and summarize truthfully.
 
 **Mandatory hierarchy**:
 
@@ -96,7 +96,7 @@ make type-check        # mypy src/
 
 ## 🧠 Core ADHD Principles
 
-- **Context Preservation**: Manual `dopemux save` and `/dx:save` support context capture; Stop hooks can perform best-effort saves when the ADHD Engine is running. A background 30-second save loop is planned/configured behavior, not observed Claude runtime support.
+- **Context Preservation**: Manual `dopemux save` and `/save` support context capture; Stop hooks can perform best-effort saves when the ADHD Engine is running. A background 30-second save loop is planned/configured behavior, not observed Claude runtime support.
 - **Gentle Guidance**: Encouraging, supportive language with clear next steps
 - **Progressive Disclosure**: Essential info first, details on request
 - **Decision Reduction**: Maximum 3 options to reduce cognitive overwhelm
@@ -107,7 +107,7 @@ make type-check        # mypy src/
 ### Task Management (ConPort + SuperClaude + Python ADHD Engine)
 **Authorities**: Task storage, PRD decomposition, ADHD optimization, progress tracking
 - **ConPort (PostgreSQL AGE)**: Task storage via progress_entry, metadata in custom_data, dependencies via link_conport_items, knowledge graph queries for unblocked tasks, decision logging
-- **SuperClaude**: PRD parsing via `/dx:prd-parse` with PAL planner, 25 standard commands, 15 specialized agents, `/dx:` custom commands for ADHD workflows
+- **SuperClaude**: user-level `/sc:*` commands and specialist agents (the loaded set varies by machine; `/help` and `/agents` show it), plus this repo's `/dx:` commands for ADHD workflows
 - **Python ADHD Engine**: Energy tracking, cognitive load calculation, break monitoring, attention state analysis, smart task routing, and hyperfocus-support modules. Claude-facing timer, break, and forced-pause automation remains not proven wired unless an explicit command/service path is verified.
 - **React Ink Dashboard**: Visual task progress, ADHD metrics, attention-aware UI, real-time updates
 
@@ -120,7 +120,7 @@ make type-check        # mypy src/
 **Event-Driven Coordination**: Redis Streams + EventBus + Integration Bridge
 - **Authority Enforcement**: Tool-level boundaries enforced via MetaMCP role-based filtering
 - **Event Routing**: SuperClaude → Python ADHD Engine → ConPort → Dashboard (all async)
-- **Conflict Resolution**: ConPort is source of truth for tasks, decisions, and ADHD state
+- **Conflict Resolution**: ConPort is source of truth for decisions, progress, and ADHD state; PM metadata lives in Leantime and workflow transitions in task-orchestrator (AGENTS.md §6)
 
 ## 🎯 Mode-Aware Operation
 
@@ -144,20 +144,20 @@ make type-check        # mypy src/
 WORKSPACE_ID="<workspace_root>"
 
 # Mandatory session initialization
-mcp__conport__get_active_context --workspace_id "$WORKSPACE_ID"
-mcp__conport__get_recent_activity_summary --workspace_id "$WORKSPACE_ID" --hours_ago 24
+mcp__conport__conport_get_context --workspace_id "$WORKSPACE_ID"
+mcp__conport__conport_get_recent_activity --workspace_id "$WORKSPACE_ID" --hours 24
 ```
 
 ### Sprint Management (mem4sprint)
 ```bash
 # Set mode and create sprint structure
-mcp__conport__update_active_context --workspace_id "$WORKSPACE_ID" --patch_content '{"mode": "PLAN", "sprint_id": "S-2025.09"}'
-mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_goals" --key "S-2025.09-G1" --value '{"type": "sprint_goal", "content": "Goal description", "sprint_id": "S-2025.09", "status": "planned"}'
+mcp__conport__conport_update_context --workspace_id "$WORKSPACE_ID" --active_context '{"mode": "PLAN", "sprint_id": "S-2025.09"}'
+mcp__conport__conport_save_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_goals" --key "S-2025.09-G1" --value '{"type": "sprint_goal", "content": "Goal description", "sprint_id": "S-2025.09", "status": "planned"}'
 ```
 
 ### Authority Routing
-- **Task Storage**: ConPort progress_entry + custom_data only (no external orchestrators)
-- **PRD Decomposition**: SuperClaude `/dx:prd-parse` with PAL planner (human review required)
+- **Task Storage**: PM metadata in Leantime, workflow transitions in task-orchestrator; ConPort progress_entry + custom_data for progress and structured context (AGENTS.md §6)
+- **PRD Decomposition**: PAL `planner` drafts the breakdown; a human reviews it before tasks are created
 - **ADHD Optimization**: Python ADHD Engine queries ConPort, no direct task modification
 - **Decisions**: Log in ConPort only (single source of truth)
 - **Code Navigation**: Serena LSP only (LSP protocol + semantic analysis)
@@ -168,9 +168,8 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 **Status**: Fully integrated with Dopemux MCP stack (see ConPort decisions #142–144)
 
 **Available Tools**:
-- **25 Slash Commands**: `/sc:implement`, `/sc:workflow`, `/sc:research`, `/sc:analyze`, etc.
+- **Slash commands and specialist agents**: `/sc:*` commands (`/sc:implement`, `/sc:research`, ...) and agents (security, QA, architecture, ...) come from the user-level SuperClaude install; which ones are loaded varies by machine, so check `/help` and `/agents`
 - **7 Behavioral Modes**: Brainstorming, Deep Research, Task Management, Token Efficiency, Orchestration, Introspection, Business Panel
-- **16 Specialized Agents**: Frontend, Backend, Security, QA, DevOps, Performance, Refactoring, etc.
 
 **MCP Customization**:
 - `sequential` → `pal` (multi-model reasoning: thinkdeep, planner, consensus, debug, codereview; formerly named `zen`)
@@ -181,7 +180,7 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 See `.claude/modules/shared/superclaude-workflows.md` for complete integration patterns, command selection guide, and ADHD session workflows.
 
 **MCP Documentation**:
-All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
+All Dopemux MCPs documented in `~/.claude/MCP_*.md` (not auto-imported; read on demand):
 - MCP_PAL.md - Multi-model reasoning suite (6 tools; formerly MCP_Zen)
 - MCP_ConPort.md - Knowledge graph & task management (9 capabilities)
 - MCP_Serena.md - Code intelligence v2 (LSP + semantic analysis)
@@ -230,10 +229,6 @@ When you need comprehensive details, refer to:
 **Filesystem Organization**: `docs/03-reference/filesystem-guide.md` (directory structure, file placement rules)
 **Plugins**: `.claude/modules/shared/plugin-integration.md` (installed plugins, auto-use triggers, doctrine overrides, do-not-enable list)
 **Harness features** (Plan mode, advisor, /loop, ToolSearch, Skill): `~/.claude/MODES_AND_TOOLS.md`
-
-## 🎖️ Success Metrics
-
-**Target Improvements**: 77% token reduction ✅ | 85% ADHD task completion | Sub-2s context switching | Zero authority violations
 
 ---
 

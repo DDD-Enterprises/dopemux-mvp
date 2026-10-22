@@ -2,7 +2,7 @@
 
 > **TL;DR**: Automation scripts with clear output and error handling. Organized by purpose. Use argparse, emit progress with emojis.
 
-**Inherits**: Root context (MCP tools, Do/Don't rules)
+**Inherits**: the root `AGENTS.md` and `.claude/claude.md`, which load alongside this file.
 
 ---
 
@@ -53,7 +53,7 @@ Note: `deployment/`, `testing/`, `maintenance/` do **not** exist at top level. B
 | `docs_validator.py` | Validate doc frontmatter |
 | `docs_frontmatter_guard.py` | Fix frontmatter issues |
 | `docs_normalize.py` | Normalize filenames |
-| `smoke_up.sh` | Bring up smoke stack + runtime gate |
+| `smoke_up.sh` | Bring up smoke stack + runtime gate (sanctioned test-only exception to the `dopemux mcp` rule: its own `.env.smoke` stack via raw compose) |
 | `deploy/deployment/stack_status.sh` | Stack status |
 | `sync_personas.py` | Mirror canonical `.claude/personas` → packaged `src/dopemux/personas` (`--check` is read-only) |
 

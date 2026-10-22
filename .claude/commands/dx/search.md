@@ -6,7 +6,7 @@ allowed-tools: [
   "mcp__task-orchestrator__query_items",
   "mcp__task-orchestrator__query_notes"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:search — Find Work-Items by Text + Filters

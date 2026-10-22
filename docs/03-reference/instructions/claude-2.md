@@ -90,10 +90,6 @@ This pack does not override TaskX pack; if conflict, TaskX wins.
 Use PR docgen sync templates for commit/PR-driven docs coverage:
 
 - Core: `templates/skills/pr-docgen-sync/`
-- Wrappers:
-  - `templates/skills/pr-docgen-sync-gemini/`
-  - `templates/skills/pr-docgen-sync-copilot/`
-  - `templates/skills/pr-docgen-sync-claude/`
 - Installer: `python scripts/skills/sync_repo_skills.py`
 
 Default baseline: `main...HEAD`.

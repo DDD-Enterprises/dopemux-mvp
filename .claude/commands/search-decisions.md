@@ -1,2 +1,2 @@
 Search decisions in **ConPort** (FTS).
-Call: /mcp conport search_decisions_fts {"query":"<term>","limit":10}
+Call: `mcp__conport__conport_search_content` {"workspace_id":"<repo-root>","query":"<term>"}

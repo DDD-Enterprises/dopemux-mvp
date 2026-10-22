@@ -110,10 +110,6 @@ Codex interfaces with Dopemux via the local MCP fabric listed in `docker/mcp-ser
 When code changes must be mirrored into docs, use the PR docgen sync skill family:
 
 - Core template: `templates/skills/pr-docgen-sync/`
-- Wrappers:
-  - `templates/skills/pr-docgen-sync-gemini/`
-  - `templates/skills/pr-docgen-sync-copilot/`
-  - `templates/skills/pr-docgen-sync-claude/`
 - Installer: `python scripts/skills/sync_repo_skills.py`
 
 Default baseline for documentation impact scanning: `main...HEAD`.
