@@ -21,99 +21,25 @@ die() {
   exit 1
 }
 
-require_dir() {
-  local candidate="$1"
-  if [[ -n "${candidate}" && -d "${candidate}" ]]; then
-    cd "${candidate}" >/dev/null 2>&1 && pwd -P
-    return 0
-  fi
-  return 1
-}
+source "${SCRIPT_DIR}/_lib.sh"
 
-git_worktree_root() {
-  local candidate="$1"
-  git -C "${candidate}" rev-parse --show-toplevel 2>/dev/null
-}
-
-git_project_root() {
-  local candidate="$1"
-  local common_dir
-  common_dir="$(git -C "${candidate}" rev-parse --git-common-dir 2>/dev/null)" || return 1
-  if [[ "${common_dir}" != /* ]]; then
-    common_dir="$(cd "${candidate}/${common_dir}" >/dev/null 2>&1 && pwd -P)" || return 1
-  else
-    common_dir="$(cd "${common_dir}" >/dev/null 2>&1 && pwd -P)" || return 1
-  fi
-
-  if [[ "$(basename "${common_dir}")" == ".git" ]]; then
-    dirname "${common_dir}"
-  else
-    printf '%s\n' "${common_dir}"
-  fi
-}
-
-workspace_root=""
-for var_name in TASK_ORCHESTRATOR_WORKSPACE_ROOT DOPEMUX_WORKSPACE_ROOT CODEX_WORKSPACE_ROOT CODEX_PROJECT_ROOT; do
-  var_value="${!var_name:-}"
-  if resolved="$(require_dir "${var_value}")"; then
-    workspace_root="${resolved}"
-    break
-  fi
-done
-
-if [[ -z "${workspace_root}" ]]; then
-  if git_root="$(git_worktree_root "${PWD}")"; then
-    workspace_root="$(cd "${git_root}" && pwd -P)"
-  fi
-fi
-
-if [[ -z "${workspace_root}" ]]; then
-  for var_name in TASK_ORCHESTRATOR_PROJECT_ROOT DOPEMUX_PROJECT_ROOT; do
-    var_value="${!var_name:-}"
-    if resolved="$(require_dir "${var_value}")"; then
-      workspace_root="${resolved}"
-      break
-    fi
-  done
-fi
-
-if [[ -z "${workspace_root}" ]]; then
-  printf 'task-orchestrator-current-stdio: no workspace detected (CWD not in a git repo and no *_WORKSPACE_ROOT/*_PROJECT_ROOT env set); skipping orchestrator for this session\n' >&2
-  exit 0
-fi
-[[ -f "${LOGBACK_CONFIG}" ]] || die "missing logback config at ${LOGBACK_CONFIG}"
-
-project_root=""
-if resolved="$(require_dir "${TASK_ORCHESTRATOR_PROJECT_ROOT:-}")"; then
-  project_root="${resolved}"
-elif resolved="$(require_dir "${DOPEMUX_PROJECT_ROOT:-}")"; then
-  project_root="${resolved}"
-elif git_project="$(git_project_root "${workspace_root}")"; then
-  project_root="${git_project}"
-fi
-
-[[ -n "${project_root}" ]] || die "could not derive project root from TASK_ORCHESTRATOR_PROJECT_ROOT, DOPEMUX_PROJECT_ROOT, or git common dir"
-
-hash_input="${project_root}"
-if command -v shasum >/dev/null 2>&1; then
-  workspace_hash="$(printf '%s' "${hash_input}" | shasum -a 256 | awk '{print substr($1, 1, 16)}')"
-elif command -v sha256sum >/dev/null 2>&1; then
-  workspace_hash="$(printf '%s' "${hash_input}" | sha256sum | awk '{print substr($1, 1, 16)}')"
+# Shared derivation (see _lib.sh resolve_task_orchestrator_identity).
+if resolve_task_orchestrator_identity; then
+  :
 else
-  workspace_hash="$(python3 -c 'import hashlib,sys; print(hashlib.sha256(sys.stdin.buffer.read()).hexdigest()[:16])' <<<"${hash_input}")"
+  rc=$?
+  if [[ "${rc}" -eq 2 ]]; then
+    printf 'task-orchestrator-current-stdio: no workspace detected (CWD not in a git repo and no *_WORKSPACE_ROOT/*_PROJECT_ROOT env set); skipping orchestrator for this session\n' >&2
+    exit 0
+  fi
+  die "could not resolve task-orchestrator identity"
 fi
-
-workspace_name="$(basename "${project_root}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
-[[ -n "${workspace_name}" ]] || workspace_name="workspace"
-workspace_id="${workspace_name}-${workspace_hash}"
-
-data_root="${XDG_DATA_HOME:-${HOME}/.local/share}/dopemux-mission-control/task-orchestrator"
-data_dir="${data_root}/${workspace_id}"
-
-config_root="${workspace_root}"
-if [[ ! -f "${config_root}/.taskorchestrator/config.yaml" && -f "${project_root}/.taskorchestrator/config.yaml" ]]; then
-  config_root="${project_root}"
-fi
+workspace_root="${TO_WORKSPACE_ROOT}"
+project_root="${TO_PROJECT_ROOT}"
+workspace_id="${TO_STATE_ID}"
+data_dir="${TO_DATA_DIR}"
+config_root="${TO_CONFIG_ROOT}"
+[[ -f "${LOGBACK_CONFIG}" ]] || die "missing logback config at ${LOGBACK_CONFIG}"
 
 if [[ "${PRINT_RESOLUTION}" == "true" ]]; then
   printf 'workspace_root=%s\n' "${workspace_root}"
@@ -141,27 +67,25 @@ mkdir -p "${data_dir}"
 # Tradeoff: opening a second Claude session in the same project disconnects
 # the first session's MCP. For typical single-operator-per-project use
 # this matches expectations.
-container_name="task-orchestrator-${workspace_id}"
+container_name="${TO_STDIO_CONTAINER_NAME}"
+http_container_name="${TO_HTTP_CONTAINER_NAME}"
 
 # ─── Defer to a running HTTP singleton ─────────────────────────────────
 # Claude (and any HTTP client) runs this workspace's orchestrator as a
 # long-lived HTTP singleton container that PUBLISHES a host TCP port
 # (task-orchestrator-http-singleton.sh, default :7890). It shares this
-# launcher's container name and data_dir. Our kill-and-replace below would
-# tear that singleton down and disconnect the other client.
+# launcher's data_dir, and is named from DOPEMUX_PROJECT_ID when that is set
+# (TO_HTTP_CONTAINER_NAME), otherwise it shares this launcher's name. Our
+# kill-and-replace below would tear it down and disconnect the other client.
 #
-# A stdio container never publishes a host port (the image only EXPOSEs
-# 3001/tcp internally), so a *running* container with our name AND a
-# host-published port binding is unambiguously the HTTP singleton — not a
-# leaked stdio container. In that case defer: emit a note and exit 0 without
-# touching it. Codex sets required = false for this server, so the clean
-# exit is non-fatal; the singleton keeps serving the shared data_dir to the
-# HTTP client. When no singleton is running this detection is empty and we
-# fall through to a normal stdio launch, so Codex still gets tools when it is
-# the only client. Leaked same-named stdio containers publish no host port,
-# so they are NOT matched here and are still reaped by kill-and-replace.
-singleton_cid="$(docker ps -q --filter "name=^${container_name}$" 2>/dev/null | awk 'NF{print;exit}' || true)"
-if [[ -n "${singleton_cid}" ]]; then
+# A stdio container never publishes a host port, so a *running* container with
+# the singleton's exact name AND a host-published port binding is
+# unambiguously the HTTP singleton. In that case defer: emit a note and exit 0
+# without touching it. Leaked stdio containers publish no host port, so they
+# are NOT matched here and are still reaped below.
+for candidate_name in "${http_container_name}" "${container_name}"; do
+  singleton_cid="$(docker ps -q --filter "name=^${candidate_name}$" 2>/dev/null | awk 'NF{print;exit}' || true)"
+  [[ -n "${singleton_cid}" ]] || continue
   singleton_port="$(docker inspect \
     --format '{{range $p,$conf := .NetworkSettings.Ports}}{{if $conf}}{{(index $conf 0).HostPort}} {{end}}{{end}}' \
     "${singleton_cid}" 2>/dev/null | awk '{print $1; exit}' || true)"
@@ -178,17 +102,41 @@ if [[ -n "${singleton_cid}" ]]; then
       fi
     fi
     printf 'task-orchestrator-current-stdio: HTTP singleton already running for %s at http://127.0.0.1:%s/mcp (%s); deferring — skipping stdio launch\n' \
-      "${container_name}" "${singleton_port}" "${health}" >&2
+      "${candidate_name}" "${singleton_port}" "${health}" >&2
     exit 0
   fi
-fi
+done
 
+# True when container $1 is (or may be) the HTTP singleton: exact singleton
+# name, dopemux.transport=http label, or any host-published port. Such a
+# container is never ours to remove.
+is_http_singleton() {
+  local cid="$1" cname transport ports
+  cname="$(docker inspect --format '{{.Name}}' "${cid}" 2>/dev/null | sed 's#^/##' || true)"
+  [[ "${cname}" == "${http_container_name}" ]] && return 0
+  transport="$(docker inspect --format '{{index .Config.Labels "dopemux.transport"}}' "${cid}" 2>/dev/null || true)"
+  [[ "${transport}" == "http" ]] && return 0
+  ports="$(docker inspect \
+    --format '{{range $p,$conf := .NetworkSettings.Ports}}{{if $conf}}{{(index $conf 0).HostPort}} {{end}}{{end}}' \
+    "${cid}" 2>/dev/null | awk '{print $1; exit}' || true)"
+  [[ -n "${ports}" ]] && return 0
+  return 1
+}
+
+# Our own containers: exact stdio name, plus leaked containers holding the same
+# data_dir mount. Mount-matched containers are skipped if they are the singleton.
 stale_by_name="$(docker ps -aq --filter "name=^${container_name}$" 2>/dev/null || true)"
+stale_by_name="$(printf '%s\n' "${stale_by_name}" | while read -r cid; do
+  [[ -z "${cid}" ]] && continue
+  is_http_singleton "${cid}" && continue
+  printf '%s\n' "${cid}"
+done)"
 
 stale_by_mount="$(docker ps -q 2>/dev/null | while read -r cid; do
   [[ -z "${cid}" ]] && continue
   mount="$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/app/data"}}{{.Source}}{{end}}{{end}}' "${cid}" 2>/dev/null)"
   if [[ "${mount}" == "${data_dir}" ]]; then
+    is_http_singleton "${cid}" && continue
     printf '%s\n' "${cid}"
   fi
 done)"

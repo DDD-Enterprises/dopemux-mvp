@@ -112,3 +112,11 @@ class TestConPortClientContract(IsolatedAsyncioTestCase):
             progress_id=123,
             updates={"status": "IN_PROGRESS", "description": "Working on it"}
         )
+
+    async def test_get_progress_from_conport_refuses_blank_workspace(self):
+        adapter = ConPortEventAdapter(workspace_id="  ")
+        adapter.http_session = MagicMock()
+        adapter.http_session.get = MagicMock(side_effect=AssertionError("must not issue GET"))
+
+        assert await adapter._get_progress_from_conport() == []
+        adapter.http_session.get.assert_not_called()

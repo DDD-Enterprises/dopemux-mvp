@@ -76,6 +76,12 @@ from ..search.hybrid_search import BM25Index, HybridSearch
 from ..sync.file_synchronizer import ChangeSet, FileSynchronizer
 from ..utils.metrics_tracker import get_tracker
 from ..utils.token_budget import truncate_code_results, truncate_docs_results
+from ..utils.workspace_guard import (
+    WorkspaceRejected,
+    resolve_workspace,
+    validate_patterns,
+    validate_workspace_path,
+)
 from ..utils.workspace import (
     get_collection_names,
     get_legacy_collection_names,
@@ -236,9 +242,10 @@ async def autoindex_bootstrap(request: Request) -> JSONResponse:
     debounce_seconds = float(payload.get("debounce_seconds", 5.0))
     periodic_interval = int(payload.get("periodic_interval", 600))
 
-    workspace = (
-        Path(workspace_path).resolve() if workspace_path else get_workspace_root()
-    )
+    try:
+        workspace = resolve_workspace(workspace_path, get_workspace_root)
+    except WorkspaceRejected as exc:
+        return JSONResponse({"status": "rejected", "error": str(exc)}, status_code=400)
     key = str(workspace)
     running_task = _autoindex_bootstrap_tasks.get(key)
 
@@ -285,7 +292,12 @@ async def autoindex_status(request: Request) -> JSONResponse:
         workspace_path = None
 
     if workspace_path:
-        key = str(Path(workspace_path).resolve())
+        try:
+            key = str(validate_workspace_path(workspace_path))
+        except WorkspaceRejected as exc:
+            return JSONResponse(
+                {"status": "rejected", "error": str(exc)}, status_code=400
+            )
         return JSONResponse(
             {
                 "workspace": key,
@@ -638,9 +650,9 @@ def _resolve_target_workspaces(
     candidates: List[Path] = []
 
     if workspace_paths:
-        candidates.extend(Path(p).expanduser() for p in workspace_paths if p)
+        candidates.extend(validate_workspace_path(p) for p in workspace_paths if p)
     if workspace_path:
-        candidates.append(Path(workspace_path).expanduser())
+        candidates.append(validate_workspace_path(workspace_path))
 
     if not candidates:
         discovered = _discover_workspaces_from_snapshots()
@@ -673,9 +685,9 @@ def _resolve_explicit_workspaces(
     candidates: List[Path] = []
 
     if workspace_paths:
-        candidates.extend(Path(p).expanduser() for p in workspace_paths if p)
+        candidates.extend(validate_workspace_path(p) for p in workspace_paths if p)
     if workspace_path:
-        candidates.append(Path(workspace_path).expanduser())
+        candidates.append(validate_workspace_path(workspace_path))
 
     if not candidates and fallback_to_current:
         candidates.append(get_workspace_root())
@@ -922,7 +934,9 @@ async def _index_workspace_impl(
     max_files: Optional[int] = None,
 ) -> Dict:
     """Implementation of index_workspace tool."""
-    workspace = Path(workspace_path).resolve()
+    workspace = validate_workspace_path(workspace_path)
+    validate_patterns(include_patterns)
+    validate_patterns(exclude_patterns)
     code_profile = build_code_collection_profile()
     code_collection, _ = get_collection_names(workspace, code_profile=code_profile)
 
@@ -1096,12 +1110,14 @@ async def _search_code_impl(
     enrich_with_graph: bool = False,  # F-NEW-5: Code graph enrichment
 ) -> List[Dict]:
     """Implementation of search_code tool (NOW WITH DYNAMIC TOP_K + GRAPH ENRICHMENT!)."""
+    if workspace_path:
+        validate_workspace_path(workspace_path)
     try:
         # Get dynamic top_k from ADHD Engine
         top_k = await get_dynamic_top_k(user_id, top_k)
 
         # Detect workspace
-        workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+        workspace = resolve_workspace(workspace_path, get_workspace_root)
         code_collection, _ = get_collection_names(workspace)
 
         # Log metrics for benchmarking
@@ -1685,11 +1701,7 @@ async def _clear_index_impl(
     approval_phrase: Optional[str] = None,
 ) -> Dict:
     """Implementation of clear_index tool."""
-    workspace = (
-        Path(workspace_path).expanduser().resolve()
-        if workspace_path
-        else get_workspace_root()
-    )
+    workspace = resolve_workspace(workspace_path, get_workspace_root)
     target_normalized = (target or "code").lower()
     if target_normalized not in {"code", "docs", "both"}:
         raise ValueError("target must be one of: code, docs, both")
@@ -1802,7 +1814,8 @@ async def _index_docs_impl(
     include_patterns: Optional[List[str]] = None,
 ) -> Dict:
     """Implementation of index_docs tool."""
-    workspace = Path(workspace_path).resolve()
+    workspace = validate_workspace_path(workspace_path)
+    validate_patterns(include_patterns)
     docs_profile = build_docs_collection_profile()
     _, docs_collection = get_collection_names(workspace, docs_profile=docs_profile)
 
@@ -1891,7 +1904,7 @@ async def _docs_search_impl(
 ) -> Any:
     """Implementation of docs_search tool."""
     # Detect workspace
-    workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    workspace = resolve_workspace(workspace_path, get_workspace_root)
     docs_profile = build_docs_collection_profile()
     _, docs_collection = get_collection_names(workspace, docs_profile=docs_profile)
     content_profile = docs_profile.content()
@@ -2179,7 +2192,7 @@ async def _search_decisions_impl(
     """
     Query ConPort decisions through dopecon-bridge for unified retrieval.
     """
-    workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    workspace = resolve_workspace(workspace_path, get_workspace_root)
     config = _load_decision_sync_config(workspace)
 
     if not config.get("enabled", False):
@@ -2242,7 +2255,7 @@ async def configure_decision_auto_indexing(
     This enables `search_all` to automatically include ConPort decision matches
     alongside code and docs results.
     """
-    workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    workspace = resolve_workspace(workspace_path, get_workspace_root)
     current = _load_decision_sync_config(workspace)
     current.update(
         {
@@ -2283,7 +2296,7 @@ async def _search_all_impl(
     """Implementation of unified search_all tool."""
     search_started = perf_counter()
     requested_top_k = max(1, int(top_k))
-    workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    workspace = resolve_workspace(workspace_path, get_workspace_root)
     decision_config = _load_decision_sync_config(workspace)
     configured_decision_limit = _normalize_decision_limit(
         decision_config.get("limit", TRINITY_DECISION_DEFAULT_LIMIT)
@@ -2456,7 +2469,8 @@ async def _sync_workspace_impl(
     auto_reindex: bool = False,
 ) -> Dict:
     """Implementation of sync_workspace tool."""
-    workspace = Path(workspace_path).resolve()
+    workspace = validate_workspace_path(workspace_path)
+    validate_patterns(include_patterns)
     code_collection, _ = get_collection_names(workspace)
 
     logger.info(f"Syncing workspace: {workspace}")
@@ -2676,7 +2690,8 @@ async def _sync_docs_impl(
     include_patterns: Optional[List[str]] = None,
 ) -> Dict:
     """Implementation of sync_docs tool."""
-    workspace = Path(workspace_path).resolve()
+    workspace = validate_workspace_path(workspace_path)
+    validate_patterns(include_patterns)
 
     logger.info(f"Syncing docs: {workspace}")
 

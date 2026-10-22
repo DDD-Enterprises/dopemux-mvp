@@ -48,6 +48,7 @@ COPY services/working-memory-assistant/canonical_ledger.py .
 COPY services/working-memory-assistant/dope_memory_main.py .
 COPY services/working-memory-assistant/mcp_http.py .
 COPY services/working-memory-assistant/eventbus_consumer.py .
+COPY services/working-memory-assistant/identity_match.py .
 COPY services/working-memory-assistant/postgres_mirror_sync.py .
 
 

@@ -104,10 +104,10 @@ async def conport_fork_instance(workspace_id: str, source_instance: Optional[str
 
 
 @server.tool()
-async def conport_promote(progress_id: str, conport_url: str = "http://localhost:3004") -> list[TextContent]:
+async def conport_promote(progress_id: str, workspace_id: str, conport_url: str = "http://localhost:3004") -> list[TextContent]:
     """Promote an instance-local progress entry to shared (clears instance_id)."""
     url = f"{conport_url}/api/progress/promote"
-    data = await _post_json(url, {"progress_id": progress_id})
+    data = await _post_json(url, {"progress_id": progress_id, "workspace_id": workspace_id})
     return [TextContent(type="text", text=json.dumps(data, ensure_ascii=False, indent=2))]
 
 

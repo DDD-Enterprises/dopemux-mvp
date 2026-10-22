@@ -108,3 +108,31 @@ async def test_semantic_search_no_fallback_on_server_error():
     assert "error" in result
     assert result.get("endpoint") == "/api/adhd/semantic-search"
     assert len(client.session.calls) == 1
+
+
+class _GetSession:
+    def __init__(self):
+        self.calls = []
+        self.closed = False
+
+    def get(self, url, params=None):
+        self.calls.append({"url": url, "params": params})
+        return _FakeRequestContext(_FakeResponse(200, payload={"progress": []}))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("ws", [None, "", "   "])
+async def test_get_progress_without_workspace_fails_without_request(ws):
+    client = ConPortClient(base_url="http://localhost:3004")
+    client.session = _GetSession()
+    result = await client.get_progress(workspace_id=ws)
+    assert "workspace_id" in result.get("error", "")
+    assert client.session.calls == []
+
+
+@pytest.mark.asyncio
+async def test_get_progress_sends_workspace():
+    client = ConPortClient(base_url="http://localhost:3004")
+    client.session = _GetSession()
+    await client.get_progress(workspace_id="/ws/a")
+    assert client.session.calls[0]["params"]["workspace_id"] == "/ws/a"

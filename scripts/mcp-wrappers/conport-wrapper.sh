@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ConPort MCP Wrapper - Resilient Docker-based MCP server launcher
 # Wraps the docker-based ConPort MCP server: workspace detection,
-# container name resolution (works with renamed containers), graceful errors.
+# exact container name resolution, graceful errors.
 
 source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
 
@@ -15,23 +15,14 @@ export DOPEMUX_INSTANCE_ID="${instance_id}"
 
 require_docker "conport-wrapper"
 
-# Find the ConPort container (try new name first, then old).
-container_name=""
-for name_pattern in "dopemux-mcp-conport" "mcp-conport"; do
-  if container_name="$(find_container "$name_pattern")"; then
-    break
-  fi
-done
-
-if [[ -z "$container_name" ]]; then
-  echo "❌ conport-wrapper: ConPort container not found (tried: dopemux-mcp-conport, mcp-conport)" >&2
-  echo "💡 Suggestion: Start your Dopemux stack with: docker-compose up -d" >&2
-  exit 1
-fi
-
-# Verify container is running.
-if ! docker ps --format "table {{.Names}}" | grep -q "^${container_name}$"; then
-  echo "❌ conport-wrapper: Container '$container_name' is not running" >&2
+# Exact container name only. Created by compose.yml:237
+# (container_name: ${CONPORT_CONTAINER_NAME:-mcp-conport}); per-instance names
+# come from src/dopemux/mcp/instance_overlay.py:175 via CONPORT_CONTAINER_NAME.
+# No substring fallback: never attach to another worktree's/project's container.
+expected_name="${CONPORT_CONTAINER_NAME:-mcp-conport}"
+if ! container_name="$(find_container "$expected_name")"; then
+  echo "❌ conport-wrapper: ConPort container '$expected_name' not found or not running" >&2
+  echo "💡 Suggestion: start it with 'dopemux mcp start' (or set CONPORT_CONTAINER_NAME to this project's container)" >&2
   exit 1
 fi
 

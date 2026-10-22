@@ -212,9 +212,10 @@ class ConPortClient:
         workspace_id: Optional[str] = None,
         limit: int = 20,
     ) -> Dict[str, Any]:
-        params: Dict[str, Any] = {"limit": limit}
-        if workspace_id:
-            params["workspace_id"] = workspace_id
+        resolved = workspace_id or self.workspace_id
+        if not isinstance(resolved, str) or not resolved.strip():
+            raise HTTPException(status_code=400, detail="workspace_id is required")
+        params: Dict[str, Any] = {"limit": limit, "workspace_id": resolved}
         return await self._request("GET", "/api/decisions", params=params)
 
     async def search_decisions(

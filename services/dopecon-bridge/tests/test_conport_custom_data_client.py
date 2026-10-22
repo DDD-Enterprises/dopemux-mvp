@@ -59,3 +59,30 @@ async def test_get_custom_data_preserves_non_404_failures(unused_tcp_port):
 
     assert exc_info.value.status_code == 502
     assert "conport unavailable" in exc_info.value.detail
+
+
+@pytest.mark.asyncio
+async def test_list_decisions_always_sends_workspace(unused_tcp_port):
+    seen = []
+
+    async def handler(request):
+        seen.append(dict(request.query))
+        return web.json_response({"decisions": []})
+
+    app = web.Application()
+    app.router.add_get("/api/decisions", handler)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    await web.TCPSite(runner, "127.0.0.1", unused_tcp_port).start()
+    client = ConPortClient()
+    client.base_url = f"http://127.0.0.1:{unused_tcp_port}"
+    try:
+        await client.list_decisions(workspace_id=None, limit=3)
+        client.workspace_id = ""
+        with pytest.raises(HTTPException) as exc:
+            await client.list_decisions(workspace_id=None, limit=3)
+    finally:
+        await client.close()
+        await runner.cleanup()
+    assert len(seen) == 1 and seen[0]["workspace_id"]
+    assert exc.value.status_code == 400

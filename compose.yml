@@ -66,7 +66,7 @@ services:
       - pg_age_data:/var/lib/postgresql/data
       - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1" ]
       timeout: 5s
@@ -83,7 +83,7 @@ services:
       - dopemux-network
 
     ports:
-      - "${REDIS_EVENTS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_EVENTS_PORT:-6379}:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -98,7 +98,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${REDIS_PRIMARY_PORT:-6380}:6379"
+      - "127.0.0.1:${REDIS_PRIMARY_PORT:-6380}:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
@@ -163,7 +163,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${LEANTIME_PORT:-8080}:80"
+      - "127.0.0.1:${LEANTIME_PORT:-8080}:80"
     depends_on:
       mysql_leantime:
         condition: service_healthy
@@ -209,7 +209,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${REDIS_UI_PORT:-8081}:5540"
+      - "127.0.0.1:${REDIS_UI_PORT:-8081}:5540"
     # Note: RedisInsight healthcheck disabled - app takes time to start and doesn't respond reliably to health checks
 
   # Qdrant (vector database for embeddings)
@@ -220,8 +220,8 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "${QDRANT_PORT:-6333}:6333"
-      - "${QDRANT_GRPC_PORT:-6334}:6334"
+      - "127.0.0.1:${QDRANT_PORT:-6333}:6333"
+      - "127.0.0.1:${QDRANT_GRPC_PORT:-6334}:6334"
     volumes:
       - dope-decision-graph-qdrant-data:/qdrant/storage
 
@@ -320,7 +320,7 @@ services:
       - CUSTOM_MODELS_CONFIG_PATH=/app/conf/custom_models.direct-ci.json
       - MCP_SERVER_PORT=${PAL_PORT:-3003}
     ports:
-      - "${PAL_PORT:-3003}:3003"
+      - "127.0.0.1:${PAL_PORT:-3003}:3003"
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:3003/health || exit 1" ]
       timeout: 10s
@@ -371,7 +371,7 @@ services:
       - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/litellm}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
     ports:
-      - "${LITELLM_PORT:-4000}:4000"
+      - "127.0.0.1:${LITELLM_PORT:-4000}:4000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -445,7 +445,7 @@ services:
       - dopemux-network
 
     ports:
-      - "${DOPECON_BRIDGE_PORT:-3016}:3016"
+      - "127.0.0.1:${DOPECON_BRIDGE_PORT:-3016}:3016"
     environment:
       - PORT_BASE=${DOPEMUX_PORT_BASE:-3000}
       - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dopemux-postgres-age:5432/dopemux_knowledge_graph
@@ -492,7 +492,7 @@ services:
       - DOPECON_BRIDGE_REDIS_URL=redis://redis-primary:6379
       - PORT=8000
     ports:
-      - "${TASK_ORCHESTRATOR_PORT:-8000}:8000"
+      - "127.0.0.1:${TASK_ORCHESTRATOR_PORT:-8000}:8000"
     depends_on:
       redis-primary:
         condition: service_healthy

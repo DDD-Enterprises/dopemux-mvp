@@ -13,6 +13,26 @@ from typing import Any, Dict, Optional
 DEFAULT_TOOLS_URL = "http://localhost:3020/tools"
 
 
+def _identity(params: Dict[str, Any], key: str, env_name: str) -> Optional[str]:
+    """Identity from params, else env; blank or "default" counts as unset."""
+    for raw in (params.get(key), os.environ.get(env_name)):
+        value = str(raw).strip() if raw is not None else ""
+        if value and value != "default":
+            return value
+    return None
+
+
+def _with_identity(params: Dict[str, Any], payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Add workspace_id/instance_id only when known; the server falls back to its own."""
+    ws = _identity(params, "workspace_id", "DOPE_MEMORY_WORKSPACE_ID")
+    inst = _identity(params, "instance_id", "DOPE_MEMORY_INSTANCE_ID")
+    if ws:
+        payload["workspace_id"] = ws
+    if inst:
+        payload["instance_id"] = inst
+    return payload
+
+
 class DopeMemoryMCPAdapter:
     """MCP stdio adapter for Dope-Memory REST service"""
 
@@ -64,18 +84,15 @@ class DopeMemoryMCPAdapter:
 
     def _memory_search(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """memory_search tool implementation"""
-        workspace_id = params.get("workspace_id", "default")
-        instance_id = params.get("instance_id", "A")
         query = params.get("query", "")
         top_k = params.get("top_k", 5)
         session_id = params.get("session_id")
 
         payload = {
-            "workspace_id": workspace_id,
-            "instance_id": instance_id,
             "query": query,
             "top_k": top_k,
         }
+        _with_identity(params, payload)
         if session_id:
             payload["session_id"] = session_id
 
@@ -83,8 +100,6 @@ class DopeMemoryMCPAdapter:
 
     def _memory_store(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """memory_store tool implementation"""
-        workspace_id = params.get("workspace_id", "default")
-        instance_id = params.get("instance_id", "A")
         category = params.get("category", "manual")
         entry_type = params.get("entry_type", "note")
         summary = params.get("summary", "")
@@ -92,13 +107,12 @@ class DopeMemoryMCPAdapter:
         session_id = params.get("session_id")
 
         payload = {
-            "workspace_id": workspace_id,
-            "instance_id": instance_id,
             "category": category,
             "entry_type": entry_type,
             "summary": summary,
             "details": details,
         }
+        _with_identity(params, payload)
         if session_id:
             payload["session_id"] = session_id
 
