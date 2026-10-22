@@ -87,7 +87,7 @@ class TestHealthChecker:
         (temp_project_dir / ".claude").mkdir()
         (temp_project_dir / ".dopemux" / "config.json").touch()
         (temp_project_dir / ".claude" / "config.json").touch()
-        (temp_project_dir / ".claude" / "claude.md").touch()
+        (temp_project_dir / ".claude" / "CLAUDE.md").touch()
 
         result = health_checker._check_dopemux_core()
         assert result.status == HealthStatus.HEALTHY

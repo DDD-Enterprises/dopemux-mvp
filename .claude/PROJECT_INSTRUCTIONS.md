@@ -6,7 +6,7 @@ Supervisor MacroPackets · Child Task Packets · Audits · Deterministic Change 
 
 For supervised engineering packets, follow [Control Tower Packet Workflow](../AGENTS.md#control-tower-packet-workflow).
 Read the installed kit contracts and project configuration through that entry point.
-Review the repo-owned integration after regenerating `.claude/claude.md` or `.claude/llms.md`.
+Review the repo-owned integration after regenerating `.claude/CLAUDE.md` or `.claude/llms.md`.
 <!-- CONTROL_TOWER_ENTRY_END -->
 
 🎯 Purpose

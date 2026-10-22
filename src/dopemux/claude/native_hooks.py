@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import sys
 from typing import Any, Dict, Optional, Tuple
@@ -78,21 +78,148 @@ try:
 except ImportError:
     def on_facade_edit(_root, _fp, _sid=None): return None  # type: ignore[misc]
 
-from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
-from dopemux.workflow.service import WorkflowKernel  # noqa: E402
-from dopemux.memory.capture_client import try_emit_promotable_capture_event  # noqa: E402
+# Workflow imports pull in heavy optional deps (pydantic, rich, httpx; ~100-200 ms
+# of CPU per hook process) and can be missing in a linked worktree without a
+# project venv. They are therefore resolved lazily by ``_ensure_workflow`` and
+# only when the workflow store is non-empty (see ``_workflow_store_known_empty``).
+# Unavailable -> "no workflow state", so the stdlib-only guards (red-lane
+# denies) keep working. ``_WORKFLOW_AVAILABLE`` is None until first resolved.
+_WORKFLOW_AVAILABLE: Optional[bool] = None
+WorkflowStatus = None  # type: ignore[assignment,misc]
+WorkflowKernel = None  # type: ignore[assignment,misc]
+
+
+def contains_completion_token(_text, _token) -> bool:  # type: ignore[misc]
+    return False
+
+
+def parse_workflow_checkpoint(_text):  # type: ignore[misc]
+    return None
+
+
+def _ensure_workflow() -> bool:
+    """Import the workflow kernel on first use; ImportError means unavailable."""
+    global _WORKFLOW_AVAILABLE, WorkflowStatus, WorkflowKernel
+    global contains_completion_token, parse_workflow_checkpoint
+    if _WORKFLOW_AVAILABLE is not None:
+        return _WORKFLOW_AVAILABLE
+    try:
+        from dopemux.workflow import (  # noqa: E402
+            WorkflowStatus as _status,
+            contains_completion_token as _contains,
+            parse_workflow_checkpoint as _parse,
+        )
+        from dopemux.workflow.service import WorkflowKernel as _kernel  # noqa: E402
+    except ImportError:
+        _WORKFLOW_AVAILABLE = False
+        return False
+    WorkflowStatus = _status
+    WorkflowKernel = _kernel
+    contains_completion_token = _contains
+    parse_workflow_checkpoint = _parse
+    _WORKFLOW_AVAILABLE = True
+    return True
+
+
+def _workflow_store_known_empty(project_root: Path) -> bool:
+    """True only when it is certain ``WorkflowKernel.resolve()`` returns None.
+
+    Mirrors ``WorkflowKernel.discover_workspace_context`` for the default
+    layout (no ``DOPEMUX_WORKSPACE_ROOT`` / ``DOPEMUX_MAIN_REPO`` override, git
+    available) and checks whether ``<family_root>/.dopemux/workflows`` holds any
+    ``*/state.json``. Any doubt (env override, git failure, odd output, fs
+    error) returns False so the full kernel path decides.
+    """
+    if os.environ.get("DOPEMUX_WORKSPACE_ROOT") or os.environ.get("DOPEMUX_MAIN_REPO"):
+        return False
+    try:
+        import subprocess
+
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel", "--git-common-dir"],
+            cwd=str(project_root),
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=5,
+        )
+        if result.returncode != 0:
+            return False
+        lines = result.stdout.strip().splitlines()
+        if len(lines) != 2 or not lines[0].strip() or not lines[1].strip():
+            return False
+        active_workspace = Path(lines[0].strip()).resolve()
+        family_root = active_workspace
+        common_path = Path(lines[1].strip())
+        if not common_path.is_absolute():
+            common_path = (active_workspace / common_path).resolve()
+        if common_path.name == ".git":
+            family_root = common_path.parent.resolve()
+        # Same side effect as WorkflowKernel.store_root (kept so behavior is
+        # identical); on failure defer to the full path, which raises as before.
+        store_root = family_root / ".dopemux" / "workflows"
+        store_root.mkdir(parents=True, exist_ok=True)
+        return next(store_root.glob("*/state.json"), None) is None
+    except Exception:
+        return False
+
 
 try:
-    from dopemux.claude.activity_ratelimit import should_emit_heartbeat
-except Exception:  # pragma: no cover - fail-open: no limiter, keep emitting
-    def should_emit_heartbeat(  # noqa: ARG001
+    from dopemux.memory.capture_client import try_emit_promotable_capture_event  # noqa: E402
+except ImportError:
+    def try_emit_promotable_capture_event(*_args, **_kwargs):  # type: ignore[misc]
+        return None
+
+_HEARTBEAT_IMPL: Any = None
+
+
+def _heartbeat_impl():
+    """Resolve ``activity_ratelimit.should_emit_heartbeat`` (stdlib-light).
+
+    ``import dopemux.claude.activity_ratelimit`` runs ``dopemux/claude/__init__``
+    (launcher, configurator, config.manager, pydantic, rich: ~70 ms) although the
+    limiter itself needs only the stdlib. Reuse the regular module when something
+    already imported it (keeps one shared module object, e.g. under pytest);
+    otherwise load the same source file directly, bypassing the package init.
+    Any failure falls back to the regular import, then to fail-open ``True``.
+    """
+    global _HEARTBEAT_IMPL
+    module = sys.modules.get("dopemux.claude.activity_ratelimit")
+    if module is not None:
+        return module.should_emit_heartbeat
+    if _HEARTBEAT_IMPL is None:
+        try:
+            import importlib.util
+
+            path = Path(__file__).resolve().with_name("activity_ratelimit.py")
+            spec = importlib.util.spec_from_file_location("_dopemux_activity_ratelimit", path)
+            loaded = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(loaded)
+            _HEARTBEAT_IMPL = loaded.should_emit_heartbeat
+        except Exception:
+            try:
+                from dopemux.claude.activity_ratelimit import should_emit_heartbeat as _impl
+
+                _HEARTBEAT_IMPL = _impl
+            except Exception:  # pragma: no cover - fail-open: no limiter, keep emitting
+                _HEARTBEAT_IMPL = lambda *_a, **_k: True  # noqa: E731
+    return _HEARTBEAT_IMPL
+
+
+def should_emit_heartbeat(
+    event_type,
+    *,
+    session_id=None,
+    project_root=None,
+    cooldown_seconds=None,
+) -> bool:
+    return _heartbeat_impl()(
         event_type,
-        *,
-        session_id=None,
-        project_root=None,
-        cooldown_seconds=None,
-    ) -> bool:
-        return True
+        session_id=session_id,
+        project_root=project_root,
+        cooldown_seconds=cooldown_seconds,
+    )
+
 
 # Claude Code command hook exit codes
 EXIT_SUCCESS = 0
@@ -168,7 +295,7 @@ def _emit_activity_event(
             os.environ.get("DOPEMUX_ACTIVITY_EVENT_STREAM", DEFAULT_ACTIVITY_STREAM),
             {
                 "event_type": NATIVE_HOOK_ACTIVITY_EVENT_TYPE,
-                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
                 "source": "dopemux.native_hooks",
                 "data": json.dumps(data, sort_keys=True, separators=(",", ":")),
             },
@@ -275,7 +402,8 @@ class NativeHookAdapter:
         self.project_root = (project_root or Path.cwd()).resolve()
         self.instance_id = os.environ.get("DOPEMUX_INSTANCE_ID") or "A"
         self.session_id: Optional[str] = None
-        self.kernel = WorkflowKernel(self.project_root)
+        # Built lazily by _active_state (it always rebuilds a fresh kernel).
+        self.kernel = None
 
     def _emit(self, payload: Dict[str, Any], exit_code: int = EXIT_SUCCESS) -> Tuple[int, Dict[str, Any]]:
         return exit_code, payload
@@ -298,29 +426,44 @@ class NativeHookAdapter:
         return self._emit(payload, EXIT_SUCCESS)
 
     def _deny_tool(self, message: str, additional_context: Optional[str] = None) -> Tuple[int, Dict[str, Any]]:
-        payload: Dict[str, Any] = {
-            "systemMessage": message,
-            "hookSpecificOutput": {
-                "permissionDecision": "deny",
-                "decision": "block",
-            },
+        """Deny a PreToolUse call.
+
+        Claude Code ignores stdout on exit 2 and shows only stderr, so the deny
+        is expressed as exit 0 plus structured PreToolUse JSON on stdout. Only
+        ever called from ``_on_pre_tool_use``; other events do not use it.
+        """
+        hook_output: Dict[str, Any] = {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "deny",
+            "permissionDecisionReason": message,
         }
         if additional_context:
-            payload["hookSpecificOutput"]["additionalContext"] = additional_context
-        return self._emit(payload, EXIT_BLOCK)
+            hook_output["additionalContext"] = additional_context
+        payload: Dict[str, Any] = {
+            "systemMessage": message,
+            "hookSpecificOutput": hook_output,
+        }
+        return self._emit(payload, EXIT_SUCCESS)
 
     def _block_stop(self, message: str, additional_context: Optional[str] = None) -> Tuple[int, Dict[str, Any]]:
+        """Block a Stop/SubagentStop: exit 0 with top-level ``decision: block``.
+
+        ``reason`` is what Claude is told, so the extra context is folded into
+        it (Stop has no hookSpecificOutput schema).
+        """
+        reason = message if not additional_context else f"{message}\n\n{additional_context}"
         payload: Dict[str, Any] = {
             "decision": "block",
+            "reason": reason,
             "systemMessage": message,
         }
-        if additional_context:
-            payload["hookSpecificOutput"] = {
-                "additionalContext": additional_context,
-            }
-        return self._emit(payload, EXIT_BLOCK)
+        return self._emit(payload, EXIT_SUCCESS)
 
     def _active_state(self):
+        if _workflow_store_known_empty(self.project_root):
+            return None
+        if not _ensure_workflow():
+            return None
         # Fresh resolution to ensure environment changes (like instance_id) are picked up
         self.kernel = WorkflowKernel(self.project_root)
         state = self.kernel.resolve()
@@ -662,6 +805,30 @@ class NativeHookAdapter:
         return self._allow()
 
 
+def _is_blocking_response(response: Dict[str, Any]) -> bool:
+    """True for a PreToolUse deny or a Stop/SubagentStop block response."""
+    if not isinstance(response, dict):
+        return False
+    hook_output = response.get("hookSpecificOutput")
+    denied = isinstance(hook_output, dict) and hook_output.get("permissionDecision") == "deny"
+    return denied or response.get("decision") == "block"
+
+
+def _blocking_stderr_message(response: Dict[str, Any]) -> Optional[str]:
+    """Reason text to mirror to stderr for blocking responses (belt-and-braces)."""
+    if not _is_blocking_response(response):
+        return None
+    hook_output = response.get("hookSpecificOutput") or {}
+    reason = (
+        hook_output.get("permissionDecisionReason")
+        or response.get("reason")
+        or response.get("systemMessage")
+        or "Blocked by Dopemux hook"
+    )
+    extra = hook_output.get("additionalContext")
+    return str(reason) + (f"\n{extra}" if extra and extra not in str(reason) else "")
+
+
 def main() -> None:
     """CLI entry point for the hook script."""
     raw_input = sys.stdin.read()
@@ -677,6 +844,9 @@ def main() -> None:
     exit_code, response = adapter.handle_event(payload)
     if response:
         sys.stdout.write(json.dumps(response))
+    stderr_message = _blocking_stderr_message(response)
+    if stderr_message:
+        sys.stderr.write(stderr_message + "\n")
     sys.exit(exit_code)
 
 
@@ -692,6 +862,8 @@ def handle_event(event_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     adapter = NativeHookAdapter(project_root=Path(payload.get("cwd", Path.cwd())))
     payload["hook_event_name"] = event_name
     exit_code, response = adapter.handle_event(payload)
-    if exit_code == EXIT_BLOCK:
+    # Denies/blocks are now exit 0 + structured JSON; keep the legacy
+    # ``decision == "block"`` marker for callers that predate that change.
+    if exit_code == EXIT_BLOCK or _is_blocking_response(response):
         response["decision"] = "block"
     return response
