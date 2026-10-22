@@ -209,7 +209,11 @@ def test_native_hooks_register_global_uses_running_interpreter(
 
     assert result.exit_code == 0, result.output
     settings = json.loads((tmp_path / ".claude" / "settings.json").read_text())
-    commands = [entry["command"] for entry in settings["hooks"]["command"]]
+    commands = [
+        hook["command"]
+        for group in settings["hooks"]["SessionStart"]
+        for hook in group["hooks"]
+    ]
     assert len(commands) == 1
     argv = shlex.split(commands[0])
     assert argv[0] == sys.executable

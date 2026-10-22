@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "verdict": "PASS",
+  "findings": [],
+  "risks": [
+    "Validation tests were not executed during this embedded audit because candidate checkout and tool execution are disabled by policy (validation_status=NOT_RUN).",
+    "Existing settings.json files that were previously written with the legacy hooks.command array key will retain that legacy key alongside the new event-keyed entries unless manually cleaned up."
+  ],
+  "rationale": "PR 1439 (head SHA 34005d6c2967e7a1210fed682a321e16f7aab2e3 against base SHA 95e95bee88cae5e6c95e6e34f7c28bb423ad9496 in DDD-Enterprises/dopemux-mvp) updates native_hooks_register in src/dopemux/cli.py to emit Claude Code's event-keyed hooks.<EventName> schema (including SubagentStart) instead of the legacy hooks.command array, falls back to the shlex-quoted sys.executable and absolute native_hooks.py path when .claude/hooks/run_native_hooks.sh is absent in project mode, validates each event bucket as a list before mutating settings on disk, and only treats unrestricted matchers (omitted, empty string, or '*') as satisfying registration. Unit tests in tests/unit/test_native_hooks_register.py and tests/unit/test_cli_audit_remediations.py thoroughly cover schema shape, dispatcher fallback, idempotency, matcher scoping, and malformed settings rejection.",
+  "inspected_paths": [
+    "src/dopemux/cli.py",
+    "tests/unit/test_cli_audit_remediations.py",
+    "tests/unit/test_native_hooks_register.py"
+  ],
+  "evidence_refs": [
+    "src/dopemux/cli.py:native_hooks_register@L4164-L4238",
+    "tests/unit/test_cli_audit_remediations.py:test_native_hooks_register_global_uses_running_interpreter@L209-L219",
+    "tests/unit/test_native_hooks_register.py@L1-L259"
+  ],
+  "validation_status": "NOT_RUN"
+}
