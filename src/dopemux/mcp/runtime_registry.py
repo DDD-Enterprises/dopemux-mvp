@@ -16,7 +16,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Collection, Dict, List, Optional, Sequence
 
 SCHEMA_VERSION = "1.0"
 REGISTRY_ENV = "DOPEMUX_MCP_RUNTIME_REGISTRY"
@@ -187,6 +187,75 @@ class RuntimeRegistry:
             for i in self.instances()
             if i.get("instance_id") and i.get("instance_id") not in known
         ]
+
+    def find_stale_running(self, running_container_names: Collection[str]) -> List[Dict[str, Any]]:
+        """Return `running` instances none of whose containers are currently running.
+
+        An instance with no recorded container_names counts as stale. Read-only.
+        """
+        running = set(running_container_names)
+        stale: List[Dict[str, Any]] = []
+        for inst in self.instances():
+            if inst.get("status") != "running":
+                continue
+            names = inst.get("container_names") or []
+            if not any(name in running for name in names):
+                stale.append(inst)
+        return stale
+
+    def reconcile_stale_running(
+        self,
+        running_container_names: Collection[str],
+        *,
+        dry_run: bool = True,
+    ) -> Dict[str, Any]:
+        """Mark stale `running` instances as `stopped` (never deletes entries).
+
+        Dry-run (or nothing stale) writes nothing. Otherwise the registry file is
+        copied to `<path>.backup-<UTC stamp>` before the atomic save. Callers must
+        not run this concurrently with other lifecycle commands: save() rewrites
+        the whole file without a cross-process lock.
+        """
+        self.require_writable()
+        stale = self.find_stale_running(running_container_names)
+        plan: Dict[str, Any] = {
+            "dry_run": dry_run,
+            "stale_count": len(stale),
+            "stale": [
+                {
+                    "instance_id": inst.get("instance_id"),
+                    "service": inst.get("service"),
+                    "project_root": inst.get("project_root"),
+                    "worktree_root": inst.get("worktree_root"),
+                    "container_names": list(inst.get("container_names") or []),
+                    "updated_at": inst.get("updated_at"),
+                }
+                for inst in stale
+            ],
+            "backup_path": None,
+            "applied": False,
+        }
+        if dry_run or not stale:
+            return plan
+
+        if self.path.exists():
+            stamp = _utc_now().replace(":", "").replace("-", "")
+            backup = self.path.with_suffix(self.path.suffix + f".backup-{stamp}")
+            backup.write_bytes(self.path.read_bytes())
+            plan["backup_path"] = str(backup)
+
+        now = _utc_now()
+        for inst in stale:
+            inst["status"] = "stopped"
+            inst["updated_at"] = now
+            inst["last_probe"] = {
+                "status": "NOT_RUNNING",
+                "checked_at": now,
+                "source": "mcp registry reconcile",
+            }
+        self.save()
+        plan["applied"] = True
+        return plan
 
     def save(self) -> None:
         self.require_writable()

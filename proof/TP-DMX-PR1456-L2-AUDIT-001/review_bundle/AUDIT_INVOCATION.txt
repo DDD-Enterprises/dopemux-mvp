@@ -1,0 +1,7 @@
+date_utc=2026-10-20T22:02:24Z
+cwd=/private/tmp/claude-501/-Users-hue-code-dopemux-mvp/76436141-ff29-41f5-9965-9b025f7f3adf/scratchpad/audit-pr1456/run (sealed: only AUDIT_PROMPT.txt present)
+agy_version=1.4.3
+model_requested=gemini-4-argon-high (operator-approved fallback, chat 2026-10-20)
+subject_head=e58d322f1ecc8f97c0cdc61b7a57d9c1ef7bb0f3
+subject_base=95e95bee88cae5e6c95e6e34f7c28bb423ad9496
+command=agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print="$(cat AUDIT_PROMPT.txt)"

@@ -1,0 +1,44 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1456,
+  "head_sha": "e58d322f1ecc8f97c0cdc61b7a57d9c1ef7bb0f3",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1456-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "RISK-01 (low, src/dopemux/mcp/runtime_registry.py:206-258): RuntimeRegistry.reconcile_stale_running(--apply) rewrites instances.json via save() without a cross-process file lock, so concurrent execution alongside dopemux mcp start/stop/restart/up/down or another reconcile could lose updates. This limitation is explicitly documented in the CLI help, docstring, and troubleshooting docs.",
+      "RISK-02 (low, src/dopemux/mcp/runtime_registry.py:191-204): RuntimeRegistry.find_stale_running() only marks a running instance stale when none of its recorded container_names are present in docker ps (not any(name in running for name in names)). If an instance ever spans multiple containers and experiences a partial container exit, it will remain marked running.",
+      "RISK-03 (low, src/dopemux/commands/mcp_commands.py:1370-1391): CLI unit tests cover compose environment injection for up, down, logs, start-all, and status --legacy-compose, but do not directly exercise mcp_ensure_cmd compose environment forwarding via _run_checked."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}

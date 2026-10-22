@@ -182,6 +182,98 @@ export TASK_ORCHESTRATOR_HTTP_PORT=7890
 
 ---
 
+## Bug 4: Compose required-variable guard breaks mcp up/start from a clean shell (Fixed in docker_runtime.py / mcp_commands.py)
+
+**Status**: **FIXED** in W01 of MACRO-DMX-MCP-LIFECYCLE-REPAIR-001 (commit `6895e8d4e`).
+The guard itself came from commit `0994ce8a0` (2026-09-04), which made the
+dope-context workspace mount read-only and fail-closed. Source audit:
+`docs/05-audit-reports/dopemux-cross-repo-readiness-audit-2026-10-16.md`, section 6.
+
+**Symptom**: From a shell where `HOST_CODE_PARENT_DIR` is not exported, `dopemux mcp`
+lifecycle commands fail before any container starts:
+```text
+required variable HOST_CODE_PARENT_DIR is missing a value
+MCP start: FAIL — conport: failed
+```
+
+**Cause**: `compose.yml` line 423 marks the dope-context mount source as required
+(`${HOST_CODE_PARENT_DIR:?...}`), and lines 406-408 interpolate
+`HOST_CODE_PARENT_DIR` and `HOST_PROJECT_RELATIVE_PATH`. Compose interpolates the
+whole file for any single-service command, so one unset variable fails `conport`
+and every other service too. Before W01 the lifecycle passed only `os.environ` plus
+the parse-only `DOPECON_BRIDGE_TOKEN` placeholder (`env_with_compose_interpolation`),
+so the two host-path variables were missing unless the operator had exported them.
+
+**Fix**: `env_with_compose_interpolation()` in `src/dopemux/mcp/docker_runtime.py`
+now derives `HOST_CODE_PARENT_DIR` (the parent of the checkout) and
+`HOST_PROJECT_RELATIVE_PATH` (the checkout directory name) from `product_root()`
+when they are unset or blank. A non-blank operator value always wins. If the
+product root cannot be found, both stay unset and compose still fails closed.
+Every `docker compose -f compose.yml` call in `src/dopemux/commands/mcp_commands.py`
+passes this env. Call sites that can start `dope-context` disable the derived
+defaults (`host_path_defaults=False`), so the dope-context mount source is never
+supplied silently. Those paths still need the variable set explicitly.
+
+Raw `docker compose` does not derive anything. It still needs both variables
+exported (see `.env.example`). On checkouts that predate W01, prefix them on the one
+command. Use placeholders, not real paths:
+```bash
+HOST_CODE_PARENT_DIR=<parent of checkouts> HOST_PROJECT_RELATIVE_PATH=<checkout dir name> dopemux mcp start --repo <checkout>
+```
+
+**Verify**:
+```bash
+# Drift gate for the compose required-variable set (run from the repo root)
+.venv/bin/python -m pytest tests/arch/test_compose_required_vars.py
+
+# Raw compose from a shell without the variables still fails closed (read-only)
+env -u HOST_CODE_PARENT_DIR -u HOST_PROJECT_RELATIVE_PATH docker compose -f compose.yml config postgres
+```
+The first command should pass. The second should fail with the
+`required variable ... is missing a value` message, which shows the guard is still
+in place for raw compose. It should succeed once both variables are exported.
+
+---
+
+## Bug 5: Stale running entries in instances.json had no reconcile path (Fixed: dopemux mcp registry reconcile)
+
+**Status**: **FIXED** in W02 of MACRO-DMX-MCP-LIFECYCLE-REPAIR-001 (commit `1f8498a7b`).
+
+**Symptom**: `instances.json` (the MCP runtime registry) keeps entries with status
+`running` after their containers are gone, so the registry reports instances as
+running when they are not.
+
+**Cause**: Nothing reconciled the registry against Docker. `mcp status --repo` never
+writes the registry. `mcp stop` marks an entry stopped only after an actual
+`docker stop`. `mcp leases reconcile` covers port leases only. No supported command
+cleared entries whose containers had exited on their own, for example after a host
+restart or manual container removal.
+
+**Fix**: `RuntimeRegistry.find_stale_running()` and `reconcile_stale_running()` in
+`src/dopemux/mcp/runtime_registry.py`, exposed as
+`dopemux mcp registry reconcile --dry-run | --apply [--json]`:
+- Lists `running` entries whose containers are absent from `docker ps`.
+- `--apply` first copies the registry to `instances.json.backup-<UTC stamp>`, then
+  marks each stale entry `stopped` with a `NOT_RUNNING` probe record.
+- Entries are never deleted, and containers are never touched.
+- Fails closed when the registry is unreadable or Docker is unavailable.
+- `--apply` rewrites `instances.json` without a cross-process lock. Never run it
+  concurrently with `dopemux mcp start/stop/restart/up/down` or another reconcile.
+
+```bash
+dopemux mcp registry reconcile --dry-run   # plan only, writes nothing
+dopemux mcp registry reconcile --apply     # backs up first, then marks stale entries stopped
+```
+
+**Verify**:
+```bash
+dopemux mcp registry reconcile --dry-run --json   # review the plan
+# after --apply, an instances.json.backup-<UTC stamp> file sits beside the registry
+.venv/bin/python -m pytest tests/unit/test_mcp_runtime_registry.py tests/unit/test_mcp_commands_lifecycle.py
+```
+
+---
+
 ## Quick Diagnosis Checklist
 
 If MCP servers are not connecting:
@@ -216,3 +308,11 @@ If MCP servers are not connecting:
    ```bash
    ./mcp_server_health_report.sh
    ```
+
+6. **Compose reports a missing host-path variable** (`required variable HOST_CODE_PARENT_DIR
+   is missing a value`): run `dopemux mcp` from the checkout so the variables are derived,
+   or export them for raw `docker compose`. See Bug 4.
+
+7. **Registry shows `running` for containers that are gone**: run
+   `dopemux mcp registry reconcile --dry-run`, then `--apply` only when no lifecycle
+   command is running. See Bug 5.

@@ -24,7 +24,7 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 from urllib.parse import urlparse
 
 import click
@@ -282,7 +282,13 @@ def mcp_up_cmd(
         ensure_docker_networks(["dopemux-network"], runner=subprocess.run)
         cmd = ["docker", "compose", "-f", "compose.yml", "up", "-d", "--build"] + svc_list
         console.logger.info(f"[info]{' '.join(cmd)}[/info]")
-        subprocess.run(cmd, check=True, env=env_with_compose_interpolation())
+        subprocess.run(
+            cmd,
+            check=True,
+            env=env_with_compose_interpolation(
+                host_path_defaults="dope-context" not in svc_list
+            ),
+        )
         console.logger.info("[success]MCP servers started[/success]")
     except (CalledProcessError, FileNotFoundError, RuntimeError) as exc:
         console.logger.error(f"[error]Failed to start MCP servers: {exc}[/error]")
@@ -319,12 +325,15 @@ def mcp_down_cmd(
     try:
         # Derive from the default set so `down` stays symmetric with `up`
         # (previously a hardcoded list that omitted several running services).
+        from ..mcp.docker_runtime import env_with_compose_interpolation
+
         mcp_services = sorted(DEFAULT_MCP_SERVICES & _compose_services())
         if not mcp_services:
             mcp_services = sorted(DEFAULT_MCP_SERVICES)
         subprocess.run(
             ["docker", "compose", "-f", "compose.yml", "rm", "-f", "-s", "-v"] + mcp_services,
             check=True,
+            env=env_with_compose_interpolation(),
         )
         console.logger.info("[success]MCP servers stopped[/success]")
     except (CalledProcessError, FileNotFoundError) as exc:
@@ -348,8 +357,14 @@ def mcp_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose: 
     ``--legacy-compose``: previous cwd `docker compose ps` behavior.
     """
     if legacy_compose:
+        from ..mcp.docker_runtime import env_with_compose_interpolation
+
         try:
-            subprocess.run(["docker", "compose", "-f", "compose.yml", "ps"], check=True)
+            subprocess.run(
+                ["docker", "compose", "-f", "compose.yml", "ps"],
+                check=True,
+                env=env_with_compose_interpolation(),
+            )
         except (CalledProcessError, FileNotFoundError):
             sys.exit(1)
         return
@@ -370,8 +385,14 @@ def mcp_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose: 
             json_output=json_output,
         )
         return
+    from ..mcp.docker_runtime import env_with_compose_interpolation
+
     try:
-        subprocess.run(["docker", "compose", "-f", "compose.yml", "ps"], check=True)
+        subprocess.run(
+            ["docker", "compose", "-f", "compose.yml", "ps"],
+            check=True,
+            env=env_with_compose_interpolation(),
+        )
     except (CalledProcessError, FileNotFoundError):
         sys.exit(1)
 
@@ -385,6 +406,8 @@ def mcp_logs_cmd(service: str):
     Enables direct observation of the signal exchange between the cockpit 
     and its distributed toolset for granular ritual debugging.
     """
+    from ..mcp.docker_runtime import env_with_compose_interpolation
+
     try:
         if service:
             svc_list = _parse_services(service)
@@ -392,7 +415,7 @@ def mcp_logs_cmd(service: str):
         else:
             cmd = ["docker", "compose", "-f", "compose.yml", "logs", "-f"]
         console.logger.info(f"[info]{' '.join(cmd)}[/info]")
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True, env=env_with_compose_interpolation())
     except (CalledProcessError, FileNotFoundError):
         sys.exit(1)
 
@@ -419,8 +442,19 @@ def mcp_start_all_cmd(verify: bool):
             # before either compose invocation below (idempotent).
             ensure_docker_networks(["dopemux-network"], runner=subprocess.run)
 
+            from ..mcp.docker_runtime import env_with_compose_interpolation
+
             console.logger.info("[info]Starting MCP servers...[/info]")
-            subprocess.run(["docker", "compose", "-f", "compose.yml", "up", "-d"], check=True)
+            # Whole-file `up` includes dope-context: never default the host
+            # path variables, so the `:?` guard keeps failing closed.
+            compose_env = env_with_compose_interpolation(
+                host_path_defaults=False
+            )
+            subprocess.run(
+                ["docker", "compose", "-f", "compose.yml", "up", "-d"],
+                check=True,
+                env=compose_env,
+            )
 
             # NOTE: the legacy docker/conport-kg integration-bridge is dead
             # code (kill-list per the MCP fleet audit) and must not be
@@ -430,6 +464,7 @@ def mcp_start_all_cmd(verify: bool):
             subprocess.run(
                 ["docker", "compose", "-f", "compose.yml", "--profile", "manual", "up", "-d", "task-orchestrator"],
                 check=True,
+                env=compose_env,
             )
 
             console.logger.info("[success]All services started[/success]")
@@ -1222,10 +1257,11 @@ def _run_checked(
     cwd: Path,
     label: str,
     timeout: int = DEFAULT_ENSURE_TIMEOUT_SECONDS,
+    env: Optional[Mapping[str, str]] = None,
 ) -> None:
     console.logger.info(f"[info]{label}: {' '.join(cmd)}[/info]")
     try:
-        subprocess.run(cmd, cwd=cwd, check=True, timeout=timeout)
+        subprocess.run(cmd, cwd=cwd, check=True, timeout=timeout, env=env)
     except FileNotFoundError as exc:
         raise click.ClickException(f"{label}: command not found: {cmd[0]}") from exc
     except CalledProcessError as exc:
@@ -1333,6 +1369,8 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
 
     compose_services = _catalog_compose_services(catalog)
     if compose_services:
+        from ..mcp.docker_runtime import env_with_compose_interpolation
+
         # --wait blocks until dependent services report healthy (bounded by
         # --wait-timeout). The Python-side timeout= is a backstop against a
         # hung CLI and must cover BOTH a cold first-run image build AND the
@@ -1347,6 +1385,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
             cwd=repo_path,
             label="compose",
             timeout=DEFAULT_COMPOSE_UP_TIMEOUT_SECONDS,
+            env=env_with_compose_interpolation(
+                host_path_defaults="dope-context" not in compose_services
+            ),
         )
 
     # ensure-pal.sh owns the off-compose Codex pal-mcp-server container only;
@@ -2052,6 +2093,60 @@ def mcp_leases_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
             )
         if plan.get("backup_path"):
             console.logger.info(f"[info]backup: {plan['backup_path']}[/info]")
+
+
+@mcp.group("registry")
+def mcp_registry_group():
+    """📇 Runtime registry: inspect/reconcile ~/.dopemux/mcp/runtime/instances.json"""
+
+
+@mcp_registry_group.command("reconcile")
+@click.option("--dry-run", is_flag=True, help="Plan only; write nothing.")
+@click.option("--apply", is_flag=True, help="Mark stale running instances stopped after backup.")
+@click.option("--json", "json_output", is_flag=True, help="Emit JSON plan/result.")
+def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
+    """
+    Mark registry instances stopped when their containers are not running.
+
+    Lists `running` entries whose containers are absent from `docker ps` and, with
+    --apply, backs the registry up and marks them `stopped` with a NOT_RUNNING
+    probe record. Never deletes entries and never touches containers.
+
+    WARNING: --apply rewrites instances.json without a cross-process lock. Never
+    run it concurrently with `dopemux mcp start/stop/restart/up/down` or another
+    reconcile.
+    """
+    _require_exactly_one_dry_run_or_apply(dry_run, apply)
+    import dopemux.mcp.docker_inspect as docker_inspect
+    from dopemux.mcp.runtime_registry import RegistryError, RuntimeRegistry
+
+    reg = RuntimeRegistry.load()
+    if reg.parse_status == "ERROR":
+        raise click.ClickException(f"Runtime registry unreadable: {reg.error}")
+    inspected = docker_inspect.inspect_running_containers()
+    if not inspected.available:
+        raise click.ClickException(
+            f"Docker unavailable; registry left unchanged: {inspected.error}"
+        )
+    running = {c.name for c in inspected.containers}
+    try:
+        plan = reg.reconcile_stale_running(running, dry_run=not apply)
+    except RegistryError as exc:
+        raise click.ClickException(str(exc)) from exc
+    if json_output:
+        sys.stdout.write(json.dumps(plan, indent=2) + "\n")
+        return
+    click.echo(
+        f"registry reconcile dry_run={plan['dry_run']} "
+        f"stale={plan['stale_count']} applied={plan['applied']}"
+    )
+    for item in plan["stale"]:
+        click.echo(
+            f"  - {item['instance_id']} service={item['service']} "
+            f"root={item['project_root']} containers={','.join(item['container_names'])}"
+        )
+    if plan.get("backup_path"):
+        click.echo(f"backup: {plan['backup_path']}")
 
 
 @mcp.command("repair-config")
