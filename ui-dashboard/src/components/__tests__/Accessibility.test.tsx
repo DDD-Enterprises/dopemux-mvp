@@ -163,7 +163,7 @@ test('App.tsx exposes metric card tooltips with focus indicators and labels', ()
 
 test('TaskSequencer.tsx has contextual aria-labels and current step indicator', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
-  expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
+  expect(content).toMatch(/aria-label=\{\s*currentTask\s*\?\s*\(?isTimerRunning\s*\?\s*`Pause task: \$\{currentTask\.title\}`\s*:\s*`Start task: \$\{currentTask\.title\}`\)?\s*:\s*\(?isTimerRunning\s*\?\s*'Pause task'\s*:\s*'Start task'\)?\s*\}/);
   expect(content).toContain('getCompletionTransitionTask(currentTaskId, tasks, optimizedTasks)');
   expect(content).toContain('getSkipTransitionTask(currentTaskId, optimizedTasks)');
   expect(content).toMatch(/aria-label=\{\s*nextTaskAfterCompletion\s*[\s\S]*\?\s*`Complete \$\{currentTask\.title\}, proceed to \$\{nextTaskAfterCompletion\.title\}`\s*[\s\S]*:\s*`Complete \$\{currentTask\.title\}, finish ritual`\s*\}/);
