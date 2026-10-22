@@ -1,0 +1,15 @@
+# Exact invocation record -- PR #1466 L3 embedded audit (operator-approved grok-cli/grok-4.5 route)
+# grok 1.0.67 (2fe064390d07) [stable]; session_id=01a1635d-0170-7a32-b3d1-c05a24d6805b
+# start=2026-10-22T11:26:41Z end=2026-10-22T11:27:55Z exit=0 duration=74s
+# subject head=7c12570f28df4cfa738001ae3b909e4a951d63b8 base=93050d135ffc2592000c1d0edef82b2912935525
+# cwd=sealed dir containing only AUDIT_PROMPT.txt (built by scripts/audit/pal_clink_runner.py --build-prompt; proof/** excluded)
+# raw output sha256=83b544a66e735bc93f184c75115d38d1b2eb30e3bfbb9bfab3e4baa583e60260
+# prompt sha256=445c38f3f4b274ac2b057e950aa4b9a2510ed10e2cc37589915a20348ca05e0c
+# observed identity: summary.json current_model_id='grok-4.5' reasoning_effort='high'
+# containment: init tools=[] ; session tool_definitions.json=[] ; no tool_use blocks ; system prompt replaced
+
+cd <sealed> && grok -m grok-4.5 --effort high --sandbox workspace --cwd <sealed> \
+  --system-prompt-override "$(cat SYSTEM_PROMPT.txt)" --disallowed-tools "$(cat DISALLOWED_TOOLS.txt)" \
+  --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources" \
+  --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 \
+  --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt > AUDIT_OUTPUT_RAW.jsonl
