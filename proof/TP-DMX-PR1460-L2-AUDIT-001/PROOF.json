@@ -1,0 +1,157 @@
+{
+  "packet_id": "TP-DMX-PR1460-L2-AUDIT-001",
+  "branch": "fix/test-hygiene-daemon-and-registry-leaks",
+  "base": "main",
+  "base_sha": "95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "head_sha": "7ea96e052ea78354f18edb523f6c22ba9b080ca1",
+  "kind": "test_hygiene_daemon_and_registry_leaks_audit",
+  "risk_lane": "L2",
+  "implementer": "Claude Code supervisor session 76436141-ff29-41f5-9965-9b025f7f3adf (claude-opus-5-5, self-reported) authored the test-only fix and built the audit prompt with scripts/audit/pal_clink_runner.py --build-prompt.",
+  "audited_files": [
+    "tests/unit/test_ccr_models_env_for_altp.py",
+    "tests/unit/test_task_orchestrator_http_singleton.py"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "fallback_auditor_approval": {
+    "approved_by": "operator",
+    "approval_text": "go with grok",
+    "approved_at": "2026-10-21",
+    "exact_model": "grok-4.5",
+    "recorded_auditor_model": "grok-4.5",
+    "bounded_input": "trusted prompt built by scripts/audit/pal_clink_runner.py --build-prompt (task, output contract, delimited untrusted metadata + unified diff); grok --sandbox workspace with cwd an empty scratch dir; edit, web and sub-agent tools disallowed",
+    "no_secret_constraints": "prompt contains only the public PR diff and metadata; no env values, tokens or keys",
+    "rationale": "Operator reply 'go with grok' (2026-10-21, Claude Code desktop session 76436141-ff29-41f5-9965-9b025f7f3adf) after the approved AGY gemini-4-argon-high route returned a 429 quota error (reset about 2026-10-24T03:27Z). grok-cli/grok-4.5 is a schema auditor enum and the accepted route for PR #1420; -m grok-4.5 given explicitly because the CLI default grok-4.7 is not admitted."
+  },
+  "auditor_run": {
+    "grok_cli_version": "grok 1.0.62 (1474f9cbdd91) [stable]",
+    "session_id": "01a16011-ee53-7b81-b283-afd09bbe61dc",
+    "request_id": "64f5330c-3ef1-49bb-9a3a-25d6c6fb2a69",
+    "stop_reason": "end_turn",
+    "num_turns": 9,
+    "usage": {
+      "input_tokens": 57678,
+      "cache_read_input_tokens": 329472,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 7805,
+      "reasoning_tokens": 3661,
+      "total_tokens": 394955
+    },
+    "model_usage_keys": [
+      "grok-4.5-build"
+    ],
+    "total_cost_usd": 0.088749384,
+    "observed_identity": {
+      "current_model_id": "grok-4.5",
+      "reasoning_effort": "high",
+      "summary_path": "~/.grok/sessions/%2Fprivate%2Ftmp%2Fclaude-501%2F-Users-hue-code-dopemux-mvp%2F76436141-ff29-41f5-9965-9b025f7f3adf%2Fscratchpad%2Faudit-pr1460%2Fgrok-cwd/01a16011-ee53-7b81-b283-afd09bbe61dc/summary.json"
+    },
+    "verdict_extraction": "single fenced JSON block after auditor narration, parsed by trusted parser",
+    "raw_output_sha256": "96d680073848f9e29057c3a908844d4b647768bc93c5e3d5b10f9460ebd8cfb8",
+    "prompt_sha256": "5969c162a52fba13a596003332cd613c117bc90d4417e2a83cd4ee6c5c6567c5"
+  },
+  "validations": [
+    {
+      "name": "CI documentation check",
+      "result": "PASS",
+      "detail": "\ud83d\udcda Documentation Check SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315508"
+    },
+    {
+      "name": "CI security review",
+      "result": "PASS",
+      "detail": "\ud83d\udd12 Security Review SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321316020"
+    },
+    {
+      "name": "CI code quality & linting",
+      "result": "PASS",
+      "detail": "\ud83d\udc85 Code Quality & Linting SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315853"
+    },
+    {
+      "name": "CI auditor router",
+      "result": "PASS",
+      "detail": "\ud83e\uddea Auditor Router SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321316154"
+    },
+    {
+      "name": "CI clobber guard",
+      "result": "PASS",
+      "detail": "\ud83d\udee1\ufe0f Clobber Guard SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872613/job/119321316858"
+    },
+    {
+      "name": "CI unit tests (GitHub Actions, audited head 7ea96e052)",
+      "result": "PASS",
+      "detail": "\ud83e\uddea Unit Tests SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315870"
+    },
+    {
+      "name": "CI audit proof validator (--all)",
+      "result": "PASS",
+      "detail": "\ud83d\udd0d Audit Proof Validator (--all) SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315963"
+    },
+    {
+      "name": "CI model routing consistency",
+      "result": "PASS",
+      "detail": "\ud83d\uddfa\ufe0f Model Routing Consistency SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39628872636/job/119321315848"
+    },
+    {
+      "name": "supervisor: make test-fast at audited head 7ea96e052",
+      "result": "PASS",
+      "detail": "2676 passed, 2 skipped, exit 0 (2026-10-21)"
+    },
+    {
+      "name": "supervisor: leak sentinels around that run",
+      "result": "PASS",
+      "detail": "no new monitor_daemon.py process, no new ~/.dopemux/mcp/runtime entry, 0 files written under ~/.dopemux"
+    },
+    {
+      "name": "supervisor: red/green for the HOME isolation assertion",
+      "result": "PASS",
+      "detail": "assert 0 == 1 before the fix (identity file went to real HOME); 2 passed after"
+    },
+    {
+      "name": "supervisor: flake8 counts vs base",
+      "result": "PASS",
+      "detail": "both changed files equal the base counts"
+    },
+    {
+      "name": "auditor-side validations",
+      "result": "NOT_RUN",
+      "detail": "validation_status in auditor return: NOT_RUN"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <scratch>/grok-cwd --always-approve --disallowed-tools \"search_replace,web_search,web_fetch,Agent\" --max-turns 80 --output-format json --prompt-file AUDIT_INPUT.md; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1460-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "validation_status=NOT_RUN: trusted policy forbids checking out or executing candidate code; the two unit tests were not re-run in this audit.",
+      "Remote GitHub PR #1460 headRefOid was not independently confirmed (gh API HTTP 401). Audit is pinned to local freeze artifacts and local git objects for head 7ea96e052ea78354f18edb523f6c22ba9b080ca1 / base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496.",
+      "test_task_orchestrator_http_singleton.py asserts exactly one identity file under isolated HOME; correct for current launcher write-once paths, but brittle if write_identity_metadata later writes additional workspace_id directories on the reuse/recreate paths."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
