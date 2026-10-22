@@ -6,6 +6,7 @@ Test ADHD UX improvements for Phase 3.
 import asyncio
 import sys
 import os
+from unittest.mock import patch
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
@@ -60,7 +61,16 @@ async def test_adhd_ux():
         {"name": "Option 2", "description": "Moderate action", "complexity": 0.6},
         {"name": "Option 3", "description": "Complex action", "complexity": 0.8}
     ]
-    selection = prompts.ask_action_selection(actions, "Choose an action")
+    # Automatic pytest collection must not open a terminal or nest an event loop.
+    # Exercise the real choice builder with only the terminal response mocked.
+    with patch("questionary.select") as select:
+        select.return_value.ask.return_value = "Option 1"
+        selection = prompts.ask_action_selection(actions, "Choose an action")
+        select.assert_called_once()
+        choices = select.call_args.kwargs["choices"]
+        assert [choice.value for choice in choices] == ["Option 1", "Option 2", "Option 3"]
+        assert select.call_args.kwargs["default"].value == "Option 1"
+        assert selection == "Option 1"
     print(f"Selection: {selection}")
 
     print("\n🎉 ADHD UX tests completed successfully!")

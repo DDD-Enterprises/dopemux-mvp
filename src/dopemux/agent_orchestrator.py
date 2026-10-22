@@ -94,45 +94,120 @@ class AgentManager:
         self._active_tasks: Dict[str, AgentTask] = {}
         self._task_queue: List[AgentTask] = []
         self._litellm_manager = get_litellm_manager(self.project_root)
+        # Data lock: guards agents/queues/state and is taken by the worker.
         self._lock = threading.Lock()
+        # Lifecycle lock: serializes start()/stop() end to end, including
+        # monitoring teardown and the worker join. The worker never takes it,
+        # so holding it across the join cannot deadlock the worker.
+        self._lifecycle_lock = threading.Lock()
         self._running = False
         self._worker_thread: Optional[threading.Thread] = None
-        
+        # Per-generation stop signal: each worker generation gets its own
+        # Event, so a worker from an earlier generation can never observe a
+        # later start() as permission to keep running.
+        self._stop_event: Optional[threading.Event] = None
+        self._worker_join_timeout = 5.0
+
     def start(self) -> None:
-        """Start the agent manager and its worker thread."""
-        with self._lock:
+        """Start the agent manager and its worker thread.
+
+        Fails closed: if the previous worker generation outlived the bounded
+        join in stop() and is still alive, ``AgentError`` is raised rather than
+        launching a second concurrently-processing generation. The stale
+        reference is retained in ``_worker_thread`` so it stays trackable; once
+        that thread has exited, start() succeeds again.
+        """
+        with self._lifecycle_lock:
             if self._running:
                 return
-            
-            self._running = True
-            self._worker_thread = threading.Thread(
-                target=self._process_tasks,
-                daemon=True,
-                name="AgentOrchestratorWorker"
-            )
-            self._worker_thread.start()
-            
-            # Start LiteLLM health monitoring
+
+            previous = self._worker_thread
+            if previous is not None and previous.is_alive():
+                raise AgentError(
+                    "Previous agent worker thread is still alive; "
+                    "refusing to start a second worker generation"
+                )
+
+            # Start LiteLLM health monitoring BEFORE marking running or
+            # launching the worker, so a monitoring failure leaves the manager
+            # fully stopped and restartable (fail closed).
             self._litellm_manager.start()
-            
+
+            # Startup transaction: worker construction AND start are rolled
+            # back together (monitoring stopped) on any failure.
+            stop_event = threading.Event()
+            try:
+                worker = threading.Thread(
+                    target=self._process_tasks,
+                    args=(stop_event,),
+                    daemon=True,
+                    name="AgentOrchestratorWorker"
+                )
+                with self._lock:
+                    self._running = True
+                    self._stop_event = stop_event
+                    self._worker_thread = worker
+                worker.start()
+            except BaseException as exc:
+                # Roll back partial startup so a later start() can retry.
+                with self._lock:
+                    self._running = False
+                    self._stop_event = None
+                    self._worker_thread = None
+                try:
+                    self._litellm_manager.stop()
+                except Exception as cleanup_exc:
+                    # Surface the cleanup failure without masking the original.
+                    logger.exception(
+                        "Failed to stop LiteLLM monitoring during "
+                        "start rollback"
+                    )
+                    exc.add_note(
+                        "LiteLLM monitoring cleanup also failed: "
+                        f"{cleanup_exc!r}"
+                    )
+                raise
+
             logger.info("🚀 Agent manager started")
-    
+
     def stop(self) -> None:
-        """Stop the agent manager and cleanup."""
-        with self._lock:
-            if not self._running:
-                return
-            
-            self._running = False
-            
-            # Stop LiteLLM monitoring
-            self._litellm_manager.stop()
-            
-            # Wait for worker thread to finish
-            if self._worker_thread:
-                self._worker_thread.join(timeout=5.0)
-            
-            logger.info("⏹️  Agent manager stopped")
+        """Stop the agent manager and cleanup.
+
+        Holds the lifecycle lock for the whole teardown so a concurrent start()
+        cannot interleave with it; the data lock is released before the join so
+        the worker can finish its current iteration. ``_worker_thread`` is kept
+        after stop so callers (and start()) can track a worker that outlived
+        the bounded join.
+        """
+        with self._lifecycle_lock:
+            with self._lock:
+                if not self._running:
+                    return
+
+                self._running = False
+                worker = self._worker_thread
+                stop_event, self._stop_event = self._stop_event, None
+
+            if stop_event is not None:
+                stop_event.set()
+
+            try:
+                # Stop LiteLLM monitoring (outside the data lock)
+                self._litellm_manager.stop()
+            finally:
+                # Join OUTSIDE the data lock so the worker can acquire it to
+                # finish its current iteration; keep the join bounded to avoid
+                # hanging shutdown.
+                is_self = worker is threading.current_thread()
+                if worker is not None and not is_self:
+                    worker.join(timeout=self._worker_join_timeout)
+                    if worker.is_alive():
+                        logger.warning(
+                            "Agent worker thread did not exit within %ss",
+                            self._worker_join_timeout,
+                        )
+
+                logger.info("⏹️  Agent manager stopped")
     
     def register_agent(self, config: AgentConfig) -> None:
         """Register a new agent with the manager."""
@@ -195,9 +270,18 @@ class AgentManager:
         # For now, return None as tasks are processed synchronously in the worker
         return None
     
-    def _process_tasks(self) -> None:
-        """Main task processing loop."""
+    def _process_tasks(
+        self, stop_event: Optional[threading.Event] = None
+    ) -> None:
+        """Main task processing loop.
+
+        ``stop_event`` is this generation's private stop signal; once set it
+        stays set, so a later start() (which flips ``_running`` back to True
+        for a NEW generation) can never revive this one.
+        """
         while self._running:
+            if stop_event is not None and stop_event.is_set():
+                break
             try:
                 self._process_next_task()
             except Exception as e:

@@ -39,30 +39,81 @@ class DopetaskSeriesLoader:
 
     def parse_dict(self, data: Dict) -> DopetaskSeriesResult:
         """Parse and validate a dictionary representing series state."""
+        # 0. Top-level shape validation (JSON list / null / scalar are not a series)
+        if not isinstance(data, dict):
+            raise SeriesSchemaError(
+                f"Series state must be a JSON object, got {type(data).__name__}"
+            )
+
         # 1. Basic Field Validation
         missing_fields = self.REQUIRED_SERIES_FIELDS - set(data.keys())
         if missing_fields:
             raise SeriesSchemaError(f"Missing required series fields: {', '.join(sorted(missing_fields))}")
 
-        # 2. Packet Parsing & Validation
+        for field_name in ("series_id", "project_id"):
+            field_value = data[field_name]
+            if not isinstance(field_value, str) or not field_value.strip():
+                raise SeriesSchemaError(
+                    f"Series field '{field_name}' must be a non-empty string, got {field_value!r}"
+                )
+
+        series_status = data["status"]
+        if not isinstance(series_status, str):
+            raise SeriesSchemaError(
+                f"Series field 'status' must be a string, got {type(series_status).__name__}"
+            )
+
+        raw_packets = data["packets"]
+        if not isinstance(raw_packets, list):
+            raise SeriesSchemaError(
+                f"Series field 'packets' must be a list, got {type(raw_packets).__name__}"
+            )
+
+        # 2. Packet Parsing & Validation (all-or-nothing: any defect aborts before assembly)
         packet_records: List[DopetaskPacketRecord] = []
         packet_ids: Set[str] = set()
-        
-        for p_data in data["packets"]:
+
+        for index, p_data in enumerate(raw_packets):
+            if not isinstance(p_data, dict):
+                raise SeriesSchemaError(
+                    f"Packet at index {index} must be an object, got {type(p_data).__name__}"
+                )
+
             p_missing = self.REQUIRED_PACKET_FIELDS - set(p_data.keys())
             if p_missing:
-                raise SeriesSchemaError(f"Packet missing fields: {', '.join(sorted(p_missing))}")
-            
+                raise SeriesSchemaError(
+                    f"Packet missing fields: {', '.join(sorted(p_missing))} (packet index {index})"
+                )
+
             p_id = p_data["tp_id"]
+            if not isinstance(p_id, str) or not p_id.strip():
+                raise SeriesSchemaError(f"Packet at index {index} has invalid tp_id: {p_id!r}")
             if p_id in packet_ids:
                 raise SeriesSchemaError(f"Duplicate packet ID in series: {p_id}")
             packet_ids.add(p_id)
 
+            p_status = p_data["status"]
+            if not isinstance(p_status, str):
+                raise SeriesSchemaError(
+                    f"Packet '{p_id}' status must be a string, got {type(p_status).__name__}"
+                )
+
+            depends_on = p_data.get("depends_on", [])
+            if not isinstance(depends_on, list):
+                raise SeriesSchemaError(
+                    f"Packet '{p_id}' depends_on must be a list, got {type(depends_on).__name__}"
+                )
+            for dep_id in depends_on:
+                if not isinstance(dep_id, str) or not dep_id.strip():
+                    raise SeriesSchemaError(
+                        f"Packet '{p_id}' depends_on contains invalid packet ID: {dep_id!r}"
+                    )
+
             record = DopetaskPacketRecord(
                 tp_id=p_id,
-                status=self._map_packet_status(p_data["status"]),
-                raw_status=p_data["status"],
-                depends_on=p_data.get("depends_on", []),
+                status=self._map_packet_status(p_status),
+                raw_status=p_status,
+                depends_on=depends_on,
                 is_final=p_data.get("is_final", False),
                 bundle_path=p_data.get("bundle_path"),
                 title=p_data.get("title", "UNKNOWN"),
@@ -81,8 +132,8 @@ class DopetaskSeriesLoader:
 
         return DopetaskSeriesResult(
             identity=identity,
-            status=self._map_series_status(data["status"]),
-            raw_status=data["status"],
+            status=self._map_series_status(series_status),
+            raw_status=series_status,
             packets=packet_records,
             allowed_actions=[],  # Populated by mapper/adapter
             computed_at=data.get("computed_at", "")
