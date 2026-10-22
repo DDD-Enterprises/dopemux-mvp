@@ -335,6 +335,16 @@ function DashboardApp() {
     }
   }, [cognitiveState.recommendation]);
 
+  useEffect(() => {
+    if (notifications.length === 0) {
+      setIsConfirmingClear(false);
+      if (clearConfirmTimeoutRef.current) {
+        clearTimeout(clearConfirmTimeoutRef.current);
+        clearConfirmTimeoutRef.current = null;
+      }
+    }
+  }, [notifications.length]);
+
   const layout =
     cognitiveState.status === 'critical'
       ? { showTeamDashboard: false, showPredictions: false, compactMode: true }
