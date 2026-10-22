@@ -176,10 +176,39 @@ function DashboardApp() {
   const clearConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [copiedNotificationId, setCopiedNotificationId] = useState<string | null>(null);
+  const copyNotificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const hydrationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastSignalTime, setLastSignalTime] = useState<Date | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
+
+  const handleCopyNotification = useCallback(
+    async (notification: Notification) => {
+      if (!navigator.clipboard?.writeText) {
+        setErrorMessage('Clipboard API is not supported in this browser or context.');
+        return;
+      }
+      try {
+        const textToCopy = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
+        await navigator.clipboard.writeText(textToCopy);
+        setCopiedNotificationId(notification.id);
+
+        if (copyNotificationTimeoutRef.current) {
+          clearTimeout(copyNotificationTimeoutRef.current);
+        }
+
+        copyNotificationTimeoutRef.current = setTimeout(() => {
+          setCopiedNotificationId(null);
+          copyNotificationTimeoutRef.current = null;
+        }, 2000);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        setErrorMessage(`Failed to copy notification signal: ${errorMsg}`);
+      }
+    },
+    []
+  );
 
   const handleHydrate = useCallback(() => {
     setIsHydrated(true);
@@ -234,6 +263,10 @@ function DashboardApp() {
       if (copyTimeoutRef.current) {
         clearTimeout(copyTimeoutRef.current);
         copyTimeoutRef.current = null;
+      }
+      if (copyNotificationTimeoutRef.current) {
+        clearTimeout(copyNotificationTimeoutRef.current);
+        copyNotificationTimeoutRef.current = null;
       }
       if (hydrationTimeoutRef.current) {
         clearTimeout(hydrationTimeoutRef.current);
@@ -851,22 +884,39 @@ function DashboardApp() {
               {notifications.map((notification) => {
                 const severityColor = getNotificationColor(notification.notificationType);
                 const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
+                const isNotificationCopied = copiedNotificationId === notification.id;
                 return (
                   <Fade in={true} key={notification.id}>
-                    <Tooltip title="Dismiss notification" arrow describeChild>
+                    <Tooltip title={isNotificationCopied ? 'Copied!' : 'Click to copy signal details'} arrow>
                       <Chip
-                        icon={getNotificationIcon(notification.notificationType)}
+                        icon={
+                          isNotificationCopied ? (
+                            <Check size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
+                          ) : (
+                            getNotificationIcon(notification.notificationType)
+                          )
+                        }
                         label={notificationLabel}
-                        aria-label={notificationLabel}
+                        aria-label={
+                          isNotificationCopied
+                            ? `${notificationLabel} (Copied)`
+                            : `Copy notification signal: ${notificationLabel}`
+                        }
                         variant="outlined"
+                        onClick={() => void handleCopyNotification(notification)}
                         onDelete={() => handleDismissNotification(notification.id)}
-                        deleteIcon={<X size={14} aria-hidden="true" />}
+                        deleteIcon={<X size={14} aria-label="Dismiss notification" />}
                         tabIndex={0}
                         sx={{
                           maxWidth: '100%',
-                          borderColor: alpha(severityColor, 0.6),
-                          color: severityColor,
-                          backgroundColor: alpha(severityColor, 0.08),
+                          borderColor: isNotificationCopied ? brandTokens.colors.serumMint : alpha(severityColor, 0.6),
+                          color: isNotificationCopied ? brandTokens.colors.serumMint : severityColor,
+                          backgroundColor: alpha(isNotificationCopied ? brandTokens.colors.serumMint : severityColor, 0.08),
+                          cursor: 'copy',
+                          transition: 'all 0.2s ease',
+                          ...(isNotificationCopied && {
+                            animation: 'copy-success 0.4s ease-out',
+                          }),
                           '& .MuiChip-deleteIcon': {
                             color: alpha(severityColor, 0.7),
                             '&:hover': {
