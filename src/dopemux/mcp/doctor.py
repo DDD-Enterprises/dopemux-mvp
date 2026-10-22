@@ -1363,9 +1363,18 @@ def run_mcp_doctor(
 
 
 def format_human_summary(
-    report: DoctorReport, *, verbose: bool = False, max_findings: int = 5
+    report: DoctorReport,
+    *,
+    verbose: bool = False,
+    max_findings: int = 5,
+    repair_status: Optional[str] = None,
 ) -> str:
-    """Compact human-readable doctor summary."""
+    """Compact human-readable doctor summary.
+
+    ``repair_status`` is the dry-run ``repair-config`` plan status. When it is
+    ``NOOP`` or ``BLOCKED``, ``repair-config --apply`` cannot help, so those
+    recommendations are not offered as the next action.
+    """
     repo_name = Path(report.repo_arg).name or report.repo_arg
     lines = [f"MCP Doctor for {repo_name}: {report.status}"]
     # Prioritize FAIL then WARN then UNKNOWN
@@ -1405,7 +1414,15 @@ def format_human_summary(
             lines.append(f"{i}. {f['severity']} {f['code']}{svc} {f['message']}")
     else:
         lines.append("Top findings: (none)")
-    if report.recommended_next_actions:
+    actions = list(report.recommended_next_actions)
+    if repair_status in {"NOOP", "BLOCKED"}:
+        kept = [a for a in actions if "repair-config --apply" not in a]
+        if len(kept) != len(actions):
+            actions = kept or [
+                f"`dopemux mcp repair-config --dry-run` reports {repair_status}; "
+                "`--apply` will not change this repo. Review its output."
+            ]
+    if actions:
         lines.append("Next action:")
-        lines.append(report.recommended_next_actions[0])
+        lines.append(actions[0])
     return "\n".join(lines) + "\n"

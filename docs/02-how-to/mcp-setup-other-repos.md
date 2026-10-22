@@ -45,9 +45,22 @@ Target repos do **not** need their own `compose.yml`. `dopemux mcp start` is hom
 
 1. **Shared infrastructure** (postgres, redis, etc.) is already running from the primary
    dopemux stack once. Sidecar start uses `--no-deps` and does not re-home those services.
+   Postgres is **not** in `mcp_catalog.yaml`, so `dopemux mcp ensure --full` does not start
+   it; see [Restoring Postgres](#restoring-postgres).
 2. **Docker is running**.
 3. **Target workspace** is a git repository (`dopemux mcp init` requires git).
    If it is not a git repo yet, `git init` first.
+4. **`DOPEMUX_MVP_ROOT`** (alias `DOPEMUX_PRODUCT_ROOT`) points at the dopemux-mvp
+   checkout **when `dopemux` is installed outside it** (for example `~/.dopemux/venv`).
+   `dopemux mcp start --repo` locates the product `compose.yml` from this variable, else
+   from the module's parent directories (`product_root()` in
+   `src/dopemux/mcp/docker_runtime.py`). An install outside the checkout has no such
+   ancestor and fails with `PRODUCT_ROOT_UNKNOWN`. Harmless to set when running the
+   repo's own `.venv` CLI.
+
+   ```bash
+   export DOPEMUX_MVP_ROOT=~/code/dopemux-mvp
+   ```
 
 ---
 
@@ -145,6 +158,22 @@ agy       # Antigravity CLI
 
 Both clients read `.mcp.json` at session startup and expand `${VAR:-default}` from the
 environment.
+
+---
+
+## Restoring Postgres
+
+Postgres (`postgres-age`, ConPort's backing store) belongs to the primary compose stack,
+not the MCP catalog, so `dopemux mcp ensure --full` will not bring it back. If it is
+missing, start it from the dopemux-mvp checkout:
+
+```bash
+cd ~/code/dopemux-mvp
+dopemux mcp up --services postgres
+```
+
+The compose project is `dopemux` and data lives in the named volume
+`dopemux_pg_age_data`; do not delete that volume when recreating the container.
 
 ---
 
