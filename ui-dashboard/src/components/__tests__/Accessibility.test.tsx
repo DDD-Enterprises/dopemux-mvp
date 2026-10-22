@@ -327,6 +327,11 @@ test('TaskSequencer.tsx has accessible timer with pluralization', () => {
   expect(content).toContain('const getTimerAriaLabel = (seconds: number): string =>');
 });
 
+test('TaskSequencer primary Start/Pause button renders predictive task title in tooltip', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
+  expect(content).toMatch(/title=\{\s*isTimerRunning\s*\?\s*`Pause task: \$\{currentTask\.title\}`\s*:\s*`Start task: \$\{currentTask\.title\}`\s*\}/);
+});
+
 test('TaskSequencer.tsx displays total remaining duration with accessibility', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('const totalRemainingMinutes = useMemo(() =>');
@@ -419,7 +424,7 @@ test('TaskSequencer pending Start button renders tooltip on hover and keyboard f
   const getPendingListStartButton = () => {
     // List pending/non-current Start controls use "Start task: {title}" and live on
     // list items without aria-current="step". Exclude the primary ritual Start control
-    // (tooltip "Start Ritual") which shares the same accessible-name pattern.
+    // which shares the same accessible-name pattern.
     const candidates = screen.getAllByRole('button', { name: /^Start task: / });
     const pending = candidates.find((btn) => {
       const listItem = btn.closest('li');
