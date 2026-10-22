@@ -5,9 +5,9 @@ allowed-tools: [
   "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__get_next_item",
   "mcp__task-orchestrator__get_context",
-  "mcp__conport__conport_get_context"
+  "mcp__conport__get_context"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:next — Pick the Next Work Item
@@ -99,7 +99,7 @@ Next actions:
 
 ## Phase 5: ConPort Cross-Check (Optional)
 
-If `mcp__conport__conport_get_context` is available, fetch it and look for `current_focus`. If set and matches one of the candidates, mark that candidate with a `(resuming previous focus)` annotation.
+If `mcp__conport__get_context` is available, fetch it and look for `current_focus`. If set and matches one of the candidates, mark that candidate with a `(resuming previous focus)` annotation.
 
 This bridges interrupted sessions — the operator's prior intent surfaces alongside the next-best ranking.
 

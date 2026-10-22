@@ -2,7 +2,7 @@
 description: "Scaffold, validate, or force-track a proof bundle (AGENTS.md §9 + TP-DMX-PROOF-TRACKING-POLICY-001)"
 arguments: "<scaffold|validate|track> <TP-ID> [--strict]"
 allowed-tools: ["Bash", "Read", "Write", "Edit", "Glob", "Grep"]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /proof:bundle — Proof Bundle Lifecycle
