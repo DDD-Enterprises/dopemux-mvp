@@ -652,7 +652,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
               </Typography>
             )}
           </Box>
-          <Tooltip title="Current task progress based on estimate" arrow>
+          <Tooltip
+            title={
+              isOvertime
+                ? `Current task progress: Overtime (+${overtimeMinutes}m)`
+                : `Current task progress: ${progressPercent}% of estimated duration`
+            }
+            arrow
+          >
             <Box
               tabIndex={0}
               sx={{
