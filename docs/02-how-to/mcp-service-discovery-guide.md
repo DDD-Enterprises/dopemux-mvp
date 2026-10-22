@@ -17,6 +17,14 @@ prelude: "Step-by-step guide for adding /info endpoints to MCP servers and using
 
 **Related**: ADR-208 - MCP Configuration Drift Prevention via Service Discovery
 
+> **Current fleet truth**: client transports and URLs come from the catalog,
+> `src/dopemux/mcp/default_catalog.yaml` — not from `/info`. Several examples below
+> predate the current fleet: the `exa` server was retired (ADR-223, commit `65313194a`),
+> and `gpt-researcher` is contractually a stdio server
+> (`docker exec -i dopemux-mcp-gptr-mcp python /app/server.py`). Its port-3009 SSE-style
+> surface is non-contractual (ADR-MCPINT-001 §4). Placeholders like `<port>` stand in
+> for a real server's values.
+
 ## Quick Start
 
 ### For Server Developers
@@ -67,8 +75,9 @@ add_info_endpoint(
     app,
     name="gpt-researcher",
     version="1.0.0",
-    protocol="sse",
-    connection_url="http://localhost:3009/sse",
+    protocol="stdio",  # catalog contract; see default_catalog.yaml `gpt-researcher`
+    connection_command="docker",
+    connection_args=["exec", "-i", "dopemux-mcp-gptr-mcp", "python", "/app/server.py"],
     description="Deep research with comprehensive analysis",
     env_vars={"OPENAI_API_KEY": "${OPENAI_API_KEY:-}"},
     metadata={"role": "research", "priority": "medium"}
@@ -170,7 +179,7 @@ jobs:
     "connection": {
       // SSE:
       "type": "sse",
-      "url": "http://localhost:3009/sse"
+      "url": "http://localhost:<port>/sse"
 
       // OR stdio:
       "type": "stdio",
@@ -317,21 +326,20 @@ For servers that use mcp-proxy (stdio → SSE conversion), we run a **parallel H
 ### Manual Test
 
 ```bash
-# Start server
-docker-compose up -d exa
+# Start the server through `dopemux mcp` — never raw `docker compose up` (AGENTS.md §12)
 
-# Query /info
-curl http://localhost:3008/info | jq
+# Query /info (<info-port> is the server's info port)
+curl http://localhost:<info-port>/info | jq
 
-# Expected output:
+# Expected output shape:
 {
-  "name": "exa",
+  "name": "<server>",
   "version": "1.0.0",
   "mcp": {
     "protocol": "sse",
     "connection": {
       "type": "sse",
-      "url": "http://localhost:3008/sse"
+      "url": "http://localhost:<port>/sse"
     }
   },
   ...
@@ -344,8 +352,8 @@ curl http://localhost:3008/info | jq
 # Run discovery script
 python scripts/generate-claude-config.py --validate
 
-# Should show:
-✅ exa: sse configured
+# Should show, per discovered server:
+✅ <server>: <transport> configured
 ```
 
 ## Troubleshooting
@@ -385,36 +393,19 @@ Review drift and decide:
 
 ## Example Implementations
 
-### ✅ Exa (Completed)
+### ⛔ Exa (retired)
 
-See: `docker/mcp-servers/exa/exa_server.py` lines 66-108
+The exa server was retired (ADR-223, commit `65313194a`); `docker/mcp-servers/exa/`
+and its catalog entry no longer exist.
 
-### 🚧 GPT Researcher (TODO)
+### ⚠️ GPT Researcher (transport mismatch — not a usable example)
 
-```python
-# docker/mcp-servers/gpt-researcher/server.py (ADD THIS)
-
-@mcp.custom_route("/info", methods=["GET"])
-async def service_info(request):
-    from starlette.responses import JSONResponse
-    return JSONResponse({
-        "name": "gpt-researcher",
-        "version": "1.0.0",
-        "mcp": {
-            "protocol": "sse",
-            "connection": {
-                "type": "sse",
-                "url": "http://localhost:3009/sse"
-            },
-            "env": {
-                "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
-                "TAVILY_API_KEY": "${TAVILY_API_KEY:-}"
-            }
-        },
-        "health": "/health",
-        "description": "Deep research with comprehensive analysis"
-    })
-```
+`docker/mcp-servers/gptr-mcp/wrapper.py` defines an `/info` route, but it advertises
+an SSE connection on port 3009, while the catalog's contractual transport is stdio
+(`docker exec -i dopemux-mcp-gptr-mcp python /app/server.py`). The image's `CMD` runs
+`/app/server.py` directly rather than `wrapper.py`, so the route is not proven to be
+served. Until the `/info` payload matches the catalog, configure `gpt-researcher` from
+the catalog (`dopemux mcp sync-globals`), not from `/info`.
 
 ### 🚧 Desktop Commander (TODO)
 
@@ -439,7 +430,7 @@ Infrastructure changes → /info endpoint auto-updated → Generate script → N
 
 ## Next Steps
 
-1. **Immediate**: Add /info to 3-4 more servers (gpt-researcher, desktop-commander, pal)
+1. **Immediate**: Add /info to more servers (desktop-commander, pal) and align the gpt-researcher `/info` payload with its catalog transport
 1. **Short-term**: Generate and validate config, commit to repo
 1. **Long-term**: Add CI validation, service registry dashboard
 
