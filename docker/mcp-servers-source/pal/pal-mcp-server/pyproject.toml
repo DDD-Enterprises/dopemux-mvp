@@ -4,7 +4,7 @@ version = "9.8.2"
 description = "AI-powered PAL MCP server with multiple model providers"
 requires-python = ">=3.10"
 dependencies = [
-    "mcp>=1.28.1,<2",
+    "mcp>=2.3.0,<3",
     "google-genai>=1.19.0",
     "openai>=1.66.0",
     "pydantic>=2.0.0",
@@ -136,5 +136,5 @@ build-backend = "setuptools.build_meta"
 [tool.uv]
 override-dependencies = [
     "cryptography>=50.0.0",
-    "mcp>=1.28.1,<2",
+    "mcp>=2.3.0,<3",
 ]
