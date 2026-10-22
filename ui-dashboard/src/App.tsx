@@ -178,6 +178,8 @@ function DashboardApp() {
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const hydrationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [copiedNotificationId, setCopiedNotificationId] = useState<string | null>(null);
+  const copyNotificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [lastSignalTime, setLastSignalTime] = useState<Date | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
 
@@ -201,6 +203,31 @@ function DashboardApp() {
   const handleDismissNotification = useCallback((id: string) => {
     setNotifications((current) => current.filter((n) => n.id !== id));
   }, []);
+
+  const handleCopyNotification = useCallback(
+    async (notification: Notification) => {
+      if (!navigator.clipboard?.writeText) {
+        setErrorMessage('Clipboard API is not supported in this browser or context.');
+        return;
+      }
+      const label = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
+      try {
+        await navigator.clipboard.writeText(label);
+        setCopiedNotificationId(notification.id);
+        if (copyNotificationTimeoutRef.current) {
+          clearTimeout(copyNotificationTimeoutRef.current);
+        }
+        copyNotificationTimeoutRef.current = setTimeout(() => {
+          setCopiedNotificationId(null);
+          copyNotificationTimeoutRef.current = null;
+        }, 2000);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        setErrorMessage(`Failed to copy signal message: ${errorMsg}`);
+      }
+    },
+    []
+  );
 
   const handleCopyRecommendation = useCallback(async () => {
     if (!navigator.clipboard?.writeText) {
@@ -238,6 +265,10 @@ function DashboardApp() {
       if (hydrationTimeoutRef.current) {
         clearTimeout(hydrationTimeoutRef.current);
         hydrationTimeoutRef.current = null;
+      }
+      if (copyNotificationTimeoutRef.current) {
+        clearTimeout(copyNotificationTimeoutRef.current);
+        copyNotificationTimeoutRef.current = null;
       }
     };
   }, []);
@@ -851,28 +882,63 @@ function DashboardApp() {
               {notifications.map((notification) => {
                 const severityColor = getNotificationColor(notification.notificationType);
                 const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
+                const isNotificationCopied = copiedNotificationId === notification.id;
                 return (
                   <Fade in={true} key={notification.id}>
-                    <Tooltip title="Dismiss notification" arrow describeChild>
+                    <Tooltip
+                      title={isNotificationCopied ? 'Signal message copied!' : 'Click chip to copy signal message'}
+                      arrow
+                    >
                       <Chip
-                        icon={getNotificationIcon(notification.notificationType)}
+                        icon={
+                          isNotificationCopied ? (
+                            <Check size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
+                          ) : (
+                            getNotificationIcon(notification.notificationType)
+                          )
+                        }
                         label={notificationLabel}
-                        aria-label={notificationLabel}
+                        aria-label={
+                          isNotificationCopied
+                            ? `Copied signal message: ${notificationLabel}`
+                            : `Copy signal message: ${notificationLabel}`
+                        }
                         variant="outlined"
+                        onClick={() => handleCopyNotification(notification)}
                         onDelete={() => handleDismissNotification(notification.id)}
-                        deleteIcon={<X size={14} aria-hidden="true" />}
-                        tabIndex={0}
+                        deleteIcon={<X size={14} aria-label="Dismiss notification" />}
                         sx={{
                           maxWidth: '100%',
-                          borderColor: alpha(severityColor, 0.6),
-                          color: severityColor,
+                          borderColor: isNotificationCopied
+                            ? brandTokens.colors.serumMint
+                            : alpha(severityColor, 0.6),
+                          color: isNotificationCopied ? brandTokens.colors.serumMint : severityColor,
                           backgroundColor: alpha(severityColor, 0.08),
+                          cursor: 'copy',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            backgroundColor: alpha(severityColor, 0.15),
+                            borderColor: isNotificationCopied
+                              ? brandTokens.colors.serumMint
+                              : severityColor,
+                          },
                           '& .MuiChip-deleteIcon': {
                             color: alpha(severityColor, 0.7),
                             '&:hover': {
                               color: severityColor,
                             },
                           },
+                          ...(isNotificationCopied && {
+                            animation: 'signal-copy-pulse 0.4s ease-out',
+                            '@keyframes signal-copy-pulse': {
+                              '0%': { transform: 'scale(1)' },
+                              '50%': {
+                                transform: 'scale(1.05)',
+                                boxShadow: `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.4)}`,
+                              },
+                              '100%': { transform: 'scale(1)' },
+                            },
+                          }),
                         }}
                       />
                     </Tooltip>
