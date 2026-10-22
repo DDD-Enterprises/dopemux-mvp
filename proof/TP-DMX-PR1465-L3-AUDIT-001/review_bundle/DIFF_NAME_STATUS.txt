@@ -1,0 +1,3 @@
+M	src/dopemux/commands/mcp_commands.py
+M	src/dopemux/mcp/fleet_catalog.py
+A	tests/unit/test_mcp_fleet_catalog_profile_quarantine.py
