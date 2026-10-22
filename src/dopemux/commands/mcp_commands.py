@@ -1005,6 +1005,18 @@ def mcp_generate_cmd(
             )
         except profile_policy.ProfilePolicyError as exc:
             raise click.ClickException(str(exc)) from exc
+        # Fail closed before any write: decision-required / planned-active servers
+        # must never reach a startable generated output (AGENTS.md §12.5).
+        quarantine_errors = (
+            fleet_catalog.validate_decision_required_generated_config_quarantine(
+                catalog, outputs
+            )
+        )
+        if quarantine_errors:
+            raise click.ClickException(
+                f"decision-required quarantine gate failed for profile `{resolved}`:\n"
+                + "\n".join(f"- {error}" for error in quarantine_errors)
+            )
 
     if not apply:
         console.logger.info("[info]Dry-run only. No files were written.[/info]")
