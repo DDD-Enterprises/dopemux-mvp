@@ -1,0 +1,147 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-W05-DOCS-001",
+  "project": "dopemux-mvp",
+  "target": "Write the how-to for the Memory Bridge mod at docs/02-how-to/memory-bridge.md, accurate to what the dispatched workstreams actually built and explicit about what stayed NOT_BUILT.",
+  "invariants": [
+    "C01 Shared workspace: other workers may edit this checkout. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in the execution worktree .worktrees/memory-bridge-001 on feat/memory-bridge-001 (base 93050d135ffc2592000c1d0edef82b2912935525); verify `git rev-parse --show-toplevel` and the branch before the first write.",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env*, credential files, tokens or keys; never write a secret into a file, test fixture or return. Network use is limited to what this packet names.",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Anything live that you did not observe is NOT_RUN. The conport, dope-memory and gpt-researcher MCP connectors were unreachable when this packet was issued: do not invent endpoints, tool names, request fields or ports. Use only interfaces this packet names or that you confirm in source with file:line; otherwise write UNKNOWN.",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers (each with the action that clears it), advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when: a needed file is outside your write_surface; a contract-sensitive surface (schema, hook registration, MCP manifest) would change; a required fact is UNKNOWN; or validation still fails after one fix attempt for the same cause (no cheap-model repair loop).",
+    "C08 Authority order: this packet, then runtime code, then schemas, then tests, then docs. Docs and the opportunity map are not evidence of runtime behaviour.",
+    "Gate: dispatch only if the team lead records, from proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md, the GATE_TABLE verdicts that this packet's dispatch rule names; UNKNOWN counts as NO_GO. The team lead applies the macro's dispatch table mechanically and may not reinterpret it. A depends_on entry for a workstream the gate did not dispatch is satisfied by that workstream's recorded SKIPPED_BY_GATE state (the dependency exists to serialize writes to one file, not to require the skipped work).",
+    "G05 Dispatch rule: W05 runs after every dispatched build workstream (W02, and W03/W04 if the gate dispatched them) is committed. It documents what was built, not what was planned; a sub-feature the gate or a stop left NOT_BUILT is documented as not built, with the blocker.",
+    "D01 Derive every statement from the committed files under plugins/dopemux-memory-bridge/ and from W01_FINDINGS.md; mark live behaviour NOT_RUN / not verified. Do not state a port, option name or event type that is not in the code.",
+    "D02 Follow the docs conventions: kebab-case filename, YAML frontmatter required by docs-frontmatter-guard (run `.venv/bin/python scripts/docs_frontmatter_guard.py --help` and then per its usage on the new file), a Diataxis how-to shape, under 150 lines.",
+    "D03 Cover: what it records and where; how to load the mod (`--plugin-dir plugins/dopemux-memory-bridge`); the options; the status line and band; replay and recap (or their NOT_BUILT state); identity configuration; the marker rule for decisions; privacy; the surfaces caveat; troubleshooting when a store is down; that nothing is written to the stores except through the replay sinks that were built."
+  ],
+  "depends_on": [
+    "TP-DMX-MEMBRIDGE-W02-OUTBOX-BAND-001",
+    "TP-DMX-MEMBRIDGE-W03-REPLAY-001",
+    "TP-DMX-MEMBRIDGE-W04-RECAP-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/memory-bridge-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(memory-bridge): how-to for the dopemux-memory-bridge mod",
+    "allowlist": [
+      "docs/02-how-to/memory-bridge.md"
+    ],
+    "verify": [
+      ".venv/bin/pre-commit run --files docs/02-how-to/memory-bridge.md",
+      "git diff --name-only | sort   # equals the allowlist"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod (outbox, status count, welcome-back band; gated replay and recap)",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001. Draft until the single final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W05-S1",
+      "task": "Read the committed mod, its README and W01_FINDINGS.md",
+      "requirements": [
+        "Derive every statement from code."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "facts match the committed files"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+        "plugins/dopemux-memory-bridge/hooks/hooks.json",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md",
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md"
+      ]
+    },
+    {
+      "id": "W05-S2",
+      "task": "Write the how-to and pass the docs hooks",
+      "requirements": [
+        "Only the allowlisted file."
+      ],
+      "commands": [
+        ".venv/bin/pre-commit run --files docs/02-how-to/memory-bridge.md"
+      ],
+      "expected_files": [
+        "docs/02-how-to/memory-bridge.md"
+      ],
+      "validation": [
+        "docs hooks pass"
+      ],
+      "context_files": [
+        "docs/02-how-to/memory-bridge.md"
+      ]
+    },
+    {
+      "id": "W05-S3",
+      "task": "Return",
+      "requirements": [
+        "Summary, hook results, advisor_calls, files_written, observed_model."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001",
+  "workstream_id": "W05",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-haiku-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [
+      {
+        "runner": "claude-code-agent",
+        "model": "claude-sonnet-5-5",
+        "effort": "UNKNOWN"
+      }
+    ],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "docs/02-how-to/memory-bridge.md"
+  ],
+  "canonical_writers": [
+    "W05-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-docs"
+  ],
+  "rollback_boundary": "git revert <W05 commit> on feat/memory-bridge-001 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

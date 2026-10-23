@@ -1,0 +1,337 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R2",
+  "objective": "Memory Bridge R2 (opportunity map builds M3 and M4), sized from the completed W01 investigation of R1 (findings sha256 ccc05d92571130d0aed95adc1216214585ebaf4eee6f65c2c42f2e18cd9c70bd). Builds only what W01 unblocked: a per-session local JSONL outbox, a pending-count status line and a welcome-back band (W02); replay of task-completion and manual-note rows to the local capture ledger plus a bridge-note command (W03); a how-to (W04). NOT built, by W01 verdict: the session-start recap (identity not fail-closed, P3), decision.logged (doctrine), dope-memory REST replay (not idempotent), any ConPort access. Home: plugins/dopemux-memory-bridge/. R1 (MACRO-DMX-MEMORY-BRIDGE-001) is preserved unchanged; its W01 result is an input, not re-run.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants C01-C09 and A01-A03 in each child. Order of authority: runtime code, then schemas, then tests, then docs. PROPOSED macro allowances (no schema field exists; enforced by the team lead; caps, not forecasts): elapsed wall time 6 h from the authorization to a frozen head, excluding the operator-gated audit; subagent tokens 3,000,000 in total; child dispatches 5 (W02, W03, W04 plus at most 2 retries or fallbacks); team-lead correction rounds 2 across the macro; intermediate model audits 0; advisor calls 0 for every child and for the coordinator; the final independent audit is 1 call outside this budget on an operator-approved route. Hitting any cap: stop dispatching, preserve uncommitted diffs, return NEEDS_SUPERVISOR with the counters (duration_ms, subagent_tokens, tool_uses from each completion notice).",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "R1 was authorized verbatim on 2026-10-23 (proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/AUTHORIZATION_RECORD.md); that authorization covers R1 only. R2 needs AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R2_EXECUTION=YES"
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "sign",
+      "push",
+      "open_pr"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R2_EXECUTION=YES absent",
+      "worktree HEAD != fresh origin/main at start, or origin/main moved and a cited file changed",
+      "W01_FINDINGS.md sha256 differs from the value pinned in the children",
+      "any write outside a child allowlist",
+      "plugin-authoring declaration file not supplied to a mod workstream",
+      "any child calls the advisor tool or delegates (advisor budget 0)",
+      "any HTTP call, dope-memory or ConPort access, or live write from a child or a test",
+      "a workstream exceeds its elapsed, token, tool-use or attempt cap (A01-A03), or the macro exceeds its 6 h, 3,000,000-token or 5-dispatch cap",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "8340e49ad491d559421dded0e3d849ff4873f7202d0cf1e3427dae798491c1e7"
+    },
+    "authority_ceiling": "Child-specific intersection only; the team lead alone commits (one commit per workstream, explicit pathspec). Push, PR, signing and the final-audit route are separate operator gates and are not granted by this packet.",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record and ct validate-binding per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "86b499a54a7817a0d28511197c6d783e1c1833d40004dbe199a7aa07096c4d61"
+      },
+      "objective": "No-store core of plugins/dopemux-memory-bridge/: per-session JSONL outbox ring, capture on turn.complete / session.compact / session.end plus TodoWrite completions, pending-count status line, welcome-back band that wraps next(e).",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+        "plugins/dopemux-memory-bridge/hooks/hooks.json",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md",
+        "plugins/dopemux-memory-bridge/types/index.d.ts"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-mod"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001-R2",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "c108e09b25b035230639ca351d440387b872c917204599284e601b1f3de47c8c"
+      },
+      "objective": "Replay task-completion and manual-note rows to the local capture ledger via `dopemux capture emit` (serial, bounded, idempotent, dead-row path) and the bridge-note command. No HTTP, dope-memory REST, ConPort or recap.",
+      "dependencies": [
+        "W02"
+      ],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+        "plugins/dopemux-memory-bridge/hooks/hooks.json",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md",
+        "plugins/dopemux-memory-bridge/types/index.d.ts"
+      ],
+      "canonical_writers": [
+        "W03-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-mod"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W03 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001-R2",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W04",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W04/TASK_PACKET.json",
+        "sha256": "be814deba35cbf90a78a34a39f28647b13e824a9f78243ff5ff42eae6de5b273"
+      },
+      "objective": "How-to docs at docs/02-how-to/memory-bridge.md with an explicit 'Not built' section.",
+      "dependencies": [
+        "W02",
+        "W03"
+      ],
+      "parallel_group": "P3",
+      "mutating": true,
+      "write_surface": [
+        "docs/02-how-to/memory-bridge.md"
+      ],
+      "canonical_writers": [
+        "W04-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-docs"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W04 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-haiku-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": [
+          {
+            "runner": "claude-code-agent",
+            "model": "claude-sonnet-5-5",
+            "effort": "UNKNOWN"
+          }
+        ]
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001-R2",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-BUILD",
+      "requires": [
+        "W02",
+        "W03"
+      ],
+      "condition": "plugin validate and test pass, no HTTP or dope-memory/ConPort access in the mod, diffs inside allowlists, counters inside the A01 caps",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J02-FREEZE",
+      "requires": [
+        "W02",
+        "W03",
+        "W04"
+      ],
+      "condition": "docs hooks pass; change-contract preflight and git diff --check pass; freeze the subject for the single final L2 audit (operator-gated route)",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit per frozen L2 subject, different family from the claude-code-agent implementers, route operator-gated (agy gemini-3.1-pro-high absent; gemini-4-argon-high 429 until about 2026-10-24T03:30Z; Grok CLI tool-less recipe needs explicit approval). Copy every audit artifact, including raw streams, into the flat proof review bundle immediately. PROPOSED macro allowances (no schema field exists; enforced by the team lead; caps, not forecasts): elapsed wall time 6 h from the authorization to a frozen head, excluding the operator-gated audit; subagent tokens 3,000,000 in total; child dispatches 5 (W02, W03, W04 plus at most 2 retries or fallbacks); team-lead correction rounds 2 across the macro; intermediate model audits 0; advisor calls 0 for every child and for the coordinator; the final independent audit is 1 call outside this budget on an operator-approved route. Hitting any cap: stop dispatching, preserve uncommitted diffs, return NEEDS_SUPERVISOR with the counters (duration_ms, subagent_tokens, tool_uses from each completion notice).",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "allowance_exceeded",
+      "child_advisor_call",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}
