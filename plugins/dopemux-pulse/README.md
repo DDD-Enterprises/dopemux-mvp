@@ -21,14 +21,18 @@ two things in a session:
     anything else is refused and nothing starts). Starting one while another
     runs restarts it.
   - `/break` ends the block and the continuous-focus count.
-  - `/done` finishes the block (says so if none is running).
+  - `/done` finishes the block and also ends the continuous-focus count (says
+    so if none is running).
   - A band above the prompt shows `🎯 Focus: 15 min left of 25` while a block
     runs and draws nothing of its own when idle. A toast fires at the limit,
-    and a gentler nudge after 90 minutes of continuous focus (the count runs
-    from the first block after a break, so chained blocks do not reset it).
+    and a gentler nudge after 90 minutes of continuous focus (the count starts
+    at the first `/pulse-focus` and resets on `/break` or `/done`; chained
+    blocks do not reset it).
 
 `/focus` is a name Claude Code itself ships and `$.command.register` refuses it
 (`claude plugin validate` reports it), so the focus command is `/pulse-focus`.
+If Claude Code refuses to register one of the three commands, a toast
+`dopemux-pulse: /<name> could not be registered` is shown.
 
 ## Load it
 
@@ -52,6 +56,10 @@ against the Dopemux ADHD engine. It needs the engine's `energy` and `attention`
 keys; the `energy_level` / `attention_state` aliases are accepted too. Without a
 running engine the focus clock still works and the status line says the engine
 is unreachable.
+
+While a request is outstanding the mod starts no other. A hung engine shows
+`unreachable` after 2 seconds, and polling resumes once the abandoned request
+settles; an engine that never settles it keeps the status line on `unreachable`.
 
 ## Limits
 

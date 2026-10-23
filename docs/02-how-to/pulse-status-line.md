@@ -5,7 +5,7 @@ type: how-to
 owner: '@hu3mann'
 author: 'claude-code-agent (claude-haiku-5-5)'
 date: '2026-10-21'
-last_review: '2026-10-21'
+last_review: '2026-10-23'
 next_review: '2027-01-19'
 prelude: How to load the dopemux-pulse mod, read its status line and focus band, use the focus commands, and diagnose an unreachable ADHD engine.
 ---
@@ -47,8 +47,7 @@ Example:
 | `🧠 focused` | Engine `attention` (or `attention_state` alias) | `parseState` |
 | `⏱ 37m` | Session minutes counted by the mod from session start | `session.start` handler |
 
-The engine's own `session_minutes` value is not used. The engine returns it, but
-nothing in the engine sets it, so it stays `0` (see section 5).
+The engine's `session_minutes` value is not used (see section 5).
 
 If a field is missing from an otherwise valid answer, the mod shows `?` in its
 place (for example `🧠 ?`).
@@ -59,14 +58,15 @@ place (for example `🧠 ?`).
 |---------|--------|
 | `/pulse-focus [minutes]` | Start a block. Default 25; whole numbers 5-120 only. Starting while one runs restarts it. |
 | `/break` | End the block and clear the continuous-focus count. |
-| `/done` | Finish the block. Says `No focus block is running.` when none runs. |
+| `/done` | Finish the block and also clear the continuous-focus count. Says `No focus block is running.` when none runs. |
 
 Anything other than a whole number from 5 to 120 is refused with
 `Focus minutes must be a whole number from 5-120 (default 25). Nothing started.`
 Examples of refused input: `4`, `121`, `12.5`, `abc`.
 
-The command is `/pulse-focus`, not `/focus`. Claude Code ships `/focus` and
-refuses to register a plugin command under that name.
+The command is `/pulse-focus`, not `/focus`, which Claude Code ships and refuses.
+If Claude Code refuses to register one of the three commands, a toast
+`dopemux-pulse: /<name> could not be registered` is shown.
 
 ### What you see while a block runs
 
@@ -95,8 +95,9 @@ container the engine listens on `8095`.
   timeout. This is the only request it makes. It writes no files and runs no
   processes.
 - **Keys:** the engine returns `energy`, `attention`, `session_minutes` and
-  `user_id`. Since commit `3dbced397` it also returns the aliases `energy_level`
-  and `attention_state`, with the same values. The mod prefers the primary keys.
+  `user_id`. Its `/state` handler also returns `energy_level` and
+  `attention_state`, with the same values. An older engine returns only `energy`
+  and `attention`. The mod prefers the primary keys either way.
 - **Energy and attention are proxy data.** The engine infers them from hook
   activity, not from measurements of the person. Treat them as a rough signal.
 - **Fallback answers look healthy.** If the engine's handler raises, it still
@@ -123,7 +124,10 @@ down (`ADHD engine unreachable` or `ADHD engine state malformed`), and once when
 it comes back (`ADHD engine is back`). An engine that was never up shows only the
 status line, with no toast.
 
-Focus timers keep running while the engine is down.
+Focus timers keep running while the engine is down. While a request is
+outstanding the mod starts no other; a hung engine shows `unreachable` after 2
+seconds, and polling resumes once the abandoned request settles. An engine that
+never settles it keeps the status line on `unreachable`.
 
 ## 7. Verify the mod
 
