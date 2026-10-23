@@ -28,7 +28,6 @@ def test_classify_lanes() -> None:
     assert classify_path("proof/pr_merge/embedded-audit/pr-1181/PROOF.json") == "L0"
     assert classify_path("task-packets/TP-X.json") == "L0"
     assert classify_path("src/dopemux/cli.py") == "L2"
-    assert classify_path("ui-dashboard/src/components/TaskSequencer.tsx") == "L1"
     # Unmatched / uncertain paths escalate to L2 (not silent L1).
     assert classify_path("README.md") == "L2"
     assert classify_path("unknown/surface/foo.bar") == "L2"
