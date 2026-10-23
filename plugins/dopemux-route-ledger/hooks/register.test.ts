@@ -9,7 +9,7 @@ import {
   parseConfig,
   summarize,
   toBindingFields,
-} from './register.tsx'
+} from './register'
 
 const T0 = 1_792_000_000_000
 const DEFAULT_DIR = '.control-tower/state/route-ledger'
