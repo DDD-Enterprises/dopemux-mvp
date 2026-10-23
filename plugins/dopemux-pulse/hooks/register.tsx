@@ -35,6 +35,7 @@ type Pulse = {
   sessionStartedAt: number | undefined
   isEnded: boolean
   isPolling: boolean
+  isFetching: boolean
   view: EngineView
   wasUp: boolean | undefined
   pollTimer: Timer | undefined
@@ -132,17 +133,40 @@ async function renderStatus($: EngineInterface, s: Pulse): Promise<void> {
   $.ui.status(parts.join(' · '))
 }
 
+// The 2 s timeout only decides what the status line shows. `$.http.fetch` has
+// no timeout or abort option, so the request it gives up on is NOT cancelled:
+// `isFetching` stays set until that request settles, and no poll starts a second
+// one meanwhile. Trade-off: if the host never settles an abandoned request,
+// polling pauses and the status line stays "unreachable" until it does (the
+// host's own network timeout is unknown). The late answer is discarded.
 async function fetchState($: EngineInterface, s: Pulse): Promise<EngineView> {
   if (s.baseUrl === undefined) return { kind: 'bad-url' }
   let timer: Timer | undefined
   try {
-    const timeout = new Promise<'timeout'>(resolve => {
-      timer = $.clock.after(FETCH_TIMEOUT_MS, () => resolve('timeout'))
+    // Handlers are attached here, at creation, so a late rejection is handled
+    // whether or not the race still waits on this promise.
+    const answer: Promise<EngineView> = $.http
+      .fetch(`${s.baseUrl}/api/v1/state`)
+      .then(
+        (response): EngineView => {
+          try {
+            if (!response.ok) return { kind: 'down', httpStatus: response.status }
+            return parseState(response.text)
+          } catch {
+            return { kind: 'down' }
+          }
+        },
+        (): EngineView => ({ kind: 'down' }),
+      )
+      .then(view => {
+        s.isFetching = false
+        return view
+      })
+    s.isFetching = true
+    const timeout = new Promise<EngineView>(resolve => {
+      timer = $.clock.after(FETCH_TIMEOUT_MS, () => resolve({ kind: 'down' }))
     })
-    const response = await Promise.race([$.http.fetch(`${s.baseUrl}/api/v1/state`), timeout])
-    if (response === 'timeout') return { kind: 'down' }
-    if (!response.ok) return { kind: 'down', httpStatus: response.status }
-    return parseState(response.text)
+    return await Promise.race([answer, timeout])
   } catch {
     return { kind: 'down' }
   } finally {
@@ -151,7 +175,7 @@ async function fetchState($: EngineInterface, s: Pulse): Promise<EngineView> {
 }
 
 async function poll($: EngineInterface, s: Pulse): Promise<void> {
-  if (s.isEnded || s.isPolling) return
+  if (s.isEnded || s.isPolling || s.isFetching) return
   s.isPolling = true
   try {
     const next = await fetchState($, s)
@@ -175,6 +199,23 @@ async function poll($: EngineInterface, s: Pulse): Promise<void> {
     // A failed poll must never surface.
   } finally {
     s.isPolling = false
+  }
+}
+
+// One refused registration must not stop the rest, but the person is told.
+// The text is fixed and carries only the literal command name, never error text.
+async function registerCommand(
+  $: EngineInterface,
+  spec: { name: string; description: string; argumentHint?: string },
+): Promise<void> {
+  try {
+    await $.command.register(spec)
+  } catch {
+    try {
+      $.ui.toast(`dopemux-pulse: /${spec.name} could not be registered`)
+    } catch {
+      // never surface
+    }
   }
 }
 
@@ -204,6 +245,7 @@ export const register: Register = (on, options) => {
     sessionStartedAt: undefined,
     isEnded: false,
     isPolling: false,
+    isFetching: false,
     view: { kind: 'connecting' },
     wasUp: undefined,
     pollTimer: undefined,
@@ -218,19 +260,16 @@ export const register: Register = (on, options) => {
       await renderStatus($, s)
 
       // One refused registration must not stop the status line.
-      await $.command
-        .register({
-          name: 'pulse-focus',
-          description: 'Start a focus block (5-120 minutes, default 25).',
-          argumentHint: '[minutes]',
-        })
-        .catch(() => undefined)
-      await $.command
-        .register({ name: 'break', description: 'End the focus block and take a break.' })
-        .catch(() => undefined)
-      await $.command
-        .register({ name: 'done', description: 'Finish the focus block.' })
-        .catch(() => undefined)
+      await registerCommand($, {
+        name: 'pulse-focus',
+        description: 'Start a focus block (5-120 minutes, default 25).',
+        argumentHint: '[minutes]',
+      })
+      await registerCommand($, {
+        name: 'break',
+        description: 'End the focus block and take a break.',
+      })
+      await registerCommand($, { name: 'done', description: 'Finish the focus block.' })
 
       // The first poll must not hold the session start; its answer lands in
       // the status line when it arrives.

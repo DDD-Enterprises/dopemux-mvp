@@ -24,10 +24,12 @@ type Behaviour =
   | { kind: 'status'; code: number }
   | { kind: 'down' }
   | { kind: 'slow' }
+  | { kind: 'slow-then-deny' }
 
 // Everything beneath the plugin is mocked here: the clock, the engine's HTTP
 // answer, and the display calls the plugin makes (recorded, never drawn).
-function harness($: Engine, on: On, first: Behaviour) {
+// `denyCommand` makes `command.register` refuse that one name.
+function harness($: Engine, on: On, first: Behaviour, denyCommand?: string) {
   const clock: MockClock = mock.clock(on)
   const world = {
     clock,
@@ -50,6 +52,7 @@ function harness($: Engine, on: On, first: Behaviour) {
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.end', (_, e) => ({ sessionId: e.sessionId }))
   on('command.register', (_, e) => {
+    if (e.name === denyCommand) return { deny: 'refused' }
     world.registered.push(e.name)
     return { value: { command: e.name } }
   })
@@ -65,6 +68,10 @@ function harness($: Engine, on: On, first: Behaviour) {
     world.urls.push(e.url)
     const b = world.behaviour
     if (b.kind === 'down') return { deny: 'connection refused' }
+    if (b.kind === 'slow-then-deny') {
+      await clock.sleep(10 * MIN)
+      return { deny: 'connection reset' }
+    }
     if (b.kind === 'slow') await clock.sleep(10 * MIN)
     const status = b.kind === 'status' ? b.code : 200
     const text =
@@ -160,6 +167,88 @@ test('a hung engine times out instead of wedging the poll', async ($, on) => {
   await h.start()
   await h.world.clock.advance(2_100)
   expect(h.world.status).toBe('🎯 idle · 🔌 ADHD engine unreachable · ⏱ 0m')
+})
+
+// F1: the 2 s timeout only changes what the status line shows. The request it
+// gave up on is still outstanding, and no poll may start another until it ends.
+test('T1: a timed-out request still pending holds the guard, no second fetch', async ($, on) => {
+  const h = harness($, on, { kind: 'slow' })
+  await h.start()
+  await h.world.clock.advance(2_100)
+  expect(h.world.status).toBe('🎯 idle · 🔌 ADHD engine unreachable · ⏱ 0m')
+  expect(h.world.urls).toHaveLength(1)
+
+  await h.world.clock.advance(5 * MIN)
+  expect(h.world.urls).toHaveLength(1)
+})
+
+test('T2: once the abandoned request settles, polling resumes and a healthy answer shows', async ($, on) => {
+  const h = harness($, on, { kind: 'slow' })
+  await h.start()
+  await h.world.clock.advance(2_100)
+  h.set(HEALTHY)
+
+  // The engine is healthy again, but the first request is still outstanding.
+  await h.world.clock.advance(7 * MIN)
+  expect(h.world.urls).toHaveLength(1)
+  expect(h.world.status).toBe('🎯 idle · 🔌 ADHD engine unreachable · ⏱ 0m')
+
+  // Past the settle (10 min) and a tick: not pinned to an exact count.
+  await h.world.clock.advance(12 * MIN - 2_100 - 7 * MIN)
+  expect(h.world.urls.length).toBeGreaterThanOrEqual(2)
+  expect(h.world.status).toMatch(/⚡ medium · 🧠 focused/)
+
+  // The stale answer of the abandoned request was never shown or toasted; the
+  // only toast is the recovery one, from the healthy poll after the settle.
+  expect(h.world.statuses.some(t => /malformed/.test(t ?? ''))).toBe(false)
+  expect(h.world.toasts).toEqual(['ADHD engine is back'])
+})
+
+test('T3: a request that is refused late raises nothing and changes nothing', async ($, on) => {
+  // An unhandled rejection is not observable from here (no `process` in the
+  // sandbox); the runner itself fails the file with "a rejection nothing
+  // handled", so a late deny that escaped would turn this file red.
+  const h = harness($, on, { kind: 'slow-then-deny' })
+  await h.start()
+  await h.world.clock.advance(2_100)
+  expect(h.world.status).toBe('🎯 idle · 🔌 ADHD engine unreachable · ⏱ 0m')
+  const statuses = h.world.statuses.length
+
+  // Up to just past the 10 min settle: the late deny lands and writes nothing.
+  // At most the tick after the settle starts one new (again pending) request,
+  // whose own 2 s timeout has not yet elapsed.
+  await h.world.clock.advance(10 * MIN - 2_100 + 1_000)
+  expect(h.world.urls.length).toBeLessThanOrEqual(2)
+  expect(h.world.statuses).toHaveLength(statuses)
+  expect(h.world.toasts).toEqual([])
+})
+
+test('T4: a session that ends while a request is pending stays silent when it settles', async ($, on) => {
+  const h = harness($, on, { kind: 'slow' })
+  await h.start()
+  await h.world.clock.advance(2_100)
+  await h.end()
+
+  const urls = h.world.urls.length
+  const statuses = h.world.statuses.length
+  const toasts = h.world.toasts.length
+  await h.world.clock.advance(15 * MIN)
+
+  expect(h.world.urls).toHaveLength(urls)
+  expect(h.world.statuses).toHaveLength(statuses)
+  expect(h.world.toasts).toHaveLength(toasts)
+})
+
+// F6: a refused registration is told to the person, once per name, and the
+// rest of the setup carries on.
+test('T5: a refused command registration is toasted and the rest still starts', async ($, on) => {
+  const h = harness($, on, HEALTHY, 'break')
+  await h.start()
+
+  expect(h.world.registered).toEqual(['pulse-focus', 'done'])
+  expect(h.world.toasts).toEqual(['dopemux-pulse: /break could not be registered'])
+  expect(h.world.urls).toHaveLength(1)
+  expect(h.world.status).toBe('🎯 idle · ⚡ medium · 🧠 focused · ⏱ 0m')
 })
 
 test('toasts once on up to down and once on recovery, not every poll', async ($, on) => {
