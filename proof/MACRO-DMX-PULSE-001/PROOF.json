@@ -1,5 +1,6 @@
 {
   "tp_id": "MACRO-DMX-PULSE-001",
+  "packet_id": "MACRO-DMX-PULSE-001",
   "tp_path": "proof/MACRO-DMX-PULSE-001/review_bundle/MACRO_PACKET.json",
   "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/pulse-001",
   "branch": "feat/pulse-001",
