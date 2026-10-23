@@ -1,0 +1,40 @@
+{
+  "name": "dopemux-route-ledger",
+  "version": "0.1.0",
+  "description": "Route ledger for Claude Code: records the model each Agent call requests (warning when none is pinned) and the model and advisor server-tool-uses each model step reports, as JSONL receipts a supervisor can merge into an ExecutionBinding. Read-only: it never rewrites, denies or retries a call.",
+  "userConfig": {
+    "receiptDir": {
+      "type": "string",
+      "title": "Receipt directory",
+      "description": "Where receipt files (<sessionId>.jsonl) are written. The default is used only when .control-tower/state exists; an explicit directory is created on first write. A path containing a .. segment disables receipts.",
+      "default": ".control-tower/state/route-ledger"
+    },
+    "unpinnedAgent": {
+      "type": "string",
+      "title": "Unpinned Agent calls",
+      "description": "warn: toast once for each Agent call with no model pinned (forks excepted). off: record only.",
+      "options": ["warn", "off"],
+      "default": "warn"
+    },
+    "childAdvisorBudget": {
+      "type": "number",
+      "title": "Advisor calls allowed per child agent",
+      "description": "Whole number. 0 (default) means a child's first advisor call exceeds the budget; a negative number disables the check.",
+      "default": 0
+    },
+    "sessionAdvisorBudget": {
+      "type": "number",
+      "title": "Advisor calls allowed per session",
+      "description": "Whole number. -1 (default) turns the session budget off.",
+      "default": -1
+    },
+    "maxReceiptsPerFile": {
+      "type": "number",
+      "title": "Receipts per file",
+      "description": "Whole number from 50 to 5000 (default 500); a new <sessionId>.<n>.jsonl segment starts after this many.",
+      "default": 500,
+      "min": 50,
+      "max": 5000
+    }
+  }
+}

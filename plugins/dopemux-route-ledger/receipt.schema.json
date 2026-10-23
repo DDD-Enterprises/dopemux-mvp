@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "dopemux-route-ledger receipt",
+  "$comment": "One JSON object per line of <receiptDir>/<sessionId>.jsonl (rolled segments: <sessionId>.<n>.jsonl, n from 1). seq runs from 0 per session and continues after a hot reload. recorded_at is RFC 3339 UTC from $.clock.now(); started_at and ended_at of an advisor_call are $.clock.now() epoch milliseconds exactly as the engine gave them. agent_id is the loop the event belongs to (null = main loop); on an agent_request it is the CALLING loop, and spawned_agent_id (joined from agent.spawn by tool_use_id alone, null until it fires) is the loop it started. BINDING FIELDS: agent_request and step_observed carry binding_fields, the shape a supervisor merges into a GEC v2 ExecutionBinding (schemas/governed_execution/execution_binding.v2.schema.json): selection.runner, selection.model, selection.effort and the top-level effort_requested, effort_observed, response_claimed_model, provider_attested_model and independence_class map onto the same-named ExecutionBinding keys. A receipt is NOT a valid ExecutionBinding: that schema has about 23 required keys and the mod knows these six; the supervisor supplies the rest and runs `ct bind-record`; the mod never does. selection.model is the requested alias (agent_request) or the model the engine resolved for the step (step_observed), else UNKNOWN. response_claimed_model is the API-reported usage.model of the step; it is what the response claimed, not provider attestation, so provider_attested_model stays UNKNOWN. The API never reports effort, so effort_observed is always UNKNOWN; independence_class is the supervisor's. match (step_observed) is true when the observed model equals the requested one (a trailing -YYYYMMDD ignored, a bare family alias matching its family), false when it differs, null when either side is unknown. advisor_call records a server-side advisor call the mod can count and cannot block; it is keyed by the server-tool-use id and counted once. No prompt, file content or tool output is ever recorded; description is the Agent call's short label cut to 80 characters.",
+  "oneOf": [
+    { "$ref": "#/definitions/agent_request" },
+    { "$ref": "#/definitions/step_observed" },
+    { "$ref": "#/definitions/advisor_call" }
+  ],
+  "definitions": {
+    "binding_fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selection",
+        "effort_requested",
+        "effort_observed",
+        "response_claimed_model",
+        "provider_attested_model",
+        "independence_class"
+      ],
+      "properties": {
+        "selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["runner", "model", "effort"],
+          "properties": {
+            "runner": { "const": "claude-code-agent" },
+            "model": { "type": "string", "minLength": 1 },
+            "effort": { "type": "string", "minLength": 1 }
+          }
+        },
+        "effort_requested": { "type": "string", "minLength": 1 },
+        "effort_observed": { "const": "UNKNOWN" },
+        "response_claimed_model": { "type": "string", "minLength": 1 },
+        "provider_attested_model": { "const": "UNKNOWN" },
+        "independence_class": { "const": "UNKNOWN" }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_tokens",
+        "output_tokens",
+        "cache_read_input_tokens",
+        "cache_creation_input_tokens"
+      ],
+      "properties": {
+        "input_tokens": { "type": "integer", "minimum": 0 },
+        "output_tokens": { "type": "integer", "minimum": 0 },
+        "cache_read_input_tokens": { "type": "integer", "minimum": 0 },
+        "cache_creation_input_tokens": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "agent_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "seq",
+        "session_id",
+        "recorded_at",
+        "agent_id",
+        "tool_use_id",
+        "requested_model",
+        "requested_effort",
+        "subagent_type",
+        "description",
+        "pinned",
+        "inherits",
+        "spawned_agent_id",
+        "resolved_model",
+        "binding_fields"
+      ],
+      "properties": {
+        "schema_version": { "const": "dopemux.route_ledger.receipt.v1" },
+        "kind": { "const": "agent_request" },
+        "seq": { "type": "integer", "minimum": 0 },
+        "session_id": { "type": "string", "minLength": 1 },
+        "recorded_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$" },
+        "agent_id": { "type": ["string", "null"] },
+        "tool_use_id": { "type": "string" },
+        "requested_model": { "type": ["string", "null"] },
+        "requested_effort": { "type": ["string", "number", "null"] },
+        "subagent_type": { "type": ["string", "null"] },
+        "description": { "type": "string", "maxLength": 80 },
+        "pinned": { "type": "boolean" },
+        "inherits": { "type": "boolean" },
+        "spawned_agent_id": { "type": ["string", "null"] },
+        "resolved_model": { "type": ["string", "null"] },
+        "binding_fields": { "$ref": "#/definitions/binding_fields" }
+      }
+    },
+    "step_observed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "seq",
+        "session_id",
+        "recorded_at",
+        "agent_id",
+        "turn_id",
+        "step_index",
+        "requested_model",
+        "requested_effort",
+        "observed_model",
+        "match",
+        "usage",
+        "binding_fields"
+      ],
+      "properties": {
+        "schema_version": { "const": "dopemux.route_ledger.receipt.v1" },
+        "kind": { "const": "step_observed" },
+        "seq": { "type": "integer", "minimum": 0 },
+        "session_id": { "type": "string", "minLength": 1 },
+        "recorded_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$" },
+        "agent_id": { "type": ["string", "null"] },
+        "turn_id": { "type": "string" },
+        "step_index": { "type": "integer", "minimum": 0 },
+        "requested_model": { "type": ["string", "null"] },
+        "requested_effort": { "type": ["string", "number", "null"] },
+        "observed_model": { "type": "string", "minLength": 1 },
+        "match": { "type": ["boolean", "null"] },
+        "usage": {
+          "oneOf": [{ "type": "null" }, { "$ref": "#/definitions/usage" }]
+        },
+        "binding_fields": { "$ref": "#/definitions/binding_fields" }
+      }
+    },
+    "advisor_call": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "seq",
+        "session_id",
+        "recorded_at",
+        "agent_id",
+        "advisor_use_id",
+        "started_at",
+        "ended_at",
+        "loop"
+      ],
+      "properties": {
+        "schema_version": { "const": "dopemux.route_ledger.receipt.v1" },
+        "kind": { "const": "advisor_call" },
+        "seq": { "type": "integer", "minimum": 0 },
+        "session_id": { "type": "string", "minLength": 1 },
+        "recorded_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$" },
+        "agent_id": { "type": ["string", "null"] },
+        "advisor_use_id": { "type": "string", "minLength": 1 },
+        "started_at": { "type": "integer" },
+        "ended_at": { "type": ["integer", "null"] },
+        "loop": { "enum": ["main", "agent"] }
+      }
+    }
+  }
+}
