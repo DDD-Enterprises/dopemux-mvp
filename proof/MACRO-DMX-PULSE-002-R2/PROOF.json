@@ -1,0 +1,262 @@
+{
+  "tp_id": "MACRO-DMX-PULSE-002-R2",
+  "packet_id": "MACRO-DMX-PULSE-002-R2",
+  "tp_path": "proof/MACRO-DMX-PULSE-002-R2/review_bundle/MACRO_PACKET.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/pulse-f1-001-5a321f",
+  "branch": "claude/pulse-f1-001-5a321f",
+  "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git (origin matches repo_binding.origin_hint DDD-Enterprises/dopemux-mvp)",
+  "base_sha": "95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "audited_head_sha": "b5dc04dd7d9560ed31a2dc0fd2192218c727ea01",
+  "head_sha": "b5dc04dd7d9560ed31a2dc0fd2192218c727ea01",
+  "commit_sha": "Audited content head b5dc04dd7d9560ed31a2dc0fd2192218c727ea01 (successor of PR #1472, built on its signed proof head f4115046484ed0dc580cc4337bb8c7cf55d39af7); proof-only commits follow it: 990ef677c23f342bc57f90baa396dfecbb929e89 (pack), 98500222b67a2ed8ae490eafc4c3e601134fa6d8 (audit custody), then the commit holding this file (see git log for the final head)",
+  "pr_url_or_blocker": "NO PR: push, PR publication or update, signing and merge are operator gates and were not authorized. Delivery vehicle open: fast-forward feat/pulse-001 (PR #1472 then carries the successor head) or a stacked draft PR based on feat/pulse-001.",
+  "slices": [
+    {
+      "id": "W01",
+      "commit": "abd128393eddf68830afd4e2c3637feefd10c467",
+      "files": 2,
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "UNKNOWN",
+      "status": "PASS",
+      "note": "self-reported claude-sonnet-5-5; 88095 tokens, 32 tool uses, 196474 ms (harness-measured)"
+    },
+    {
+      "id": "W02",
+      "commit": "b5dc04dd7d9560ed31a2dc0fd2192218c727ea01",
+      "files": 2,
+      "model_requested": "claude-haiku-5-5",
+      "model_observed": "UNKNOWN",
+      "status": "PASS",
+      "note": "self-reported claude-haiku-5-5; 66059 tokens, 22 tool uses, 88361 ms (harness-measured)"
+    },
+    {
+      "id": "W03",
+      "commit": "990ef677c23f342bc57f90baa396dfecbb929e89",
+      "files": 18,
+      "model_requested": "NONE (local-shell)",
+      "model_observed": "NONE",
+      "status": "PASS",
+      "note": "closure checks and gates PASS; git diff --check on the proof-only commit FAILS on two evidence files (see validations)"
+    }
+  ],
+  "files_changed": [
+    "docs/02-how-to/pulse-status-line.md",
+    "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+    "plugins/dopemux-pulse/README.md",
+    "plugins/dopemux-pulse/hooks/hooks.json",
+    "plugins/dopemux-pulse/hooks/register.test.ts",
+    "plugins/dopemux-pulse/hooks/register.tsx",
+    "services/adhd_engine/api/routes.py",
+    "services/adhd_engine/tests/test_state_contract.py"
+  ],
+  "validations": [
+    {
+      "command": "claude plugin validate plugins/dopemux-pulse",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "at C; only the README install-line advice (baseline)"
+    },
+    {
+      "command": "claude plugin test plugins/dopemux-pulse",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "29 pass / 0 fail at C (baseline 24); coordinator re-ran it after each child"
+    },
+    {
+      "command": "tsc -p plugins/dopemux-pulse",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "the engine laid no .claude-plugin/types/ directory"
+    },
+    {
+      "command": "tsc with an out-of-repo tsconfig (declaration from the plugin-authoring bundle)",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "mutation check: drop `|| s.isFetching` from poll",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "note": "T1, T2, T3 failed as expected; restored byte-identical (cmp)"
+    },
+    {
+      "command": "pre-commit run --from-ref origin/feat/pulse-001 --to-ref C",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "python scripts/governance/validate_change_contract.py --base origin/main --head C",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "python scripts/governance/validate_change_contract.py --base f41150464 --head C",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "pytest services/adhd_engine/tests/test_state_contract.py -q (unchanged)",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "closure checks 1-6 (ancestry, exact file sets, predecessor verdict files byte-identical, package pins)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "review_bundle/CLOSURE_CHECKS.txt"
+    },
+    {
+      "command": "git diff --check f41150464..C",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "git diff --check on the proof-only commit P",
+      "exit_code": 2,
+      "bucket": "FAIL",
+      "note": "trailing whitespace in FROZEN_DELTA.diff (blank context lines of a verbatim patch) and GATES.txt; evidence files left byte-unchanged (GATES.txt hash is recorded in SHA256SUMS.txt); the repo pre-commit hooks passed at commit time"
+    },
+    {
+      "command": "validate_change_contract --proof-only (P over C, explicit heads)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "model re-audit of content NOT_REQUIRED"
+    },
+    {
+      "command": "grok-cli grok-4.5 final audit, tool-less, one attempt",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "verdict PASS_WITH_RISKS; init.tools == []; 0 tool_use; stream preserved"
+    },
+    {
+      "command": "live run: engine on 127.0.0.1:3025 + claude --plugin-dir plugins/dopemux-pulse",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "operator step; no live session was run"
+    },
+    {
+      "command": "make test (full suite)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "scope limited to the mod tests, the engine contract test and the gates above"
+    }
+  ],
+  "codereview_status": "Independent final audit PASS_WITH_RISKS (grok-cli grok-4.5, tool-less, operator-approved route, one attempt). Q1-Q10 PASS, Q11 PASS_WITH_RISKS. Predecessor F1, F3, F4, F6 REPAIRED; F2, F5, F7 out of scope. No PAL codereview run.",
+  "precommit_status": "PASS (pre-commit run --from-ref origin/feat/pulse-001 --to-ref C)",
+  "residual_risks": [
+    "PREDECESSOR RECORD, preserved unchanged: the audit of PR #1472 at 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147 returned PASS_WITH_RISKS with Q3 FAIL on F1, and the operator accepted F1 as a disclosed residual risk on 2026-10-22. This proof is a separate record on the successor head and relabels nothing.",
+    "N2/F1 successor design: the abandoned $.http.fetch is still not cancelled; if the host never settles it, polling pauses and the status stays unreachable. Host timeout UNKNOWN. Disclosed in code, README and how-to. Not yet accepted by the operator.",
+    "Mod never run in a real Claude Code session against a live ADHD engine (NOT_RUN); /clear survival, the guard and UI paint are test-kit only (N1/F2).",
+    "Whether production $.command.register rejects when it refuses a name is UNKNOWN (the declaration says only that a built-in's name is refused); the registration toast is proven under the mock only.",
+    "No dedicated test that /done alone resets the 90-minute clock (N3).",
+    "The \"ADHD engine is back\" toast can fire on the first success after an initial failure; pre-existing, wording nit (N4).",
+    "Engine exception fallback answers HTTP 200 medium/focused; the mod cannot tell it from real state (N5/F7, pre-existing, documented).",
+    "Engine energy/attention are proxy-inferred from hook activity; session_minutes in the engine is always 0.",
+    "git diff --check fails on the proof-only commit for FROZEN_DELTA.diff and GATES.txt (trailing whitespace in evidence files); a corrective proof-only commit would be needed before a push whose preflight runs git diff --check.",
+    "Auditor self-reported grok-4; the CLI init event shows grok-4.5; provider-attested identity UNKNOWN. Q11 verdict carried PASS_WITH_RISKS, outside the per-question enum (format deviation)."
+  ],
+  "unknowns": [
+    "Live behaviour against a running engine and real Claude Code (NOT_RUN)",
+    "Whether the host bounds or cancels abandoned $.http.fetch requests",
+    "Whether production $.command.register rejects on refusal",
+    "Provider-attested identity of the auditor model and of the implementer children (observed model UNKNOWN without runtime receipts)",
+    "Per-child effort level (not settable via the Agent tool)",
+    "PROOF.json.sig absent: signing needs the operator's key",
+    "Whether the PR Steward and the CI audit gate accept a second signed attestation for a new head under PR #1472"
+  ],
+  "cleanup_status": "Worktree and branch retained; no running processes; nothing pushed; scratchpad copies of the audit artifacts are redundant with the committed bundle",
+  "audit_evidence": {
+    "grok": {
+      "prompt_sha256": "4543b16ab95da2d1ac44557e31293afa0f09dec73f9f321d95081244bc7f78c1",
+      "response_sha256": "127175a1ca36ce2afd61b01c023276c87b9ff1756ea9570c1b2562c7c2430f30",
+      "frozen_diff_sha256": "ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8",
+      "delta_diff_sha256": "393b4beeb74165fd712b21e5ca9c175dc74889e136751b062906193b2545bbd9",
+      "stream_sha256": "81bc3e82a5ce189e0fe032c8188b5e5ce5119628b9849e4b61da9481d5c6762f",
+      "probe2_stream_sha256": "f128d5fb2160af0d278c9e687680a1819bd14355a5d5bef572dd32a03b7f2c73",
+      "path": "proof/MACRO-DMX-PULSE-002-R2/review_bundle/ (files GROK_*)"
+    }
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-sonnet-5-5 (supervisor session and W01); claude-haiku-5-5 (W02)",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "sealed directory holding only AUDIT_PROMPT.txt; grok CLI 1.0.67 with the tool-less recipe (38 disallowed tool ids built from the probe's own init.tools plus a no-skills system prompt); probe 2 confirmed init.tools == [], real run init.tools == [] with 0 tool_use blocks; launched 2026-10-23T21:00:30Z, finished 2026-10-23T21:02:56Z; exact command in review_bundle/GROK_INVOCATION.txt; one attempt, no retries.",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-PULSE-002-R2/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "N1",
+        "severity": "HIGH",
+        "title": "Cumulative feature still never exercised in a real Claude Code session against a live ADHD engine (same fact as F2).",
+        "status": "OPEN",
+        "body": "Disclosed Not verified in README and how-to; predecessor F2 deliberately OUT_OF_SCOPE. Blocks confidence in live paint, typeahead, real HTTP, and real session.end/clear behaviour. [plugins/dopemux-pulse/README.md] ADJUDICATION: Coordinator: CONFIRMED, disclosed; live run NOT_RUN (operator step)."
+      },
+      {
+        "id": "N2",
+        "severity": "MEDIUM",
+        "title": "If the host never settles an abandoned $.http.fetch, the guard stays set: polling pauses and the status stays unreachable.",
+        "status": "OPEN",
+        "body": "Explicit trade-off in fetchState comment; README and how-to §6 disclose it. Host network timeout UNKNOWN. By design given no abort API, but residual availability risk. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED, by design (no abort option in this build's declaration), disclosed in code, README and how-to; host timeout UNKNOWN; not yet accepted by the operator."
+      },
+      {
+        "id": "N3",
+        "severity": "LOW",
+        "title": "No dedicated test that /done alone resets the 90-minute continuous-focus nudge clock (only /break is asserted).",
+        "status": "OPEN",
+        "body": "stopContinuous is called in the done handler (register.tsx); test 'a break resets the 90-minute continuous-focus clock' covers break only. Behaviour likely correct but unguarded against regression. [plugins/dopemux-pulse/hooks/register.test.ts] ADJUDICATION: Coordinator: CONFIRMED against register.test.ts; the code calls stopContinuous in the done handler."
+      },
+      {
+        "id": "N4",
+        "severity": "LOW",
+        "title": "The recovery toast \"ADHD engine is back\" can fire on the first successful poll after an initial failure even though the engine was never up in the session.",
+        "status": "OPEN",
+        "body": "wasUp becomes false on first down (including 2s timeout); next ok with wasUp===false triggers recovery toast. T2 expects ['ADHD engine is back'] after slow->healthy without a prior ok. Docs describe toast as coming back from reachable. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED and PRE-EXISTING (logic unchanged since the PULSE-001 audited head); docs say \"comes back\"."
+      },
+      {
+        "id": "N5",
+        "severity": "INFO",
+        "title": "Exception fallback still answers HTTP 200 with medium/focused; the mod treats it as healthy state (same as F7).",
+        "status": "OPEN",
+        "body": "except branch in routes.py; documented in how-to §5. Predecessor F7 OUT_OF_SCOPE. [services/adhd_engine/api/routes.py] ADJUDICATION: Coordinator: CONFIRMED, pre-existing, documented."
+      }
+    ],
+    "fixes_applied": [
+      "F1 REPAIRED (auditor and coordinator): the poll guard is held until the underlying $.http.fetch settles; late answer discarded; tests T1-T4 (mock only).",
+      "F3 REPAIRED: README and how-to say /done also resets the continuous-focus count, which starts at the first /pulse-focus.",
+      "F4 REPAIRED: the how-to no longer cites a commit SHA; no hash or PR number remains in README or how-to.",
+      "F6 REPAIRED under the mock: a refused command.register toasts a fixed message (test T5); production refusal semantics UNKNOWN."
+    ],
+    "remaining_risks": [
+      "N2: if the host never settles an abandoned request, polling pauses and the status stays unreachable (host timeout UNKNOWN).",
+      "N1/F2: the mod has never run live against an engine in a real session (NOT_RUN).",
+      "F6 toast proven under the mock only; production refusal semantics UNKNOWN.",
+      "N3: no dedicated test for /done resetting the 90-minute clock.",
+      "N4: \"ADHD engine is back\" can toast on the first success after an initial failure (pre-existing).",
+      "N5/F7: engine exception fallback answers HTTP 200 medium/focused (pre-existing, documented)."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
