@@ -687,7 +687,18 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
             </Box>
           </Tooltip>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'} arrow>
+            <Tooltip
+              title={
+                currentTask
+                  ? isTimerRunning
+                    ? `Pause task: ${currentTask.title}`
+                    : `Start task: ${currentTask.title}`
+                  : isTimerRunning
+                    ? 'Pause task'
+                    : 'Start task'
+              }
+              arrow
+            >
               <Button
                 ref={primaryActionRef}
                 size="small"

@@ -209,7 +209,8 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   expect(content).toContain('<IconButton');
   expect(content).toContain('onClick={() => handleCopyTaskTitle(currentTask.title)}');
 
-  // Verify start button tooltip
+  // Verify primary active Start/Pause button tooltip and pending start button tooltip
+  expect(content).toMatch(/title=\{\s*currentTask\s*\?\s*isTimerRunning\s*\?\s*`Pause task: \$\{currentTask\.title\}`\s*:\s*`Start task: \$\{currentTask\.title\}`\s*:\s*isTimerRunning\s*\?\s*'Pause task'\s*:\s*'Start task'\s*\}/);
   expect(content).toMatch(/<Tooltip\s+title=\{\s*`Start task and switch active focus to: \$\{task\.title\}`\s*\}\s*arrow\s*>/);
 
   // Verify Predictive Skip and Soft Confirmation
