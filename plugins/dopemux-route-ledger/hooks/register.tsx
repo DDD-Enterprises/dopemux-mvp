@@ -1,4 +1,4 @@
-import type { EngineInterface, Register } from 'claude-code'
+import type { EngineInterface, Register, Timer } from 'claude-code'
 
 // dopemux-route-ledger (core): records which model each Agent call REQUESTED,
 // which model each model step OBSERVED (the API-reported `usage.model`), and
@@ -37,6 +37,11 @@ const MAX_MAX_RECEIPTS = 5000
 const DESCRIPTION_MAX = 80
 // `$.fs.write` and `$.fs.read` reject over 4 MiB: roll well before that.
 const SEGMENT_BYTES_MAX = 3_500_000
+// A burst of receipts redraws the status line once, this long after the first.
+const STATUS_DEBOUNCE_MS = 500
+const TOAST_MS = 8000
+const ROUTE_ROWS_MAX = 60
+const SHORT_ID = 8
 
 type Family = 'S' | 'O' | 'H' | 'F' | 'other'
 type Effort = string | number
@@ -158,6 +163,8 @@ type Ledger = {
   advisorSeen: Set<string>
   agents: Record<string, AgentRecord>
   toasted: Set<string>
+  // A pending debounced status redraw, if any.
+  statusTimer: Timer | undefined
   chain: Promise<void>
   flushQueued: boolean
 }
@@ -239,6 +246,7 @@ export function newLedger(options: Settings): Ledger {
     advisorSeen: new Set(),
     agents: {},
     toasted: new Set(),
+    statusTimer: undefined,
     chain: Promise.resolve(),
     flushQueued: false,
   }
@@ -246,7 +254,7 @@ export function newLedger(options: Settings): Ledger {
 
 // Glyph rule shared with W02: the lower-cased model text decides.
 export function familyOf(model: string | null | undefined): Family {
-  const text = (model ?? '').toLowerCase()
+  const text = (typeof model === 'string' ? model : '').toLowerCase()
   if (text.includes('sonnet')) return 'S'
   if (text.includes('opus')) return 'O'
   if (text.includes('haiku')) return 'H'
@@ -391,9 +399,233 @@ function tally(s: Ledger, receipt: Receipt): boolean {
   return true
 }
 
-// W02 extends this in place; W01 leaves it empty. Called, wrapped, after every
-// recorded receipt.
-function afterRecord($: EngineInterface, s: Ledger, receipt: Receipt): void {}
+function shortId(id: string): string {
+  return id.slice(0, SHORT_ID)
+}
+
+function advisorTotal(s: Ledger): number {
+  return summarize(s).advisorTotal
+}
+
+// `agents S×4 H×2 · advisor 1`. Pure: the whole status line from the ledger.
+function statusText(s: Ledger): string {
+  const sum = summarize(s)
+  const order: [string, number][] = [
+    ['S', sum.agents.S],
+    ['O', sum.agents.O],
+    ['H', sum.agents.H],
+    ['F', sum.agents.F],
+    ['?', sum.agents.other],
+  ]
+  const present = order.filter(([, n]) => n > 0).map(([glyph, n]) => `${glyph}×${n}`)
+  let line = present.length === 0 ? 'agents –' : `agents ${present.join(' ')}`
+  if (sum.advisorTotal > 0) {
+    const { sessionAdvisorBudget, childAdvisorBudget } = s.config
+    const overSession = sessionAdvisorBudget >= 0 && sum.advisorTotal > sessionAdvisorBudget
+    const overChild =
+      childAdvisorBudget >= 0 && Object.values(sum.advisorByAgent).some(n => n > childAdvisorBudget)
+    if (overSession) line += ` · advisor ${sum.advisorTotal}/${sessionAdvisorBudget} ⚠`
+    else if (overChild) line += ` · advisor ${sum.advisorTotal}/${childAdvisorBudget} ⚠`
+    else line += ` · advisor ${sum.advisorTotal}`
+  }
+  if (!s.receiptsEnabled) line += ' · ledger off'
+  if (s.receiptsFailed > 0) line += ' · receipts ✗'
+  return line
+}
+
+function drawStatus($: EngineInterface, s: Ledger): void {
+  if (s.isEnded) return
+  try {
+    $.ui.status(statusText(s))
+  } catch {
+    // a refused status line must not cost anything else
+  }
+}
+
+// Debounced: the first call arms one timer, calls inside the window ride on it.
+function scheduleStatus($: EngineInterface, s: Ledger): void {
+  if (s.isEnded || s.statusTimer !== undefined) return
+  try {
+    s.statusTimer = $.clock.after(STATUS_DEBOUNCE_MS, () => {
+      s.statusTimer = undefined
+      drawStatus($, s)
+    })
+  } catch {
+    s.statusTimer = undefined
+  }
+}
+
+function toastOnce($: EngineInterface, s: Ledger, key: string, message: string): void {
+  if (s.toasted.has(key)) return
+  s.toasted.add(key)
+  try {
+    $.ui.toast(message, { timeoutMs: TOAST_MS })
+  } catch {
+    // a refused toast must not cost the receipt
+  }
+}
+
+// Advisor budgets. The mod counts calls after the fact and cannot block them.
+function budgetToasts($: EngineInterface, s: Ledger, receipt: AdvisorCallReceipt): void {
+  const { childAdvisorBudget, sessionAdvisorBudget } = s.config
+  if (receipt.loop === 'agent' && receipt.agent_id !== null && childAdvisorBudget >= 0) {
+    const n = s.advisorByAgent[receipt.agent_id] ?? 0
+    if (n > childAdvisorBudget) {
+      toastOnce(
+        $,
+        s,
+        `advisor-child:${receipt.agent_id}`,
+        `route-ledger: agent ${shortId(receipt.agent_id)} made ${n} advisor calls (budget ${childAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
+      )
+    }
+  }
+  if (sessionAdvisorBudget >= 0) {
+    const total = advisorTotal(s)
+    if (total > sessionAdvisorBudget) {
+      toastOnce(
+        $,
+        s,
+        'advisor-session',
+        `route-ledger: session made ${total} advisor calls (budget ${sessionAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
+      )
+    }
+  }
+}
+
+// Called, wrapped, after every recorded receipt: toasts and the status line.
+function afterRecord($: EngineInterface, s: Ledger, receipt: Receipt): void {
+  if (receipt.kind === 'advisor_call') budgetToasts($, s, receipt)
+  scheduleStatus($, s)
+}
+
+// ------------------------------------------------------------------ the command
+
+function cell(value: string | null | undefined): string {
+  return value === null || value === undefined || value === '' ? UNKNOWN : String(value)
+}
+
+// The last step the main loop observed, from the receipts held in memory.
+function lastMainStep(s: Ledger): StepObservedReceipt | undefined {
+  for (let i = s.segments.length - 1; i >= 0; i--) {
+    const receipts = s.segments[i]!.receipts
+    for (let j = receipts.length - 1; j >= 0; j--) {
+      const r = receipts[j]!
+      if (r.kind === 'step_observed' && r.agent_id === null) return r
+    }
+  }
+  return undefined
+}
+
+function matchCell(requested: string | null, observed: string | null): string {
+  if (requested === null || observed === null) return UNKNOWN
+  const same = sameModel(requested, observed)
+  return same === null ? UNKNOWN : same ? 'yes' : 'no'
+}
+
+function row(cells: string[]): string {
+  return cells.join(' | ')
+}
+
+function routeTable(s: Ledger): string {
+  const rows: string[] = []
+  const main = lastMainStep(s)
+  rows.push(
+    row([
+      'main',
+      RUNNER,
+      cell(main?.requested_model),
+      cell(main?.observed_model),
+      cell(main?.requested_effort === null || main === undefined ? null : String(main.requested_effort)),
+      matchCell(main?.requested_model ?? null, main?.observed_model ?? null),
+      String(s.advisorMain),
+    ]),
+  )
+  const seen = new Set<string>()
+  for (const [key, record] of Object.entries(s.agents)) {
+    const id = record.agentId ?? record.receipt?.spawned_agent_id ?? null
+    if (id !== null) seen.add(id)
+    const effort = record.receipt?.requested_effort
+    rows.push(
+      row([
+        id !== null ? shortId(id) : `pending:${shortId(record.toolUseId ?? key)}`,
+        RUNNER,
+        cell(record.requestedModel),
+        cell(record.observedModel),
+        effort === null || effort === undefined ? UNKNOWN : String(effort),
+        matchCell(record.requestedModel, record.observedModel),
+        String(id !== null ? (s.advisorByAgent[id] ?? 0) : 0),
+      ]),
+    )
+  }
+  for (const [id, n] of Object.entries(s.advisorByAgent)) {
+    if (!seen.has(id) && s.agents[id] === undefined) {
+      rows.push(row([shortId(id), RUNNER, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, String(n)]))
+    }
+  }
+  const shown = rows.slice(0, ROUTE_ROWS_MAX)
+  const lines = [
+    row(['agent', 'runner', 'model requested', 'model observed', 'effort requested', 'match', 'advisor']),
+    ...shown,
+  ]
+  if (rows.length > shown.length) lines.push(`+${rows.length - shown.length} more`)
+  lines.push(
+    'observed = the API-reported response model (response_claimed, not provider attestation); effort observed is UNKNOWN.',
+    'The mod counts advisor calls and cannot block them.',
+  )
+  return lines.join('\n')
+}
+
+function receiptsText(s: Ledger): string {
+  const counts = { agent_request: 0, step_observed: 0, advisor_call: 0 }
+  for (const seg of s.segments) {
+    for (const r of seg.receipts) {
+      if (r.kind in counts) counts[r.kind] += 1
+    }
+  }
+  const lines = [
+    `receipt file: ${s.receiptFile ?? 'none'}`,
+    `receipts: agent_request ${counts.agent_request}, step_observed ${counts.step_observed}, advisor_call ${counts.advisor_call}`,
+    `receiptsEnabled ${s.receiptsEnabled}, receiptsFailed ${s.receiptsFailed}`,
+  ]
+  if (!s.receiptsEnabled && s.receiptsDisabledReason !== undefined) {
+    lines.push(`receipts are off: ${s.receiptsDisabledReason}`)
+  }
+  return lines.join('\n')
+}
+
+// `/route-ledger` and its alias `/route`. Reads the ledger, writes nothing.
+function routeAnswer(s: Ledger, args: unknown): string {
+  const arg = typeof args === 'string' ? args.trim() : ''
+  if (arg === '') return routeTable(s)
+  if (arg === 'receipts') return receiptsText(s)
+  return 'Usage: /route-ledger [receipts]  (no argument: the model table; receipts: the receipt file and counts)'
+}
+
+async function registerCommands($: EngineInterface): Promise<void> {
+  // Each name on its own: one refusal never stops the other.
+  try {
+    await $.command
+      .register({
+        name: 'route-ledger',
+        description: 'Show requested versus observed model per agent, and advisor counts.',
+        argumentHint: '[receipts]',
+      })
+      .catch(() => undefined)
+  } catch {
+    // never surface
+  }
+  try {
+    await $.command
+      .register({
+        name: 'route',
+        description: 'Alias of /route-ledger.',
+        argumentHint: '[receipts]',
+      })
+      .catch(() => undefined)
+  } catch {
+    // never surface
+  }
+}
 
 function currentSegment(s: Ledger): Segment {
   const last = s.segments[s.segments.length - 1]
@@ -440,7 +672,9 @@ function scheduleFlush($: EngineInterface, s: Ledger): void {
   s.flushQueued = true
   enqueue(s, async () => {
     s.flushQueued = false
+    const failedBefore = s.receiptsFailed
     await flushSegments($, s)
+    if (s.receiptsFailed !== failedBefore) scheduleStatus($, s)
   })
 }
 
@@ -748,6 +982,9 @@ export const register: Register = (on, options) => {
       // Not awaited: the rebuild must not hold the session's start.
       s.isEnded = false
       enqueue(s, () => initSession($, s))
+      // After the rehydrate, on the same chain: the status reads rebuilt tallies.
+      enqueue(s, async () => drawStatus($, s))
+      void registerCommands($)
     } catch {
       // never surface
     }
@@ -789,12 +1026,31 @@ export const register: Register = (on, options) => {
     return r
   })
 
+  // One handler for the canonical name and the alias.
+  on('command.run', { command: 'route-ledger' }, async (_, e) => {
+    try {
+      return { text: routeAnswer(s, e.args) }
+    } catch {
+      return { text: 'route-ledger: could not read the ledger.' }
+    }
+  })
+  on('command.run', { command: 'route' }, async (_, e) => {
+    try {
+      return { text: routeAnswer(s, e.args) }
+    } catch {
+      return { text: 'route-ledger: could not read the ledger.' }
+    }
+  })
+
   on('session.end', async ($, e, next) => {
     // /clear fires session.end with reason 'clear' but the process goes on and
     // no session.start follows: not an end.
     if (e.reason === 'clear') return next(e)
     try {
       s.isEnded = true
+      s.statusTimer?.cancel()
+      s.statusTimer = undefined
+      $.ui.status(undefined)
       scheduleFlush($, s)
       await s.chain
     } catch {

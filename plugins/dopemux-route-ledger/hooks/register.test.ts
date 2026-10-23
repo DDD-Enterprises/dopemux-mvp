@@ -125,6 +125,11 @@ function harness($: Engine, on: On, opts: Opts = {}) {
     writes: [] as { path: string; text: string }[],
     failWrites: false,
     toasts: [] as string[],
+    toastTimeouts: [] as (number | undefined)[],
+    statuses: [] as (string | undefined)[],
+    registered: [] as string[],
+    // Command names the engine refuses to register (a built-in collision).
+    refused: new Set<string>(),
     calls: [] as Receipt[],
     spawns: [] as Receipt[],
     stepInputs: [] as Receipt[],
@@ -139,7 +144,17 @@ function harness($: Engine, on: On, opts: Opts = {}) {
   on('session.id', () => ({ value: opts.sessionId ?? 'sess-1' }))
   on('ui.toast', (_, e) => {
     world.toasts.push(e.text)
+    world.toastTimeouts.push(e.timeoutMs)
     return { value: undefined }
+  })
+  on('ui.status', (_, e) => {
+    world.statuses.push(e.text)
+    return { value: undefined }
+  })
+  on('command.register', (_, e) => {
+    if (world.refused.has(e.name)) return { deny: `${e.name} is a built-in name` }
+    world.registered.push(e.name)
+    return { value: { command: e.name } }
   })
   on('fs.write', (_, e) => {
     const path = rel(e.path)
@@ -213,6 +228,19 @@ function harness($: Engine, on: On, opts: Opts = {}) {
       await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
       await clock.settle()
     },
+    // The last status text the plugin pinned (undefined when cleared or never set).
+    status: () => world.statuses[world.statuses.length - 1],
+    async run(command: string, args = '') {
+      return $.command.run({
+        command,
+        args,
+        origin: { kind: 'composer' },
+        presentation: { isFullscreen: false, columns: 80 },
+      })
+    },
+    async settleStatus() {
+      await clock.advance(DEBOUNCE_MS)
+    },
     async end(reason: 'clear' | 'other' = 'other') {
       await $.session.end({ reason, sessionId: 'sess-1', resume: { sessionId: 'sess-1' } as never })
       await clock.settle()
@@ -259,6 +287,7 @@ function harness($: Engine, on: On, opts: Opts = {}) {
   }
 }
 
+const DEBOUNCE_MS = 1_000
 const STEP: StepInput = { turnId: 'turn-1', index: 0, model: 'claude-sonnet-5-5' }
 
 // ---------------------------------------------------------------- Agent calls
@@ -829,4 +858,299 @@ test('a failed write is counted in the state, not thrown and not retried', async
   expect(attempts).toBe(1)
   expect(s.receiptsFailed).toBe(1)
   expect(summarize(s).receiptsFailed).toBe(1)
+})
+
+// ----------------------------------------------------------- W02: status segment
+
+const stepAs = (h: ReturnType<typeof harness>, agentId: string, model: string, index = 0) => {
+  h.world.usage = { ...USAGE, model }
+  return h.step({ ...STEP, index, agentId, model })
+}
+
+test('status shows `agents –` with no agents, set in session.start', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  expect(h.status()).toBe('agents –')
+})
+
+test('status counts agents in the fixed order S, O, H, F, ? and only non-zero', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await stepAs(h, 'a1', 'claude-haiku-4-5')
+  await stepAs(h, 'a2', 'claude-sonnet-5-5')
+  await stepAs(h, 'a3', 'claude-sonnet-5-5')
+  await stepAs(h, 'a4', 'gpt-x')
+  await stepAs(h, 'a5', 'claude-opus-5')
+  await stepAs(h, 'a6', 'fable-1')
+  await h.settleStatus()
+  expect(h.status()).toBe('agents S×2 O×1 H×1 F×1 ?×1')
+
+})
+
+test('status with a single agent reads `agents S×1`', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  await h.settleStatus()
+  expect(h.status()).toBe('agents S×1')
+})
+
+test('status shows advisor N only when N > 0, and N/B ⚠ once a budget is exceeded', { options: { sessionAdvisorBudget: 1, childAdvisorBudget: -1 } }, async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await h.step(STEP)
+  await h.settleStatus()
+  expect(h.status()).toBe('agents – · advisor 1')
+
+  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await h.step({ ...STEP, index: 1 })
+  await h.settleStatus()
+  expect(h.status()).toBe('agents – · advisor 2/1 ⚠')
+})
+
+test('a child over its budget shows N/B ⚠ in the status', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
+  await h.settleStatus()
+  expect(h.status()).toBe('agents S×1 · advisor 1/0 ⚠')
+})
+
+test('status appends ledger off when receipts are disabled, and receipts ✗ after a failed write', async ($, on) => {
+  const off = harness($, on, { dirs: [] })
+  await off.start()
+  expect(off.status()).toBe('agents – · ledger off')
+})
+
+test('status appends receipts ✗ when a receipt write failed', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.failWrites = true
+  await h.agent({ model: 'sonnet' })
+  await h.settleStatus()
+  expect(h.status()).toBe('agents S×1 · receipts ✗')
+})
+
+test('a burst of receipts is debounced into one status update', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  const before = h.world.statuses.length
+  for (let i = 0; i < 20; i++) await h.step({ ...STEP, index: i, agentId: `a${i}` })
+  expect(h.world.statuses.length).toBe(before)
+  await h.settleStatus()
+  expect(h.world.statuses.length).toBe(before + 1)
+  expect(h.status()).toBe('agents S×20')
+  await h.settleStatus()
+  expect(h.world.statuses.length).toBe(before + 1)
+})
+
+test('session.end clear keeps the status; any other reason clears it', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'opus' })
+  await h.settleStatus()
+  await h.end('clear')
+  expect(h.status()).toBe('agents O×1')
+  await h.end('other')
+  expect(h.status()).toBe(undefined)
+  // A pending update does not bring the status back after the end.
+  await h.settleStatus()
+  expect(h.status()).toBe(undefined)
+})
+
+// ------------------------------------------------------------------ W02: toasts
+
+test('a child over childAdvisorBudget toasts once per agent, names it, never claims prevention', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-1234567890', 'claude-sonnet-5-5')
+  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-1234567890', 'claude-sonnet-5-5', 1)
+  expect(h.world.toasts).toHaveLength(1)
+  const toast = h.world.toasts[0]!
+  expect(toast.includes('agent-12')).toBe(true)
+  expect(toast.includes('agent-1234567890')).toBe(false)
+  expect(toast.includes('1')).toBe(true)
+  expect(toast.includes('0')).toBe(true)
+  expect(toast).toMatch(/cannot block/)
+  expect(toast).not.toMatch(/prevented|blocked a/)
+  expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
+
+  // Another agent crosses its own budget: its own toast.
+  h.world.serverToolUses = [{ id: 'srv-3', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-other', 'claude-sonnet-5-5')
+  expect(h.world.toasts).toHaveLength(2)
+})
+
+test('a budget of -1 never toasts for a child', { options: { childAdvisorBudget: -1 } }, async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
+  expect(h.world.toasts).toHaveLength(0)
+})
+
+test('the session total toasts once when it exceeds sessionAdvisorBudget', { options: { sessionAdvisorBudget: 1 } }, async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  for (const id of ['srv-1', 'srv-2', 'srv-3']) {
+    h.world.serverToolUses = [{ id, name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+    await h.step({ ...STEP, index: Number(id.slice(-1)) })
+  }
+  expect(h.world.toasts).toHaveLength(1)
+  expect(h.world.toasts[0]).toMatch(/session/)
+  expect(h.world.toasts[0]).toMatch(/cannot block/)
+  expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
+})
+
+// ---------------------------------------------------------------- W02: commands
+
+test('registers route-ledger then route, each on its own', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  expect(h.world.registered).toEqual(['route-ledger', 'route'])
+})
+
+test('a refused route registration leaves route-ledger and the status working', async ($, on) => {
+  const h = harness($, on)
+  h.world.refused.add('route')
+  await h.start()
+  expect(h.world.registered).toEqual(['route-ledger'])
+  expect(h.status()).toBe('agents –')
+  const answer = await h.run('route-ledger')
+  expect(answer.text).toMatch(/model requested/)
+})
+
+test('a refused route-ledger registration does not stop route', async ($, on) => {
+  const h = harness($, on)
+  h.world.refused.add('route-ledger')
+  await h.start()
+  expect(h.world.registered).toEqual(['route'])
+})
+
+test('/route-ledger on an empty ledger prints the main row, UNKNOWN cells and the footer', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  const { text } = await h.run('route-ledger')
+  const lines = text!.split('\n')
+  expect(lines[0]).toBe('agent | runner | model requested | model observed | effort requested | match | advisor')
+  expect(lines[1]).toBe('main | claude-code-agent | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | 0')
+  expect(text).toMatch(/response_claimed/)
+  expect(text).toMatch(/effort observed is UNKNOWN/)
+  expect(text).toMatch(/cannot block/)
+})
+
+test('/route-ledger on a mixed ledger has one row per loop', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.step({ ...STEP, effort: 'high' })
+  const call = await h.agent({ model: 'haiku', effort: 'low', description: 'cheap' })
+  await h.spawn(call.id)
+  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  h.world.usage = { ...USAGE, model: 'claude-haiku-4-5' }
+  await h.step({ ...STEP, index: 1, agentId: 'agent-7', model: 'claude-haiku-4-5' })
+  await h.agent({ subagent_type: 'Explore' })
+
+  const rows = (await h.run('route-ledger')).text!.split('\n').slice(1, 4)
+  expect(rows[0]).toBe('main | claude-code-agent | claude-sonnet-5-5 | claude-sonnet-5-5 | high | yes | 0')
+  expect(rows[1]).toBe('agent-7 | claude-code-agent | haiku | claude-haiku-4-5 | low | yes | 1')
+  expect(rows[2]).toMatch(/^pending:.* \| claude-code-agent \| UNKNOWN \| UNKNOWN \| UNKNOWN \| UNKNOWN \| 0$/)
+})
+
+test('a request that differs from what was observed shows match no', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  const call = await h.agent({ model: 'opus' })
+  await h.spawn(call.id)
+  h.world.usage = { ...USAGE, model: 'claude-sonnet-5-5' }
+  await h.step({ ...STEP, agentId: 'agent-7' })
+  const rows = (await h.run('route-ledger')).text!.split('\n')
+  expect(rows[2]).toBe('agent-7 | claude-code-agent | opus | claude-sonnet-5-5 | UNKNOWN | no | 0')
+})
+
+test('/route-ledger lists at most 60 loops then +N more', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  for (let i = 0; i < 75; i++) await h.step({ ...STEP, index: i, agentId: `a${i}` })
+  const lines = (await h.run('route-ledger')).text!.split('\n')
+  const rows = lines.filter(line => line.includes(' | claude-code-agent | '))
+  expect(rows).toHaveLength(60)
+  expect(rows[0]!.startsWith('main | ')).toBe(true)
+  // main + 75 agents = 76 loops: 16 are cut.
+  expect(lines).toContain('+16 more')
+})
+
+test('/route and /route-ledger answer the same text', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  const a = await h.run('route-ledger')
+  const b = await h.run('route')
+  expect(b.text).toBe(a.text)
+  expect((await h.run('route', 'receipts')).text).toBe((await h.run('route-ledger', 'receipts')).text)
+})
+
+test('the receipts argument prints the file, counts and flags', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  await h.step(STEP)
+  const { text } = await h.run('route-ledger', 'receipts')
+  expect(text).toMatch(new RegExp(FILE.replace(/[.]/g, '\\.')))
+  expect(text).toMatch(/agent_request 1/)
+  expect(text).toMatch(/step_observed 1/)
+  expect(text).toMatch(/advisor_call 0/)
+  expect(text).toMatch(/receiptsEnabled true/)
+  expect(text).toMatch(/receiptsFailed 0/)
+})
+
+test('receipts argument with receipts disabled says so', async ($, on) => {
+  const h = harness($, on, { dirs: [] })
+  await h.start()
+  const { text } = await h.run('route-ledger', 'receipts')
+  expect(text).toMatch(/receiptsEnabled false/)
+  expect(text).toMatch(/none/)
+})
+
+test('an unknown argument prints a usage line and changes nothing', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  const writes = h.world.writes.length
+  const statuses = h.world.statuses.length
+  const { text } = await h.run('route-ledger', 'frobnicate')
+  expect(text!.includes('\n')).toBe(false)
+  expect(text).toMatch(/Usage: \/route-ledger/)
+  expect(h.world.writes.length).toBe(writes)
+  expect(h.world.statuses.length).toBe(statuses)
+  expect(h.receipts()).toHaveLength(1)
+})
+
+test('the command is read-only: running it writes nothing', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  const writes = h.world.writes.length
+  await h.run('route-ledger')
+  await h.run('route-ledger', 'receipts')
+  await h.run('route', 'nope')
+  expect(h.world.writes.length).toBe(writes)
+})
+
+test('nothing throws when the ledger is empty or odd input reaches summarize', async ($, on) => {
+  const h = harness($, on)
+  h.world.usage = null
+  await h.start()
+  await h.step(STEP)
+  await h.step({ ...STEP, index: 1, agentId: 'a1' })
+  await h.run('route-ledger')
+  await h.settleStatus()
+  expect(h.status()).toBe('agents ?×1')
+
+  const s = newLedger({})
+  s.agents['x'] = { toolUseId: null, agentId: null, requestedModel: 5 as never, observedModel: null, pinned: null, inherits: false }
+  expect(() => summarize(s)).not.toThrow()
 })
