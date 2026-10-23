@@ -21,6 +21,6 @@ Any fix to F1, F3 or F4 changes the audited subject, so it needs a new audit. A 
 The raw Grok and agy streams and the first F5 outputs were lost when the session scratchpad was deleted. The frozen diff (sha256 matches), the audit prompt (52805 bytes, sha256 `3e0510fe...ce69`) and the F5 comparison (re-run, same result) were regenerated. The Grok response is a transcription whose length matches the original (11435 bytes). See `GROK_RUN_RECORD.md`.
 
 ## Operator decisions left
-1. F1: accept as a residual risk, or authorize a repair (hold `isPolling` until the fetch settles; README `/done` wording) and a fresh audit on a newly approved route.
+1. F1: DECIDED. The operator accepted it as a disclosed residual risk on 2026-10-22 and kept the audited head `1d2219e8c`. No repair or re-audit.
 2. Attest `audit_identity.independence` (left `UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING`), knowing the containment streams are lost.
 3. Push, PR and signing, all still ungranted.

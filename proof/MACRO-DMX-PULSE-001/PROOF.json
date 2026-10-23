@@ -135,7 +135,7 @@
   "codereview_status": "Independent final audit PASS_WITH_RISKS (grok-cli grok-4.5, operator-approved after the agy 429 failure). Q3 FAIL on F1. No PAL codereview run.",
   "precommit_status": "PASS (pre-commit run --from-ref origin/main --to-ref HEAD)",
   "residual_risks": [
-    "F1/Q3: after the 2 s race the underlying $.http.fetch is not cancelled; a hung engine leaves one pending GET per 60 s poll. Host fetch lifetime UNKNOWN. Needs operator accept-or-repair decision.",
+    "F1/Q3 (ACCEPTED by the operator 2026-10-22 as a disclosed residual risk): after the 2 s race the underlying $.http.fetch is not cancelled; a hung engine leaves one pending GET per 60 s poll. Host fetch lifetime UNKNOWN. Not repaired.",
     "Mod never run in a real Claude Code session against a live ADHD engine (NOT_RUN); /clear survival and UI paint are test-kit only.",
     "README says only /break ends the continuous-focus count; /done also resets it.",
     "How-to cites commit 3dbced397 by SHA, which will not survive a squash merge.",
@@ -197,8 +197,8 @@
         "id": "F1",
         "severity": "MEDIUM",
         "title": "Timed-out polls leave $.http.fetch promises running; a hung engine can accumulate unbounded in-flight GETs (one per minute) because Promise.race does not cancel fetch.",
-        "status": "OPEN",
-        "body": "fetchState races $.http.fetch against $.clock.after(2000); on 'timeout' it returns {kind:'down'} and finally only cancels the timer. Authority states fetch has no timeout option. poll's isPolling guard blocks overlapping poll() entry but not prior raced fetches still pending. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED in register.tsx fetchState/poll; host fetch lifetime UNKNOWN. Operator decision: accept or repair + re-audit."
+        "status": "ACCEPTED_RISK",
+        "body": "fetchState races $.http.fetch against $.clock.after(2000); on 'timeout' it returns {kind:'down'} and finally only cancels the timer. Authority states fetch has no timeout option. poll's isPolling guard blocks overlapping poll() entry but not prior raced fetches still pending. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED in register.tsx fetchState/poll; host fetch lifetime UNKNOWN. Operator accepted this as a disclosed residual risk in chat on 2026-10-22 (\"Accept F1 as a disclosed residual risk. Keep the audited head.\"); no repair, no re-audit."
       },
       {
         "id": "F2",
@@ -245,7 +245,7 @@
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "F1/Q3: after the 2 s race the underlying $.http.fetch is not cancelled; a hung engine leaves one pending GET per 60 s poll. Host fetch lifetime UNKNOWN. Needs operator accept-or-repair decision.",
+      "F1/Q3 (ACCEPTED by the operator 2026-10-22 as a disclosed residual risk): after the 2 s race the underlying $.http.fetch is not cancelled; a hung engine leaves one pending GET per 60 s poll. Host fetch lifetime UNKNOWN. Not repaired.",
       "Mod never run in a real Claude Code session against a live ADHD engine (NOT_RUN); /clear survival and UI paint are test-kit only.",
       "README says only /break ends the continuous-focus count; /done also resets it.",
       "How-to cites commit 3dbced397 by SHA, which will not survive a squash merge.",

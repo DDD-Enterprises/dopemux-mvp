@@ -1,6 +1,6 @@
 # MACRO-DMX-PULSE-001 - Aggregate Return 01
 
-**Status**: `READY_FOR_AUDIT` is NOT claimed. The final audit returned `PASS_WITH_RISKS` (Grok), with Q3 = FAIL (F1). Hand-off state: `NEEDS_SUPERVISOR` on one operator decision (accept or repair F1).
+**Status**: `READY_FOR_AUDIT` is NOT claimed. The final audit returned `PASS_WITH_RISKS` (Grok), with Q3 = FAIL (F1). The operator accepted F1 as a disclosed residual risk on 2026-10-22 and kept the audited head; no repair or re-audit follows.
 **Authority**: NONE. This aggregate mints no PASS/READY/DONE. Nothing pushed, signed, merged or opened as a PR.
 **Authorization consumed**: operator message `AUTHORIZE_MACRO_DMX_PULSE_001_EXECUTION=YES` (2026-10-21); "In the repo" placement; the Grok audit approval (2026-10-22).
 
@@ -26,5 +26,5 @@ F5 baseline (re-run for this bundle): `services/adhd_engine/tests` on base = 28 
 ## Audit
 agy attempt failed (429): `AGY_ATTEMPT_RECORD.md`. Grok audit: `GROK_RUN_RECORD.md`, `GROK_AUDIT_RESPONSE.txt`, `GROK_ADJUDICATION.md`. Raw streams were lost (see EVIDENCE LOST).
 
-## Next material blocker
-Operator: accept F1 (orphaned fetch after the 2 s race) as a residual risk, or authorize a small repair (hold `isPolling` until the fetch settles, plus the README `/done` wording) and a fresh audit on a newly approved route.
+## Next step (operator)
+Review the bundle, attest `audit_identity.independence`, then push, open the PR and sign. None of these has been done.
