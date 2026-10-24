@@ -12,6 +12,27 @@ const PLUGIN = 'dopemux-memory-bridge'
 const GIT = ['git', 'status', '--porcelain']
 const MESSAGES = [{ role: 'user', text: 'hi', toolUses: [] }] as never
 
+const LEDGER_TIMEOUT_MS = 15_000
+
+function isGit(argv: readonly string[]): boolean {
+  return argv.length === GIT.length && argv.every((part, i) => part === GIT[i])
+}
+
+// The exact replay argv of packet L01: nothing in it but the event JSON varies.
+function isEmit(argv: readonly string[]): boolean {
+  return (
+    argv.length === 9 &&
+    argv[0] === 'dopemux' &&
+    argv[1] === 'capture' &&
+    argv[2] === 'emit' &&
+    argv[3] === '--event' &&
+    argv[5] === '--mode' &&
+    argv[6] === 'plugin' &&
+    argv[7] === '--repo-root' &&
+    argv[8] === ROOT
+  )
+}
+
 const BAND = {
   plugin: PLUGIN,
   component: 'AbovePrompt',
@@ -27,6 +48,7 @@ const BAND = {
 
 type WriteMode = 'ok' | 'fail' | 'slow'
 type ProcMode = 'ok' | 'deny' | 'throw' | 'hang'
+type LedgerMode = 'ok' | 'fail' | 'slow' // how `dopemux capture emit` answers
 
 type Row = Record<string, unknown> & {
   id: string
@@ -74,7 +96,16 @@ function harness($: Engine, on: On, opts: Options = {}) {
     writes: [] as { path: string; text: string }[],
     active: 0,
     maxActive: 0,
-    procCalls: [] as { argv: readonly string[]; cwd: string | undefined }[],
+    ledgerMode: 'ok' as LedgerMode,
+    ledgerActive: 0,
+    ledgerMaxActive: 0,
+    procCalls: [] as { argv: readonly string[]; cwd: string | undefined; timeoutMs: number | undefined }[],
+    emits: [] as {
+      argv: readonly string[]
+      event: Record<string, unknown>
+      rowStateAtCall: string | undefined
+    }[],
+    registered: [] as { name: string; description: string; argumentHint: string | undefined }[],
     statuses: [] as (string | undefined)[],
     store: new Map<string, unknown>(Object.entries(opts.store ?? {})),
     storeSets: [] as string[],
@@ -161,11 +192,38 @@ function harness($: Engine, on: On, opts: Options = {}) {
       world.active -= 1
     }
   })
+  on('command.register', (_, e) => {
+    world.registered.push({ name: e.name, description: e.description, argumentHint: e.argumentHint })
+    return { value: { command: e.name } }
+  })
   on('process.run', async (_, e) => {
-    world.procCalls.push({ argv: e.argv, cwd: e.init?.cwd })
+    world.procCalls.push({ argv: e.argv, cwd: e.init?.cwd, timeoutMs: e.init?.timeoutMs })
     if (world.procMode === 'hang') await clock.sleep(1000 * MIN)
     if (world.procMode === 'deny') return { deny: 'process is not available here' }
     if (world.procMode === 'throw') throw new Error('process.run blew up')
+    if (e.argv[0] === 'dopemux') {
+      const raw = e.argv[e.argv.indexOf('--event') + 1] ?? '{}'
+      const event = JSON.parse(raw) as Record<string, unknown>
+      const row = readOutbox(world.files, String(event.session_id))?.rows.find(r => r.id === event.event_id)
+      world.emits.push({ argv: e.argv, event, rowStateAtCall: row?.state })
+      world.ledgerActive += 1
+      world.ledgerMaxActive = Math.max(world.ledgerMaxActive, world.ledgerActive)
+      try {
+        if (world.ledgerMode === 'slow') await clock.sleep(10 * MIN)
+        const exitCode = world.ledgerMode === 'fail' ? 1 : 0
+        return {
+          value: {
+            exitCode,
+            stdout: '',
+            stderr: exitCode === 0 ? '' : 'capture failed',
+            isStdoutTruncated: false,
+            isStderrTruncated: false,
+          },
+        }
+      } finally {
+        world.ledgerActive -= 1
+      }
+    }
     return {
       value: {
         exitCode: 0,
@@ -248,6 +306,16 @@ function harness($: Engine, on: On, opts: Options = {}) {
     gen(sid = world.sid) {
       return readOutbox(world.files, sid)?.gen
     },
+    async run(command: string, args = '') {
+      const answer = await $.command.run({
+        command,
+        args,
+        origin: { kind: 'composer' },
+        presentation: { isFullscreen: false, columns: 80 },
+      })
+      await clock.settle()
+      return answer
+    },
     async band(surface: 'terminal' | 'desktop' = 'terminal') {
       const ui = await $.ui.mount({ ...BAND, surface })
       const found = await ui.find({ type: 'Text', text: /Welcome back/ })
@@ -320,6 +388,9 @@ function seedRow(id: string, state: 'pending' | 'sent' | 'dead', over: Record<st
   }
 }
 
+// A row the ledger replay is waiting to deliver (the only kind the status line counts).
+const WAITING = { kind: 'task', intended_event: 'task.completed', todos_completed: ['waiting'] }
+
 function startedOutbox(sid: string, rows: object[], gen = 1, dropped = 0) {
   return { [primary(sid)]: genText(sid, gen, rows, dropped) }
 }
@@ -378,7 +449,8 @@ test('a turn records the goal, files, a marked decision and completed todos', as
   const task = h.rows().find(r => r.kind === 'task')!
   expect(task.intended_event).toBe('task.completed')
   expect(task.todos_completed).toEqual(['Write tests'])
-  expect(h.world.status).toBe('📮 2 pending')
+  // Only the task row waits for the ledger; the turn row is local history.
+  expect(h.world.status).toBe('📮 1 pending')
 })
 
 test('no raw prompt, tool output or answer text reaches the outbox', async ($, on) => {
@@ -720,7 +792,7 @@ test('every row is at most 8 KB', async ($, on) => {
 test('over the 1 MiB cap the oldest sent rows go first and drops are counted', async ($, on) => {
   const body = 'x'.repeat(6000)
   const sent = Array.from({ length: 100 }, (_, i) => seedRow(`sent${i}`, 'sent', { goal: body }))
-  const pending = Array.from({ length: 70 }, (_, i) => seedRow(`pend${i}`, 'pending', { goal: body }))
+  const pending = Array.from({ length: 70 }, (_, i) => seedRow(`pend${i}`, 'pending', { ...WAITING, goal: body }))
   const h = harness($, on, { files: startedOutbox('s1', [...sent, ...pending]) })
   await h.start()
   await h.turn('new work', 'ok')
@@ -733,7 +805,7 @@ test('over the 1 MiB cap the oldest sent rows go first and drops are counted', a
   expect(rows.filter(r => r.state === 'pending').length).toBe(71)
   expect(rows.some(r => r.id === 'sent0')).toBe(false)
   expect(rows.some(r => r.id === 'sent99')).toBe(true)
-  expect(h.world.status).toMatch(/^📮 71 pending \+\d+ dropped$/)
+  expect(h.world.status).toMatch(/^📮 70 pending \+\d+ dropped$/)
 })
 
 test('with no sent rows left the oldest pending rows are dropped, and counted', async ($, on) => {
@@ -754,8 +826,8 @@ test('with no sent rows left the oldest pending rows are dropped, and counted', 
 // generation recovery
 
 test('a torn newer generation is skipped and the older valid one is used', async ($, on) => {
-  const older = [seedRow('keep1', 'pending'), seedRow('keep2', 'pending')]
-  const tornFull = genText('s1', 6, [...older, seedRow('lost', 'pending')])
+  const older = [seedRow('keep1', 'pending', WAITING), seedRow('keep2', 'pending', WAITING)]
+  const tornFull = genText('s1', 6, [...older, seedRow('lost', 'pending', WAITING)])
   const files = {
     [primary('s1')]: genText('s1', 5, older),
     [alternate('s1')]: tornFull.slice(0, tornFull.length - 60),
@@ -775,8 +847,8 @@ test('a torn newer generation is skipped and the older valid one is used', async
 
 test('the highest valid generation wins when both are whole', async ($, on) => {
   const files = {
-    [primary('s1')]: genText('s1', 3, [seedRow('g3', 'pending')]),
-    [alternate('s1')]: genText('s1', 4, [seedRow('g3', 'pending'), seedRow('g4', 'pending')]),
+    [primary('s1')]: genText('s1', 3, [seedRow('g3', 'pending', WAITING)]),
+    [alternate('s1')]: genText('s1', 4, [seedRow('g3', 'pending', WAITING), seedRow('g4', 'pending', WAITING)]),
   }
   const h = harness($, on, { files })
   await h.start()
@@ -784,7 +856,7 @@ test('the highest valid generation wins when both are whole', async ($, on) => {
 })
 
 test('garbage lines inside a whole generation are skipped, not fatal', async ($, on) => {
-  const text = genText('s1', 2, [seedRow('ok1', 'pending')]).split('\n')
+  const text = genText('s1', 2, [seedRow('ok1', 'pending', WAITING)]).split('\n')
   text.splice(1, 0, '{not json')
   const bad = text.join('\n').replace(/"rows":1/, '"rows":2')
   const h = harness($, on, { files: { [primary('s1')]: bad } })
@@ -800,19 +872,53 @@ test('status line: clear, pending count, memory-only, write failed, dropped suff
   await h.start()
   expect(h.world.status).toBe('📮 clear')
 
+  // A turn row is local history: it never waits for the ledger.
   await h.turn('one', 'ok')
-  expect(h.world.status).toBe('📮 1 pending')
+  expect(h.world.status).toBe('📮 clear')
   await h.turn('two', 'ok')
+  expect(h.world.status).toBe('📮 clear')
+
+  await h.todos([['T1', 'completed']])
+  expect(h.world.status).toBe('📮 1 pending')
+  await h.todos([['T1', 'completed'], ['T2', 'completed']])
   expect(h.world.status).toBe('📮 2 pending')
 })
 
-test('status line counts pending rows already on disk at session start', async ($, on) => {
-  const other = [seedRow('o1', 'pending'), seedRow('o2', 'sent'), seedRow('o3', 'pending')]
+test('status line counts replayable pending rows already on disk at session start', async ($, on) => {
+  const other = [
+    seedRow('o1', 'pending', WAITING),
+    seedRow('o2', 'sent', WAITING),
+    seedRow('o3', 'pending', WAITING),
+    seedRow('o4', 'pending'), // a prior turn row: local history, not counted
+    seedRow('o5', 'pending', { kind: 'compact' }),
+    seedRow('o6', 'pending', { kind: 'end' }),
+  ]
   const h = harness($, on, { files: startedOutbox('older', other) })
   await h.start()
   expect(h.world.status).toBe('📮 2 pending')
   await h.turn('one', 'ok')
-  expect(h.world.status).toBe('📮 3 pending')
+  expect(h.world.status).toBe('📮 2 pending')
+})
+
+test('prior-session turn rows alone leave the status line clear', async ($, on) => {
+  const other = [seedRow('t1', 'pending'), seedRow('t2', 'pending', { kind: 'compact' })]
+  const h = harness($, on, { files: startedOutbox('older', other) })
+  await h.start()
+  expect(h.world.status).toBe('📮 clear')
+})
+
+test('status goes clear -> 1 pending after a completed todo -> clear once it is sent', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.turn('talk only', 'ok')
+  expect(h.world.status).toBe('📮 clear')
+  await finishTasks(h, ['Do it'])
+  expect(h.world.status).toBe('📮 1 pending')
+  await h.world.clock.advance(61 * SEC)
+  expect(h.rows().find(r => r.kind === 'task')!.state).toBe('sent')
+  expect(h.world.status).toBe('📮 clear')
+  // The turn rows are still there, still 'pending' in the file.
+  expect(h.rows().filter(r => r.kind === 'turn').every(r => r.state === 'pending')).toBe(true)
 })
 
 test('without <root>/.dopemux the outbox stays in memory plus the store and says so', async ($, on) => {
@@ -853,7 +959,7 @@ test('a write failure never surfaces and the status line shows it, then recovers
 
   h.world.writeMode = 'ok'
   await h.turn('two', 'ok')
-  expect(h.world.status).toBe('📮 2 pending')
+  expect(h.world.status).toBe('📮 clear')
   expect(h.rows().filter(r => r.kind === 'turn')).toHaveLength(2)
 })
 
@@ -887,7 +993,7 @@ test('a hung write is raced, flagged, and never piles up overlapping writes', as
   await h.world.clock.advance(11 * MIN)
   expect(h.world.maxActive).toBe(1)
   expect(h.world.writes).toHaveLength(2)
-  expect(h.world.status).toBe('📮 5 pending')
+  expect(h.world.status).toBe('📮 clear')
   expect(h.rows().filter(r => r.kind === 'turn')).toHaveLength(5)
 })
 
@@ -1124,7 +1230,7 @@ test('a throwing $.process.run is survived as well', async ($, on) => {
   await h.world.clock.advance(31 * MIN)
   expect((await h.band()).text).toBe('Welcome back - you were on Throw goal')
   // The outbox and the status line never needed it.
-  expect(h.world.status).toBe('📮 1 pending')
+  expect(h.world.status).toBe('📮 clear')
 })
 
 
@@ -1181,20 +1287,22 @@ test('an outer plugin that draws without next hides the band (accepted limit)', 
 // ---------------------------------------------------------------------------------
 // the contract: no network, no subprocess but git status
 
-test('the mod makes no network call and runs nothing but git status', async ($, on) => {
+test('the mod makes no network call and runs nothing but git status and the ledger emit', async ($, on) => {
   const h = harness($, on, { gitOut: ' M a\n' })
   await h.start()
   await h.turn('Everything', 'Decision: d', async () => {
     await h.edit('/repo/a.py')
     await h.todos([['T', 'completed']])
   })
+  await h.run('bridge-note', 'a note')
   await $.session.compact({ trigger: 'auto', messages: MESSAGES })
   await h.world.clock.advance(120 * MIN)
   await h.band()
   await h.end('other')
   expect(h.world.network).toEqual([])
-  for (const call of h.world.procCalls) expect(call.argv).toEqual(GIT)
-  expect(h.world.procCalls.length).toBeGreaterThan(0)
+  for (const call of h.world.procCalls) expect(isGit(call.argv) || isEmit(call.argv)).toBe(true)
+  expect(h.world.procCalls.some(call => isGit(call.argv))).toBe(true)
+  expect(h.world.emits.length).toBe(2)
 })
 
 test('the store is only touched in memory-only mode', async ($, on) => {
@@ -1202,4 +1310,406 @@ test('the store is only touched in memory-only mode', async ($, on) => {
   await h.start()
   await h.turn('x', 'ok')
   expect(h.world.storeSets).toEqual([])
+})
+
+// ---------------------------------------------------------------------------------
+// ledger replay: task and note rows go to `dopemux capture emit`, nothing else
+
+type Harness = ReturnType<typeof harness>
+
+const ALLOWED_EVENTS = ['task.completed', 'manual.memory_store']
+
+// A main-loop turn that completes the given todo titles: one `task` row each.
+async function finishTasks(h: Harness, titles: string[], text = 'ship') {
+  await h.turn(text, 'ok', async () => {
+    await h.todos(titles.map(t => [t, 'completed'] as [string, 'completed']))
+  })
+}
+
+function sentCount(h: Harness): number {
+  return h.rows().filter(r => r.state === 'sent').length
+}
+
+test('registers the bridge-note command in session.start and no other', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  expect(h.world.registered).toEqual([
+    { name: 'bridge-note', description: 'Store a note in the capture ledger', argumentHint: '<text>' },
+  ])
+})
+
+test('a completed todo is replayed once a minute later, with the exact argv and event', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await finishTasks(h, ['Ship the thing'])
+  const row = h.rows().find(r => r.kind === 'task')!
+  expect(row.state).toBe('pending')
+
+  // Nothing runs before the tick.
+  await h.world.clock.advance(59 * SEC)
+  expect(h.world.emits).toHaveLength(0)
+
+  await h.world.clock.advance(2 * SEC)
+  expect(h.world.emits).toHaveLength(1)
+  const call = h.world.procCalls.find(c => isEmit(c.argv))!
+  expect(call.timeoutMs).toBe(LEDGER_TIMEOUT_MS)
+  expect(call.argv.slice(0, 3)).toEqual(['dopemux', 'capture', 'emit'])
+  expect(call.argv.slice(5)).toEqual(['--mode', 'plugin', '--repo-root', ROOT])
+  expect(h.world.emits[0]!.event).toEqual({
+    event_type: 'task.completed',
+    payload: { title: 'Ship the thing' },
+    ts_utc: row.ts,
+    session_id: 's1',
+    event_id: row.id,
+  })
+  const after = h.rows().find(r => r.id === row.id)!
+  expect(after.state).toBe('sent')
+  expect(after.attempts).toBe(1)
+})
+
+test('a row is marked sent only after exit 0: it is still pending while the call runs', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await finishTasks(h, ['Order matters'])
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits[0]!.rowStateAtCall).toBe('pending')
+  expect(h.rows().find(r => r.kind === 'task')!.state).toBe('sent')
+})
+
+test('rows that are not task or note rows are never replayed', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.turn('only a goal', 'Decision: keep it local')
+  await $.session.compact({ trigger: 'auto', messages: MESSAGES })
+  await h.world.clock.advance(10 * MIN)
+  expect(h.world.emits).toHaveLength(0)
+  expect(h.world.procCalls.filter(c => isEmit(c.argv))).toHaveLength(0)
+  expect(h.rows().every(r => r.state === 'pending')).toBe(true)
+})
+
+test('only task.completed and manual.memory_store are ever emitted', async ($, on) => {
+  const stray = (id: string, intended: string) =>
+    seedRow(id, 'pending', { session_id: 's1', kind: 'task', intended_event: intended, todos_completed: ['x'] })
+  const h = harness($, on, {
+    files: startedOutbox('s1', [
+      stray('aaaaaaaaaaaaaaaaaaaaaaaa', 'decision.logged'),
+      stray('bbbbbbbbbbbbbbbbbbbbbbbb', 'work.untracked_detected'),
+    ]),
+  })
+  await h.start()
+  await finishTasks(h, ['Real task'])
+  await h.run('bridge-note', 'a real note')
+  await h.world.clock.advance(5 * MIN)
+  expect(h.world.emits.length).toBe(2)
+  for (const emit of h.world.emits) expect(ALLOWED_EVENTS).toContain(emit.event.event_type)
+  // The stray rows were never touched.
+  const stays = h.rows().filter(r => r.id.startsWith('aaaa') || r.id.startsWith('bbbb'))
+  expect(stays.map(r => r.state)).toEqual(['pending', 'pending'])
+})
+
+test('a non-zero exit leaves the row pending, counts the attempt and says the ledger is unavailable', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.ledgerMode = 'fail'
+  await finishTasks(h, ['Stuck'])
+  await h.world.clock.advance(61 * SEC)
+  const row = h.rows().find(r => r.kind === 'task')!
+  expect(row.state).toBe('pending')
+  expect(row.attempts).toBe(1)
+  expect(h.world.status).toBe('📮 1 pending (ledger unavailable)')
+
+  // The ledger comes back: the next tick delivers it and the suffix goes.
+  h.world.ledgerMode = 'ok'
+  await h.world.clock.advance(61 * SEC)
+  expect(h.rows().find(r => r.kind === 'task')!.state).toBe('sent')
+  expect(h.world.status).toBe('📮 clear')
+})
+
+test('a timed-out call leaves the row pending and is not joined by a second call', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.ledgerMode = 'slow'
+  await finishTasks(h, ['Slow one'])
+  await h.world.clock.advance(61 * SEC) // the call starts
+  expect(h.world.emits).toHaveLength(1)
+  await h.world.clock.advance(20 * SEC) // the 15 s guard gave up
+  expect(h.rows().find(r => r.kind === 'task')!.state).toBe('pending')
+  expect(h.rows().find(r => r.kind === 'task')!.attempts).toBe(1)
+  expect(h.world.status).toBe('📮 1 pending (ledger unavailable)')
+
+  // Still hung: several ticks pass and no second call overlaps it.
+  await h.world.clock.advance(5 * MIN)
+  expect(h.world.emits).toHaveLength(1)
+  expect(h.world.ledgerMaxActive).toBe(1)
+
+  // The hung call finally returns exit 0: the next tick may run again.
+  h.world.ledgerMode = 'ok'
+  await h.world.clock.advance(6 * MIN)
+  expect(h.world.ledgerMaxActive).toBe(1)
+  expect(h.rows().find(r => r.kind === 'task')!.state).toBe('sent')
+})
+
+for (const mode of ['deny', 'throw'] as const) {
+  test(`without a usable $.process (${mode}) rows stay pending, nothing throws and attempts are not spent`, async ($, on) => {
+    const h = harness($, on)
+    h.world.procMode = mode
+    await h.start()
+    await finishTasks(h, ['Offline task'])
+    await h.run('bridge-note', 'offline note')
+    await h.world.clock.advance(5 * MIN)
+    const rows = h.rows().filter(r => r.intended_event !== null)
+    expect(rows).toHaveLength(2)
+    expect(rows.every(r => r.state === 'pending' && r.attempts === 0)).toBe(true)
+    expect(h.world.status).toBe('📮 2 pending (ledger unavailable)')
+    // The outbox itself kept working.
+    expect(h.rows().filter(r => r.kind === 'turn')).toHaveLength(1)
+    expect(h.world.network).toEqual([])
+  })
+}
+
+test('at most three rows go out per tick', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await finishTasks(h, ['t1', 't2', 't3', 't4', 't5'])
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits).toHaveLength(3)
+  expect(sentCount(h)).toBe(3)
+  await h.world.clock.advance(60 * SEC)
+  expect(h.world.emits).toHaveLength(5)
+  expect(sentCount(h)).toBe(5)
+  // Nothing pending to send: the timer is not re-armed.
+  await h.world.clock.advance(10 * MIN)
+  expect(h.world.emits).toHaveLength(5)
+})
+
+test('calls are serial: a slow ledger never has two in flight', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.ledgerMode = 'slow'
+  await finishTasks(h, ['s1', 's2', 's3', 's4'])
+  await h.world.clock.advance(61 * SEC)
+  await h.world.clock.advance(30 * MIN)
+  expect(h.world.ledgerMaxActive).toBe(1)
+  expect(h.world.emits.length).toBeGreaterThan(0)
+})
+
+test('after five failed attempts a row is dead: not retried, counted in the status line', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.ledgerMode = 'fail'
+  await finishTasks(h, ['Doomed'])
+  for (let i = 0; i < 8; i += 1) await h.world.clock.advance(61 * SEC)
+  const row = h.rows().find(r => r.kind === 'task')!
+  expect(row.state).toBe('dead')
+  expect(row.attempts).toBe(5)
+  expect(h.world.emits).toHaveLength(5)
+  expect(h.world.status).toBe('⚠ 1 undeliverable')
+
+  // A dead row stays in the file and is never sent again.
+  h.world.ledgerMode = 'ok'
+  await h.world.clock.advance(10 * MIN)
+  expect(h.world.emits).toHaveLength(5)
+})
+
+test('a fresh session counts dead rows it finds on disk', async ($, on) => {
+  const h = harness($, on, {
+    files: startedOutbox('old', [seedRow('dddddddddddddddddddddddd', 'dead', { kind: 'task', intended_event: 'task.completed' })]),
+  })
+  await h.start()
+  expect(h.world.status).toBe('⚠ 1 undeliverable')
+})
+
+test('a resend carries the same event_id every time, and again after a restart', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.ledgerMode = 'fail'
+  await finishTasks(h, ['Same id'])
+  const row = h.rows().find(r => r.kind === 'task')!
+  await h.world.clock.advance(61 * SEC)
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits.map(e => e.event.event_id)).toEqual([row.id, row.id])
+  expect(h.world.emits[0]!.event).toEqual(h.world.emits[1]!.event)
+})
+
+test('a pending row left by an earlier run of the same session is replayed with its stored id', async ($, on) => {
+  const stored = seedRow('cccccccccccccccccccccccc', 'pending', {
+    session_id: 's1',
+    kind: 'task',
+    intended_event: 'task.completed',
+    todos_completed: ['Left behind'],
+  })
+  const h = harness($, on, { files: startedOutbox('s1', [stored]) })
+  await h.start()
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits).toHaveLength(1)
+  expect(h.world.emits[0]!.event).toMatchObject({
+    event_type: 'task.completed',
+    event_id: 'cccccccccccccccccccccccc',
+    payload: { title: 'Left behind' },
+  })
+  expect(h.rows().find(r => r.id === stored.id)!.state).toBe('sent')
+})
+
+test('rows of other sessions are not replayed (single writer per file)', async ($, on) => {
+  const h = harness($, on, {
+    files: startedOutbox('other', [
+      seedRow('eeeeeeeeeeeeeeeeeeeeeeee', 'pending', { kind: 'task', intended_event: 'task.completed', todos_completed: ['theirs'] }),
+    ]),
+  })
+  await h.start()
+  await h.world.clock.advance(10 * MIN)
+  expect(h.world.emits).toHaveLength(0)
+})
+
+test('a malformed task row with no title is dead at once and nothing is sent for it', async ($, on) => {
+  const h = harness($, on, {
+    files: startedOutbox('s1', [
+      seedRow('ffffffffffffffffffffffff', 'pending', { session_id: 's1', kind: 'task', intended_event: 'task.completed' }),
+    ]),
+  })
+  await h.start()
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits).toHaveLength(0)
+  expect(h.rows().find(r => r.id.startsWith('ffff'))!.state).toBe('dead')
+})
+
+test('replay still runs for the old session after /clear changes the session id', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await finishTasks(h, ['Before clear'])
+  h.world.sid = 's2' // /clear: a fresh session id, no session.start
+  await $.session.end({ reason: 'clear', sessionId: 's1', resume: { sessionId: 's1' } as never })
+  await h.world.clock.settle()
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits).toHaveLength(1)
+  expect(h.world.emits[0]!.event.session_id).toBe('s1')
+  expect(h.rows('s1').find(r => r.kind === 'task')!.state).toBe('sent')
+})
+
+test('a real session end cancels the replay timer', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await finishTasks(h, ['Never sent'])
+  await h.end('other')
+  await h.world.clock.advance(10 * MIN)
+  expect(h.world.emits).toHaveLength(0)
+  expect(h.rows().find(r => r.kind === 'task')!.state).toBe('pending')
+})
+
+test('without <root>/.dopemux the rows replay from memory and the store follows', async ($, on) => {
+  const h = harness($, on, { dopemux: false })
+  await h.start()
+  await finishTasks(h, ['Memory task'])
+  expect(h.world.status).toBe('📮 memory-only')
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits).toHaveLength(1)
+  const saved = h.world.store.get('outbox:s1') as { rows: Row[] }
+  expect(saved.rows.find(r => r.kind === 'task')!.state).toBe('sent')
+})
+
+test('a replay write that fails is retried and never surfaces', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await finishTasks(h, ['Write trouble'])
+  h.world.writeMode = 'fail'
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.status).toBe('⚠ outbox write failed')
+  h.world.writeMode = 'ok'
+  await h.turn('later', 'ok')
+  expect(h.rows().find(r => r.kind === 'task')!.state).toBe('sent')
+})
+
+// --- /bridge-note ----------------------------------------------------------------------
+
+test('bridge-note queues a note row and says queued, not stored', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  const answer = await h.run('bridge-note', '  remember   the milk  ')
+  expect(answer.text).toMatch(/queued/i)
+  expect(answer.text).toMatch(/nothing is stored yet/i)
+  expect(answer.text).not.toMatch(/\b(?:note|it) (?:is|was|has been) stored\b/i)
+  const note = h.rows().find(r => r.kind === 'note')!
+  expect(note).toMatchObject({
+    note: 'remember the milk',
+    intended_event: 'manual.memory_store',
+    state: 'pending',
+    attempts: 0,
+    todos_completed: [],
+    decisions: [],
+  })
+  expect(h.world.status).toBe('📮 1 pending')
+})
+
+test('bridge-note is replayed as manual.memory_store with the stable id', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.run('bridge-note', 'a note for later')
+  const note = h.rows().find(r => r.kind === 'note')!
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits).toHaveLength(1)
+  expect(h.world.emits[0]!.event).toEqual({
+    event_type: 'manual.memory_store',
+    payload: { category: 'implementation', entry_type: 'manual_note', summary: 'a note for later' },
+    ts_utc: note.ts,
+    session_id: 's1',
+    event_id: note.id,
+  })
+  expect(h.rows().find(r => r.kind === 'note')!.state).toBe('sent')
+})
+
+test('bridge-note redacts secrets and caps the text at 500 characters', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.run('bridge-note', 'key sk-ant-api03-ABCDEFGHIJKLMNOP mail me@example.com DATABASE_URL=postgres://u:pw@h/db')
+  const first = h.rows().find(r => r.kind === 'note')!
+  expect(first.note).not.toMatch(/ABCDEFGHIJKLMNOP|me@example\.com|pw@h/)
+  expect(first.note).toContain('[REDACTED')
+
+  await h.run('bridge-note', 'x'.repeat(900))
+  const notes = h.rows().filter(r => r.kind === 'note')
+  expect(notes).toHaveLength(2)
+  expect(notes[1]!.note!.length).toBe(500)
+})
+
+test('bridge-note with no text returns usage and appends nothing', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  for (const args of ['', '   ', '\n\t']) {
+    const answer = await h.run('bridge-note', args)
+    expect(answer.text).toMatch(/usage/i)
+    expect(answer.text).toMatch(/nothing/i)
+  }
+  expect(h.rows()).toHaveLength(0)
+  expect(h.world.writes).toHaveLength(0)
+})
+
+test('two identical notes are two rows', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.run('bridge-note', 'same')
+  await h.run('bridge-note', 'same')
+  expect(h.rows().filter(r => r.kind === 'note')).toHaveLength(2)
+})
+
+test('bridge-note works when $.process is missing: queued, nothing thrown', async ($, on) => {
+  const h = harness($, on)
+  h.world.procMode = 'deny'
+  await h.start()
+  const answer = await h.run('bridge-note', 'offline note')
+  expect(answer.text).toMatch(/queued/i)
+  await h.world.clock.advance(3 * MIN)
+  expect(h.rows().find(r => r.kind === 'note')!.state).toBe('pending')
+})
+
+test('no HTTP call is made anywhere in a full run, and no decision.logged is emitted', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await finishTasks(h, ['A', 'B'])
+  await h.run('bridge-note', 'n')
+  await h.turn('d', 'Decision: x')
+  await h.world.clock.advance(10 * MIN)
+  await h.end('other')
+  expect(h.world.network).toEqual([])
+  const types = h.world.emits.map(e => e.event.event_type)
+  expect(types.sort()).toEqual(['manual.memory_store', 'task.completed', 'task.completed'])
 })

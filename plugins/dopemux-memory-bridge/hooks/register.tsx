@@ -9,17 +9,21 @@ import type {
   TurnCompleteInput,
 } from 'claude-code'
 
-// dopemux-memory-bridge: a local, no-network memory outbox.
+// dopemux-memory-bridge: a local memory outbox with a local-ledger replay.
 //
 // It records a derived digest of each turn (goal, relative file paths,
 // marker-detected decisions, completed todo titles) into a per-session JSONL
 // ring under `<repo-root>/.dopemux/memory-bridge/`, shows how many rows wait
 // in the status line, and draws a one-line welcome-back band after a break.
+// Completed todos and `/bridge-note` notes are replayed, a few per minute, to
+// the local capture ledger with `dopemux capture emit` (idempotent through the
+// row id used as the event_id).
 //
-// There is no `$.http.fetch`, no `dopemux` call and no ConPort or dope-memory
-// access anywhere in this file. The one subprocess is `git status --porcelain`
-// (band only). Every hook body is wrapped so an exception never reaches the
-// person, and the observing hooks hand `next(e)` back untouched.
+// There is no `$.http.fetch` and no ConPort or dope-memory access anywhere in
+// this file. The only subprocesses are `git status --porcelain` (band) and the
+// `dopemux capture emit` replay argv. Every hook body is wrapped so an
+// exception never reaches the person, and the observing hooks hand `next(e)`
+// back untouched.
 //
 // The engine's static reader follows `$` only through functions declared at
 // the top of this file, so the helpers below take `$` and the session's state
@@ -43,11 +47,17 @@ const NOTE_CHARS = 2_000
 const MAX_DECISIONS = 3
 const MAX_FILES = 30
 const MAX_TODOS = 10
+const NOTE_COMMAND_CHARS = 500
 
 const WRITE_TIMEOUT_MS = 3_000
 const INIT_TIMEOUT_MS = 1_500
 const END_FLUSH_MS = 800
 const GIT_TIMEOUT_MS = 3_000
+const REPLAY_MS = 60_000 // one replay tick a minute, only while rows wait
+const REPLAY_PER_TICK = 3 // each emit costs about 2.8 s
+const MAX_ATTEMPTS = 5
+const LEDGER_TIMEOUT_MS = 15_000
+const LEDGER_GUARD_MS = LEDGER_TIMEOUT_MS + 1_000 // the race timer outlives the engine's own
 const MAX_SESSIONS_READ = 8
 const MAX_ROOT_WALK = 40
 const STORE_KEEP_SESSIONS = 3
@@ -96,7 +106,19 @@ type Ring = {
   failed: boolean
 }
 
-type PriorSessions = { rows: OutboxRow[]; pending: number }
+type PriorSessions = { rows: OutboxRow[]; pending: number; dead: number }
+
+type LedgerEvent =
+  | { event_type: 'task.completed'; payload: { title: string }; ts_utc: string; session_id: string; event_id: string }
+  | {
+      event_type: 'manual.memory_store'
+      payload: { category: 'implementation'; entry_type: 'manual_note'; summary: string }
+      ts_utc: string
+      session_id: string
+      event_id: string
+    }
+
+type Outcome = 'ok' | 'failed' | 'timeout' | 'unavailable'
 
 // One module load's state. Module-local on purpose: a reload starts fresh, and
 // everything that matters is already in the outbox file.
@@ -107,6 +129,7 @@ type Bridge = {
   rootFor: string | undefined
   rings: Map<string, Ring>
   foldedPending: number // pending rows of closed (cleared) sessions and older files
+  foldedDead: number
   foldedDropped: number
   turnId: string
   goal: string
@@ -119,6 +142,11 @@ type Bridge = {
   bandLine: string | undefined
   bandBusy: boolean
   gitInFlight: boolean
+  replayTimer: Timer | undefined
+  replaying: boolean // a replay tick is running
+  ledgerInFlight: boolean // a `dopemux capture emit` is running (a raced call is not cancelled)
+  ledgerDown: boolean // the last replay call did not succeed
+  noteSeq: number
   isEnded: boolean
 }
 
@@ -589,23 +617,44 @@ async function boundedFlush($: EngineInterface, s: Bridge, ring: Ring): Promise<
 
 // --- status line -------------------------------------------------------------------
 
+function isReplayable(row: OutboxRow): boolean {
+  return row.state === 'pending' && (row.intended_event === 'task.completed' || row.intended_event === 'manual.memory_store')
+}
+
 function renderStatus($: EngineInterface, s: Bridge): void {
   if (s.isEnded) return
   try {
+    // `pending` means waiting for the ledger: turn, compact and end rows are
+    // local history (state 'pending' in the file, never sent) and do not count.
     let pending = s.foldedPending
+    let dead = s.foldedDead
     let dropped = s.foldedDropped
+    let waiting = 0 // pending rows this run can replay
     let isFailed = false
     let isMemory = false
     for (const ring of s.rings.values()) {
-      for (const entry of ring.entries) if (entry.row.state === 'pending') pending += 1
+      for (const entry of ring.entries) {
+        if (isReplayable(entry.row)) {
+          pending += 1
+          waiting += 1
+        } else if (entry.row.state === 'dead') {
+          dead += 1
+        }
+      }
       dropped += ring.dropped
       if (ring.failed) isFailed = true
       if (ring.mode === 'memory') isMemory = true
     }
     let text: string
-    if (isFailed) text = '⚠ outbox write failed'
-    else if (isMemory) text = '📮 memory-only'
-    else text = pending === 0 ? '📮 clear' : `📮 ${pending} pending`
+    if (isFailed) {
+      text = '⚠ outbox write failed'
+    } else {
+      let base: string
+      if (isMemory) base = '📮 memory-only'
+      else if (pending === 0) base = '📮 clear'
+      else base = `📮 ${pending} pending${s.ledgerDown && waiting > 0 ? ' (ledger unavailable)' : ''}`
+      text = dead > 0 ? `⚠ ${dead} undeliverable${base === '📮 clear' ? '' : ` · ${base}`}` : base
+    }
     if (dropped > 0) text += ` +${dropped} dropped`
     $.ui.status(text)
   } catch {
@@ -655,6 +704,185 @@ async function append($: EngineInterface, s: Bridge, input: AppendInput): Promis
   ring.dirty = true
   renderStatus($, s)
   void flush($, s, ring)
+  if (isReplayable(row)) armReplay($, s)
+}
+
+// --- the ledger replay -----------------------------------------------------------------
+
+// The event `dopemux capture emit` takes (W01 Q5, capture_client.py
+// `emit_capture_event`): `event_id` is the row id, so a resend is a no-op in the
+// ledger. A row that cannot make a complete event has no event.
+function ledgerEvent(row: OutboxRow): LedgerEvent | undefined {
+  if (row.intended_event === 'task.completed') {
+    const title = row.todos_completed[0]
+    if (title === undefined || title === '') return undefined
+    return { event_type: 'task.completed', payload: { title }, ts_utc: row.ts, session_id: row.session_id, event_id: row.id }
+  }
+  if (row.intended_event === 'manual.memory_store') {
+    const summary = row.note
+    if (summary === undefined || summary === '') return undefined
+    return {
+      event_type: 'manual.memory_store',
+      payload: { category: 'implementation', entry_type: 'manual_note', summary },
+      ts_utc: row.ts,
+      session_id: row.session_id,
+      event_id: row.id,
+    }
+  }
+  return undefined
+}
+
+// Rewrites one row in place (a new line and size) and queues the ring for a
+// write. False when the row was dropped by the cap in the meantime.
+function markRow(ring: Ring, id: string, patch: Partial<Pick<OutboxRow, 'state' | 'attempts'>>): boolean {
+  const entry = ring.entries.find(candidate => candidate.row.id === id)
+  if (entry === undefined) return false
+  const row: OutboxRow = { ...entry.row, ...patch }
+  const line = JSON.stringify(row)
+  const bytes = byteLength(line) + 1
+  ring.bytes += bytes - entry.bytes
+  entry.row = row
+  entry.line = line
+  entry.bytes = bytes
+  ring.dirty = true
+  return true
+}
+
+// Fewest attempts first, then oldest, so one poisoned row cannot starve the rest.
+function nextReplayable(s: Bridge, tried: ReadonlySet<string>): { ring: Ring; row: OutboxRow } | undefined {
+  let best: { ring: Ring; row: OutboxRow } | undefined
+  for (const ring of s.rings.values()) {
+    for (const entry of ring.entries) {
+      const row = entry.row
+      if (!isReplayable(row) || tried.has(row.id)) continue
+      if (
+        best === undefined ||
+        row.attempts < best.row.attempts ||
+        (row.attempts === best.row.attempts && row.ts < best.row.ts)
+      ) {
+        best = { ring, row }
+      }
+    }
+  }
+  return best
+}
+
+function hasReplayable(s: Bridge): boolean {
+  for (const ring of s.rings.values()) if (ring.entries.some(entry => isReplayable(entry.row))) return true
+  return false
+}
+
+// One `dopemux capture emit`. The call is raced against a timer, but a raced
+// call is not cancelled: `ledgerInFlight` stays set until it really settles, so
+// a hung call can never be joined by a second one.
+async function emitOnce($: EngineInterface, s: Bridge, root: string, event: LedgerEvent): Promise<Outcome> {
+  const argv = [
+    'dopemux',
+    'capture',
+    'emit',
+    '--event',
+    JSON.stringify(event),
+    '--mode',
+    'plugin',
+    '--repo-root',
+    root,
+  ]
+  let timer: Timer | undefined
+  try {
+    const started = await $.clock.now()
+    s.ledgerInFlight = true
+    const settled = Promise.resolve()
+      .then(() => $.process.run(argv, { timeoutMs: LEDGER_TIMEOUT_MS }))
+      .then(
+        result => ({ exitCode: result.exitCode as number | undefined }),
+        () => ({ exitCode: undefined }),
+      )
+    void settled.finally(() => {
+      s.ledgerInFlight = false
+    })
+    const timeout = new Promise<'timeout'>(resolve => {
+      timer = $.clock.after(LEDGER_GUARD_MS, () => resolve('timeout'))
+    })
+    const result = await Promise.race([settled, timeout])
+    if (result === 'timeout') return 'timeout'
+    if (result.exitCode !== undefined) return result.exitCode === 0 ? 'ok' : 'failed'
+    // A rejection: the command could not start (`$.process` is CLI only and may
+    // be absent or refuse on another surface) or the engine's own timeout hit.
+    // Only a call that ran for its whole time counts as a failed attempt.
+    const elapsed = (await $.clock.now()) - started
+    return elapsed >= LEDGER_TIMEOUT_MS - 500 ? 'timeout' : 'unavailable'
+  } catch {
+    s.ledgerInFlight = false
+    return 'unavailable'
+  } finally {
+    timer?.cancel()
+  }
+}
+
+async function replayTick($: EngineInterface, s: Bridge): Promise<void> {
+  s.replayTimer = undefined
+  if (s.isEnded || s.replaying) return
+  if (s.ledgerInFlight) {
+    armReplay($, s)
+    return
+  }
+  s.replaying = true
+  try {
+    await resolveRoot($, s)
+    const tried = new Set<string>()
+    for (let step = 0; step < REPLAY_PER_TICK && !s.isEnded; step += 1) {
+      const found = nextReplayable(s, tried)
+      if (found === undefined) break
+      tried.add(found.row.id)
+      const { ring, row } = found
+
+      const event = ledgerEvent(row)
+      if (event === undefined) {
+        // Nothing to send for it, ever: stop retrying a row that cannot be built.
+        markRow(ring, row.id, { state: 'dead' })
+        void flush($, s, ring)
+        renderStatus($, s)
+        continue
+      }
+      const root = s.root
+      if (root === undefined || s.ledgerInFlight) {
+        s.ledgerDown = true
+        break
+      }
+
+      const outcome = await emitOnce($, s, root, event)
+      if (s.isEnded) break
+      if (outcome === 'unavailable') {
+        s.ledgerDown = true
+        break
+      }
+      if (outcome === 'ok') {
+        s.ledgerDown = false
+        markRow(ring, row.id, { state: 'sent', attempts: row.attempts + 1 })
+      } else {
+        s.ledgerDown = true
+        const attempts = row.attempts + 1
+        markRow(ring, row.id, { state: attempts >= MAX_ATTEMPTS ? 'dead' : 'pending', attempts })
+      }
+      void flush($, s, ring)
+      renderStatus($, s)
+      if (outcome === 'timeout') break
+    }
+  } catch {
+    // never surface
+  } finally {
+    s.replaying = false
+    renderStatus($, s)
+    if (!s.isEnded && hasReplayable(s)) armReplay($, s)
+  }
+}
+
+// One timer at most, and only while a row waits: no row, no tick.
+function armReplay($: EngineInterface, s: Bridge): void {
+  if (s.isEnded || s.replayTimer !== undefined || s.replaying) return
+  s.replayTimer = $.clock.after(REPLAY_MS, () => {
+    void replayTick($, s).catch(() => undefined)
+  })
 }
 
 // --- capture ---------------------------------------------------------------------------
@@ -756,7 +984,7 @@ function captureCompact($: EngineInterface, s: Bridge, trigger: SessionCompactTr
 // Reads the newest few other sessions' outbox files of this repo (the current
 // process's own sessions are in memory and fresher than their files).
 async function readPrior($: EngineInterface, s: Bridge): Promise<PriorSessions> {
-  const none: PriorSessions = { rows: [], pending: 0 }
+  const none: PriorSessions = { rows: [], pending: 0, dead: 0 }
   const root = s.root
   if (root === undefined) return none
   try {
@@ -776,6 +1004,7 @@ async function readPrior($: EngineInterface, s: Bridge): Promise<PriorSessions> 
       .map(([key]) => key)
     const rows: OutboxRow[] = []
     let pending = 0
+    let dead = 0
     for (const key of keys) {
       const best = newest(
         await readGeneration($, generationPath(root, key, 1)),
@@ -783,9 +1012,10 @@ async function readPrior($: EngineInterface, s: Bridge): Promise<PriorSessions> 
       )
       if (best === undefined) continue
       rows.push(...best.rows)
-      pending += best.rows.filter(row => row.state === 'pending').length
+      pending += best.rows.filter(isReplayable).length
+      dead += best.rows.filter(row => row.state === 'dead').length
     }
-    return { rows, pending }
+    return { rows, pending, dead }
   } catch {
     return none
   }
@@ -906,6 +1136,7 @@ async function initSession($: EngineInterface, s: Bridge, cwd: string): Promise<
 
   const prior = await readPrior($, s)
   s.foldedPending = prior.pending
+  s.foldedDead = prior.dead
   const now = await $.clock.now()
   const turns = [...prior.rows, ...ring.entries.map(entry => entry.row)].filter(row => row.kind === 'turn')
   const lastTurn = newestWith(turns, () => true)
@@ -913,6 +1144,7 @@ async function initSession($: EngineInterface, s: Bridge, cwd: string): Promise<
   s.lastActivityAt = Number.isFinite(lastAt) && lastAt <= now ? lastAt : now
   armIdle($, s, s.lastActivityAt + s.idleMs - now)
   renderStatus($, s)
+  if (hasReplayable(s)) armReplay($, s)
 
   void refreshBand($, s).then(() => redraw($), () => undefined)
 }
@@ -945,6 +1177,7 @@ export const register: Register = (on, options) => {
     rootFor: undefined,
     rings: new Map(),
     foldedPending: 0,
+    foldedDead: 0,
     foldedDropped: 0,
     turnId: '',
     goal: '',
@@ -957,12 +1190,25 @@ export const register: Register = (on, options) => {
     bandLine: undefined,
     bandBusy: false,
     gitInFlight: false,
+    replayTimer: undefined,
+    replaying: false,
+    ledgerInFlight: false,
+    ledgerDown: false,
+    noteSeq: 0,
     isEnded: false,
   }
 
   on('session.start', async ($, e, next) => {
     try {
       s.isEnded = false
+      // One refused registration must not stop the outbox.
+      await $.command
+        .register({
+          name: 'bridge-note',
+          description: 'Store a note in the capture ledger',
+          argumentHint: '<text>',
+        })
+        .catch(() => undefined)
       // A hung file system must not hold the session start: the init carries on
       // in the background and the status line follows when it lands.
       await bounded($, initSession($, s, e.cwd), INIT_TIMEOUT_MS)
@@ -970,6 +1216,32 @@ export const register: Register = (on, options) => {
       // Never surface a failure from setup.
     }
     return next(e)
+  })
+
+  // The only user-triggered write and the only slash command: it queues the
+  // note (redacted, capped) as a `note` row. It says so; it has stored nothing.
+  on('command.run', { command: 'bridge-note' }, async ($, e) => {
+    try {
+      const note = clean(e.args, NOTE_COMMAND_CHARS)
+      if (note === '') {
+        return { text: 'Usage: /bridge-note <text>. Nothing queued.' }
+      }
+      s.noteSeq += 1
+      const now = await $.clock.now()
+      await append($, s, {
+        kind: 'note',
+        turnId: s.turnId,
+        disc: `${now}#${s.noteSeq}`,
+        goal: s.goal,
+        note,
+        intended: 'manual.memory_store',
+      })
+      return {
+        text: `Queued your note (${Array.from(note).length} characters) for the capture ledger. Nothing is stored yet: the replay runs about once a minute and the status line shows what is still waiting.`,
+      }
+    } catch {
+      return { text: 'Could not queue the note. Nothing queued.' }
+    }
   })
 
   on('prompt.submit', async ($, e, next) => {
@@ -1076,9 +1348,19 @@ export const register: Register = (on, options) => {
           await boundedFlush($, s, ring)
         }
         if (e.reason === 'clear') {
-          // Fold the closed session into the counters; keep it if it is unsaved.
-          if (ring !== undefined && !ring.dirty && !ring.flushing && !ring.failed) {
-            for (const entry of ring.entries) if (entry.row.state === 'pending') s.foldedPending += 1
+          // Fold the closed session into the counters; keep it while it is
+          // unsaved or still holds rows the replay has to deliver.
+          if (
+            ring !== undefined &&
+            !ring.dirty &&
+            !ring.flushing &&
+            !ring.failed &&
+            !ring.entries.some(entry => isReplayable(entry.row))
+          ) {
+            for (const entry of ring.entries) {
+              if (isReplayable(entry.row)) s.foldedPending += 1
+              else if (entry.row.state === 'dead') s.foldedDead += 1
+            }
             s.foldedDropped += ring.dropped
             s.rings.delete(e.sessionId)
           }
@@ -1088,6 +1370,8 @@ export const register: Register = (on, options) => {
           s.isEnded = true
           s.idleTimer?.cancel()
           s.idleTimer = undefined
+          s.replayTimer?.cancel()
+          s.replayTimer = undefined
           $.ui.status(undefined)
         }
       }
