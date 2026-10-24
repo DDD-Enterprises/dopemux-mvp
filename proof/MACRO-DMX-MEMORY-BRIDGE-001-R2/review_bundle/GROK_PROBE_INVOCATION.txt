@@ -1,0 +1,12 @@
+#!/bin/bash
+# MACRO-DMX-MEMORY-BRIDGE-001-R2 audit PROBE: content-free prompt, same tool-less flags as the real run. Sealed cwd holds only PROBE_PROMPT.txt.
+A=/private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-memory-bridge-001-b349d8/0e3904e3-b5c3-497c-9b8c-3ae61536f9ed/scratchpad/audit
+cd "$A/probe_seal" || exit 90
+grok -m grok-4.5 --effort high --sandbox workspace --cwd "$A/probe_seal" \
+  --system-prompt-override "$(cat "$A/SYSTEM_PROMPT.txt")" \
+  --disallowed-tools "$(cat "$A/DISALLOWED.txt")" \
+  --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources" \
+  --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim \
+  --output-format streaming-messages-json --prompt-file PROBE_PROMPT.txt \
+  > "$A/GROK_PROBE_STREAM.txt" 2> "$A/GROK_PROBE_STDERR.txt"
+echo "probe_exit=$?" > "$A/GROK_PROBE_EXIT.txt"
