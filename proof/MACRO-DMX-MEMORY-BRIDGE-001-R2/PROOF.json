@@ -196,50 +196,50 @@
         "id": "N1",
         "severity": "MEDIUM",
         "title": "How-to claims code HEAD `1ce149a76` and verification at that commit; frozen audit head is `52855fb35ea40f420bdacdcab9e092f8d15292c6`.",
-        "status": "OPEN",
-        "body": "Lines: 'code committed at HEAD `1ce149a76`' and Verification 'At commit `1ce149a76`…105 tests'. Subject identifies frozen content head 52855fb… (3 commits from base). Stale or wrong HEAD citation for the delivered tree. [docs/02-how-to/memory-bridge.md] ADJUDICATION: Coordinator: CONFIRMED as a documentation defect; severity LOW, not MEDIUM. `docs/02-how-to/memory-bridge.md` lines 19 and 137 cite commit `1ce149a76`. `git diff 1ce149a76 52855fb35 -- plugins` is empty: the only change after it is the how-to itself, so the cited facts (code at that commit, 105 tests, validate pass) are true of the frozen tree. The defect is the pinned SHA: it reads as the delivered head and goes stale at the next commit, the same pattern the Pulse audit raised as F4 and repaired. Repair is a docs-only edit (drop the SHA) but it changes the audited subject, so it needs the operator's decision."
+        "status": "ACCEPTED_RISK",
+        "body": "Lines: 'code committed at HEAD `1ce149a76`' and Verification 'At commit `1ce149a76`…105 tests'. Subject identifies frozen content head 52855fb… (3 commits from base). Stale or wrong HEAD citation for the delivered tree. [docs/02-how-to/memory-bridge.md] ADJUDICATION: Coordinator: CONFIRMED as a documentation defect; severity LOW, not MEDIUM. `docs/02-how-to/memory-bridge.md` lines 19 and 137 cite commit `1ce149a76`. `git diff 1ce149a76 52855fb35 -- plugins` is empty: the only change after it is the how-to itself, so the cited facts (code at that commit, 105 tests, validate pass) are true of the frozen tree. The defect is the pinned SHA: it reads as the delivered head and goes stale at the next commit, the same pattern the Pulse audit raised as F4 and repaired. Repair is a docs-only edit (drop the SHA) but it changes the audited subject, so it needs the operator's decision. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N2",
         "severity": "MEDIUM",
         "title": "Slash command description says 'Store a note in the capture ledger' while the command reply and intent require queued-not-stored messaging.",
-        "status": "OPEN",
-        "body": "session.start registers description: 'Store a note in the capture ledger'; command.run returns text with 'Queued' and 'Nothing is stored yet'. Menu copy overclaims persistence relative to replay semantics. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED; severity LOW; the wording is a packet defect. `register.tsx:1208` registers the description `Store a note in the capture ledger`; `register.tsx:1240` replies `Queued your note ... Nothing is stored yet`. The description came from the issuance packet (W03 invariant L03) and the implementer followed it. Menu text overclaims relative to the queued-then-replayed behaviour. Repair is one string."
+        "status": "ACCEPTED_RISK",
+        "body": "session.start registers description: 'Store a note in the capture ledger'; command.run returns text with 'Queued' and 'Nothing is stored yet'. Menu copy overclaims persistence relative to replay semantics. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED; severity LOW; the wording is a packet defect. `register.tsx:1208` registers the description `Store a note in the capture ledger`; `register.tsx:1240` replies `Queued your note ... Nothing is stored yet`. The description came from the issuance packet (W03 invariant L03) and the implementer followed it. Menu text overclaims relative to the queued-then-replayed behaviour. Repair is one string. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N3",
         "severity": "LOW",
         "title": "Status pending includes other sessions' replayable rows that this mod will never send, so 📮 N pending can stick until those files change outside this process.",
-        "status": "OPEN",
-        "body": "readPrior adds isReplayable counts into foldedPending; replay only walks s.rings (this process). README documents counting newest eight other files; intent (e) says other-session replay not built. Misleading 'waiting' semantics. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED and disclosed; severity LOW stands; candidate for an accepted-risk ruling. `readPrior` adds other sessions' replayable pending rows to `foldedPending`, while replay walks only this process's rings, so `📮 N pending` can stay non-zero for rows another (ended) session left. README lines 106, 151 and 184 and the how-to's Not built table say other sessions' rows are counted but not replayed. Behaviour is documented and intended as a limit, but the label `pending` is misleading for those rows. A proper fix is the undesigned adoption rule."
+        "status": "ACCEPTED_RISK",
+        "body": "readPrior adds isReplayable counts into foldedPending; replay only walks s.rings (this process). README documents counting newest eight other files; intent (e) says other-session replay not built. Misleading 'waiting' semantics. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED and disclosed; severity LOW stands; candidate for an accepted-risk ruling. `readPrior` adds other sessions' replayable pending rows to `foldedPending`, while replay walks only this process's rings, so `📮 N pending` can stay non-zero for rows another (ended) session left. README lines 106, 151 and 184 and the how-to's Not built table say other sessions' rows are counted but not replayed. Behaviour is documented and intended as a limit, but the label `pending` is misleading for those rows. A proper fix is the undesigned adoption rule. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N4",
         "severity": "LOW",
         "title": "decisionsOf runs RegExp matchAll on the full unbounded assistant answer before any size bound.",
-        "status": "OPEN",
-        "body": "decisionsOf(answer) has no pre-trim; clean() bounds only matched capture groups. A multi-megabyte answer could cost CPU on every turn.complete (privacy still OK — answer not stored). [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: PARTIALLY CONFIRMED; severity INFO; the ReDoS framing is not substantiated. `decisionsOf` calls `matchAll` on the whole `answer` with no pre-trim (`register.tsx:209-216`), unlike `clean()`. The regex is anchored per line with no nested quantifiers, so the cost is linear in the answer length per finished turn, not catastrophic. No stored content is affected."
+        "status": "ACCEPTED_RISK",
+        "body": "decisionsOf(answer) has no pre-trim; clean() bounds only matched capture groups. A multi-megabyte answer could cost CPU on every turn.complete (privacy still OK — answer not stored). [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: PARTIALLY CONFIRMED; severity INFO; the ReDoS framing is not substantiated. `decisionsOf` calls `matchAll` on the whole `answer` with no pre-trim (`register.tsx:209-216`), unlike `clean()`. The regex is anchored per line with no nested quantifiers, so the cost is linear in the answer length per finished turn, not catastrophic. No stored content is affected. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N5",
         "severity": "LOW",
         "title": "Successful ledger emit increments attempts; docs describe attempts as failed-delivery counters.",
-        "status": "OPEN",
-        "body": "markRow on outcome==='ok' sets attempts: row.attempts + 1; test expects attempts===1 after success. README emphasizes attempts on non-zero/timeout only. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED as a documentation inaccuracy; severity LOW. On exit 0 the code writes `attempts: row.attempts + 1` (a sent row has attempts 1; tested). `README.md:43` describes `attempts` as `a counter of failed delivery attempts`. Behaviour is harmless and tested; the README line is inaccurate."
+        "status": "ACCEPTED_RISK",
+        "body": "markRow on outcome==='ok' sets attempts: row.attempts + 1; test expects attempts===1 after success. README emphasizes attempts on non-zero/timeout only. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED as a documentation inaccuracy; severity LOW. On exit 0 the code writes `attempts: row.attempts + 1` (a sent row has attempts 1; tested). `README.md:43` describes `attempts` as `a counter of failed delivery attempts`. Behaviour is harmless and tested; the README line is inaccurate. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N6",
         "severity": "INFO",
         "title": "On /clear, fold path that increments foldedPending from isReplayable is unreachable.",
-        "status": "OPEN",
-        "body": "Ring is deleted only when !entries.some(isReplayable); the following loop still branches on isReplayable. Dead code; behaviour still correct because replayable rings are retained. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED; severity INFO. In the `/clear` branch (`register.tsx` about 1350-1366) the ring is deleted only when no entry is replayable, so the `if (isReplayable(entry.row)) s.foldedPending += 1` branch can never run. Dead code; behaviour is correct."
+        "status": "ACCEPTED_RISK",
+        "body": "Ring is deleted only when !entries.some(isReplayable); the following loop still branches on isReplayable. Dead code; behaviour still correct because replayable rings are retained. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED; severity INFO. In the `/clear` branch (`register.tsx` about 1350-1366) the ring is deleted only when no entry is replayable, so the `if (isReplayable(entry.row)) s.foldedPending += 1` branch can never run. Dead code; behaviour is correct. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N7",
         "severity": "INFO",
         "title": "Live behaviour, real ledger emit, desktop $.process, fs.write atomicity, and pre-commit hooks remain NOT_RUN / UNKNOWN as disclosed.",
-        "status": "OPEN",
-        "body": "README/how-to Verification and Known limits; implementer authority facts. Unit kit only. Acceptable disclosure for L2 but residual operational risk. [plugins/dopemux-memory-bridge/README.md] ADJUDICATION: Coordinator: CONFIRMED; disclosure, not a defect; severity INFO. Live behaviour, a real `dopemux capture emit`, the desktop `$.process`, `$.fs.write` atomicity and the pre-commit hooks are NOT_RUN / UNKNOWN, exactly as the README, how-to and `RETURN-01.md` state. The operator's live smoke test is the clearing action."
+        "status": "ACCEPTED_RISK",
+        "body": "README/how-to Verification and Known limits; implementer authority facts. Unit kit only. Acceptable disclosure for L2 but residual operational risk. [plugins/dopemux-memory-bridge/README.md] ADJUDICATION: Coordinator: CONFIRMED; disclosure, not a defect; severity INFO. Live behaviour, a real `dopemux capture emit`, the desktop `$.process`, `$.fs.write` atomicity and the pre-commit hooks are NOT_RUN / UNKNOWN, exactly as the README, how-to and `RETURN-01.md` state. The operator's live smoke test is the clearing action. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       }
     ],
     "fixes_applied": [],
@@ -249,7 +249,8 @@
       "N3: status counts other sessions' never-replayed rows as pending (disclosed limit).",
       "Never run live; desktop $.process, Pulse band ordering and $.fs.write atomicity UNKNOWN (N7).",
       "N4: no pre-bound on the answer text before decision matching (linear cost, no ReDoS).",
-      "N6: dead code in the /clear fold path (harmless)."
+      "N6: dead code in the /clear fold path (harmless).",
+      "OPERATOR DECISION 2026-10-24: the PASS_WITH_RISKS verdict was accepted as-is; every finding above is ACCEPTED_RISK and tracked as a follow-up in review_bundle/FOLLOWUPS.md. Any repair changes the audited subject and needs a new audit on an operator-approved route."
     ],
     "skip_reason": null,
     "instruction_like_content": {
