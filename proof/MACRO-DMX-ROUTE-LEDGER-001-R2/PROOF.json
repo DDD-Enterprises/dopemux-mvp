@@ -203,71 +203,71 @@
         "id": "N1",
         "severity": "HIGH",
         "title": "Mod never run live; hook ordering, tool_use_id population and status coexistence are UNKNOWN.",
-        "status": "OPEN",
-        "body": "No real session has loaded the mod: the coordinator's gates are all mock-engine, and the README and how-to say so. Not fixable inside this macro. Operator step: `claude --plugin-dir plugins/dopemux-route-ledger` with `.control-tower/state` present, one pinned and one unpinned Agent call, one advisor use in a child, then read the receipt file and run `/route-ledger`. ADJUDICATION: Coordinator: CONFIRMED."
+        "status": "ACCEPTED_RISK",
+        "body": "No real session has loaded the mod: the coordinator's gates are all mock-engine, and the README and how-to say so. Not fixable inside this macro. Operator step: `claude --plugin-dir plugins/dopemux-route-ledger` with `.control-tower/state` present, one pinned and one unpinned Agent call, one advisor use in a child, then read the receipt file and run `/route-ledger`. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N2",
         "severity": "MEDIUM",
         "title": "Explicit absolute or symlinked receiptDir is not constrained beyond host permissions.",
-        "status": "OPEN",
-        "body": "register.tsx checks only for a `..` segment, an empty or root path, and the default directory's parent `.control-tower/state`; it never calls `$.fs.stat`, so a symlink at or under an explicit `receiptDir` is followed. The setting is the operator's own plugin config and the mod writes only `<dir>/<sanitized id>[.n].jsonl`, so the blast radius is that of the host process's own file permissions. Disclosed (limitation vii). Residual risk, no repair in this macro; a possible follow-up is a `$.fs.stat` check that refuses a symlinked directory. ADJUDICATION: Coordinator: CONFIRMED."
+        "status": "ACCEPTED_RISK",
+        "body": "register.tsx checks only for a `..` segment, an empty or root path, and the default directory's parent `.control-tower/state`; it never calls `$.fs.stat`, so a symlink at or under an explicit `receiptDir` is followed. The setting is the operator's own plugin config and the mod writes only `<dir>/<sanitized id>[.n].jsonl`, so the blast radius is that of the host process's own file permissions. Disclosed (limitation vii). Residual risk, no repair in this macro; a possible follow-up is a `$.fs.stat` check that refuses a symlinked directory. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N3",
         "severity": "MEDIUM",
         "title": "In-memory receipts of closed segments are never released (linear growth per session).",
-        "status": "OPEN",
-        "body": "`s.segments` is appended at register.tsx lines 643 and 788 and reset only on init; a rolled-over segment stays in memory with all its receipts. Growth is linear in receipts for the process lifetime (roughly half a kilobyte to a kilobyte per receipt), so a very long session grows by megabytes, not unboundedly fast. Flush rewrites only dirty segments, so write cost does not grow with it. Residual; a follow-up could keep only counters and the last main step for closed segments. ADJUDICATION: Coordinator: CONFIRMED."
+        "status": "ACCEPTED_RISK",
+        "body": "`s.segments` is appended at register.tsx lines 643 and 788 and reset only on init; a rolled-over segment stays in memory with all its receipts. Growth is linear in receipts for the process lifetime (roughly half a kilobyte to a kilobyte per receipt), so a very long session grows by megabytes, not unboundedly fast. Flush rewrites only dirty segments, so write cost does not grow with it. Residual; a follow-up could keep only counters and the last main step for closed segments. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N4",
         "severity": "MEDIUM",
         "title": "A failed final flush at a real session end loses the unflushed tail of receipts.",
-        "status": "OPEN",
-        "body": "`flushSegments` counts a failed write in `receiptsFailed` and leaves the segment dirty, and `session.end` schedules one flush and awaits the chain once; after `isEnded` nothing records again, so a failed final flush loses the dirty tail (earlier flushed segments stay on disk). The status line shows ` · receipts ✗` after the first failure, so the loss is visible while the session runs. Failure of a local file write is exceptional. Residual; by design no tight retry loop. ADJUDICATION: Coordinator: CONFIRMED."
+        "status": "ACCEPTED_RISK",
+        "body": "`flushSegments` counts a failed write in `receiptsFailed` and leaves the segment dirty, and `session.end` schedules one flush and awaits the chain once; after `isEnded` nothing records again, so a failed final flush loses the dirty tail (earlier flushed segments stay on disk). The status line shows ` · receipts ✗` after the first failure, so the loss is visible while the session runs. Failure of a local file write is exceptional. Residual; by design no tight retry loop. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N5",
         "severity": "MEDIUM",
         "title": "After /clear receipts keep going to the old session id's file.",
-        "status": "OPEN",
-        "body": "`session.end` with reason `clear` returns `next(e)` untouched (the W01 packet requires it, as in Pulse), so after `/clear` receipts continue to the old session id's file. Disclosed as limitation (v) and in the code comment. It keeps counting rather than losing data; a later change could re-resolve the session id lazily. ADJUDICATION: Coordinator: CONFIRMED, BY DESIGN."
+        "status": "ACCEPTED_RISK",
+        "body": "`session.end` with reason `clear` returns `next(e)` untouched (the W01 packet requires it, as in Pulse), so after `/clear` receipts continue to the old session id's file. Disclosed as limitation (v) and in the code comment. It keeps counting rather than losing data; a later change could re-resolve the session id lazily. ADJUDICATION: Coordinator: CONFIRMED, BY DESIGN. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N6",
         "severity": "LOW",
         "title": "Unpinned toast does not set a timeout.",
-        "status": "OPEN",
-        "body": "The unpinned-agent toast at register.tsx line 889 passes only a message (the host default duration); budget toasts pass `timeoutMs: 8000`. Cosmetic inconsistency; no repair after freeze. ADJUDICATION: Coordinator: CONFIRMED."
+        "status": "ACCEPTED_RISK",
+        "body": "The unpinned-agent toast at register.tsx line 889 passes only a message (the host default duration); budget toasts pass `timeoutMs: 8000`. Cosmetic inconsistency; no repair after freeze. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N7",
         "severity": "LOW",
         "title": "Status segment N/B uses session total with the child budget; docs do not say which budget.",
-        "status": "OPEN",
-        "body": "`statusText` prints the session advisor total over the child budget when only a child is over it (`advisor 1/0 ⚠`); the README says only `advisor N/B ⚠` once a budget B applies and is exceeded. Flagged to the operator at freeze as an open design call. Follow-up wording or semantics change. ADJUDICATION: Coordinator: CONFIRMED."
+        "status": "ACCEPTED_RISK",
+        "body": "`statusText` prints the session advisor total over the child budget when only a child is over it (`advisor 1/0 ⚠`); the README says only `advisor N/B ⚠` once a budget B applies and is exceeded. Flagged to the operator at freeze as an open design call. Follow-up wording or semantics change. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N8",
         "severity": "LOW",
         "title": "Test debounce slack (1000 ms vs 500 ms).",
-        "status": "OPEN",
-        "body": "register.test.ts advances 1000 ms (`DEBOUNCE_MS`, line 290) while the code debounces 500 ms (`STATUS_DEBOUNCE_MS`, line 41), so a regression to a value up to 1000 ms would still pass. Test hygiene only. ADJUDICATION: Coordinator: CONFIRMED."
+        "status": "ACCEPTED_RISK",
+        "body": "register.test.ts advances 1000 ms (`DEBOUNCE_MS`, line 290) while the code debounces 500 ms (`STATUS_DEBOUNCE_MS`, line 41), so a regression to a value up to 1000 ms would still pass. Test hygiene only. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N9",
         "severity": "LOW",
         "title": "Agent description (80 chars) is persisted in receipts.",
-        "status": "OPEN",
-        "body": "Receipts and the unpinned toast carry the Agent call's `description`, truncated to 80 characters, unredacted. The prompt is never recorded (a test asserts it). Disclosed (limitation viii). Receipts live in the gitignored `.control-tower/state/` by default. ADJUDICATION: Coordinator: CONFIRMED."
+        "status": "ACCEPTED_RISK",
+        "body": "Receipts and the unpinned toast carry the Agent call's `description`, truncated to 80 characters, unredacted. The prompt is never recorded (a test asserts it). Disclosed (limitation viii). Receipts live in the gitignored `.control-tower/state/` by default. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       },
       {
         "id": "N10",
         "severity": "INFO",
         "title": "API drift and Pulse coexistence remain unverified.",
-        "status": "OPEN",
-        "body": "The declaration drifted from 2.1.304 (implementers) to 2.1.308 (this session's reload) while the CLI is 2.1.309. The audited files type-check against the 2.1.308 declaration with the default engine options (GATES.txt), which is extra evidence against drift but is not the in-tree `tsc -p` (NOT_RUN). Pulse status-line coexistence is unverified and disclosed. ADJUDICATION: Coordinator: ACKNOWLEDGED."
+        "status": "ACCEPTED_RISK",
+        "body": "The declaration drifted from 2.1.304 (implementers) to 2.1.308 (this session's reload) while the CLI is 2.1.309. The audited files type-check against the 2.1.308 declaration with the default engine options (GATES.txt), which is extra evidence against drift but is not the in-tree `tsc -p` (NOT_RUN). Pulse status-line coexistence is unverified and disclosed. ADJUDICATION: Coordinator: ACKNOWLEDGED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
       }
     ],
     "fixes_applied": [],
@@ -277,7 +277,8 @@
       "N3: closed receipt segments retained in memory.",
       "N4: failed final flush loses the unflushed tail.",
       "N5: after /clear receipts continue to the old session file.",
-      "N6-N10: toast timeout, status budget semantics, test debounce slack, stored Agent description, declaration drift and Pulse coexistence."
+      "N6-N10: toast timeout, status budget semantics, test debounce slack, stored Agent description, declaration drift and Pulse coexistence.",
+      "OPERATOR DECISION 2026-10-24: the PASS_WITH_RISKS verdict was accepted as-is; every finding above is ACCEPTED_RISK and tracked as a follow-up in review_bundle/FOLLOWUPS.md. Any repair changes the audited subject and needs a new audit on an operator-approved route."
     ],
     "skip_reason": null,
     "instruction_like_content": {
