@@ -1,0 +1,58 @@
+{
+  "tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R2",
+  "tp_path": "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle/MACRO_PACKET.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8",
+  "branch": "claude/memory-bridge-001-b349d8",
+  "repo_identity": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "52855fb35ea40f420bdacdcab9e092f8d15292c6",
+  "commit_sha": "52855fb35ea40f420bdacdcab9e092f8d15292c6",
+  "routes": [
+    {"workstream": "W01 (R1)", "runner": "claude-code-agent", "model_requested": "claude-sonnet-5-5", "model_observed": "claude-sonnet-5-5 (response-claimed, no receipt)", "effort": "UNKNOWN", "skills": []},
+    {"workstream": "W02", "runner": "claude-code-agent", "model_requested": "claude-sonnet-5-5", "model_observed": "claude-sonnet-5-5 (response-claimed, no receipt)", "effort": "UNKNOWN", "skills": []},
+    {"workstream": "W03", "runner": "claude-code-agent", "model_requested": "claude-sonnet-5-5", "model_observed": "claude-sonnet-5-5 (response-claimed, no receipt)", "effort": "UNKNOWN", "skills": []},
+    {"workstream": "W04", "runner": "claude-code-agent", "model_requested": "claude-haiku-5-5", "model_observed": "claude-haiku-5-5 (response-claimed, no receipt)", "effort": "UNKNOWN", "skills": []}
+  ],
+  "slices": [
+    "ed53a0c74 evidence (flat proof copies, W01 findings, authorization record)",
+    "e561166a6 W02 outbox, status line, band",
+    "1ce149a76 W03 ledger replay and bridge-note (1 correction round)",
+    "52855fb35 W04 how-to"
+  ],
+  "files_changed": [
+    "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+    "plugins/dopemux-memory-bridge/hooks/hooks.json",
+    "plugins/dopemux-memory-bridge/hooks/register.tsx",
+    "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+    "plugins/dopemux-memory-bridge/README.md",
+    "docs/02-how-to/memory-bridge.md",
+    "proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/ (evidence, flat)",
+    "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/ (evidence, flat; this file)"
+  ],
+  "validations": [
+    {"command": "claude plugin validate plugins/dopemux-memory-bridge", "exit_code": 0, "bucket": "PASS", "reason": "advisory warnings only (no icon, no marketplace install line)"},
+    {"command": "claude plugin test plugins/dopemux-memory-bridge", "exit_code": 0, "bucket": "PASS", "reason": "105 pass, 0 fail"},
+    {"command": "tsc -p <scratch tsconfig: strict, 2.1.304 declaration>", "exit_code": 0, "bucket": "PASS", "reason": "register.tsx and register.test.ts"},
+    {"command": "git diff --check origin/main..HEAD", "exit_code": 0, "bucket": "PASS", "reason": ""},
+    {"command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text", "exit_code": 0, "bucket": "PASS", "reason": "max_lane L2, model_audit_required"},
+    {"command": "docs_frontmatter_guard.py, docs_prohibited_patterns.sh, docs_validator.py on docs/02-how-to/memory-bridge.md", "exit_code": 0, "bucket": "PASS", "reason": ""},
+    {"command": ".venv/bin/pre-commit run (docs hooks)", "exit_code": 127, "bucket": "NOT_RUN", "reason": "no .venv and no pre-commit in this worktree"},
+    {"command": "live session with the mod; real dopemux capture emit; any service", "exit_code": 0, "bucket": "NOT_RUN", "reason": "no running services; not in reach of this macro"}
+  ],
+  "codereview_status": "NOT_RUN",
+  "precommit_status": "NOT_RUN",
+  "audit": {"required": true, "status": "NOT_RUN", "route": "operator-gated (gemini-4-argon-high after about 2026-10-24T03:30Z, or Grok CLI tool-less recipe with explicit approval)"},
+  "pr_url_or_blocker": "no push or PR: operator gates; final independent L2 audit not run",
+  "residual_risks": [
+    "no live proof of any behaviour; $.process on the desktop surface UNKNOWN",
+    "Pulse can hide the welcome-back band (plugin order UNKNOWN)",
+    "replay writes raw ledger rows only and needs the dopemux service tree under the repo root; other sessions' pending rows are not replayed",
+    "recap, decision.logged, dope-memory REST replay and ConPort access are NOT_BUILT by W01 verdicts"
+  ],
+  "unknowns": [
+    "$.fs.write atomicity",
+    "outer/inner order of two user-tier plugins hooking AbovePrompt",
+    "provider-attested model identity and effort of every child",
+    "whether W03 token total over-counts (harness may report cumulative tokens on a resume)"
+  ],
+  "cleanup_status": "worktree retained; task-packets/MACRO-DMX-MEMORY-BRIDGE-001/ and -R2/ stay untracked by design (preflight rejects GEC v2 packets under task-packets/); flat copies are committed under proof/"
+}
