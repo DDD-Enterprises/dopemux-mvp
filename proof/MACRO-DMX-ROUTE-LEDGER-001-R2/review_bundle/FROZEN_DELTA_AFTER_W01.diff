@@ -215,7 +215,7 @@ index c28c66ce2..4bc8d7828 100644
    toBindingFields,
 -} from './register.tsx'
 +} from './register'
- 
+
  const T0 = 1_792_000_000_000
  const DEFAULT_DIR = '.control-tower/state/route-ledger'
 @@ -125,6 +125,11 @@ function harness($: Engine, on: On, opts: Opts = {}) {
@@ -272,10 +272,10 @@ index c28c66ce2..4bc8d7828 100644
 @@ -259,6 +287,7 @@ function harness($: Engine, on: On, opts: Opts = {}) {
    }
  }
- 
+
 +const DEBOUNCE_MS = 1_000
  const STEP: StepInput = { turnId: 'turn-1', index: 0, model: 'claude-sonnet-5-5' }
- 
+
  // ---------------------------------------------------------------- Agent calls
 @@ -830,3 +859,298 @@ test('a failed write is counted in the state, not thrown and not retried', async
    expect(s.receiptsFailed).toBe(1)
@@ -583,7 +583,7 @@ index 272aaf9ff..6d5eb173f 100644
 @@ -1,4 +1,4 @@
 -import type { EngineInterface, Register } from 'claude-code'
 +import type { EngineInterface, Register, Timer } from 'claude-code'
- 
+
  // dopemux-route-ledger (core): records which model each Agent call REQUESTED,
  // which model each model step OBSERVED (the API-reported `usage.model`), and
 @@ -37,6 +37,11 @@ const MAX_MAX_RECEIPTS = 5000
@@ -595,7 +595,7 @@ index 272aaf9ff..6d5eb173f 100644
 +const TOAST_MS = 8000
 +const ROUTE_ROWS_MAX = 60
 +const SHORT_ID = 8
- 
+
  type Family = 'S' | 'O' | 'H' | 'F' | 'other'
  type Effort = string | number
 @@ -158,6 +163,8 @@ type Ledger = {
@@ -616,7 +616,7 @@ index 272aaf9ff..6d5eb173f 100644
      flushQueued: false,
    }
 @@ -246,7 +254,7 @@ export function newLedger(options: Settings): Ledger {
- 
+
  // Glyph rule shared with W02: the lower-cased model text decides.
  export function familyOf(model: string | null | undefined): Family {
 -  const text = (model ?? '').toLowerCase()
@@ -627,7 +627,7 @@ index 272aaf9ff..6d5eb173f 100644
 @@ -391,9 +399,233 @@ function tally(s: Ledger, receipt: Receipt): boolean {
    return true
  }
- 
+
 -// W02 extends this in place; W01 leaves it empty. Called, wrapped, after every
 -// recorded receipt.
 -function afterRecord($: EngineInterface, s: Ledger, receipt: Receipt): void {}
@@ -858,7 +858,7 @@ index 272aaf9ff..6d5eb173f 100644
 +    // never surface
 +  }
 +}
- 
+
  function currentSegment(s: Ledger): Segment {
    const last = s.segments[s.segments.length - 1]
 @@ -440,7 +672,9 @@ function scheduleFlush($: EngineInterface, s: Ledger): void {
@@ -870,7 +870,7 @@ index 272aaf9ff..6d5eb173f 100644
 +    if (s.receiptsFailed !== failedBefore) scheduleStatus($, s)
    })
  }
- 
+
 @@ -748,6 +982,9 @@ export const register: Register = (on, options) => {
        // Not awaited: the rebuild must not hold the session's start.
        s.isEnded = false
@@ -884,7 +884,7 @@ index 272aaf9ff..6d5eb173f 100644
 @@ -789,12 +1026,31 @@ export const register: Register = (on, options) => {
      return r
    })
- 
+
 +  // One handler for the canonical name and the alias.
 +  on('command.run', { command: 'route-ledger' }, async (_, e) => {
 +    try {

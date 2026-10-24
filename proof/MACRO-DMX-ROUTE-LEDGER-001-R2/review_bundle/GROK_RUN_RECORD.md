@@ -31,3 +31,8 @@ Audit: 1 route, 1 attempt, 0 retries. Probes plus run: 2026-10-24T06:59:30Z to 2
 ## Limits of this evidence
 
 Provider-attested identity is UNKNOWN: the CLI's init event shows `grok-4.5`, and whatever the auditor reports about itself in its own answer is a claim, not attestation. The audit has no tools, so it judged the diff text only; it could not run the code or the tests.
+
+## Post-commit notes (after the verdict was read)
+
+- `FROZEN_DELTA_AFTER_W01.diff` (the change after the W01 commit; it was not part of the audit prompt) was committed byte-exact in the custody commit and then whitespace-normalized in the closing commit, because `git diff --check` flags the trailing space on blank context lines of a verbatim patch. The normalized copy is a reading aid, not a byte-exact patch; the exact bytes remain in the custody commit and are reproducible with `git diff 01aa4a123 93969e7a3 -- <the seven paths>`. `FROZEN_CUMULATIVE.diff`, the actual audit input, is byte-identical to what the auditor saw (`AUDIT_PROMPT.txt` embeds it).
+- `GATES.txt`, `GROK_ADJUDICATION.md`, `AUDITOR_REPORT.md` and `PROOF.json` were written after the verdict was read.
