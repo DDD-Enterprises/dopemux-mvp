@@ -1,58 +1,262 @@
 {
   "tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R2",
+  "packet_id": "MACRO-DMX-MEMORY-BRIDGE-001-R2",
   "tp_path": "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle/MACRO_PACKET.json",
   "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8",
   "branch": "claude/memory-bridge-001-b349d8",
-  "repo_identity": "DDD-Enterprises/dopemux-mvp",
+  "repo_identity": "DDD-Enterprises/dopemux-mvp (local worktree; origin not re-queried)",
+  "base_sha": "93050d135ffc2592000c1d0edef82b2912935525",
+  "audited_head_sha": "52855fb35ea40f420bdacdcab9e092f8d15292c6",
   "head_sha": "52855fb35ea40f420bdacdcab9e092f8d15292c6",
-  "commit_sha": "52855fb35ea40f420bdacdcab9e092f8d15292c6",
-  "routes": [
-    {"workstream": "W01 (R1)", "runner": "claude-code-agent", "model_requested": "claude-sonnet-5-5", "model_observed": "claude-sonnet-5-5 (response-claimed, no receipt)", "effort": "UNKNOWN", "skills": []},
-    {"workstream": "W02", "runner": "claude-code-agent", "model_requested": "claude-sonnet-5-5", "model_observed": "claude-sonnet-5-5 (response-claimed, no receipt)", "effort": "UNKNOWN", "skills": []},
-    {"workstream": "W03", "runner": "claude-code-agent", "model_requested": "claude-sonnet-5-5", "model_observed": "claude-sonnet-5-5 (response-claimed, no receipt)", "effort": "UNKNOWN", "skills": []},
-    {"workstream": "W04", "runner": "claude-code-agent", "model_requested": "claude-haiku-5-5", "model_observed": "claude-haiku-5-5 (response-claimed, no receipt)", "effort": "UNKNOWN", "skills": []}
-  ],
+  "commit_sha": "Audited content head 52855fb35ea40f420bdacdcab9e092f8d15292c6; proof-only commits follow it: d8ce61a15ae21422871d9abf7d3bdf3518cc466f (closure record), 9ead56246 (audit custody), then the commit holding this file (see git log for the final head)",
+  "pr_url_or_blocker": "NO PR: push, PR, signing and merge are operator gates and were not authorized.",
   "slices": [
-    "ed53a0c74 evidence (flat proof copies, W01 findings, authorization record)",
-    "e561166a6 W02 outbox, status line, band",
-    "1ce149a76 W03 ledger replay and bridge-note (1 correction round)",
-    "52855fb35 W04 how-to"
+    {
+      "id": "evidence",
+      "commit": "ed53a0c741cfb082077f07ef3462569854d1428c",
+      "status": "PASS",
+      "note": "flat proof copies of R1 package, W01 findings, authorization record, R2 package"
+    },
+    {
+      "id": "W02",
+      "commit": "e561166a6",
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5 (response-claimed, no receipt)",
+      "status": "PASS",
+      "note": "331,933 tokens, 64 tool uses, 1,010,959 ms (harness-measured)"
+    },
+    {
+      "id": "W03",
+      "commit": "1ce149a76",
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5 (response-claimed, no receipt)",
+      "status": "PASS",
+      "note": "first run 202,149 tokens / 33 tool uses / 403,749 ms; correction round 222,195 tokens / 10 tool uses / 93,565 ms (sum may over-count)"
+    },
+    {
+      "id": "W04",
+      "commit": "52855fb35",
+      "model_requested": "claude-haiku-5-5",
+      "model_observed": "claude-haiku-5-5 (response-claimed, no receipt)",
+      "status": "PASS",
+      "note": "164,222 tokens, 17 tool uses, 101,142 ms (harness-measured)"
+    }
   ],
   "files_changed": [
-    "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
-    "plugins/dopemux-memory-bridge/hooks/hooks.json",
-    "plugins/dopemux-memory-bridge/hooks/register.tsx",
-    "plugins/dopemux-memory-bridge/hooks/register.test.ts",
-    "plugins/dopemux-memory-bridge/README.md",
     "docs/02-how-to/memory-bridge.md",
-    "proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/ (evidence, flat)",
-    "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/ (evidence, flat; this file)"
+    "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+    "plugins/dopemux-memory-bridge/README.md",
+    "plugins/dopemux-memory-bridge/hooks/hooks.json",
+    "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+    "plugins/dopemux-memory-bridge/hooks/register.tsx"
   ],
   "validations": [
-    {"command": "claude plugin validate plugins/dopemux-memory-bridge", "exit_code": 0, "bucket": "PASS", "reason": "advisory warnings only (no icon, no marketplace install line)"},
-    {"command": "claude plugin test plugins/dopemux-memory-bridge", "exit_code": 0, "bucket": "PASS", "reason": "105 pass, 0 fail"},
-    {"command": "tsc -p <scratch tsconfig: strict, 2.1.304 declaration>", "exit_code": 0, "bucket": "PASS", "reason": "register.tsx and register.test.ts"},
-    {"command": "git diff --check origin/main..HEAD", "exit_code": 0, "bucket": "PASS", "reason": ""},
-    {"command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text", "exit_code": 0, "bucket": "PASS", "reason": "max_lane L2, model_audit_required"},
-    {"command": "docs_frontmatter_guard.py, docs_prohibited_patterns.sh, docs_validator.py on docs/02-how-to/memory-bridge.md", "exit_code": 0, "bucket": "PASS", "reason": ""},
-    {"command": ".venv/bin/pre-commit run (docs hooks)", "exit_code": 127, "bucket": "NOT_RUN", "reason": "no .venv and no pre-commit in this worktree"},
-    {"command": "live session with the mod; real dopemux capture emit; any service", "exit_code": 0, "bucket": "NOT_RUN", "reason": "no running services; not in reach of this macro"}
+    {
+      "command": "claude plugin validate plugins/dopemux-memory-bridge",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "advisory warnings only (no icon, no marketplace install line)"
+    },
+    {
+      "command": "claude plugin test plugins/dopemux-memory-bridge",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "105 pass, 0 fail"
+    },
+    {
+      "command": "tsc -p <scratch tsconfig: strict, 2.1.304 declaration>",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "register.tsx and register.test.ts"
+    },
+    {
+      "command": "git diff --check origin/main..HEAD",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": ""
+    },
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "max_lane L2, model_audit_required"
+    },
+    {
+      "command": "docs_frontmatter_guard.py, docs_prohibited_patterns.sh, docs_validator.py on docs/02-how-to/memory-bridge.md",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": ""
+    },
+    {
+      "command": ".venv/bin/pre-commit run (docs hooks)",
+      "exit_code": 127,
+      "bucket": "NOT_RUN",
+      "reason": "no .venv and no pre-commit in this worktree"
+    },
+    {
+      "command": "live session with the mod; real dopemux capture emit; any service",
+      "exit_code": 0,
+      "bucket": "NOT_RUN",
+      "reason": "no running services; not in reach of this macro"
+    },
+    {
+      "command": "grok-cli grok-4.5 tool-less final audit (one attempt)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "verdict PASS_WITH_RISKS; init.tools == [] in probe and run; 0 tool_use blocks; Q9 FAIL, other questions PASS; 7 findings OPEN"
+    },
+    {
+      "command": "python3 scripts/audit/validate_audit_proof.py proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/PROOF.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "embedded_audit schema 1/1 PASS"
+    },
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --proof-only --content-head 52855fb35 --audited-head 52855fb35 --proof-head <proof head> --base 52855fb35 --head <proof head>",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "note": "only finding: proof_only_missing_signature (PROOF.json.sig absent, operator step); all changed paths within the proof-only allowlist"
+    },
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head <proof head> --format text",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "non-proof-only form; max lane L2"
+    },
+    {
+      "command": "git diff --check 52855fb35..HEAD",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "no whitespace errors in the proof-only evidence files"
+    },
+    {
+      "command": "python3 scripts/audit/local_audit_acceptance.py / signing",
+      "exit_code": 0,
+      "bucket": "NOT_RUN",
+      "note": "signature and local acceptance are operator steps; PROOF.json is unsigned"
+    }
   ],
-  "codereview_status": "NOT_RUN",
-  "precommit_status": "NOT_RUN",
-  "audit": {"required": true, "status": "NOT_RUN", "route": "operator-gated (gemini-4-argon-high after about 2026-10-24T03:30Z, or Grok CLI tool-less recipe with explicit approval)"},
-  "pr_url_or_blocker": "no push or PR: operator gates; final independent L2 audit not run",
+  "codereview_status": "Independent final audit PASS_WITH_RISKS (grok-cli grok-4.5, tool-less, operator-approved route, one attempt, zero retries). Q9 FAIL (docs: pinned SHA, attempts wording); Q1-Q8 and Q10-Q12 PASS. No PAL codereview run.",
+  "precommit_status": "NOT_RUN (no .venv and no pre-commit in this worktree; the docs validators were run directly and passed)",
   "residual_risks": [
     "no live proof of any behaviour; $.process on the desktop surface UNKNOWN",
     "Pulse can hide the welcome-back band (plugin order UNKNOWN)",
     "replay writes raw ledger rows only and needs the dopemux service tree under the repo root; other sessions' pending rows are not replayed",
-    "recap, decision.logged, dope-memory REST replay and ConPort access are NOT_BUILT by W01 verdicts"
+    "recap, decision.logged, dope-memory REST replay and ConPort access are NOT_BUILT by W01 verdicts",
+    "N1/N5: documentation defects (pinned commit SHA in the how-to; README misdescribes attempts) are OPEN and unrepaired; repairing them changes the audited subject.",
+    "N2: /bridge-note menu description says 'Store' while the reply says queued; OPEN.",
+    "N3: the status line counts other sessions' never-replayed rows as pending (disclosed limit); OPEN.",
+    "Auditor self-reported grok-4; the CLI init event shows grok-4.5; provider-attested identity UNKNOWN."
   ],
   "unknowns": [
     "$.fs.write atomicity",
     "outer/inner order of two user-tier plugins hooking AbovePrompt",
     "provider-attested model identity and effort of every child",
-    "whether W03 token total over-counts (harness may report cumulative tokens on a resume)"
+    "whether W03 token total over-counts (harness may report cumulative tokens on a resume)",
+    "PROOF.json.sig absent: signing needs the operator's key",
+    "audit_identity.independence unattested"
   ],
-  "cleanup_status": "worktree retained; task-packets/MACRO-DMX-MEMORY-BRIDGE-001/ and -R2/ stay untracked by design (preflight rejects GEC v2 packets under task-packets/); flat copies are committed under proof/"
+  "cleanup_status": "Worktree retained; nothing pushed; task-packets/MACRO-DMX-MEMORY-BRIDGE-001/ and -R2/ stay untracked by design; the audit artifacts are committed in the flat review_bundle (scratchpad copies are redundant). Unrelated changes by other sessions (.codex/config.toml, .agents/) are not part of any commit here.",
+  "audit_evidence": {
+    "grok": {
+      "prompt_sha256": "24fcd6245ae524018f9be71d2bdb909ee8e856742079851ecbacc8eefef70f7b",
+      "response_sha256": "22a46c8161372ca17795fa7fc3a39e0416f423efff8c0f637963ebedb81fcf05",
+      "frozen_diff_sha256": "575b241961879971e51ba908b4ecc19cd35125877832971a1a9a336a0d1b7856",
+      "stream_sha256": "27929dc8e0326034740d808bda0379b1ac74db09aa2a9344539c373fc3e9f5fa",
+      "probe_stream_sha256": "2b77611eeb24ab25a868561e6b3ce3b6828d15279910379dc6dea39abf8e4ea4",
+      "path": "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle/ (files GROK_*)"
+    }
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-sonnet-5-5 (coordinator, W01-W03); claude-haiku-5-5 (W04)",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop (coordinator); claude-code-agent (children)",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "sealed directory holding only AUDIT_PROMPT.txt; grok CLI 1.0.67 with the tool-less recipe (38 disallowed tool ids plus a no-skills system prompt, reused from MACRO-DMX-PULSE-002-R2); the probe confirmed init.tools == [], the real run init.tools == [] with 0 tool_use blocks; probe launched 2026-10-24T07:00:01Z, real run 2026-10-24T07:00:30Z to 07:03:32Z; exact command in review_bundle/GROK_INVOCATION.txt; one attempt, no retries, no fallback.",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "N1",
+        "severity": "MEDIUM",
+        "title": "How-to claims code HEAD `1ce149a76` and verification at that commit; frozen audit head is `52855fb35ea40f420bdacdcab9e092f8d15292c6`.",
+        "status": "OPEN",
+        "body": "Lines: 'code committed at HEAD `1ce149a76`' and Verification 'At commit `1ce149a76`…105 tests'. Subject identifies frozen content head 52855fb… (3 commits from base). Stale or wrong HEAD citation for the delivered tree. [docs/02-how-to/memory-bridge.md] ADJUDICATION: Coordinator: CONFIRMED as a documentation defect; severity LOW, not MEDIUM. `docs/02-how-to/memory-bridge.md` lines 19 and 137 cite commit `1ce149a76`. `git diff 1ce149a76 52855fb35 -- plugins` is empty: the only change after it is the how-to itself, so the cited facts (code at that commit, 105 tests, validate pass) are true of the frozen tree. The defect is the pinned SHA: it reads as the delivered head and goes stale at the next commit, the same pattern the Pulse audit raised as F4 and repaired. Repair is a docs-only edit (drop the SHA) but it changes the audited subject, so it needs the operator's decision."
+      },
+      {
+        "id": "N2",
+        "severity": "MEDIUM",
+        "title": "Slash command description says 'Store a note in the capture ledger' while the command reply and intent require queued-not-stored messaging.",
+        "status": "OPEN",
+        "body": "session.start registers description: 'Store a note in the capture ledger'; command.run returns text with 'Queued' and 'Nothing is stored yet'. Menu copy overclaims persistence relative to replay semantics. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED; severity LOW; the wording is a packet defect. `register.tsx:1208` registers the description `Store a note in the capture ledger`; `register.tsx:1240` replies `Queued your note ... Nothing is stored yet`. The description came from the issuance packet (W03 invariant L03) and the implementer followed it. Menu text overclaims relative to the queued-then-replayed behaviour. Repair is one string."
+      },
+      {
+        "id": "N3",
+        "severity": "LOW",
+        "title": "Status pending includes other sessions' replayable rows that this mod will never send, so 📮 N pending can stick until those files change outside this process.",
+        "status": "OPEN",
+        "body": "readPrior adds isReplayable counts into foldedPending; replay only walks s.rings (this process). README documents counting newest eight other files; intent (e) says other-session replay not built. Misleading 'waiting' semantics. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED and disclosed; severity LOW stands; candidate for an accepted-risk ruling. `readPrior` adds other sessions' replayable pending rows to `foldedPending`, while replay walks only this process's rings, so `📮 N pending` can stay non-zero for rows another (ended) session left. README lines 106, 151 and 184 and the how-to's Not built table say other sessions' rows are counted but not replayed. Behaviour is documented and intended as a limit, but the label `pending` is misleading for those rows. A proper fix is the undesigned adoption rule."
+      },
+      {
+        "id": "N4",
+        "severity": "LOW",
+        "title": "decisionsOf runs RegExp matchAll on the full unbounded assistant answer before any size bound.",
+        "status": "OPEN",
+        "body": "decisionsOf(answer) has no pre-trim; clean() bounds only matched capture groups. A multi-megabyte answer could cost CPU on every turn.complete (privacy still OK — answer not stored). [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: PARTIALLY CONFIRMED; severity INFO; the ReDoS framing is not substantiated. `decisionsOf` calls `matchAll` on the whole `answer` with no pre-trim (`register.tsx:209-216`), unlike `clean()`. The regex is anchored per line with no nested quantifiers, so the cost is linear in the answer length per finished turn, not catastrophic. No stored content is affected."
+      },
+      {
+        "id": "N5",
+        "severity": "LOW",
+        "title": "Successful ledger emit increments attempts; docs describe attempts as failed-delivery counters.",
+        "status": "OPEN",
+        "body": "markRow on outcome==='ok' sets attempts: row.attempts + 1; test expects attempts===1 after success. README emphasizes attempts on non-zero/timeout only. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED as a documentation inaccuracy; severity LOW. On exit 0 the code writes `attempts: row.attempts + 1` (a sent row has attempts 1; tested). `README.md:43` describes `attempts` as `a counter of failed delivery attempts`. Behaviour is harmless and tested; the README line is inaccurate."
+      },
+      {
+        "id": "N6",
+        "severity": "INFO",
+        "title": "On /clear, fold path that increments foldedPending from isReplayable is unreachable.",
+        "status": "OPEN",
+        "body": "Ring is deleted only when !entries.some(isReplayable); the following loop still branches on isReplayable. Dead code; behaviour still correct because replayable rings are retained. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED; severity INFO. In the `/clear` branch (`register.tsx` about 1350-1366) the ring is deleted only when no entry is replayable, so the `if (isReplayable(entry.row)) s.foldedPending += 1` branch can never run. Dead code; behaviour is correct."
+      },
+      {
+        "id": "N7",
+        "severity": "INFO",
+        "title": "Live behaviour, real ledger emit, desktop $.process, fs.write atomicity, and pre-commit hooks remain NOT_RUN / UNKNOWN as disclosed.",
+        "status": "OPEN",
+        "body": "README/how-to Verification and Known limits; implementer authority facts. Unit kit only. Acceptable disclosure for L2 but residual operational risk. [plugins/dopemux-memory-bridge/README.md] ADJUDICATION: Coordinator: CONFIRMED; disclosure, not a defect; severity INFO. Live behaviour, a real `dopemux capture emit`, the desktop `$.process`, `$.fs.write` atomicity and the pre-commit hooks are NOT_RUN / UNKNOWN, exactly as the README, how-to and `RETURN-01.md` state. The operator's live smoke test is the clearing action."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "N1/N5: how-to cites a pinned commit SHA and the README misdescribes attempts (docs defects, unrepaired).",
+      "N2: /bridge-note menu description overclaims persistence (packet-specified wording).",
+      "N3: status counts other sessions' never-replayed rows as pending (disclosed limit).",
+      "Never run live; desktop $.process, Pulse band ordering and $.fs.write atomicity UNKNOWN (N7).",
+      "N4: no pre-bound on the answer text before decision matching (linear cost, no ReDoS).",
+      "N6: dead code in the /clear fold path (harmless)."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
 }
