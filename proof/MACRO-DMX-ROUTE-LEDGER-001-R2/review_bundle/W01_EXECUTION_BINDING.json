@@ -1,0 +1,118 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+  "stage": "issuance",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "task-packets/MACRO-DMX-ROUTE-LEDGER-001-R2/WORKSTREAMS/W01/TASK_PACKET.json",
+    "operator_gate_refs": [
+      "operator task relayed 2026-10-23 by issuing session local_901ed6d9-e250-47e7-bd52-6f2fdc18ca3c: 'Issue (do NOT execute) a Control Tower MacroPacket for the Route Ledger Claude Code function-hook mod (build M5, claudedocs/dopemux-mods-plugins-opportunity-map-2026-10-16.md section 4.1 and 3)'; source ranks Route Ledger third of three builds in section 3",
+      "R2 amendment 2026-10-23 relayed by session local_901ed6d9-e250-47e7-bd52-6f2fdc18ca3c: the merge owner found revision R1 (task-packets/MACRO-DMX-ROUTE-LEDGER-001, preserved unchanged) records no numeric active or elapsed allowances; add them as PROPOSED in a new revision. The operator authorized R1 verbatim (AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_EXECUTION=YES); that authorization covers R1 only. R2 needs its own verbatim line."
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "selection": {
+    "runner": "claude-code-agent",
+    "runner_availability": "PROPOSED",
+    "model": "claude-sonnet-5-5",
+    "effort": "high",
+    "connector": "claude-code-agent-tool",
+    "configured_identity": "claude-sonnet-5-5",
+    "response_claimed_identity": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": []
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read",
+      "edit",
+      "validate"
+    ],
+    "forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready"
+    ],
+    "stop_conditions": [
+      "operator gate absent",
+      "authority conflict",
+      "parallel write overlap",
+      "advisor call",
+      "allowance exhausted (ALLOWANCES.json)"
+    ],
+    "custody_constraints": [
+      "mutation only inside the issuing worktree /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032 on branch claude/route-ledger-001-8d8032"
+    ],
+    "context_constraints": [
+      "children receive only their TASK_PACKET plus cited context_files"
+    ]
+  },
+  "justification": {
+    "why_runner": "claude-code Agent subagent pinned by TP_ROUTE (cost-first: a worker, not the supervisor's model)",
+    "why_model": "Sonnet: the work is a streaming-generator hook, frozen-type API use and a schema against an early-access declaration; Haiku is not adequate for that judgment and Opus has no trigger",
+    "why_effort": "high: streaming `turn.step` hook plus fs rewrite design and a receipt-to-binding mapping; one step below is the first that would risk a rework loop (cost basis UNKNOWN)",
+    "alternatives_considered": [
+      {
+        "route": "claude-haiku-5-5",
+        "disposition": "rejected",
+        "reason": "streaming/frozen-type hook design is above bounded mechanical work"
+      },
+      {
+        "route": "claude-opus-5-5",
+        "disposition": "rejected",
+        "reason": "no judgment-tier trigger; the supervisor holds the architecture decisions"
+      }
+    ],
+    "cost_latency_tradeoff": "UNKNOWN (no current price evidence recorded)",
+    "evidence": [
+      "claudedocs/dopemux-mods-plugins-opportunity-map-2026-10-16.md",
+      "task-packets/MACRO-DMX-PULSE-001/ (template)"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "NOT_RUN"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "recorded_at": "2026-10-23T20:23:53Z",
+  "runner_version": "UNKNOWN",
+  "effort_requested": "high",
+  "effort_observed": "UNKNOWN",
+  "auth_profile_ref": "UNKNOWN",
+  "network_posture": "no-network-mutation",
+  "containment_posture": "worktree-scoped",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "not triggered"
+  },
+  "response_claimed_model": "UNKNOWN",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "UNKNOWN",
+  "qualification_receipt_ref": "NOT_RUN",
+  "packet_id": "TP-DMX-ROUTELEDGER-W01-CORE-001-R2"
+}

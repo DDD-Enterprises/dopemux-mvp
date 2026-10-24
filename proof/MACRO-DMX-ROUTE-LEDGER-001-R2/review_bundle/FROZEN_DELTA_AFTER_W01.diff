@@ -1,0 +1,915 @@
+diff --git a/docs/02-how-to/route-ledger.md b/docs/02-how-to/route-ledger.md
+new file mode 100644
+index 000000000..1efe85cc8
+--- /dev/null
++++ b/docs/02-how-to/route-ledger.md
+@@ -0,0 +1,141 @@
++---
++id: route-ledger
++title: Route Ledger Mod (dopemux-route-ledger)
++type: how-to
++owner: '@hu3mann'
++author: 'claude-code-agent (claude-haiku-5-5)'
++date: '2026-10-23'
++last_review: '2026-10-23'
++next_review: '2027-01-21'
++prelude: How to load the dopemux-route-ledger mod, read its status segment and toasts, use the /route-ledger table, configure its receipts, and hand receipts to a supervisor for ExecutionBinding merge.
++---
++# Route Ledger Mod (dopemux-route-ledger)
++
++`dopemux-route-ledger` is a read-only Claude Code mod that records which model each
++Agent call requested, which model each step reported back, and every advisor call.
++It shows the result as a status segment, toasts, and a `/route-ledger` table, and
++writes each record as a JSONL receipt. Source: `plugins/dopemux-route-ledger/`.
++
++Live behaviour is NOT VERIFIED. The offline tests in `hooks/register.test.ts` are the
++only evidence so far. Before you rely on the mod, run it in a real session (section 1)
++and check what it shows.
++
++## 1. Load the mod
++
++From the repo root:
++
++```bash
++claude --plugin-dir plugins/dopemux-route-ledger
++```
++
++Offline checks, from the repo root:
++
++```bash
++claude plugin validate plugins/dopemux-route-ledger
++claude plugin test plugins/dopemux-route-ledger
++```
++
++Nothing is installed. The mod lasts for that session
++(`plugins/dopemux-route-ledger/README.md`, "Load it").
++
++## 2. What you see
++
++- **Status segment**, for example `agents S×4 H×2 · advisor 1`. Agents appear in the
++  order S (sonnet), O (opus), H (haiku), F (fable), then `?` for any other or unknown
++  model. Only non-zero counts show. With none, the segment reads `agents –`.
++  `advisor N` appears when N > 0. Once a budget applies and is exceeded it reads
++  `advisor N/B ⚠`.
++- `· ledger off` is appended when receipts are disabled. `· receipts ✗` is appended
++  when a receipt write failed.
++- **Toasts**, each shown once:
++  - a subagent whose advisor count exceeds `childAdvisorBudget`;
++  - the session, once its total exceeds `sessionAdvisorBudget`;
++  - an Agent call with no model pinned (`unpinnedAgent`).
++  Every advisor toast says the mod counts advisor calls and cannot block them.
++- **`/route-ledger`** prints a table with one row per loop: `main`, then one row per
++  subagent, at most 60 rows and then `+N more`. Columns: `agent | runner | model
++  requested | model observed | effort requested | match | advisor`. Unknown cells read
++  `UNKNOWN`.
++- **`/route-ledger receipts`** prints the receipt file, the receipt counts, and
++  `receiptsEnabled` / `receiptsFailed`. Any other argument prints a one-line usage.
++
++The command reads the ledger and writes nothing.
++
++## 3. The `/route` alias
++
++`/route` is an alias with the same output. It is a best-effort name: it may collide
++with a built-in or another plugin's command, and some builds refuse it. If `/route` is
++refused, use `/route-ledger`. That name is registered on its own and keeps working.
++
++## 4. Options (`userConfig`)
++
++| key | default | meaning |
++| --- | --- | --- |
++| `receiptDir` | `.control-tower/state/route-ledger` | Where `<sessionId>.jsonl` files go. The default is used only when `.control-tower/state` exists. An explicit directory is created on first write. A `..` segment disables receipts. |
++| `unpinnedAgent` | `warn` | `warn` toasts once per Agent call with no model pinned (forks excepted). `off` records only. |
++| `childAdvisorBudget` | `0` | Advisor calls allowed per child agent. `0` means a child's first call exceeds it. A negative number turns the check off. |
++| `sessionAdvisorBudget` | `-1` | Advisor calls allowed per session. `-1` turns it off. |
++| `maxReceiptsPerFile` | `500` | Allowed range 50 to 5000. A new segment starts after this many records. |
++
++## 5. Receipts
++
++Receipts are JSONL under `receiptDir`. The file stem is the session id with any
++character outside `A-Za-z0-9_-` replaced by `_`, so the file is `<stem>.jsonl`, then
++`<stem>.1.jsonl` and so on. Each record has `schema_version`
++`dopemux.route_ledger.receipt.v1`. The format is defined by `receipt.schema.json`.
++
++Three record kinds exist:
++
++- `agent_request`: the requested model and effort. It also carries nullable
++  `spawned_agent_id` and `resolved_model`, filled when `agent.spawn` fires.
++- `step_observed`: the requested model against the `usage.model` the API reported,
++  with token usage.
++- `advisor_call`: one advisor server-tool-use, deduplicated by its id.
++
++Prompts, file contents and tool output never enter a receipt.
++
++### binding_fields
++
++`agent_request` and `step_observed` receipts carry `binding_fields`, a partial mapping:
++
++- `selection` = `{ runner: "claude-code-agent", model, effort }` from the request;
++- `effort_requested` = the requested effort, or `UNKNOWN`;
++- `effort_observed` = always `UNKNOWN`, because the API does not report effort;
++- `response_claimed_model` = the API-reported model, or `UNKNOWN`;
++- `provider_attested_model` = always `UNKNOWN`;
++- `independence_class` = always `UNKNOWN`.
++
++A receipt is not a valid binding. A supervisor merges receipts into an ExecutionBinding
++and runs `ct bind-record`. The mod never runs `ct`.
++
++## 6. What the mod does not do
++
++- It counts advisor calls after the fact. It cannot block, deny or retry any call.
++- The observed model is what the API response claimed. It is not provider attestation.
++  Effort observed is always UNKNOWN.
++- A fork inherits its parent's model, so a fork with no model is recorded as
++  inheriting, not as unpinned.
++- It makes no network, process or model call. It writes nothing to the repository
++  except its own receipt files under `receiptDir`, and nothing to `~/.claude`.
++- Whether it coexists with another plugin's status line, for example dopemux-pulse,
++  is unverified. The mod sets its own status line, and this was not run.
++- The plugin API is early access and may change between Claude Code builds.
++
++## 7. Troubleshooting
++
++- **`· ledger off` in the status, or `receipts are off` in `/route-ledger receipts`.**
++  The default `receiptDir` is used only when `.control-tower/state` exists. Either
++  create that directory, or set `receiptDir` to an explicit path. The receipts text
++  gives the reason.
++- **`· receipts ✗`.** A receipt write failed. Run `/route-ledger receipts` and read
++  `receiptsFailed`. Check that the receipt directory is writable.
++- **Unpinned-agent toast.** An Agent call had no model. Pin the model on the call, or
++  set `unpinnedAgent` to `off` to record without the toast.
++- **`/route` refused.** Use `/route-ledger`.
++- **`UNKNOWN` in the table.** The field was not reported. Do not read it as a pass.
++
++## 8. Next step
++
++To see the mod work, load it with section 1 in a real session, start one Agent call
++with a pinned model, and run `/route-ledger`. Record what you observe. Until someone
++does, treat the runtime behaviour as NOT VERIFIED.
+diff --git a/plugins/dopemux-route-ledger/README.md b/plugins/dopemux-route-ledger/README.md
+new file mode 100644
+index 000000000..406f16506
+--- /dev/null
++++ b/plugins/dopemux-route-ledger/README.md
+@@ -0,0 +1,54 @@
++# dopemux-route-ledger
++
++dopemux-route-ledger is a read-only Claude Code mod that keeps a ledger of delegation. It records which model each Agent call asked for, which model each model step reported back in the API response, and every advisor server-tool-use, then shows the result as a status segment, as toasts when an advisor budget is exceeded, and as a `/route-ledger` table (alias `/route`). Each record is also written as a JSONL receipt that a supervisor can merge into an ExecutionBinding.
++
++## What it shows
++
++- Status segment, for example `agents S×4 H×2 · advisor 1`. Agents appear in the fixed order S (sonnet), O (opus), H (haiku), F (fable), then `?` for any other or unknown model, and only the non-zero ones; with none the segment reads `agents –`. `advisor N` appears when N > 0 and becomes `advisor N/B ⚠` once a budget B applies and is exceeded. ` · ledger off` is appended when receipts are disabled and ` · receipts ✗` when a receipt write failed. The line is redrawn at most about once per half second.
++- Toasts. A subagent whose advisor count exceeds `childAdvisorBudget` toasts once, naming a shortened agent id, the count and the budget. The session toasts once when its total exceeds `sessionAdvisorBudget`. An Agent call with no model pinned also toasts once (`unpinnedAgent`). The toasts say the mod counts advisor calls and cannot block them.
++- `/route-ledger` prints a table, one row per loop (`main`, then one per subagent, at most 60 rows then `+N more`) with the columns `agent | runner | model requested | model observed | effort requested | match | advisor`. Unknown cells read `UNKNOWN`. `/route-ledger receipts` prints the receipt file, the receipt counts and `receiptsEnabled` / `receiptsFailed`. Any other argument prints a one-line usage. The command never writes, spawns or reads outside its own state.
++- `/route` is an alias with identical output.
++
++## Load it
++
++```
++claude --plugin-dir plugins/dopemux-route-ledger
++```
++
++Check it offline with `claude plugin validate plugins/dopemux-route-ledger` and `claude plugin test plugins/dopemux-route-ledger`.
++
++## Options (`userConfig`)
++
++| key | default | meaning |
++| --- | --- | --- |
++| `receiptDir` | `.control-tower/state/route-ledger` | Where `<sessionId>.jsonl` files go. The default is used only when `.control-tower/state` exists; an explicit directory is created on first write. A `..` segment disables receipts. |
++| `unpinnedAgent` | `warn` | `warn` toasts once per Agent call with no model pinned (forks excepted); `off` records only. |
++| `childAdvisorBudget` | `0` | Advisor calls allowed per child agent. 0 means a child's first call exceeds it; a negative number turns the check off. |
++| `sessionAdvisorBudget` | `-1` | Advisor calls allowed per session; -1 turns it off. |
++| `maxReceiptsPerFile` | `500` | 50 to 5000; a new `<sessionId>.<n>.jsonl` segment starts after this many. |
++
++## Receipts
++
++Receipts are JSONL under `receiptDir`, one file (segment) per session, named `<sessionId>.jsonl`, then `<sessionId>.1.jsonl` and so on. Three kinds exist: `agent_request` (the requested model and effort, joined to the spawned agent id and resolved model when `agent.spawn` fires), `step_observed` (requested versus the API-reported `usage.model`, with token usage) and `advisor_call`. The format is defined by `receipt.schema.json`. Prompts, file contents and tool output never enter a receipt.
++
++`agent_request` and `step_observed` receipts carry `binding_fields`, a partial mapping a supervisor can merge into an ExecutionBinding:
++
++- `selection` = `{ runner: "claude-code-agent", model, effort }` from what was requested
++- `effort_requested` = the requested effort, or `UNKNOWN`
++- `effort_observed` = always `UNKNOWN` (the API does not report effort)
++- `response_claimed_model` = the API-reported model, or `UNKNOWN`
++- `provider_attested_model` = always `UNKNOWN`
++- `independence_class` = always `UNKNOWN`
++
++A receipt is not a valid binding: the mod knows only these fields. A supervisor merges the receipts into a binding and runs `ct bind-record`; the mod never does.
++
++## Limits
++
++- It counts advisor calls after the fact. It cannot block, deny or retry any call.
++- The observed model is what the API response claimed (`response_claimed`), not provider attestation. Effort observed is UNKNOWN.
++- A fork inherits its parent's model, so a fork with no model is recorded as inheriting, not as unpinned.
++- The plugin API is early access and may change between Claude Code builds.
++- `/route` may collide with a built-in or another plugin's command in some builds. If it is refused, use `/route-ledger`, which is registered independently and keeps working.
++- The mod pins its own status line. Whether it coexists with another plugin's status line (for example dopemux-pulse) is unverified and was not run.
++- The mod is read-only toward the repository except its own receipt files under `receiptDir`. It makes no network, process or model call.
++- Not run yet: a live Claude Code session loading the mod. Offline tests only.
+diff --git a/plugins/dopemux-route-ledger/hooks/register.test.ts b/plugins/dopemux-route-ledger/hooks/register.test.ts
+index c28c66ce2..4bc8d7828 100644
+--- a/plugins/dopemux-route-ledger/hooks/register.test.ts
++++ b/plugins/dopemux-route-ledger/hooks/register.test.ts
+@@ -9,7 +9,7 @@ import {
+   parseConfig,
+   summarize,
+   toBindingFields,
+-} from './register.tsx'
++} from './register'
+ 
+ const T0 = 1_792_000_000_000
+ const DEFAULT_DIR = '.control-tower/state/route-ledger'
+@@ -125,6 +125,11 @@ function harness($: Engine, on: On, opts: Opts = {}) {
+     writes: [] as { path: string; text: string }[],
+     failWrites: false,
+     toasts: [] as string[],
++    toastTimeouts: [] as (number | undefined)[],
++    statuses: [] as (string | undefined)[],
++    registered: [] as string[],
++    // Command names the engine refuses to register (a built-in collision).
++    refused: new Set<string>(),
+     calls: [] as Receipt[],
+     spawns: [] as Receipt[],
+     stepInputs: [] as Receipt[],
+@@ -139,8 +144,18 @@ function harness($: Engine, on: On, opts: Opts = {}) {
+   on('session.id', () => ({ value: opts.sessionId ?? 'sess-1' }))
+   on('ui.toast', (_, e) => {
+     world.toasts.push(e.text)
++    world.toastTimeouts.push(e.timeoutMs)
+     return { value: undefined }
+   })
++  on('ui.status', (_, e) => {
++    world.statuses.push(e.text)
++    return { value: undefined }
++  })
++  on('command.register', (_, e) => {
++    if (world.refused.has(e.name)) return { deny: `${e.name} is a built-in name` }
++    world.registered.push(e.name)
++    return { value: { command: e.name } }
++  })
+   on('fs.write', (_, e) => {
+     const path = rel(e.path)
+     world.writes.push({ path, text: e.text })
+@@ -213,6 +228,19 @@ function harness($: Engine, on: On, opts: Opts = {}) {
+       await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+       await clock.settle()
+     },
++    // The last status text the plugin pinned (undefined when cleared or never set).
++    status: () => world.statuses[world.statuses.length - 1],
++    async run(command: string, args = '') {
++      return $.command.run({
++        command,
++        args,
++        origin: { kind: 'composer' },
++        presentation: { isFullscreen: false, columns: 80 },
++      })
++    },
++    async settleStatus() {
++      await clock.advance(DEBOUNCE_MS)
++    },
+     async end(reason: 'clear' | 'other' = 'other') {
+       await $.session.end({ reason, sessionId: 'sess-1', resume: { sessionId: 'sess-1' } as never })
+       await clock.settle()
+@@ -259,6 +287,7 @@ function harness($: Engine, on: On, opts: Opts = {}) {
+   }
+ }
+ 
++const DEBOUNCE_MS = 1_000
+ const STEP: StepInput = { turnId: 'turn-1', index: 0, model: 'claude-sonnet-5-5' }
+ 
+ // ---------------------------------------------------------------- Agent calls
+@@ -830,3 +859,298 @@ test('a failed write is counted in the state, not thrown and not retried', async
+   expect(s.receiptsFailed).toBe(1)
+   expect(summarize(s).receiptsFailed).toBe(1)
+ })
++
++// ----------------------------------------------------------- W02: status segment
++
++const stepAs = (h: ReturnType<typeof harness>, agentId: string, model: string, index = 0) => {
++  h.world.usage = { ...USAGE, model }
++  return h.step({ ...STEP, index, agentId, model })
++}
++
++test('status shows `agents –` with no agents, set in session.start', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  expect(h.status()).toBe('agents –')
++})
++
++test('status counts agents in the fixed order S, O, H, F, ? and only non-zero', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await stepAs(h, 'a1', 'claude-haiku-4-5')
++  await stepAs(h, 'a2', 'claude-sonnet-5-5')
++  await stepAs(h, 'a3', 'claude-sonnet-5-5')
++  await stepAs(h, 'a4', 'gpt-x')
++  await stepAs(h, 'a5', 'claude-opus-5')
++  await stepAs(h, 'a6', 'fable-1')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×2 O×1 H×1 F×1 ?×1')
++
++})
++
++test('status with a single agent reads `agents S×1`', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1')
++})
++
++test('status shows advisor N only when N > 0, and N/B ⚠ once a budget is exceeded', { options: { sessionAdvisorBudget: 1, childAdvisorBudget: -1 } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await h.step(STEP)
++  await h.settleStatus()
++  expect(h.status()).toBe('agents – · advisor 1')
++
++  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await h.step({ ...STEP, index: 1 })
++  await h.settleStatus()
++  expect(h.status()).toBe('agents – · advisor 2/1 ⚠')
++})
++
++test('a child over its budget shows N/B ⚠ in the status', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1 · advisor 1/0 ⚠')
++})
++
++test('status appends ledger off when receipts are disabled, and receipts ✗ after a failed write', async ($, on) => {
++  const off = harness($, on, { dirs: [] })
++  await off.start()
++  expect(off.status()).toBe('agents – · ledger off')
++})
++
++test('status appends receipts ✗ when a receipt write failed', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.failWrites = true
++  await h.agent({ model: 'sonnet' })
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1 · receipts ✗')
++})
++
++test('a burst of receipts is debounced into one status update', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const before = h.world.statuses.length
++  for (let i = 0; i < 20; i++) await h.step({ ...STEP, index: i, agentId: `a${i}` })
++  expect(h.world.statuses.length).toBe(before)
++  await h.settleStatus()
++  expect(h.world.statuses.length).toBe(before + 1)
++  expect(h.status()).toBe('agents S×20')
++  await h.settleStatus()
++  expect(h.world.statuses.length).toBe(before + 1)
++})
++
++test('session.end clear keeps the status; any other reason clears it', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'opus' })
++  await h.settleStatus()
++  await h.end('clear')
++  expect(h.status()).toBe('agents O×1')
++  await h.end('other')
++  expect(h.status()).toBe(undefined)
++  // A pending update does not bring the status back after the end.
++  await h.settleStatus()
++  expect(h.status()).toBe(undefined)
++})
++
++// ------------------------------------------------------------------ W02: toasts
++
++test('a child over childAdvisorBudget toasts once per agent, names it, never claims prevention', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-1234567890', 'claude-sonnet-5-5')
++  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-1234567890', 'claude-sonnet-5-5', 1)
++  expect(h.world.toasts).toHaveLength(1)
++  const toast = h.world.toasts[0]!
++  expect(toast.includes('agent-12')).toBe(true)
++  expect(toast.includes('agent-1234567890')).toBe(false)
++  expect(toast.includes('1')).toBe(true)
++  expect(toast.includes('0')).toBe(true)
++  expect(toast).toMatch(/cannot block/)
++  expect(toast).not.toMatch(/prevented|blocked a/)
++  expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
++
++  // Another agent crosses its own budget: its own toast.
++  h.world.serverToolUses = [{ id: 'srv-3', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-other', 'claude-sonnet-5-5')
++  expect(h.world.toasts).toHaveLength(2)
++})
++
++test('a budget of -1 never toasts for a child', { options: { childAdvisorBudget: -1 } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  expect(h.world.toasts).toHaveLength(0)
++})
++
++test('the session total toasts once when it exceeds sessionAdvisorBudget', { options: { sessionAdvisorBudget: 1 } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  for (const id of ['srv-1', 'srv-2', 'srv-3']) {
++    h.world.serverToolUses = [{ id, name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++    await h.step({ ...STEP, index: Number(id.slice(-1)) })
++  }
++  expect(h.world.toasts).toHaveLength(1)
++  expect(h.world.toasts[0]).toMatch(/session/)
++  expect(h.world.toasts[0]).toMatch(/cannot block/)
++  expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
++})
++
++// ---------------------------------------------------------------- W02: commands
++
++test('registers route-ledger then route, each on its own', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  expect(h.world.registered).toEqual(['route-ledger', 'route'])
++})
++
++test('a refused route registration leaves route-ledger and the status working', async ($, on) => {
++  const h = harness($, on)
++  h.world.refused.add('route')
++  await h.start()
++  expect(h.world.registered).toEqual(['route-ledger'])
++  expect(h.status()).toBe('agents –')
++  const answer = await h.run('route-ledger')
++  expect(answer.text).toMatch(/model requested/)
++})
++
++test('a refused route-ledger registration does not stop route', async ($, on) => {
++  const h = harness($, on)
++  h.world.refused.add('route-ledger')
++  await h.start()
++  expect(h.world.registered).toEqual(['route'])
++})
++
++test('/route-ledger on an empty ledger prints the main row, UNKNOWN cells and the footer', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const { text } = await h.run('route-ledger')
++  const lines = text!.split('\n')
++  expect(lines[0]).toBe('agent | runner | model requested | model observed | effort requested | match | advisor')
++  expect(lines[1]).toBe('main | claude-code-agent | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | 0')
++  expect(text).toMatch(/response_claimed/)
++  expect(text).toMatch(/effort observed is UNKNOWN/)
++  expect(text).toMatch(/cannot block/)
++})
++
++test('/route-ledger on a mixed ledger has one row per loop', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.step({ ...STEP, effort: 'high' })
++  const call = await h.agent({ model: 'haiku', effort: 'low', description: 'cheap' })
++  await h.spawn(call.id)
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  h.world.usage = { ...USAGE, model: 'claude-haiku-4-5' }
++  await h.step({ ...STEP, index: 1, agentId: 'agent-7', model: 'claude-haiku-4-5' })
++  await h.agent({ subagent_type: 'Explore' })
++
++  const rows = (await h.run('route-ledger')).text!.split('\n').slice(1, 4)
++  expect(rows[0]).toBe('main | claude-code-agent | claude-sonnet-5-5 | claude-sonnet-5-5 | high | yes | 0')
++  expect(rows[1]).toBe('agent-7 | claude-code-agent | haiku | claude-haiku-4-5 | low | yes | 1')
++  expect(rows[2]).toMatch(/^pending:.* \| claude-code-agent \| UNKNOWN \| UNKNOWN \| UNKNOWN \| UNKNOWN \| 0$/)
++})
++
++test('a request that differs from what was observed shows match no', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const call = await h.agent({ model: 'opus' })
++  await h.spawn(call.id)
++  h.world.usage = { ...USAGE, model: 'claude-sonnet-5-5' }
++  await h.step({ ...STEP, agentId: 'agent-7' })
++  const rows = (await h.run('route-ledger')).text!.split('\n')
++  expect(rows[2]).toBe('agent-7 | claude-code-agent | opus | claude-sonnet-5-5 | UNKNOWN | no | 0')
++})
++
++test('/route-ledger lists at most 60 loops then +N more', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  for (let i = 0; i < 75; i++) await h.step({ ...STEP, index: i, agentId: `a${i}` })
++  const lines = (await h.run('route-ledger')).text!.split('\n')
++  const rows = lines.filter(line => line.includes(' | claude-code-agent | '))
++  expect(rows).toHaveLength(60)
++  expect(rows[0]!.startsWith('main | ')).toBe(true)
++  // main + 75 agents = 76 loops: 16 are cut.
++  expect(lines).toContain('+16 more')
++})
++
++test('/route and /route-ledger answer the same text', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  const a = await h.run('route-ledger')
++  const b = await h.run('route')
++  expect(b.text).toBe(a.text)
++  expect((await h.run('route', 'receipts')).text).toBe((await h.run('route-ledger', 'receipts')).text)
++})
++
++test('the receipts argument prints the file, counts and flags', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  await h.step(STEP)
++  const { text } = await h.run('route-ledger', 'receipts')
++  expect(text).toMatch(new RegExp(FILE.replace(/[.]/g, '\\.')))
++  expect(text).toMatch(/agent_request 1/)
++  expect(text).toMatch(/step_observed 1/)
++  expect(text).toMatch(/advisor_call 0/)
++  expect(text).toMatch(/receiptsEnabled true/)
++  expect(text).toMatch(/receiptsFailed 0/)
++})
++
++test('receipts argument with receipts disabled says so', async ($, on) => {
++  const h = harness($, on, { dirs: [] })
++  await h.start()
++  const { text } = await h.run('route-ledger', 'receipts')
++  expect(text).toMatch(/receiptsEnabled false/)
++  expect(text).toMatch(/none/)
++})
++
++test('an unknown argument prints a usage line and changes nothing', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  const writes = h.world.writes.length
++  const statuses = h.world.statuses.length
++  const { text } = await h.run('route-ledger', 'frobnicate')
++  expect(text!.includes('\n')).toBe(false)
++  expect(text).toMatch(/Usage: \/route-ledger/)
++  expect(h.world.writes.length).toBe(writes)
++  expect(h.world.statuses.length).toBe(statuses)
++  expect(h.receipts()).toHaveLength(1)
++})
++
++test('the command is read-only: running it writes nothing', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  const writes = h.world.writes.length
++  await h.run('route-ledger')
++  await h.run('route-ledger', 'receipts')
++  await h.run('route', 'nope')
++  expect(h.world.writes.length).toBe(writes)
++})
++
++test('nothing throws when the ledger is empty or odd input reaches summarize', async ($, on) => {
++  const h = harness($, on)
++  h.world.usage = null
++  await h.start()
++  await h.step(STEP)
++  await h.step({ ...STEP, index: 1, agentId: 'a1' })
++  await h.run('route-ledger')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents ?×1')
++
++  const s = newLedger({})
++  s.agents['x'] = { toolUseId: null, agentId: null, requestedModel: 5 as never, observedModel: null, pinned: null, inherits: false }
++  expect(() => summarize(s)).not.toThrow()
++})
+diff --git a/plugins/dopemux-route-ledger/hooks/register.tsx b/plugins/dopemux-route-ledger/hooks/register.tsx
+index 272aaf9ff..6d5eb173f 100644
+--- a/plugins/dopemux-route-ledger/hooks/register.tsx
++++ b/plugins/dopemux-route-ledger/hooks/register.tsx
+@@ -1,4 +1,4 @@
+-import type { EngineInterface, Register } from 'claude-code'
++import type { EngineInterface, Register, Timer } from 'claude-code'
+ 
+ // dopemux-route-ledger (core): records which model each Agent call REQUESTED,
+ // which model each model step OBSERVED (the API-reported `usage.model`), and
+@@ -37,6 +37,11 @@ const MAX_MAX_RECEIPTS = 5000
+ const DESCRIPTION_MAX = 80
+ // `$.fs.write` and `$.fs.read` reject over 4 MiB: roll well before that.
+ const SEGMENT_BYTES_MAX = 3_500_000
++// A burst of receipts redraws the status line once, this long after the first.
++const STATUS_DEBOUNCE_MS = 500
++const TOAST_MS = 8000
++const ROUTE_ROWS_MAX = 60
++const SHORT_ID = 8
+ 
+ type Family = 'S' | 'O' | 'H' | 'F' | 'other'
+ type Effort = string | number
+@@ -158,6 +163,8 @@ type Ledger = {
+   advisorSeen: Set<string>
+   agents: Record<string, AgentRecord>
+   toasted: Set<string>
++  // A pending debounced status redraw, if any.
++  statusTimer: Timer | undefined
+   chain: Promise<void>
+   flushQueued: boolean
+ }
+@@ -239,6 +246,7 @@ export function newLedger(options: Settings): Ledger {
+     advisorSeen: new Set(),
+     agents: {},
+     toasted: new Set(),
++    statusTimer: undefined,
+     chain: Promise.resolve(),
+     flushQueued: false,
+   }
+@@ -246,7 +254,7 @@ export function newLedger(options: Settings): Ledger {
+ 
+ // Glyph rule shared with W02: the lower-cased model text decides.
+ export function familyOf(model: string | null | undefined): Family {
+-  const text = (model ?? '').toLowerCase()
++  const text = (typeof model === 'string' ? model : '').toLowerCase()
+   if (text.includes('sonnet')) return 'S'
+   if (text.includes('opus')) return 'O'
+   if (text.includes('haiku')) return 'H'
+@@ -391,9 +399,233 @@ function tally(s: Ledger, receipt: Receipt): boolean {
+   return true
+ }
+ 
+-// W02 extends this in place; W01 leaves it empty. Called, wrapped, after every
+-// recorded receipt.
+-function afterRecord($: EngineInterface, s: Ledger, receipt: Receipt): void {}
++function shortId(id: string): string {
++  return id.slice(0, SHORT_ID)
++}
++
++function advisorTotal(s: Ledger): number {
++  return summarize(s).advisorTotal
++}
++
++// `agents S×4 H×2 · advisor 1`. Pure: the whole status line from the ledger.
++function statusText(s: Ledger): string {
++  const sum = summarize(s)
++  const order: [string, number][] = [
++    ['S', sum.agents.S],
++    ['O', sum.agents.O],
++    ['H', sum.agents.H],
++    ['F', sum.agents.F],
++    ['?', sum.agents.other],
++  ]
++  const present = order.filter(([, n]) => n > 0).map(([glyph, n]) => `${glyph}×${n}`)
++  let line = present.length === 0 ? 'agents –' : `agents ${present.join(' ')}`
++  if (sum.advisorTotal > 0) {
++    const { sessionAdvisorBudget, childAdvisorBudget } = s.config
++    const overSession = sessionAdvisorBudget >= 0 && sum.advisorTotal > sessionAdvisorBudget
++    const overChild =
++      childAdvisorBudget >= 0 && Object.values(sum.advisorByAgent).some(n => n > childAdvisorBudget)
++    if (overSession) line += ` · advisor ${sum.advisorTotal}/${sessionAdvisorBudget} ⚠`
++    else if (overChild) line += ` · advisor ${sum.advisorTotal}/${childAdvisorBudget} ⚠`
++    else line += ` · advisor ${sum.advisorTotal}`
++  }
++  if (!s.receiptsEnabled) line += ' · ledger off'
++  if (s.receiptsFailed > 0) line += ' · receipts ✗'
++  return line
++}
++
++function drawStatus($: EngineInterface, s: Ledger): void {
++  if (s.isEnded) return
++  try {
++    $.ui.status(statusText(s))
++  } catch {
++    // a refused status line must not cost anything else
++  }
++}
++
++// Debounced: the first call arms one timer, calls inside the window ride on it.
++function scheduleStatus($: EngineInterface, s: Ledger): void {
++  if (s.isEnded || s.statusTimer !== undefined) return
++  try {
++    s.statusTimer = $.clock.after(STATUS_DEBOUNCE_MS, () => {
++      s.statusTimer = undefined
++      drawStatus($, s)
++    })
++  } catch {
++    s.statusTimer = undefined
++  }
++}
++
++function toastOnce($: EngineInterface, s: Ledger, key: string, message: string): void {
++  if (s.toasted.has(key)) return
++  s.toasted.add(key)
++  try {
++    $.ui.toast(message, { timeoutMs: TOAST_MS })
++  } catch {
++    // a refused toast must not cost the receipt
++  }
++}
++
++// Advisor budgets. The mod counts calls after the fact and cannot block them.
++function budgetToasts($: EngineInterface, s: Ledger, receipt: AdvisorCallReceipt): void {
++  const { childAdvisorBudget, sessionAdvisorBudget } = s.config
++  if (receipt.loop === 'agent' && receipt.agent_id !== null && childAdvisorBudget >= 0) {
++    const n = s.advisorByAgent[receipt.agent_id] ?? 0
++    if (n > childAdvisorBudget) {
++      toastOnce(
++        $,
++        s,
++        `advisor-child:${receipt.agent_id}`,
++        `route-ledger: agent ${shortId(receipt.agent_id)} made ${n} advisor calls (budget ${childAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
++      )
++    }
++  }
++  if (sessionAdvisorBudget >= 0) {
++    const total = advisorTotal(s)
++    if (total > sessionAdvisorBudget) {
++      toastOnce(
++        $,
++        s,
++        'advisor-session',
++        `route-ledger: session made ${total} advisor calls (budget ${sessionAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
++      )
++    }
++  }
++}
++
++// Called, wrapped, after every recorded receipt: toasts and the status line.
++function afterRecord($: EngineInterface, s: Ledger, receipt: Receipt): void {
++  if (receipt.kind === 'advisor_call') budgetToasts($, s, receipt)
++  scheduleStatus($, s)
++}
++
++// ------------------------------------------------------------------ the command
++
++function cell(value: string | null | undefined): string {
++  return value === null || value === undefined || value === '' ? UNKNOWN : String(value)
++}
++
++// The last step the main loop observed, from the receipts held in memory.
++function lastMainStep(s: Ledger): StepObservedReceipt | undefined {
++  for (let i = s.segments.length - 1; i >= 0; i--) {
++    const receipts = s.segments[i]!.receipts
++    for (let j = receipts.length - 1; j >= 0; j--) {
++      const r = receipts[j]!
++      if (r.kind === 'step_observed' && r.agent_id === null) return r
++    }
++  }
++  return undefined
++}
++
++function matchCell(requested: string | null, observed: string | null): string {
++  if (requested === null || observed === null) return UNKNOWN
++  const same = sameModel(requested, observed)
++  return same === null ? UNKNOWN : same ? 'yes' : 'no'
++}
++
++function row(cells: string[]): string {
++  return cells.join(' | ')
++}
++
++function routeTable(s: Ledger): string {
++  const rows: string[] = []
++  const main = lastMainStep(s)
++  rows.push(
++    row([
++      'main',
++      RUNNER,
++      cell(main?.requested_model),
++      cell(main?.observed_model),
++      cell(main?.requested_effort === null || main === undefined ? null : String(main.requested_effort)),
++      matchCell(main?.requested_model ?? null, main?.observed_model ?? null),
++      String(s.advisorMain),
++    ]),
++  )
++  const seen = new Set<string>()
++  for (const [key, record] of Object.entries(s.agents)) {
++    const id = record.agentId ?? record.receipt?.spawned_agent_id ?? null
++    if (id !== null) seen.add(id)
++    const effort = record.receipt?.requested_effort
++    rows.push(
++      row([
++        id !== null ? shortId(id) : `pending:${shortId(record.toolUseId ?? key)}`,
++        RUNNER,
++        cell(record.requestedModel),
++        cell(record.observedModel),
++        effort === null || effort === undefined ? UNKNOWN : String(effort),
++        matchCell(record.requestedModel, record.observedModel),
++        String(id !== null ? (s.advisorByAgent[id] ?? 0) : 0),
++      ]),
++    )
++  }
++  for (const [id, n] of Object.entries(s.advisorByAgent)) {
++    if (!seen.has(id) && s.agents[id] === undefined) {
++      rows.push(row([shortId(id), RUNNER, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, String(n)]))
++    }
++  }
++  const shown = rows.slice(0, ROUTE_ROWS_MAX)
++  const lines = [
++    row(['agent', 'runner', 'model requested', 'model observed', 'effort requested', 'match', 'advisor']),
++    ...shown,
++  ]
++  if (rows.length > shown.length) lines.push(`+${rows.length - shown.length} more`)
++  lines.push(
++    'observed = the API-reported response model (response_claimed, not provider attestation); effort observed is UNKNOWN.',
++    'The mod counts advisor calls and cannot block them.',
++  )
++  return lines.join('\n')
++}
++
++function receiptsText(s: Ledger): string {
++  const counts = { agent_request: 0, step_observed: 0, advisor_call: 0 }
++  for (const seg of s.segments) {
++    for (const r of seg.receipts) {
++      if (r.kind in counts) counts[r.kind] += 1
++    }
++  }
++  const lines = [
++    `receipt file: ${s.receiptFile ?? 'none'}`,
++    `receipts: agent_request ${counts.agent_request}, step_observed ${counts.step_observed}, advisor_call ${counts.advisor_call}`,
++    `receiptsEnabled ${s.receiptsEnabled}, receiptsFailed ${s.receiptsFailed}`,
++  ]
++  if (!s.receiptsEnabled && s.receiptsDisabledReason !== undefined) {
++    lines.push(`receipts are off: ${s.receiptsDisabledReason}`)
++  }
++  return lines.join('\n')
++}
++
++// `/route-ledger` and its alias `/route`. Reads the ledger, writes nothing.
++function routeAnswer(s: Ledger, args: unknown): string {
++  const arg = typeof args === 'string' ? args.trim() : ''
++  if (arg === '') return routeTable(s)
++  if (arg === 'receipts') return receiptsText(s)
++  return 'Usage: /route-ledger [receipts]  (no argument: the model table; receipts: the receipt file and counts)'
++}
++
++async function registerCommands($: EngineInterface): Promise<void> {
++  // Each name on its own: one refusal never stops the other.
++  try {
++    await $.command
++      .register({
++        name: 'route-ledger',
++        description: 'Show requested versus observed model per agent, and advisor counts.',
++        argumentHint: '[receipts]',
++      })
++      .catch(() => undefined)
++  } catch {
++    // never surface
++  }
++  try {
++    await $.command
++      .register({
++        name: 'route',
++        description: 'Alias of /route-ledger.',
++        argumentHint: '[receipts]',
++      })
++      .catch(() => undefined)
++  } catch {
++    // never surface
++  }
++}
+ 
+ function currentSegment(s: Ledger): Segment {
+   const last = s.segments[s.segments.length - 1]
+@@ -440,7 +672,9 @@ function scheduleFlush($: EngineInterface, s: Ledger): void {
+   s.flushQueued = true
+   enqueue(s, async () => {
+     s.flushQueued = false
++    const failedBefore = s.receiptsFailed
+     await flushSegments($, s)
++    if (s.receiptsFailed !== failedBefore) scheduleStatus($, s)
+   })
+ }
+ 
+@@ -748,6 +982,9 @@ export const register: Register = (on, options) => {
+       // Not awaited: the rebuild must not hold the session's start.
+       s.isEnded = false
+       enqueue(s, () => initSession($, s))
++      // After the rehydrate, on the same chain: the status reads rebuilt tallies.
++      enqueue(s, async () => drawStatus($, s))
++      void registerCommands($)
+     } catch {
+       // never surface
+     }
+@@ -789,12 +1026,31 @@ export const register: Register = (on, options) => {
+     return r
+   })
+ 
++  // One handler for the canonical name and the alias.
++  on('command.run', { command: 'route-ledger' }, async (_, e) => {
++    try {
++      return { text: routeAnswer(s, e.args) }
++    } catch {
++      return { text: 'route-ledger: could not read the ledger.' }
++    }
++  })
++  on('command.run', { command: 'route' }, async (_, e) => {
++    try {
++      return { text: routeAnswer(s, e.args) }
++    } catch {
++      return { text: 'route-ledger: could not read the ledger.' }
++    }
++  })
++
+   on('session.end', async ($, e, next) => {
+     // /clear fires session.end with reason 'clear' but the process goes on and
+     // no session.start follows: not an end.
+     if (e.reason === 'clear') return next(e)
+     try {
+       s.isEnded = true
++      s.statusTimer?.cancel()
++      s.statusTimer = undefined
++      $.ui.status(undefined)
+       scheduleFlush($, s)
+       await s.chain
+     } catch {
