@@ -212,6 +212,11 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   // Verify start button tooltip
   expect(content).toMatch(/<Tooltip\s+title=\{\s*`Start task and switch active focus to: \$\{task\.title\}`\s*\}\s*arrow\s*>/);
 
+  // Verify pending task title copyable surface
+  expect(content).toMatch(/<Tooltip\s+title=\{\s*copiedTaskId === task\.id \? 'Copied!' : `Copy task title: \$\{task\.title\}`\s*\}\s*arrow\s*>/);
+  expect(content).toMatch(/aria-label=\{\s*copiedTaskId === task\.id \? `Task title copied: \$\{task\.title\}` : `Copy task title: \$\{task\.title\}`\s*\}/);
+  expect(content).toContain('onClick={() => handleCopyPendingTaskTitle(task.id, task.title)}');
+
   // Verify Predictive Skip and Soft Confirmation
   expect(content).toContain('const [isSkipConfirming, setIsSkipConfirming] = useState(false);');
   expect(content).toContain('const skipConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);');
@@ -652,4 +657,41 @@ test('TaskSequencer step index badges accessibility and tooltip attributes', () 
   expect(badge3).toBeInTheDocument();
   expect(badge3).toHaveAttribute('tabIndex', '0');
   expect(badge3).toHaveTextContent('#3');
+});
+
+test('TaskSequencer pending task title copyable surface handles click and keyboard copy', async () => {
+  const cognitiveState = {
+    energy: 80,
+    attention: 70,
+    load: 40,
+    status: 'optimal' as const,
+    recommendation: 'Complete tasks.',
+  };
+
+  const writeTextMock = vi.fn().mockResolvedValue(undefined);
+  const originalClipboard = navigator.clipboard;
+  Object.defineProperty(navigator, 'clipboard', {
+    value: { writeText: writeTextMock },
+    configurable: true,
+  });
+
+  try {
+    render(<TaskSequencer cognitiveState={cognitiveState} />);
+
+    // Find pending task title copy surface (e.g. "Implement LSTM cognitive predictor")
+    const copySurface = screen.getByRole('button', { name: /Copy task title: Implement LSTM cognitive predictor/i });
+    expect(copySurface).toBeInTheDocument();
+    expect(copySurface).toHaveAttribute('tabIndex', '0');
+
+    // Click to copy
+    fireEvent.click(copySurface);
+
+    expect(writeTextMock).toHaveBeenCalledWith('Implement LSTM cognitive predictor');
+    expect(await screen.findByRole('button', { name: /Task title copied: Implement LSTM cognitive predictor/i })).toBeInTheDocument();
+  } finally {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: originalClipboard,
+      configurable: true,
+    });
+  }
 });
