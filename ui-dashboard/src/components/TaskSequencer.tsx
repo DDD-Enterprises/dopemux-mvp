@@ -126,6 +126,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
 
   const [isTaskTitleCopied, setIsTaskTitleCopied] = useState(false);
   const copyTaskTitleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [copiedTaskId, setCopiedTaskId] = useState<string | null>(null);
+  const copyTaskIdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -174,6 +176,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
       if (copyTaskTitleTimeoutRef.current) {
         clearTimeout(copyTaskTitleTimeoutRef.current);
       }
+      if (copyTaskIdTimeoutRef.current) {
+        clearTimeout(copyTaskIdTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -210,6 +215,27 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
       })
       .catch((err) => {
         if (currentTaskIdRef.current !== capturedTaskId) return;
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        onError?.(`Failed to copy task title: ${errorMsg}`);
+      });
+  };
+
+  const handleCopyPendingTaskTitle = (taskId: string, title: string) => {
+    if (!navigator.clipboard?.writeText) {
+      onError?.('Clipboard API is not supported in this browser or context.');
+      return;
+    }
+    void navigator.clipboard
+      .writeText(title)
+      .then(() => {
+        setCopiedTaskId(taskId);
+        if (copyTaskIdTimeoutRef.current) clearTimeout(copyTaskIdTimeoutRef.current);
+        copyTaskIdTimeoutRef.current = setTimeout(() => {
+          setCopiedTaskId(null);
+          copyTaskIdTimeoutRef.current = null;
+        }, 2000);
+      })
+      .catch((err) => {
         const errorMsg = err instanceof Error ? err.message : String(err);
         onError?.(`Failed to copy task title: ${errorMsg}`);
       });
@@ -1020,9 +1046,44 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   disableTypography
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body2" sx={{ flexGrow: 1, color: brandTokens.text.primary }}>
-                        {task.title}
-                      </Typography>
+                      <Tooltip title={copiedTaskId === task.id ? 'Copied!' : `Copy task title: ${task.title}`} arrow>
+                        <Typography
+                          variant="body2"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => handleCopyPendingTaskTitle(task.id, task.title)}
+                          onKeyDown={(e) => {
+                            if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) {
+                              e.preventDefault();
+                              handleCopyPendingTaskTitle(task.id, task.title);
+                            }
+                          }}
+                          aria-label={copiedTaskId === task.id ? `Task title copied: ${task.title}` : `Copy task title: ${task.title}`}
+                          sx={{
+                            flexGrow: 1,
+                            color: brandTokens.text.primary,
+                            cursor: 'copy',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            borderRadius: 1,
+                            px: 0.5,
+                            py: 0.25,
+                            transition: 'all 0.2s ease',
+                            '&:hover, &:focus-visible': {
+                              bgcolor: alpha(brandTokens.colors.ritualCyan, 0.1),
+                              outline: `1px dashed ${brandTokens.colors.ritualCyan}`,
+                            },
+                          }}
+                        >
+                          {task.title}
+                          {copiedTaskId === task.id ? (
+                            <Check size={12} color={brandTokens.colors.serumMint} aria-hidden="true" />
+                          ) : (
+                            <Copy size={12} color={brandTokens.colors.ritualCyan} style={{ opacity: 0.6 }} aria-hidden="true" />
+                          )}
+                        </Typography>
+                      </Tooltip>
                       <Tooltip title={`Complexity: ${Math.round(task.complexity * 100)}% - used for ritual sequencing`} arrow>
                         <Chip
                           size="small"
