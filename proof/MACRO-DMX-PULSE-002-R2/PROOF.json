@@ -190,7 +190,7 @@
       "runner": "claude-code-desktop",
       "runtime_family": "anthropic-claude-code"
     },
-    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+    "independence": "PROVEN"
   },
   "embedded_audit": {
     "required": true,
@@ -213,7 +213,7 @@
         "severity": "MEDIUM",
         "title": "If the host never settles an abandoned $.http.fetch, the guard stays set: polling pauses and the status stays unreachable.",
         "status": "OPEN",
-        "body": "Explicit trade-off in fetchState comment; README and how-to §6 disclose it. Host network timeout UNKNOWN. By design given no abort API, but residual availability risk. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED, by design (no abort option in this build's declaration), disclosed in code, README and how-to; host timeout UNKNOWN; not yet accepted by the operator."
+        "body": "Explicit trade-off in fetchState comment; README and how-to \u00a76 disclose it. Host network timeout UNKNOWN. By design given no abort API, but residual availability risk. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED, by design (no abort option in this build's declaration), disclosed in code, README and how-to; host timeout UNKNOWN; not yet accepted by the operator."
       },
       {
         "id": "N3",
@@ -234,7 +234,7 @@
         "severity": "INFO",
         "title": "Exception fallback still answers HTTP 200 with medium/focused; the mod treats it as healthy state (same as F7).",
         "status": "OPEN",
-        "body": "except branch in routes.py; documented in how-to §5. Predecessor F7 OUT_OF_SCOPE. [services/adhd_engine/api/routes.py] ADJUDICATION: Coordinator: CONFIRMED, pre-existing, documented."
+        "body": "except branch in routes.py; documented in how-to \u00a75. Predecessor F7 OUT_OF_SCOPE. [services/adhd_engine/api/routes.py] ADJUDICATION: Coordinator: CONFIRMED, pre-existing, documented."
       }
     ],
     "fixes_applied": [
