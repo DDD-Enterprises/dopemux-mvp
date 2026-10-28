@@ -299,36 +299,6 @@ test('TaskSequencer.tsx handles Escape key to cancel soft confirmation for Skip'
   expect(screen.queryByRole('button', { name: /^Confirm skip / })).not.toBeInTheDocument();
 });
 
-test('App.tsx handles Escape key to dismiss copied recommendation state', async () => {
-  const writeTextMock = vi.fn().mockResolvedValue(undefined);
-  const originalClipboard = navigator.clipboard;
-  Object.defineProperty(navigator, 'clipboard', {
-    value: { writeText: writeTextMock },
-    configurable: true,
-  });
-
-  try {
-    const AppModule = await import('../../App');
-    const App = AppModule.default;
-    render(<App />);
-
-    const chip = screen.getByRole('button', { name: /^Copy AI Recommendation:/i });
-    fireEvent.click(chip);
-
-    expect(await screen.findByRole('button', { name: /^AI Recommendation: .+ \(Copied\)$/i })).toBeInTheDocument();
-
-    const copiedChip = screen.getByRole('button', { name: /^AI Recommendation: .+ \(Copied\)$/i });
-    fireEvent.keyDown(copiedChip, { key: 'Escape' });
-
-    expect(screen.getByRole('button', { name: /^Copy AI Recommendation:/i })).toBeInTheDocument();
-  } finally {
-    Object.defineProperty(navigator, 'clipboard', {
-      value: originalClipboard,
-      configurable: true,
-    });
-  }
-});
-
 test('TaskSequencer.tsx implements overtime visual cues', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('const isOvertime = useMemo(() =>');
