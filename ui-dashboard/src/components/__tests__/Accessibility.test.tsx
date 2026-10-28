@@ -388,6 +388,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toContain('handleReconnect();');
   expect(appContent).toContain('handleHydrate();');
   expect(appContent).toContain('void handleCopyRecommendation();');
+  expect(appContent).toContain("if (isCopied && e.key === 'Escape')");
 
   // Verify focus-visible overrides for buttons and icon buttons in theme
   expect(themeContent).toContain('MuiIconButton');
