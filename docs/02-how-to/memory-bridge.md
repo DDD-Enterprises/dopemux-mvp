@@ -16,8 +16,7 @@ local capture ledger, draws a welcome-back band after a break, and replays
 completed todos and `/bridge-note` notes to that ledger. It makes no network call.
 Source: `plugins/dopemux-memory-bridge/` (design notes in its `README.md`).
 
-**Status:** code committed at HEAD `1ce149a76`. Live behaviour is **NOT_RUN**: no
-real session has loaded the mod yet.
+**Status:** live behaviour is **NOT_RUN**: no real session has loaded the mod yet.
 
 ## 1. Load the mod
 
@@ -134,8 +133,7 @@ unavailable. The outbox and status line do not need `$.process`.
 
 ## Verification status
 
-- At commit `1ce149a76`, `claude plugin validate` passes (advisory warnings only) and
-  `claude plugin test` passes 105 tests.
+- `claude plugin validate` and `claude plugin test` pass for the committed mod (advisory warnings only).
 - Unit tests mock the clock, file system, store and process. Live proof: **NOT_RUN**.
 
 ## Not built

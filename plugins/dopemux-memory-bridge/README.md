@@ -40,7 +40,7 @@ A row holds derived fields only, never a raw prompt, tool output or answer:
 | `todos_completed` | up to 10 titles of TodoWrite items that newly became `completed` |
 | `note` | `note` rows only: the user's own text, redacted, at most 500 characters |
 | `intended_event` | `task.completed` on a `task` row, `manual.memory_store` on a `note` row, otherwise `null` |
-| `state`, `attempts` | `pending` / `sent` / `dead`, and a counter of failed delivery attempts |
+| `state`, `attempts` | `pending` / `sent` / `dead`, and a counter of delivery attempts that ran (failed ones plus the final successful one) |
 
 Subagent loops (`agentId` set) never write a `turn` row, change the goal, or count
 todos. File edits made inside a subagent count toward the turn that spawned it.
