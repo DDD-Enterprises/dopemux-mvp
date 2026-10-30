@@ -43,12 +43,9 @@ interface Task {
   energyRequired: string;
 }
 
+// The sequencer only reads the load band; App passes 'optimal' when the band is unknown.
 interface CognitiveState {
-  energy: number;
-  attention: number;
-  load: number;
   status: 'low' | 'optimal' | 'high' | 'critical';
-  recommendation: string;
 }
 
 interface TaskSequencerProps {
@@ -552,25 +549,22 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
             </Typography>
           </Box>
         </Tooltip>
-        <Tooltip title="Real-time task synchronization active" arrow>
+        <Tooltip title="Sample queue. Not connected to a task source; progress is lost on reload." arrow>
           <Chip
             size="small"
-            label="[LIVE]"
+            label="[SAMPLE]"
             className="dopemux-chip"
             tabIndex={0}
             sx={{
               ml: 'auto',
-              borderColor: brandTokens.borders.cyan,
-              color: brandTokens.colors.ritualCyan,
-              bgcolor: alpha(brandTokens.colors.ritualCyan, 0.08),
+              borderColor: brandTokens.borders.strong,
+              color: brandTokens.text.secondary,
+              bgcolor: 'transparent',
             }}
-            aria-label="Real-time task synchronization active"
+            aria-label="Sample queue. Not connected to a task source; progress is lost on reload."
           />
         </Tooltip>
       </Box>
-      <Typography className="dopemux-roast" sx={{ mb: 2 }}>
-        Your backlog is feral. I muzzle it with ritual order and velvet threats.
-      </Typography>
 
       {currentTask ? (
         <Box

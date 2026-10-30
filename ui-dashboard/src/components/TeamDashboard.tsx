@@ -96,6 +96,21 @@ export default function TeamDashboard({ onError }: TeamDashboardProps = {}) {
           <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
             Team Signal Board
           </Typography>
+          <Typography
+            component="span"
+            sx={{
+              fontFamily: '"JetBrains Mono", monospace',
+              fontSize: '0.6875rem',
+              letterSpacing: '0.08em',
+              color: brandTokens.text.secondary,
+              border: `1px solid ${brandTokens.borders.strong}`,
+              borderRadius: '999px',
+              px: 1,
+              py: 0.25,
+            }}
+          >
+            [SAMPLE] not connected
+          </Typography>
           <Box
             sx={{
               ml: 'auto',

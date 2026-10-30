@@ -437,3 +437,6 @@ audit_inputs/pcp_pr925_supervisor_adjudication/
 
 # Debug-only logback config (production variant is already tracked)
 scripts/mcp-wrappers/task-orchestrator-logback-debug.xml
+
+# Vite build output
+ui-dashboard/dist/
