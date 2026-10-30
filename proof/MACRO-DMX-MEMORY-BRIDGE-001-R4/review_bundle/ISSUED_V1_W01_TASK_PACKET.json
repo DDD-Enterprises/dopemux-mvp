@@ -1,0 +1,146 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-R4-W01-STATUS-DECISIONS-FOLD-001",
+  "project": "dopemux-mvp",
+  "target": "Repair re-audit findings N6 (dead branch), N4 (bound the answer text before the decision regex) and N3 (status line: earlier sessions' unsent rows get their own suffix instead of counting as pending) in register.tsx and its tests.",
+  "invariants": [
+    "C01 Shared workspace: other sessions may change unrelated files in this checkout (.codex/config.toml, .agents/): do not touch them. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head afa4390bcb7b999098cff94567421158009695ba; base 93050d135ffc2592000c1d0edef82b2912935525.",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history; you do not stage. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env* or credential files; never write a secret into a file or return. No network. No `dopemux capture emit` run; no real subprocess in tests (they mock `$.process`).",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Live behaviour is NOT_RUN (no session ever loaded the mod).",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers, advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when: a needed change is outside your write_surface; a finding cannot be repaired as stated; validation still fails after one fix attempt for the same cause. Do NOT widen the repair: N7 (never run live) and N8 (fire-and-forget observation in the tool.call hook) stay accepted notes; the replay, the ring file format, the band and /bridge-note behave exactly as before.",
+    "C08 Evidence input: the re-audit's adjudicated findings are in proof/MACRO-DMX-MEMORY-BRIDGE-001-R3/AUDITOR_REPORT.md and proof/MACRO-DMX-MEMORY-BRIDGE-001-R3/review_bundle/GROK_ADJUDICATION.md (audited content head c71e7c1f436349f477037d28ce479218c63a53a4). Read N3, N4 and N6 there before you change anything.",
+    "A01 PROPOSED allowances (caps, not forecasts; accepted by authorizing R4): elapsed 45 min from dispatch; subagent tokens 500,000; tool uses 120; attempts: 1 Sonnet attempt + 1 retry after a failed validation with a named cause; team-lead review: 1 diff re-read + at most 1 correction round across the macro.",
+    "A02 The team lead records duration_ms, subagent_tokens and tool_uses from your completion notice. Any exceeded cap or any advisor call ends the workstream: the diff is preserved untouched and the return is NEEDS_SUPERVISOR with the counters.",
+    "S01 N6 (INFO) dead branch: in the `session.end` handler for reason 'clear' the ring is deleted only when `!ring.entries.some(isReplayable)`, so the loop's `if (isReplayable(entry.row)) s.foldedPending += 1` can never run. Remove that unreachable branch (keep the `dead` counting and the `foldedDropped` fold). No behaviour change.",
+    "S02 N4 (LOW) unbounded answer text: `decisionsOf(answer)` runs `matchAll` on the whole assistant answer. Add a constant `MAX_ANSWER_SCAN_CHARS = 200_000` and run the matcher on `answer.slice(0, MAX_ANSWER_SCAN_CHARS)` only. A `Decision:` line beyond that bound is not captured (the how-to will say so). Tests: a marker inside the bound is captured; a marker placed after the bound is not; a multi-megabyte answer with a marker near the start still returns it and the hook completes.",
+    "S03 N3 (LOW) status counts other sessions' rows as pending: `s.foldedPending` now holds only the replayable pending rows found in earlier sessions' files at session start, which this process never replays. Keep the field name but fix its comment. Change `renderStatus` so that: `pending` counts only this process's own replayable pending rows (the rings); the earlier-session rows are shown separately as a suffix ` · N left by earlier sessions` appended to the base text (`📮 clear`, `📮 N pending`, `📮 N pending (ledger unavailable)`, and after the `⚠ N undeliverable` prefix form), and never counted in `pending`; the suffix is omitted when N is 0 and in the `📮 memory-only` and `⚠ outbox write failed` forms. Example texts: `📮 clear · 2 left by earlier sessions`, `📮 1 pending · 2 left by earlier sessions`. Replay still walks only this process's rings (no adoption of another writer's file; that stays NOT_BUILT).",
+    "S04 TDD: update the tests that assert the old text for prior-session rows (the test 'status line counts replayable pending rows already on disk at session start' and any neighbour that depends on it) and add: own-only counting with a suffix, suffix absent at 0, suffix with dead rows, suffix absent in memory-only and failed forms, and that earlier-session rows are still never emitted. Show the failing run first.",
+    "S05 Scope guard: only plugins/dopemux-memory-bridge/hooks/register.tsx and plugins/dopemux-memory-bridge/hooks/register.test.ts. No other behaviour, text, import or formatting change. `git diff --numstat` for register.tsx must stay small (the three changes above); report it.",
+    "S06 Gates (report each PASS/FAIL/NOT_RUN): `claude plugin test plugins/dopemux-memory-bridge`, `claude plugin validate plugins/dopemux-memory-bridge` (exit 0, advisory warnings only), and a `tsc -p` run with an out-of-repo tsconfig built on the Claude Code declaration that the coordinator supplies (path and sha256 in your prompt; the packets' older 2.1.304 file no longer exists). Live behaviour NOT_RUN."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001-R4",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R4",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/memory-bridge-001-b349d8",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(memory-bridge): bound the decision scan, drop the dead /clear branch, label earlier sessions' rows in the status line",
+    "allowlist": [
+      "plugins/dopemux-memory-bridge/hooks/register.tsx",
+      "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+    ],
+    "verify": [
+      "claude plugin test plugins/dopemux-memory-bridge",
+      "claude plugin validate plugins/dopemux-memory-bridge",
+      "git diff --numstat",
+      "git status --porcelain   # only the two allowlisted files modified"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod (repaired after two audits)",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001-R4. Draft until the final independent L2 audit of the repaired head and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Read N3, N4, N6 and the code",
+      "requirements": [
+        "Quote the lines you will change."
+      ],
+      "commands": [
+        "grep -n 'foldedPending\\|decisionsOf\\|function renderStatus' plugins/dopemux-memory-bridge/hooks/register.tsx"
+      ],
+      "expected_files": [],
+      "validation": [
+        "lines located"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R3/AUDITOR_REPORT.md",
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R3/review_bundle/GROK_ADJUDICATION.md",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "TDD: tests first for the status suffix and the answer bound, then the code and the dead-branch removal",
+      "requirements": [
+        "Only the two allowlisted files; failing run first."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-memory-bridge"
+      ],
+      "expected_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ],
+      "validation": [
+        "tests fail before and pass after"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Return",
+      "requirements": [
+        "Status, gate table, numstat, the final status texts, advisor_calls, files_written, observed_model, counters you can see."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R4",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001-R4",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-memory-bridge/hooks/register.tsx",
+    "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-status-decisions-fold"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head afa4390bcb7b999098cff94567421158009695ba; base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
