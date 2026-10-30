@@ -43,3 +43,20 @@ test('missing fields stay unknown instead of defaulting to a mid value', () => {
 test('non-state messages do not update the reading', () => {
   expect(mapRealtimeState({ type: 'dashboard_notification' })).toBeNull();
 });
+
+test('out-of-range ratios are unknown, not clamped into a plausible value', () => {
+  const state = mapRealtimeState({
+    type: 'state_update',
+    data: { cognitive_load: 1.4, predicted_load_15min: -0.2, energy_level: 'medium' },
+  });
+
+  expect(state?.load).toBeNull();
+  expect(state?.prediction).toBeNull();
+  expect(state?.energyLevel).toBe('medium');
+});
+
+test('non-object envelopes are ignored instead of throwing', () => {
+  expect(mapRealtimeState(null)).toBeNull();
+  expect(mapRealtimeState(42)).toBeNull();
+  expect(mapRealtimeState('state_update')).toBeNull();
+});

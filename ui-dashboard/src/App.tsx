@@ -20,6 +20,7 @@ import {
   AggregateDashboardState,
   CognitiveReading,
   EMPTY_READING,
+  isMessageObject,
   mapAggregateState,
   mapRealtimeState,
 } from './cognitiveReading';
@@ -107,6 +108,15 @@ function DashboardApp() {
 
   const handleClearNotifications = useCallback(() => setNotifications([]), []);
 
+  // "Show all" lasts one critical episode: any non-critical reading re-arms the collapse.
+  const applyReading = useCallback((next: CognitiveReading) => {
+    setReading(next);
+    setLastUpdated(new Date());
+    if (next.load === null || deriveStatus(next.load) !== 'critical') {
+      setShowAllPanels(false);
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       if (sipTimeoutRef.current) {
@@ -133,8 +143,7 @@ function DashboardApp() {
         if (!isMounted) {
           return;
         }
-        setReading(mapAggregateState(payload));
-        setLastUpdated(new Date());
+        applyReading(mapAggregateState(payload));
       } catch {
         if (isMounted) {
           setHttpError(`Failed: GET ${STATE_ENDPOINT}, no response (network error).`);
@@ -147,7 +156,7 @@ function DashboardApp() {
     return () => {
       isMounted = false;
     };
-  }, [retryTrigger]);
+  }, [retryTrigger, applyReading]);
 
   useEffect(() => {
     const socket = new WebSocket(SOCKET_ENDPOINT);
@@ -157,19 +166,24 @@ function DashboardApp() {
     };
 
     socket.onmessage = (event) => {
-      let message: Record<string, unknown>;
+      let message: unknown;
       try {
-        message = JSON.parse(event.data) as Record<string, unknown>;
+        message = JSON.parse(event.data);
       } catch {
         setErrorMessage(`Failed: could not parse a message from ${SOCKET_ENDPOINT}.`);
         return;
       }
+      if (!isMessageObject(message)) {
+        setErrorMessage(`Failed: unexpected message from ${SOCKET_ENDPOINT}.`);
+        return;
+      }
 
       // A state_update is a full snapshot: fields it omits become unknown, not stale.
+      // It also supersedes an earlier failed GET, so that failure stops being shown.
       const nextReading = mapRealtimeState(message);
       if (nextReading) {
-        setReading(nextReading);
-        setLastUpdated(new Date());
+        applyReading(nextReading);
+        setHttpError(null);
         return;
       }
 
@@ -201,11 +215,11 @@ function DashboardApp() {
       socket.onclose = null;
       socket.close();
     };
-  }, [retryTrigger]);
+  }, [retryTrigger, applyReading]);
 
   const status = reading.load === null ? null : deriveStatus(reading.load);
   const isCritical = status === 'critical' && !showAllPanels;
-  const showTeamDashboard = status !== 'critical' && status !== 'high' && !isMobile;
+  const showTeamDashboard = !isMobile && (status === 'critical' ? showAllPanels : status !== 'high');
 
   const connectionStatus: ConnectionStatus =
     socketState === 'open' ? 'live' : socketState === 'connecting' && !httpError ? 'connecting' : 'degraded';

@@ -31,8 +31,10 @@ export const EMPTY_READING: CognitiveReading = {
 const asText = (value: unknown): string | null =>
   typeof value === 'string' && value.trim() !== '' ? value : null;
 
+// Out-of-range values are invalid input, not a reading: they stay unknown rather than
+// being clamped into a plausible 0% or 100%.
 const asRatio = (value: unknown): number | null =>
-  typeof value === 'number' && Number.isFinite(value) ? Math.min(Math.max(value, 0), 1) : null;
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1 ? value : null;
 
 export function mapAggregateState(payload: AggregateDashboardState): CognitiveReading {
   return {
@@ -44,9 +46,12 @@ export function mapAggregateState(payload: AggregateDashboardState): CognitiveRe
   };
 }
 
+export const isMessageObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 /** Maps a `/ws/state` message; returns `null` for anything that is not a `state_update`. */
-export function mapRealtimeState(message: Record<string, unknown>): CognitiveReading | null {
-  if (message.type !== 'state_update') {
+export function mapRealtimeState(message: unknown): CognitiveReading | null {
+  if (!isMessageObject(message) || message.type !== 'state_update') {
     return null;
   }
 

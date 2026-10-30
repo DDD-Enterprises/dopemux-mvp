@@ -123,6 +123,54 @@ test('critical load hides secondary panels until the operator asks for them', as
 
   expect(screen.getByRole('heading', { name: 'Signal Feed' })).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: 'Attention State' })).toBeInTheDocument();
+  expect(screen.getByText('Team Signal Board')).toBeInTheDocument();
+});
+
+test('show all lasts one critical episode; the next one collapses panels again', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.9) }));
+  await renderApp();
+  fireEvent.click(screen.getByRole('button', { name: 'Show all panels' }));
+
+  const sendLoad = async (load: number) =>
+    act(async () => {
+      FakeSocket.instances[0].onmessage?.({
+        data: JSON.stringify({ type: 'state_update', data: { cognitive_load: load } }),
+      });
+    });
+
+  await sendLoad(0.4);
+  await sendLoad(0.9);
+
+  expect(screen.getByRole('button', { name: 'Show all panels' })).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'Signal Feed' })).not.toBeInTheDocument();
+});
+
+test('a live state_update clears a stale state-request failure', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+  await renderApp();
+  expect(screen.getByRole('alert')).toHaveTextContent('Failed: GET');
+
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+    FakeSocket.instances[0].onmessage?.({
+      data: JSON.stringify({ type: 'state_update', data: { cognitive_load: 0.4 } }),
+    });
+  });
+
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  expect(screen.getByText('40%')).toBeInTheDocument();
+});
+
+test('a null socket message is reported, not thrown', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.4) }));
+  await renderApp();
+
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+    FakeSocket.instances[0].onmessage?.({ data: 'null' });
+  });
+
+  expect(screen.getByRole('alert')).toHaveTextContent('Failed: unexpected message from ws://localhost:8097/ws/state.');
 });
 
 test('signal feed lists notifications as log rows that can be dismissed', async () => {
