@@ -128,8 +128,11 @@ are off.
   the dropped receipts.
 - At session end the mod flushes, and if a segment is still unwritten it tries once
   more. A second failure is counted in `receiptsFailed` and not retried.
-- On `/clear` the mod writes what is pending, keeps the status line, then resets its
-  ledger so the next hook re-resolves the session id. A new id means a new file and a
+- On `/clear` the mod writes what is pending (one more try if the first write fails),
+  keeps the status line, then resets its ledger so the next hook re-resolves the
+  session id. If receipts are still unwritten the reset waits and nothing is dropped:
+  the next hook flushes again and the reset happens once the tail is on disk, and
+  receipts recorded in between carry the old session id. A new id means a new file and a
   fresh ledger (counts and table start again). An unchanged id means the mod reads the
   same file back and carries on. Whether Claude Code changes the id on `/clear` is
   UNKNOWN (not observed in a live session); both cases are handled and tested offline.

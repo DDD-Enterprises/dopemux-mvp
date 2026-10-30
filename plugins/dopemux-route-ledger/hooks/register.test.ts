@@ -1814,6 +1814,56 @@ test('D8: /clear writes a dirty tail before the ledger is reset', async ($, on) 
   expect(h.receipts()).toHaveLength(1)
 })
 
+// Codex review of c4a98f99d: a tail that cannot be written at /clear must not be
+// discarded by the reset. The reset waits until the tail is on disk.
+test('D8: a tail that fails to write through /clear survives, and the unchanged id continues the file', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.failWrites = true
+  await h.agent({ model: 'sonnet' })
+  await h.step(STEP)
+  await h.end('clear')
+  expect(h.world.files.has(FILE)).toBe(false)
+
+  h.world.failWrites = false
+  await h.agent({ model: 'opus' })
+  expect(h.receipts().map(r => r.seq)).toEqual([0, 1, 2])
+  expect(h.receipts().map(r => r.kind)).toEqual(['agent_request', 'step_observed', 'agent_request'])
+})
+
+test('D8: a tail that fails to write through /clear is written to its own file when the id changes', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.failWrites = true
+  await h.agent({ model: 'sonnet' })
+  await h.end('clear')
+
+  h.world.failWrites = false
+  h.world.sessionId = 'sess-2'
+  await h.agent({ model: 'opus' })
+  // The old session's receipt reached its own file; the new session starts fresh.
+  expect(h.receipts().map(r => r.kind)).toEqual(['agent_request'])
+  expect(h.receipts()[0]!.requested_model).toBe('sonnet')
+  const next = h.lines(`${DEFAULT_DIR}/sess-2.jsonl`)
+  expect(next.map(r => r.seq)).toEqual([0])
+  expect(next[0]!.requested_model).toBe('opus')
+})
+
+test('D8: while writes keep failing after /clear nothing is dropped, and the tail lands once they recover', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.failWrites = true
+  await h.agent({ model: 'sonnet' })
+  await h.end('clear')
+  await h.agent({ model: 'opus' })
+  expect(h.world.files.has(FILE)).toBe(false)
+
+  h.world.failWrites = false
+  await h.agent({ model: 'haiku' })
+  expect(h.receipts().map(r => r.seq)).toEqual([0, 1, 2])
+  expect(h.receipts().map(r => r.requested_model)).toEqual(['sonnet', 'opus', 'haiku'])
+})
+
 test('D8: /clear keeps the status line, up to date, and a pending redraw does not show the reset ledger', async ($, on) => {
   const h = harness($, on)
   await h.start()

@@ -201,6 +201,11 @@ type Ledger = SessionState & {
   statusTimer: Timer | undefined
   chain: Promise<void>
   flushQueued: boolean
+  // `/clear` arrived while receipts were still unwritten. The reset waits: the
+  // ledger keeps this session's state and finishes the reset at the first hook
+  // after a flush leaves nothing dirty (`finishClear`). Not part of the session
+  // state on purpose: the reset itself must not clear it.
+  clearPending: boolean
 }
 
 type Summary = {
@@ -294,6 +299,7 @@ export function newLedger(options: Settings): Ledger {
     statusTimer: undefined,
     chain: Promise.resolve(),
     flushQueued: false,
+    clearPending: false,
   }
 }
 
@@ -991,7 +997,30 @@ async function rehydrate($: EngineInterface, s: Ledger): Promise<void> {
   restoreBudgetToasted(s)
 }
 
+function hasUnwritten(s: Ledger): boolean {
+  return s.receiptsEnabled && s.segments.some(seg => seg.dirty)
+}
+
+// Finishes a `/clear` that had to wait for unwritten receipts. It runs only from
+// `ensureReady`, which runs inside the serialized chain, so it flushes directly:
+// awaiting `s.chain` from here would wait on itself. If anything is still dirty
+// the ledger goes on recording into this session (nothing is dropped) and the
+// next hook tries again. Until it finishes, receipts carry the old session id:
+// when the host changed the id, that is the price of keeping them while storage
+// keeps failing.
+async function finishClear($: EngineInterface, s: Ledger): Promise<void> {
+  const failedBefore = s.receiptsFailed
+  await flushSegments($, s)
+  if (s.receiptsFailed !== failedBefore) scheduleStatus($, s)
+  if (hasUnwritten(s)) return
+  s.clearPending = false
+  s.statusTimer?.cancel()
+  s.statusTimer = undefined
+  Object.assign(s, freshSession())
+}
+
 async function ensureReady($: EngineInterface, s: Ledger): Promise<void> {
+  if (s.clearPending) await finishClear($, s)
   if (!s.isReady) await initSession($, s)
 }
 
@@ -1252,14 +1281,16 @@ export const register: Register = (on, options) => {
     // so the next hook re-resolves `$.session.id()`: a new id is a new file and
     // a fresh ledger, an unchanged id rehydrates and continues the same file.
     // (Whether the host changes the id on /clear is UNKNOWN; both are handled.)
+    // Receipts that still cannot be written after the one more awaited try are
+    // never discarded: the reset waits for them (`clearPending`, `finishClear`).
     if (e.reason === 'clear') {
       try {
-        scheduleFlush($, s)
-        await s.chain
+        await flushAtEnd($, s)
         s.statusTimer?.cancel()
         s.statusTimer = undefined
         drawStatus($, s)
-        Object.assign(s, freshSession())
+        if (hasUnwritten(s)) s.clearPending = true
+        else Object.assign(s, freshSession())
       } catch {
         // never surface
       }
