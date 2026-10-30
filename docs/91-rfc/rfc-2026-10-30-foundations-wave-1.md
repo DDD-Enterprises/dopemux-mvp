@@ -114,7 +114,7 @@ All write sets are disjoint. The only shared file is `src/dopemux/cli.py`, and o
 
 ### W4 - Service port drift tests
 
-- **Writes:** new `tests/arch/test_service_port_drift.py`; `src/dopemux/config/manager.py`; `scripts/dopemux_dashboard.py`. Not `src/dopemux/ui/service_endpoints.py` or `src/dopemux/profile_detector.py`: their defaults are recorded as exceptions, because changing them changes the live dashboard's behavior.
+- **Writes:** new `tests/arch/test_service_port_drift.py`; `src/dopemux/config/manager.py`. Not `scripts/dopemux_dashboard.py`, `src/dopemux/ui/service_endpoints.py` or `src/dopemux/profile_detector.py` (see the table below).
 - **Comparison rules (supervisor's call):**
   - Compare host ports only. A compose mapping `"127.0.0.1:${VAR:-N}:M"` has host port `N`; resolve `${VAR:-default}` to its default.
   - A compose service with no host `ports:` entry, or with `network_mode`, is "not comparable". The test lists it in its output and does not fail on it.
@@ -128,14 +128,13 @@ All write sets are disjoint. The only shared file is `src/dopemux/cli.py`, and o
 
 | Where | Difference | Verified by | Action |
 |---|---|---|---|
-| `config/manager.py:200,621` | ADHD engine default `3008`; registry `3025` | supervisor | Fix to `3025`. No reader in `src/`. |
-| `scripts/dopemux_dashboard.py:66-72` | ADHD engine on `localhost:8095`; compose publishes `3025` | supervisor | Fix to `3025`. No launcher, Dockerfile or compose entry runs this script, and it uses `localhost`, so it is a host-run script (supervisor's call). |
-| `src/dopemux/ui/service_endpoints.py:117`, `src/dopemux/profile_detector.py:379-384` | Resolver defaults probe `5448` and `8095`; neither is the compose host port | supervisor | Exception plus follow-up. `8095` is right for a directly run engine; `5448` has no source. Fixing them changes the dashboard, which is out of scope. |
-| `scripts/dopemux_dashboard.py:74` | ConPort on `8005`, in neither registry nor compose | sweep (not spot-checked) | Exception with follow-up unless the correct port is unambiguous. |
-| `.claude/statusline.sh:224-230` | Probes `localhost:3009` as task-orchestrator; `3009` is `gptr-mcp` | supervisor | Exception plus follow-up. The statusline is out of scope (non-goals). |
-| `mcp_server_health_report.sh:168` | Probes pal at `/mcp`; the catalog says pal's health URL is `/health` | sweep (not spot-checked) | Builder verifies, then fixes or adds an exception. |
+| `config/manager.py:192-202, 612-624` (Dope layout defaults) | `adhd_engine_url` `3008` (registry `3025`), `leantime_url` `3007` (registry `8080`), `serena_url` `3010` (registry `3006`; `3010` is dope-context). No reader in `src/`. | supervisor | Fix all three to the registry ports. `conport_url` `3009` (that is gpt-researcher) and `activity_capture_url` `3006` have no unambiguous registry service: follow-up, not a test exception. |
+| `scripts/dopemux_dashboard.py` (21 lines) | `8095` (container port), `8005` and `8003` (in no registry or compose), and calls to routes the engine does not serve (`/api/v1/break/start`, a websocket stream) | supervisor | Exception per port plus a "retire or repair this script" follow-up. Changing `8095` to `3025` would leave it just as broken. Changed after plan recon; the earlier draft said "fix to 3025". |
+| `src/dopemux/ui/service_endpoints.py:117`, `src/dopemux/profile_detector.py:379-384` | Resolvers probe `5448` and `8095` as bare numbers; neither is the compose host port | supervisor | Follow-up only. The literal-URL rule does not see bare numbers, and changing them changes the live dashboard. |
+| `.claude/statusline.sh:224-230` | Probes `localhost:3009` as task-orchestrator; `3009` is `gptr-mcp` | supervisor | Follow-up only. `3009` is a valid port for another service, so the unknown-port rule does not flag it, and the statusline is out of scope. |
+| `mcp_server_health_report.sh:168` | Probes pal at `/mcp`; the catalog says pal's health URL is `/health` | sweep (not spot-checked) | Follow-up. This wave checks ports, not paths. |
 | `services/registry.yaml:152-156` vs catalog `:616-620` | task-orchestrator `8000` vs `7890` | supervisor | Exception: two processes share the name (S2). |
-| registry `dopecon-bridge-alt` vs compose | `3000` vs `3016` | sweep (not spot-checked) | Builder verifies, then fixes or adds an exception. The row must name which compose service owns `3016`, because `scripts/dopemux_dashboard.py` also probes `3016`. |
+| registry `dopecon-bridge-alt` (`:68-72`) vs compose | Registry host port `3000`; its `compose_service_name` is `dopecon-bridge`, which publishes only `3016` | supervisor | Exception plus follow-up: the alt entry describes a port compose never publishes. |
 
 - **Decided:** exceptions live in the test file as a table. Each entry has the file, the value, a one-line reason and a follow-up reference. The test fails on any difference that is not in the table, and also on a table entry that no longer matches anything, so stale exceptions are removed.
 - **Required proof:** a mutation check. Change one port in a temporary copy, run the test, and show it fails. Record the output.
@@ -186,7 +185,7 @@ An independent reader checked this design before approval and raised eight quest
 1. `dopemux adhd status` resolves env, then the registry's compose host port `3025`, with no socket probing; the existing resolvers are not reused (W3).
 2. It also calls `/health` and reports `degraded` with exit code 3 for the fallback engine. The `/state` error path stays undetectable and is documented (W3).
 3. The real engine's `assess_task` uses the operator user id and marks placeholder inputs in its output; `.score` is a documented table, not a measurement (W2).
-4. `scripts/dopemux_dashboard.py` is treated as host-run and fixed to `3025` (W4).
+4. `scripts/dopemux_dashboard.py` is too stale to fix by changing one port, so it gets per-port exceptions and a follow-up; `manager.py`'s Dope layout defaults are fixed where the registry service is unambiguous (W4; revised during plan recon).
 5. Port comparison is host-port only; services without host ports are listed as not comparable; stale exceptions fail (W4).
 6. CI is Python 3.11; every new test must pass there with no skips, and a child that needs a file outside its write set stops for an amendment (section 5).
 7. Build now, audit after #1482, #1472 and #1483 merge (section 5).
@@ -200,3 +199,5 @@ An independent reader checked this design before approval and raised eight quest
 - Retire `services/adhd_engine/cli/adhd.py`.
 - Resolve the task-orchestrator name collision (S2).
 - Proof-only closure mode for clean merges of `main` (operator decision).
+- Retire or repair `scripts/dopemux_dashboard.py`.
+- Resolver defaults `5448`/`8095` in `service_endpoints.py` and `profile_detector.py`; `manager.py` `conport_url` and `activity_capture_url`; pal health path in `mcp_server_health_report.sh`.
