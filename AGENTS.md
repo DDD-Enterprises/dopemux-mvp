@@ -161,6 +161,7 @@ For Repo Truth Extractor work, agents must preserve the merged authority-order m
 - `config/instructions/agents.instructions.md` is observed as GitHub Copilot custom-agent file authoring guidance with `applyTo: '**/*.agent.md'`; this file is not proven to govern Codex runtime behavior.
 - `.github/copilot-instructions.md` is Copilot-specific guidance and should not be treated as Codex runtime authority without separate evidence.
 - `.claude/personas/*.agent.md` files are persona or agent definitions, not proof of a single repo-wide agent runtime authority.
+- `plugins/dopemux-*` are Claude Code mods (status line, bands, slash commands). They are Claude-Code-runtime only and Codex does not load them; none has been run live. Reference: `docs/04-explanation/claude-code-mods.md`. Agent handling rules: `.claude/modules/shared/plugin-integration.md`, section "Repo-local mods".
 
 ## 9. Proof and Finality
 
@@ -199,6 +200,7 @@ Governance, process, schema, prompt, proof, and authority-boundary packets requi
 - A Claude Code session may run the audit locally against the diff and author the proof — see the runbook's "Local Claude Code / CLI route (pre-PR)". Precedent: `proof/TP-DCP-MCP-RO-0008`.
 - Proof: `proof/<PACKET_ID>/PROOF.json` (`embedded_audit` per `schemas/proof/embedded_audit.schema.json`) + `AUDITOR_REPORT.md` + `review_bundle/`; validate with `scripts/audit/validate_audit_proof.py`.
 - A pre-PR local audit leaves the PR-scoped `pr-steward gate --audit-proof` `NOT_RUN` (1-hour TTL + PR-head match); regenerate and re-pin the proof to the PR head before the FINALIZATION gate.
+- A signed local proof binds a PR to its audited head, and `main` requires up-to-date branches, so merging `main` into a signed PR fails the proof-only closure. Plan merge order and re-audits with `docs/92-runbooks/signed-proof-merge-order.md`; never use `--admin` or `--auto` without explicit operator authority.
 
 ## 10. Known Dangers
 

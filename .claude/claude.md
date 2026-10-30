@@ -228,7 +228,10 @@ When you need comprehensive details, refer to:
 **ADHD Engine**: `.claude/modules/shared/adhd-patterns.md` (sessions, energy tracking, break management; separates observed support from planned automation)
 **Shared Systems**: `.claude/modules/shared/` (sprint.md, event-patterns.md, superclaude-workflows.md)
 **Filesystem Organization**: `docs/03-reference/filesystem-guide.md` (directory structure, file placement rules)
-**Plugins**: `.claude/modules/shared/plugin-integration.md` (installed plugins, auto-use triggers, doctrine overrides, do-not-enable list)
+**Plugins**: `.claude/modules/shared/plugin-integration.md` (installed plugins, auto-use triggers, doctrine overrides, do-not-enable list; section "Repo-local mods" covers Pulse, Route Ledger and Memory Bridge and how to talk about them: none has run live)
+**Mods**: `docs/04-explanation/claude-code-mods.md` (concept), `docs/03-reference/mods/` (one reference per mod), `docs/92-runbooks/claude-code-mods-live-verification.md` (first live run)
+**Merging signed-proof PRs**: `docs/92-runbooks/signed-proof-merge-order.md` (`main` requires up-to-date branches; updating a signed PR breaks its proof-only closure)
+**Slash command drift gate**: `docs/03-reference/command-drift-gate.md`
 **Harness features** (Plan mode, advisor, /loop, ToolSearch, Skill): `~/.claude/MODES_AND_TOOLS.md`
 
 ## 🎖️ Success Metrics
