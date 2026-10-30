@@ -1334,7 +1334,7 @@ test('registers the bridge-note command in session.start and no other', async ($
   const h = harness($, on)
   await h.start()
   expect(h.world.registered).toEqual([
-    { name: 'bridge-note', description: 'Store a note in the capture ledger', argumentHint: '<text>' },
+    { name: 'bridge-note', description: 'Queue a note for the capture ledger', argumentHint: '<text>' },
   ])
 })
 

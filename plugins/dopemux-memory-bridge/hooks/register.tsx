@@ -1205,7 +1205,7 @@ export const register: Register = (on, options) => {
       await $.command
         .register({
           name: 'bridge-note',
-          description: 'Store a note in the capture ledger',
+          description: 'Queue a note for the capture ledger',
           argumentHint: '<text>',
         })
         .catch(() => undefined)
