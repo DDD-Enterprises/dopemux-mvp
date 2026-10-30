@@ -1,0 +1,64 @@
+CLOSURE CHECKS at C = b5dc04dd7d9560ed31a2dc0fd2192218c727ea01
+merge-base(origin/main, C) = 95e95bee88cae5e6c95e6e34f7c28bb423ad9496
+
+PASS  precondition: exactly 2 commits (C1, C2) above the signed proof head
+  $ git rev-list --count f4115046484ed0dc580cc4337bb8c7cf55d39af7..HEAD
+  2
+
+PASS  precondition: commit chain
+  $ git log --format="%H %s" f4115046484ed0dc580cc4337bb8c7cf55d39af7..HEAD
+  b5dc04dd7d9560ed31a2dc0fd2192218c727ea01 docs(pulse): /done also resets the continuous-focus count; drop the commit SHA; document the poll guard
+  abd128393eddf68830afd4e2c3637feefd10c467 fix(pulse): hold the poll guard until the engine fetch settles; toast a refused command registration
+
+PASS  precondition: porcelain shows only the untracked task-packets directories
+  $ git status --porcelain
+  ?? task-packets/MACRO-DMX-PULSE-002-R2/
+  ?? task-packets/MACRO-DMX-PULSE-002/
+
+PASS  precondition: PR #1472 still OPEN at the signed proof head
+  $ gh pr view 1472 --json state,headRefOid
+  OPEN f4115046484ed0dc580cc4337bb8c7cf55d39af7
+
+PASS  1 audited head and signed proof head are ancestors of C
+  $ git merge-base --is-ancestor 1d2219e8c|f41150464 b5dc04dd7
+  audited:True proof:True
+
+PASS  2 the delta is exactly the four W01/W02 files
+  $ git diff --name-only f41150464..b5dc04dd7 | sort
+  docs/02-how-to/pulse-status-line.md
+  plugins/dopemux-pulse/README.md
+  plugins/dopemux-pulse/hooks/register.test.ts
+  plugins/dopemux-pulse/hooks/register.tsx
+
+PASS  3 cumulative content files (minus the PR's own earlier proof/attestation paths) are exactly the eight
+  $ git diff --name-only 95e95bee8..b5dc04dd7 | sort, minus ('proof/MACRO-DMX-PULSE-001/', 'proof/pr_merge/embedded-audit/pr-1472/')
+  docs/02-how-to/pulse-status-line.md
+  plugins/dopemux-pulse/.claude-plugin/plugin.json
+  plugins/dopemux-pulse/README.md
+  plugins/dopemux-pulse/hooks/hooks.json
+  plugins/dopemux-pulse/hooks/register.test.ts
+  plugins/dopemux-pulse/hooks/register.tsx
+  services/adhd_engine/api/routes.py
+  services/adhd_engine/tests/test_state_contract.py
+
+PASS  4 predecessor proofs, attestations, engine, src and .claude are untouched
+  $ git diff f41150464..b5dc04dd7 -- proof/MACRO-DMX-PULSE-001 proof/pr_merge/embedded-audit/pr-1472 services src .claude
+  diff bytes: 0
+
+PASS  5 each predecessor verdict file has the same sha256 at the signed proof head and at C
+  $ git show <rev>:<file> | sha256 (7 files)
+  proof/MACRO-DMX-PULSE-001/PROOF.json  base=81d061667abf1938  C=81d061667abf1938
+  proof/MACRO-DMX-PULSE-001/PROOF.json.sig  base=cec3beb220f91078  C=cec3beb220f91078
+  proof/MACRO-DMX-PULSE-001/AUDITOR_REPORT.md  base=209dc7ae962112b8  C=209dc7ae962112b8
+  proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md  base=f58363030af184f1  C=f58363030af184f1
+  proof/MACRO-DMX-PULSE-001/review_bundle/GROK_AUDIT_RESPONSE.txt  base=9e2105f90947a831  C=9e2105f90947a831
+  proof/pr_merge/embedded-audit/pr-1472/PROOF.json  base=bd98b815317af127  C=bd98b815317af127
+  proof/pr_merge/embedded-audit/pr-1472/PROOF.json.sig  base=fa8f00afced09ee8  C=fa8f00afced09ee8
+
+PASS  6 package pins (macro -> children and binding; W03 -> template) match the bytes
+  $ sha256 of package members vs MACRO_PACKET.json and W03 packet
+  WORKSTREAMS/W01/TASK_PACKET.json pin=9cc3bc5a6b1bc928 actual=9cc3bc5a6b1bc928
+  WORKSTREAMS/W02/TASK_PACKET.json pin=fae519f6da539261 actual=fae519f6da539261
+  WORKSTREAMS/W03/TASK_PACKET.json pin=92070ac216069a43 actual=92070ac216069a43
+  EXECUTION_BINDING.json pin=2949b99edcfe760f actual=2949b99edcfe760f
+  AUDIT_PROMPT_TEMPLATE.txt actual=7b0ee9d3dde9ba56 present in the W03 packet: True

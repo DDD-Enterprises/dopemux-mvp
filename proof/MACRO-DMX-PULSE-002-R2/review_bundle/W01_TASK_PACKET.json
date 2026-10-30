@@ -1,0 +1,172 @@
+{
+  "id": "TP-DMX-PULSE2R2-W01-FETCH-GUARD-001",
+  "project": "dopemux-mvp",
+  "target": "Harden plugins/dopemux-pulse/hooks/register.tsx against audit finding F1 (Q3 FAIL) and F6: (F1) fetchState races $.http.fetch against a 2 s $.clock.after, cancels only the timer, and poll releases isPolling after the race, so a hung engine leaves one orphaned in-flight GET per 60 s poll. Keep the in-flight guard until the underlying fetch settles, still show `down` after 2 s, leave no unhandled rejection and no timer leak. (F6) show a toast when $.command.register refuses one of the three commands instead of swallowing it. Prove both with non-vacuous tests in register.test.ts.",
+  "invariants": [
+    "MACRO-DMX-PULSE-002-R2 invariants I01-I08 apply. SUCCESSOR OF PR #1472 (not an unrelated stacked repair): the macro's result is the audited SUCCESSOR HEAD of the whole Pulse feature. Predecessor record, kept verbatim and never edited or relabelled: audited head 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147, signed proof head f4115046484ed0dc580cc4337bb8c7cf55d39af7, verdict PASS_WITH_RISKS with Q3 FAIL on F1, and the operator's 2026-10-22 acceptance of F1 as a disclosed residual risk. The existing signed proofs for #1472 do NOT cover this work. It is judged by exactly ONE new independent audit of the CUMULATIVE subject (merge-base(origin/main, C)..C, the whole feature), not only the delta. This workstream carries the guard-lifetime/race fix (F1, audit Q3) and the bounded F6 slice.",
+    "Exact custody: worktree /Users/hue/code/dopemux-mvp/.claude/worktrees/pulse-f1-001-5a321f; branch claude/pulse-f1-001-5a321f (local only, nothing pushed); base f4115046484ed0dc580cc4337bb8c7cf55d39af7 = origin/feat/pulse-001 = the head of PR #1472 (signed proof head); HEAD must be hard-equal to the base at W01 start and porcelain must show only the untracked task-packets/MACRO-DMX-PULSE-002/ and task-packets/MACRO-DMX-PULSE-002-R2/. Writers: W01-implementer (Sonnet child) writes only register.tsx and register.test.ts; W02-implementer (Haiku child) writes only README.md and the how-to; W03 is the team lead (local-shell) writing only proof/MACRO-DMX-PULSE-002-R2/review_bundle/. The team lead alone commits, one commit per workstream, explicit pathspec: C1 (W01), C2 (W02) = the content head C that the audit freezes, P (W03) = a proof-only successor. Rollback is git revert in reverse order (P, C2, C1); no reset, no force-push; deleting the branch or worktree is an operator gate. Findings source of truth (read-only): proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md (rows F1, F6) and GROK_AUDIT_RESPONSE.txt.",
+    "Edit EXACTLY plugins/dopemux-pulse/hooks/register.tsx and plugins/dopemux-pulse/hooks/register.test.ts. Do not touch plugin.json, hooks.json, README.md or any docs (W02 owns docs). Do not touch services/adhd_engine (out of scope). Do not write under ~/.claude, enable hot reload or run `claude plugin install`.",
+    "Authoring contract: the coordinator loads the `plugin-authoring` skill at dispatch and passes you the path of THIS BUILD's claude-code.d.ts (session-specific; an old path is gone). Read the declaration for `$.http.fetch`, `$.clock.after`/`every`/`Timer`, `$.command.register` and `$.ui.toast` before editing. If the path was not supplied, STOP and return NEEDS_SUPERVISOR. If the declaration documents a timeout or abort option for `$.http.fetch`, do NOT adopt it silently: implement the guard design below anyway and report the option in the return so the supervisor can decide.",
+    "F1 required behaviour. (a) The in-flight guard is held until the underlying `$.http.fetch` promise SETTLES (resolves or rejects), not until the 2 s race resolves. (b) After 2 s with no answer the status line still shows `🔌 ADHD engine unreachable` and the up->down toast logic is unchanged (the existing test 'a hung engine times out instead of wedging the poll' must pass unmodified). (c) While a request is outstanding, no code path (60 s tick included) starts a second `$.http.fetch`. (d) When the outstanding request settles, polling resumes at the next tick and a healthy answer then restores the `ok` status (and the 'ADHD engine is back' toast if the engine was previously up). The late answer of the timed-out request is DISCARDED: never written to the view, never toasted, because it is stale. (e) No unhandled rejection: the promise that loses the race must have a rejection handler attached when it is created, so a late rejection never reaches the host. (f) No timer leak: the 2 s timer is cancelled whenever the fetch wins, and after `session.end` (any reason but `clear`) a late settle changes nothing: no status write, no toast, no new fetch. (g) Preserve: the helpers are top-level functions that take `$` and the state object as arguments (the engine's static reader follows `$` only through them), the never-surface try/catch policy, the single-GET-of-one-URL safety property, and every existing constant.",
+    "Known trade-off to record in a short code comment AND in the return (do not invent your own cancellation): the guard design means that if the host never settles an abandoned request, polling pauses and the status line stays `unreachable` until it does. The host's own network timeout is UNKNOWN. State this honestly; do not claim the orphaned request is cancelled, because it is not.",
+    "F6 required behaviour. In the `session.start` registration block, when `$.command.register` rejects for `pulse-focus`, `break` or `done`, show ONE toast per failed name with fixed text `dopemux-pulse: /<name> could not be registered` (interpolate only the literal command name, never error text). Registration of the remaining commands and the poll start must still happen. The toast call is itself wrapped so it can never surface. A small local helper at the top of the file is fine. If F6 needs more than that (restructuring hooks, new state, harness changes outside register.test.ts), STOP the F6 slice, leave F1 complete, and report F6 as NOT_RUN with the reason; F1 is the priority.",
+    "Tests (register.test.ts), TDD. Write the new tests FIRST and show them FAIL against the unmodified register.tsx (record the test names and failing assertions). New tests required, all non-vacuous: T1 with the existing `slow` behaviour (its fetch sleeps 10 minutes on the mock clock), after start and 2.1 s the status is `unreachable`, and after 5 more minutes `world.urls` still has length 1 (no second fetch while the first is pending); T2 continuing T1, with the behaviour switched to HEALTHY beforehand and the clock advanced well past the slow fetch's settle (10 minutes) plus a tick (e.g. to 12 minutes), `world.urls.length` is at least 2 and the status shows the healthy energy/attention (recovery); do not pin an exact count at the instant of the settle, because tick-versus-settle ordering at exactly 10 minutes is mock-clock dependent, and once the guard is released later ticks legitimately start further instant fetches; T3 a `slow-then-deny` behaviour (sleep then `{ deny }`) produces no unhandled rejection and no state change when it settles late; T4 `session.end` while a request is pending: after the late settle, urls, statuses and toasts are unchanged; T5 (F6) a harness option makes `command.register` deny exactly one name, the other two register, the toast text above is the only toast, and the status line still polls. Harness additions stay inside register.test.ts and the existing 24 tests must keep passing with no assertion weakened.",
+    "Mutation check (this is what makes the tests non-vacuous): for F1 revert only the guard-release change locally and show T1 fails; remove only the rejection handler and show T3 fails or, if the runner cannot observe unhandled rejections, say so and mark T3's rejection claim as covered by inspection only; restore, and show the full suite green. Report each as PASS/FAIL.",
+    "Safety property unchanged: no `$.process.run`, no `$.fs`, no prompt or tool hooks, no model calls, no new network target. No new dependencies, no config changes.",
+    "Finite limits for W01 (PROPOSED in ALLOWANCES_PROPOSED.json; binding once the operator sends the R2 AUTHORIZE line): ONE dispatch attempt plus at most ONE supervisor-narrowed repair attempt, and the repair only after a deterministic-gate failure; at most 2 coordinator review rounds; at most 45 minutes active and 90 minutes elapsed; at most 500000 child tokens where the runner reports usage (otherwise UNKNOWN, not enforced). Exceeding any limit: STOP and return NEEDS_SUPERVISOR with evidence. No self-extension, no retry beyond the one repair, no provider or model substitution.",
+    "You never commit, push, open a PR or call the `advisor` tool (advisor_calls must be 0). The coordinator re-reads your diff and commits with an explicit pathspec."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-PULSE-002-R2",
+    "base_branch": "feat/pulse-001",
+    "parent_tp_id": "MACRO-DMX-PULSE-002-R2",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/pulse-f1-001-5a321f",
+    "base_branch": "feat/pulse-001",
+    "stacked_because": "PR #1472 (feat/pulse-001) is open and unmerged; this packet builds its audited successor head on top of the signed proof head."
+  },
+  "commit": {
+    "message": "fix(pulse): hold the poll guard until the engine fetch settles; toast a refused command registration",
+    "allowlist": [
+      "plugins/dopemux-pulse/hooks/register.tsx",
+      "plugins/dopemux-pulse/hooks/register.test.ts"
+    ],
+    "verify": [
+      "claude plugin validate plugins/dopemux-pulse   # exit 0; warnings allowed, baseline passes with README install-line advice only",
+      "claude plugin test plugins/dopemux-pulse   # baseline 24 pass / 0 fail; expect 24 + new tests, 0 fail",
+      "tsc -p plugins/dopemux-pulse   # only if the engine laid .claude-plugin/types/ for the mod; otherwise NOT_RUN with the reason",
+      "git diff --check",
+      "git diff --name-only | sort   # must equal the allowlist"
+    ]
+  },
+  "pr": {
+    "title": "fix(pulse): hold the poll guard until the engine fetch settles (successor of #1472)",
+    "body": "MACRO-DMX-PULSE-002-R2 W01 of 3. Delivery vehicle (fast-forward of feat/pulse-001 or a stacked draft PR) is an operator gate, not decided here. Draft until a new independent final audit.",
+    "base": "feat/pulse-001"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Read the findings, the declaration and the current fetchState/poll/session.start code; confirm the custody preconditions",
+      "requirements": [
+        "Confirm F1 and F6 against the source before editing.",
+        "STOP and return NEEDS_SUPERVISOR if the declaration path was not supplied."
+      ],
+      "commands": [
+        "git rev-parse HEAD   # must equal f4115046484ed0dc580cc4337bb8c7cf55d39af7",
+        "git status --porcelain   # only the untracked task-packets/MACRO-DMX-PULSE-002/ and task-packets/MACRO-DMX-PULSE-002-R2/"
+      ],
+      "expected_files": [],
+      "validation": [
+        "HEAD and porcelain as stated",
+        "every API used exists in the supplied declaration"
+      ],
+      "context_files": [
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts",
+        "proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md",
+        "proof/MACRO-DMX-PULSE-001/review_bundle/GROK_AUDIT_RESPONSE.txt"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "F1 TDD: add T1-T4, show them fail on the unmodified module, then implement the settle-held guard",
+      "requirements": [
+        "Only the two allowlisted files.",
+        "Show the failing run, then the passing run, then the mutation checks."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-pulse"
+      ],
+      "expected_files": [
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts"
+      ],
+      "validation": [
+        "T1-T4 fail before and pass after; mutation checks reported; 24 baseline tests still pass"
+      ],
+      "context_files": [
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "F6 TDD: add T5, show it fail, then toast a refused command registration (bounded; see invariants for the STOP rule)",
+      "requirements": [
+        "Fixed toast text, literal command names only."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-pulse",
+        "claude plugin validate plugins/dopemux-pulse"
+      ],
+      "expected_files": [
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts"
+      ],
+      "validation": [
+        "T5 fails before and passes after, or F6 is reported NOT_RUN with the reason"
+      ],
+      "context_files": [
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S4",
+      "task": "Return",
+      "requirements": [
+        "Per-file summary; fail-then-pass evidence per test; mutation-check results; validate/test/tsc as PASS/FAIL/NOT_RUN with exit codes; the host-never-settles trade-off; any documented fetch timeout option seen in the declaration; the unchanged runtime NOT_RUN statement (no live session was run); advisor_calls (must be 0); files_written; observed model if a runtime receipt exists, else UNKNOWN."
+      ],
+      "commands": [
+        "git diff --stat",
+        "git diff --check",
+        "git diff --name-only | sort"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-PULSE-002-R2",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "PULSE-002-R2-FINAL-AUDIT",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-pulse/hooks/register.tsx",
+    "plugins/dopemux-pulse/hooks/register.test.ts"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "pulse-mod-runtime"
+  ],
+  "rollback_boundary": "git revert <C1> on claude/pulse-f1-001-5a321f (REVERT_COMMITS); base f4115046484ed0dc580cc4337bb8c7cf55d39af7",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

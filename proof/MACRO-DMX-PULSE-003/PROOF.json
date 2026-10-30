@@ -1,0 +1,268 @@
+{
+  "tp_id": "MACRO-DMX-PULSE-003",
+  "packet_id": "MACRO-DMX-PULSE-003",
+  "tp_path": "proof/MACRO-DMX-PULSE-003/review_bundle/MACRO_PACKET.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/pulse-003",
+  "branch": "feat/pulse-003-update",
+  "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git (origin matches repo_binding.origin_hint DDD-Enterprises/dopemux-mvp)",
+  "base_sha": "93050d135ffc2592000c1d0edef82b2912935525",
+  "audited_head_sha": "4b0c430674de4b428302fb010159cdc40a62f1c1",
+  "head_sha": "4b0c430674de4b428302fb010159cdc40a62f1c1",
+  "commit_sha": "Audited merge commit 4b0c430674de4b428302fb010159cdc40a62f1c1 (main 93050d135ffc2592000c1d0edef82b2912935525 merged into the signed head ee00d36552c6f7a8ef2b83dc0165b8de97481e5a of PR #1472); proof-only commits follow it: fe14cd6bd637b77121aefb02ff7d3f1c86534677 (pack), 1c60bad2f69de4d2a334cccfa239366eca8ece1c (audit custody), then the commit holding this file (see git log for the final head)",
+  "pr_url_or_blocker": "PR #1472 exists (OPEN, BEHIND main until delivery). Delivery is a non-force fast-forward push of feat/pulse-003-update to feat/pulse-001: an operator gate, not authorized or performed. Signing, attestation and the PR merge are also operator gates.",
+  "slices": [
+    {
+      "id": "W01",
+      "commit": "4b0c430674de4b428302fb010159cdc40a62f1c1",
+      "files": 63,
+      "model_requested": "NONE (local-shell)",
+      "model_observed": "NONE",
+      "status": "PASS",
+      "note": "merge commit, no edits; tree equals the dry run; gate incidents recorded in validations"
+    },
+    {
+      "id": "W02",
+      "commit": "fe14cd6bd637b77121aefb02ff7d3f1c86534677",
+      "files": 16,
+      "model_requested": "NONE (local-shell)",
+      "model_observed": "NONE",
+      "status": "PASS",
+      "note": "seven closure checks PASS"
+    },
+    {
+      "id": "W03",
+      "commit": "1c60bad2f69de4d2a334cccfa239366eca8ece1c",
+      "files": 10,
+      "model_requested": "grok-cli grok-4.5 (audit call)",
+      "model_observed": "grok-4.5 per the CLI init event; provider-attested UNKNOWN",
+      "status": "PASS",
+      "note": "custody commit before reading; the verdict commit follows"
+    }
+  ],
+  "files_changed": [
+    "docs/02-how-to/pulse-status-line.md",
+    "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+    "plugins/dopemux-pulse/README.md",
+    "plugins/dopemux-pulse/hooks/hooks.json",
+    "plugins/dopemux-pulse/hooks/register.test.ts",
+    "plugins/dopemux-pulse/hooks/register.tsx",
+    "services/adhd_engine/api/routes.py",
+    "services/adhd_engine/tests/test_state_contract.py"
+  ],
+  "validations": [
+    {
+      "command": "claude plugin validate plugins/dopemux-pulse",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "at M"
+    },
+    {
+      "command": "claude plugin test plugins/dopemux-pulse",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "at M"
+    },
+    {
+      "command": "tsc with an out-of-repo tsconfig",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "the declaration file the plugin-authoring skill writes is not available in this session"
+    },
+    {
+      "command": "pytest services/adhd_engine/tests/test_state_contract.py -q (unchanged)",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "pre-commit run --from-ref origin/main --to-ref M (repo config, first attempt)",
+      "exit_code": 3,
+      "bucket": "FAIL",
+      "note": "tooling crash: nodeenv could not parse node 27.0.0-alpha.0.0.0 for the markdownlint hook; no hook ran"
+    },
+    {
+      "command": "pre-commit run -c <config copy with default_language_version node: system> --from-ref origin/main --to-ref M",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "14 hooks passed; config copy differs from the repo config only by two prepended lines"
+    },
+    {
+      "command": "python scripts/governance/validate_change_contract.py --base origin/main --head M",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "git diff --check origin/main..M",
+      "exit_code": 2,
+      "bucket": "FAIL",
+      "note": "only FROZEN_DELTA.diff and GATES.txt of the R2 pack, already on the PR head; not introduced by M; not fixable inside this macro"
+    },
+    {
+      "command": "git diff --check ee00d3655..M (as written in the W02 packet)",
+      "exit_code": 2,
+      "bucket": "FAIL",
+      "note": "that range contains the 63 files main brought in"
+    },
+    {
+      "command": "negative control: proof-only closure of M over the old signed head",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "note": "behaved as expected: failed with proof_only_escaped_path, which is why a new audit is required"
+    },
+    {
+      "command": "closure checks 1-7 (ancestry, 63 pinned paths, eight files byte-identical, cumulative diff sha256 equal, PR content set, predecessor proof files byte-identical, pins)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "review_bundle/CLOSURE_CHECKS.txt"
+    },
+    {
+      "command": "git diff --check on this macro's own commits (P3, custody)",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "validate_change_contract --proof-only (P3 over M, explicit heads)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "model re-audit of content NOT_REQUIRED"
+    },
+    {
+      "command": "grok-cli grok-4.5 final audit, tool-less, one attempt",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "verdict PASS_WITH_RISKS; init.tools == []; 0 tool_use; stream preserved"
+    },
+    {
+      "command": "live run: engine on 127.0.0.1:3025 + claude --plugin-dir plugins/dopemux-pulse",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "operator step; no live session was run"
+    },
+    {
+      "command": "make test (full suite)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "scope limited to the mod tests, the engine contract test and the gates above"
+    }
+  ],
+  "codereview_status": "Independent final audit PASS_WITH_RISKS (grok-cli grok-4.5, tool-less, operator-approved route, one attempt). Q1-Q12 PASS; F1, F3, F4, F6 REPAIRED; N1-N5 STILL_OPEN (correct); no BLOCKING finding. No PAL codereview run.",
+  "precommit_status": "PASS only through a config copy with node: system (14 hooks); the first run with the repo config crashed in the nodeenv bootstrap before any hook ran",
+  "residual_risks": [
+    "PREDECESSOR RECORD, preserved unchanged: audit 1 of PR #1472 at 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147 returned PASS_WITH_RISKS with Q3 FAIL on F1 (F1 accepted by the operator); audit 2 at b5dc04dd7d9560ed31a2dc0fd2192218c727ea01 returned PASS_WITH_RISKS with N1-N5 open. This proof is a separate record on the merged head and relabels nothing.",
+    "M2/N2: the abandoned $.http.fetch is still not cancelled; if the host never settles it, polling pauses and the status stays unreachable. Host timeout UNKNOWN. Disclosed. Not yet accepted by the operator.",
+    "M1/N1/F2: the mod has never run in a real Claude Code session against a live ADHD engine (NOT_RUN); /clear survival, the guard and UI paint are test-kit only.",
+    "M6: whether production $.command.register rejects when it refuses a name is UNKNOWN; the registration toast is proven under the mock only.",
+    "M3/N3: no dedicated test that /done alone resets the 90-minute clock.",
+    "M4/N4: the \"ADHD engine is back\" toast can fire on the first success after an initial failure (pre-existing).",
+    "M5/N5/F7: engine exception fallback answers HTTP 200 medium/focused (pre-existing, documented).",
+    "git diff --check origin/main..M fails on FROZEN_DELTA.diff and GATES.txt of the R2 pack already on the PR head; a repair changes a signed head and needs its own proof cycle.",
+    "tsc NOT_RUN in this macro (declaration file unavailable); tsc was clean at the earlier audited head on the byte-identical files.",
+    "The PR goes BEHIND again if anything else merges into main before the delivery push (strict up-to-date)."
+  ],
+  "unknowns": [
+    "Live behaviour against a running engine and real Claude Code (NOT_RUN)",
+    "Whether the host bounds or cancels abandoned $.http.fetch requests",
+    "Whether production $.command.register rejects on refusal",
+    "Provider-attested identity of the auditor model",
+    "PROOF.json.sig absent: signing needs the operator's key",
+    "Whether the PR Steward and the CI audit gate accept a new signed attestation for the merged head under PR #1472"
+  ],
+  "cleanup_status": "Worktree and branch retained; no running processes; nothing pushed; scratchpad copies of the audit artifacts are redundant with the committed bundle",
+  "audit_evidence": {
+    "grok": {
+      "prompt_sha256": "e64876db21de75667ae651d138b363c76f2b281f1330b893459250bc2157360b",
+      "response_sha256": "ce27910d2b306224a50d7dcd8fc73ac164924a8fc41690988b31baf59e16d970",
+      "frozen_diff_sha256": "ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8",
+      "stream_sha256": "bac853be300c13182d965d477815204fb39acdc7eadc66e4e8a029f542af02bf",
+      "probe2_stream_sha256": "1589fa9d5e3648d388067e674f9edf4183f40aa3c4bba4f0af3d7ea6374f2100",
+      "path": "proof/MACRO-DMX-PULSE-003/review_bundle/ (files GROK_*)"
+    }
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-sonnet-5-5 (supervisor session; W01-W03 were run by the team lead with local tools and no child model)",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "sealed directory holding only AUDIT_PROMPT.txt; grok CLI 1.0.70 with the tool-less recipe (38 disallowed tool ids built from the probe's own init.tools plus a no-skills system prompt); probe 2 confirmed init.tools == [], real run init.tools == [] with 0 tool_use blocks; launched 2026-10-30T07:49:23Z, finished 2026-10-30T07:51:28Z; exact command in review_bundle/GROK_INVOCATION.txt; one attempt, no retries.",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-PULSE-003/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "M1",
+        "severity": "HIGH",
+        "title": "Mod still never exercised in a real Claude Code session against a live ADHD engine (same fact as N1/F2).",
+        "status": "OPEN",
+        "body": "Disclosed Not verified in README and how-to; tests use mocked clock/HTTP only. Same residual as N1/F2. [plugins/dopemux-pulse/README.md] ADJUDICATION: Coordinator: CONFIRMED, disclosed; live run NOT_RUN (operator step)."
+      },
+      {
+        "id": "M2",
+        "severity": "MEDIUM",
+        "title": "If the host never settles an abandoned $.http.fetch, the guard stays set: polling pauses and the status stays unreachable (same as N2).",
+        "status": "OPEN",
+        "body": "fetchState clears isFetching only in the fetch promise chain; no abort API; disclosed in code comment and docs. Same as N2. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED, by design, disclosed; host timeout UNKNOWN; not yet accepted by the operator."
+      },
+      {
+        "id": "M3",
+        "severity": "LOW",
+        "title": "No dedicated test that /done alone resets the 90-minute continuous-focus nudge clock (same as N3).",
+        "status": "OPEN",
+        "body": "Only 'a break resets the 90-minute continuous-focus clock' exists; /done path covered for ending the block but not for continuous reset. Same as N3. [plugins/dopemux-pulse/hooks/register.test.ts] ADJUDICATION: Coordinator: CONFIRMED; the code calls stopContinuous in the done handler."
+      },
+      {
+        "id": "M4",
+        "severity": "LOW",
+        "title": "The \"ADHD engine is back\" toast can fire on the first success after an initial failure (same as N4).",
+        "status": "OPEN",
+        "body": "wasUp starts undefined; first down sets wasUp=false without toast; later ok toasts recovery. Same as N4. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED and PRE-EXISTING; docs say \"comes back\"."
+      },
+      {
+        "id": "M5",
+        "severity": "INFO",
+        "title": "Exception fallback still answers HTTP 200 with medium/focused (same as N5/F7).",
+        "status": "OPEN",
+        "body": "except branch returns 200 aliases medium/focused; documented. Same as N5/F7. [services/adhd_engine/api/routes.py] ADJUDICATION: Coordinator: CONFIRMED, pre-existing, documented."
+      },
+      {
+        "id": "M6",
+        "severity": "LOW",
+        "title": "The registration-failure toast depends on production $.command.register rejecting when it refuses a name; the shape is UNKNOWN.",
+        "status": "OPEN",
+        "body": "registerCommand only toasts in catch; test harness returns {deny:'refused'} which the runner treats as failure for T5. Production refuse shape not evidenced in this message. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED as UNKNOWN (already noted before); proven under the mock only."
+      }
+    ],
+    "fixes_applied": [
+      "Strict up-to-date cleared by one non-force merge commit 4b0c43067 of main 93050d135 into the signed head; no Pulse file edited; the eight content files and the cumulative diff (sha256 ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8) are byte-identical to the previously audited ones.",
+      "Re-audit of the whole cumulative feature at the merged head: Q1-Q12 PASS; F1, F3, F4, F6 REPAIRED (mock only for F1 and F6); N1-N5 STILL_OPEN, correctly stated."
+    ],
+    "remaining_risks": [
+      "M2/N2: if the host never settles an abandoned request, polling pauses and the status stays unreachable (host timeout UNKNOWN).",
+      "M1/N1/F2: the mod has never run live against an engine in a real session (NOT_RUN).",
+      "M6: the registration toast is proven under the mock only; production refusal semantics UNKNOWN.",
+      "M3/N3: no dedicated test for /done resetting the 90-minute clock.",
+      "M4/N4: \"ADHD engine is back\" can toast on the first success after an initial failure (pre-existing).",
+      "M5/N5/F7: engine exception fallback answers HTTP 200 medium/focused (pre-existing, documented)."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
