@@ -189,7 +189,7 @@ class DopeLayoutTransientConfig(BaseModel):
 class DopeLayoutPMConfig(BaseModel):
     """PM mode configuration for the Dope layout."""
 
-    leantime_url: str = "http://localhost:3007"
+    leantime_url: str = "http://localhost:8080"
     conport_url: str = "http://localhost:3009"
     auto_switch: bool = False
 
@@ -197,9 +197,9 @@ class DopeLayoutPMConfig(BaseModel):
 class DopeLayoutServicesConfig(BaseModel):
     """External service endpoints used by the Dope layout."""
 
-    adhd_engine_url: str = "http://localhost:3008"
+    adhd_engine_url: str = "http://localhost:3025"
     activity_capture_url: str = "http://localhost:3006"
-    serena_url: str = "http://localhost:3010"
+    serena_url: str = "http://localhost:3006"
     litellm_url: str = "http://localhost:4000"
     docker_compose_bin: str = "docker compose"
 
@@ -613,14 +613,14 @@ class ConfigManager:
                     },
                 },
                 "pm_mode": {
-                    "leantime_url": "http://localhost:3007",
+                    "leantime_url": "http://localhost:8080",
                     "conport_url": "http://localhost:3009",
                     "auto_switch": False,
                 },
                 "services": {
-                    "adhd_engine_url": "http://localhost:3008",
+                    "adhd_engine_url": "http://localhost:3025",
                     "activity_capture_url": "http://localhost:3006",
-                    "serena_url": "http://localhost:3010",
+                    "serena_url": "http://localhost:3006",
                     "litellm_url": "http://localhost:4000",
                     "docker_compose_bin": "docker compose",
                 },
