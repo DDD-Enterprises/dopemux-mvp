@@ -378,3 +378,134 @@ def test_url_option_overrides_and_is_used(
         "http://example.test:9/health",
     ]
     assert "--url" in result.output
+
+
+def test_requests_use_two_second_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls = []
+    base = fake_get(
+        {"/api/v1/state": (200, MAIN_STATE), "/health": (200, NORMAL_HEALTH)}
+    )
+
+    def spy(url: str, *args: Any, **kwargs: Any) -> FakeResponse:
+        calls.append((url, kwargs))
+        return base(url, *args, **kwargs)
+
+    monkeypatch.setattr(adhd_commands.requests, "get", spy)
+    result = CliRunner().invoke(adhd, ["status"])
+    assert result.exit_code == 0
+    assert [url.rsplit("/", 1)[-1] for url, _ in calls] == ["state", "health"]
+    assert [kwargs.get("timeout") for _, kwargs in calls] == [2.0, 2.0]
+
+
+def _record_urls(monkeypatch: pytest.MonkeyPatch) -> list:
+    seen: list = []
+    base = fake_get(
+        {"/api/v1/state": (200, MAIN_STATE), "/health": (200, NORMAL_HEALTH)}
+    )
+
+    def spy(url: str, *args: Any, **kwargs: Any) -> FakeResponse:
+        seen.append(url)
+        return base(url, *args, **kwargs)
+
+    monkeypatch.setattr(adhd_commands.requests, "get", spy)
+    return seen
+
+
+def test_url_without_scheme_gets_http(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen = _record_urls(monkeypatch)
+    result = CliRunner().invoke(adhd, ["status", "--url", "localhost:8095", "--json"])
+    assert result.exit_code == 0
+    assert seen == [
+        "http://localhost:8095/api/v1/state",
+        "http://localhost:8095/health",
+    ]
+    assert json.loads(result.output)["url"] == "http://localhost:8095"
+
+
+def test_url_path_is_dropped(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen = _record_urls(monkeypatch)
+    result = CliRunner().invoke(
+        adhd, ["status", "--url", "https://example.test:9/some/path?x=1"]
+    )
+    assert result.exit_code == 0
+    assert seen[0] == "https://example.test:9/api/v1/state"
+
+
+@pytest.mark.parametrize(
+    "bad",
+    ["", "http://", "localhost:notaport", "localhost:99999", "ftp://host:1", "://x"],
+)
+def test_invalid_url_option_is_usage_error(
+    monkeypatch: pytest.MonkeyPatch, bad: str
+) -> None:
+    seen = _record_urls(monkeypatch)
+    result = CliRunner().invoke(adhd, ["status", "--url", bad])
+    assert result.exit_code == 2
+    assert "--url" in result.output
+    assert seen == []
+
+
+def test_invalid_base_url_env_is_skipped_with_warning(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    env = {
+        "DOPEMUX_ADHD_ENGINE_BASE_URL": "localhost:notaport",
+        "ADHD_ENGINE_PORT": "4000",
+    }
+    assert resolve_engine_url(None, env) == (
+        "http://127.0.0.1:4000",
+        "ADHD_ENGINE_PORT",
+    )
+    assert "DOPEMUX_ADHD_ENGINE_BASE_URL" in capsys.readouterr().err
+    assert resolve_engine_url(None, {"DOPEMUX_ADHD_ENGINE_BASE_URL": "ftp://x"}) == (
+        "http://127.0.0.1:3025",
+        "registry-default",
+    )
+    assert "DOPEMUX_ADHD_ENGINE_BASE_URL" in capsys.readouterr().err
+
+
+def test_base_url_env_without_scheme_is_normalized() -> None:
+    env = {"DOPEMUX_ADHD_ENGINE_BASE_URL": "localhost:8095/health"}
+    assert resolve_engine_url(None, env) == (
+        "http://localhost:8095",
+        "DOPEMUX_ADHD_ENGINE_BASE_URL",
+    )
+
+
+def test_human_line_stays_one_line_for_multiline_startup_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    health = {
+        **FALLBACK_HEALTH,
+        "startup_error": 'Traceback (most recent call last):\n  File "x"\n\n\tBoom',
+    }
+    routes: Dict[str, Reply] = {
+        "/api/v1/state": (200, MAIN_STATE),
+        "/health": (200, health),
+    }
+    result = run_status(monkeypatch, routes)
+    assert result.exit_code == 3
+    assert result.output.count("\n") == 1
+    assert (
+        'startup error: Traceback (most recent call last): File "x" Boom'
+        in result.output
+    )
+    raw = json.loads(run_status(monkeypatch, routes, "--json").output)
+    assert raw["detail"].endswith(health["startup_error"] + ")")
+    assert "startup_error" not in raw
+
+
+def test_human_line_truncates_long_engine_strings(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    long = "x" * 500
+    health = {**FALLBACK_HEALTH, "startup_error": long}
+    state = {**MAIN_STATE, "energy": long}
+    result = run_status(
+        monkeypatch, {"/api/v1/state": (200, state), "/health": (200, health)}
+    )
+    assert result.output.count("\n") == 1
+    assert long not in result.output
+    assert result.output.count("\u2026") == 2
+    assert "x" * 199 + "\u2026" in result.output
+    assert "x" * 200 not in result.output
