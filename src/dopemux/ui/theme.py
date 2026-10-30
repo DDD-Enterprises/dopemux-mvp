@@ -299,7 +299,8 @@ DOPEMUX_THEME = build_theme(get_active_theme_name())
 class Glyphs:
     """Nerd Font glyphs for status indicators and UI elements.
 
-    Primary set assumes JetBrains Mono Nerd Font.
+    Primary set assumes the Dopemux Term Nerd Font (older local builds name it
+    "DopemuxTerm Nerd Font Mono"); any Nerd Font renders the same codepoints.
     Fallback chars provided for graceful degradation.
     """
 

@@ -3,241 +3,127 @@ import {
   Alert,
   Box,
   Button,
-  Chip,
-  CircularProgress,
   Collapse,
   Container,
-  Fade,
   CssBaseline,
-  Divider,
   Grid,
-  IconButton,
   Link,
-  Paper,
   ThemeProvider,
   Tooltip,
   Typography,
   useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import {
-  AlertCircle,
-  AlertTriangle,
-  Bell,
-  Brain,
-  Check,
-  CheckCircle,
-  Clock,
-  Copy,
-  Droplet,
-  Eye,
-  Info,
-  PauseCircle,
-  Trash2,
-  TrendingDown,
-  TrendingUp,
-  X,
-  Zap,
-} from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
+import {
+  CognitiveReading,
+  EMPTY_READING,
+  isMessageObject,
+  mapAggregateState,
+  mapRealtimeState,
+} from './cognitiveReading';
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
-import CognitiveLoadGauge from './components/CognitiveLoadGauge';
-import { getNotificationColor } from './notificationColors';
-import PredictionPanel from './components/PredictionPanel';
+import AttentionStatePanel from './components/AttentionStatePanel';
+import LoadInstrument from './components/LoadInstrument';
+import SignalFeed, { DashboardNotification } from './components/SignalFeed';
 import TaskSequencer from './components/TaskSequencer';
 import TeamDashboard from './components/TeamDashboard';
 import RepositoryPlannerPage from './features/repository-planner/RepositoryPlannerPage';
-import theme, { brandTokens, statusStyles, deriveStatus, getDynamicRoast, MetricLabel } from './theme';
+import theme, { brandTokens, deriveStatus } from './theme';
+import { formatClockTime } from './time';
 
-interface CognitiveState {
-  energy: number;
-  attention: number;
-  load: number;
-  prediction?: number;
-  status: 'low' | 'optimal' | 'high' | 'critical';
-  recommendation: string;
-}
+type SocketState = 'connecting' | 'open' | 'closed';
+type ConnectionStatus = 'connecting' | 'live' | 'degraded';
 
-interface Notification {
-  id: string;
-  message: string;
-  notificationType: string;
-  timestamp: string;
-}
+const STATE_ENDPOINT = `${dashboardApiUrl}/api/adhd-state`;
+const SOCKET_ENDPOINT = `${dashboardWsUrl}/ws/state`;
+const MAX_SIGNALS = 5;
 
-interface AggregateDashboardState {
-  energy?: {
-    energy_level?: string;
-  };
-  attention?: {
-    attention_state?: string;
-  };
-  cognitive_load?: {
-    cognitive_load?: number;
-    predicted_load_15min?: number;
-  };
-  recommendation?: string;
-}
-
-const energyMap: Record<string, number> = {
-  very_low: 0.2,
-  low: 0.4,
-  medium: 0.7,
-  high: 0.9,
-  hyperfocus: 1.0,
+// Brand: cyan = live, yellow = degraded or waiting. Red is reserved for failed/blocked.
+const CONNECTION_META: Record<ConnectionStatus, { label: string; color: string }> = {
+  live: { label: '[LIVE]', color: brandTokens.colors.ritualCyan },
+  connecting: { label: '[CONNECTING]', color: brandTokens.colors.giltEdge },
+  degraded: { label: '[DEGRADED]', color: brandTokens.colors.giltEdge },
 };
 
-const attentionMap: Record<string, number> = {
-  scattered: 0.3,
-  transitioning: 0.5,
-  focused: 0.8,
-  hyperfocused: 1.0,
-  overwhelmed: 0.2,
-};
+const monoSx = { fontFamily: brandTokens.fonts.mono } as const;
 
-function mapAggregateState(payload: AggregateDashboardState): CognitiveState {
-  const load = payload.cognitive_load?.cognitive_load ?? 0.5;
-  return {
-    energy: energyMap[payload.energy?.energy_level || 'medium'] || 0.5,
-    attention: attentionMap[payload.attention?.attention_state || 'focused'] || 0.5,
-    load,
-    prediction: payload.cognitive_load?.predicted_load_15min,
-    status: deriveStatus(load),
-    recommendation: payload.recommendation || 'No active recommendation',
-  };
-}
+// String lengths on purpose: in MUI sx a bare `1` means 100%.
+const visuallyHiddenSx = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  margin: '-1px',
+  padding: 0,
+  border: 0,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+} as const;
 
-export function mapRealtimeState(message: Record<string, unknown>): CognitiveState | null {
-  if (message.type !== 'state_update') {
-    return null;
+function endpointHost(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
   }
-
-  const data = (message.data || {}) as Record<string, unknown>;
-  const load = typeof data.cognitive_load === 'number' ? data.cognitive_load : 0.5;
-
-  return {
-    energy: energyMap[String(data.energy_level || 'medium')] || 0.5,
-    attention: attentionMap[String(data.attention_state || 'focused')] || 0.5,
-    load,
-    prediction: typeof data.predicted_load_15min === 'number' ? data.predicted_load_15min : undefined,
-    status: deriveStatus(load),
-    recommendation: String(data.recommendation || 'No active recommendation'),
-  };
 }
-
-const formatTimestamp = (dateStr: string) => {
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return '[--:--:--]';
-  const hh = date.getHours().toString().padStart(2, '0');
-  const mm = date.getMinutes().toString().padStart(2, '0');
-  const ss = date.getSeconds().toString().padStart(2, '0');
-  return `[${hh}:${mm}:${ss}]`;
-};
-
-const getNotificationIcon = (type: string) => {
-  const iconSize = 14;
-  switch (type) {
-    case 'decision':
-      return <CheckCircle size={iconSize} aria-hidden="true" />;
-    case 'progress':
-      return <TrendingUp size={iconSize} aria-hidden="true" />;
-    case 'break':
-      return <PauseCircle size={iconSize} aria-hidden="true" />;
-    case 'session':
-      return <Clock size={iconSize} aria-hidden="true" />;
-    case 'warning':
-      return <AlertTriangle size={iconSize} aria-hidden="true" />;
-    case 'error':
-      return <AlertCircle size={iconSize} aria-hidden="true" />;
-    case 'hyperfocus':
-      return <Zap size={iconSize} aria-hidden="true" />;
-    case 'info':
-      return <Info size={iconSize} aria-hidden="true" />;
-    default:
-      return <Bell size={iconSize} aria-hidden="true" />;
-  }
-};
 
 function DashboardApp() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const feedHeadingRef = useRef<HTMLHeadingElement>(null);
-  const [cognitiveState, setCognitiveState] = useState<CognitiveState>({
-    energy: 0.7,
-    attention: 0.6,
-    load: 0.5,
-    status: 'optimal',
-    recommendation: 'Continue current work patterns',
-  });
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'live' | 'degraded'>('connecting');
+  const [reading, setReading] = useState<CognitiveReading>(EMPTY_READING);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
+  const [httpError, setHttpError] = useState<string | null>(null);
+  const [socketState, setSocketState] = useState<SocketState>('connecting');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
-  const clearConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
-  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const hydrationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [lastSignalTime, setLastSignalTime] = useState<Date | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
+  const [showAllPanels, setShowAllPanels] = useState(false);
+  const [isSipLogged, setIsSipLogged] = useState(false);
+  const sipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Once a live state_update lands, it is newer than any GET still in flight.
+  const liveReadingSeenRef = useRef(false);
 
-  const handleHydrate = useCallback(() => {
-    setIsHydrated(true);
-    if (hydrationTimeoutRef.current) {
-      clearTimeout(hydrationTimeoutRef.current);
-    }
-    hydrationTimeoutRef.current = setTimeout(() => {
-      setIsHydrated(false);
-      hydrationTimeoutRef.current = null;
-    }, 2000);
+  const handleRetry = useCallback(() => {
+    liveReadingSeenRef.current = false;
+    setHttpError(null);
+    setSocketState('connecting');
+    setErrorMessage(null);
+    setRetryTrigger((prev) => prev + 1);
   }, []);
 
-  const handleReconnect = useCallback(() => {
-    setRetryTrigger((prev) => prev + 1);
-    setConnectionStatus('connecting');
-    setErrorMessage(null);
+  const handleLogSip = useCallback(() => {
+    setIsSipLogged(true);
+    if (sipTimeoutRef.current) {
+      clearTimeout(sipTimeoutRef.current);
+    }
+    sipTimeoutRef.current = setTimeout(() => {
+      setIsSipLogged(false);
+      sipTimeoutRef.current = null;
+    }, 2000);
   }, []);
 
   const handleDismissNotification = useCallback((id: string) => {
     setNotifications((current) => current.filter((n) => n.id !== id));
   }, []);
 
-  const handleCopyRecommendation = useCallback(async () => {
-    if (!navigator.clipboard?.writeText) {
-      setErrorMessage('Clipboard API is not supported in this browser or context.');
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(cognitiveState.recommendation);
-      setIsCopied(true);
+  const handleClearNotifications = useCallback(() => setNotifications([]), []);
 
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
-      }
-
-      copyTimeoutRef.current = setTimeout(() => {
-        setIsCopied(false);
-        copyTimeoutRef.current = null;
-      }, 2000);
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      setErrorMessage(`Failed to copy recommendation: ${errorMsg}`);
+  // "Show all" lasts one critical episode: any non-critical reading re-arms the collapse.
+  const applyReading = useCallback((next: CognitiveReading) => {
+    setReading(next);
+    setLastUpdated(new Date());
+    if (next.load === null || deriveStatus(next.load) !== 'critical') {
+      setShowAllPanels(false);
     }
-  }, [cognitiveState.recommendation]);
+  }, []);
 
   useEffect(() => {
     return () => {
-      if (clearConfirmTimeoutRef.current) {
-        clearTimeout(clearConfirmTimeoutRef.current);
-        clearConfirmTimeoutRef.current = null;
-      }
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
-        copyTimeoutRef.current = null;
-      }
-      if (hydrationTimeoutRef.current) {
-        clearTimeout(hydrationTimeoutRef.current);
-        hydrationTimeoutRef.current = null;
+      if (sipTimeoutRef.current) {
+        clearTimeout(sipTimeoutRef.current);
+        sipTimeoutRef.current = null;
       }
     };
   }, []);
@@ -245,31 +131,42 @@ function DashboardApp() {
   useEffect(() => {
     let isMounted = true;
 
-    async function loadInitialState() {
-      try {
-        const response = await fetch(`${dashboardApiUrl}/api/adhd-state`, {
-          headers: dashboardApiHeaders,
-        });
-        if (!response.ok) {
-          throw new Error(`Dashboard state request failed with ${response.status}`);
-        }
+    // Once a live state_update has landed, this GET is obsolete: neither its reading
+    // nor its failure may replace what the socket already delivered.
+    const isCurrent = () => isMounted && !liveReadingSeenRef.current;
+    const fail = (message: string) => {
+      if (isCurrent()) {
+        setHttpError(message);
+      }
+    };
 
-        const payload = (await response.json()) as AggregateDashboardState;
-        if (!isMounted) {
-          return;
-        }
-        setCognitiveState(mapAggregateState(payload));
-        setConnectionStatus('live');
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-        setConnectionStatus('degraded');
-        setErrorMessage(error instanceof Error ? error.message : 'Unable to load dashboard state');
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+    // Each failure stage gets its own message so the banner names what actually broke.
+    async function loadInitialState() {
+      let response: Response;
+      try {
+        response = await fetch(STATE_ENDPOINT, { headers: dashboardApiHeaders });
+      } catch {
+        fail(`Failed: GET ${STATE_ENDPOINT}, no response (network error).`);
+        return;
+      }
+      if (!response.ok) {
+        fail(`Failed: GET ${STATE_ENDPOINT} returned HTTP ${response.status}.`);
+        return;
+      }
+
+      let payload: unknown;
+      try {
+        payload = await response.json();
+      } catch {
+        fail(`Failed: GET ${STATE_ENDPOINT} returned invalid JSON.`);
+        return;
+      }
+      if (!isMessageObject(payload)) {
+        fail(`Failed: GET ${STATE_ENDPOINT} returned an unexpected payload.`);
+        return;
+      }
+      if (isCurrent()) {
+        applyReading(mapAggregateState(payload));
       }
     }
 
@@ -278,28 +175,45 @@ function DashboardApp() {
     return () => {
       isMounted = false;
     };
-  }, [retryTrigger]);
+  }, [retryTrigger, applyReading]);
 
   useEffect(() => {
-    const socket = new WebSocket(`${dashboardWsUrl}/ws/state`);
+    const socket = new WebSocket(SOCKET_ENDPOINT);
 
     socket.onopen = () => {
-      setConnectionStatus('live');
+      setSocketState('open');
     };
 
     socket.onmessage = (event) => {
+      let message: unknown;
       try {
-        const message = JSON.parse(event.data) as Record<string, unknown>;
-        const nextState = mapRealtimeState(message);
+        message = JSON.parse(event.data);
+      } catch {
+        setErrorMessage(`Failed: could not parse a message from ${SOCKET_ENDPOINT}.`);
+        return;
+      }
+      if (!isMessageObject(message)) {
+        setErrorMessage(`Failed: unexpected message from ${SOCKET_ENDPOINT}.`);
+        return;
+      }
 
-        if (nextState) {
-          setCognitiveState((current) => ({ ...current, ...nextState }));
-          return;
-        }
+      // A state_update is a full snapshot: fields it omits become unknown, not stale.
+      // It also supersedes an earlier failed GET, so that failure stops being shown.
+      const nextReading = mapRealtimeState(message);
+      if (nextReading) {
+        liveReadingSeenRef.current = true;
+        applyReading(nextReading);
+        setHttpError(null);
+        return;
+      }
+      if (message.type === 'state_update') {
+        setErrorMessage(`Failed: malformed state_update from ${SOCKET_ENDPOINT}.`);
+        return;
+      }
 
-        if (message.type === 'dashboard_notification') {
-          setLastSignalTime(new Date());
-          setNotifications((current) => [
+      if (message.type === 'dashboard_notification') {
+        setNotifications((current) =>
+          [
             {
               id: String(message.id || Date.now().toString() + Math.random().toString(36).substring(2, 9)),
               message: String(message.message || 'Notification received'),
@@ -307,110 +221,36 @@ function DashboardApp() {
               timestamp: String(message.timestamp || new Date().toISOString()),
             },
             ...current,
-          ].slice(0, 5));
-        }
-      } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : 'WebSocket parse failure');
+          ].slice(0, MAX_SIGNALS)
+        );
       }
     };
 
     socket.onerror = () => {
-      setConnectionStatus('degraded');
+      setSocketState('closed');
     };
 
     socket.onclose = () => {
-      setConnectionStatus((current) => (current === 'live' ? 'degraded' : current));
+      setSocketState('closed');
     };
 
+    // Detach every handler first so a retired socket cannot touch state after a retry.
     return () => {
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onerror = null;
+      socket.onclose = null;
       socket.close();
     };
-  }, [retryTrigger]);
+  }, [retryTrigger, applyReading]);
 
-  useEffect(() => {
-    setIsCopied(false);
-    if (copyTimeoutRef.current) {
-      clearTimeout(copyTimeoutRef.current);
-      copyTimeoutRef.current = null;
-    }
-  }, [cognitiveState.recommendation]);
+  const status = reading.load === null ? null : deriveStatus(reading.load);
+  const isCritical = status === 'critical' && !showAllPanels;
+  const showTeamDashboard = !isMobile && (status === 'critical' ? showAllPanels : status !== 'high');
 
-  const layout =
-    cognitiveState.status === 'critical'
-      ? { showTeamDashboard: false, showPredictions: false, compactMode: true }
-      : cognitiveState.status === 'high'
-        ? { showTeamDashboard: false, showPredictions: true, compactMode: false }
-        : { showTeamDashboard: true, showPredictions: true, compactMode: false };
-
-  const statusMeta = statusStyles[cognitiveState.status];
-  const connectionLabel =
-    connectionStatus === 'live'
-      ? brandTokens.chips.live
-      : connectionStatus === 'connecting'
-        ? brandTokens.chips.connecting
-        : brandTokens.chips.degraded;
-
-  const connectionColor =
-    connectionStatus === 'live'
-      ? brandTokens.colors.ritualCyan
-      : connectionStatus === 'connecting'
-        ? brandTokens.colors.saintGold
-        : brandTokens.colors.errorRed;
-
-  const metricCards = [
-    {
-      label: 'Energy Level' as const,
-      value: cognitiveState.energy,
-      icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
-      accentColor: brandTokens.colors.serumMint,
-      roast: getDynamicRoast('Energy Level', cognitiveState.energy),
-      tooltip: 'Your current biometric energy reserve based on activity and sleep data',
-    },
-    {
-      label: 'Attention Focus' as const,
-      value: cognitiveState.attention,
-      icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
-      accentColor: brandTokens.colors.ritualCyan,
-      roast: getDynamicRoast('Attention Focus', cognitiveState.attention),
-      tooltip: 'Real-time attention state: scattered, focused, or hyperfocused',
-    },
-    {
-      label: 'Cognitive Load' as const,
-      value: cognitiveState.load,
-      icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
-      accentColor: brandTokens.colors.saintGold,
-      roast: getDynamicRoast('Cognitive Load', cognitiveState.load),
-      tooltip: 'Total mental effort being exerted on current tasks',
-    },
-    {
-      label: '15-min Prediction' as const,
-      value: cognitiveState.prediction ?? null,
-      icon:
-        cognitiveState.prediction !== undefined && cognitiveState.prediction < cognitiveState.load ? (
-          <TrendingDown
-            color={statusStyles[deriveStatus(cognitiveState.prediction)].color}
-            size={24}
-            aria-hidden="true"
-          />
-        ) : (
-          <TrendingUp
-            color={
-              cognitiveState.prediction !== undefined
-                ? statusStyles[deriveStatus(cognitiveState.prediction)].color
-                : brandTokens.colors.giltEdge
-            }
-            size={24}
-            aria-hidden="true"
-          />
-        ),
-      accentColor:
-        cognitiveState.prediction !== undefined
-          ? statusStyles[deriveStatus(cognitiveState.prediction)].color
-          : brandTokens.colors.giltEdge,
-      roast: getDynamicRoast('15-min Prediction', cognitiveState.prediction ?? null),
-      tooltip: 'AI-driven forecast of your cognitive state for the next 15 minutes',
-    },
-  ];
+  const connectionStatus: ConnectionStatus =
+    socketState === 'open' ? 'live' : socketState === 'connecting' && !httpError ? 'connecting' : 'degraded';
+  const connection = CONNECTION_META[connectionStatus];
 
   return (
     <ThemeProvider theme={theme}>
@@ -428,7 +268,6 @@ function DashboardApp() {
           borderRadius: '0 0 4px 0',
           fontWeight: 'bold',
           textDecoration: 'none',
-          transition: 'top 0.2s',
           '&:focus-visible': {
             top: 0,
             outline: `2px solid ${brandTokens.text.primary}`,
@@ -437,200 +276,123 @@ function DashboardApp() {
       >
         Skip to main content
       </Link>
-      <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Container maxWidth="xl" sx={{ py: 2.5, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
         <Box
           component="header"
           sx={{
-            mb: 4,
-            p: 3,
-            borderRadius: 4,
-            background: brandTokens.gradients.velvet,
-            border: `1px solid ${brandTokens.borders.mint}`,
-            boxShadow: brandTokens.shadows.panel,
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '12px 20px',
+            px: 2,
+            py: 1.5,
+            border: `1px solid ${brandTokens.borders.subtle}`,
+            borderRadius: '12px',
+            bgcolor: alpha(brandTokens.colors.voidNavy, 0.6),
           }}
         >
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Tooltip
-              title={
-                connectionStatus === 'degraded'
-                  ? 'Connection degraded. Click to attempt manual reconnection.'
-                  : 'Real-time connection to the ADHD dashboard surface'
-              }
-              arrow
+          <Typography
+            component="h1"
+            sx={{ m: 0, fontFamily: brandTokens.fonts.display, fontWeight: 600, fontSize: '1.125rem', letterSpacing: '0.08em' }}
+          >
+            DØPEMÜX
+            <Box component="span" sx={visuallyHiddenSx}>
+              {' '}cockpit
+            </Box>
+          </Typography>
+          <Box
+            role="status"
+            aria-label={`Connection ${connectionStatus}`}
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1,
+              px: 1.25,
+              py: 0.5,
+              border: `1px solid ${alpha(connection.color, 0.6)}`,
+              borderRadius: '999px',
+              ...monoSx,
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              color: connection.color,
+            }}
+          >
+            <Box aria-hidden="true" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: connection.color }} />
+            {connection.label}
+          </Box>
+          <Typography sx={{ ...monoSx, fontSize: '0.8125rem', color: brandTokens.text.secondary }}>
+            {`adhd-dashboard ${endpointHost(dashboardApiUrl)}`}
+          </Typography>
+          <Typography sx={{ ...monoSx, fontSize: '0.8125rem', color: brandTokens.text.muted }}>
+            {lastUpdated ? `updated ${formatClockTime(lastUpdated)}` : 'no update received'}
+          </Typography>
+          <Typography sx={{ ...monoSx, fontSize: '0.75rem', letterSpacing: '0.08em', color: brandTokens.text.muted }}>
+            [CONSENT: UNKNOWN]
+          </Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          <Tooltip title="Local reminder only. Nothing is saved." arrow describeChild>
+            <Button
+              variant="outlined"
+              onClick={handleLogSip}
+              sx={{
+                minHeight: 40,
+                ...monoSx,
+                fontSize: '0.75rem',
+                borderColor: alpha(brandTokens.colors.aftercareViolet, 0.7),
+                color: brandTokens.colors.aftercareViolet,
+                '&:hover': {
+                  borderColor: brandTokens.colors.aftercareViolet,
+                  bgcolor: alpha(brandTokens.colors.aftercareViolet, 0.08),
+                },
+              }}
             >
-              <Chip
-                icon={
-                  <Box
-                    aria-hidden="true"
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      bgcolor: connectionColor,
-                      ml: 1,
-                      animation: 'pulse 2s infinite',
-                      '@keyframes pulse': {
-                        '0%': { boxShadow: `0 0 0 0px ${alpha(connectionColor, 0.7)}` },
-                        '70%': { boxShadow: `0 0 0 8px ${alpha(connectionColor, 0)}` },
-                        '100%': { boxShadow: `0 0 0 0px ${alpha(connectionColor, 0)}` },
-                      },
-                    }}
-                  />
-                }
-                label={`${connectionLabel} DØPEMÜX Ritual Daemon`}
-                aria-label={
-                  connectionStatus === 'degraded'
-                    ? `System connection degraded: ${connectionLabel} DØPEMÜX Ritual Daemon. Click to retry connection.`
-                    : `System is actively monitoring ritual state: ${connectionLabel} DØPEMÜX Ritual Daemon`
-                }
-                className="dopemux-chip"
-                color={
-                  connectionStatus === 'live'
-                    ? 'primary'
-                    : connectionStatus === 'connecting'
-                      ? 'secondary'
-                      : 'error'
-                }
-                onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}
-                onKeyDown={
-                  connectionStatus === 'degraded'
-                    ? (e) => {
-                        if (e.key === ' ' || e.key === 'Enter') {
-                          e.preventDefault();
-                          handleReconnect();
-                        }
-                      }
-                    : undefined
-                }
-                tabIndex={0}
-                sx={{
-                  ...(connectionStatus === 'degraded' && {
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: alpha(brandTokens.colors.errorRed, 0.2),
-                    },
-                  }),
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="User consent verified for cognitive monitoring" arrow>
-              <Chip
-                label={`${brandTokens.chips.consent}`}
-                aria-label="User consent verified for cognitive monitoring"
-                className="dopemux-chip"
-                variant="outlined"
-                sx={{ borderColor: alpha(brandTokens.colors.saintGold, 0.9), color: brandTokens.colors.saintGold }}
-                tabIndex={0}
-              />
-            </Tooltip>
-            <Tooltip title={isHydrated ? 'Sip Logged!' : 'Health and hydration status: Click to log a hydration sip.'} arrow>
-              <Chip
-                icon={isHydrated ? <Check size={16} color={brandTokens.colors.serumMint} aria-hidden="true" /> : <Droplet size={16} color={brandTokens.colors.aftercareViolet} aria-hidden="true" />}
-                label={isHydrated ? '[AFTERCARE] Sip Logged! Stay Feral.' : '[AFTERCARE] Logged. Hydrate.'}
-                aria-label={isHydrated ? 'Sip Logged! Stay Feral.' : 'Health and hydration status: [AFTERCARE] Logged. Hydrate. Click to log a hydration sip.'}
-                className="dopemux-chip"
-                onClick={handleHydrate}
-                onKeyDown={(e) => {
-                  if (e.key === ' ' || e.key === 'Enter') {
-                    e.preventDefault();
-                    handleHydrate();
-                  }
-                }}
-                tabIndex={0}
-                sx={{
-                  borderColor: isHydrated ? alpha(brandTokens.colors.serumMint, 0.8) : alpha(brandTokens.colors.aftercareViolet, 0.8),
-                  color: isHydrated ? brandTokens.colors.serumMint : brandTokens.colors.aftercareViolet,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover, &:focus-visible': {
-                    transform: 'translateY(-2px)',
-                    borderColor: isHydrated ? brandTokens.colors.serumMint : brandTokens.colors.aftercareViolet,
-                    boxShadow: isHydrated
-                      ? `0 0 12px ${alpha(brandTokens.colors.serumMint, 0.3)}`
-                      : `0 0 12px ${alpha(brandTokens.colors.aftercareViolet, 0.3)}`,
-                  },
-                  ...(isHydrated && {
-                    animation: 'hydration-pulse 0.4s ease-out',
-                    '@keyframes hydration-pulse': {
-                      '0%': { transform: 'scale(1)' },
-                      '50%': { transform: 'scale(1.05)', boxShadow: `0 0 20px ${alpha(brandTokens.colors.serumMint, 0.4)}` },
-                      '100%': { transform: 'scale(1)' },
-                    },
-                  }),
-                }}
-              />
-            </Tooltip>
-          </Box>
-          <Typography variant="h2" sx={{ fontWeight: 600, mb: 1, letterSpacing: '0.08em' }}>
-            Dopemux Ultra UI
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 720 }}>
-            Luxury filth meets lab precision. I track your cognitive drips, roast your sprint sins,
-            and still remind you to hydrate. Status: <strong>{connectionLabel}</strong> {statusMeta.label}.
-          </Typography>
-          <Divider sx={{ my: 2, borderColor: brandTokens.borders.cyan }} />
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Tooltip title="Current cognitive status and load percentage" arrow>
-              <Chip
-                label={`${statusMeta.label} • ${(cognitiveState.load * 100).toFixed(0)}% load`}
-                aria-label={`Current status: ${statusMeta.label}, ${(cognitiveState.load * 100).toFixed(0)}% cognitive load`}
-                tabIndex={0}
-                sx={{
-                  backgroundColor: alpha(statusMeta.color, 0.1),
-                  color: statusMeta.color,
-                  border: `1px solid ${statusMeta.color}`,
-                }}
-              />
-            </Tooltip>
-            <Tooltip title={isCopied ? 'Recommendation copied!' : 'Copy recommendation to clipboard'} arrow>
-              <Chip
-                icon={
-                  isCopied ? (
-                    <Check size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
-                  ) : (
-                    <Copy size={14} color={brandTokens.colors.serumMint} aria-hidden="true" />
-                  )
-                }
-                label={`Recommendation: ${cognitiveState.recommendation}`}
-                aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `Copy AI Recommendation: ${cognitiveState.recommendation}`}
-                onClick={handleCopyRecommendation}
-                onKeyDown={(e) => {
-                  if (e.key === ' ' || e.key === 'Enter') {
-                    e.preventDefault();
-                    void handleCopyRecommendation();
-                  }
-                }}
-                tabIndex={0}
-                sx={{
-                  backgroundColor: alpha(brandTokens.colors.voidNavy, 0.65),
-                  color: brandTokens.colors.serumMint,
-                  border: `1px solid ${brandTokens.borders.mint}`,
-                  cursor: 'copy',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    backgroundColor: alpha(brandTokens.colors.voidNavy, 0.85),
-                    transform: 'translateY(-1px)',
-                    borderColor: brandTokens.colors.ritualCyan,
-                    boxShadow: `0 0 12px ${alpha(brandTokens.colors.ritualCyan, 0.3)}`,
-                  },
-                  '&:active': {
-                    transform: 'translateY(0)',
-                  },
-                  ...(isCopied && {
-                    animation: 'copy-success 0.4s ease-out',
-                    '@keyframes copy-success': {
-                      '0%': { transform: 'scale(1)' },
-                      '50%': { transform: 'scale(1.05)', boxShadow: `0 0 20px ${alpha(brandTokens.colors.serumMint, 0.4)}` },
-                      '100%': { transform: 'scale(1)' },
-                    }
-                  }),
-                }}
-              />
-            </Tooltip>
-          </Box>
+              {isSipLogged ? '[AFTERCARE] Sip logged' : '[AFTERCARE] Log a sip'}
+            </Button>
+          </Tooltip>
         </Box>
 
-        <Collapse in={Boolean(errorMessage)}>
+        {(httpError !== null || socketState === 'closed') && (
+          <Alert
+            severity="warning"
+            icon={<AlertTriangle size={20} aria-hidden="true" />}
+            action={
+              <Button color="inherit" variant="outlined" onClick={handleRetry} sx={{ minHeight: 40 }}>
+                Retry
+              </Button>
+            }
+            sx={{
+              alignItems: 'center',
+              borderRadius: '12px',
+              color: brandTokens.text.primary,
+              backgroundColor: alpha(brandTokens.colors.giltEdge, 0.06),
+              border: `1px solid ${alpha(brandTokens.colors.giltEdge, 0.55)}`,
+              '& .MuiAlert-icon': { color: brandTokens.colors.giltEdge },
+              '& .MuiAlert-action': { color: brandTokens.colors.giltEdge },
+            }}
+          >
+            {httpError && (
+              <Typography sx={{ ...monoSx, fontSize: '0.875rem', fontWeight: 600, color: brandTokens.colors.giltEdge }}>
+                {httpError}
+              </Typography>
+            )}
+            {socketState === 'closed' && (
+              <Typography sx={{ ...monoSx, fontSize: '0.875rem', fontWeight: 600, color: brandTokens.colors.giltEdge }}>
+                {`Failed: WebSocket ${SOCKET_ENDPOINT} closed. Live updates stopped.`}
+              </Typography>
+            )}
+            <Typography sx={{ fontSize: '0.9375rem' }}>
+              {lastUpdated
+                ? `Values shown are from ${formatClockTime(lastUpdated)}.`
+                : 'Load, energy and attention are unknown until the service responds.'}
+            </Typography>
+            <Typography sx={{ fontSize: '0.9375rem', color: brandTokens.text.secondary }}>
+              {`Next: check that the adhd-dashboard service is running at ${dashboardApiUrl}, then retry.`}
+            </Typography>
+          </Alert>
+        )}
+
+        <Collapse in={Boolean(errorMessage)} unmountOnExit>
           <Alert
             severity="error"
             icon={<AlertTriangle size={20} aria-hidden="true" />}
@@ -641,29 +403,8 @@ function DashboardApp() {
                 'aria-label': 'Dismiss error notification',
               },
             }}
-            action={
-              connectionStatus === 'degraded' ? (
-                <Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow describeChild>
-                  <Button
-                    color="inherit"
-                    size="small"
-                    onClick={handleReconnect}
-                    aria-label="Retry connection to daemon"
-                    sx={{
-                      '&:focus-visible': {
-                        outline: `2px solid ${brandTokens.colors.errorRed}`,
-                        outlineOffset: 2,
-                      },
-                    }}
-                  >
-                    RECONNECT
-                  </Button>
-                </Tooltip>
-              ) : null
-            }
             sx={{
-              mb: 3,
-              borderRadius: 3,
+              borderRadius: '12px',
               backgroundColor: alpha(brandTokens.colors.errorRed, 0.08),
               border: `1px solid ${brandTokens.colors.errorRed}`,
             }}
@@ -672,261 +413,60 @@ function DashboardApp() {
           </Alert>
         </Collapse>
 
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          {metricCards.map((metric) => (
-            <Grid item xs={12} md={6} lg={3} key={metric.label}>
-              <Tooltip title={metric.tooltip} arrow describeChild>
-                <Paper
-                  tabIndex={0}
-                  aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : 'N/A'}%. ${metric.roast}`}
-                  sx={{
-                    p: 2.5,
-                    minHeight: 140,
-                    borderRadius: 3,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 1.2,
-                    border: `1px solid ${brandTokens.borders.subtle}`,
-                    background: brandTokens.gradients.focusCard,
-                    cursor: 'help',
-                    outline: 'none',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover, &:focus-visible': {
-                      borderColor: metric.accentColor,
-                      transform: 'translateY(-4px)',
-                      boxShadow: `0 0 20px ${alpha(metric.accentColor, 0.2)}`,
-                    },
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      {metric.icon}
-                    </Box>
-                    <Box>
-                      <Typography variant="h6">
-                        {metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">{metric.label}</Typography>
-                    </Box>
-                  </Box>
-                  <Typography className="dopemux-roast">{metric.roast}</Typography>
-                  <Typography className="dopemux-aftercare">Logged. Hydrate.</Typography>
-                </Paper>
-              </Tooltip>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Paper
-          sx={{
-            mb: 3,
-            p: 2.5,
-            borderRadius: 3,
-            border: `1px solid ${brandTokens.borders.subtle}`,
-            background: brandTokens.gradients.focusCard,
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-            <Bell size={18} aria-hidden="true" />
-            <Typography
-              variant="h6"
-              ref={feedHeadingRef}
-              tabIndex={-1}
-              sx={{ outline: 'none' }}
-            >
-              Live Signal Feed
-            </Typography>
-            <Tooltip title="System is actively listening for ConPort and ADHD event traffic" arrow>
+        <Grid container spacing={2.5} id="main-dashboard" component="main" tabIndex={-1} sx={{ outline: 'none' }}>
+          <Grid item xs={12} lg={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <LoadInstrument load={reading.load} prediction={reading.prediction} recommendation={reading.recommendation} />
+            {!isCritical && (
+              <AttentionStatePanel energyLevel={reading.energyLevel} attentionState={reading.attentionState} />
+            )}
+          </Grid>
+          <Grid item xs={12} lg={7}>
+            <TaskSequencer cognitiveState={{ status: status ?? 'unknown' }} onError={setErrorMessage} />
+          </Grid>
+          {isCritical ? (
+            <Grid item xs={12}>
               <Box
-                tabIndex={0}
-                aria-label="System is actively listening for ConPort and ADHD event traffic"
                 sx={{
                   display: 'flex',
-                  gap: 0.5,
-                  cursor: 'help',
-                  outline: 'none',
-                  borderRadius: 1,
-                  px: 0.5,
-                  '&:focus-visible': {
-                    boxShadow: `0 0 0 2px ${brandTokens.colors.ritualCyan}`,
-                  },
-                  '& span': {
-                    width: 4,
-                    height: 4,
-                    borderRadius: '50%',
-                    bgcolor: brandTokens.colors.ritualCyan,
-                    animation: 'listeningPulse 1.4s infinite ease-in-out both',
-                  },
-                  '& span:nth-of-type(1)': { animationDelay: '-0.32s' },
-                  '& span:nth-of-type(2)': { animationDelay: '-0.16s' },
-                  '@keyframes listeningPulse': {
-                    '0%, 80%, 100%': { transform: 'scale(0)' },
-                    '40%': { transform: 'scale(1.0)' },
-                  },
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  px: 2,
+                  py: 1.5,
+                  border: `1px dashed ${brandTokens.borders.strong}`,
+                  borderRadius: '12px',
                 }}
               >
-                <span />
-                <span />
-                <span />
-              </Box>
-            </Tooltip>
-            {lastSignalTime && (
-              <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.8 }}>
-                Last signal: {formatTimestamp(lastSignalTime.toISOString())}
-              </Typography>
-            )}
-            {isLoading && (
-              <CircularProgress
-                size={16}
-                sx={{ ml: 'auto' }}
-                aria-label="Loading updates"
-              />
-            )}
-            {notifications.length > 0 && (
-              <Tooltip title={isConfirmingClear ? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'} arrow>
-                <Chip
-                  size="small"
+                <Typography sx={{ ...monoSx, flex: '1 1 320px', fontSize: '0.8125rem', color: brandTokens.text.secondary }}>
+                  Hidden while load is critical: attention state, signal feed, team board.
+                </Typography>
+                <Button
                   variant="outlined"
-                  icon={isConfirmingClear ? <AlertTriangle size={14} aria-hidden="true" /> : <Trash2 size={14} aria-hidden="true" />}
-                  label={isConfirmingClear ? 'Confirm Clear?' : 'Clear'}
-                  onClick={() => {
-                    if (!isConfirmingClear) {
-                      setIsConfirmingClear(true);
-                      if (clearConfirmTimeoutRef.current) clearTimeout(clearConfirmTimeoutRef.current);
-                      clearConfirmTimeoutRef.current = setTimeout(() => {
-                        setIsConfirmingClear(false);
-                        clearConfirmTimeoutRef.current = null;
-                      }, 3000);
-                      return;
-                    }
-                    if (clearConfirmTimeoutRef.current) {
-                      clearTimeout(clearConfirmTimeoutRef.current);
-                      clearConfirmTimeoutRef.current = null;
-                    }
-                    setIsConfirmingClear(false);
-                    setNotifications([]);
-                    feedHeadingRef.current?.focus();
-                  }}
-                  onKeyDown={(e) => {
-                    if (isConfirmingClear && e.key === 'Escape') {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsConfirmingClear(false);
-                      if (clearConfirmTimeoutRef.current) {
-                        clearTimeout(clearConfirmTimeoutRef.current);
-                        clearConfirmTimeoutRef.current = null;
-                      }
-                    }
-                  }}
-                  aria-label={isConfirmingClear ? 'Confirm clear all notifications' : 'Clear all notifications'}
-                  sx={{
-                    ml: isLoading ? 1 : 'auto',
-                    cursor: 'pointer',
-                    bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed, 0.1),
-                    color: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed,
-                    borderColor: isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed,
-                    transition: 'all 0.2s ease',
-                    ...(isConfirmingClear && {
-                      animation: 'clear-pulse 2s infinite',
-                      '@keyframes clear-pulse': {
-                        '0%': { transform: 'scale(1)' },
-                        '50%': { transform: 'scale(1.03)', boxShadow: `0 0 12px ${alpha(brandTokens.colors.saintGold, 0.4)}` },
-                        '100%': { transform: 'scale(1)' },
-                      }
-                    }),
-                    '&:hover': {
-                      bgcolor: alpha(isConfirmingClear ? brandTokens.colors.saintGold : brandTokens.colors.errorRed, 0.2),
-                    },
-                  }}
-                />
-              </Tooltip>
-            )}
-          </Box>
-          {notifications.length > 0 ? (
-            <Box
-              sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}
-              role="log"
-              aria-live="polite"
-            >
-              {notifications.map((notification) => {
-                const severityColor = getNotificationColor(notification.notificationType);
-                const notificationLabel = `${formatTimestamp(notification.timestamp)} ${notification.notificationType}: ${notification.message}`;
-                return (
-                  <Fade in={true} key={notification.id}>
-                    <Tooltip title="Dismiss notification" arrow describeChild>
-                      <Chip
-                        icon={getNotificationIcon(notification.notificationType)}
-                        label={notificationLabel}
-                        aria-label={notificationLabel}
-                        variant="outlined"
-                        onDelete={() => handleDismissNotification(notification.id)}
-                        deleteIcon={<X size={14} aria-hidden="true" />}
-                        tabIndex={0}
-                        sx={{
-                          maxWidth: '100%',
-                          borderColor: alpha(severityColor, 0.6),
-                          color: severityColor,
-                          backgroundColor: alpha(severityColor, 0.08),
-                          '& .MuiChip-deleteIcon': {
-                            color: alpha(severityColor, 0.7),
-                            '&:hover': {
-                              color: severityColor,
-                            },
-                          },
-                        }}
-                      />
-                    </Tooltip>
-                  </Fade>
-                );
-              })}
-            </Box>
+                  onClick={() => setShowAllPanels(true)}
+                  aria-label="Show all panels"
+                  sx={{ minHeight: 40, borderColor: brandTokens.borders.strong, color: brandTokens.text.secondary }}
+                >
+                  Show all
+                </Button>
+              </Box>
+            </Grid>
           ) : (
-            <Typography variant="body2" color="text.secondary">
-              Waiting for signals...
-            </Typography>
-          )}
-        </Paper>
-
-        <Grid
-          container
-          spacing={3}
-          id="main-dashboard"
-          component="main"
-          tabIndex={-1}
-          sx={{ outline: 'none' }}
-        >
-          <Grid item xs={12} lg={layout.compactMode ? 12 : 4}>
-            <CognitiveLoadGauge
-              load={cognitiveState.load}
-              status={cognitiveState.status}
-              recommendation={cognitiveState.recommendation}
-              onError={setErrorMessage}
-            />
-          </Grid>
-          <Grid item xs={12} lg={layout.compactMode ? 12 : 4}>
-            <TaskSequencer cognitiveState={cognitiveState} onError={setErrorMessage} />
-          </Grid>
-          {layout.showPredictions && (
-            <Grid item xs={12} lg={4}>
-              <PredictionPanel
-                prediction={cognitiveState.prediction}
-                currentLoad={cognitiveState.load}
-                onError={setErrorMessage}
+            <Grid item xs={12}>
+              <SignalFeed
+                notifications={notifications}
+                socketUrl={SOCKET_ENDPOINT}
+                socketState={socketState}
+                onDismiss={handleDismissNotification}
+                onClear={handleClearNotifications}
               />
             </Grid>
           )}
-          {layout.showTeamDashboard && !isMobile && (
+          {showTeamDashboard && (
             <Grid item xs={12}>
               <TeamDashboard onError={setErrorMessage} />
             </Grid>
           )}
         </Grid>
-
-        <Box sx={{ mt: 4, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Typography variant="body2" color="text.secondary" align="center">
-            Ultra UI Dashboard - Adaptive Interface for Cognitive Optimization
-          </Typography>
-        </Box>
       </Container>
     </ThemeProvider>
   );
