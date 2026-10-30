@@ -113,6 +113,30 @@
       "exit_code": 0,
       "bucket": "NOT_RUN",
       "note": "not in reach of this macro"
+    },
+    {
+      "command": "python3 scripts/audit/validate_audit_proof.py proof/MACRO-DMX-MEMORY-BRIDGE-001-R5/PROOF.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "embedded_audit schema 1/1 PASS"
+    },
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --proof-only --content-head bce150b58 --audited-head bce150b58 --proof-head <proof head> --base bce150b58 --head <proof head>",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "note": "only finding: proof_only_missing_signature (PROOF.json.sig absent, operator step); all changed paths within the proof-only allowlist"
+    },
+    {
+      "command": "git diff --check origin/main..HEAD (proof head)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": ""
+    },
+    {
+      "command": "signature and local acceptance",
+      "exit_code": 0,
+      "bucket": "NOT_RUN",
+      "note": "operator steps; PROOF.json is unsigned"
     }
   ],
   "codereview_status": "Independent final audit PASS_WITH_RISKS (grok-cli grok-4.5, tool-less, operator-approved route, one attempt). All 14 questions PASS. Coordinator (claude-opus-5-5) designed the key rule, re-read every diff and re-verified N1, N2, N5, N6 in source. No PAL codereview run.",
