@@ -1,0 +1,100 @@
+{
+  "schema": "dopemux.pulse.successor_lineage.v1",
+  "authority": "NONE",
+  "macro_id": "MACRO-DMX-PULSE-003",
+  "purpose": "clear the strict up-to-date gate of PR 1472 by a merge commit of main; re-audit the merged head",
+  "predecessor_pr": 1472,
+  "audit_1": {
+    "audited_head": "1d2219e8c894c5929ceba6ac5f2650dfe7ba2147",
+    "verdict": "PASS_WITH_RISKS",
+    "q3": "FAIL",
+    "accepted_risk": "F1, accepted by the operator 2026-10-22"
+  },
+  "audit_2": {
+    "audited_head": "b5dc04dd7d9560ed31a2dc0fd2192218c727ea01",
+    "verdict": "PASS_WITH_RISKS",
+    "findings": {
+      "N1": "OPEN",
+      "N2": "OPEN",
+      "N3": "OPEN",
+      "N4": "OPEN",
+      "N5": "OPEN"
+    },
+    "source": "proof/MACRO-DMX-PULSE-002-R2/AUDITOR_REPORT.md"
+  },
+  "signed_pr_head_before_merge": "ee00d36552c6f7a8ef2b83dc0165b8de97481e5a",
+  "main_tip_merged": "93050d135ffc2592000c1d0edef82b2912935525",
+  "merge_commit_M": "4b0c430674de4b428302fb010159cdc40a62f1c1",
+  "merge_tree_T": "5667dfbfe006df07e6239f0fcabef69927b8b541",
+  "parents_of_M": [
+    "ee00d36552c6f7a8ef2b83dc0165b8de97481e5a",
+    "93050d135ffc2592000c1d0edef82b2912935525"
+  ],
+  "merge_base_with_main": "93050d135ffc2592000c1d0edef82b2912935525",
+  "pinned_main_paths": 63,
+  "predecessor_files_sha256": {
+    "proof/MACRO-DMX-PULSE-001/PROOF.json": {
+      "at_signed_head": "81d061667abf1938695ef91d8442bd3f0a7475e271382e8fec1543b2986e5467",
+      "at_M": "81d061667abf1938695ef91d8442bd3f0a7475e271382e8fec1543b2986e5467"
+    },
+    "proof/MACRO-DMX-PULSE-001/PROOF.json.sig": {
+      "at_signed_head": "cec3beb220f910781ad4ed5d2fdb1bd2a69c4909403e2202698d9831756a38c6",
+      "at_M": "cec3beb220f910781ad4ed5d2fdb1bd2a69c4909403e2202698d9831756a38c6"
+    },
+    "proof/MACRO-DMX-PULSE-001/AUDITOR_REPORT.md": {
+      "at_signed_head": "209dc7ae962112b81cf9dab6dd53352b4bc40d4ebcbeb77934bbd2a00de6d6f0",
+      "at_M": "209dc7ae962112b81cf9dab6dd53352b4bc40d4ebcbeb77934bbd2a00de6d6f0"
+    },
+    "proof/MACRO-DMX-PULSE-002-R2/PROOF.json": {
+      "at_signed_head": "0672b38feb57717ffff8a5a60c35e5df0ae5a605457f6c389096c25f7333495a",
+      "at_M": "0672b38feb57717ffff8a5a60c35e5df0ae5a605457f6c389096c25f7333495a"
+    },
+    "proof/MACRO-DMX-PULSE-002-R2/PROOF.json.sig": {
+      "at_signed_head": "a61fa162e0c6ba6e329e3cc6793fb4111aefc99457e5e437a26dd69cd89629a9",
+      "at_M": "a61fa162e0c6ba6e329e3cc6793fb4111aefc99457e5e437a26dd69cd89629a9"
+    },
+    "proof/MACRO-DMX-PULSE-002-R2/AUDITOR_REPORT.md": {
+      "at_signed_head": "e7dec6626ff89b1b02f3c48c776d688d8517045e6b6c1cc01c65e0dbb437a6fe",
+      "at_M": "e7dec6626ff89b1b02f3c48c776d688d8517045e6b6c1cc01c65e0dbb437a6fe"
+    },
+    "proof/pr_merge/embedded-audit/pr-1472/PROOF.json": {
+      "at_signed_head": "480a43cae0baba50bbd0fca1133d032ed266d943b85cd33a4b8c914fbe2ab8ec",
+      "at_M": "480a43cae0baba50bbd0fca1133d032ed266d943b85cd33a4b8c914fbe2ab8ec"
+    },
+    "proof/pr_merge/embedded-audit/pr-1472/PROOF.json.sig": {
+      "at_signed_head": "f6c425a3c300828727b637e856538884f29d04c23e4289ebd153b73fec9393bc",
+      "at_M": "f6c425a3c300828727b637e856538884f29d04c23e4289ebd153b73fec9393bc"
+    }
+  },
+  "cumulative_diff_sha256_now": "ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8",
+  "cumulative_diff_sha256_at_audit_2": "ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8",
+  "cumulative_diff_equal": true,
+  "successor_commits": [
+    {
+      "sha": "4b0c430674de4b428302fb010159cdc40a62f1c1",
+      "committed_at": "2026-10-30T00:35:14-07:00",
+      "subject": "Merge origin/main (93050d135) into feat/pulse-001 to satisfy strict up-to-date (PR 1472)"
+    },
+    {
+      "sha": "93050d135ffc2592000c1d0edef82b2912935525",
+      "committed_at": "2026-10-22T03:59:02-07:00",
+      "subject": "fix: Repo Renaissance integration — 12 verified repairs (pr-merge, docs-hygiene, agents, mcp, tests) (#1447)"
+    }
+  ],
+  "execution_record": {
+    "started_at": "2026-10-30T07:34:37Z",
+    "model_calls": 0,
+    "children_dispatched": 0,
+    "gate_incidents": [
+      "pre-commit range: first attempt crashed in the nodeenv bootstrap (no hook ran); the operator chose to fix the environment; rerun with an unchanged-hooks config copy using the system node passed (14 hooks)",
+      "git diff --check fails on two evidence files already on the PR head (R2 pack), not on M"
+    ],
+    "tsc": "NOT_RUN (declaration file unavailable in this session)"
+  },
+  "audit": {
+    "status": "NOT_RUN",
+    "route": "PROPOSED:AUDITOR_BINDING_PROPOSED.json",
+    "route_line_sent": true,
+    "route_line": "AUTHORIZE_MACRO_DMX_PULSE_003_AUDIT_ROUTE=grok-cli:grok-4.5:ONE_ATTEMPT (received verbatim before this pack was built)"
+  }
+}

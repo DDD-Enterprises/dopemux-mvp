@@ -1,0 +1,744 @@
+.............FFFF.FFFFFFFFF.FF.F.......FFFF............FFFFFFFF......... [ 62%]
+............................................                             [100%]
+==================================== ERRORS ====================================
+___ ERROR collecting services/adhd_engine/tests/test_attention_calibrator.py ___
+ImportError while importing test module '/Users/hue/code/dopemux-mvp/.worktrees/pulse-001-base/services/adhd_engine/tests/test_attention_calibrator.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services/adhd_engine/tests/test_attention_calibrator.py:6: in <module>
+    from services.adhd_engine.attention_calibrator import AttentionCalibrator, CalibrationSample
+E   ModuleNotFoundError: No module named 'services.adhd_engine.attention_calibrator'
+__________ ERROR collecting services/adhd_engine/tests/test_engine.py __________
+ImportError while importing test module '/Users/hue/code/dopemux-mvp/.worktrees/pulse-001-base/services/adhd_engine/tests/test_engine.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services/adhd_engine/tests/test_engine.py:6: in <module>
+    from ..engine import ADHDAccommodationEngine
+services/adhd_engine/engine.py:35: in <module>
+    from ml.data_collector import DataCollector
+E   ModuleNotFoundError: No module named 'ml'
+______ ERROR collecting services/adhd_engine/tests/test_feature_flags.py _______
+ImportError while importing test module '/Users/hue/code/dopemux-mvp/.worktrees/pulse-001-base/services/adhd_engine/tests/test_feature_flags.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services/adhd_engine/tests/test_feature_flags.py:16: in <module>
+    from adhd_engine.feature_flags import (
+E   ModuleNotFoundError: No module named 'adhd_engine.feature_flags'
+_____ ERROR collecting services/adhd_engine/tests/test_voice_assistant.py ______
+ImportError while importing test module '/Users/hue/code/dopemux-mvp/.worktrees/pulse-001-base/services/adhd_engine/tests/test_voice_assistant.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services/adhd_engine/tests/test_voice_assistant.py:3: in <module>
+    from services.adhd_engine.voice_assistant import VoiceAssistant
+E   ModuleNotFoundError: No module named 'services.adhd_engine.voice_assistant'
+=================================== FAILURES ===================================
+____________ TestMaxResults.test_scattered_attention_limits_results ____________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestMaxResults object at 0x111db29f0>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1129eb860>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1129eb7a0>
+
+    @pytest.mark.asyncio
+    async def test_scattered_attention_limits_results(self, adhd_service, redis_client):
+        """Scattered attention should limit results to 5."""
+        # Setup: User in scattered state
+        await redis_client.set("adhd:attention_state:user1", "scattered")
+
+        # Execute
+        max_results = await adhd_service.get_max_results("user1")
+
+        # Verify
+>       assert max_results == 5, "Scattered attention should limit to 5 results"
+E       AssertionError: Scattered attention should limit to 5 results
+E       assert 10 == 5
+
+services/adhd_engine/tests/test_adhd_config_service.py:51: AssertionError
+__________ TestMaxResults.test_focused_attention_allows_more_results ___________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestMaxResults object at 0x111db0110>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1129df650>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1129df6e0>
+
+    @pytest.mark.asyncio
+    async def test_focused_attention_allows_more_results(self, adhd_service, redis_client):
+        """Focused attention should allow 15 results."""
+        await redis_client.set("adhd:attention_state:user1", "focused")
+
+        max_results = await adhd_service.get_max_results("user1")
+
+>       assert max_results == 15, "Focused attention should allow 15 results"
+E       AssertionError: Focused attention should allow 15 results
+E       assert 10 == 15
+
+services/adhd_engine/tests/test_adhd_config_service.py:60: AssertionError
+___________ TestMaxResults.test_hyperfocused_allows_maximum_results ____________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestMaxResults object at 0x111db3830>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1129de9f0>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1129dea80>
+
+    @pytest.mark.asyncio
+    async def test_hyperfocused_allows_maximum_results(self, adhd_service, redis_client):
+        """Hyperfocused attention should allow 40 results."""
+        await redis_client.set("adhd:attention_state:user1", "hyperfocused")
+
+        max_results = await adhd_service.get_max_results("user1")
+
+>       assert max_results == 40, "Hyperfocused should allow 40 results"
+E       AssertionError: Hyperfocused should allow 40 results
+E       assert 10 == 40
+
+services/adhd_engine/tests/test_adhd_config_service.py:69: AssertionError
+______________ TestMaxResults.test_overwhelmed_minimizes_results _______________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestMaxResults object at 0x111db3b00>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x112910890>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x112912630>
+
+    @pytest.mark.asyncio
+    async def test_overwhelmed_minimizes_results(self, adhd_service, redis_client):
+        """Overwhelmed state should minimize results to 3."""
+        await redis_client.set("adhd:attention_state:user1", "overwhelmed")
+
+        max_results = await adhd_service.get_max_results("user1")
+
+>       assert max_results == 3, "Overwhelmed should minimize to 3 results"
+E       AssertionError: Overwhelmed should minimize to 3 results
+E       assert 10 == 3
+
+services/adhd_engine/tests/test_adhd_config_service.py:78: AssertionError
+________ TestComplexityThreshold.test_very_low_energy_lowers_threshold _________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestComplexityThreshold object at 0x111d7f6e0>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x112911e50>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x112911ee0>
+
+    @pytest.mark.asyncio
+    async def test_very_low_energy_lowers_threshold(self, adhd_service, redis_client):
+        """Very low energy should set threshold to 0.3 (only simple tasks)."""
+        await redis_client.set("adhd:energy_level:user1", "very_low")
+
+        threshold = await adhd_service.get_complexity_threshold("user1")
+
+>       assert threshold == 0.3, "Very low energy should lower threshold to 0.3"
+E       AssertionError: Very low energy should lower threshold to 0.3
+E       assert 0.7 == 0.3
+
+services/adhd_engine/tests/test_adhd_config_service.py:99: AssertionError
+__________ TestComplexityThreshold.test_low_energy_moderate_threshold __________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestComplexityThreshold object at 0x111db25d0>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x112910fb0>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x112911070>
+
+    @pytest.mark.asyncio
+    async def test_low_energy_moderate_threshold(self, adhd_service, redis_client):
+        """Low energy should set threshold to 0.5."""
+        await redis_client.set("adhd:energy_level:user1", "low")
+
+        threshold = await adhd_service.get_complexity_threshold("user1")
+
+>       assert threshold == 0.5, "Low energy threshold should be 0.5"
+E       AssertionError: Low energy threshold should be 0.5
+E       assert 0.7 == 0.5
+
+services/adhd_engine/tests/test_adhd_config_service.py:108: AssertionError
+________ TestComplexityThreshold.test_high_energy_allows_complex_tasks _________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestComplexityThreshold object at 0x111db0500>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x112913f50>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x112911be0>
+
+    @pytest.mark.asyncio
+    async def test_high_energy_allows_complex_tasks(self, adhd_service, redis_client):
+        """High energy should allow complex tasks (0.9)."""
+        await redis_client.set("adhd:energy_level:user1", "high")
+
+        threshold = await adhd_service.get_complexity_threshold("user1")
+
+>       assert threshold == 0.9, "High energy should allow 0.9 complexity"
+E       AssertionError: High energy should allow 0.9 complexity
+E       assert 0.7 == 0.9
+
+services/adhd_engine/tests/test_adhd_config_service.py:117: AssertionError
+____________ TestComplexityThreshold.test_hyperfocus_removes_limits ____________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestComplexityThreshold object at 0x111ec14f0>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1127f0920>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1127f13a0>
+
+    @pytest.mark.asyncio
+    async def test_hyperfocus_removes_limits(self, adhd_service, redis_client):
+        """Hyperfocus should remove complexity limits (1.0)."""
+        await redis_client.set("adhd:energy_level:user1", "hyperfocus")
+
+        threshold = await adhd_service.get_complexity_threshold("user1")
+
+>       assert threshold == 1.0, "Hyperfocus should allow any complexity"
+E       AssertionError: Hyperfocus should allow any complexity
+E       assert 0.7 == 1.0
+
+services/adhd_engine/tests/test_adhd_config_service.py:126: AssertionError
+_______________ TestContextDepth.test_scattered_minimizes_depth ________________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestContextDepth object at 0x111ec2030>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1127f1f40>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1127f0cb0>
+
+    @pytest.mark.asyncio
+    async def test_scattered_minimizes_depth(self, adhd_service, redis_client):
+        """Scattered attention should minimize context depth to 1."""
+        await redis_client.set("adhd:attention_state:user1", "scattered")
+
+        depth = await adhd_service.get_context_depth("user1")
+
+>       assert depth == 1, "Scattered should limit depth to 1 level"
+E       AssertionError: Scattered should limit depth to 1 level
+E       assert 2 == 1
+
+services/adhd_engine/tests/test_adhd_config_service.py:139: AssertionError
+_____________ TestContextDepth.test_focused_allows_standard_depth ______________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestContextDepth object at 0x111ec2420>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1127c1f10>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1127f2900>
+
+    @pytest.mark.asyncio
+    async def test_focused_allows_standard_depth(self, adhd_service, redis_client):
+        """Focused attention should allow 3 levels."""
+        await redis_client.set("adhd:attention_state:user1", "focused")
+
+        depth = await adhd_service.get_context_depth("user1")
+
+>       assert depth == 3, "Focused should allow 3 levels"
+E       AssertionError: Focused should allow 3 levels
+E       assert 2 == 3
+
+services/adhd_engine/tests/test_adhd_config_service.py:148: AssertionError
+__________ TestContextDepth.test_hyperfocused_allows_deep_exploration __________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestContextDepth object at 0x111ec2870>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x112906600>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1129050a0>
+
+    @pytest.mark.asyncio
+    async def test_hyperfocused_allows_deep_exploration(self, adhd_service, redis_client):
+        """Hyperfocused should allow 5 levels for deep dives."""
+        await redis_client.set("adhd:attention_state:user1", "hyperfocused")
+
+        depth = await adhd_service.get_context_depth("user1")
+
+>       assert depth == 5, "Hyperfocused should allow 5 levels"
+E       AssertionError: Hyperfocused should allow 5 levels
+E       assert 2 == 5
+
+services/adhd_engine/tests/test_adhd_config_service.py:157: AssertionError
+_________ TestBreakSuggestions.test_suggests_break_after_max_duration __________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestBreakSuggestions object at 0x111ec2cf0>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x112907da0>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x112907140>
+
+    @pytest.mark.asyncio
+    async def test_suggests_break_after_max_duration(self, adhd_service, redis_client):
+        """Should suggest break after max task duration."""
+        # Setup: User profile with 90min max duration
+        profile = {
+            "user_id": "user1",
+            "optimal_task_duration": 25,
+            "max_task_duration": 90
+        }
+        await redis_client.set("adhd:profile:user1", json.dumps(profile))
+
+        # Set last break to 95 minutes ago (exceeds max)
+        last_break = (datetime.now() - timedelta(minutes=95)).isoformat()
+        await redis_client.set("adhd:last_break:user1", last_break)
+
+        # Execute
+        should_break, reason = await adhd_service.should_suggest_break("user1")
+
+        # Verify
+>       assert should_break is True, "Should suggest break after max duration"
+E       AssertionError: Should suggest break after max duration
+E       assert False is True
+
+services/adhd_engine/tests/test_adhd_config_service.py:182: AssertionError
+_________ TestBreakSuggestions.test_suggests_break_for_very_low_energy _________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestBreakSuggestions object at 0x111ec3530>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1129049e0>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x112905580>
+
+    @pytest.mark.asyncio
+    async def test_suggests_break_for_very_low_energy(self, adhd_service, redis_client):
+        """Should suggest break when energy is very low."""
+        await redis_client.set("adhd:energy_level:user1", "very_low")
+
+        should_break, reason = await adhd_service.should_suggest_break("user1")
+
+>       assert should_break is True, "Should suggest break for very low energy"
+E       AssertionError: Should suggest break for very low energy
+E       assert False is True
+
+services/adhd_engine/tests/test_adhd_config_service.py:192: AssertionError
+________________ TestCaching.test_caching_reduces_redis_queries ________________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestCaching object at 0x111ec3d70>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1127f0cb0>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1127f3bf0>
+
+    @pytest.mark.asyncio
+    async def test_caching_reduces_redis_queries(self, adhd_service, redis_client):
+        """Verify caching works and reduces Redis queries."""
+        await redis_client.set("adhd:attention_state:user1", "focused")
+
+        # First call - should query Redis
+        result1 = await adhd_service._get_attention_state("user1")
+>       assert result1 == "focused"
+E       AssertionError: assert 'transitioning' == 'focused'
+E
+E         - focused
+E         + transitioning
+
+services/adhd_engine/tests/test_adhd_config_service.py:219: AssertionError
+___________________ TestCaching.test_cache_expires_after_ttl ___________________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestCaching object at 0x111f9d640>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1127f3590>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1127f1700>
+
+    @pytest.mark.asyncio
+    async def test_cache_expires_after_ttl(self, adhd_service, redis_client):
+        """Verify cache expires after 5-minute TTL."""
+        await redis_client.set("adhd:attention_state:user1", "focused")
+
+        # First call
+        result1 = await adhd_service._get_attention_state("user1")
+>       assert result1 == "focused"
+E       AssertionError: assert 'transitioning' == 'focused'
+E
+E         - focused
+E         + transitioning
+
+services/adhd_engine/tests/test_adhd_config_service.py:238: AssertionError
+_________________ TestStateSummary.test_complete_state_summary _________________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestStateSummary object at 0x111ec3ec0>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x112910920>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x112913b00>
+
+    @pytest.mark.asyncio
+    async def test_complete_state_summary(self, adhd_service, redis_client):
+        """Should return complete state summary with all fields."""
+        # Setup state
+        await redis_client.set("adhd:energy_level:user1", "medium")
+        await redis_client.set("adhd:attention_state:user1", "focused")
+
+        profile = {
+            "user_id": "user1",
+            "optimal_task_duration": 25,
+            "distraction_sensitivity": 0.6
+        }
+        await redis_client.set("adhd:profile:user1", json.dumps(profile))
+
+        # Execute
+        summary = await adhd_service.get_current_state_summary("user1")
+
+        # Verify all fields present
+        assert summary["user_id"] == "user1"
+        assert summary["energy_level"] == "medium"
+>       assert summary["attention_state"] == "focused"
+E       AssertionError: assert 'transitioning' == 'focused'
+E
+E         - focused
+E         + transitioning
+
+services/adhd_engine/tests/test_adhd_config_service.py:292: AssertionError
+___ TestUserProfile.test_cognitive_load_adjusts_for_distraction_sensitivity ____
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestUserProfile object at 0x111f9da00>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x112910b60>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x112910a10>
+
+    @pytest.mark.asyncio
+    async def test_cognitive_load_adjusts_for_distraction_sensitivity(self, adhd_service, redis_client):
+        """High distraction sensitivity should lower cognitive load threshold."""
+        # High sensitivity profile
+        profile = {
+            "user_id": "user1",
+            "distraction_sensitivity": 0.9  # Very high sensitivity
+        }
+        await redis_client.set("adhd:profile:user1", json.dumps(profile))
+
+        threshold = await adhd_service.get_cognitive_load_threshold("user1")
+
+        # Higher sensitivity = lower threshold
+        # Formula: max(0.5, 1.0 - (0.9 * 0.5)) = max(0.5, 0.55) = 0.55
+>       assert 0.5 <= threshold <= 0.6, "High sensitivity should lower threshold"
+E       AssertionError: High sensitivity should lower threshold
+E       assert 0.8 <= 0.6
+
+services/adhd_engine/tests/test_adhd_config_service.py:405: AssertionError
+__________________ TestUserProfile.test_profile_caching_works __________________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestUserProfile object at 0x111f9c950>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1129dfbf0>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1129de7e0>
+
+    @pytest.mark.asyncio
+    async def test_profile_caching_works(self, adhd_service, redis_client):
+        """Profile should be cached for 5 minutes."""
+        profile = {"user_id": "user1", "optimal_task_duration": 30}
+        await redis_client.set("adhd:profile:user1", json.dumps(profile))
+
+        # First call - loads from Redis
+        profile1 = await adhd_service._get_user_profile("user1")
+>       assert profile1["optimal_task_duration"] == 30
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+
+services/adhd_engine/tests/test_adhd_config_service.py:415: TypeError
+_________________ TestIntegration.test_end_to_end_state_query __________________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestIntegration object at 0x111f9cda0>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x1129de810>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x1129de6c0>
+
+    @pytest.mark.asyncio
+    async def test_end_to_end_state_query(self, adhd_service, redis_client):
+        """
+        Test complete workflow:
+        1. ADHD Engine sets state in Redis
+        2. ADHDConfigService queries state
+        3. Returns appropriate accommodations
+        """
+        # Simulate ADHD Engine setting state
+        await redis_client.set("adhd:attention_state:developer1", "scattered")
+        await redis_client.set("adhd:energy_level:developer1", "low")
+
+        profile = {
+            "user_id": "developer1",
+            "optimal_task_duration": 25,
+            "max_task_duration": 90,
+            "distraction_sensitivity": 0.7
+        }
+        await redis_client.set("adhd:profile:developer1", json.dumps(profile))
+
+        # Query accommodations
+        summary = await adhd_service.get_current_state_summary("developer1")
+
+        # Verify appropriate accommodations
+>       assert summary["energy_level"] == "low"
+E       AssertionError: assert 'medium' == 'low'
+E
+E         - low
+E         + medium
+
+services/adhd_engine/tests/test_adhd_config_service.py:453: AssertionError
+______________ TestFocusModeLimit.test_focus_mode_halves_results _______________
+
+self = <services.adhd_engine.tests.test_adhd_config_service.TestFocusModeLimit object at 0x111f9d1f0>
+adhd_service = <adhd_engine.adhd_config_service.ADHDConfigService object at 0x112907aa0>
+redis_client = <services.adhd_engine.inmemory_redis.InMemoryRedis object at 0x112906450>
+
+    @pytest.mark.asyncio
+    async def test_focus_mode_halves_results(self, adhd_service, redis_client):
+        """Focus mode should show half the normal results."""
+        await redis_client.set("adhd:attention_state:user1", "focused")
+
+        # Normal: 15 results
+        normal_limit = await adhd_service.get_max_results("user1")
+>       assert normal_limit == 15
+E       assert 10 == 15
+
+services/adhd_engine/tests/test_adhd_config_service.py:472: AssertionError
+_____________ TestAPICaching.test_energy_level_cache_miss_and_hit ______________
+
+self = <services.adhd_engine.tests.test_api_caching.TestAPICaching object at 0x11257aa50>
+client = <services.adhd_engine.tests.test_api_caching.AsyncASGITestClient object at 0x112b02ab0>
+cache_stub = <services.adhd_engine.api.routes._InMemoryCache object at 0x112b05c10>
+mock_predictive_engine = <AsyncMock name='mock.predictive_engine' id='4608514752'>
+
+    async def test_energy_level_cache_miss_and_hit(self, client, cache_stub, mock_predictive_engine):
+        """Test energy level endpoint cache miss then hit."""
+        # Mock the cache and engine
+        mock_engine = AsyncMock()
+        with patch('adhd_engine.main.engine', mock_engine):
+            mock_engine.current_energy_levels = {"test_user": "MEDIUM"}
+            mock_engine.predictive_engine = mock_predictive_engine
+
+            # First call - cache miss
+            response = await client.get("/api/v1/energy-level/test_user", headers={"X-API-Key": "test"})
+>           assert response.status_code == 200
+E           assert 503 == 200
+E            +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+services/adhd_engine/tests/test_api_caching.py:93: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-10-22 20:16:00,681 INFO adhd-engine httpx rid=- task=- workspace=- HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1740 HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+________________ TestAPICaching.test_attention_state_cache_hit _________________
+
+self = <services.adhd_engine.tests.test_api_caching.TestAPICaching object at 0x11271d7c0>
+client = <services.adhd_engine.tests.test_api_caching.AsyncASGITestClient object at 0x112a7dac0>
+cache_stub = <services.adhd_engine.api.routes._InMemoryCache object at 0x112a7efc0>
+mock_predictive_engine = <AsyncMock name='mock.predictive_engine' id='4607960384'>
+
+    async def test_attention_state_cache_hit(self, client, cache_stub, mock_predictive_engine):
+        """Test attention state endpoint cache hit."""
+        mock_engine = AsyncMock()
+        mock_engine.current_attention_states = {"test_user": "FOCUSED"}
+        mock_engine.predictive_engine = mock_predictive_engine
+        with patch('adhd_engine.main.engine', mock_engine):
+
+            # Populate cache
+            cache_key = "adhd:attention:test_user"
+            cached_response = EnergyLevelResponse(  # Using EnergyLevelResponse as example
+                energy_level="HIGH",
+                confidence=0.8,
+                last_updated=datetime.now(timezone.utc),
+                ml_prediction=MLPrediction(
+                    predicted_value="HIGH",
+                    confidence=0.85,
+                    explanation="Test",
+                    ml_used=True
+                )
+            )
+            await cache_stub.set(cache_key, cached_response.model_dump_json())
+
+            # Call should return cached data
+            response = await client.get("/api/v1/attention-state/test_user", headers={"X-API-Key": "test"})
+>           assert response.status_code == 200
+E           assert 503 == 200
+E            +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+services/adhd_engine/tests/test_api_caching.py:133: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-10-22 20:16:00,686 INFO adhd-engine httpx rid=- task=- workspace=- HTTP Request: GET http://testserver/api/v1/attention-state/test_user "HTTP/1.1 503 Service Unavailable"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1740 HTTP Request: GET http://testserver/api/v1/attention-state/test_user "HTTP/1.1 503 Service Unavailable"
+__________ TestAPICaching.test_break_recommendation_cache_with_params __________
+
+self = <services.adhd_engine.tests.test_api_caching.TestAPICaching object at 0x11271dc40>
+client = <services.adhd_engine.tests.test_api_caching.AsyncASGITestClient object at 0x1129580e0>
+cache_stub = <services.adhd_engine.api.routes._InMemoryCache object at 0x1129580b0>
+mock_predictive_engine = <AsyncMock name='mock.predictive_engine' id='4606755616'>
+
+    async def test_break_recommendation_cache_with_params(self, client, cache_stub, mock_predictive_engine):
+        """Test break recommendation endpoint cache with work_duration param."""
+        mock_engine = AsyncMock()
+        mock_engine.user_profiles = {"test_user": ADHDProfile(user_id="test_user")}
+        mock_engine.predictive_engine = mock_predictive_engine
+        with patch('adhd_engine.main.engine', mock_engine):
+
+            # Test cache miss
+            response = await client.post("/api/v1/recommend-break",
+                                 json={"user_id": "test_user", "work_duration": 30},
+                                 headers={"X-API-Key": "test"})
+>           assert response.status_code == 200
+E           assert 503 == 200
+E            +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+services/adhd_engine/tests/test_api_caching.py:146: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-10-22 20:16:00,691 INFO adhd-engine httpx rid=- task=- workspace=- HTTP Request: POST http://testserver/api/v1/recommend-break "HTTP/1.1 503 Service Unavailable"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1740 HTTP Request: POST http://testserver/api/v1/recommend-break "HTTP/1.1 503 Service Unavailable"
+_____________ TestAPICaching.test_profile_update_invalidates_cache _____________
+
+self = <services.adhd_engine.tests.test_api_caching.TestAPICaching object at 0x11271e0c0>
+client = <services.adhd_engine.tests.test_api_caching.AsyncASGITestClient object at 0x1128f6090>
+cache_stub = <services.adhd_engine.api.routes._InMemoryCache object at 0x1128f5bb0>
+mock_predictive_engine = <AsyncMock name='mock.predictive_engine' id='4606351344'>
+
+    async def test_profile_update_invalidates_cache(self, client, cache_stub, mock_predictive_engine):
+        """Test that profile updates invalidate user caches."""
+        mock_engine = AsyncMock()
+        mock_engine.user_profiles = {}
+        mock_engine.predictive_engine = mock_predictive_engine
+        with patch('adhd_engine.main.engine', mock_engine):
+
+            # Create profile
+            response = await client.post("/api/v1/user-profile",
+                                 json={"user_id": "test_user", "optimal_task_duration": 30},
+                                 headers={"X-API-Key": "test"})
+>           assert response.status_code == 200
+E           assert 503 == 200
+E            +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+services/adhd_engine/tests/test_api_caching.py:164: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-10-22 20:16:00,696 INFO adhd-engine httpx rid=- task=- workspace=- HTTP Request: POST http://testserver/api/v1/user-profile "HTTP/1.1 503 Service Unavailable"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1740 HTTP Request: POST http://testserver/api/v1/user-profile "HTTP/1.1 503 Service Unavailable"
+___________ TestAPICaching.test_backward_compatibility_no_ml_engine ____________
+
+self = <services.adhd_engine.tests.test_api_caching.TestAPICaching object at 0x11271e4e0>
+client = <services.adhd_engine.tests.test_api_caching.AsyncASGITestClient object at 0x112aab260>
+cache_stub = <services.adhd_engine.api.routes._InMemoryCache object at 0x112aabe60>
+
+    async def test_backward_compatibility_no_ml_engine(self, client, cache_stub):
+        """Test that endpoints work without predictive engine (backward compatibility)."""
+        mock_engine = AsyncMock()
+        mock_engine.current_energy_levels = {"test_user": "LOW"}
+        mock_engine.predictive_engine = None  # No ML engine
+        with patch('adhd_engine.main.engine', mock_engine):
+
+            response = await client.get("/api/v1/energy-level/test_user", headers={"X-API-Key": "test"})
+>           assert response.status_code == 200
+E           assert 503 == 200
+E            +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+services/adhd_engine/tests/test_api_caching.py:178: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-10-22 20:16:00,701 INFO adhd-engine httpx rid=- task=- workspace=- HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1740 HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+____________ TestAPICaching.test_cache_failure_graceful_degradation ____________
+
+self = <services.adhd_engine.tests.test_api_caching.TestAPICaching object at 0x11271e930>
+client = <services.adhd_engine.tests.test_api_caching.AsyncASGITestClient object at 0x112aa26f0>
+mock_predictive_engine = <AsyncMock name='mock.predictive_engine' id='4608106928'>
+
+    async def test_cache_failure_graceful_degradation(self, client, mock_predictive_engine):
+        """Test that cache failures don't break the API."""
+        mock_engine = AsyncMock()
+        mock_engine.current_energy_levels = {"test_user": "HIGH"}
+        mock_engine.predictive_engine = mock_predictive_engine
+        with patch('adhd_engine.api.routes.get_cache_instance', new_callable=AsyncMock, side_effect=Exception("Redis down")), \
+             patch('adhd_engine.main.engine', mock_engine):
+
+            # Should still work without cache
+            response = await client.get("/api/v1/energy-level/test_user", headers={"X-API-Key": "test"})
+>           assert response.status_code == 200
+E           assert 503 == 200
+E            +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+services/adhd_engine/tests/test_api_caching.py:194: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-10-22 20:16:00,705 INFO adhd-engine httpx rid=- task=- workspace=- HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1740 HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+____________________ TestAPICaching.test_performance_target ____________________
+
+self = <services.adhd_engine.tests.test_api_caching.TestAPICaching object at 0x11271edb0>
+client = <services.adhd_engine.tests.test_api_caching.AsyncASGITestClient object at 0x1129cf320>
+cache_stub = <services.adhd_engine.api.routes._InMemoryCache object at 0x1129cee40>
+mock_predictive_engine = <AsyncMock name='mock.predictive_engine' id='4607243376'>
+
+    async def test_performance_target(self, client, cache_stub, mock_predictive_engine):
+        """Test that cached responses are fast (mock latency)."""
+        mock_engine = AsyncMock()
+        mock_engine.current_energy_levels = {"test_user": "MEDIUM"}
+        mock_engine.predictive_engine = mock_predictive_engine
+        with patch('adhd_engine.main.engine', mock_engine):
+
+            # Populate cache
+            cache_key = "adhd:energy:test_user"
+            cached_response = EnergyLevelResponse(
+                energy_level="MEDIUM",
+                confidence=0.8,
+                last_updated=datetime.now(timezone.utc),
+                ml_prediction=None
+            )
+            await cache_stub.set(cache_key, cached_response.model_dump_json())
+
+            # Measure response time (mock)
+            import time
+            start = time.time()
+            response = await client.get("/api/v1/energy-level/test_user", headers={"X-API-Key": "test"})
+            end = time.time()
+
+>           assert response.status_code == 200
+E           assert 503 == 200
+E            +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+services/adhd_engine/tests/test_api_caching.py:222: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-10-22 20:16:00,710 INFO adhd-engine httpx rid=- task=- workspace=- HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1740 HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+___________________ TestAPICaching.test_hit_rate_simulation ____________________
+
+self = <services.adhd_engine.tests.test_api_caching.TestAPICaching object at 0x11271f230>
+client = <services.adhd_engine.tests.test_api_caching.AsyncASGITestClient object at 0x1129ccf50>
+cache_stub = <services.adhd_engine.api.routes._InMemoryCache object at 0x1129cf3b0>
+mock_predictive_engine = <AsyncMock name='mock.predictive_engine' id='4607245200'>
+
+    async def test_hit_rate_simulation(self, client, cache_stub, mock_predictive_engine):
+        """Simulate hit rate by making multiple calls."""
+        mock_engine = AsyncMock()
+        mock_engine.current_energy_levels = {"test_user": "LOW"}
+        mock_engine.predictive_engine = mock_predictive_engine
+        with patch('adhd_engine.main.engine', mock_engine):
+
+            # Make multiple calls
+            hits = 0
+            total = 5
+
+            for i in range(total):
+                response = await client.get("/api/v1/energy-level/test_user", headers={"X-API-Key": "test"})
+>               assert response.status_code == 200
+E               assert 503 == 200
+E                +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+services/adhd_engine/tests/test_api_caching.py:239: AssertionError
+----------------------------- Captured stdout call -----------------------------
+2026-10-22 20:16:00,714 INFO adhd-engine httpx rid=- task=- workspace=- HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1740 HTTP Request: GET http://testserver/api/v1/energy-level/test_user "HTTP/1.1 503 Service Unavailable"
+=============================== warnings summary ===============================
+services/adhd_engine/tests/test_correlation_engine.py::TestCrossServiceCorrelator::test_correlate_break_productivity
+  /Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/unittest/mock.py:2217: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestMaxResults::test_scattered_attention_limits_results
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestMaxResults::test_focused_attention_allows_more_results
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestMaxResults::test_hyperfocused_allows_maximum_results
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestMaxResults::test_overwhelmed_minimizes_results
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestComplexityThreshold::test_very_low_energy_lowers_threshold
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestComplexityThreshold::test_low_energy_moderate_threshold
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestComplexityThreshold::test_high_energy_allows_complex_tasks
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestComplexityThreshold::test_hyperfocus_removes_limits
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestContextDepth::test_scattered_minimizes_depth
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestContextDepth::test_focused_allows_standard_depth
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestContextDepth::test_hyperfocused_allows_deep_exploration
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestBreakSuggestions::test_suggests_break_after_max_duration
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestBreakSuggestions::test_suggests_break_for_very_low_energy
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestCaching::test_caching_reduces_redis_queries
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestCaching::test_cache_expires_after_ttl
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestStateSummary::test_complete_state_summary
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestUserProfile::test_cognitive_load_adjusts_for_distraction_sensitivity
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestUserProfile::test_profile_caching_works
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestIntegration::test_end_to_end_state_query
+FAILED services/adhd_engine/tests/test_adhd_config_service.py::TestFocusModeLimit::test_focus_mode_halves_results
+FAILED services/adhd_engine/tests/test_api_caching.py::TestAPICaching::test_energy_level_cache_miss_and_hit
+FAILED services/adhd_engine/tests/test_api_caching.py::TestAPICaching::test_attention_state_cache_hit
+FAILED services/adhd_engine/tests/test_api_caching.py::TestAPICaching::test_break_recommendation_cache_with_params
+FAILED services/adhd_engine/tests/test_api_caching.py::TestAPICaching::test_profile_update_invalidates_cache
+FAILED services/adhd_engine/tests/test_api_caching.py::TestAPICaching::test_backward_compatibility_no_ml_engine
+FAILED services/adhd_engine/tests/test_api_caching.py::TestAPICaching::test_cache_failure_graceful_degradation
+FAILED services/adhd_engine/tests/test_api_caching.py::TestAPICaching::test_performance_target
+FAILED services/adhd_engine/tests/test_api_caching.py::TestAPICaching::test_hit_rate_simulation
+ERROR services/adhd_engine/tests/test_attention_calibrator.py
+ERROR services/adhd_engine/tests/test_engine.py
+ERROR services/adhd_engine/tests/test_feature_flags.py
+ERROR services/adhd_engine/tests/test_voice_assistant.py
+28 failed, 88 passed, 1 warning, 4 errors in 1.27s

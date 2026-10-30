@@ -1,0 +1,13 @@
+{
+  "name": "dopemux-pulse",
+  "version": "0.1.0",
+  "description": "Read-only ADHD pulse for Claude Code: a status line with the Dopemux ADHD engine's energy and attention plus session minutes, and a /pulse-focus /break /done focus clock with a band above the prompt.",
+  "userConfig": {
+    "engineUrl": {
+      "type": "string",
+      "title": "ADHD engine URL",
+      "description": "Base URL of the Dopemux ADHD engine; the mod only sends GET <url>/api/v1/state.",
+      "default": "http://127.0.0.1:3025"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schema": "dopemux.pulse.allowances_proposed.v1",
+  "macro_id": "MACRO-DMX-PULSE-002-R2",
+  "status": "PROPOSED",
+  "authority": "NONE",
+  "ratification": "Nothing here is recorded or binding until the operator ratifies it: sending the R2 AUTHORIZE line after reading this file ratifies these numbers as written; replying with changed numbers replaces them. No allowance existed before this file.",
+  "enforcement": "Coordinator-enforced from wall-clock timestamps and counted dispatches. Not enforced by ct. Exceeding any figure means STOP and NEEDS_SUPERVISOR with evidence; no self-extension.",
+  "basis": "Judgment only. No measured per-workstream history for PULSE-001 is in hand (UNKNOWN). The only measured figure is the PULSE-001 Grok audit: about 200 s, about USD 0.0436.",
+  "time_semantics": {
+    "active": "minutes of work by the named worker or the team lead, excluding operator-gate waits",
+    "elapsed": "wall-clock minutes from dispatch (or start) to return, excluding operator-gate waits"
+  },
+  "per_workstream": {
+    "W01": {
+      "executor": "claude-code-agent claude-sonnet-5-5",
+      "max_active_minutes": 45,
+      "max_elapsed_minutes": 90,
+      "max_dispatch_attempts": 1,
+      "max_repair_attempts": 1,
+      "max_coordinator_review_rounds": 2,
+      "max_child_model_calls": 2,
+      "max_child_tokens": 500000,
+      "tokens_note": "recorded only if the runner reports usage; otherwise UNKNOWN and not enforced"
+    },
+    "W02": {
+      "executor": "claude-code-agent claude-haiku-5-5 (repair may be the named sonnet fallback if the supervisor accepts a STOP)",
+      "max_active_minutes": 20,
+      "max_elapsed_minutes": 45,
+      "max_dispatch_attempts": 1,
+      "max_repair_attempts": 1,
+      "max_coordinator_review_rounds": 2,
+      "max_child_model_calls": 2,
+      "max_child_tokens": 150000,
+      "tokens_note": "recorded only if the runner reports usage; otherwise UNKNOWN and not enforced"
+    },
+    "W03": {
+      "executor": "team lead, local-shell, no model",
+      "max_active_minutes": 30,
+      "max_elapsed_minutes": 60,
+      "max_dispatch_attempts": 1,
+      "max_repair_attempts": 0,
+      "max_deterministic_reruns": 1,
+      "max_coordinator_review_rounds": 1,
+      "max_child_model_calls": 0,
+      "max_child_tokens": 0
+    }
+  },
+  "per_macro": {
+    "max_active_minutes": 95,
+    "max_elapsed_minutes": 240,
+    "max_child_dispatches": 4,
+    "max_repair_attempts_total": 2,
+    "max_coordinator_review_rounds_total": 5,
+    "max_child_model_calls": 4,
+    "max_child_tokens_total": 650000,
+    "coordinator_tokens": "UNKNOWN (not recordable from this runner); not enforced",
+    "prior_spend_not_counted": "Under the superseded R1, W01 (Sonnet) was dispatched twice and stopped twice by the supervisor before returning; the working tree showed zero edits (empty diff, sha256 e3b0c442...b855). That spend is recorded here and proposed NOT to count against R2."
+  },
+  "audit": {
+    "routes": 1,
+    "max_attempts": 1,
+    "max_retries": 0,
+    "fallback_routes": 0,
+    "max_active_minutes": 20,
+    "max_elapsed_minutes": 60,
+    "max_prompt_bytes": 150000,
+    "max_cost_usd": 1.0,
+    "cost_note": "recorded only if the stream reports it; otherwise UNKNOWN",
+    "artifact_custody": "prompt, raw stream, response, run record and hashes copied into the review bundle in the same hour; a missing raw stream voids the audit",
+    "proposal_only": "The route is operator-gated: AUDITOR_BINDING_PROPOSED.json is not recorded, selected or run by the R2 AUTHORIZE line."
+  },
+  "review": {
+    "max_review_rounds_before_freeze": 2,
+    "after_freeze": "Any semantic change after C is frozen invalidates the audit and needs a new operator line; proof-only commits do not.",
+    "after_audit_fail_or_pass_with_risks": "No automatic repair loop. FAIL or NEEDS_SUPERVISOR returns to the operator."
+  }
+}

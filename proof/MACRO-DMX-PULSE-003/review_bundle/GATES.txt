@@ -1,0 +1,147 @@
+GATES at M = 4b0c430674de4b428302fb010159cdc40a62f1c1
+
+[PASS] plugin validate
+  $ claude plugin validate plugins/dopemux-pulse
+  exit=0
+  |
+  |   ❯ The repository root was taken to be /Users/hue/code/dopemux-mvp/.worktrees/pulse-003, the nearest parent folder with a .git folder or file. LICENSE was taken from it, because this plugin folder has none of its own. For a plugin submitted from a git repository, the repository root is the top folder of that repository, with only what is committed there, so check that the folder named above is that top folder.
+  |   ❯ hooks/hooks.json names a hooks module (a code file listed under `modules`). The plugin directory has rules of its own for such code, and these checks apply none of them, so passing here does not mean the directory accepts the plugin. The developer portal's own validation applies those rules.
+  |
+  | These plugin directory checks do not change the result below.
+  |
+  | The directory also runs a safety scan and a policy review that this command does not.
+  |
+  | ℹ Advice (does not change the verdict):
+  |
+  |   ❯ /Users/hue/code/dopemux-mvp/.worktrees/pulse-003/plugins/dopemux-pulse/README.md: This README has no line that installs "dopemux-pulse" from a marketplace. Add the install line, which works in one step on Claude Code 2.1.275 or later. Validate the folder that holds its marketplace.json to have <owner>/<repo> filled in, and the name its marketplace lists it under.
+  |       /plugin install dopemux-pulse --marketplace <owner>/<repo>
+  |
+  | ✔ Validation passed with warnings
+
+[PASS] plugin test
+  $ claude plugin test plugins/dopemux-pulse
+  exit=0
+  | (pass) session.end (resume) cancels the poll and the focus timers [12.86ms]
+  | (pass) session.end (logout) cancels the poll and the focus timers [17.29ms]
+  | (pass) session.end (prompt_input_exit) cancels the poll and the focus timers [14.87ms]
+  | (pass) session.end with reason clear leaves the poll, status and focus block running [17.77ms]
+  | (pass) the 90-minute nudge survives a /clear [48.50ms]
+  | (pass) the band is idle (next) when no focus block runs [17.22ms]
+  | (pass) the band yields to a survey and to a settled idle state after /done [16.66ms]
+  | (pass) the plugin makes no call beyond one GET of the configured URL [23.23ms]
+  | (pass) the engine URL option is honoured and a trailing slash is dropped [10.23ms]
+  | (pass) a non-http engine URL is refused and nothing is fetched [9.82ms]
+  |
+  |  29 pass
+  |  0 fail
+  | Ran 29 tests across 1 file. [1.09s]
+
+[NOT_RUN] tsc, out-of-repo tsconfig
+  $ tsc
+  exit=n/a the declaration file the plugin-authoring skill writes is not available in this session (skill not loaded; the earlier bundle path is gone)
+
+[PASS] engine contract test (unchanged)
+  $ /Users/hue/code/dopemux-mvp/.venv/bin/python -m pytest services/adhd_engine/tests/test_state_contract.py -q -p no:cacheprovider
+  exit=0
+  | ....                                                                     [100%]
+  | 4 passed in 0.24s
+
+[FAIL] pre-commit range origin/main..M, repo config, first attempt
+  $ pre-commit run --from-ref origin/main --to-ref HEAD
+  exit=3 tooling crash, no hook ran: nodeenv could not parse node 27.0.0-alpha.0.0.0 for the markdownlint hook (see MERGE_RECORD.md)
+
+[PASS] pre-commit range origin/main..M, config copy with node: system (same hooks)
+  $ /Users/hue/code/dopemux-mvp/.venv/bin/pre-commit run -c /private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-pulse-f1-001-5a321f/20e271cd-503b-426a-b344-3c4cc4c70b8a/scratchpad/r3/pre-commit-config.system-node.yaml --from-ref origin/main --to-ref HEAD
+  exit=0 config copy differs from the repo config only by two prepended lines (default_language_version: node: system)
+  | Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+  | Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+  | Enforce markdown file locations for changed files..........................................Passed
+  | Enforce docs placement hygiene (changed files).............................................Passed
+  | Enforce docs filename hygiene (kebab-case).................................................Passed
+  | Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+  | Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+  | Enforce repository root hygiene (no random root files).....................................Passed
+  | Validate proof bundle embedded_audit schema................................................Passed
+  | Validate GitHub Actions workflow syntax................................(no files to check)Skipped
+  | markdownlint...............................................................................Passed
+  | trim trailing whitespace...................................................................Passed
+  | fix end of files...........................................................................Passed
+  | check yaml.............................................................(no files to check)Skipped
+
+[PASS] validate_change_contract vs origin/main
+  $ /Users/hue/code/dopemux-mvp/.venv/bin/python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text
+  exit=0
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/ISSUANCE.md
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/MACRO_PACKET.json
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/SHA256SUMS.txt
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/SHA256SUMS_AUDIT.txt
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/SUCCESSOR_LINEAGE.json
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_RETURN.md
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_TASK_PACKET.json
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_RETURN.md
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_TASK_PACKET.json
+  |   [L0] proof/MACRO-DMX-PULSE-002-R2/review_bundle/W03_TASK_PACKET.json
+  |   [L0] proof/pr_merge/embedded-audit/pr-1472/PROOF.json
+  |   [L0] proof/pr_merge/embedded-audit/pr-1472/PROOF.json.sig
+  |   [L2] services/adhd_engine/api/routes.py
+  |   [L2] services/adhd_engine/tests/test_state_contract.py
+
+[FAIL] git diff --check origin/main..M (the PR's own content)
+  $ git diff --check origin/main..HEAD
+  exit=2 FAIL is the known nit in two files already on the PR head (R2 pack: FROZEN_DELTA.diff, GATES.txt); not introduced by M; not fixable inside this macro
+  | proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt:79: trailing whitespace.
+  | +  exit=0
+  | proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt:101: trailing whitespace.
+  | +  exit=0
+  | proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt:114: trailing whitespace.
+  | +  exit=0
+  | proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt:120: trailing whitespace.
+  | +  exit=0
+  | proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt:124: trailing whitespace.
+  | +  exit=1
+  | proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt:128: trailing whitespace.
+  | +  exit=0
+  | proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt:132: trailing whitespace.
+  | +  exit=0
+
+[FAIL] git diff --check ee00d3655..M (as written in the W02 packet; includes the files main brought in)
+  $ git diff --check ee00d36552c6f7a8ef2b83dc0165b8de97481e5a..HEAD
+  exit=2 FAIL: this range contains the 63 files main brought in; their whitespace is not this PR's and not M's
+  | proof/TP-DMX-PR1447-L3-AUDIT-002/review_bundle/AUDIT_INPUT.md:1893: trailing whitespace.
+  | +
+  | proof/TP-DMX-PR1447-L3-AUDIT-002/review_bundle/AUDIT_INPUT.md:1895: trailing whitespace.
+  | +
+  | proof/TP-DMX-PR1447-L3-AUDIT-002/review_bundle/AUDIT_INPUT.md:1907: trailing whitespace.
+  | +
+  | proof/TP-DMX-PR1447-L3-AUDIT-002/review_bundle/AUDIT_INPUT.md:1910: trailing whitespace.
+  | +
+  | proof/TP-DMX-PR1447-L3-AUDIT-002/review_bundle/AUDIT_INPUT.md:2034: trailing whitespace.
+  | +
+  | proof/TP-DMX-PR1447-L3-AUDIT-002/review_bundle/AUDIT_INPUT.md:2037: trailing whitespace.
+  | +
+  | proof/TP-DMX-PR1447-L3-AUDIT-002/review_bundle/AUDIT_INVOCATION.txt:9: trailing whitespace.
+  | +sealed dir contents after run: AUDIT_PROMPT.txt
+
+[PASS] NEGATIVE CONTROL (expected FAIL, not a gate): proof-only closure of M over the old signed head
+  $ /Users/hue/code/dopemux-mvp/.venv/bin/python scripts/governance/validate_change_contract.py --base ee00d36552c6f7a8ef2b83dc0165b8de97481e5a --head 4b0c430674de4b428302fb010159cdc40a62f1c1 --proof-only --content-head 4b0c430674de4b428302fb010159cdc40a62f1c1 --audited-head ee00d36552c6f7a8ef2b83dc0165b8de97481e5a --proof-head 4b0c430674de4b428302fb010159cdc40a62f1c1 --format text
+  exit=1 EXPECTED to fail with proof_only_escaped_path; that is why a new audit is required
+  |   - [error] proof_only_escaped_path (tests/orchestrator/test_status_updates.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/pr_merge_specialist/test_queue_drain_integration.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/pr_merge_specialist/test_template_contracts.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/scripts/test_adhd_ux.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/scripts/test_docs_filename_hygiene.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/scripts/test_docs_hygiene.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/unit/test_agent_manager_lifecycle_guards.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/unit/test_dopetask_archive_resolver_regression.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/unit/test_dopetask_bundle_loader_shapes.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/unit/test_dopetask_compatibility_regression.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/unit/test_dopetask_packet_launcher_validate_first.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/unit/test_dopetask_series_loader.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/unit/test_mcp_fleet_catalog_merge_safety.py): Path outside proof-only allowlist in proof-only successor
+  |   - [error] proof_only_escaped_path (tests/unit/test_pytest_collection_contract.py): Path outside proof-only allowlist in proof-only successor
+
+[PASS] tree clean after the gates
+  $ git status --porcelain
+  exit=0
+  | ?? proof/MACRO-DMX-PULSE-003/
+  | ?? task-packets/MACRO-DMX-PULSE-003/

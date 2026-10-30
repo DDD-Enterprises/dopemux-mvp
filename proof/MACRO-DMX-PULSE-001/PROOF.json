@@ -1,0 +1,267 @@
+{
+  "tp_id": "MACRO-DMX-PULSE-001",
+  "packet_id": "MACRO-DMX-PULSE-001",
+  "tp_path": "proof/MACRO-DMX-PULSE-001/review_bundle/MACRO_PACKET.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/pulse-001",
+  "branch": "feat/pulse-001",
+  "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git (origin matches repo_binding.origin_hint DDD-Enterprises/dopemux-mvp)",
+  "base_sha": "95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "audited_head_sha": "1d2219e8c894c5929ceba6ac5f2650dfe7ba2147",
+  "head_sha": "1d2219e8c894c5929ceba6ac5f2650dfe7ba2147",
+  "commit_sha": "Audited content head 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147; proof-only successor commits follow it (see git log for the final head)",
+  "pr_url_or_blocker": "NO PR: push, PR publication, signing and merge are operator gates and were not authorized",
+  "slices": [
+    {
+      "id": "W01",
+      "commit": "3dbced397",
+      "files": 2,
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS"
+    },
+    {
+      "id": "W02",
+      "commit": "2e27c6fe3",
+      "files": 5,
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS"
+    },
+    {
+      "id": "W03",
+      "commit": "1d2219e8c",
+      "files": 1,
+      "model_requested": "claude-haiku-5-5",
+      "model_observed": "claude-haiku-5-5",
+      "status": "PASS"
+    }
+  ],
+  "files_changed": [
+    "docs/02-how-to/pulse-status-line.md",
+    "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+    "plugins/dopemux-pulse/README.md",
+    "plugins/dopemux-pulse/hooks/hooks.json",
+    "plugins/dopemux-pulse/hooks/register.test.ts",
+    "plugins/dopemux-pulse/hooks/register.tsx",
+    "services/adhd_engine/api/routes.py",
+    "services/adhd_engine/tests/test_state_contract.py"
+  ],
+  "validations": [
+    {
+      "command": "pytest services/adhd_engine/tests/test_state_contract.py -q",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "4 passed"
+    },
+    {
+      "command": "pytest services/adhd_engine/tests (base vs head, --continue-on-collection-errors)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "28 failed + 4 errors on BOTH; identical failing IDs; head +4 passed"
+    },
+    {
+      "command": "pytest tests/arch -q",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "184 passed"
+    },
+    {
+      "command": "claude plugin validate plugins/dopemux-pulse",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "2 non-blocking warnings (no icon, no marketplace install line)"
+    },
+    {
+      "command": "claude plugin test plugins/dopemux-pulse",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "24 passed"
+    },
+    {
+      "command": "tsc (bundled claude-code.d.ts)",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "black --check + flake8 on test_state_contract.py",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "flake8 services/adhd_engine/api/routes.py",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "339 findings before and after (unchanged)"
+    },
+    {
+      "command": "git diff --check 95e95bee8..1d2219e8c",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "python scripts/governance/validate_change_contract.py --base origin/main --head HEAD",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "max_lane L2"
+    },
+    {
+      "command": "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": ".control-tower/bin/ct validate-macro + validate-binding (coordinator, W01-W03)",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "live run: engine on 127.0.0.1:3025 + claude --plugin-dir plugins/dopemux-pulse",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "operator step; no live session was run"
+    },
+    {
+      "command": "make test (full suite)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "scope limited to tests/arch, adhd_engine tests, plugin tests and gates"
+    },
+    {
+      "command": "agy gemini-4-argon-high final audit",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "reason": "RESOURCE_EXHAUSTED 429 at start, 0 tokens; no verdict (review_bundle/AGY_ATTEMPT_RECORD.md)"
+    }
+  ],
+  "codereview_status": "Independent final audit PASS_WITH_RISKS (grok-cli grok-4.5, operator-approved after the agy 429 failure). Q3 FAIL on F1. No PAL codereview run.",
+  "precommit_status": "PASS (pre-commit run --from-ref origin/main --to-ref HEAD)",
+  "residual_risks": [
+    "F1/Q3 (ACCEPTED by the operator 2026-10-22 as a disclosed residual risk): after the 2 s race the underlying $.http.fetch is not cancelled; a hung engine leaves one pending GET per 60 s poll. Host fetch lifetime UNKNOWN. Not repaired.",
+    "Mod never run in a real Claude Code session against a live ADHD engine (NOT_RUN); /clear survival and UI paint are test-kit only.",
+    "README says only /break ends the continuous-focus count; /done also resets it.",
+    "How-to cites commit 3dbced397 by SHA, which will not survive a squash merge.",
+    "command.register failures are swallowed; a future built-in named break or done would silently disable the command.",
+    "Engine exception fallback answers HTTP 200 medium/focused; the mod cannot tell it from real state (pre-existing, documented).",
+    "Engine energy/attention are proxy-inferred from hook activity; session_minutes in the engine is always 0 (the mod counts its own).",
+    "Raw Grok and agy streams lost with the session scratchpad; containment (init.tools == []) is attested by the coordinator only.",
+    "Auditor self-reported grok-4; the CLI init event showed grok-4.5 (attested); provider-attested identity UNKNOWN."
+  ],
+  "unknowns": [
+    "Live behaviour against a running engine and real Claude Code (NOT_RUN)",
+    "Whether the host bounds or cancels abandoned $.http.fetch requests",
+    "Provider-attested identity of the auditor model",
+    "Per-child effort level (not settable via the Agent tool; observed UNKNOWN)",
+    "Byte identity of GROK_AUDIT_RESPONSE.txt versus the lost original (size matches)",
+    "PROOF.json.sig absent: signing needs the operator's key"
+  ],
+  "cleanup_status": "Worktree and branch retained; baseline worktree removed; no running processes; no stash entries; nothing pushed",
+  "audit_evidence": {
+    "grok": {
+      "prompt_sha256": "3e0510feceb6c9578e73d350933bb0288219fdc8ac7fac1bafe337be10e6ce69",
+      "response_sha256": "9e2105f90947a8314336648a2d9eb0438a974a6e7aff9d97804fa668633243bc",
+      "frozen_diff_sha256": "aebcd086d35b262bd1a6b6bb59135cafec63f0186a9ede345e017bdcf27858b4",
+      "stream_sha256": "LOST: raw event stream deleted with the session scratchpad before copy-in",
+      "path": "proof/MACRO-DMX-PULSE-001/review_bundle/ (files GROK_*)"
+    },
+    "agy_failed_attempt": {
+      "verdict": "NONE (RESOURCE_EXHAUSTED 429 at start)",
+      "launched_at": "2026-10-22T10:59:37Z",
+      "path": "proof/MACRO-DMX-PULSE-001/review_bundle/AGY_ATTEMPT_RECORD.md"
+    }
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "runner default (grok-cli; effort not set separately)",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-sonnet-5-5 (supervisor session); children claude-sonnet-5-5 (W01, W02) and claude-haiku-5-5 (W03)",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "sealed directory holding only AUDIT_PROMPT.txt and frozen.diff; grok CLI 1.0.67 with the tool-less recipe (45 disallowed tool ids plus a no-skills system prompt; probe confirmed init.tools == []); launched 2026-10-22T11:24:24Z. Exact INVOCATION.sh lost with the scratchpad; see review_bundle/GROK_RUN_RECORD.md. Operator-approved route after the agy gemini-4-argon-high attempt failed with a 429.",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-PULSE-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "MEDIUM",
+        "title": "Timed-out polls leave $.http.fetch promises running; a hung engine can accumulate unbounded in-flight GETs (one per minute) because Promise.race does not cancel fetch.",
+        "status": "ACCEPTED_RISK",
+        "body": "fetchState races $.http.fetch against $.clock.after(2000); on 'timeout' it returns {kind:'down'} and finally only cancels the timer. Authority states fetch has no timeout option. poll's isPolling guard blocks overlapping poll() entry but not prior raced fetches still pending. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED in register.tsx fetchState/poll; host fetch lifetime UNKNOWN. Operator accepted this as a disclosed residual risk in chat on 2026-10-22 (\"Accept F1 as a disclosed residual risk. Keep the audited head.\"); no repair, no re-audit."
+      },
+      {
+        "id": "F2",
+        "severity": "HIGH",
+        "title": "Mod has never been exercised in a real Claude Code session against a live ADHD engine; /clear survival and UI paint are test-kit only.",
+        "status": "OPEN",
+        "body": "Stated DISCLOSED LIMITATION (i); how-to and README 'Not verified' sections agree. Mocked 24-pass suite does not substitute for host integration. [plugins/dopemux-pulse/] ADJUDICATION: Coordinator: CONFIRMED, disclosed. Live run NOT_RUN (operator step)."
+      },
+      {
+        "id": "F3",
+        "severity": "LOW",
+        "title": "Comment claims continuous-focus count runs from first block after a break (or session start); code starts it at the first /pulse-focus.",
+        "status": "OPEN",
+        "body": "Comment above continuousSince assignment vs `if (s.continuousSince === undefined) { s.continuousSince = now; ...}`. How-to follows the code; README still says 'first block after a break' and under-describes /done resetting the count (code stopContinuous on both /break and /done). [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: code comment matches the code; real gap is README omitting that /done also resets the count."
+      },
+      {
+        "id": "F4",
+        "severity": "LOW",
+        "title": "How-to asserts engine host/container ports via services/registry.yaml and cites commit 3dbced397; neither is evidenced by this diff.",
+        "status": "OPEN",
+        "body": "\u00a74 port 3025/8095 and \u00a75 'Since commit 3dbced397'; frozen head given as 1d2219e8\u2026; SHA squash fragility disclosed as limitation (v). [docs/02-how-to/pulse-status-line.md] ADJUDICATION: Coordinator: port 3025/8095 VERIFIED in services/registry.yaml:183-186; commit SHA 3dbced397 will not survive a squash merge."
+      },
+      {
+        "id": "F5",
+        "severity": "MEDIUM",
+        "title": "Suite outside test_state_contract.py has 28 failures and 4 collection errors; whether they pre-exist is UNVERIFIED.",
+        "status": "RESOLVED",
+        "body": "DISCLOSED LIMITATION (ii). Diff only changes get_adhd_state returns and adds test_state_contract.py; cannot confirm baseline from this message. [services/adhd_engine/tests/] ADJUDICATION: Coordinator: baseline compared. Base and head both 28 failed + 4 errors with identical failing IDs; head adds 4 passing tests."
+      },
+      {
+        "id": "F6",
+        "severity": "LOW",
+        "title": "command.register failures for pulse-focus/break/done are swallowed with .catch(() => undefined); a future built-in name collision would silently disable commands.",
+        "status": "OPEN",
+        "body": "session.start registration block. Mock always accepts names; only /focus refusal is documented. No production assertion that break/done remain free. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED, register.tsx:227-233 swallow failures."
+      },
+      {
+        "id": "F7",
+        "severity": "INFO",
+        "title": "Exception fallback still returns HTTP 200 medium/focused (with new aliases); mod cannot distinguish fallback from real healthy state.",
+        "status": "OPEN",
+        "body": "except branch ~1601-1608; documented in how-to \u00a75 and DISCLOSED LIMITATION (iii). Pre-existing behaviour; W01 only mirrors aliases onto it. [services/adhd_engine/api/routes.py] ADJUDICATION: Coordinator: CONFIRMED, pre-existing and documented in how-to section 5."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "F1/Q3 (ACCEPTED by the operator 2026-10-22 as a disclosed residual risk): after the 2 s race the underlying $.http.fetch is not cancelled; a hung engine leaves one pending GET per 60 s poll. Host fetch lifetime UNKNOWN. Not repaired.",
+      "Mod never run in a real Claude Code session against a live ADHD engine (NOT_RUN); /clear survival and UI paint are test-kit only.",
+      "README says only /break ends the continuous-focus count; /done also resets it.",
+      "How-to cites commit 3dbced397 by SHA, which will not survive a squash merge.",
+      "command.register failures are swallowed; a future built-in named break or done would silently disable the command.",
+      "Engine exception fallback answers HTTP 200 medium/focused; the mod cannot tell it from real state (pre-existing, documented).",
+      "Engine energy/attention are proxy-inferred from hook activity; session_minutes in the engine is always 0 (the mod counts its own).",
+      "Raw Grok and agy streams lost with the session scratchpad; containment (init.tools == []) is attested by the coordinator only.",
+      "Auditor self-reported grok-4; the CLI init event showed grok-4.5 (attested); provider-attested identity UNKNOWN."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
