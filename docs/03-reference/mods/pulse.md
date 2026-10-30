@@ -96,7 +96,7 @@ Hook registration is a single module list, `hooks/hooks.json:2`
 The "bands" are: the `AbovePrompt` focus band (two texts, running and past the
 limit) and the status line. There are no other bands.
 
-**Command replies** (returned text, `register.tsx`): start `Focus block started for M minutes. /break to rest, /done to finish.` with a `Restarted: ` prefix when a block was already running (334); refusal `Focus minutes must be a whole number from 5-120 (default 25). Nothing started.` (291); `/break` `Break time. Stand up, drink some water, look away from the screen. /pulse-focus when you are ready.` (347); `/done` `Focus block done after N minutes. Nice work.` (362) or `No focus block is running.` (356). A thrown error yields a fixed `dopemux-pulse: could not ...` text (337, 350, 364).
+**Command replies** (returned text, `register.tsx`): start `Focus block started for M minutes. /break to rest, /done to finish.` with a `Restarted:` prefix (followed by a space) when a block was already running (334); refusal `Focus minutes must be a whole number from 5-120 (default 25). Nothing started.` (291); `/break` `Break time. Stand up, drink some water, look away from the screen. /pulse-focus when you are ready.` (347); `/done` `Focus block done after N minutes. Nice work.` (362) or `No focus block is running.` (356). A thrown error yields a fixed `dopemux-pulse: could not ...` text (337, 350, 364).
 
 ## 4. Configuration reference
 

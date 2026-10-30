@@ -85,7 +85,7 @@ Status line strings (register.tsx:648-659). Precedence is: write failed, then me
 | `📮 N pending` | N replayable pending rows (see [section 6](#6-outbox-and-ledger-data-contract)) |
 | `📮 N pending (ledger unavailable)` | As above, and the last replay step did not succeed, and at least one waiting row is in this process |
 | `⚠ D undeliverable` or `⚠ D undeliverable · 📮 N pending` | D dead rows; the pending part is dropped when it would be `📮 clear` |
-| suffix ` +K dropped` | K rows were dropped by the size cap |
+| suffix `+K dropped` (after a space) | K rows were dropped by the size cap |
 
 Welcome-back band text (register.tsx:1079-1082):
 
