@@ -1,0 +1,33 @@
+W04 gates for MACRO-DMX-ROUTE-LEDGER-001-R4, run 2026-10-30T10:56:35Z on audited head 989fe4651c050ec23619e5208da17d6152b477b0
+
+### validate_audit_proof.py proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json
+PASS  proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json
+
+Result: 1/1 PASS
+exit=0
+
+### embedded_audit vs schemas/proof/embedded_audit.schema.json (jsonschema)
+embedded_audit errors: none
+status PASS_WITH_RISKS | tool grok-cli | model grok-4.5 | findings 11
+
+### proof identity fields
+packet_id: MACRO-DMX-ROUTE-LEDGER-001-R4
+audited_head_sha: 989fe4651c050ec23619e5208da17d6152b477b0
+independence: UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING
+
+### flattened package vs originals (cmp)
+MACRO_PACKET.json identical
+EXECUTION_BINDING.json identical
+ALLOWANCES.json identical
+ISSUANCE.md identical
+W01 task packet and binding identical
+W02 task packet and binding identical
+W03 task packet and binding identical
+W04 task packet and binding identical
+
+### secret scan over the new W04 files
+AKIA[0-9A-Z]{16}: 0
+xox[baprs]-: 0
+ghp_[A-Za-z0-9]{20,}: 0
+sk-[A-Za-z0-9]{20,}: 0
+private key header: 0
