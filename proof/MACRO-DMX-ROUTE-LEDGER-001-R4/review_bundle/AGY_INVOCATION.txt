@@ -1,0 +1,64 @@
+#!/bin/bash
+# MACRO-DMX-ROUTE-LEDGER-001-R3 W03: agy, model gemini-4-argon-high, sealed print mode. usage: run.sh <A> probe1|probe2|real
+A="$1"; MODE="$2"
+SETTINGS='{"toolPermission":"request-review","allowNonWorkspaceAccess":false,"permissions":{"allow":[]}}'
+case "$MODE" in
+  probe1) SEAL="$A/seal_probe"; PROMPT="$(sed -n 1p "$A/seal_probe/AGY_PROBE_PROMPT.txt")"; TMO=3m ;;
+  probe2) SEAL="$A/seal_probe"; PROMPT="$(sed -n 2p "$A/seal_probe/AGY_PROBE_PROMPT.txt")"; TMO=3m ;;
+  real)   SEAL="$A/seal_real";  PROMPT="$(cat "$A/seal_real/AUDIT_PROMPT.txt")";          TMO=10m ;;
+  *) echo "bad mode" >&2; exit 91 ;;
+esac
+cd "$SEAL" || exit 90
+date -u +%Y-%m-%dT%H:%M:%SZ > "$A/out/$MODE.start"
+env -i HOME="$HOME" PATH="$PATH" agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout "$TMO" --settings "$SETTINGS" --print="$PROMPT" > "$A/out/$MODE.jsonl" 2> "$A/out/$MODE.err"
+echo $? > "$A/out/$MODE.exit"
+date -u +%Y-%m-%dT%H:%M:%SZ > "$A/out/$MODE.end"
+
+# driver (probe1, probe2, mechanical gate, one real attempt):
+#!/bin/bash
+# R4 W03 driver: probe1, probe2, mechanical gate, then the ONE real attempt. usage: driver.sh <A> <committed prompt>
+A="$1"; COMMITTED="$2"
+: > "$A/out/GATES.txt"
+for m in probe1 probe2; do
+  "$A/run.sh" "$A" $m
+  g=$(python3 "$A/agy_gate.py" "$A/out/$m.jsonl" "$(cat "$A/out/$m.exit" 2>/dev/null)")
+  echo "$m gate: $g" >> "$A/out/GATES.txt"
+  if [ "$g" != OK ]; then echo "GATE FAIL at $m: the real prompt was NOT sent" >> "$A/out/GATES.txt"; exit 0; fi
+done
+if ! cmp -s "$COMMITTED" "$A/seal_real/AUDIT_PROMPT.txt"; then echo "GATE FAIL: sealed prompt differs from the committed one" >> "$A/out/GATES.txt"; exit 0; fi
+echo "gates passed; launching the ONE real attempt at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$A/out/GATES.txt"
+"$A/run.sh" "$A" real
+echo "real attempt finished, exit $(cat "$A/out/real.exit" 2>/dev/null)" >> "$A/out/GATES.txt"
+
+# gate script:
+#!/usr/bin/env python3
+"""Mechanical admissibility gate for an agy stream-json probe: prints OK or FAIL:<reason>. Never prints text bodies."""
+import json, sys
+path, rc = sys.argv[1], sys.argv[2]
+init = None; steps = set(); status = None
+for l in open(path, encoding='utf-8', errors='replace'):
+    l = l.strip()
+    if not l: continue
+    try: o = json.loads(l)
+    except Exception: print('FAIL:unparsed line'); sys.exit(0)
+    if o.get('event') == 'init': init = o.get('init') or {}
+    su = o.get('step_update')
+    if isinstance(su, dict) and su.get('step_type'): steps.add(su['step_type'])
+    if o.get('event') == 'result': status = (o.get('result') or {}).get('status')
+if rc != '0': print('FAIL:exit ' + rc); sys.exit(0)
+if init is None: print('FAIL:no init event'); sys.exit(0)
+if init.get('permission_mode') != 'request-review': print('FAIL:permission_mode=' + str(init.get('permission_mode'))); sys.exit(0)
+if init.get('model') != 'gemini-4-argon-high': print('FAIL:model=' + str(init.get('model'))); sys.exit(0)
+if not steps <= {'user_input', 'agent_response'}: print('FAIL:step types ' + ','.join(sorted(steps))); sys.exit(0)
+if status != 'SUCCESS': print('FAIL:result status ' + str(status)); sys.exit(0)
+print('OK')
+
+# gate log:
+probe1 gate: OK
+probe2 gate: OK
+gates passed; launching the ONE real attempt at 2026-10-30T10:45:45Z
+real attempt finished, exit 0
+
+# sealed directories (outside the repo, never removed): /private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-route-ledger-001-8d8032/533ad7a9-4330-4030-b51a-2a7763cbe828/scratchpad/r4/agy_20261030T104455Z
+# environment: env -i HOME PATH only
+# session-only hardening (never saved): --settings toolPermission=request-review, allowNonWorkspaceAccess=false, permissions.allow=[] (saved user settings: toolPermission=always-proceed, allowNonWorkspaceAccess=true, an allow list incl. git commit and gh); no agy or gemini settings file and no MCP configuration was changed
