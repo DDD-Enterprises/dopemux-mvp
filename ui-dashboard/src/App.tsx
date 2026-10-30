@@ -49,10 +49,14 @@ const CONNECTION_META: Record<ConnectionStatus, { label: string; color: string }
 
 const monoSx = { fontFamily: '"JetBrains Mono", monospace' } as const;
 
+// String lengths on purpose: in MUI sx a bare `1` means 100%.
 const visuallyHiddenSx = {
   position: 'absolute',
-  width: 1,
-  height: 1,
+  width: '1px',
+  height: '1px',
+  margin: '-1px',
+  padding: 0,
+  border: 0,
   overflow: 'hidden',
   clip: 'rect(0 0 0 0)',
   whiteSpace: 'nowrap',
@@ -286,7 +290,7 @@ function DashboardApp() {
             [CONSENT: UNKNOWN]
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
-          <Tooltip title="Local reminder only. Nothing is saved." arrow>
+          <Tooltip title="Local reminder only. Nothing is saved." arrow describeChild>
             <Button
               variant="outlined"
               onClick={handleLogSip}
@@ -369,8 +373,11 @@ function DashboardApp() {
         </Collapse>
 
         <Grid container spacing={2.5} id="main-dashboard" component="main" tabIndex={-1} sx={{ outline: 'none' }}>
-          <Grid item xs={12} lg={5}>
+          <Grid item xs={12} lg={5} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <LoadInstrument load={reading.load} prediction={reading.prediction} recommendation={reading.recommendation} />
+            {!isCritical && (
+              <AttentionStatePanel energyLevel={reading.energyLevel} attentionState={reading.attentionState} />
+            )}
           </Grid>
           <Grid item xs={12} lg={7}>
             <TaskSequencer cognitiveState={{ status: status ?? 'optimal' }} onError={setErrorMessage} />
@@ -403,20 +410,15 @@ function DashboardApp() {
               </Box>
             </Grid>
           ) : (
-            <>
-              <Grid item xs={12} lg={4}>
-                <AttentionStatePanel energyLevel={reading.energyLevel} attentionState={reading.attentionState} />
-              </Grid>
-              <Grid item xs={12} lg={8}>
-                <SignalFeed
-                  notifications={notifications}
-                  socketUrl={SOCKET_ENDPOINT}
-                  isListening={socketState === 'open'}
-                  onDismiss={handleDismissNotification}
-                  onClear={handleClearNotifications}
-                />
-              </Grid>
-            </>
+            <Grid item xs={12}>
+              <SignalFeed
+                notifications={notifications}
+                socketUrl={SOCKET_ENDPOINT}
+                isListening={socketState === 'open'}
+                onDismiss={handleDismissNotification}
+                onClear={handleClearNotifications}
+              />
+            </Grid>
           )}
           {showTeamDashboard && (
             <Grid item xs={12}>

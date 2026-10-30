@@ -86,6 +86,15 @@ test('consent is reported as unknown, not verified', async () => {
   expect(screen.queryByText(/consent verified/i)).not.toBeInTheDocument();
 });
 
+test('aftercare button keeps its own name; the tooltip only describes it', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.4) }));
+  await renderApp();
+
+  const button = screen.getByRole('button', { name: '[AFTERCARE] Log a sip' });
+  fireEvent.click(button);
+  expect(screen.getByRole('button', { name: '[AFTERCARE] Sip logged' })).toBeInTheDocument();
+});
+
 test('critical load hides secondary panels until the operator asks for them', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.9) }));
   await renderApp();

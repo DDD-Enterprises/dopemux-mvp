@@ -58,8 +58,6 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
       aria-labelledby="load-instrument-title"
       sx={{
         p: 3,
-        height: '100%',
-        boxSizing: 'border-box',
         borderRadius: '18px',
         display: 'flex',
         flexDirection: 'column',
@@ -172,10 +170,16 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
         </Box>
         <Box
           aria-hidden="true"
-          sx={{ display: 'flex', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.6875rem', letterSpacing: '0.06em', color: brandTokens.text.secondary }}
+          sx={{
+            display: 'flex',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: { xs: '0.625rem', sm: '0.6875rem' },
+            letterSpacing: { xs: 0, sm: '0.06em' },
+            color: brandTokens.text.secondary,
+          }}
         >
           {ZONES.map((zone) => (
-            <Box key={zone.status} component="span" sx={{ width: `${zone.width}%` }}>
+            <Box key={zone.status} component="span" sx={{ width: `${zone.width}%`, pr: 0.5, overflow: 'hidden' }}>
               {zone.label}
             </Box>
           ))}

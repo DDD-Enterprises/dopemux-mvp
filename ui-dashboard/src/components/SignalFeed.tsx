@@ -59,7 +59,7 @@ const SignalFeed: React.FC<SignalFeedProps> = ({ notifications, socketUrl, isLis
     <Paper
       component="section"
       aria-labelledby="signal-feed-title"
-      sx={{ p: 3, height: '100%', boxSizing: 'border-box', borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: 1.5 }}
+      sx={{ p: 3, borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: 1.5 }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
         <Typography

@@ -43,7 +43,7 @@ const AttentionStatePanel: React.FC<AttentionStatePanelProps> = ({ energyLevel, 
     <Paper
       component="section"
       aria-labelledby="attention-state-title"
-      sx={{ p: 3, height: '100%', boxSizing: 'border-box', borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: 1.75 }}
+      sx={{ p: 3, borderRadius: '18px', display: 'flex', flexDirection: 'column', gap: 1.75 }}
     >
       <Typography
         id="attention-state-title"
