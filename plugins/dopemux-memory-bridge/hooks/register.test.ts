@@ -490,6 +490,24 @@ test('decision capture is marker-only: bold forms, three at most, 200 characters
   expect(none.decisions).toEqual([])
 })
 
+test('the decision scan is bounded: a marker inside the bound is captured, one after it is not', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.turn('inside', `${'a'.repeat(150_000)}\nDecision: inside the bound`)
+  await h.turn('beyond', `${'a'.repeat(200_001)}\nDecision: beyond the bound`)
+  const turns = h.rows().filter(r => r.kind === 'turn')
+  expect(turns.find(r => r.goal === 'inside')!.decisions).toEqual(['inside the bound'])
+  expect(turns.find(r => r.goal === 'beyond')!.decisions).toEqual([])
+})
+
+test('a multi-megabyte answer with an early marker still yields it and the hook completes', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.turn('huge', `Decision: early marker\n${'filler line\n'.repeat(400_000)}Decision: late marker\n`)
+  const row = h.rows().find(r => r.kind === 'turn')!
+  expect(row.decisions).toEqual(['early marker'])
+})
+
 test('decision.logged is never emitted anywhere', async ($, on) => {
   const h = harness($, on)
   await h.start()
@@ -884,7 +902,7 @@ test('status line: clear, pending count, memory-only, write failed, dropped suff
   expect(h.world.status).toBe('📮 2 pending')
 })
 
-test('status line counts replayable pending rows already on disk at session start', async ($, on) => {
+test('status line counts only the replayable pending rows this session adopted from a quiet earlier file', async ($, on) => {
   const other = [
     seedRow('o1', 'pending', WAITING),
     seedRow('o2', 'sent', WAITING),
@@ -898,6 +916,240 @@ test('status line counts replayable pending rows already on disk at session star
   expect(h.world.status).toBe('📮 2 pending')
   await h.turn('one', 'ok')
   expect(h.world.status).toBe('📮 2 pending')
+})
+
+// --- adoption: a quiet earlier session's undelivered rows are relayed by copy --------
+
+const taskRow = (id: string, over: Record<string, unknown> = {}) =>
+  seedRow(id, 'pending', { kind: 'task', intended_event: 'task.completed', todos_completed: [`title-${id}`], ...over })
+
+const agoIso = (ms: number) => new Date(NOW0 - ms).toISOString()
+
+test('a quiet earlier-session task row is adopted, counted, delivered with its id and the source is never written', async ($, on) => {
+  const source = startedOutbox('older', [taskRow('a1a1a1a1a1a1a1a1a1a1a1a1'), seedRow('t1', 'pending')])
+  const h = harness($, on, { files: source })
+  const before = h.world.files.get(primary('older'))
+  await h.start()
+  expect(h.world.status).toBe('📮 1 pending')
+
+  const adopted = h.rows('s1').find(r => r.id === 'a1a1a1a1a1a1a1a1a1a1a1a1')!
+  expect(adopted).toMatchObject({
+    state: 'pending',
+    session_id: 'old',
+    kind: 'task',
+    intended_event: 'task.completed',
+    todos_completed: ['title-a1a1a1a1a1a1a1a1a1a1a1a1'],
+    attempts: 0,
+    adopted_from: 'older',
+  })
+  // The copy keeps the original writer's session id; adopted_from names the file key.
+  expect(h.rows('s1').some(r => r.id === 't1')).toBe(false) // the turn row stays behind
+
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits).toHaveLength(1)
+  expect(h.world.emits[0]!.event).toMatchObject({
+    event_type: 'task.completed',
+    event_id: 'a1a1a1a1a1a1a1a1a1a1a1a1',
+    session_id: 'old',
+    payload: { title: 'title-a1a1a1a1a1a1a1a1a1a1a1a1' },
+  })
+  expect(h.rows('s1').find(r => r.id === 'a1a1a1a1a1a1a1a1a1a1a1a1')!.state).toBe('sent')
+  expect(h.world.status).toBe('📮 clear')
+
+  // Single writer per file: every write went to this session's own files.
+  expect(h.world.writes.length).toBeGreaterThan(0)
+  for (const w of h.world.writes) expect([primary('s1'), alternate('s1')]).toContain(w.path)
+  expect(h.world.files.get(primary('older'))).toBe(before)
+  expect(h.world.files.has(alternate('older'))).toBe(false)
+})
+
+test('a quiet earlier-session note row is adopted and delivered as manual.memory_store', async ($, on) => {
+  const note = seedRow('b2b2b2b2b2b2b2b2b2b2b2b2', 'pending', {
+    kind: 'note',
+    intended_event: 'manual.memory_store',
+    note: 'remember this',
+  })
+  const h = harness($, on, { files: startedOutbox('older', [note]) })
+  await h.start()
+  expect(h.world.status).toBe('📮 1 pending')
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits[0]!.event).toMatchObject({
+    event_type: 'manual.memory_store',
+    event_id: 'b2b2b2b2b2b2b2b2b2b2b2b2',
+    payload: { summary: 'remember this' },
+  })
+})
+
+test('a fresh earlier-session file (a live concurrent session) is neither adopted nor counted', async ($, on) => {
+  const h = harness($, on, { files: startedOutbox('live', [taskRow('c3c3c3c3c3c3c3c3c3c3c3c3')]) })
+  h.world.mtimes.set(primary('live'), NOW0 - 9 * MIN)
+  await h.start()
+  expect(h.world.status).toBe('📮 clear')
+  await h.world.clock.advance(10 * MIN)
+  expect(h.world.emits).toHaveLength(0)
+  expect(h.world.writes).toHaveLength(0)
+})
+
+test('the quiet threshold is ten minutes: exactly ten adopts', async ($, on) => {
+  const h = harness($, on, { files: startedOutbox('edge', [taskRow('c4c4c4c4c4c4c4c4c4c4c4c4')]) })
+  h.world.mtimes.set(primary('edge'), NOW0 - 10 * MIN)
+  await h.start()
+  expect(h.world.status).toBe('📮 1 pending')
+})
+
+test('a file counts as quiet by the newest of its two generation files', async ($, on) => {
+  const h = harness($, on, {
+    files: {
+      [primary('mix')]: genText('mix', 1, [taskRow('c5c5c5c5c5c5c5c5c5c5c5c5')]),
+      [alternate('mix')]: genText('mix', 2, [taskRow('c5c5c5c5c5c5c5c5c5c5c5c5')]),
+    },
+  })
+  h.world.mtimes.set(alternate('mix'), NOW0 - 1 * MIN)
+  await h.start()
+  expect(h.world.status).toBe('📮 clear')
+})
+
+test('a row older than seven days is not adopted', async ($, on) => {
+  const h = harness($, on, {
+    files: startedOutbox('ancient', [
+      taskRow('d4d4d4d4d4d4d4d4d4d4d4d4', { ts: agoIso(7 * 24 * 60 * MIN + 1) }),
+      taskRow('d5d5d5d5d5d5d5d5d5d5d5d5', { ts: agoIso(6 * 24 * 60 * MIN) }),
+    ]),
+  })
+  await h.start()
+  expect(h.world.status).toBe('📮 1 pending')
+  expect(h.rows('s1').map(r => r.id)).toEqual(['d5d5d5d5d5d5d5d5d5d5d5d5'])
+})
+
+test('an id that is sent in another file is not adopted', async ($, on) => {
+  const h = harness($, on, {
+    files: {
+      ...startedOutbox('writer', [taskRow('e5e5e5e5e5e5e5e5e5e5e5e5', { state: 'sent', attempts: 1 })]),
+      ...startedOutbox('adopter', [taskRow('e5e5e5e5e5e5e5e5e5e5e5e5', { adopted_from: 'writer' })]),
+    },
+  })
+  await h.start()
+  expect(h.world.status).toBe('📮 clear')
+  await h.world.clock.advance(10 * MIN)
+  expect(h.world.emits).toHaveLength(0)
+})
+
+test('an id that is dead in another file is not adopted', async ($, on) => {
+  const h = harness($, on, {
+    files: {
+      ...startedOutbox('writer', [taskRow('e6e6e6e6e6e6e6e6e6e6e6e6', { state: 'dead', attempts: 5 })]),
+      ...startedOutbox('copy', [taskRow('e6e6e6e6e6e6e6e6e6e6e6e6')]),
+    },
+  })
+  await h.start()
+  expect(h.rows('s1')).toEqual([])
+  expect(h.world.emits).toHaveLength(0)
+})
+
+test('the same id in two quiet files is adopted once', async ($, on) => {
+  const h = harness($, on, {
+    files: {
+      ...startedOutbox('one', [taskRow('f6f6f6f6f6f6f6f6f6f6f6f6')]),
+      ...startedOutbox('two', [taskRow('f6f6f6f6f6f6f6f6f6f6f6f6')]),
+    },
+  })
+  await h.start()
+  expect(h.world.status).toBe('📮 1 pending')
+  expect(h.rows('s1').filter(r => r.id === 'f6f6f6f6f6f6f6f6f6f6f6f6')).toHaveLength(1)
+  await h.world.clock.advance(5 * MIN)
+  expect(h.world.emits).toHaveLength(1)
+  expect(h.world.status).toBe('📮 clear')
+})
+
+test('an id already in this session ring is not adopted again', async ($, on) => {
+  const mine = taskRow('f7f7f7f7f7f7f7f7f7f7f7f7', { session_id: 's1' })
+  const h = harness($, on, {
+    files: {
+      ...startedOutbox('s1', [mine]),
+      ...startedOutbox('older', [taskRow('f7f7f7f7f7f7f7f7f7f7f7f7', { session_id: 's1' })]),
+    },
+  })
+  await h.start()
+  expect(h.rows('s1')).toHaveLength(1)
+  expect(h.rows('s1')[0]!.adopted_from).toBeUndefined()
+  await h.world.clock.advance(5 * MIN)
+  expect(h.world.emits).toHaveLength(1)
+})
+
+test('at most fifty rows are adopted per session start, oldest first', async ($, on) => {
+  const many = Array.from({ length: 60 }, (_, i) =>
+    taskRow(`${String(i).padStart(2, '0')}`.repeat(12), { ts: agoIso(40 * 60 * MIN - i * MIN) }),
+  )
+  const h = harness($, on, { files: startedOutbox('big', many) })
+  await h.start()
+  expect(h.world.status).toBe('📮 50 pending')
+  const ids = h.rows('s1').map(r => r.id)
+  expect(ids).toHaveLength(50)
+  expect(ids).toEqual(many.slice(0, 50).map(r => r.id))
+})
+
+test('adopted_from survives a reload of the same session file', async ($, on) => {
+  const kept = taskRow('a8a8a8a8a8a8a8a8a8a8a8a8', { session_id: 'older', adopted_from: 'older' })
+  const h = harness($, on, { files: startedOutbox('s1', [kept]) })
+  await h.start()
+  await h.world.clock.advance(61 * SEC)
+  const row = h.rows('s1').find(r => r.id === 'a8a8a8a8a8a8a8a8a8a8a8a8')!
+  expect(row.state).toBe('sent')
+  expect(row.adopted_from).toBe('older')
+})
+
+test('turn, compact and end rows are never adopted', async ($, on) => {
+  const h = harness($, on, {
+    files: startedOutbox('quietly', [
+      seedRow('g1', 'pending'),
+      seedRow('g2', 'pending', { kind: 'compact' }),
+      seedRow('g3', 'pending', { kind: 'end' }),
+    ]),
+  })
+  await h.start()
+  expect(h.world.status).toBe('📮 clear')
+  expect(h.rows('s1')).toEqual([])
+  expect(h.world.writes).toHaveLength(0)
+})
+
+test('memory-only mode adopts nothing', async ($, on) => {
+  const h = harness($, on, {
+    dopemux: false,
+    files: startedOutbox('older', [taskRow('h9h9h9h9h9h9h9h9h9h9h9h9')]),
+  })
+  await h.start()
+  expect(h.world.status).toBe('📮 memory-only')
+  await h.world.clock.advance(10 * MIN)
+  expect(h.world.emits).toHaveLength(0)
+  expect([...h.world.store.keys()]).toEqual([])
+})
+
+test('adoption runs once per session start, not on /clear', async ($, on) => {
+  const h = harness($, on, { files: startedOutbox('older', [taskRow('i1i1i1i1i1i1i1i1i1i1i1i1')]) })
+  await h.start()
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits).toHaveLength(1)
+  h.world.files.set(primary('later'), genText('later', 1, [taskRow('i2i2i2i2i2i2i2i2i2i2i2i2')]))
+  h.world.mtimes.set(primary('later'), NOW0 - 48 * 60 * MIN)
+  h.world.sid = 's2'
+  await $.session.end({ reason: 'clear', sessionId: 's1', resume: { sessionId: 's1' } as never })
+  await h.world.clock.settle()
+  await h.world.clock.advance(5 * MIN)
+  expect(h.world.emits).toHaveLength(1)
+})
+
+test('a dead row counts as undeliverable only when its id is not sent elsewhere', async ($, on) => {
+  const h = harness($, on, {
+    files: {
+      ...startedOutbox('failed', [
+        taskRow('j1j1j1j1j1j1j1j1j1j1j1j1', { state: 'dead', attempts: 5 }),
+        taskRow('j2j2j2j2j2j2j2j2j2j2j2j2', { state: 'dead', attempts: 5 }),
+      ]),
+      ...startedOutbox('delivered', [taskRow('j1j1j1j1j1j1j1j1j1j1j1j1', { state: 'sent', attempts: 6 })]),
+    },
+  })
+  await h.start()
+  expect(h.world.status).toBe('⚠ 1 undeliverable')
 })
 
 test('prior-session turn rows alone leave the status line clear', async ($, on) => {
@@ -1550,15 +1802,17 @@ test('a pending row left by an earlier run of the same session is replayed with 
   expect(h.rows().find(r => r.id === stored.id)!.state).toBe('sent')
 })
 
-test('rows of other sessions are not replayed (single writer per file)', async ($, on) => {
+test('rows of a live other session are not replayed (single writer per file)', async ($, on) => {
   const h = harness($, on, {
     files: startedOutbox('other', [
       seedRow('eeeeeeeeeeeeeeeeeeeeeeee', 'pending', { kind: 'task', intended_event: 'task.completed', todos_completed: ['theirs'] }),
     ]),
   })
+  h.world.mtimes.set(primary('other'), NOW0 - 1 * MIN)
   await h.start()
   await h.world.clock.advance(10 * MIN)
   expect(h.world.emits).toHaveLength(0)
+  expect(h.world.writes).toHaveLength(0)
 })
 
 test('a malformed task row with no title is dead at once and nothing is sent for it', async ($, on) => {

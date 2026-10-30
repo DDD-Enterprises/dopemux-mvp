@@ -61,6 +61,10 @@ const LEDGER_GUARD_MS = LEDGER_TIMEOUT_MS + 1_000 // the race timer outlives the
 const MAX_SESSIONS_READ = 8
 const MAX_ROOT_WALK = 40
 const STORE_KEEP_SESSIONS = 3
+const MAX_ANSWER_SCAN_CHARS = 200_000 // a `Decision:` line beyond this is not captured
+const ADOPT_QUIET_MS = 10 * MINUTE // an earlier file this still is not a live session's
+const ADOPT_MAX_AGE_MS = 7 * 24 * 60 * MINUTE // the ledger's default ttl_days is 7
+const ADOPT_MAX_ROWS = 50 // per session start
 
 type Kind = 'turn' | 'compact' | 'end' | 'task' | 'note'
 type RowState = 'pending' | 'sent' | 'dead'
@@ -84,6 +88,7 @@ type OutboxRow = {
   intended_event: IntendedEvent
   state: RowState
   attempts: number
+  adopted_from?: string // the earlier session's file key this row was relayed from
 }
 
 type Entry = { row: OutboxRow; line: string; bytes: number }
@@ -106,7 +111,9 @@ type Ring = {
   failed: boolean
 }
 
-type PriorSessions = { rows: OutboxRow[]; pending: number; dead: number }
+type PriorFile = { key: string; mtimeMs: number; rows: OutboxRow[] }
+
+type PriorSessions = { rows: OutboxRow[]; files: PriorFile[] }
 
 type LedgerEvent =
   | { event_type: 'task.completed'; payload: { title: string }; ts_utc: string; session_id: string; event_id: string }
@@ -128,8 +135,7 @@ type Bridge = {
   root: string | undefined
   rootFor: string | undefined
   rings: Map<string, Ring>
-  foldedPending: number // pending rows of closed (cleared) sessions and older files
-  foldedDead: number
+  foldedDead: number // dead rows of closed (cleared) sessions and earlier files
   foldedDropped: number
   turnId: string
   goal: string
@@ -213,7 +219,8 @@ const DECISION_LINE =
 function decisionsOf(answer: unknown): string[] {
   if (typeof answer !== 'string') return []
   const found: string[] = []
-  for (const match of answer.matchAll(DECISION_LINE)) {
+  // The matcher only ever sees the first MAX_ANSWER_SCAN_CHARS of the answer.
+  for (const match of answer.slice(0, MAX_ANSWER_SCAN_CHARS).matchAll(DECISION_LINE)) {
     const text = clean(match[1], DECISION_CHARS)
     if (text !== '') found.push(text)
     if (found.length >= MAX_DECISIONS) break
@@ -339,6 +346,7 @@ function toRow(r: Record<string, unknown>): OutboxRow {
     attempts: typeof r.attempts === 'number' ? r.attempts : 0,
   }
   if (typeof r.note === 'string') row.note = r.note
+  if (typeof r.adopted_from === 'string') row.adopted_from = r.adopted_from
   return row
 }
 
@@ -626,7 +634,7 @@ function renderStatus($: EngineInterface, s: Bridge): void {
   try {
     // `pending` means waiting for the ledger: turn, compact and end rows are
     // local history (state 'pending' in the file, never sent) and do not count.
-    let pending = s.foldedPending
+    let pending = 0
     let dead = s.foldedDead
     let dropped = s.foldedDropped
     let waiting = 0 // pending rows this run can replay
@@ -984,7 +992,7 @@ function captureCompact($: EngineInterface, s: Bridge, trigger: SessionCompactTr
 // Reads the newest few other sessions' outbox files of this repo (the current
 // process's own sessions are in memory and fresher than their files).
 async function readPrior($: EngineInterface, s: Bridge): Promise<PriorSessions> {
-  const none: PriorSessions = { rows: [], pending: 0, dead: 0 }
+  const none: PriorSessions = { rows: [], files: [] }
   const root = s.root
   if (root === undefined) return none
   try {
@@ -998,24 +1006,19 @@ async function readPrior($: EngineInterface, s: Bridge): Promise<PriorSessions> 
       if (own.has(key)) continue
       newestBy.set(key, Math.max(newestBy.get(key) ?? 0, entry.mtimeMs))
     }
-    const keys = [...newestBy.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, MAX_SESSIONS_READ)
-      .map(([key]) => key)
+    const keys = [...newestBy.entries()].sort((a, b) => b[1] - a[1]).slice(0, MAX_SESSIONS_READ)
     const rows: OutboxRow[] = []
-    let pending = 0
-    let dead = 0
-    for (const key of keys) {
+    const files: PriorFile[] = []
+    for (const [key, mtimeMs] of keys) {
       const best = newest(
         await readGeneration($, generationPath(root, key, 1)),
         await readGeneration($, generationPath(root, key, 2)),
       )
       if (best === undefined) continue
       rows.push(...best.rows)
-      pending += best.rows.filter(isReplayable).length
-      dead += best.rows.filter(row => row.state === 'dead').length
+      files.push({ key, mtimeMs, rows: best.rows })
     }
-    return { rows, pending, dead }
+    return { rows, files }
   } catch {
     return none
   }
@@ -1126,6 +1129,64 @@ function idleMsOf(option: unknown): number {
   return minutes * MINUTE
 }
 
+// --- relaying a quiet earlier session's undelivered rows ---------------------------------
+
+// An earlier session that ended before it delivered a task or note row leaves it
+// stranded: no process replays another session's file. A later session copies
+// such a row into its own ring with the same id, and the normal replay sends it
+// (`event_id` is the row id, so a row delivered twice is one ledger row). The
+// earlier file is read, never written.
+function adoptRow(ring: Ring, source: OutboxRow, from: string): void {
+  // Same id, ts, session_id, payload and attempts: only the state and the source change.
+  const row = fitRow({ ...source, state: 'pending', adopted_from: from })
+  // No await between the caller's id check and this push, as in `append`.
+  ring.ids.add(row.id)
+  const entry = entryOf(row)
+  ring.entries.push(entry)
+  ring.bytes += entry.bytes
+  enforceCap(ring, FILE_CAP_BYTES)
+  ring.dirty = true
+}
+
+// The ids that have the given state in a file read or in a ring of this process.
+function idsInState(s: Bridge, prior: PriorSessions, state: RowState): Set<string> {
+  const ids = new Set<string>()
+  for (const row of prior.rows) if (row.state === state) ids.add(row.id)
+  for (const ring of s.rings.values()) {
+    for (const entry of ring.entries) if (entry.row.state === state) ids.add(entry.row.id)
+  }
+  return ids
+}
+
+// Earlier files' dead rows, once per id, unless the id was sent anywhere.
+function deadOfEarlier(s: Bridge, prior: PriorSessions): number {
+  const sent = idsInState(s, prior, 'sent')
+  const dead = new Set<string>()
+  for (const row of prior.rows) if (row.state === 'dead' && !sent.has(row.id)) dead.add(row.id)
+  return dead.size
+}
+
+// Once per session start. Returns how many rows were adopted.
+function adoptEarlier(s: Bridge, ring: Ring, prior: PriorSessions, now: number): number {
+  if (ring.mode !== 'file') return 0
+  const settled = new Set([...idsInState(s, prior, 'sent'), ...idsInState(s, prior, 'dead')])
+  const found = new Map<string, { row: OutboxRow; from: string; at: number }>()
+  for (const file of prior.files) {
+    // A live concurrent session replays its own rows every minute and keeps its file fresh.
+    if (now - file.mtimeMs < ADOPT_QUIET_MS) continue
+    for (const row of file.rows) {
+      if (!isReplayable(row) || settled.has(row.id) || found.has(row.id)) continue
+      if ([...s.rings.values()].some(candidate => candidate.ids.has(row.id))) continue
+      const at = Date.parse(row.ts)
+      if (!Number.isFinite(at) || now - at > ADOPT_MAX_AGE_MS) continue
+      found.set(row.id, { row, from: file.key, at })
+    }
+  }
+  const oldest = [...found.values()].sort((a, b) => a.at - b.at).slice(0, ADOPT_MAX_ROWS)
+  for (const item of oldest) adoptRow(ring, item.row, item.from)
+  return oldest.length
+}
+
 async function initSession($: EngineInterface, s: Bridge, cwd: string): Promise<void> {
   s.cwd = cwd
   s.rootFor = undefined
@@ -1135,9 +1196,9 @@ async function initSession($: EngineInterface, s: Bridge, cwd: string): Promise<
   await ensureLoaded($, s, ring)
 
   const prior = await readPrior($, s)
-  s.foldedPending = prior.pending
-  s.foldedDead = prior.dead
   const now = await $.clock.now()
+  s.foldedDead = deadOfEarlier(s, prior)
+  if (adoptEarlier(s, ring, prior, now) > 0) void flush($, s, ring)
   const turns = [...prior.rows, ...ring.entries.map(entry => entry.row)].filter(row => row.kind === 'turn')
   const lastTurn = newestWith(turns, () => true)
   const lastAt = lastTurn === undefined ? Number.NaN : Date.parse(lastTurn.ts)
@@ -1176,7 +1237,6 @@ export const register: Register = (on, options) => {
     root: undefined,
     rootFor: undefined,
     rings: new Map(),
-    foldedPending: 0,
     foldedDead: 0,
     foldedDropped: 0,
     turnId: '',
@@ -1358,8 +1418,7 @@ export const register: Register = (on, options) => {
             !ring.entries.some(entry => isReplayable(entry.row))
           ) {
             for (const entry of ring.entries) {
-              if (isReplayable(entry.row)) s.foldedPending += 1
-              else if (entry.row.state === 'dead') s.foldedDead += 1
+              if (entry.row.state === 'dead') s.foldedDead += 1
             }
             s.foldedDropped += ring.dropped
             s.rings.delete(e.sessionId)
