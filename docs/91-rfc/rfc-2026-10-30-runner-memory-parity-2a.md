@@ -28,7 +28,9 @@ Quoted from chat on 2026-10-30:
 - Build for every runner: "make sure we are building for all cli and desktop runners. claude code is the primary target, but codex is the main implementer and grok, agy, cmd code, and opencode (as well as copilot cli) get a fair bit of use too".
 - Scope: "Yes, that scope", in answer to "Should the next wave be unlocking memory for Codex and the other runners?"
 - Identity strength: "Require verified identity", in answer to "Is self-asserted agent attribution enough for Codex writes?"
-- "upgrade conport to 4.0.0". **Read as: upgrade the task orchestrator to upstream 4.0.0.** ConPort is in-repo code with no version line; 4.0.0 is the task-orchestrator release that moved identity to per-client bearer tokens. The operator confirms or corrects this reading when approving.
+- "upgrade conport to 4.0.0", confirmed as "Yes, the orchestrator": upgrade the task orchestrator to upstream 4.0.0. (ConPort is in-repo code with no version line.)
+- Cross-repo cutover: "All at once (Recommended)".
+- ADR change: "Amend it (Recommended)".
 - ConPort's shared-data mode was asked and not answered. Section 5 records the supervisor's call.
 
 ## 1. Why
@@ -113,7 +115,15 @@ Each is the supervisor's call unless section 0 quotes the operator.
 
 ### 5.6 Cross-repo reach
 
-The task orchestrator on `:7890` is one container for the whole machine. About 25 repos' `.mcp.json` files, four repos' `.codex/config.toml`, and the global Claude, Codex and Command Code configs point at it. The running container is currently serving dNh_CRM. Requiring tokens affects all of them. **This is an operator decision** (section 9); the design assumes the cutover touches only configs that `dopemux` generates and leaves other repos to re-run `dopemux mcp init`, unless the operator chooses otherwise.
+The task orchestrator on `:7890` is one container for the whole machine. About 25 repos' `.mcp.json` files, four repos' `.codex/config.toml`, and the global Claude, Codex and Command Code configs point at it. The running container is currently serving dNh_CRM. Requiring tokens affects all of them.
+
+**Operator decision: all at once.** One operator-run cutover command:
+
+1. Dry run first: lists every config on the machine that references `:7890` (repo `.mcp.json` and `.codex/config.toml` files under the code root, and the global runner configs), and says which will lose access.
+2. Backs up the orchestrator's database.
+3. Issues the runner tokens, regenerates this repo's configs, switches the image to 4.0.0 with token auth, and restarts it.
+4. Other repos regain access by re-running `dopemux mcp init`; until they do, their orchestrator calls fail with a clear authentication error. Global runner configs are listed for the operator; Wave 2B's generator rewrites them.
+5. Rollback: restore the backup and the 3.8.0 pin with one command.
 
 ### 5.7 Generator gate becomes real
 
@@ -140,7 +150,7 @@ W5 delivers the 4.0.0 pin, config, hooks change and token file support behind a 
 
 ### 5.8 ADR
 
-ADR-MCPINT-002's precondition 2 names `actor_authentication.enabled`, a 3.x setting that 4.0.0 removed. W7 drafts an amendment (status proposed): "verified per-runner transport identity on all write-capable servers" replaces precondition 2, and precondition 1 is restated as G1 plus G2. **Accepting the amendment is an operator decision** (section 9).
+ADR-MCPINT-002's precondition 2 names `actor_authentication.enabled`, a 3.x setting that 4.0.0 removed. **Operator decision: amend it.** W7 drafts the amendment (status proposed): "verified per-runner transport identity on all write-capable servers" replaces precondition 2, and precondition 1 is restated as G1 plus G2. The operator accepts the amendment before the Codex config ships.
 
 ## 6. Security
 
@@ -186,11 +196,9 @@ An independent reader raised six questions. All were settled as supervisor's cal
 - Merge order: this joins the signed-proof merge train after #1482, #1483, #1485 and #1484.
 - Writing to the user's home directory (keychain, `~/.config/dopemux/auth/`, global runner configs) changes persistent configuration: every such write is an explicit command the operator runs, with a dry run first.
 
-## 9. Open operator decisions
+## 9. Operator decisions
 
-1. **Cross-repo cutover** (5.6): accept that requiring tokens on the shared orchestrator affects every repo pointing at `:7890`, with other repos re-running `dopemux mcp init`; or require a per-repo opt-in; or keep the orchestrator permissive until a separate cutover.
-2. **ADR-MCPINT-002 amendment** (5.8): accept that verified per-runner transport identity replaces `actor_authentication.enabled` as precondition 2.
-3. **Reading of "upgrade conport to 4.0.0"** (section 0).
+All three are decided (section 0): cutover all at once (5.6), amend the ADR (5.8), and 4.0.0 means the task orchestrator. Still ahead for the operator: accepting the ADR amendment text, running the cutover command, approving the audit route, and the live Codex acceptance run.
 
 ## 10. Left to the builder
 
