@@ -19,6 +19,7 @@ Static parsing only; nothing here starts a service.
 """
 
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -201,7 +202,7 @@ def _compose_differences() -> Tuple[Dict[str, Tuple[int, List[int]]], List[str]]
         compose_name = svc.get("compose_service_name", name)
         compose_svc = compose_services.get(compose_name)
         if compose_svc is None:
-            not_comparable.append(f"{name}: compose service {compose_name!r} not found")
+            # Reported by _missing_compose_services(); a failure, not a note.
             continue
         if compose_svc.get("network_mode"):
             not_comparable.append(f"{name}: compose service uses network_mode")
@@ -213,6 +214,17 @@ def _compose_differences() -> Tuple[Dict[str, Tuple[int, List[int]]], List[str]]
         if svc["port"] not in host_ports:
             differences[name] = (svc["port"], host_ports)
     return differences, not_comparable
+
+
+def _missing_compose_services() -> List[Tuple[str, str]]:
+    """(registry service, compose name) for non-smoke services absent from compose.yml."""
+    compose_services = load_compose().get("services", {})
+    return [
+        (svc["name"], svc.get("compose_service_name", svc["name"]))
+        for svc in _registry_services()
+        if not svc.get("enabled_in_smoke", False)
+        and svc.get("compose_service_name", svc["name"]) not in compose_services
+    ]
 
 
 def _literal_hits() -> Dict[Tuple[str, int], List[str]]:
@@ -262,6 +274,37 @@ def test_registry_matches_compose_for_non_smoke() -> None:
             "EXCEPTIONS entry with a reason and follow_up."
         )
     assert not problems, "Registry/compose port drift:\n  - " + "\n  - ".join(problems)
+
+
+def test_registry_services_exist_in_compose() -> None:
+    problems = [
+        f"{name}: services/registry.yaml names compose service {compose_name!r} "
+        "but compose.yml has no such service (rule: a non-smoke registry service "
+        "must exist in compose.yml; set compose_service_name or fix the registry)."
+        for name, compose_name in _missing_compose_services()
+    ]
+    assert (
+        not problems
+    ), "Registry services missing from compose:\n  - " + "\n  - ".join(problems)
+
+
+def test_missing_compose_service_is_reported(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        sys.modules[__name__],
+        "_registry_services",
+        lambda: [
+            {"name": "ghost", "port": 1234, "compose_service_name": "ghost-compose"},
+            {"name": "plain", "port": 1235},
+            {"name": "smoke", "port": 1236, "enabled_in_smoke": True},
+        ],
+    )
+    monkeypatch.setattr(
+        sys.modules[__name__], "load_compose", lambda: {"services": {"smoke": {}}}
+    )
+    assert _missing_compose_services() == [
+        ("ghost", "ghost-compose"),
+        ("plain", "plain"),
+    ]
 
 
 def test_no_unknown_port_literals() -> None:
