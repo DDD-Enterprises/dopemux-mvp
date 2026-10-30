@@ -421,12 +421,16 @@ function statusText(s: Ledger): string {
   let line = present.length === 0 ? 'agents –' : `agents ${present.join(' ')}`
   if (sum.advisorTotal > 0) {
     const { sessionAdvisorBudget, childAdvisorBudget } = s.config
+    // The session total is only ever read against the session budget, and the
+    // worst child only against the child budget, so neither figure borrows the other's.
     const overSession = sessionAdvisorBudget >= 0 && sum.advisorTotal > sessionAdvisorBudget
-    const overChild =
-      childAdvisorBudget >= 0 && Object.values(sum.advisorByAgent).some(n => n > childAdvisorBudget)
-    if (overSession) line += ` · advisor ${sum.advisorTotal}/${sessionAdvisorBudget} ⚠`
-    else if (overChild) line += ` · advisor ${sum.advisorTotal}/${childAdvisorBudget} ⚠`
-    else line += ` · advisor ${sum.advisorTotal}`
+    line += overSession
+      ? ` · advisor ${sum.advisorTotal}/${sessionAdvisorBudget} ⚠`
+      : ` · advisor ${sum.advisorTotal}`
+    const worstChild = Math.max(0, ...Object.values(sum.advisorByAgent))
+    if (childAdvisorBudget >= 0 && worstChild > childAdvisorBudget) {
+      line += ` · child ${worstChild}/${childAdvisorBudget} ⚠`
+    }
   }
   if (!s.receiptsEnabled) line += ' · ledger off'
   if (s.receiptsFailed > 0) line += ' · receipts ✗'
@@ -475,7 +479,7 @@ function budgetToasts($: EngineInterface, s: Ledger, receipt: AdvisorCallReceipt
         $,
         s,
         `advisor-child:${receipt.agent_id}`,
-        `route-ledger: agent ${shortId(receipt.agent_id)} made ${n} advisor calls (budget ${childAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
+        `agent ${shortId(receipt.agent_id)} made ${n} advisor calls (budget ${childAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
       )
     }
   }
@@ -486,7 +490,7 @@ function budgetToasts($: EngineInterface, s: Ledger, receipt: AdvisorCallReceipt
         $,
         s,
         'advisor-session',
-        `route-ledger: session made ${total} advisor calls (budget ${sessionAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
+        `session made ${total} advisor calls (budget ${sessionAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
       )
     }
   }
@@ -887,7 +891,8 @@ function noteAgentCall($: EngineInterface, s: Ledger, e: Readonly<Record<string,
     if (facts.toolUseId !== '') s.toasted.add(facts.toolUseId)
     try {
       $.ui.toast(
-        `route-ledger: Agent call "${facts.description}" (${facts.subagentType ?? 'default'}) has no model pinned.`,
+        `Agent call "${facts.description}" (${facts.subagentType ?? 'default'}) has no model pinned.`,
+        { timeoutMs: TOAST_MS },
       )
     } catch {
       // a refused toast must not cost the receipt
@@ -1031,14 +1036,14 @@ export const register: Register = (on, options) => {
     try {
       return { text: routeAnswer(s, e.args) }
     } catch {
-      return { text: 'route-ledger: could not read the ledger.' }
+      return { text: 'could not read the ledger.' }
     }
   })
   on('command.run', { command: 'route' }, async (_, e) => {
     try {
       return { text: routeAnswer(s, e.args) }
     } catch {
-      return { text: 'route-ledger: could not read the ledger.' }
+      return { text: 'could not read the ledger.' }
     }
   })
 

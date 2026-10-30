@@ -356,6 +356,10 @@ test('an unpinned Agent call toasts once, naming the type and description but no
   expect(h.world.toasts[0]!.includes('Explore')).toBe(true)
   expect(h.world.toasts[0]!.includes('Map the repo')).toBe(true)
   expect(h.world.toasts[0]!.includes('SECRET-PROMPT')).toBe(false)
+  // The host already names the plugin; a leading `route-ledger:` would print twice.
+  expect(h.world.toasts[0]).not.toMatch(/^route-ledger:/)
+  // An unset timeout falls back to the host default of 4 s, which is easy to miss.
+  expect(h.world.toastTimeouts[0]).toBeGreaterThan(4000)
 
   const receipt = h.receipts()[0]!
   expect(receipt.pinned).toBe(false)
@@ -909,13 +913,35 @@ test('status shows advisor N only when N > 0, and N/B ⚠ once a budget is excee
   expect(h.status()).toBe('agents – · advisor 2/1 ⚠')
 })
 
-test('a child over its budget shows N/B ⚠ in the status', async ($, on) => {
+test('a child over its budget shows its own count against its own budget, apart from the session total', async ($, on) => {
   const h = harness($, on)
   await h.start()
   h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
   await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
   await h.settleStatus()
-  expect(h.status()).toBe('agents S×1 · advisor 1/0 ⚠')
+  expect(h.status()).toBe('agents S×1 · advisor 1 · child 1/0 ⚠')
+})
+
+test('the child segment names the worst child, and a session overage shows both segments', { options: { sessionAdvisorBudget: 1, childAdvisorBudget: 0 } }, async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
+  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
+  await h.settleStatus()
+  expect(h.status()).toBe('agents S×1 · advisor 2/1 ⚠ · child 2/0 ⚠')
+})
+
+test('a clean agent after an over-budget one does not change the figures the status shows', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
+  h.world.serverToolUses = []
+  await stepAs(h, 'agent-8', 'claude-haiku-5-5')
+  await h.settleStatus()
+  expect(h.status()).toBe('agents S×1 H×1 · advisor 1 · child 1/0 ⚠')
 })
 
 test('status appends ledger off when receipts are disabled, and receipts ✗ after a failed write', async ($, on) => {
@@ -977,6 +1003,7 @@ test('a child over childAdvisorBudget toasts once per agent, names it, never cla
   expect(toast.includes('0')).toBe(true)
   expect(toast).toMatch(/cannot block/)
   expect(toast).not.toMatch(/prevented|blocked a/)
+  expect(toast).not.toMatch(/^route-ledger:/)
   expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
 
   // Another agent crosses its own budget: its own toast.
@@ -1003,6 +1030,7 @@ test('the session total toasts once when it exceeds sessionAdvisorBudget', { opt
   expect(h.world.toasts).toHaveLength(1)
   expect(h.world.toasts[0]).toMatch(/session/)
   expect(h.world.toasts[0]).toMatch(/cannot block/)
+  expect(h.world.toasts[0]).not.toMatch(/^route-ledger:/)
   expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
 })
 

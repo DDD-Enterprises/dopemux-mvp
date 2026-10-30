@@ -43,8 +43,10 @@ Nothing is installed. The mod lasts for that session
 - **Status segment**, for example `agents S×4 H×2 · advisor 1`. Agents appear in the
   order S (sonnet), O (opus), H (haiku), F (fable), then `?` for any other or unknown
   model. Only non-zero counts show. With none, the segment reads `agents –`.
-  `advisor N` appears when N > 0. Once a budget applies and is exceeded it reads
-  `advisor N/B ⚠`.
+  `advisor N` (the session total) appears when N > 0. Once `sessionAdvisorBudget`
+  applies and N exceeds it, it reads `advisor N/B ⚠`. A separate `· child M/B ⚠`
+  segment appears once the busiest child's count M exceeds `childAdvisorBudget`, so a
+  clean agent never makes the session total look like a child overage.
 - `· ledger off` is appended when receipts are disabled. `· receipts ✗` is appended
   when a receipt write failed.
 - **Toasts**, each shown once:
