@@ -825,6 +825,29 @@ def _json_mcp_server_names(payload: str) -> set[str]:
     return set()
 
 
+_PROFILE_STARTABLE_OUTPUT_RE = re.compile(
+    r"^profiles/[^/]+/(?:mcpServers\.json|\.mcp\.json)$"
+)
+
+
+def _mapping_server_names(
+    output_path: str, data: Any, key: str, errors: list[str]
+) -> set[str]:
+    """Server names under ``data[key]``; records a shape error instead of raising."""
+    if data is None:
+        return set()
+    if not isinstance(data, dict):
+        errors.append(f"{output_path} top level is not a mapping")
+        return set()
+    section = data.get(key)
+    if section is None:
+        return set()
+    if not isinstance(section, dict):
+        errors.append(f"{output_path} `{key}` is not a mapping")
+        return set()
+    return set(section)
+
+
 def validate_decision_required_generated_config_quarantine(
     catalog: dict[str, Any],
     outputs: dict[str, str] | None = None,
@@ -861,16 +884,29 @@ def validate_decision_required_generated_config_quarantine(
         except json.JSONDecodeError:
             errors.append("opencode/opencode.managed.jsonc is not parseable JSONC")
         else:
-            startable_outputs["opencode/opencode.managed.jsonc"] = set(
-                opencode_data.get("mcp") or {}
+            opencode_path = "opencode/opencode.managed.jsonc"
+            startable_outputs[opencode_path] = _mapping_server_names(
+                opencode_path, opencode_data, "mcp", errors
             )
 
     copilot_payload = rendered.get("copilot/mcp-proxy-config.copilot.yaml")
     if copilot_payload:
-        copilot_data = yaml.safe_load(copilot_payload) or {}
-        startable_outputs["copilot/mcp-proxy-config.copilot.yaml"] = set(
-            copilot_data.get("mcpServers") or {}
-        )
+        try:
+            copilot_data = yaml.safe_load(copilot_payload)
+        except yaml.YAMLError:
+            errors.append("copilot/mcp-proxy-config.copilot.yaml is not parseable YAML")
+        else:
+            copilot_path = "copilot/mcp-proxy-config.copilot.yaml"
+            startable_outputs[copilot_path] = _mapping_server_names(
+                copilot_path, copilot_data, "mcpServers", errors
+            )
+
+    # Profile-plane outputs (ADR-DMX-MCPPROF-001) are startable server maps too.
+    for output_path in sorted(rendered):
+        if _PROFILE_STARTABLE_OUTPUT_RE.match(output_path):
+            startable_outputs[output_path] = _json_mcp_server_names(
+                rendered[output_path]
+            )
 
     for output_path, names in startable_outputs.items():
         for name in sorted(names & decision_required):
