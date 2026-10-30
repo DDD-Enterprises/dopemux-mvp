@@ -1,0 +1,193 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W02-VERIFY-001-R5",
+  "project": "dopemux-mvp",
+  "target": "Independently verify W01's repair (structural transcript check, whole-diff review against D1-D10, all gates re-run by the coordinator), then commit it by explicit pathspec and record the proof files. No auditor is run.",
+  "invariants": [
+    "I01 Scope: the coordinator writes only the proof files in this packet's write_surface and commits, by explicit pathspec, the six content files W01 changed. The coordinator never edits a content file (a defect goes back to W01 as the one narrow repair dispatch, by SendMessage, or the macro stops).",
+    "I02 Forbidden actions: push, open or update a PR, merge, sign, mark ready, force-push, history rewrite, `sync_with_base_branch`, running any auditor or sending repository content to any model or network endpoint.",
+    "I03 advisor: the coordinator may call `advisor` at most ONCE, at the verification freeze, and records it; the child's count must be 0.",
+    "I04 One narrow repair dispatch to W01 is allowed after an evidence-backed defect; otherwise no delegation.",
+    "I05 Route: the coordinator (claude-code-desktop, claude-sonnet-5-5, effort high as the session reports; observed identity UNKNOWN without a runtime receipt).",
+    "I06 Report every gate as PASS, FAIL, NOT_RUN or UNKNOWN literally; never collapse NOT_RUN into PASS. `model_observed` stays UNKNOWN unless a runtime receipt shows it.",
+    "I07 No secrets, no credentials, no network. Do not print or copy environment values, tokens or key material into any file; a pattern scan of every file you write is required (patterns in the steps).",
+    "I08 Return: the repaired head, the two commit hashes, per-item verification (D1-D10) with file:line, the gate table, the child's measured allowances and structural counts, and what the operator needs next (the audit macro and its gate line).",
+    "I09 Allowances (PROPOSED): elapsed <= 60 min for this workstream (coordinator clock); child dispatches 0 beyond W01's cap; coordinator advisor calls <= 1. A figure the runner does not report is UNKNOWN and never counts as within budget. When ANY limit is reached or about to be exceeded: stop at the next safe point, dispatch nothing further, retry nothing, substitute nothing, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Verification: (1) before reading anything, parse W01's transcript STRUCTURALLY (tool_use by name, advisor blocks, Agent calls, models, tool-use count, span) with a script; any advisor block, Agent call, commit, push or write outside the allowlist is a STOP. (2) `git diff --stat` and `git status --porcelain` show only the six allowlisted files (plus the unrelated untracked/modified files already present). (3) Read the whole diff yourself (at most two re-reads) and check each of D1-D10 against it with file:line, including that no new await was added to the `tool.call` or `turn.step` hook bodies, that `next(e)` is still called exactly once everywhere, that no forbidden API is used, and that no receipt key, enum or schema_version changed. (4) Re-run every gate yourself, independently of the child: `claude plugin validate`, `claude plugin test` (count must be >= 55 plus the new tests, 0 fail), `tsc -p ... --noEmit`, the receipt schema check with a negative control, `python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD` after the commit, `git diff --check`, `SKIP=markdownlint pre-commit run --files <the six files>`; markdownlint is NOT_RUN. (5) Mutation sanity for the three riskiest items (D6, D7, D8): temporarily revert the relevant hunk in a SCRATCH COPY (never in the worktree) or reason from the diff that the new tests would fail without it, and record how you checked.",
+    "Commits: first the six content files, message `fix(route-ledger): repair the ten R4 audit findings` with the finding ids and no body claims beyond what you verified; then, as a separate commit, the proof files (VERIFY_NOTES.md, GATES_R5.txt, REPAIR.diff = `git diff 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1 <repair commit> -- <six files>` byte-exact, ALLOWANCE_LEDGER.json, the flattened issuance package with SHA256SUMS_PACKAGE.txt). Run a pattern scan (AKIA, xox, ghp_, sk-, password assignment, private key header) over every new file; a hit is a STOP.",
+    "After both commits STOP and report. Do not start any audit: the audit macro is issued separately, pinned to the repaired head, with its own operator line. State plainly that the R4 audits and the R4 proof no longer cover the repaired code, that N1 (live session) and N10 remain, and that main must be re-checked (and merged by the operator's sync decision) before an audit if it moved."
+  ],
+  "depends_on": [
+    "TP-DMX-ROUTELEDGER-W01-REPAIR-001-R5"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R5",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R5",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "proof(route-ledger-001-r5): verification of the repair of the ten R4 findings",
+    "allowlist": [
+      "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "plugins/dopemux-route-ledger/hooks/register.test.ts",
+      "plugins/dopemux-route-ledger/README.md",
+      "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+      "plugins/dopemux-route-ledger/receipt.schema.json",
+      "docs/02-how-to/route-ledger.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/VERIFY_NOTES.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/GATES_R5.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/REPAIR.diff",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCE_LEDGER.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCE_LEDGER_LIVE.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/MACRO_PACKET.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/EXECUTION_BINDING.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCES.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ISSUANCE.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W01_TASK_PACKET.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W02_TASK_PACKET.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W01_EXECUTION_BINDING.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W02_EXECUTION_BINDING.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SHA256SUMS_PACKAGE.txt"
+    ],
+    "verify": [
+      "git diff --name-only | sort   # equals the allowlist plus unrelated untracked/unstaged files already present at start",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): dopemux-route-ledger mod (R5 repair of the R4 findings)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R5 (W02). The PR is #1482 and is owned by the operator: no push, sign or merge here.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Structural transcript check and allowlist check of W01",
+      "requirements": [
+        "No advisor, no Agent call, no commit, no stray write."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "0 advisor blocks",
+        "0 Agent calls",
+        "only the six files changed"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W02-S2",
+      "task": "Read the whole diff and verify D1-D10",
+      "requirements": [
+        "file:line evidence per item."
+      ],
+      "commands": [
+        "git diff --stat",
+        "git diff"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/VERIFY_NOTES.md"
+      ],
+      "validation": [
+        "each item verified"
+      ],
+      "context_files": [
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/README.md",
+        "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+        "plugins/dopemux-route-ledger/receipt.schema.json",
+        "docs/02-how-to/route-ledger.md"
+      ]
+    },
+    {
+      "id": "W02-S3",
+      "task": "Re-run all gates independently",
+      "requirements": [
+        "Literal output."
+      ],
+      "commands": [
+        "claude plugin validate plugins/dopemux-route-ledger",
+        "claude plugin test plugins/dopemux-route-ledger",
+        "tsc -p plugins/dopemux-route-ledger --noEmit"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/GATES_R5.txt"
+      ],
+      "validation": [
+        "gates recorded"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W02-S4",
+      "task": "Commit the repair, then the proof files; scan; report",
+      "requirements": [
+        "Two commits, explicit pathspecs."
+      ],
+      "commands": [
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/REPAIR.diff",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCE_LEDGER.json"
+      ],
+      "validation": [
+        "two commits exist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R5",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R5",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-desktop",
+      "model": "claude-sonnet-5-5",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/VERIFY_NOTES.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/GATES_R5.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/REPAIR.diff",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCE_LEDGER.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCE_LEDGER_LIVE.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/MACRO_PACKET.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCES.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ISSUANCE.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W01_TASK_PACKET.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W02_TASK_PACKET.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W01_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W02_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SHA256SUMS_PACKAGE.txt"
+  ],
+  "canonical_writers": [
+    "W02-coordinator"
+  ],
+  "semantic_scope": [
+    "route-ledger-repair-verify"
+  ],
+  "rollback_boundary": "git revert <W02 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
