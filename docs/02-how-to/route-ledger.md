@@ -5,7 +5,7 @@ type: how-to
 owner: '@hu3mann'
 author: 'claude-code-agent (claude-haiku-5-5)'
 date: '2026-10-23'
-last_review: '2026-10-23'
+last_review: '2026-10-30'
 next_review: '2027-01-21'
 prelude: How to load the dopemux-route-ledger mod, read its status segment and toasts, use the /route-ledger table, configure its receipts, and hand receipts to a supervisor for ExecutionBinding merge.
 ---
@@ -52,14 +52,20 @@ Nothing is installed. The mod lasts for that session
 - **Toasts**, each shown once:
   - a subagent whose advisor count exceeds `childAdvisorBudget`;
   - the session, once its total exceeds `sessionAdvisorBudget`;
-  - an Agent call with no model pinned (`unpinnedAgent`).
-  Every advisor toast says the mod counts advisor calls and cannot block them.
+  - an Agent call with no model pinned (`unpinnedAgent`). It names the subagent type
+    and a shortened tool_use id; the description appears only when
+    `recordDescription` is on.
+  Every advisor toast says the mod counts advisor calls and cannot block them. After a
+  hot reload the toasts already shown stay shown, because the mod restores that from
+  the receipt files.
 - **`/route-ledger`** prints a table with one row per loop: `main`, then one row per
   subagent, at most 60 rows and then `+N more`. Columns: `agent | runner | model
   requested | model observed | effort requested | match | advisor`. Unknown cells read
-  `UNKNOWN`.
+  `UNKNOWN`. The `main` row comes from the last main-loop step the mod saw, not from the
+  receipt files, so it is filled even when receipts are disabled.
 - **`/route-ledger receipts`** prints the receipt file, the receipt counts, and
-  `receiptsEnabled` / `receiptsFailed`. Any other argument prints a one-line usage.
+  `receiptsEnabled` / `receiptsFailed`, and the reason when receipts are off. Any other
+  argument prints a one-line usage.
 
 The command reads the ledger and writes nothing.
 
@@ -73,17 +79,20 @@ refused, use `/route-ledger`. That name is registered on its own and keeps worki
 
 | key | default | meaning |
 | --- | --- | --- |
-| `receiptDir` | `.control-tower/state/route-ledger` | Where `<sessionId>.jsonl` files go. The default is used only when `.control-tower/state` exists. An explicit directory is created on first write. A `..` segment disables receipts. |
+| `receiptDir` | `.control-tower/state/route-ledger` | Where the receipt files go (section 5 gives the file name). The default, compared without a trailing slash, is used only when `.control-tower/state` exists. An explicit directory is created on first write. Receipts are disabled for a `..` segment, for a directory (or its nearest existing parent) that is a symbolic link or not a directory, and for a relative directory that resolves outside the project root. An absolute directory is allowed. |
 | `unpinnedAgent` | `warn` | `warn` toasts once per Agent call with no model pinned (forks excepted). `off` records only. |
 | `childAdvisorBudget` | `0` | Advisor calls allowed per child agent. `0` means a child's first call exceeds it. A negative number turns the check off. |
 | `sessionAdvisorBudget` | `-1` | Advisor calls allowed per session. `-1` turns it off. |
-| `maxReceiptsPerFile` | `500` | Allowed range 50 to 5000. A new segment starts after this many records. |
+| `maxReceiptsPerFile` | `500` | Allowed range 50 to 5000. A new segment starts after this many records, or earlier when the file reaches about 3.5 MB. |
+| `recordDescription` | `false` | `false`: the Agent call's description is not recorded (the receipt keeps an empty `description`) and the unpinned-agent toast names the subagent type and a shortened tool_use id. `true`: the first 80 characters are recorded and named in the toast. |
 
 ## 5. Receipts
 
 Receipts are JSONL under `receiptDir`. The file stem is the session id with any
-character outside `A-Za-z0-9_-` replaced by `_`, so the file is `<stem>.jsonl`, then
-`<stem>.1.jsonl` and so on. Each record has `schema_version`
+character outside `A-Za-z0-9_-` replaced by `_`, then cut to 120 characters, so the file
+is `<stem>.jsonl`, then `<stem>.1.jsonl` and so on. A segment rolls to the next file
+after `maxReceiptsPerFile` records or when it reaches about 3.5 MB (the host refuses
+files over 4 MiB), whichever comes first. Each record has `schema_version`
 `dopemux.route_ledger.receipt.v1`. The format is defined by `receipt.schema.json`.
 
 Three record kinds exist:
@@ -94,7 +103,37 @@ Three record kinds exist:
   with token usage.
 - `advisor_call`: one advisor server-tool-use, deduplicated by its id.
 
-Prompts, file contents and tool output never enter a receipt.
+Prompts, file contents and tool output never enter a receipt. The Agent call's
+`description` key is always present, but it holds the empty string unless
+`recordDescription` is on. An empty effort string counts as no effort, and an advisor
+use with an empty id is not recorded.
+
+### Directory and file safety
+
+Once per session the mod looks at the receipt directory with `$.fs.stat` (the directory
+if it exists, else its nearest existing parent). It turns receipts off, and
+`/route-ledger receipts` gives the reason, when that path is a symbolic link or not a
+directory, or when a relative `receiptDir` lands, after links are resolved, outside the
+project root. An absolute `receiptDir` is allowed by design, subject to the link and
+directory checks. Before it writes a segment file for the first time, the mod looks at
+the file itself: a symbolic link there turns receipts off and nothing is written. A stat
+that rejects means "not there"; if no part of the directory can be inspected, receipts
+are off.
+
+### Memory, session end and /clear
+
+- Once a closed segment is written, its receipts leave memory. The open (last) segment
+  stays whole, and so does a segment that still holds an Agent call waiting for its
+  `agent.spawn` join. The counts, the `main` row and the agent table do not depend on
+  the dropped receipts.
+- At session end the mod flushes, and if a segment is still unwritten it tries once
+  more. A second failure is counted in `receiptsFailed` and not retried.
+- On `/clear` the mod writes what is pending, keeps the status line, then resets its
+  ledger so the next hook re-resolves the session id. A new id means a new file and a
+  fresh ledger (counts and table start again). An unchanged id means the mod reads the
+  same file back and carries on. Whether Claude Code changes the id on `/clear` is
+  UNKNOWN (not observed in a live session); both cases are handled and tested offline.
+  Until the next recorded event the table and counts are empty after a `/clear`.
 
 ### binding_fields
 
@@ -118,7 +157,8 @@ and runs `ct bind-record`. The mod never runs `ct`.
 - A fork inherits its parent's model, so a fork with no model is recorded as
   inheriting, not as unpinned.
 - It makes no network, process or model call. It writes nothing to the repository
-  except its own receipt files under `receiptDir`, and nothing to `~/.claude`.
+  except its own receipt files under `receiptDir`, and nothing to `~/.claude`. Its
+  file-system calls are exists, list, read, write and stat on those paths.
 - Whether it coexists with another plugin's status line, for example dopemux-pulse,
   is unverified. The mod sets its own status line, and this was not run.
 - The plugin API is early access and may change between Claude Code builds.
@@ -128,7 +168,9 @@ and runs `ct bind-record`. The mod never runs `ct`.
 - **`· ledger off` in the status, or `receipts are off` in `/route-ledger receipts`.**
   The default `receiptDir` is used only when `.control-tower/state` exists. Either
   create that directory, or set `receiptDir` to an explicit path. The receipts text
-  gives the reason.
+  gives the reason. It also appears when the receipt directory or a receipt file is a
+  symbolic link, or a relative `receiptDir` resolves outside the project root; use a
+  real directory inside the project, or an absolute one.
 - **`· receipts ✗`.** A receipt write failed. Run `/route-ledger receipts` and read
   `receiptsFailed`. Check that the receipt directory is writable.
 - **Unpinned-agent toast.** An Agent call had no model. Pin the model on the call, or

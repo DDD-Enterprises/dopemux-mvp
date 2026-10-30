@@ -6,7 +6,7 @@
     "receiptDir": {
       "type": "string",
       "title": "Receipt directory",
-      "description": "Where receipt files (<sessionId>.jsonl) are written. The default is used only when .control-tower/state exists; an explicit directory is created on first write. A path containing a .. segment disables receipts.",
+      "description": "Where receipt files (<sessionId>.jsonl) are written. The default is used only when .control-tower/state exists; an explicit directory is created on first write. Receipts are disabled for a path containing a .. segment, for a directory (or, when it does not exist yet, its nearest existing parent) that is a symbolic link or not a directory, and for a relative path that resolves outside the project root. An absolute directory is allowed.",
       "default": ".control-tower/state/route-ledger"
     },
     "unpinnedAgent": {
@@ -31,10 +31,16 @@
     "maxReceiptsPerFile": {
       "type": "number",
       "title": "Receipts per file",
-      "description": "Whole number from 50 to 5000 (default 500); a new <sessionId>.<n>.jsonl segment starts after this many.",
+      "description": "Whole number from 50 to 5000 (default 500); a new <sessionId>.<n>.jsonl segment starts after this many, or earlier, at about 3.5 MB.",
       "default": 500,
       "min": 50,
       "max": 5000
+    },
+    "recordDescription": {
+      "type": "boolean",
+      "title": "Record the Agent call description",
+      "description": "Default false: the Agent call's description is not recorded (the receipt keeps an empty description) and the unpinned-agent toast names the subagent type and a shortened tool_use id instead. true: record the first 80 characters and name them in the toast.",
+      "default": false
     }
   }
 }

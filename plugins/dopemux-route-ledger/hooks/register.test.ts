@@ -3,15 +3,23 @@ import { expect, mock, test } from 'claude-code/testing'
 import type { Engine, MockClock } from 'claude-code/testing'
 
 import {
+  STATUS_DEBOUNCE_MS,
+  commit,
   familyOf,
+  flushAtEnd,
   flushSegments,
+  initSession,
+  limits,
   newLedger,
   parseConfig,
+  recordSpawn,
   summarize,
   toBindingFields,
 } from './register'
 
 const T0 = 1_792_000_000_000
+// What the mocked `$.session.root()` answers, and where mocked real paths land.
+const ROOT = '/proj'
 const DEFAULT_DIR = '.control-tower/state/route-ledger'
 const FILE = `${DEFAULT_DIR}/sess-1.jsonl`
 const SCHEMA = 'dopemux.route_ledger.receipt.v1'
@@ -75,6 +83,10 @@ const USAGE: Usage = {
   cache_creation_input_tokens: 40,
 }
 
+type StatOverride =
+  | 'missing'
+  | { kind?: 'file' | 'dir' | 'other'; isLink?: boolean; realPath?: string }
+
 type Opts = {
   dirs?: string[]
   files?: Record<string, string>
@@ -116,14 +128,34 @@ function harness($: Engine, on: On, opts: Opts = {}) {
         }
       }
     }
+    if (root !== undefined && path === root) return '.'
     return root !== undefined && path.startsWith(`${root}/`) ? path.slice(root.length + 1) : path
   }
+  const isDir = (path: string): boolean =>
+    path === '.' ||
+    path === '/' ||
+    world.dirs.has(path) ||
+    [...world.dirs].some(dir => dir.startsWith(`${path}/`)) ||
+    [...world.files.keys()].some(file => file.startsWith(`${path}/`))
   const world = {
     clock,
     files: new Map<string, string>(Object.entries(opts.files ?? {})),
     dirs: new Set<string>(opts.dirs ?? ['.control-tower/state']),
     writes: [] as { path: string; text: string }[],
     failWrites: false,
+    // The next N writes are refused, then writes work again.
+    failNext: 0,
+    // Files that are listed but cannot be read (over 4 MiB, removed since).
+    unreadable: new Set<string>(),
+    // The session id `$.session.id()` answers; a test may change it.
+    sessionId: opts.sessionId ?? 'sess-1',
+    // Where the project root really lands (a symlinked root differs from ROOT).
+    rootReal: undefined as string | undefined,
+    // Per-path answers of `$.fs.stat`, keyed by the path as the mod spells it.
+    stats: new Map<string, StatOverride>(),
+    failStat: false,
+    statCalls: [] as { path: string; resolve: boolean }[],
+    ends: 0,
     toasts: [] as string[],
     toastTimeouts: [] as (number | undefined)[],
     statuses: [] as (string | undefined)[],
@@ -140,8 +172,12 @@ function harness($: Engine, on: On, opts: Opts = {}) {
   }
 
   on('session.start', (_, e) => ({ cwd: e.cwd }))
-  on('session.end', (_, e) => ({ sessionId: e.sessionId }))
-  on('session.id', () => ({ value: opts.sessionId ?? 'sess-1' }))
+  on('session.end', (_, e) => {
+    world.ends += 1
+    return { sessionId: e.sessionId }
+  })
+  on('session.id', () => ({ value: world.sessionId }))
+  on('session.root', () => ({ value: ROOT }))
   on('ui.toast', (_, e) => {
     world.toasts.push(e.text)
     world.toastTimeouts.push(e.timeoutMs)
@@ -159,13 +195,39 @@ function harness($: Engine, on: On, opts: Opts = {}) {
   on('fs.write', (_, e) => {
     const path = rel(e.path)
     world.writes.push({ path, text: e.text })
+    if (world.failNext > 0) {
+      world.failNext -= 1
+      return { deny: 'disk full' }
+    }
     if (world.failWrites) return { deny: 'disk full' }
     world.files.set(path, e.text)
     return { value: undefined }
   })
   on('fs.read', (_, e) => {
     const text = world.files.get(rel(e.path))
+    if (world.unreadable.has(rel(e.path))) return { deny: `EFBIG ${e.path}` }
     return text === undefined ? { deny: `ENOENT ${e.path}` } : { value: text }
+  })
+  on('fs.stat', (_, e) => {
+    const path = rel(e.path).replace(/(.)\/+$/, '$1')
+    world.statCalls.push({ path, resolve: e.resolve })
+    if (world.failStat) return { deny: 'EIO' }
+    const override = world.stats.get(path)
+    if (override === 'missing') return { deny: `ENOENT ${path}` }
+    const isFile = world.files.has(path)
+    if (!isFile && path !== ROOT && !isDir(path) && override === undefined) return { deny: `ENOENT ${path}` }
+    const realRoot = world.rootReal ?? ROOT
+    const real = path === ROOT ? realRoot : path.startsWith('/') ? path : path === '.' ? realRoot : `${realRoot}/${path}`
+    return {
+      value: {
+        kind: isFile ? ('file' as const) : ('dir' as const),
+        size: 1,
+        mtimeMs: 0,
+        isLink: false,
+        ...(e.resolve ? { realPath: real } : {}),
+        ...override,
+      },
+    }
   })
   on('fs.exists', (_, e) => {
     const path = rel(e.path)
@@ -239,11 +301,12 @@ function harness($: Engine, on: On, opts: Opts = {}) {
       })
     },
     async settleStatus() {
-      await clock.advance(DEBOUNCE_MS)
+      await clock.advance(STATUS_DEBOUNCE_MS)
     },
     async end(reason: 'clear' | 'other' = 'other') {
-      await $.session.end({ reason, sessionId: 'sess-1', resume: { sessionId: 'sess-1' } as never })
+      const result = await $.session.end({ reason, sessionId: 'sess-1', resume: { sessionId: 'sess-1' } as never })
       await clock.settle()
+      return result
     },
     async agent(args: Receipt = {}) {
       const before = world.calls.length
@@ -287,7 +350,6 @@ function harness($: Engine, on: On, opts: Opts = {}) {
   }
 }
 
-const DEBOUNCE_MS = 1_000
 const STEP: StepInput = { turnId: 'turn-1', index: 0, model: 'claude-sonnet-5-5' }
 
 // ---------------------------------------------------------------- Agent calls
@@ -327,7 +389,8 @@ test('a pinned Agent call is recorded and passed on unchanged', async ($, on) =>
     requested_model: 'sonnet',
     requested_effort: 'high',
     subagent_type: 'general-purpose',
-    description: 'Write the tests',
+    // recordDescription is off by default: the key stays, the text is not kept.
+    description: '',
     pinned: true,
     inherits: false,
     spawned_agent_id: null,
@@ -346,15 +409,16 @@ test('a pinned Agent call is recorded and passed on unchanged', async ($, on) =>
   h.expectWritesUnder(DEFAULT_DIR)
 })
 
-test('an unpinned Agent call toasts once, naming the type and description but not the prompt', async ($, on) => {
+test('an unpinned Agent call toasts once, naming the type and the short id but not the description or the prompt', async ($, on) => {
   const h = harness($, on)
   await h.start()
-  const { seen } = await h.agent({ subagent_type: 'Explore', description: 'Map the repo' })
+  const { seen, id } = await h.agent({ subagent_type: 'Explore', description: 'Map the repo' })
 
   expect(seen).toHaveLength(1)
   expect(h.world.toasts).toHaveLength(1)
   expect(h.world.toasts[0]!.includes('Explore')).toBe(true)
-  expect(h.world.toasts[0]!.includes('Map the repo')).toBe(true)
+  expect(h.world.toasts[0]!.includes(id.slice(0, 8))).toBe(true)
+  expect(h.world.toasts[0]!.includes('Map the repo')).toBe(false)
   expect(h.world.toasts[0]!.includes('SECRET-PROMPT')).toBe(false)
   // The host already names the plugin; a leading `route-ledger:` would print twice.
   expect(h.world.toasts[0]).not.toMatch(/^route-ledger:/)
@@ -396,14 +460,14 @@ test('unpinnedAgent off records but stays silent', { options: { unpinnedAgent: '
   expect(h.receipts()[0]!.pinned).toBe(false)
 })
 
-test('a long description is cut to 80 characters', async ($, on) => {
+test('a long description is cut to 80 characters when recordDescription is on', { options: { recordDescription: true } }, async ($, on) => {
   const h = harness($, on)
   await h.start()
   await h.agent({ model: 'haiku', description: 'x'.repeat(200) })
   expect(h.receipts()[0]!.description).toBe('x'.repeat(80))
 })
 
-test('next runs once with e unchanged when the write fails, and the next receipt heals the file', async ($, on) => {
+test('next runs once with e unchanged when the write fails, and the next receipt heals the file', { options: { recordDescription: true } }, async ($, on) => {
   const h = harness($, on)
   await h.start()
   h.world.failWrites = true
@@ -745,7 +809,7 @@ test('the session id is sanitized into the file name', async ($, on) => {
 
 // ------------------------------------------------------------------ lifecycle
 
-test('session.end clear is not an end; any other reason stops recording', async ($, on) => {
+test('session.end clear is not an end; any other reason stops recording', { options: { recordDescription: true } }, async ($, on) => {
   const h = harness($, on)
   await h.start()
   await h.agent({ model: 'sonnet', description: 'one' })
@@ -847,7 +911,7 @@ test('parseConfig falls back to the default for a bad value and clamps the recei
 test('a failed write is counted in the state, not thrown and not retried', async () => {
   const s = newLedger({})
   s.receiptsEnabled = true
-  s.segments = [{ n: 0, path: 'd/x.jsonl', receipts: [{ seq: 0 } as never], bytes: 0, dirty: true }]
+  s.segments = [{ n: 0, path: 'd/x.jsonl', receipts: [{ seq: 0 } as never], bytes: 0, count: 1, evicted: false, linkChecked: false, dirty: true }]
   let attempts = 0
   const failing = {
     fs: {
@@ -965,7 +1029,10 @@ test('a burst of receipts is debounced into one status update', async ($, on) =>
   const before = h.world.statuses.length
   for (let i = 0; i < 20; i++) await h.step({ ...STEP, index: i, agentId: `a${i}` })
   expect(h.world.statuses.length).toBe(before)
-  await h.settleStatus()
+  // One millisecond short of the production constant: not redrawn yet.
+  await h.world.clock.advance(STATUS_DEBOUNCE_MS - 1)
+  expect(h.world.statuses.length).toBe(before)
+  await h.world.clock.advance(1)
   expect(h.world.statuses.length).toBe(before + 1)
   expect(h.status()).toBe('agents S×20')
   await h.settleStatus()
@@ -1181,4 +1248,694 @@ test('nothing throws when the ledger is empty or odd input reaches summarize', a
   const s = newLedger({})
   s.agents['x'] = { toolUseId: null, agentId: null, requestedModel: 5 as never, observedModel: null, pinned: null, inherits: false }
   expect(() => summarize(s)).not.toThrow()
+})
+
+// ======================================================================= R5 repairs
+//
+// Test-only helpers: receipt literals as they sit in a file, and an in-memory
+// `$` for the tests that drive the exported ledger functions directly.
+
+function stepRec(seq: number, over: Receipt = {}): Receipt {
+  return {
+    ...base('step_observed', seq),
+    turn_id: 'turn-x',
+    step_index: seq,
+    requested_model: 'claude-sonnet-5-5',
+    requested_effort: 'high',
+    observed_model: 'claude-sonnet-5-5',
+    match: true,
+    usage: null,
+    binding_fields: bf('claude-sonnet-5-5'),
+    ...over,
+  }
+}
+function reqRec(seq: number, over: Receipt = {}): Receipt {
+  return {
+    ...base('agent_request', seq),
+    tool_use_id: `toolu_${seq}`,
+    requested_model: null,
+    requested_effort: null,
+    subagent_type: 'Explore',
+    description: '',
+    pinned: false,
+    inherits: false,
+    spawned_agent_id: null,
+    resolved_model: null,
+    binding_fields: bf('UNKNOWN'),
+    ...over,
+  }
+}
+function advRec(seq: number, id: string, over: Receipt = {}): Receipt {
+  return { ...base('advisor_call', seq), advisor_use_id: id, started_at: 1, ended_at: 2, loop: 'main', ...over }
+}
+const jsonl = (receipts: Receipt[]): string => receipts.map(r => JSON.stringify(r)).join('\n') + '\n'
+const asReceipt = (r: Receipt): never => r as never
+
+function fakeEnv(init: Record<string, string> = {}) {
+  const files = new Map<string, string>(Object.entries(init))
+  const writes: string[] = []
+  const flags = { failWrites: false, failNext: 0 }
+  const $ = {
+    fs: {
+      write: async (path: string, text: string) => {
+        writes.push(path)
+        if (flags.failNext > 0) {
+          flags.failNext -= 1
+          throw new Error('disk full')
+        }
+        if (flags.failWrites) throw new Error('disk full')
+        files.set(path, text)
+      },
+      read: async (path: string) => {
+        const text = files.get(path)
+        if (text === undefined) throw new Error('ENOENT')
+        return text
+      },
+      list: async (dir: string) =>
+        [...files.keys()]
+          .filter(path => path.startsWith(`${dir}/`))
+          .map(path => ({ name: path.slice(dir.length + 1), kind: 'file', size: 1, mtimeMs: 0, isLink: false })),
+      exists: async () => true,
+      stat: async (path: string, options?: { resolve: boolean }) => {
+        if (path.endsWith('.jsonl') && !files.has(path)) throw new Error('ENOENT')
+        const real = path.startsWith('/') ? path : `${ROOT}/${path}`
+        return {
+          kind: path.endsWith('.jsonl') ? 'file' : 'dir',
+          size: 1,
+          mtimeMs: 0,
+          isLink: false,
+          ...(options?.resolve === true ? { realPath: real } : {}),
+        }
+      },
+    },
+    session: { id: async () => 'sess-1', root: async () => ROOT },
+    clock: { after: () => ({ cancel() {} }) },
+    ui: { status() {}, toast() {} },
+  }
+  return { $: $ as never, files, writes, flags }
+}
+
+// A ledger as `initSession` leaves it for the default directory.
+function readyLedger(options: Record<string, unknown> = {}) {
+  const s = newLedger(options)
+  s.isReady = true
+  s.receiptsEnabled = true
+  s.sessionId = 'sess-1'
+  s.fileStem = 'sess-1'
+  s.receiptDir = DEFAULT_DIR
+  return s
+}
+
+// -------------------------------------------------------- D1 (N11): the main row
+
+test('D1: the main row shows the last main step when receipts are disabled', async ($, on) => {
+  const h = harness($, on, { dirs: [] })
+  await h.start()
+  await h.step({ ...STEP, effort: 'high' })
+
+  expect(h.world.writes).toHaveLength(0)
+  const rows = (await h.run('route-ledger')).text!.split('\n')
+  expect(rows[1]).toBe('main | claude-code-agent | claude-sonnet-5-5 | claude-sonnet-5-5 | high | yes | 0')
+})
+
+test('D1: the main row is rebuilt on rehydrate from the receipt files', async ($, on) => {
+  const files = {
+    [FILE]: jsonl([stepRec(0, { requested_model: 'claude-opus-5', observed_model: 'claude-opus-5', requested_effort: 'max' })]),
+    [`${DEFAULT_DIR}/sess-1.1.jsonl`]: jsonl([stepRec(1, { agent_id: 'agent-9' }), advRec(2, 'srv-1')]),
+  }
+  const h = harness($, on, { files })
+  await h.start()
+  const rows = (await h.run('route-ledger')).text!.split('\n')
+  expect(rows[1]).toBe('main | claude-code-agent | claude-opus-5 | claude-opus-5 | max | yes | 1')
+})
+
+// ------------------------------------------------------- D2 (N12): empty strings
+
+test('D2: an empty effort is no effort, and an empty advisor id is no advisor call', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet', effort: '' })
+  h.world.serverToolUses = [{ id: '', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await h.step({ ...STEP, effort: '' })
+
+  const receipts = h.receipts()
+  expect(receipts.map(r => r.kind)).toEqual(['agent_request', 'step_observed'])
+  for (const receipt of receipts) {
+    expect(receipt.requested_effort).toBe(null)
+    expect(receipt.binding_fields.selection.effort).toBe('UNKNOWN')
+    expect(receipt.binding_fields.effort_requested).toBe('UNKNOWN')
+  }
+  h.sample()
+})
+
+test('D2: toBindingFields treats an empty effort as UNKNOWN', async () => {
+  const fields = toBindingFields({ requestedModel: 'sonnet', requestedEffort: '', observedModel: null })
+  expect(fields.selection.effort).toBe('UNKNOWN')
+  expect(fields.effort_requested).toBe('UNKNOWN')
+})
+
+test('D2: no receipt carries an empty selection.effort, effort_requested or advisor_use_id', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  let n = 0
+  for (const effort of ['', 'high']) {
+    for (const id of ['', 'srv-ok']) {
+      n += 1
+      await h.agent({ model: 'sonnet', effort })
+      h.world.serverToolUses = [{ id: `${id}${id === '' ? '' : n}`, name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+      await h.step({ ...STEP, index: n, effort })
+    }
+  }
+  const receipts = h.receipts()
+  expect(receipts.filter(r => r.kind === 'advisor_call')).toHaveLength(2)
+  for (const receipt of receipts) {
+    if (receipt.binding_fields !== undefined) {
+      expect(receipt.binding_fields.selection.effort).not.toBe('')
+      expect(receipt.binding_fields.effort_requested).not.toBe('')
+      expect(receipt.requested_effort).not.toBe('')
+    }
+    if (receipt.kind === 'advisor_call') expect(receipt.advisor_use_id).not.toBe('')
+  }
+  h.sample()
+})
+
+// ----------------------------------------------- D3 (N13a): toast-once on reload
+
+test('D3: a reload restores the toast-once state, so nothing toasts twice', { options: { sessionAdvisorBudget: 1 } }, async ($, on) => {
+  const files = {
+    [FILE]: jsonl([
+      reqRec(0, { tool_use_id: 'toolu_old_unpinned' }),
+      advRec(1, 'srv-a', { loop: 'agent', agent_id: 'agent-old' }),
+      advRec(2, 'srv-b', { loop: 'agent', agent_id: 'agent-old' }),
+    ]),
+  }
+  const h = harness($, on, { files })
+  await h.start()
+
+  // Another advisor call by the child and the session that were already over budget.
+  h.world.serverToolUses = [{ id: 'srv-c', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-old', 'claude-sonnet-5-5')
+  expect(h.world.toasts).toHaveLength(0)
+
+  // The same unpinned call seen again does not toast; a new one still does.
+  const again = await h.agent({ subagent_type: 'Explore', tool_use_id: 'toolu_old_unpinned' })
+  expect(again.seen[0]!.tool_use_id).toBe('toolu_old_unpinned')
+  expect(h.world.toasts).toHaveLength(0)
+  await h.agent({ subagent_type: 'Explore' })
+  expect(h.world.toasts).toHaveLength(1)
+})
+
+test('D3: a pinned call and a fork are not restored as toasted, a budget of -1 restores nothing', { options: { childAdvisorBudget: -1 } }, async ($, on) => {
+  const files = {
+    [FILE]: jsonl([
+      reqRec(0, { tool_use_id: 'toolu_pinned', pinned: true, requested_model: 'haiku' }),
+      reqRec(1, { tool_use_id: 'toolu_fork', subagent_type: 'fork', inherits: true }),
+      advRec(2, 'srv-a', { loop: 'agent', agent_id: 'agent-old' }),
+    ]),
+  }
+  const h = harness($, on, { files, })
+  await h.start()
+  h.world.serverToolUses = [{ id: 'srv-b', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+  await stepAs(h, 'agent-old', 'claude-sonnet-5-5')
+  expect(h.world.toasts).toHaveLength(0)
+  // Not restored as toasted: an unpinned call under a pinned receipt's id would toast.
+  await h.agent({ subagent_type: 'Explore', tool_use_id: 'toolu_pinned' })
+  expect(h.world.toasts).toHaveLength(1)
+})
+
+// ------------------------------------------------------------ D4 (N4): final flush
+
+test('D4: session.end makes one more awaited flush when the first leaves a dirty tail', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.failNext = 2
+  await h.agent({ model: 'sonnet' })
+  expect(h.world.files.has(FILE)).toBe(false)
+
+  const result = await h.end('other')
+  expect(result).toEqual({ sessionId: 'sess-1' })
+  expect(h.world.ends).toBe(1)
+  // write 1 at the record, write 2 at the end (refused), write 3 the one more attempt.
+  expect(h.world.writes).toHaveLength(3)
+  expect(h.receipts()).toHaveLength(1)
+})
+
+test('D4: when both final writes fail it is counted, not thrown and not retried further', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.failNext = 3
+  await h.agent({ model: 'sonnet' })
+
+  const result = await h.end('other')
+  expect(result).toEqual({ sessionId: 'sess-1' })
+  expect(h.world.ends).toBe(1)
+  expect(h.world.writes).toHaveLength(3)
+  expect(h.world.files.has(FILE)).toBe(false)
+})
+
+test('D4: flushAtEnd retries once, counts each failure and stops; a clean ledger writes nothing', async () => {
+  const dirty = (): ReturnType<typeof readyLedger> => {
+    const s = readyLedger()
+    s.segments = [{ n: 0, path: FILE, receipts: [stepRec(0) as never], bytes: 10, count: 1, evicted: false, linkChecked: false, dirty: true }]
+    return s
+  }
+
+  const failing = fakeEnv()
+  failing.flags.failWrites = true
+  const s1 = dirty()
+  await flushAtEnd(failing.$, s1)
+  expect(failing.writes).toHaveLength(2)
+  expect(s1.receiptsFailed).toBe(2)
+  expect(s1.segments[0]!.dirty).toBe(true)
+
+  const healing = fakeEnv()
+  healing.flags.failNext = 1
+  const s2 = dirty()
+  await flushAtEnd(healing.$, s2)
+  expect(healing.writes).toHaveLength(2)
+  expect(s2.receiptsFailed).toBe(1)
+  expect(s2.segments[0]!.dirty).toBe(false)
+  expect(healing.files.get(FILE)).toBe(JSON.stringify(stepRec(0)) + '\n')
+
+  const clean = fakeEnv()
+  const s3 = readyLedger()
+  await flushAtEnd(clean.$, s3)
+  expect(clean.writes).toHaveLength(0)
+})
+
+// ----------------------------------------------- D6 (N2): directory and file safety
+
+const receiptsText = async (h: ReturnType<typeof harness>) => (await h.run('route-ledger', 'receipts')).text!
+
+test('D6: a trailing slash on the default directory still requires .control-tower/state', { options: { receiptDir: '.control-tower/state/route-ledger/' } }, async ($, on) => {
+  const h = harness($, on, { dirs: [] })
+  await h.start()
+  const { seen } = await h.agent({ model: 'sonnet' })
+  expect(seen).toHaveLength(1)
+  expect(h.world.writes).toHaveLength(0)
+  expect(await receiptsText(h)).toMatch(/\.control-tower\/state does not exist/)
+})
+
+test('D6: a trailing slash on the default directory is written beside existing state', { options: { receiptDir: '.control-tower/state/route-ledger/' } }, async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  expect(h.receipts()).toHaveLength(1)
+  h.expectWritesUnder(DEFAULT_DIR)
+})
+
+test('D6: a receipt directory that is a symbolic link disables receipts, with the reason', async ($, on) => {
+  const h = harness($, on)
+  h.world.stats.set(DEFAULT_DIR, { isLink: true, realPath: `${ROOT}/elsewhere` })
+  await h.start()
+  const { seen } = await h.agent({ model: 'sonnet' })
+  expect(seen).toHaveLength(1)
+  expect(h.world.writes).toHaveLength(0)
+  const text = await receiptsText(h)
+  expect(text).toMatch(/receiptsEnabled false/)
+  expect(text).toMatch(/symbolic link/)
+})
+
+test('D6: a receipt directory that is not a directory disables receipts', async ($, on) => {
+  const h = harness($, on)
+  h.world.stats.set(DEFAULT_DIR, { kind: 'file' })
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  expect(h.world.writes).toHaveLength(0)
+  expect(await receiptsText(h)).toMatch(/not a directory/)
+})
+
+test('D6: a symbolic parent of a missing directory disables receipts', { options: { receiptDir: 'out/ledger' } }, async ($, on) => {
+  const h = harness($, on, { dirs: [], dir: 'out/ledger' })
+  h.world.stats.set('out', { isLink: true, realPath: '/elsewhere/out' })
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  expect(h.world.writes).toHaveLength(0)
+  expect(await receiptsText(h)).toMatch(/symbolic link/)
+})
+
+test('D6: a relative directory whose parent resolves outside the project root disables receipts', { options: { receiptDir: 'out/ledger' } }, async ($, on) => {
+  const h = harness($, on, { dirs: [], dir: 'out/ledger' })
+  // `out` is not itself a link here (a link higher up leads it elsewhere).
+  h.world.stats.set('out', { realPath: '/elsewhere/out' })
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  expect(h.world.writes).toHaveLength(0)
+  expect(await receiptsText(h)).toMatch(/outside the project root/)
+})
+
+test('D6: an existing relative directory that lands outside the project root disables receipts', { options: { receiptDir: 'out/ledger' } }, async ($, on) => {
+  const h = harness($, on, { dirs: ['out/ledger'], dir: 'out/ledger' })
+  h.world.stats.set('out/ledger', { realPath: '/elsewhere/out/ledger' })
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  expect(h.world.writes).toHaveLength(0)
+  expect(await receiptsText(h)).toMatch(/outside the project root/)
+})
+
+test('D6: a relative directory that stays inside the project is written, root compared after resolving', { options: { receiptDir: 'out/ledger' } }, async ($, on) => {
+  const h = harness($, on, { dirs: [], dir: 'out/ledger' })
+  // The project root itself sits behind a link: both sides are resolved the same way.
+  h.world.rootReal = '/private/proj'
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  expect(h.lines('out/ledger/sess-1.jsonl')).toHaveLength(1)
+  h.expectWritesUnder('out/ledger')
+  expect(h.world.statCalls.some(call => call.path === ROOT && call.resolve)).toBe(true)
+})
+
+test('D6: a sibling that only shares the root as a name prefix is outside it', { options: { receiptDir: 'out/ledger' } }, async ($, on) => {
+  const h = harness($, on, { dirs: [], dir: 'out/ledger' })
+  h.world.stats.set('out', { realPath: `${ROOT}-other/out` })
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  expect(h.world.writes).toHaveLength(0)
+})
+
+test('D6: an absolute directory is allowed by design', { options: { receiptDir: '/var/ledger-out' } }, async ($, on) => {
+  const h = harness($, on, { dirs: [], dir: '/var/ledger-out' })
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  expect(h.lines('/var/ledger-out/sess-1.jsonl')).toHaveLength(1)
+  h.expectWritesUnder('/var/ledger-out')
+})
+
+test('D6: an absolute directory that is itself a link is still refused', { options: { receiptDir: '/var/ledger-out' } }, async ($, on) => {
+  const h = harness($, on, { dirs: [], dir: '/var/ledger-out' })
+  h.world.stats.set('/var/ledger-out', { isLink: true })
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  expect(h.world.writes).toHaveLength(0)
+})
+
+test('D6: a stat that rejects everywhere disables receipts and nothing throws', async ($, on) => {
+  const h = harness($, on)
+  h.world.failStat = true
+  await h.start()
+  const { seen, result } = await h.agent({ model: 'sonnet' })
+  expect(seen).toHaveLength(1)
+  expect(result).toEqual({ result: { status: 'ok' }, text: 'done', ref: 0 })
+  expect(h.world.writes).toHaveLength(0)
+  expect(await receiptsText(h)).toMatch(/could not be inspected/)
+})
+
+test('D6: a segment file that is a symbolic link is not written, receipts go off with a reason', async ($, on) => {
+  const h = harness($, on)
+  h.world.stats.set(FILE, { kind: 'file', isLink: true })
+  await h.start()
+  const first = await h.agent({ model: 'sonnet' })
+  await h.settleStatus()
+  await h.agent({ model: 'opus' })
+
+  expect(first.seen).toHaveLength(1)
+  expect(h.world.writes).toHaveLength(0)
+  expect(h.status()).toMatch(/ledger off/)
+  const text = await receiptsText(h)
+  expect(text).toMatch(/receiptsEnabled false/)
+  expect(text).toMatch(/sess-1\.jsonl is a symbolic link/)
+})
+
+test('D6: a segment file is checked once, before its first write only', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  for (let i = 0; i < 3; i++) await h.agent({ model: 'sonnet' })
+  expect(h.world.writes.length).toBeGreaterThanOrEqual(3)
+  expect(h.world.statCalls.filter(call => call.path === FILE)).toHaveLength(1)
+})
+
+// --------------------------------------------------- D7 (N3): bound the memory
+
+test('D7: closed segments are evicted after a flush; the open one, the counts and the last main step stay', async () => {
+  const s = readyLedger()
+  s.config.maxReceiptsPerFile = 3
+  const env = fakeEnv()
+  for (let i = 0; i < 8; i++) {
+    commit(env.$, s, asReceipt(stepRec(i, { agent_id: i === 0 ? null : `a${i}`, requested_model: `m${i}` })))
+  }
+  await s.chain
+
+  expect(s.segments.map(g => g.receipts.length)).toEqual([0, 0, 2])
+  expect(s.segments.map(g => g.evicted)).toEqual([true, true, false])
+  expect(s.segments.map(g => g.count)).toEqual([3, 3, 2])
+  expect(s.segments.every(g => g.bytes > 0)).toBe(true)
+  expect(s.segments.map(g => g.path)).toEqual([FILE, `${DEFAULT_DIR}/sess-1.1.jsonl`, `${DEFAULT_DIR}/sess-1.2.jsonl`])
+  expect(s.counts).toEqual({ agent_request: 0, step_observed: 8, advisor_call: 0 })
+  expect(s.lastMain?.seq).toBe(0)
+  // Everything was written before it left memory.
+  expect(env.files.get(FILE)!.split('\n').filter(line => line !== '')).toHaveLength(3)
+
+  // A closed segment is never written again.
+  const before = env.writes.length
+  commit(env.$, s, asReceipt(stepRec(8)))
+  await s.chain
+  expect(env.writes.slice(before)).toEqual([`${DEFAULT_DIR}/sess-1.2.jsonl`])
+})
+
+test('D7: the receipts command still counts every receipt once the closed segments are gone', { options: { maxReceiptsPerFile: 50 } }, async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  for (let i = 0; i < 120; i++) await h.step({ ...STEP, index: i })
+  const text = await receiptsText(h)
+  expect(text).toMatch(/step_observed 120/)
+  expect(text).toMatch(/agent_request 0/)
+})
+
+test('D7: nothing evicts a dirty segment, and a healed one goes at the next flush', async () => {
+  const s = readyLedger()
+  s.config.maxReceiptsPerFile = 3
+  const env = fakeEnv()
+  env.flags.failWrites = true
+  for (let i = 0; i < 5; i++) commit(env.$, s, asReceipt(stepRec(i)))
+  await s.chain
+  expect(s.segments.map(g => g.dirty)).toEqual([true, true])
+  expect(s.segments.map(g => g.receipts.length)).toEqual([3, 2])
+  expect(s.segments.map(g => g.evicted)).toEqual([false, false])
+
+  env.flags.failWrites = false
+  await flushSegments(env.$, s)
+  expect(s.segments.map(g => g.receipts.length)).toEqual([0, 2])
+  expect(s.segments.map(g => g.evicted)).toEqual([true, false])
+  expect(env.files.get(FILE)!.split('\n').filter(line => line !== '')).toHaveLength(3)
+})
+
+test('D7: a segment holding an agent_request still awaiting its spawn join is kept until it is joined', async () => {
+  const s = readyLedger()
+  s.config.maxReceiptsPerFile = 2
+  const env = fakeEnv()
+  commit(env.$, s, asReceipt(reqRec(0, { tool_use_id: 'toolu_a', pinned: true, requested_model: 'haiku' })))
+  for (let i = 1; i <= 4; i++) commit(env.$, s, asReceipt(stepRec(i)))
+  await s.chain
+  expect(s.segments.map(g => g.receipts.length)).toEqual([2, 0, 1])
+  expect(s.segments.map(g => g.evicted)).toEqual([false, true, false])
+
+  await recordSpawn(env.$, s, 'toolu_a', 'agent-1', 'claude-haiku-4-5')
+  await s.chain
+  expect(s.segments[0]!.evicted).toBe(true)
+  expect(s.segments[0]!.receipts).toHaveLength(0)
+  // The join was written whole before the segment left memory.
+  const rewritten = env.files.get(FILE)!.split('\n').filter(line => line !== '').map(line => JSON.parse(line))
+  expect(rewritten).toHaveLength(2)
+  expect(rewritten[0].spawned_agent_id).toBe('agent-1')
+  expect(rewritten[0].resolved_model).toBe('claude-haiku-4-5')
+})
+
+test('D7: rehydrate evicts each closed segment after tallying it and keeps the last one', async () => {
+  const env = fakeEnv({
+    [FILE]: jsonl([stepRec(0), stepRec(1, { agent_id: 'a1' }), advRec(2, 'srv-1')]),
+    [`${DEFAULT_DIR}/sess-1.1.jsonl`]: jsonl([reqRec(3, { tool_use_id: 'toolu_unjoined' }), stepRec(4)]),
+    [`${DEFAULT_DIR}/sess-1.2.jsonl`]: jsonl([stepRec(5), advRec(6, 'srv-2', { loop: 'agent', agent_id: 'a1' })]),
+  })
+  const s = newLedger({})
+  await initSession(env.$, s)
+
+  expect(s.receiptsEnabled).toBe(true)
+  expect(s.segments.map(g => g.n)).toEqual([0, 1, 2])
+  expect(s.segments.map(g => g.count)).toEqual([3, 2, 2])
+  // The middle one still holds a request awaiting its join, so it stays.
+  expect(s.segments.map(g => g.evicted)).toEqual([true, false, false])
+  expect(s.segments[0]!.receipts).toHaveLength(0)
+  expect(s.counts).toEqual({ agent_request: 1, step_observed: 4, advisor_call: 2 })
+  expect(s.lastMain?.seq).toBe(5)
+  expect(s.nextSeq).toBe(7)
+  expect(env.writes).toHaveLength(0)
+})
+
+// ------------------------------------------------------ D8 (N5): after /clear
+
+test('D8: after /clear a new session id means a new file and a fresh ledger', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  await h.step(STEP)
+  await h.end('clear')
+
+  h.world.sessionId = 'sess-2'
+  await h.agent({ model: 'opus' })
+  const next = h.lines(`${DEFAULT_DIR}/sess-2.jsonl`)
+  expect(next).toHaveLength(1)
+  expect(next[0]!.seq).toBe(0)
+  expect(next[0]!.session_id).toBe('sess-2')
+  // The pre-clear file is complete and untouched afterwards.
+  expect(h.receipts().map(r => r.kind)).toEqual(['agent_request', 'step_observed'])
+
+  const text = await receiptsText(h)
+  expect(text).toMatch(/sess-2\.jsonl/)
+  expect(text).toMatch(/agent_request 1, step_observed 0/)
+  // The table restarts too: one agent, and the old main step is gone.
+  const rows = (await h.run('route-ledger')).text!.split('\n')
+  expect(rows[1]).toMatch(/^main \| claude-code-agent \| UNKNOWN \| UNKNOWN \| UNKNOWN \| UNKNOWN \| 0$/)
+  expect(rows.filter(line => line.startsWith('pending:'))).toHaveLength(1)
+})
+
+test('D8: after /clear an unchanged session id rehydrates and continues the same file', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  await h.step(STEP)
+  await h.end('clear')
+
+  await h.agent({ model: 'opus' })
+  expect(h.receipts().map(r => r.seq)).toEqual([0, 1, 2])
+  expect(h.receipts().map(r => r.kind)).toEqual(['agent_request', 'step_observed', 'agent_request'])
+  const text = await receiptsText(h)
+  expect(text).toMatch(/agent_request 2, step_observed 1/)
+  const rows = (await h.run('route-ledger')).text!.split('\n')
+  expect(rows[1]).toBe('main | claude-code-agent | claude-sonnet-5-5 | claude-sonnet-5-5 | UNKNOWN | yes | 0')
+})
+
+test('D8: /clear writes a dirty tail before the ledger is reset', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  h.world.failWrites = true
+  await h.agent({ model: 'sonnet' })
+  expect(h.world.files.has(FILE)).toBe(false)
+  h.world.failWrites = false
+  await h.end('clear')
+  expect(h.receipts()).toHaveLength(1)
+})
+
+test('D8: /clear keeps the status line, up to date, and a pending redraw does not show the reset ledger', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ model: 'sonnet' })
+  // No settle: the redraw for this receipt is still pending when /clear arrives.
+  await h.end('clear')
+  expect(h.status()).toBe('agents S×1')
+  await h.settleStatus()
+  expect(h.status()).toBe('agents S×1')
+})
+
+test('D8: a hook that follows /clear re-resolves the session id before it records', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.step(STEP)
+  await h.end('clear')
+  h.world.sessionId = 'sess-3'
+  await h.step({ ...STEP, index: 1 })
+  expect(h.lines(`${DEFAULT_DIR}/sess-3.jsonl`).map(r => r.step_index)).toEqual([1])
+})
+
+// ----------------------------------------------------- D9 (N9): the description
+
+test('D9: by default the description is neither recorded nor toasted', async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  const { id } = await h.agent({ subagent_type: 'Explore', description: 'Refactor the payroll module' })
+
+  const receipt = h.receipts()[0]!
+  expect(Object.keys(receipt)).toContain('description')
+  expect(receipt.description).toBe('')
+  expect(h.world.files.get(FILE)!.includes('payroll')).toBe(false)
+  expect(h.world.toasts).toHaveLength(1)
+  expect(h.world.toasts[0]!.includes('payroll')).toBe(false)
+  expect(h.world.toasts[0]).toBe(`Agent call ${id.slice(0, 8)} (Explore) has no model pinned.`)
+  h.sample()
+})
+
+test('D9: recordDescription on records the first 80 characters and toasts them', { options: { recordDescription: true } }, async ($, on) => {
+  const h = harness($, on)
+  await h.start()
+  await h.agent({ subagent_type: 'Explore', description: 'Map the repo' })
+  await h.agent({ model: 'haiku', description: 'y'.repeat(120) })
+
+  expect(h.receipts()[0]!.description).toBe('Map the repo')
+  expect(h.receipts()[1]!.description).toBe('y'.repeat(80))
+  expect(h.world.toasts).toHaveLength(1)
+  expect(h.world.toasts[0]).toBe('Agent call "Map the repo" (Explore) has no model pinned.')
+  h.sample()
+})
+
+test('D9: parseConfig takes a boolean recordDescription and falls back to false for anything else', async () => {
+  expect(parseConfig({}).recordDescription).toBe(false)
+  expect(parseConfig({ recordDescription: true }).recordDescription).toBe(true)
+  expect(parseConfig({ recordDescription: false }).recordDescription).toBe(false)
+  for (const bad of ['true', 'yes', 1, 0, null, undefined, {}, []]) {
+    expect(parseConfig({ recordDescription: bad }).recordDescription).toBe(false)
+  }
+})
+
+// ---------------------------------------------------- D10 (O1-O5): missing tests
+
+test('a segment also rolls by bytes, before maxReceiptsPerFile is reached', async () => {
+  // The engine loads its own copy of the plugin module, so the seam is driven on a ledger built here.
+  const saved = limits.segmentBytesMax
+  limits.segmentBytesMax = 2_000
+  try {
+    const s = readyLedger()
+    const env = fakeEnv()
+    for (let i = 0; i < 10; i++) commit(env.$, s, asReceipt(stepRec(i)))
+    await s.chain
+
+    expect(s.segments.length).toBeGreaterThan(1)
+    expect(s.segments.length).toBeLessThan(10)
+    const first = env.files.get(FILE)!
+    expect(first.length).toBeGreaterThanOrEqual(2_000)
+    // It rolled at the receipt that reached the limit: without its line it was under.
+    const lastLine = first.slice(0, -1).split('\n').pop()!
+    expect(first.length - lastLine.length - 1).toBeLessThan(2_000)
+    expect(s.segments[0]!.bytes).toBe(first.length)
+    const all = [...env.files.values()].flatMap(text => text.split('\n').filter(line => line !== '').map(line => JSON.parse(line).seq))
+    expect(all.sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+  } finally {
+    limits.segmentBytesMax = saved
+  }
+})
+
+test('rehydrate leaves an unreadable segment alone and skips a corrupt line, nothing throws', async ($, on) => {
+  const unreadable = `${DEFAULT_DIR}/sess-1.1.jsonl`
+  const files = {
+    [FILE]:
+      jsonl([stepRec(0)]) +
+      'this is not json\n' +
+      JSON.stringify({ schema_version: 'something.else', seq: 1 }) +
+      '\n' +
+      'null\n' +
+      JSON.stringify(stepRec(7)) +
+      '\n',
+    [unreadable]: 'UNREADABLE-BODY',
+  }
+  const h = harness($, on, { files })
+  h.world.unreadable.add(unreadable)
+  await h.start()
+  await h.step({ ...STEP, index: 1 })
+
+  expect(h.world.files.get(unreadable)).toBe('UNREADABLE-BODY')
+  expect(h.world.writes.every(write => write.path !== unreadable)).toBe(true)
+  // Numbering continues after the highest good seq and after the unreadable segment.
+  expect(h.lines(`${DEFAULT_DIR}/sess-1.2.jsonl`).map(r => r.seq)).toEqual([8])
+  expect(await receiptsText(h)).toMatch(/step_observed 3/)
+})
+
+test('the command handlers answer `could not read the ledger.` when the table cannot be built', async ($, on) => {
+  // A receipt file may hold anything that parses; a numeric model reaches the table code.
+  const files = {
+    [FILE]: jsonl([
+      reqRec(0, { tool_use_id: 'toolu_odd', requested_model: 5, pinned: true, spawned_agent_id: 'agent-x' }),
+      stepRec(1, { agent_id: 'agent-x', observed_model: 'claude-x' }),
+    ]),
+  }
+  const h = harness($, on, { files })
+  await h.start()
+  expect((await h.run('route-ledger')).text).toBe('could not read the ledger.')
+  expect((await h.run('route')).text).toBe('could not read the ledger.')
 })

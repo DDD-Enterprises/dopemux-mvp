@@ -1,4 +1,4 @@
-import type { EngineInterface, Register, Timer } from 'claude-code'
+import type { EngineInterface, FsStat, Register, Timer } from 'claude-code'
 
 // dopemux-route-ledger (core): records which model each Agent call REQUESTED,
 // which model each model step OBSERVED (the API-reported `usage.model`), and
@@ -18,10 +18,22 @@ import type { EngineInterface, Register, Timer } from 'claude-code'
 // once. A segment rolls to `<sessionId>.<n>.jsonl` at `maxReceiptsPerFile`.
 // Nothing on this chain is ever awaited by a `tool.call` or `turn.step` hook.
 // A failed write is counted (`receiptsFailed`) and left dirty: the next flush
-// rewrites it whole, so there is no retry loop.
+// rewrites it whole, so there is no retry loop; `session.end` makes one more
+// awaited attempt for a dirty tail and stops there.
+//
+// Memory is bounded: once a closed segment is written and clean, its receipts
+// leave memory (see `evictClosed`). What the command needs without them is
+// kept on the ledger: per-kind counts, the last main-loop step, and the agent
+// records, which hold their own receipt.
+//
+// Safety: the receipt directory is checked once with `$.fs.stat` (a symbolic
+// link, a non-directory, or a relative directory that lands outside the
+// project root turns receipts off), and so is each segment file before its
+// first write. Nothing else in the mod calls `$.fs.stat`.
 //
 // No `$.state`: a hot reload re-runs `register` and `session.start`, and the
-// tallies are rebuilt from this session's own receipt files there.
+// tallies are rebuilt from this session's own receipt files there. `/clear`
+// resets the ledger the same way, so the next hook re-resolves the session id.
 //
 // The engine's static reader follows `$` only through functions declared at
 // the top level, so helpers take `$` and the ledger as arguments.
@@ -35,13 +47,16 @@ const DEFAULT_MAX_RECEIPTS = 500
 const MIN_MAX_RECEIPTS = 50
 const MAX_MAX_RECEIPTS = 5000
 const DESCRIPTION_MAX = 80
-// `$.fs.write` and `$.fs.read` reject over 4 MiB: roll well before that.
-const SEGMENT_BYTES_MAX = 3_500_000
 // A burst of receipts redraws the status line once, this long after the first.
-const STATUS_DEBOUNCE_MS = 500
+export const STATUS_DEBOUNCE_MS = 500
 const TOAST_MS = 8000
 const ROUTE_ROWS_MAX = 60
 const SHORT_ID = 8
+
+// `$.fs.write` and `$.fs.read` reject over 4 MiB: a segment rolls well before
+// that. Mutable only so the tests can reach the byte rollover with a few
+// receipts; nothing but a test assigns to it.
+export const limits = { segmentBytesMax: 3_500_000 }
 
 type Family = 'S' | 'O' | 'H' | 'F' | 'other'
 type Effort = string | number
@@ -52,11 +67,13 @@ type Config = {
   childAdvisorBudget: number
   sessionAdvisorBudget: number
   maxReceiptsPerFile: number
+  // false (default): the Agent call's description is not recorded or toasted.
+  recordDescription: boolean
 }
 
 // The shape a supervisor merges into a GEC v2 ExecutionBinding. A receipt is
 // NOT a valid binding (that schema has about 23 required keys; the mod knows
-// five of them).
+// six of them).
 type BindingFields = {
   selection: { runner: string; model: string; effort: string }
   effort_requested: string
@@ -121,10 +138,18 @@ type Receipt = AgentRequestReceipt | StepObservedReceipt | AdvisorCallReceipt
 type Segment = {
   n: number
   path: string
+  // Empty once the segment is evicted: it is never written again after that.
   receipts: Receipt[]
   bytes: number
+  // How many receipts the segment holds (or held, once evicted).
+  count: number
+  evicted: boolean
+  // True once the file's own path was checked for a symbolic link (first write).
+  linkChecked: boolean
   dirty: boolean
 }
+
+type Counts = { agent_request: number; step_observed: number; advisor_call: number }
 
 // One Agent the ledger knows of: from its request, its spawn, or its steps.
 type AgentRecord = {
@@ -138,20 +163,13 @@ type AgentRecord = {
   receipt?: AgentRequestReceipt
 }
 
-// One module load's state; W02 extends it in place. Module-local on purpose:
-// a reload starts fresh and `session.start` rebuilds it from the receipt files.
-type Ledger = {
-  config: Config
+// What belongs to one session id: reset by `/clear` and rebuilt by `initSession`.
+type SessionState = {
   sessionId: string | undefined
   fileStem: string | undefined
-  isEnded: boolean
   isReady: boolean
   receiptsEnabled: boolean
   receiptsDisabledReason: string | undefined
-  // Receipts that could not be recorded: a failed write, or no timestamp.
-  receiptsFailed: number
-  // Receipt files that exist but could not be read, so were not rewritten.
-  segmentsUnreadable: number
   receiptDir: string | undefined
   // The current segment's path.
   receiptFile: string | undefined
@@ -163,6 +181,22 @@ type Ledger = {
   advisorSeen: Set<string>
   agents: Record<string, AgentRecord>
   toasted: Set<string>
+  // The last main-loop step seen, kept apart from the segments (which may be
+  // evicted, or not written at all) so the `main` row never depends on them.
+  lastMain: StepObservedReceipt | undefined
+  // Receipts placed in a segment, per kind, for `/route-ledger receipts`.
+  counts: Counts
+}
+
+// One module load's state; W02 extends it in place. Module-local on purpose:
+// a reload starts fresh and `session.start` rebuilds it from the receipt files.
+type Ledger = SessionState & {
+  config: Config
+  isEnded: boolean
+  // Receipts that could not be recorded: a failed write, or no timestamp.
+  receiptsFailed: number
+  // Receipt files that exist but could not be read, so were not rewritten.
+  segmentsUnreadable: number
   // A pending debounced status redraw, if any.
   statusTimer: Timer | undefined
   chain: Promise<void>
@@ -190,6 +224,7 @@ type AgentCallFacts = {
   model: string | null
   effort: Effort | null
   subagentType: string | null
+  // '' unless recordDescription is on.
   description: string
   at: number
 }
@@ -222,20 +257,18 @@ export function parseConfig(options: Settings): Config {
     childAdvisorBudget: integerOr(options.childAdvisorBudget, 0),
     sessionAdvisorBudget: integerOr(options.sessionAdvisorBudget, -1),
     maxReceiptsPerFile: Math.min(MAX_MAX_RECEIPTS, Math.max(MIN_MAX_RECEIPTS, cap)),
+    recordDescription: options.recordDescription === true,
   }
 }
 
-export function newLedger(options: Settings): Ledger {
+// The state `initSession` starts from, and `/clear` goes back to.
+function freshSession(): SessionState {
   return {
-    config: parseConfig(options),
     sessionId: undefined,
     fileStem: undefined,
-    isEnded: false,
     isReady: false,
     receiptsEnabled: false,
     receiptsDisabledReason: undefined,
-    receiptsFailed: 0,
-    segmentsUnreadable: 0,
     receiptDir: undefined,
     receiptFile: undefined,
     segments: [],
@@ -246,6 +279,18 @@ export function newLedger(options: Settings): Ledger {
     advisorSeen: new Set(),
     agents: {},
     toasted: new Set(),
+    lastMain: undefined,
+    counts: { agent_request: 0, step_observed: 0, advisor_call: 0 },
+  }
+}
+
+export function newLedger(options: Settings): Ledger {
+  return {
+    ...freshSession(),
+    config: parseConfig(options),
+    isEnded: false,
+    receiptsFailed: 0,
+    segmentsUnreadable: 0,
     statusTimer: undefined,
     chain: Promise.resolve(),
     flushQueued: false,
@@ -271,9 +316,11 @@ export function toBindingFields(input: {
   observedModel: string | null | undefined
 }): BindingFields {
   const model = input.requestedModel ?? UNKNOWN
-  const effort = input.requestedEffort === null || input.requestedEffort === undefined
-    ? UNKNOWN
-    : String(input.requestedEffort)
+  // An empty effort is no effort: the schema wants at least one character.
+  const effort =
+    input.requestedEffort === null || input.requestedEffort === undefined || input.requestedEffort === ''
+      ? UNKNOWN
+      : String(input.requestedEffort)
   return {
     selection: { runner: RUNNER, model, effort },
     effort_requested: effort,
@@ -338,6 +385,12 @@ function count(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0
 }
 
+// An effort is a non-empty string or a number; anything else is no effort.
+function effortOf(value: unknown): Effort | null {
+  if (typeof value === 'string') return value === '' ? null : value
+  return typeof value === 'number' ? value : null
+}
+
 function usageOf(usage: unknown): Usage | null {
   if (typeof usage !== 'object' || usage === null) return null
   const u = usage as Record<string, unknown>
@@ -373,6 +426,7 @@ function tally(s: Ledger, receipt: Receipt): boolean {
       receipt,
     }
   } else if (receipt.kind === 'step_observed') {
+    if (receipt.agent_id === null) s.lastMain = receipt
     if (receipt.agent_id !== null) {
       const record = s.agents[receipt.agent_id] ?? {
         toolUseId: null,
@@ -508,16 +562,10 @@ function cell(value: string | null | undefined): string {
   return value === null || value === undefined || value === '' ? UNKNOWN : String(value)
 }
 
-// The last step the main loop observed, from the receipts held in memory.
+// The last step the main loop observed: a ledger field, not a search of the
+// segments, so it holds with receipts off and after a segment is evicted.
 function lastMainStep(s: Ledger): StepObservedReceipt | undefined {
-  for (let i = s.segments.length - 1; i >= 0; i--) {
-    const receipts = s.segments[i]!.receipts
-    for (let j = receipts.length - 1; j >= 0; j--) {
-      const r = receipts[j]!
-      if (r.kind === 'step_observed' && r.agent_id === null) return r
-    }
-  }
-  return undefined
+  return s.lastMain
 }
 
 function matchCell(requested: string | null, observed: string | null): string {
@@ -580,12 +628,7 @@ function routeTable(s: Ledger): string {
 }
 
 function receiptsText(s: Ledger): string {
-  const counts = { agent_request: 0, step_observed: 0, advisor_call: 0 }
-  for (const seg of s.segments) {
-    for (const r of seg.receipts) {
-      if (r.kind in counts) counts[r.kind] += 1
-    }
-  }
+  const counts = s.counts
   const lines = [
     `receipt file: ${s.receiptFile ?? 'none'}`,
     `receipts: agent_request ${counts.agent_request}, step_observed ${counts.step_observed}, advisor_call ${counts.advisor_call}`,
@@ -636,24 +679,83 @@ function currentSegment(s: Ledger): Segment {
   const isOpen =
     last !== undefined &&
     last.n === s.nextSegmentN - 1 &&
-    last.receipts.length < s.config.maxReceiptsPerFile &&
-    last.bytes < SEGMENT_BYTES_MAX
+    last.count < s.config.maxReceiptsPerFile &&
+    last.bytes < limits.segmentBytesMax
   if (last !== undefined && isOpen) return last
 
   const n = s.nextSegmentN
   s.nextSegmentN += 1
   const name = n === 0 ? `${s.fileStem}.jsonl` : `${s.fileStem}.${n}.jsonl`
-  const seg: Segment = { n, path: `${s.receiptDir}/${name}`, receipts: [], bytes: 0, dirty: false }
+  const seg: Segment = {
+    n,
+    path: `${s.receiptDir}/${name}`,
+    receipts: [],
+    bytes: 0,
+    count: 0,
+    evicted: false,
+    linkChecked: false,
+    dirty: false,
+  }
   s.segments.push(seg)
   return seg
 }
 
+// Puts a receipt in a segment and counts it. The one place receipts enter one.
+function place(s: Ledger, seg: Segment, receipt: Receipt, line: string): void {
+  seg.receipts.push(receipt)
+  seg.bytes += line.length + 1
+  seg.count += 1
+  if (receipt.kind in s.counts) s.counts[receipt.kind] += 1
+}
+
+// True while a receipt in the segment is still waiting for its `agent.spawn`
+// join: the join rewrites the segment whole, so it must still hold its receipts.
+function holdsUnjoined(s: Ledger, seg: Segment): boolean {
+  return seg.receipts.some(
+    r =>
+      r.kind === 'agent_request' &&
+      r.spawned_agent_id === null &&
+      s.agents[`tool:${r.tool_use_id}`]?.receipt === r,
+  )
+}
+
+// Drops the receipts of every closed segment (all but the open, last one) that
+// is written and clean and waits for no join. Such a segment is never written
+// again, so keeping only its path, number, bytes and count loses nothing.
+function evictClosed(s: Ledger): void {
+  for (const seg of s.segments.slice(0, -1)) {
+    if (seg.evicted || seg.dirty || holdsUnjoined(s, seg)) continue
+    seg.receipts = []
+    seg.evicted = true
+  }
+}
+
+async function statOrNone($: EngineInterface, path: string, resolve: boolean): Promise<FsStat | undefined> {
+  try {
+    return await $.fs.stat(path, { resolve })
+  } catch {
+    // a rejection means "not there"
+    return undefined
+  }
+}
+
 // Writes every dirty segment whole. A failure is counted and the segment stays
-// dirty, so the next flush rewrites it; nothing loops.
+// dirty, so the next flush rewrites it; nothing loops. Before a segment file is
+// written the first time, its own path is checked: a symbolic link there turns
+// receipts off, and nothing is written. Written closed segments then leave memory.
 export async function flushSegments($: EngineInterface, s: Ledger): Promise<void> {
   if (!s.receiptsEnabled) return
   for (const seg of s.segments) {
     if (!seg.dirty) continue
+    if (!seg.linkChecked) {
+      const stat = await statOrNone($, seg.path, false)
+      if (stat?.isLink === true) {
+        disable(s, `receipt file ${seg.path} is a symbolic link`)
+        scheduleStatus($, s)
+        return
+      }
+      seg.linkChecked = true
+    }
     try {
       await $.fs.write(seg.path, segmentText(seg))
       seg.dirty = false
@@ -661,6 +763,7 @@ export async function flushSegments($: EngineInterface, s: Ledger): Promise<void
       s.receiptsFailed += 1
     }
   }
+  evictClosed(s)
 }
 
 // All receipt work runs here, one task at a time, so seq order is chain order
@@ -682,13 +785,23 @@ function scheduleFlush($: EngineInterface, s: Ledger): void {
   })
 }
 
-function commit($: EngineInterface, s: Ledger, receipt: Receipt): void {
+// The final flush of a session, awaited. A dirty tail gets ONE more awaited
+// attempt; a second failure is counted by `flushSegments`, and nothing retries
+// after that. Exported for the unit tests.
+export async function flushAtEnd($: EngineInterface, s: Ledger): Promise<void> {
+  scheduleFlush($, s)
+  await s.chain
+  if (s.receiptsEnabled && s.segments.some(seg => seg.dirty)) {
+    scheduleFlush($, s)
+    await s.chain
+  }
+}
+
+export function commit($: EngineInterface, s: Ledger, receipt: Receipt): void {
   const isNew = tally(s, receipt)
   if (isNew && s.receiptsEnabled) {
     const seg = currentSegment(s)
-    const line = JSON.stringify(receipt)
-    seg.receipts.push(receipt)
-    seg.bytes += line.length + 1
+    place(s, seg, receipt, JSON.stringify(receipt))
     seg.dirty = true
     s.receiptFile = seg.path
     scheduleFlush($, s)
@@ -715,9 +828,59 @@ function disable(s: Ledger, reason: string): void {
   s.receiptsDisabledReason = reason
 }
 
+// Why the receipt directory may not be used, or undefined when it may. It is
+// the directory itself when that exists, else its nearest existing parent, that
+// is looked at: not a symbolic link, a directory, and (for a relative path) with
+// its real path under the project's real path. An absolute directory is allowed
+// by design, subject to the first two. A stat that rejects means "not there".
+async function receiptDirProblem($: EngineInterface, dir: string): Promise<string | undefined> {
+  const isRelative = !isAbsolute(dir)
+  let probe: string | undefined = dir
+  let found: FsStat | undefined
+  while (probe !== undefined) {
+    found = await statOrNone($, probe, isRelative)
+    if (found !== undefined) break
+    probe = parentOf(probe)
+  }
+  if (found === undefined || probe === undefined) return 'receiptDir could not be inspected'
+  if (found.isLink) return `receiptDir ${probe} is a symbolic link`
+  if (found.kind !== 'dir') return `receiptDir ${probe} is not a directory`
+  if (!isRelative) return undefined
+
+  let rootReal: string | undefined
+  try {
+    rootReal = (await statOrNone($, await $.session.root(), true))?.realPath
+  } catch {
+    rootReal = undefined
+  }
+  if (rootReal === undefined || found.realPath === undefined) {
+    return 'receiptDir could not be checked against the project root'
+  }
+  return isUnder(found.realPath, rootReal) ? undefined : 'receiptDir resolves outside the project root'
+}
+
+function isAbsolute(path: string): boolean {
+  return /^([\\/]|[A-Za-z]:[\\/])/.test(path)
+}
+
+// The path one level up, '.' above a relative name, undefined above the top.
+function parentOf(path: string): string | undefined {
+  const cut = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'))
+  if (cut > 0) return path.slice(0, cut).replace(/[\\/]+$/, '') || path.slice(0, 1)
+  if (cut === 0) return path.length > 1 ? path.slice(0, 1) : undefined
+  return path === '.' ? undefined : '.'
+}
+
+// `real` is `root` or lies beneath it (compared with a trailing separator).
+function isUnder(real: string, root: string): boolean {
+  const base = root.replace(/[\\/]+$/, '')
+  const sep = base.includes('\\') && !base.includes('/') ? '\\' : '/'
+  return real === base || real.startsWith(base + sep)
+}
+
 // Resolves the session and the receipt directory, and rebuilds the tallies from
 // this session's existing segment files. Never throws.
-async function initSession($: EngineInterface, s: Ledger): Promise<void> {
+export async function initSession($: EngineInterface, s: Ledger): Promise<void> {
   try {
     // Anything still unwritten from this load goes out before the rebuild.
     await flushSegments($, s)
@@ -730,29 +893,51 @@ async function initSession($: EngineInterface, s: Ledger): Promise<void> {
     if (stem === '') return disable(s, 'session id is empty')
     if (hasDotDot(s.config.receiptDir)) return disable(s, 'receiptDir has a .. segment')
     if (dir === '') return disable(s, 'receiptDir is the file system root')
-    if (s.config.receiptDir === DEFAULT_RECEIPT_DIR) {
+    // The trimmed value is compared, so a trailing slash does not skip the check.
+    if (dir === DEFAULT_RECEIPT_DIR) {
       // The default is never created: it is used only beside existing state.
       const hasState = await $.fs.exists(STATE_DIR).catch(() => false)
       if (!hasState) return disable(s, `${STATE_DIR} does not exist`)
     }
+    const problem = await receiptDirProblem($, dir)
+    if (problem !== undefined) return disable(s, problem)
 
-    s.fileStem = stem
-    s.receiptDir = dir
-    s.receiptsEnabled = true
-    s.receiptsDisabledReason = undefined
-    s.segments = []
-    s.nextSegmentN = 0
-    s.nextSeq = 0
-    s.advisorMain = 0
-    s.advisorByAgent = {}
-    s.advisorSeen = new Set()
-    s.agents = {}
-    s.receiptFile = undefined
+    Object.assign(s, freshSession(), {
+      isReady: true,
+      sessionId,
+      fileStem: stem,
+      receiptDir: dir,
+      receiptsEnabled: true,
+    })
     await rehydrate($, s)
   } catch {
     // A failed init never surfaces; receipts stay off and the state says why.
     disable(s, 'receipt setup failed')
   }
+}
+
+// Restores the toast-once state from what the receipt files record, so a reload
+// or a /clear that keeps the id does not toast the same thing twice.
+function restoreToasted(s: Ledger, receipt: Receipt): void {
+  if (
+    receipt.kind === 'agent_request' &&
+    receipt.pinned === false &&
+    receipt.inherits === false &&
+    typeof receipt.tool_use_id === 'string' &&
+    receipt.tool_use_id !== ''
+  ) {
+    s.toasted.add(receipt.tool_use_id)
+  }
+}
+
+function restoreBudgetToasted(s: Ledger): void {
+  const { childAdvisorBudget, sessionAdvisorBudget } = s.config
+  if (childAdvisorBudget >= 0) {
+    for (const [id, n] of Object.entries(s.advisorByAgent)) {
+      if (n > childAdvisorBudget) s.toasted.add(`advisor-child:${id}`)
+    }
+  }
+  if (sessionAdvisorBudget >= 0 && advisorTotal(s) > sessionAdvisorBudget) s.toasted.add('advisor-session')
 }
 
 async function rehydrate($: EngineInterface, s: Ledger): Promise<void> {
@@ -776,22 +961,34 @@ async function rehydrate($: EngineInterface, s: Ledger): Promise<void> {
       s.segmentsUnreadable += 1
       continue
     }
-    const seg: Segment = { n, path, receipts: [], bytes: 0, dirty: false }
+    const seg: Segment = {
+      n,
+      path,
+      receipts: [],
+      bytes: 0,
+      count: 0,
+      evicted: false,
+      linkChecked: false,
+      dirty: false,
+    }
     for (const line of body.split('\n')) {
       if (line === '') continue
       try {
         const receipt = JSON.parse(line) as Receipt
         if (receipt?.schema_version !== SCHEMA_VERSION || !Number.isInteger(receipt.seq)) continue
-        seg.receipts.push(receipt)
-        seg.bytes += line.length + 1
+        place(s, seg, receipt, line)
         tally(s, receipt)
+        restoreToasted(s, receipt)
       } catch {
         // a damaged line is skipped
       }
     }
     s.segments.push(seg)
     s.receiptFile = path
+    // The segment before this one is closed now: its receipts need not stay.
+    evictClosed(s)
   }
+  restoreBudgetToasted(s)
 }
 
 async function ensureReady($: EngineInterface, s: Ledger): Promise<void> {
@@ -855,7 +1052,7 @@ async function recordStep($: EngineInterface, s: Ledger, f: StepFacts): Promise<
 }
 
 // Joins an Agent call to the agent it spawned, by tool_use_id alone.
-async function recordSpawn(
+export async function recordSpawn(
   $: EngineInterface,
   s: Ledger,
   toolUseId: string,
@@ -885,15 +1082,17 @@ async function recordSpawn(
 // ------------------------------------------------------------------- hook work
 
 function noteAgentCall($: EngineInterface, s: Ledger, e: Readonly<Record<string, unknown>>): Promise<void> {
-  const facts = readAgentCall(e)
+  const facts = readAgentCall(e, s.config.recordDescription)
   const isUnpinned = facts.model === null && facts.subagentType !== 'fork'
   if (isUnpinned && s.config.unpinnedAgent === 'warn' && !s.toasted.has(facts.toolUseId)) {
     if (facts.toolUseId !== '') s.toasted.add(facts.toolUseId)
     try {
-      $.ui.toast(
-        `Agent call "${facts.description}" (${facts.subagentType ?? 'default'}) has no model pinned.`,
-        { timeoutMs: TOAST_MS },
-      )
+      // The description is named only when it is recorded; else the short id is.
+      const label = s.config.recordDescription ? `"${facts.description}"` : shortId(facts.toolUseId)
+      const who = label === '' ? '' : `${label} `
+      $.ui.toast(`Agent call ${who}(${facts.subagentType ?? 'default'}) has no model pinned.`, {
+        timeoutMs: TOAST_MS,
+      })
     } catch {
       // a refused toast must not cost the receipt
     }
@@ -904,15 +1103,15 @@ function noteAgentCall($: EngineInterface, s: Ledger, e: Readonly<Record<string,
   })
 }
 
-function readAgentCall(e: Readonly<Record<string, unknown>>): AgentCallFacts {
-  const effort = e.effort
+function readAgentCall(e: Readonly<Record<string, unknown>>, recordDescription: boolean): AgentCallFacts {
+  const description = recordDescription && typeof e.description === 'string' ? e.description : ''
   return {
     callerAgentId: text(e.agentId),
     toolUseId: typeof e.tool_use_id === 'string' ? e.tool_use_id : '',
     model: text(e.model),
-    effort: typeof effort === 'string' || typeof effort === 'number' ? effort : null,
+    effort: effortOf(e.effort),
     subagentType: text(e.subagent_type),
-    description: (typeof e.description === 'string' ? e.description : '').slice(0, DESCRIPTION_MAX),
+    description: description.slice(0, DESCRIPTION_MAX),
     at: 0,
   }
 }
@@ -941,20 +1140,19 @@ function noteStep(
   const advisors: StepFacts['advisors'] = []
   for (const use of serverToolUses) {
     const u = use as Record<string, unknown> | null
-    if (u?.name !== 'advisor' || typeof u.id !== 'string') continue
+    if (u?.name !== 'advisor' || typeof u.id !== 'string' || u.id === '') continue
     advisors.push({
       id: u.id,
       startedAt: typeof u.startedAt === 'number' ? u.startedAt : 0,
       endedAt: typeof u.endedAt === 'number' ? u.endedAt : null,
     })
   }
-  const effort = e.effort
   const facts: StepFacts = {
     agentId: text(e.agentId),
     turnId: typeof e.turnId === 'string' ? e.turnId : '',
     index: typeof e.index === 'number' ? e.index : 0,
     requestedModel: text(e.model),
-    requestedEffort: typeof effort === 'string' || typeof effort === 'number' ? effort : null,
+    requestedEffort: effortOf(e.effort),
     observedModel: text(usage?.model) ?? UNKNOWN,
     usage: usageOf(usage),
     advisors,
@@ -1049,15 +1247,30 @@ export const register: Register = (on, options) => {
 
   on('session.end', async ($, e, next) => {
     // /clear fires session.end with reason 'clear' but the process goes on and
-    // no session.start follows: not an end.
-    if (e.reason === 'clear') return next(e)
+    // no session.start follows: not an end. The pending work is written, the
+    // status is drawn as it stands, and the ledger goes back to its start state,
+    // so the next hook re-resolves `$.session.id()`: a new id is a new file and
+    // a fresh ledger, an unchanged id rehydrates and continues the same file.
+    // (Whether the host changes the id on /clear is UNKNOWN; both are handled.)
+    if (e.reason === 'clear') {
+      try {
+        scheduleFlush($, s)
+        await s.chain
+        s.statusTimer?.cancel()
+        s.statusTimer = undefined
+        drawStatus($, s)
+        Object.assign(s, freshSession())
+      } catch {
+        // never surface
+      }
+      return next(e)
+    }
     try {
       s.isEnded = true
       s.statusTimer?.cancel()
       s.statusTimer = undefined
       $.ui.status(undefined)
-      scheduleFlush($, s)
-      await s.chain
+      await flushAtEnd($, s)
     } catch {
       // never surface
     }
