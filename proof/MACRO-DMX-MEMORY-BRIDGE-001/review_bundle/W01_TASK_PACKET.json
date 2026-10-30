@@ -1,0 +1,202 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-W01-INVESTIGATION-001",
+  "project": "dopemux-mvp",
+  "target": "Read-only investigation for the Memory Bridge mod (opportunity map builds M3 and M4). Re-verify the SessionStart-recap blocker, the identity prerequisite P3, the 2.1.304 mod API and the live tool surface, and return a go / no-go with evidence for each sub-feature: recap, outbox, replay, band. The verdicts gate W02 to W05.",
+  "invariants": [
+    "C01 Shared workspace: other workers may edit this checkout. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in the execution worktree .worktrees/memory-bridge-001 on feat/memory-bridge-001 (base 93050d135ffc2592000c1d0edef82b2912935525); verify `git rev-parse --show-toplevel` and the branch before the first write.",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env*, credential files, tokens or keys; never write a secret into a file, test fixture or return. Network use is limited to what this packet names.",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Anything live that you did not observe is NOT_RUN. The conport, dope-memory and gpt-researcher MCP connectors were unreachable when this packet was issued: do not invent endpoints, tool names, request fields or ports. Use only interfaces this packet names or that you confirm in source with file:line; otherwise write UNKNOWN.",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers (each with the action that clears it), advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when: a needed file is outside your write_surface; a contract-sensitive surface (schema, hook registration, MCP manifest) would change; a required fact is UNKNOWN; or validation still fails after one fix attempt for the same cause (no cheap-model repair loop).",
+    "C08 Authority order: this packet, then runtime code, then schemas, then tests, then docs. Docs and the opportunity map are not evidence of runtime behaviour.",
+    "R01 This workstream is READ-ONLY toward code, config, services and the checkout. Its single write is the findings file; no other file may change. `git diff --name-only` must equal that one path.",
+    "R02 Live probes are GET-only against loopback: `curl -sS -m 3 http://127.0.0.1:<port>/health` for 3020 (dope-memory), 3004 (ConPort REST), 3025 (ADHD engine) and a TCP-level check for 3005 (ConPort SSE). Never POST, PUT or DELETE; never call memory_store, memory_recap, log_decision or any write tool; never start, stop or compose any service (`dopemux mcp` and docker are out of bounds). A refused or timed-out probe is NOT_RUN with the exact error, not a finding about the service.",
+    "R03 Sub-features and the verdict vocabulary: judge recap, outbox, replay, band (plus the sub-verdicts in R04) as GO, GO_REDUCED (buildable with a stated reduction), NO_GO or UNKNOWN. Every verdict cites file:line evidence or the exact d.ts symbol; a verdict without evidence is UNKNOWN. Do not soften a blocker to make the build possible.",
+    "R04 GATE_TABLE: end the findings file with one fenced ```json block named GATE_TABLE (the first line of the fence content is the JSON object) of exactly this shape: {\"outbox\": V, \"status_count\": V, \"band\": V, \"replay\": {\"ledger_emit\": V, \"dope_memory_store\": V}, \"recap\": {\"injection\": V, \"identity\": V, \"dope_memory_recall\": V, \"conport_context\": V}, \"decisions\": {\"outbox_location\": str, \"write_model\": str, \"injection_mechanism\": str, \"event_type_sources\": {\"decision.logged\": str, \"task.completed\": str, \"manual.memory_store\": str}, \"identity_keys\": str}, \"reductions\": [str], \"authority_conflicts\": [str], \"unknowns\": [str], \"evidence\": {key: [file:line]}} where V is one of GO, GO_REDUCED, NO_GO, UNKNOWN. It must parse with `python3 -m json.tool`.",
+    "R05 Questions you must answer (each with evidence and a bucket):",
+    "Q1 Mod API on the supplied 2.1.304 declaration: exact names and result shapes of session.start ({cwd} echo only), turn.start, turn.complete (answer, reason, durationMs, agentId), session.compact (trigger, agentId, messages), session.end (reason 'clear'), tool.call (the input fields that carry the path for Edit, Write, NotebookEdit), ui.render AbovePrompt, ui.status (one per plugin), clock.every/after/now, fs (no append, write is whole content, read capped at 4 MiB), store (4 MiB), http.fetch (HttpInit has no timeout), process.run (CLI only), session.append, prompt.compose, prompt.context. Also: may hooks.json name more than one module, and may a module import a relative file?",
+    "Q2 Recap injection mechanism: SessionStartResult is only {cwd} and a hook's own value does not change the session. Decide between `$.session.append` (user-role row the model reads; is it legal during session.start and does it reach the first turn?), a `prompt.compose` session section, and `prompt.context` blocks. Name the mechanism, show the symbol evidence, and describe its prompt-injection exposure (recalled text is data the model will read).",
+    "Q3 Outbox: where it lives (the API has no plugin data directory; $.plugin.root is the mod's own source folder, do not write there), whether `.dopemux/` is gitignored (.gitignore lines 140 and 299 were seen at issuance: confirm), whether $.fs.write may write that path, how to rotate without a rename primitive, the read-modify-write race when two sessions share one repo (recommend per-session files or another design), and a size cap that stays under the 4 MiB read limit.",
+    "Q4 Event-type sources: for decision.logged, task.completed and manual.memory_store, which deterministic signal exists in the mod's event stream (turn.complete `answer` markers, a TodoWrite tool.call, the turn summary record). A type with no deterministic source is NOT_BUILT: say so. Confirm that no `$.model.complete` call is needed or allowed.",
+    "Q5 Local-ledger route: does `dopemux` resolve on PATH and which interpreter does it run (`command -v dopemux`, `dopemux capture emit --help`; the user's memory says the PATH copy has been stale)? Give the exact event JSON shape `emit_capture_event` accepts (src/dopemux/memory/capture_client.py:455-600; required keys, how mode/repo_root/session_id/instance_id are resolved, the redaction step) and whether the promotable set in capture_client.py:41-55 equals promotion.py:23-37. Authority note: repo doctrine says 'Decisions: log in ConPort only'; report whether emitting decision.logged to the ledger conflicts with it (list it in authority_conflicts if so).",
+    "Q6 dope-memory REST on :3020: POST /tools/memory_store and /tools/memory_recap request and response shapes (dope_memory_main.py:795-870, 1180-1224), the allowed `category` and `entry_type` values (chronicle.store VALID_CATEGORIES / VALID_ENTRY_TYPES), authentication, de-duplication (is memory_store idempotent on a repeated body?), error codes, GET /health. State exactly which workspace_id and instance_id the mod must send so recall sees rows that native_hooks and capture_client wrote: the service defaults are 'default'/'A' (dope_memory_main.py:57-58) while capture_client derives workspace_id from the repo root (capture_client.py:501-504). That mismatch is prerequisite P3: say what is proven.",
+    "Q7 ConPort REST on :3004: start_with_info.sh names enhanced_server.py as the HTTP data plane; confirm which file serves /api/context/{workspace_id}, /api/decisions and /api/recent-activity/{workspace_id}, with request and response shapes, auth, and the host-port variable (compose.yml CONPORT_HTTP_PORT). The SSE endpoint on :3005 is not reachable through `$.http.fetch` (it waits for a body that never ends): confirm or refute. Compare with services/dcp-readonly-facade/src/dcp_facade/conport.py, an existing read-only consumer.",
+    "Q8 Blocker re-verification: quote claudedocs/mcp-feature-triage-2026-07.md:20 (SessionStart recap injection blocked by MEMSPINE-IDENTITY-005); read task-packets/DMX-MEMSPINE-IDENTITY-005.json (a codex packet, series codex/svcfin-memspine, no implementing commit found on main at issuance); check the code for fail-closed identity on the write and read paths; check docs/03-reference/mcp/feature-register.yaml for TP-MCF-004 and the identity entries. State whether the blocker still holds today.",
+    "Q9 Live tool surface: GET-only probes per R02; compare the tool names in mcp_tool_surfaces.json for conport and dope-memory with the tool definitions in docker/mcp-servers-source/conport/server.py and services/working-memory-assistant/mcp_http.py. Record every probe's exact command and result.",
+    "Q10 Coexistence with the Pulse mod (feat/pulse-001): ui.status is one line per plugin, so the two status lines coexist; confirm that, and check the band does not collide (two AbovePrompt hooks).",
+    "Q11 Redaction and privacy: what the dope-memory redactor and the ledger redactor mask, so the in-mod redactor (M08 of the build packets) matches or exceeds them for the fields the outbox keeps.",
+    "Q12 Surface behaviour: which features break on the desktop, vscode and mobile surfaces because $.process is CLI-only, and what the operator's usual surface implies."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/memory-bridge-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(memory-bridge): W01 go/no-go findings for the Memory Bridge mod",
+    "allowlist": [
+      "proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md"
+    ],
+    "verify": [
+      "git diff --name-only | sort   # equals exactly proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md",
+      "python3 - <<'PY'\nimport json,re,sys\nt=open('proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md').read()\nm=re.findall(r'```json\\n(.*?)\\n```',t,re.S)\njson.loads(m[-1])\nprint('GATE_TABLE parses')\nPY",
+      "git status --porcelain   # nothing else modified"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod (outbox, status count, welcome-back band; gated replay and recap)",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001. Draft until the single final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Read the supplied declaration and the Pulse reference, answer Q1, Q2, Q10, Q12",
+      "requirements": [
+        "Cite the exact symbol for every claim; the declaration is early access."
+      ],
+      "commands": [
+        "grep -n \"'session.start'\\|'turn.complete'\\|'session.compact'\\|status: (\" <supplied claude-code.d.ts>",
+        "git show feat/pulse-001:plugins/dopemux-pulse/hooks/register.tsx | sed -n 1,60p"
+      ],
+      "expected_files": [],
+      "validation": [
+        "API facts recorded with symbol evidence"
+      ],
+      "context_files": [
+        "plugins/dopemux-pulse/hooks/register.tsx (via git show feat/pulse-001)"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "Trace runtime sources for Q3 to Q8 and Q11",
+      "requirements": [
+        "file:line evidence for every verdict; docs never outrank code."
+      ],
+      "commands": [
+        "sed -n 455,600p src/dopemux/memory/capture_client.py",
+        "sed -n 780,870p services/working-memory-assistant/dope_memory_main.py",
+        "sed -n 1,60p docker/mcp-servers-source/conport/start_with_info.sh"
+      ],
+      "expected_files": [],
+      "validation": [
+        "identity keys, endpoints and the blocker status established or marked UNKNOWN"
+      ],
+      "context_files": [
+        "src/dopemux/claude/native_hooks.py",
+        "src/dopemux/memory/capture_client.py",
+        "src/dopemux/commands/capture_group_commands.py",
+        "services/working-memory-assistant/dope_memory_main.py",
+        "services/working-memory-assistant/mcp_http.py",
+        "services/working-memory-assistant/promotion/promotion.py",
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/start_with_info.sh",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/Dockerfile",
+        "compose.yml",
+        "services/registry.yaml",
+        "claudedocs/mcp-feature-triage-2026-07.md",
+        "task-packets/DMX-MEMSPINE-IDENTITY-005.json",
+        "docs/03-reference/mcp/feature-register.yaml",
+        "services/dcp-readonly-facade/src/dcp_facade/conport.py",
+        "mcp_tool_surfaces.json"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Run the GET-only live probes (Q9) and record each result",
+      "requirements": [
+        "Exact command and result per probe; refused means NOT_RUN."
+      ],
+      "commands": [
+        "curl -sS -m 3 -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:3020/health",
+        "curl -sS -m 3 -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:3004/health",
+        "curl -sS -m 3 -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:3025/health",
+        "command -v dopemux",
+        "dopemux capture emit --help >/dev/null; echo exit=$?"
+      ],
+      "expected_files": [],
+      "validation": [
+        "probe table with exit codes and buckets"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W01-S4",
+      "task": "Write the findings file with the verdict table and the GATE_TABLE block",
+      "requirements": [
+        "Only proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md; one section per question; a go / no-go summary table first."
+      ],
+      "commands": [
+        "git diff --name-only | sort"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md"
+      ],
+      "validation": [
+        "GATE_TABLE parses with the commit.verify snippet; diff equals the single path"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md"
+      ]
+    },
+    {
+      "id": "W01-S5",
+      "task": "Return",
+      "requirements": [
+        "Status, the GATE_TABLE verbatim, the probe table, advisor_calls, files_written, observed_model."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the single findings file"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-investigation"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on feat/memory-bridge-001 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
