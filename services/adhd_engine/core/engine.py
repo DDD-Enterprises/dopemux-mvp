@@ -19,7 +19,7 @@ import asyncio
 import json
 import logging
 import os
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -107,6 +107,42 @@ try:
 except ImportError:
     ML_AVAILABLE = False
     logger.warning("ML module not available - using rule-based logic only")
+
+
+# Nominal positions on a 0-1 scale for each energy level. These are labels
+# mapped to numbers for MCP consumers, not measurements.
+ENERGY_SCORE: Dict[str, float] = {
+    "very_low": 0.1,
+    "low": 0.3,
+    "medium": 0.5,
+    "high": 0.7,
+    "hyperfocus": 0.9,
+}
+
+
+@dataclass(frozen=True)
+class EnergySnapshot:
+    """Energy level of a user, as served to MCP tools."""
+
+    level: str
+    score: float
+
+
+@dataclass(frozen=True)
+class AttentionSnapshot:
+    """Attention state of a user, as served to MCP tools."""
+
+    state: str
+
+
+class TaskAssessment:
+    """Task suitability result exposing ``dict()`` for MCP tools."""
+
+    def __init__(self, payload: dict):
+        self._payload = payload
+
+    def dict(self) -> dict:
+        return self._payload
 
 
 class ADHDAccommodationEngine:
@@ -380,6 +416,34 @@ class ADHDAccommodationEngine:
             await self.event_listener.start(user_id=self.operator_user_id)
 
     # Core Accommodation Methods
+
+    async def get_energy_level(self, user_id: str) -> EnergySnapshot:
+        """Current energy level for a user (defaults to medium)."""
+        energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+        level = energy.value if hasattr(energy, "value") else str(energy)
+        return EnergySnapshot(level=level, score=ENERGY_SCORE.get(level, 0.5))
+
+    async def get_attention_state(self, user_id: str) -> AttentionSnapshot:
+        """Current attention state for a user (defaults to focused)."""
+        state = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+        return AttentionSnapshot(state=state.value if hasattr(state, "value") else str(state))
+
+    async def get_cognitive_load(self, user_id: str) -> float:
+        """Current cognitive load for a user as a float."""
+        return float(await self._calculate_cognitive_load(user_id))
+
+    async def assess_task(self, title: str, description: str = "") -> TaskAssessment:
+        """Assess a task for the operator using default complexity and duration."""
+        task_data = {
+            "title": title,
+            "description": description,
+            "complexity_score": 0.5,
+            "estimated_minutes": 30,
+        }
+        result = await self.assess_task_suitability(self.operator_user_id, task_data)
+        payload = dict(result)
+        payload["defaults_used"] = ["complexity_score", "estimated_minutes"]
+        return TaskAssessment(payload)
 
     async def assess_task_suitability(
         self,
