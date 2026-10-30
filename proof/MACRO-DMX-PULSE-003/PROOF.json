@@ -191,7 +191,7 @@
       "runner": "claude-code-desktop",
       "runtime_family": "anthropic-claude-code"
     },
-    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+    "independence": "PROVEN"
   },
   "embedded_audit": {
     "required": true,

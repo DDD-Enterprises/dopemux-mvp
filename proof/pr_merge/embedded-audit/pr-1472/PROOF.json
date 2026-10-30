@@ -8,7 +8,7 @@
       "runtime_family": "xai-grok-cli"
     },
     "implementer": {
-      "model": "claude-sonnet-5-5 (supervisor session and W01); claude-haiku-5-5 (W02)",
+      "model": "claude-sonnet-5-5 (supervisor session; W01-W03 were run by the team lead with local tools and no child model)",
       "model_family": "anthropic-claude",
       "runner": "claude-code-desktop",
       "runtime_family": "anthropic-claude-code"
@@ -21,46 +21,51 @@
     "exit_code": 0,
     "findings": [
       {
-        "body": "Disclosed Not verified in README and how-to; predecessor F2 deliberately OUT_OF_SCOPE. Blocks confidence in live paint, typeahead, real HTTP, and real session.end/clear behaviour. [plugins/dopemux-pulse/README.md] ADJUDICATION: Coordinator: CONFIRMED, disclosed; live run NOT_RUN (operator step).",
-        "id": "N1",
+        "body": "Disclosed Not verified in README and how-to; tests use mocked clock/HTTP only. Same residual as N1/F2. [plugins/dopemux-pulse/README.md] ADJUDICATION: Coordinator: CONFIRMED, disclosed; live run NOT_RUN (operator step).",
+        "id": "M1",
         "severity": "HIGH",
         "status": "OPEN",
-        "title": "Cumulative feature still never exercised in a real Claude Code session against a live ADHD engine (same fact as F2)."
+        "title": "Mod still never exercised in a real Claude Code session against a live ADHD engine (same fact as N1/F2)."
       },
       {
-        "body": "Explicit trade-off in fetchState comment; README and how-to \u00a76 disclose it. Host network timeout UNKNOWN. By design given no abort API, but residual availability risk. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED, by design (no abort option in this build's declaration), disclosed in code, README and how-to; host timeout UNKNOWN; not yet accepted by the operator.",
-        "id": "N2",
+        "body": "fetchState clears isFetching only in the fetch promise chain; no abort API; disclosed in code comment and docs. Same as N2. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED, by design, disclosed; host timeout UNKNOWN; not yet accepted by the operator.",
+        "id": "M2",
         "severity": "MEDIUM",
         "status": "OPEN",
-        "title": "If the host never settles an abandoned $.http.fetch, the guard stays set: polling pauses and the status stays unreachable."
+        "title": "If the host never settles an abandoned $.http.fetch, the guard stays set: polling pauses and the status stays unreachable (same as N2)."
       },
       {
-        "body": "stopContinuous is called in the done handler (register.tsx); test 'a break resets the 90-minute continuous-focus clock' covers break only. Behaviour likely correct but unguarded against regression. [plugins/dopemux-pulse/hooks/register.test.ts] ADJUDICATION: Coordinator: CONFIRMED against register.test.ts; the code calls stopContinuous in the done handler.",
-        "id": "N3",
+        "body": "Only 'a break resets the 90-minute continuous-focus clock' exists; /done path covered for ending the block but not for continuous reset. Same as N3. [plugins/dopemux-pulse/hooks/register.test.ts] ADJUDICATION: Coordinator: CONFIRMED; the code calls stopContinuous in the done handler.",
+        "id": "M3",
         "severity": "LOW",
         "status": "OPEN",
-        "title": "No dedicated test that /done alone resets the 90-minute continuous-focus nudge clock (only /break is asserted)."
+        "title": "No dedicated test that /done alone resets the 90-minute continuous-focus nudge clock (same as N3)."
       },
       {
-        "body": "wasUp becomes false on first down (including 2s timeout); next ok with wasUp===false triggers recovery toast. T2 expects ['ADHD engine is back'] after slow->healthy without a prior ok. Docs describe toast as coming back from reachable. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED and PRE-EXISTING (logic unchanged since the PULSE-001 audited head); docs say \"comes back\".",
-        "id": "N4",
+        "body": "wasUp starts undefined; first down sets wasUp=false without toast; later ok toasts recovery. Same as N4. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED and PRE-EXISTING; docs say \"comes back\".",
+        "id": "M4",
         "severity": "LOW",
         "status": "OPEN",
-        "title": "The recovery toast \"ADHD engine is back\" can fire on the first successful poll after an initial failure even though the engine was never up in the session."
+        "title": "The \"ADHD engine is back\" toast can fire on the first success after an initial failure (same as N4)."
       },
       {
-        "body": "except branch in routes.py; documented in how-to \u00a75. Predecessor F7 OUT_OF_SCOPE. [services/adhd_engine/api/routes.py] ADJUDICATION: Coordinator: CONFIRMED, pre-existing, documented.",
-        "id": "N5",
+        "body": "except branch returns 200 aliases medium/focused; documented. Same as N5/F7. [services/adhd_engine/api/routes.py] ADJUDICATION: Coordinator: CONFIRMED, pre-existing, documented.",
+        "id": "M5",
         "severity": "INFO",
         "status": "OPEN",
-        "title": "Exception fallback still answers HTTP 200 with medium/focused; the mod treats it as healthy state (same as F7)."
+        "title": "Exception fallback still answers HTTP 200 with medium/focused (same as N5/F7)."
+      },
+      {
+        "body": "registerCommand only toasts in catch; test harness returns {deny:'refused'} which the runner treats as failure for T5. Production refuse shape not evidenced in this message. [plugins/dopemux-pulse/hooks/register.tsx] ADJUDICATION: Coordinator: CONFIRMED as UNKNOWN (already noted before); proven under the mock only.",
+        "id": "M6",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "The registration-failure toast depends on production $.command.register rejecting when it refuses a name; the shape is UNKNOWN."
       }
     ],
     "fixes_applied": [
-      "F1 REPAIRED (auditor and coordinator): the poll guard is held until the underlying $.http.fetch settles; late answer discarded; tests T1-T4 (mock only).",
-      "F3 REPAIRED: README and how-to say /done also resets the continuous-focus count, which starts at the first /pulse-focus.",
-      "F4 REPAIRED: the how-to no longer cites a commit SHA; no hash or PR number remains in README or how-to.",
-      "F6 REPAIRED under the mock: a refused command.register toasts a fixed message (test T5); production refusal semantics UNKNOWN."
+      "Strict up-to-date cleared by one non-force merge commit 4b0c43067 of main 93050d135 into the signed head; no Pulse file edited; the eight content files and the cumulative diff (sha256 ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8) are byte-identical to the previously audited ones.",
+      "Re-audit of the whole cumulative feature at the merged head: Q1-Q12 PASS; F1, F3, F4, F6 REPAIRED (mock only for F1 and F6); N1-N5 STILL_OPEN, correctly stated."
     ],
     "instruction_like_content": {
       "detected": false,
@@ -68,25 +73,25 @@
       "matches": [],
       "truncated": false
     },
-    "invocation": "sealed directory holding only AUDIT_PROMPT.txt; grok CLI 1.0.67 with the tool-less recipe (38 disallowed tool ids built from the probe's own init.tools plus a no-skills system prompt); probe 2 confirmed init.tools == [], real run init.tools == [] with 0 tool_use blocks; launched 2026-10-23T21:00:30Z, finished 2026-10-23T21:02:56Z; exact command in review_bundle/GROK_INVOCATION.txt; one attempt, no retries.",
+    "invocation": "sealed directory holding only AUDIT_PROMPT.txt; grok CLI 1.0.70 with the tool-less recipe (38 disallowed tool ids built from the probe's own init.tools plus a no-skills system prompt); probe 2 confirmed init.tools == [], real run init.tools == [] with 0 tool_use blocks; launched 2026-10-30T07:49:23Z, finished 2026-10-30T07:51:28Z; exact command in review_bundle/GROK_INVOCATION.txt; one attempt, no retries.",
     "remaining_risks": [
-      "N2: if the host never settles an abandoned request, polling pauses and the status stays unreachable (host timeout UNKNOWN).",
-      "N1/F2: the mod has never run live against an engine in a real session (NOT_RUN).",
-      "F6 toast proven under the mock only; production refusal semantics UNKNOWN.",
-      "N3: no dedicated test for /done resetting the 90-minute clock.",
-      "N4: \"ADHD engine is back\" can toast on the first success after an initial failure (pre-existing).",
-      "N5/F7: engine exception fallback answers HTTP 200 medium/focused (pre-existing, documented)."
+      "M2/N2: if the host never settles an abandoned request, polling pauses and the status stays unreachable (host timeout UNKNOWN).",
+      "M1/N1/F2: the mod has never run live against an engine in a real session (NOT_RUN).",
+      "M6: the registration toast is proven under the mock only; production refusal semantics UNKNOWN.",
+      "M3/N3: no dedicated test for /done resetting the 90-minute clock.",
+      "M4/N4: \"ADHD engine is back\" can toast on the first success after an initial failure (pre-existing).",
+      "M5/N5/F7: engine exception fallback answers HTTP 200 medium/focused (pre-existing, documented)."
     ],
-    "report_path": "proof/MACRO-DMX-PULSE-002-R2/AUDITOR_REPORT.md",
+    "report_path": "proof/MACRO-DMX-PULSE-003/AUDITOR_REPORT.md",
     "required": true,
     "skip_reason": null,
     "status": "PASS_WITH_RISKS"
   },
-  "generated_at": "2026-10-23T00:00:00Z",
+  "generated_at": "2026-10-30T08:45:13Z",
   "github_mutation_route_added": false,
-  "head_sha": "b5dc04dd7d9560ed31a2dc0fd2192218c727ea01",
+  "head_sha": "4b0c430674de4b428302fb010159cdc40a62f1c1",
   "mutation_performed": false,
-  "packet_id": "MACRO-DMX-PULSE-002-R2",
+  "packet_id": "MACRO-DMX-PULSE-003",
   "pr_number": 1472,
   "repo": "DDD-Enterprises/dopemux-mvp"
 }
