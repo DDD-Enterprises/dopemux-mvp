@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
-import { Check, AlertTriangle } from 'lucide-react';
+import { Check, AlertTriangle, Copy } from 'lucide-react';
 
 import type { PlannerLane } from './extensionTypes';
 
@@ -89,22 +89,52 @@ export function CandidateShaChip({ sha, onError }: CandidateShaChipProps) {
       ? `Failed to copy candidate SHA ${shortSha}`
       : `Copy candidate SHA ${shortSha}`;
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if ((isCopied || copyFailed) && e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsCopied(false);
+      setCopyFailed(false);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = null;
+      }
+    }
+  }, [isCopied, copyFailed]);
+
   return (
     <Tooltip title={tooltipTitle} arrow describeChild>
       <Chip
         size="small"
         variant="outlined"
         onClick={handleCopy}
-        icon={isCopied ? <Check size={14} aria-hidden="true" /> : copyFailed ? <AlertTriangle size={14} aria-hidden="true" /> : undefined}
+        onKeyDown={handleKeyDown}
+        icon={isCopied ? <Check size={14} aria-hidden="true" /> : copyFailed ? <AlertTriangle size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
         label={chipLabel}
         aria-label={ariaLabel}
         color={isCopied ? 'success' : copyFailed ? 'error' : 'default'}
         sx={{
           fontFamily: 'monospace',
           cursor: 'pointer',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+          '&:hover, &:focus-visible': {
+            transform: 'translateY(-1px)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+          },
+          ...(isCopied && {
+            animation: 'candidate-copy-pulse 0.4s ease-out',
+            '@keyframes candidate-copy-pulse': {
+              '0%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.04)' },
+              '100%': { transform: 'scale(1)' },
+            },
+          }),
           '@media (prefers-reduced-motion: reduce)': {
             transition: 'none',
             animation: 'none',
+            '&:hover, &:focus-visible': {
+              transform: 'none',
+            },
           },
         }}
       />
