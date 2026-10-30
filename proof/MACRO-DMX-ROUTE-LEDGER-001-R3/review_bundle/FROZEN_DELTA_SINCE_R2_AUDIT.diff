@@ -1,0 +1,170 @@
+diff --git a/docs/02-how-to/route-ledger.md b/docs/02-how-to/route-ledger.md
+index 1efe85cc8..cc876e34c 100644
+--- a/docs/02-how-to/route-ledger.md
++++ b/docs/02-how-to/route-ledger.md
+@@ -43,8 +43,10 @@ Nothing is installed. The mod lasts for that session
+ - **Status segment**, for example `agents S×4 H×2 · advisor 1`. Agents appear in the
+   order S (sonnet), O (opus), H (haiku), F (fable), then `?` for any other or unknown
+   model. Only non-zero counts show. With none, the segment reads `agents –`.
+-  `advisor N` appears when N > 0. Once a budget applies and is exceeded it reads
+-  `advisor N/B ⚠`.
++  `advisor N` (the session total) appears when N > 0. Once `sessionAdvisorBudget`
++  applies and N exceeds it, it reads `advisor N/B ⚠`. A separate `· child M/B ⚠`
++  segment appears once the busiest child's count M exceeds `childAdvisorBudget`, so a
++  clean agent never makes the session total look like a child overage.
+ - `· ledger off` is appended when receipts are disabled. `· receipts ✗` is appended
+   when a receipt write failed.
+ - **Toasts**, each shown once:
+diff --git a/plugins/dopemux-route-ledger/README.md b/plugins/dopemux-route-ledger/README.md
+index 406f16506..05736b31a 100644
+--- a/plugins/dopemux-route-ledger/README.md
++++ b/plugins/dopemux-route-ledger/README.md
+@@ -4,7 +4,7 @@ dopemux-route-ledger is a read-only Claude Code mod that keeps a ledger of deleg
+ 
+ ## What it shows
+ 
+-- Status segment, for example `agents S×4 H×2 · advisor 1`. Agents appear in the fixed order S (sonnet), O (opus), H (haiku), F (fable), then `?` for any other or unknown model, and only the non-zero ones; with none the segment reads `agents –`. `advisor N` appears when N > 0 and becomes `advisor N/B ⚠` once a budget B applies and is exceeded. ` · ledger off` is appended when receipts are disabled and ` · receipts ✗` when a receipt write failed. The line is redrawn at most about once per half second.
++- Status segment, for example `agents S×4 H×2 · advisor 1`. Agents appear in the fixed order S (sonnet), O (opus), H (haiku), F (fable), then `?` for any other or unknown model, and only the non-zero ones; with none the segment reads `agents –`. `advisor N` (the session total) appears when N > 0 and becomes `advisor N/B ⚠` once `sessionAdvisorBudget` B applies and N exceeds it. A separate ` · child M/B ⚠` segment appears once the busiest child agent's count M exceeds `childAdvisorBudget` B, so a clean agent never makes the session total look like a child overage. ` · ledger off` is appended when receipts are disabled and ` · receipts ✗` when a receipt write failed. The line is redrawn at most about once per half second.
+ - Toasts. A subagent whose advisor count exceeds `childAdvisorBudget` toasts once, naming a shortened agent id, the count and the budget. The session toasts once when its total exceeds `sessionAdvisorBudget`. An Agent call with no model pinned also toasts once (`unpinnedAgent`). The toasts say the mod counts advisor calls and cannot block them.
+ - `/route-ledger` prints a table, one row per loop (`main`, then one per subagent, at most 60 rows then `+N more`) with the columns `agent | runner | model requested | model observed | effort requested | match | advisor`. Unknown cells read `UNKNOWN`. `/route-ledger receipts` prints the receipt file, the receipt counts and `receiptsEnabled` / `receiptsFailed`. Any other argument prints a one-line usage. The command never writes, spawns or reads outside its own state.
+ - `/route` is an alias with identical output.
+diff --git a/plugins/dopemux-route-ledger/hooks/register.test.ts b/plugins/dopemux-route-ledger/hooks/register.test.ts
+index 4bc8d7828..4dd261c78 100644
+--- a/plugins/dopemux-route-ledger/hooks/register.test.ts
++++ b/plugins/dopemux-route-ledger/hooks/register.test.ts
+@@ -356,6 +356,10 @@ test('an unpinned Agent call toasts once, naming the type and description but no
+   expect(h.world.toasts[0]!.includes('Explore')).toBe(true)
+   expect(h.world.toasts[0]!.includes('Map the repo')).toBe(true)
+   expect(h.world.toasts[0]!.includes('SECRET-PROMPT')).toBe(false)
++  // The host already names the plugin; a leading `route-ledger:` would print twice.
++  expect(h.world.toasts[0]).not.toMatch(/^route-ledger:/)
++  // An unset timeout falls back to the host default of 4 s, which is easy to miss.
++  expect(h.world.toastTimeouts[0]).toBeGreaterThan(4000)
+ 
+   const receipt = h.receipts()[0]!
+   expect(receipt.pinned).toBe(false)
+@@ -909,13 +913,35 @@ test('status shows advisor N only when N > 0, and N/B ⚠ once a budget is excee
+   expect(h.status()).toBe('agents – · advisor 2/1 ⚠')
+ })
+ 
+-test('a child over its budget shows N/B ⚠ in the status', async ($, on) => {
++test('a child over its budget shows its own count against its own budget, apart from the session total', async ($, on) => {
+   const h = harness($, on)
+   await h.start()
+   h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
+   await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
+   await h.settleStatus()
+-  expect(h.status()).toBe('agents S×1 · advisor 1/0 ⚠')
++  expect(h.status()).toBe('agents S×1 · advisor 1 · child 1/0 ⚠')
++})
++
++test('the child segment names the worst child, and a session overage shows both segments', { options: { sessionAdvisorBudget: 1, childAdvisorBudget: 0 } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1 · advisor 2/1 ⚠ · child 2/0 ⚠')
++})
++
++test('a clean agent after an over-budget one does not change the figures the status shows', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  h.world.serverToolUses = []
++  await stepAs(h, 'agent-8', 'claude-haiku-5-5')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1 H×1 · advisor 1 · child 1/0 ⚠')
+ })
+ 
+ test('status appends ledger off when receipts are disabled, and receipts ✗ after a failed write', async ($, on) => {
+@@ -977,6 +1003,7 @@ test('a child over childAdvisorBudget toasts once per agent, names it, never cla
+   expect(toast.includes('0')).toBe(true)
+   expect(toast).toMatch(/cannot block/)
+   expect(toast).not.toMatch(/prevented|blocked a/)
++  expect(toast).not.toMatch(/^route-ledger:/)
+   expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
+ 
+   // Another agent crosses its own budget: its own toast.
+@@ -1003,6 +1030,7 @@ test('the session total toasts once when it exceeds sessionAdvisorBudget', { opt
+   expect(h.world.toasts).toHaveLength(1)
+   expect(h.world.toasts[0]).toMatch(/session/)
+   expect(h.world.toasts[0]).toMatch(/cannot block/)
++  expect(h.world.toasts[0]).not.toMatch(/^route-ledger:/)
+   expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
+ })
+ 
+diff --git a/plugins/dopemux-route-ledger/hooks/register.tsx b/plugins/dopemux-route-ledger/hooks/register.tsx
+index 6d5eb173f..97925e881 100644
+--- a/plugins/dopemux-route-ledger/hooks/register.tsx
++++ b/plugins/dopemux-route-ledger/hooks/register.tsx
+@@ -421,12 +421,16 @@ function statusText(s: Ledger): string {
+   let line = present.length === 0 ? 'agents –' : `agents ${present.join(' ')}`
+   if (sum.advisorTotal > 0) {
+     const { sessionAdvisorBudget, childAdvisorBudget } = s.config
++    // The session total is only ever read against the session budget, and the
++    // worst child only against the child budget, so neither figure borrows the other's.
+     const overSession = sessionAdvisorBudget >= 0 && sum.advisorTotal > sessionAdvisorBudget
+-    const overChild =
+-      childAdvisorBudget >= 0 && Object.values(sum.advisorByAgent).some(n => n > childAdvisorBudget)
+-    if (overSession) line += ` · advisor ${sum.advisorTotal}/${sessionAdvisorBudget} ⚠`
+-    else if (overChild) line += ` · advisor ${sum.advisorTotal}/${childAdvisorBudget} ⚠`
+-    else line += ` · advisor ${sum.advisorTotal}`
++    line += overSession
++      ? ` · advisor ${sum.advisorTotal}/${sessionAdvisorBudget} ⚠`
++      : ` · advisor ${sum.advisorTotal}`
++    const worstChild = Math.max(0, ...Object.values(sum.advisorByAgent))
++    if (childAdvisorBudget >= 0 && worstChild > childAdvisorBudget) {
++      line += ` · child ${worstChild}/${childAdvisorBudget} ⚠`
++    }
+   }
+   if (!s.receiptsEnabled) line += ' · ledger off'
+   if (s.receiptsFailed > 0) line += ' · receipts ✗'
+@@ -475,7 +479,7 @@ function budgetToasts($: EngineInterface, s: Ledger, receipt: AdvisorCallReceipt
+         $,
+         s,
+         `advisor-child:${receipt.agent_id}`,
+-        `route-ledger: agent ${shortId(receipt.agent_id)} made ${n} advisor calls (budget ${childAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
++        `agent ${shortId(receipt.agent_id)} made ${n} advisor calls (budget ${childAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
+       )
+     }
+   }
+@@ -486,7 +490,7 @@ function budgetToasts($: EngineInterface, s: Ledger, receipt: AdvisorCallReceipt
+         $,
+         s,
+         'advisor-session',
+-        `route-ledger: session made ${total} advisor calls (budget ${sessionAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
++        `session made ${total} advisor calls (budget ${sessionAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
+       )
+     }
+   }
+@@ -887,7 +891,8 @@ function noteAgentCall($: EngineInterface, s: Ledger, e: Readonly<Record<string,
+     if (facts.toolUseId !== '') s.toasted.add(facts.toolUseId)
+     try {
+       $.ui.toast(
+-        `route-ledger: Agent call "${facts.description}" (${facts.subagentType ?? 'default'}) has no model pinned.`,
++        `Agent call "${facts.description}" (${facts.subagentType ?? 'default'}) has no model pinned.`,
++        { timeoutMs: TOAST_MS },
+       )
+     } catch {
+       // a refused toast must not cost the receipt
+@@ -1031,14 +1036,14 @@ export const register: Register = (on, options) => {
+     try {
+       return { text: routeAnswer(s, e.args) }
+     } catch {
+-      return { text: 'route-ledger: could not read the ledger.' }
++      return { text: 'could not read the ledger.' }
+     }
+   })
+   on('command.run', { command: 'route' }, async (_, e) => {
+     try {
+       return { text: routeAnswer(s, e.args) }
+     } catch {
+-      return { text: 'route-ledger: could not read the ledger.' }
++      return { text: 'could not read the ledger.' }
+     }
+   })
+ 

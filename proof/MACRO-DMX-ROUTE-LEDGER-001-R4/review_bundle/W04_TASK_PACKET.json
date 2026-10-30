@@ -1,0 +1,172 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W04-ADJUDICATE-001-R4",
+  "project": "dopemux-mvp",
+  "target": "Adjudicate both audit verdicts against the source, apply the stricter-outcome rule, and write the unsigned PROOF.json, AUDITOR_REPORT.md, allowance ledger and the flattened issuance package for operator attestation and signing.",
+  "invariants": [
+    "I01 Scope: the coordinator writes only this packet's write_surface.",
+    "I02 Forbidden actions: push, open a PR, merge, sign, mark ready, force-push, history rewrite, a second audit of either route, editing any audited content path, setting `audit_identity.independence` to PROVEN (the operator attests it), accepting any finding as ACCEPTED_RISK (the operator's call).",
+    "I03 advisor: the coordinator may call `advisor` at most ONCE, at the freeze of the adjudication, and records it; child advisor calls are 0.",
+    "I04 No delegation of the adjudication: judgment and finality stay with the coordinator. Deterministic checks use local tools.",
+    "I05 Route: the coordinator (claude-code-desktop, claude-sonnet-5-5, effort high as the session reports; observed identity UNKNOWN without a runtime receipt).",
+    "I06 Read each verdict only now. Adjudicate EVERY finding of EACH auditor against the actual source at 989fe4651c050ec23619e5208da17d6152b477b0 (file and line), as CONFIRMED, REFUTED or UNVERIFIABLE with the evidence; keep the auditor's severity and record any disagreement. Write GROK_ADJUDICATION.md, AGY_ADJUDICATION.md and COMBINED_ADJUDICATION.md (findings both auditors raise, findings only one raises, disagreements on verdict or severity).",
+    "I07 Verdict rule: the stricter outcome governs readiness. `embedded_audit.verdict` is the PRIMARY (Grok) verdict; a corroborating verdict that is stricter, or a corroborating BLOCKING finding that adjudicates CONFIRMED, makes the macro return NEEDS_SUPERVISOR with both verdicts shown. If the primary verdict is PASS or PASS_WITH_RISKS and AGY is the weaker, the proof says so in `remaining_risks` and `audit_evidence`; the aggregate never reports the stronger of two verdicts alone. If W03 was a STOP, W04 adjudicates only the Grok verdict, writes the proof with `corroboration: NOT_RUN` and the aggregate is NEEDS_SUPERVISOR.",
+    "I08 Proof: `PROOF.json` with `packet_id` MACRO-DMX-ROUTE-LEDGER-001-R4, `embedded_audit` = the Grok record (auditor_tool grok-cli, auditor_model grok-4.5, the exact invocation, times, exit code, findings with status OPEN unless the adjudicated repair evidence supports RESOLVED), the AGY run recorded in `audit_evidence` and `remaining_risks` (auditor_tool agy, generic model `gemini`, exact id gemini-4-argon-high in the invocation text, and the statement that exact-model evidence for gemini-3.1-pro-high is unavailable), `audit_identity.independence` left UNATTESTED. `AUDITOR_REPORT.md` normalizes both reports. Flatten the issuance package into the bundle byte-exact (MACRO_PACKET.json, EXECUTION_BINDING.json, ALLOWANCES.json, ISSUANCE.md, the four task packets and bindings) with SHA256SUMS_PACKAGE.txt; write ALLOWANCE_LEDGER.json (measured vs cap) and GATES.txt.",
+    "I09 Allowances (PROPOSED): elapsed <= 45 min for this workstream (coordinator clock); coordinator advisor calls <= 1; no child dispatches; no further audit attempts; the whole macro obeys ALLOWANCES.json. A figure the runner does not report is UNKNOWN and never counts as within budget. When ANY limit is reached or about to be exceeded: stop at the next safe point, dispatch nothing further, retry nothing, substitute nothing, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Validation (deterministic): the embedded_audit schema (`schemas/proof/embedded_audit.schema.json`), `scripts/audit/validate_audit_proof.py`, `scripts/governance/validate_change_contract.py` with explicit `--content-head 989fe4651c050ec23619e5208da17d6152b477b0 --audited-head 989fe4651c050ec23619e5208da17d6152b477b0 --proof-head <proof head>` (only `proof_only_missing_signature` may remain), `git diff --check`, `pre-commit` with `SKIP=markdownlint` over the proof range, a secret scan of every new file. Then commit by explicit pathspec, record the proof head, STOP and report with the repo's required response shape. Do not push, sign, open a PR or merge."
+  ],
+  "depends_on": [
+    "TP-DMX-ROUTELEDGER-W03-AUDIT-AGY-001-R4"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "proof(route-ledger-001-r3): adjudication of both audits and an unsigned PROOF.json",
+    "allowlist": [
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/AUDITOR_REPORT.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_ADJUDICATION.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_ADJUDICATION.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/COMBINED_ADJUDICATION.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GATES.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCE_LEDGER.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCE_LEDGER_LIVE.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/MACRO_PACKET.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/EXECUTION_BINDING.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCES.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ISSUANCE.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W01_TASK_PACKET.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W02_TASK_PACKET.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W03_TASK_PACKET.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W04_TASK_PACKET.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W01_EXECUTION_BINDING.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W02_EXECUTION_BINDING.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W03_EXECUTION_BINDING.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W04_EXECUTION_BINDING.json",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_PACKAGE.txt"
+    ],
+    "verify": [
+      "git diff --name-only | sort   # equals the allowlist plus unrelated untracked/unstaged files already present at start",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): dopemux-route-ledger mod (R4 final audit round)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R4 (W04). The PR is #1482 and is owned by the operator: no push, sign or merge here.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W04-S1",
+      "task": "Read both verdicts and adjudicate every finding against source",
+      "requirements": [
+        "Only after both custody commits exist."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_ADJUDICATION.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_ADJUDICATION.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/COMBINED_ADJUDICATION.md"
+      ],
+      "validation": [
+        "every finding adjudicated with file and line"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W04-S2",
+      "task": "Build the unsigned proof, report, ledger and flattened package",
+      "requirements": [
+        "Independence stays UNATTESTED."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/AUDITOR_REPORT.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCE_LEDGER.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_PACKAGE.txt"
+      ],
+      "validation": [
+        "schema and proof validators pass"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W04-S3",
+      "task": "Validate, commit, report",
+      "requirements": [
+        "Only a missing signature may remain in proof-only closure."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GATES.txt"
+      ],
+      "validation": [
+        "closure checks recorded"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+  "workstream_id": "W04",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R4",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-desktop",
+      "model": "claude-sonnet-5-5",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/AUDITOR_REPORT.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_ADJUDICATION.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_ADJUDICATION.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/COMBINED_ADJUDICATION.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GATES.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCE_LEDGER.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCE_LEDGER_LIVE.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/MACRO_PACKET.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCES.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ISSUANCE.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W01_TASK_PACKET.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W02_TASK_PACKET.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W03_TASK_PACKET.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W04_TASK_PACKET.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W01_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W02_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W03_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W04_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_PACKAGE.txt"
+  ],
+  "canonical_writers": [
+    "W04-coordinator"
+  ],
+  "semantic_scope": [
+    "route-ledger-adjudication"
+  ],
+  "rollback_boundary": "git revert <W04 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); proof-only commits above the audited head 989fe4651c050ec23619e5208da17d6152b477b0",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

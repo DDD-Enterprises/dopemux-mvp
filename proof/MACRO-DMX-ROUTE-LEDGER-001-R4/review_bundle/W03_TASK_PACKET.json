@@ -1,0 +1,176 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W03-AUDIT-AGY-001-R4",
+  "project": "dopemux-mvp",
+  "target": "Run the CORROBORATING final audit of the same frozen head with agy and the Gemini 4 Argon model in a sealed, tool-less shape: one attempt, zero retries, no fallback, containment decided from the stream, verdict-blind custody committed before any verdict is read.",
+  "invariants": [
+    "I01 Scope: the coordinator writes only the files in this packet's write_surface and its own sealed run directory (fresh, timestamped, under the session scratchpad, outside the repository, never removed by `rm`).",
+    "I02 Forbidden actions: push, open a PR, merge, sign, mark ready, force-push, history rewrite, reading either verdict before BOTH custody commits exist, a second attempt, a fallback route (including the Grok route or any Claude model inside agy), `--add-dir`, `--dangerously-skip-permissions`, and giving the auditor Grok's output. Sending is limited to the one sealed prompt (the same AUDIT_PROMPT.txt as W02, hash-checked) to the pinned agy route.",
+    "I03 advisor: the coordinator makes NO advisor call in this workstream.",
+    "I04 No delegation: the coordinator runs the commands itself with deterministic shell.",
+    "I05 Route (exact, no substitution): `agy` CLI (record `agy --version`; 1.4.10 at issuance), model `gemini-4-argon-high` (the coordinator's reading of the operator's 'argon 4'; it must appear in `agy models` output captured into AGY_MODELS_LIST.txt, otherwise STOP without sending anything). Shape that worked on 2026-10-18: a sealed directory holding only AUDIT_PROMPT.txt with the diff embedded in the prompt, `agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"` (the prompt attached to `--print` with `=`), run in the background and monitored; do not hardcode other flags and prove `--help` lists each flag used. ONE audit attempt, ZERO retries, NO fallback. Two cheap probes first (a trivial echo; 'state your exact model identifier'), neither an audit attempt; the model's self-statement is a claim.",
+    "R4 hardening (supersedes the flag shape in I05 wherever they differ): agy cannot be made tool-less (60 built-in tools incl. run_command, call_mcp_tool, write_to_file, search_web; 11 global MCP servers enabled) and the operator's SAVED agy settings are toolPermission=always-proceed and allowNonWorkspaceAccess=true with an allow list incl. git commit and gh. `--settings` (session-only, never saved; `mcpServers` cannot be set through it) is therefore REQUIRED on every probe and the real run, exactly: `--settings '{\"toolPermission\":\"request-review\",\"allowNonWorkspaceAccess\":false,\"permissions\":{\"allow\":[]}}'`, with `env -i HOME PATH` and a sealed cwd. The init event of EVERY run must report `permission_mode = request-review`; if it does not, STOP before sending the audit prompt. Do NOT run `agy mcp disable` or edit any agy or gemini settings file: the global configuration is not touched. The shape that ran in R3 is recorded in proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/AGY_INVOCATION.txt and AGY_RUN_RECORD.md (agy 1.4.11 at R4 issuance; the CLI updates itself, so record `agy --version` before each run). Probes use the same two content-free prompts as R3 (proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/AGY_PROBE_PROMPT.txt). The operator's R4 AGY token accepts this residual exposure; the stream gate decides admissibility.",
+    "I06 Report every gate PASS, FAIL, NOT_RUN or UNKNOWN literally. Exact-model evidence for the schema-required `gemini-3.1-pro-high` is UNAVAILABLE (that id is no longer listed): the proof records `auditor_tool: agy` with the generic `auditor_model: gemini` and the exact invocation; PR Steward may not treat that as READY. This is a stated, operator-approved packet-specific route (see ISSUANCE.md), not a hidden substitution.",
+    "I07 No secrets: the sealed directory holds only the prompt files; no environment values in any record. Residual: agy may load global MCP servers or home-level instruction files; the containment gate below is what decides admissibility.",
+    "I08 Containment gate (verdict-blind): from the stream-json output the only step types allowed are `user_input` and `agent_response`; any tool, MCP, file or command step makes the run inadmissible (record it, do not count it as an audit, NEEDS_SUPERVISOR). Check ONLY metadata after the run (step types, counts, durations, exit code, stderr size, a tokens figure if reported). Do not read, summarize or parse the answer text in this workstream. Write AGY_RUN_RECORD.md (facts only) BEFORE the verdict is read, copy every raw artifact flat into the bundle, write SHA256SUMS_AGY.txt, commit by explicit pathspec.",
+    "I09 Allowances (PROPOSED): audit attempts 1; retries 0; probes <= 2; wall clock probes plus run <= 30 min (`--print-timeout 10m` for the run); tokens <= 400,000 if the stream reports them, otherwise UNKNOWN; cost UNKNOWN unless reported; coordinator advisor calls 0. A figure the runner does not report is UNKNOWN and never counts as within budget. When ANY limit is reached or about to be exceeded: stop at the next safe point, dispatch nothing further, retry nothing, substitute nothing, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Stop conditions: `gemini-4-argon-high` not listed; a flag used is not in `agy --help`; probe shows a tool step; quota (429) or auth failure; timeout; non-zero exit; any non-allowed step type in the real run; empty or non-JSON final result (judged by shape only). On any of these: no retry, no fallback, keep every artifact as custody, commit it, and report NEEDS_SUPERVISOR (the W02 verdict then stays the only one; the operator decides whether that is acceptable)."
+  ],
+  "depends_on": [
+    "TP-DMX-ROUTELEDGER-W02-AUDIT-GROK-001-R4"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "proof(route-ledger-001-r3): custody of the AGY final-audit run, committed before the verdict was read",
+    "allowlist": [
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_VERSION.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_MODELS_LIST.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE_PROMPT.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE1_STREAM.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE1_STDERR.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE2_STREAM.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE2_STDERR.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_STREAM.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_RESPONSE_RAW.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_STDERR.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_INVOCATION.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_TIMES.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_RUN_RECORD.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_AGY.txt"
+    ],
+    "verify": [
+      "git diff --name-only | sort   # equals the allowlist plus unrelated untracked/unstaged files already present at start",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): dopemux-route-ledger mod (R4 final audit round)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R4 (W03). The PR is #1482 and is owned by the operator: no push, sign or merge here.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W03-S1",
+      "task": "Capture version and the model list, check the exact id",
+      "requirements": [
+        "Nothing is sent."
+      ],
+      "commands": [
+        "agy --version",
+        "agy models"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_VERSION.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_MODELS_LIST.txt"
+      ],
+      "validation": [
+        "gemini-4-argon-high listed"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W03-S2",
+      "task": "Two probes in a sealed directory",
+      "requirements": [
+        "No tool step allowed."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE1_STREAM.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE2_STREAM.txt"
+      ],
+      "validation": [
+        "step types only user_input and agent_response"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W03-S3",
+      "task": "The real run, one attempt, in the background",
+      "requirements": [
+        "Monitor; no polling loops."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_STREAM.txt"
+      ],
+      "validation": [
+        "exit 0",
+        "allowed step types only"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W03-S4",
+      "task": "Metadata-only containment check, run record, custody commit",
+      "requirements": [
+        "Do not read the answer."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_RUN_RECORD.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_AGY.txt"
+      ],
+      "validation": [
+        "custody committed"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+  "workstream_id": "W03",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R4",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "agy",
+      "model": "gemini-4-argon-high",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_VERSION.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_MODELS_LIST.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE_PROMPT.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE1_STREAM.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE1_STDERR.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE2_STREAM.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE2_STDERR.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_STREAM.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_RESPONSE_RAW.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_STDERR.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_INVOCATION.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_TIMES.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_RUN_RECORD.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_AGY.txt"
+  ],
+  "canonical_writers": [
+    "W03-coordinator"
+  ],
+  "semantic_scope": [
+    "route-ledger-agy-audit"
+  ],
+  "rollback_boundary": "git revert <W03 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); proof-only commits above the audited head 989fe4651c050ec23619e5208da17d6152b477b0",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

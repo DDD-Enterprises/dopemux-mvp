@@ -1,0 +1,291 @@
+{
+  "tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+  "packet_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+  "tp_path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R2/review_bundle/MACRO_PACKET.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032",
+  "branch": "claude/route-ledger-001-8d8032",
+  "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git (origin matches repo_binding.origin_hint DDD-Enterprises/dopemux-mvp)",
+  "base_sha": "93050d135ffc2592000c1d0edef82b2912935525",
+  "audited_head_sha": "93969e7a3ca2775c7b435e1ce1b6528ad2173c4a",
+  "head_sha": "93969e7a3ca2775c7b435e1ce1b6528ad2173c4a",
+  "commit_sha": "Audited content head 93969e7a3ca2775c7b435e1ce1b6528ad2173c4a; proof-only commits follow it: 03844022e1eedb4495b9e24104428c02851758a2 (audit custody, committed before the verdict was read), then the commit holding this file (see git log for the final head)",
+  "pr_url_or_blocker": "NO PR: push, PR publication, signing and merge are operator gates and were not authorized. The macro's package under task-packets/ stays untracked (the preflight rejects GEC v2 packets there); it is flattened in review_bundle/.",
+  "slices": [
+    {
+      "id": "W01",
+      "commit": "01aa4a1233700ca7d6a55edb603e327820aa5f9a",
+      "repair_commit": "93969e7a3ca2775c7b435e1ce1b6528ad2173c4a",
+      "files": 5,
+      "model_requested": "claude-sonnet-5-5 / effort high",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS",
+      "note": "observed = assistant message.model in the child transcript (118 messages), response-claimed, not provider attestation; effort observed UNKNOWN; 0 advisor blocks, 0 Agent calls; build 14.3 min active, 65 tool uses, 215889 tokens; repair resume 19.5 s, 4 tool uses, reported 217502 tokens (cumulative or additive); one narrow repair dispatch (test import extension, TS5097)"
+    },
+    {
+      "id": "W02",
+      "commit": "ff61c185f",
+      "files": 3,
+      "model_requested": "claude-sonnet-5-5 / effort medium",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS",
+      "note": "transcript message.model, 26 messages; 0 advisor blocks, 0 Agent calls; 3.3 min active, 16 tool uses, 113393 tokens; two small edits in W01-owned code disclosed to the auditor"
+    },
+    {
+      "id": "W03",
+      "commit": "5dd7e998a",
+      "files": 1,
+      "model_requested": "claude-haiku-5-5 / effort low",
+      "model_observed": "claude-haiku-5-5",
+      "status": "PASS",
+      "note": "transcript message.model, 28 messages; 0 advisor blocks, 0 Agent calls; 1.0 min active, 18 tool uses, 60756 tokens; one in-run markdownlint MD038 fix; no Sonnet fallback used"
+    },
+    {
+      "id": "AUDIT-CUSTODY",
+      "commit": "03844022e1eedb4495b9e24104428c02851758a2",
+      "files": 31,
+      "model_requested": "NONE (local-shell)",
+      "model_observed": "NONE",
+      "status": "PASS",
+      "note": "raw audit artifacts, probes, flattened R2 package and allowance ledger committed before the verdict was read"
+    }
+  ],
+  "files_changed": [
+    "docs/02-how-to/route-ledger.md",
+    "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+    "plugins/dopemux-route-ledger/README.md",
+    "plugins/dopemux-route-ledger/hooks/hooks.json",
+    "plugins/dopemux-route-ledger/hooks/register.test.ts",
+    "plugins/dopemux-route-ledger/hooks/register.tsx",
+    "plugins/dopemux-route-ledger/receipt.schema.json"
+  ],
+  "validations": [
+    {
+      "command": "claude plugin validate plugins/dopemux-route-ledger",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "directory-catalog advice only (author, icon); review_bundle/GATES.txt"
+    },
+    {
+      "command": "claude plugin test plugins/dopemux-route-ledger",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "53 pass / 0 fail at the audited head; re-run after each child"
+    },
+    {
+      "command": "tsc -p plugins/dopemux-route-ledger (in tree)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "the engine laid no .claude-plugin/types in the plugin folder and the plugin has no tsconfig"
+    },
+    {
+      "command": "tsc -p out-of-tree copy of the audited files with the 2.1.308 declaration and the header tsconfig (default engine options)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "the implementers' 2.1.304 declaration no longer exists; an earlier run with it also passed after the test import repair (TS5097 found and repaired by the W01 repair commit)"
+    },
+    {
+      "command": "python3 -m json.tool on plugin.json, hooks.json, receipt.schema.json",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "jsonschema: 15 receipts printed by the tests vs receipt.schema.json (extra-key negative control rejected)",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "ct validate-binding on copies of the W01 binding with receipt binding_fields merged (3 samples); ct bind-record NOT run",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "ct validate-macro --file MACRO_PACKET.json (R2) and ct bind-record then validate-binding for the coordinator and three children",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "STATIC_VALID; recorded bindings live only in the issuing worktree's gitignored state"
+    },
+    {
+      "command": "python scripts/governance/validate_change_contract.py --base origin/main --head 93969e7a3",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "lane L2, 7 paths"
+    },
+    {
+      "command": "pre-commit run --from-ref origin/main --to-ref 93969e7a3",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "grok-cli grok-4.5 final audit, tool-less, one attempt",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "verdict PASS_WITH_RISKS; init.tools == []; 0 tool_use; stream preserved; probes preserved"
+    },
+    {
+      "command": "live run: claude --plugin-dir plugins/dopemux-route-ledger in a real session with real Agent spawns and an advisor use",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "operator step; no live session was run"
+    },
+    {
+      "command": "make test (full suite)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "scope limited to the mod tests and the gates above"
+    }
+  ],
+  "codereview_status": "Independent final audit PASS_WITH_RISKS (grok-cli grok-4.5, tool-less, operator-approved route, one attempt). Q1-Q11 PASS; findings N1-N10 all OPEN (1 HIGH, 4 MEDIUM, 4 LOW, 1 INFO), all confirmed against source by the coordinator. No PAL codereview run.",
+  "precommit_status": "PASS (pre-commit run --from-ref origin/main --to-ref 93969e7a3)",
+  "residual_risks": [
+    "N1 HIGH: the mod has never run in a real Claude Code session; hook ordering, tool_use_id population, hook time budgets and status coexistence with the Pulse mod are UNKNOWN (NOT_RUN).",
+    "N2 MEDIUM: an explicit receiptDir is unconstrained beyond host permissions and a symlink is followed (no stat check).",
+    "N3 MEDIUM: closed receipt segments stay in memory for the process lifetime (linear growth).",
+    "N4 MEDIUM: a failed final flush at a real session end loses the unflushed tail of receipts (counted and shown as receipts ✗ while the session runs).",
+    "N5 MEDIUM: after /clear receipts keep going to the old session id's file (by design, disclosed).",
+    "N6-N9 LOW: unpinned toast has no timeout; the over-budget status shows the session total over the child budget (an open design call); the test debounce advance is 1000 ms against 500 ms in code; the Agent description (80 chars) is stored unredacted.",
+    "N10 INFO: declaration drift 2.1.304 (implementers) to 2.1.308 (this session) to CLI 2.1.309; in-tree tsc -p is NOT_RUN.",
+    "/route may be refused by a build; /route-ledger is canonical (pre-authorized fallback).",
+    "W01 added two nullable agent_request keys (spawned_agent_id, resolved_model) to the receipt format and W02 made two small edits in W01-owned code; both were disclosed to the auditor.",
+    "Auditor self-reported grok-4; the CLI init event shows grok-4.5; provider-attested identity UNKNOWN. Implementer observed models are response-claimed values from transcripts.",
+    "The audit route approval reached the coordinator as a relayed, truncated operator message, not as an AUTHORIZE_..._AUDIT_ROUTE line (recorded in GROK_RUN_RECORD.md).",
+    "The audit prompt was not itself reviewed by a second model; the auditor had no tools and judged the diff text only."
+  ],
+  "unknowns": [
+    "Live behaviour in a real Claude Code session (NOT_RUN)",
+    "Whether the engine fills tool_use_id on Agent tool.call and agent.spawn as the mocks assume, and the real order of those hooks",
+    "Whether /route is accepted by the installed build",
+    "Whether the status segment coexists with dopemux-pulse's status line",
+    "Provider-attested identity of the auditor model and of the implementer children",
+    "Per-child effort observed (the API does not report it; requested efforts were high, medium, low)",
+    "PROOF.json.sig absent: signing needs the operator's key",
+    "Whether the PR Steward and the CI audit gate accept this attestation"
+  ],
+  "cleanup_status": "Worktree and branch retained; no running processes; nothing pushed; the macro package under task-packets/ (R1 and R2) is untracked and flattened into review_bundle/; the issuing worktree also shows unrelated untracked/modified .agents/ and .codex/config.toml from another process, not touched",
+  "audit_evidence": {
+    "grok": {
+      "prompt_sha256": "933319b79fc8b044ed87df269edbe066efd24cd085cf00283d072496dd87f7ac",
+      "response_sha256": "4614e8e8eec12446cedb734d77a03d238a3411c080a76bb3ad131dc943022849",
+      "frozen_diff_sha256": "f9a2d0c16da05d6937b8302715bddf2dacd860b50d9d925ce211808d5a6c66bd",
+      "delta_diff_sha256": "530de0f9799b30ac60032a9aa8c1542c5eb5a9e15ab5b6d8033c524bd517749a",
+      "stream_sha256": "d13f7e5015603469fc35f99a24e5f9433053d218525bdbf8f1586b24e74d26bb",
+      "probe1_stream_sha256": "7d018878df6fcbb5f66fc3371e2cbb60475ccd6b64edcef99229c4628a683a78",
+      "probe2_stream_sha256": "340430ced1040bedf3c938169b6e7072ceb3bb9da7df59f30b6997fe024dbee9",
+      "gates_sha256": "76c7e95cb1f23b4a1ce5bdfdc181f8fe9e3befc60ecb40631f38481ad806e34b",
+      "path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R2/review_bundle/ (files GROK_*)"
+    }
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-sonnet-5-5 (supervisor session, W01, W02); claude-haiku-5-5 (W03)",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "sealed directory holding only AUDIT_PROMPT.txt; grok CLI 1.0.67 with the tool-less recipe (38 disallowed tool ids from the Pulse R2 recipe, every id of probe 1's init.tools among them, plus a no-skills system prompt); probe 2 confirmed init.tools == [], real run init.tools == [] with 0 tool_use blocks; launched 2026-10-24T06:59:59Z, finished 2026-10-24T07:02:46Z; exact command in review_bundle/GROK_INVOCATION.txt; one attempt, no retries.",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R2/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "N1",
+        "severity": "HIGH",
+        "title": "Mod never run live; hook ordering, tool_use_id population and status coexistence are UNKNOWN.",
+        "status": "ACCEPTED_RISK",
+        "body": "No real session has loaded the mod: the coordinator's gates are all mock-engine, and the README and how-to say so. Not fixable inside this macro. Operator step: `claude --plugin-dir plugins/dopemux-route-ledger` with `.control-tower/state` present, one pinned and one unpinned Agent call, one advisor use in a child, then read the receipt file and run `/route-ledger`. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      },
+      {
+        "id": "N2",
+        "severity": "MEDIUM",
+        "title": "Explicit absolute or symlinked receiptDir is not constrained beyond host permissions.",
+        "status": "ACCEPTED_RISK",
+        "body": "register.tsx checks only for a `..` segment, an empty or root path, and the default directory's parent `.control-tower/state`; it never calls `$.fs.stat`, so a symlink at or under an explicit `receiptDir` is followed. The setting is the operator's own plugin config and the mod writes only `<dir>/<sanitized id>[.n].jsonl`, so the blast radius is that of the host process's own file permissions. Disclosed (limitation vii). Residual risk, no repair in this macro; a possible follow-up is a `$.fs.stat` check that refuses a symlinked directory. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      },
+      {
+        "id": "N3",
+        "severity": "MEDIUM",
+        "title": "In-memory receipts of closed segments are never released (linear growth per session).",
+        "status": "ACCEPTED_RISK",
+        "body": "`s.segments` is appended at register.tsx lines 643 and 788 and reset only on init; a rolled-over segment stays in memory with all its receipts. Growth is linear in receipts for the process lifetime (roughly half a kilobyte to a kilobyte per receipt), so a very long session grows by megabytes, not unboundedly fast. Flush rewrites only dirty segments, so write cost does not grow with it. Residual; a follow-up could keep only counters and the last main step for closed segments. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      },
+      {
+        "id": "N4",
+        "severity": "MEDIUM",
+        "title": "A failed final flush at a real session end loses the unflushed tail of receipts.",
+        "status": "ACCEPTED_RISK",
+        "body": "`flushSegments` counts a failed write in `receiptsFailed` and leaves the segment dirty, and `session.end` schedules one flush and awaits the chain once; after `isEnded` nothing records again, so a failed final flush loses the dirty tail (earlier flushed segments stay on disk). The status line shows ` · receipts ✗` after the first failure, so the loss is visible while the session runs. Failure of a local file write is exceptional. Residual; by design no tight retry loop. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      },
+      {
+        "id": "N5",
+        "severity": "MEDIUM",
+        "title": "After /clear receipts keep going to the old session id's file.",
+        "status": "ACCEPTED_RISK",
+        "body": "`session.end` with reason `clear` returns `next(e)` untouched (the W01 packet requires it, as in Pulse), so after `/clear` receipts continue to the old session id's file. Disclosed as limitation (v) and in the code comment. It keeps counting rather than losing data; a later change could re-resolve the session id lazily. ADJUDICATION: Coordinator: CONFIRMED, BY DESIGN. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      },
+      {
+        "id": "N6",
+        "severity": "LOW",
+        "title": "Unpinned toast does not set a timeout.",
+        "status": "ACCEPTED_RISK",
+        "body": "The unpinned-agent toast at register.tsx line 889 passes only a message (the host default duration); budget toasts pass `timeoutMs: 8000`. Cosmetic inconsistency; no repair after freeze. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      },
+      {
+        "id": "N7",
+        "severity": "LOW",
+        "title": "Status segment N/B uses session total with the child budget; docs do not say which budget.",
+        "status": "ACCEPTED_RISK",
+        "body": "`statusText` prints the session advisor total over the child budget when only a child is over it (`advisor 1/0 ⚠`); the README says only `advisor N/B ⚠` once a budget B applies and is exceeded. Flagged to the operator at freeze as an open design call. Follow-up wording or semantics change. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      },
+      {
+        "id": "N8",
+        "severity": "LOW",
+        "title": "Test debounce slack (1000 ms vs 500 ms).",
+        "status": "ACCEPTED_RISK",
+        "body": "register.test.ts advances 1000 ms (`DEBOUNCE_MS`, line 290) while the code debounces 500 ms (`STATUS_DEBOUNCE_MS`, line 41), so a regression to a value up to 1000 ms would still pass. Test hygiene only. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      },
+      {
+        "id": "N9",
+        "severity": "LOW",
+        "title": "Agent description (80 chars) is persisted in receipts.",
+        "status": "ACCEPTED_RISK",
+        "body": "Receipts and the unpinned toast carry the Agent call's `description`, truncated to 80 characters, unredacted. The prompt is never recorded (a test asserts it). Disclosed (limitation viii). Receipts live in the gitignored `.control-tower/state/` by default. ADJUDICATION: Coordinator: CONFIRMED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      },
+      {
+        "id": "N10",
+        "severity": "INFO",
+        "title": "API drift and Pulse coexistence remain unverified.",
+        "status": "ACCEPTED_RISK",
+        "body": "The declaration drifted from 2.1.304 (implementers) to 2.1.308 (this session's reload) while the CLI is 2.1.309. The audited files type-check against the 2.1.308 declaration with the default engine options (GATES.txt), which is extra evidence against drift but is not the in-tree `tsc -p` (NOT_RUN). Pulse status-line coexistence is unverified and disclosed. ADJUDICATION: Coordinator: ACKNOWLEDGED. OPERATOR DECISION 2026-10-24: the verdict was accepted as-is in chat; this finding is recorded as a follow-up in review_bundle/FOLLOWUPS.md and was not repaired."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "N1 HIGH: never run live in a real session (NOT_RUN).",
+      "N2: receiptDir symlink or absolute target unchecked.",
+      "N3: closed receipt segments retained in memory.",
+      "N4: failed final flush loses the unflushed tail.",
+      "N5: after /clear receipts continue to the old session file.",
+      "N6-N10: toast timeout, status budget semantics, test debounce slack, stored Agent description, declaration drift and Pulse coexistence.",
+      "OPERATOR DECISION 2026-10-24: the PASS_WITH_RISKS verdict was accepted as-is; every finding above is ACCEPTED_RISK and tracked as a follow-up in review_bundle/FOLLOWUPS.md. Any repair changes the audited subject and needs a new audit on an operator-approved route."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

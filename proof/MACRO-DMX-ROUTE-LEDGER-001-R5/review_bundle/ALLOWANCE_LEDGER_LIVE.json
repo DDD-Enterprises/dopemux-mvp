@@ -1,0 +1,25 @@
+{
+  "macro": "MACRO-DMX-ROUTE-LEDGER-001-R5",
+  "events": [
+    {
+      "t": "2026-10-30T11:13:41Z",
+      "event": "R5 gate line received; preflight"
+    },
+    {
+      "t": "2026-10-30T11:13:57Z",
+      "event": "W01 dispatched (claude-sonnet-5-5, high)"
+    },
+    {
+      "t": "2026-10-30T11:28:11Z",
+      "event": "W01 returned READY_FOR_VERIFY; transcript parsed: 0 advisor, 0 Agent"
+    },
+    {
+      "t": "after 11:28Z",
+      "event": "volume full; the first gate run aborted and was re-run in full; the first git add failed before any commit"
+    },
+    {
+      "t": "2026-10-30T12:14:54Z",
+      "event": "repair committed 26414fef53df4970e39269a3ba9ed93afd6b8f32; proof files written"
+    }
+  ]
+}

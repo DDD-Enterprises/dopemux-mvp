@@ -1,0 +1,29 @@
+{
+  "macro": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+  "events": [
+    {
+      "t": "2026-10-30T10:39:10Z",
+      "event": "R4 gate line received; W01 preflight"
+    },
+    {
+      "t": "2026-10-30T10:39:10Z",
+      "event": "W01 started: pin, parents, fresh fetch, content identity, hashes, bindings all PASS"
+    },
+    {
+      "t": "2026-10-30T10:41:24Z",
+      "event": "W01 committed 0e0e9b40e"
+    },
+    {
+      "t": "2026-10-30T10:41:38Z",
+      "event": "W02 started; probes 10:41:38 and 10:42:01; real run 10:42:07 to 10:43:54; custody 0e1755a5a"
+    },
+    {
+      "t": "2026-10-30T10:45:07Z",
+      "event": "W03 started; probes 10:45:07 and 10:45:20, gate OK; real run 10:45:46 to 10:50:50; custody 118e1ecfc at 10:51:44"
+    },
+    {
+      "t": "2026-10-30T10:56:18Z",
+      "event": "W04 adjudication, proof and ledger written (verdicts first read after both custody commits)"
+    }
+  ]
+}

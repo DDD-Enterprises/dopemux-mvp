@@ -1,0 +1,259 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R5",
+  "objective": "Route Ledger repair round R5. Repair, test first, ten of the eleven R4 audit findings in the read-only dopemux-route-ledger mod (N11, N12, N13a, N4, N8, N2, N3, N5, N9 and the doc and test observations O1-O5; N1 and N10 are not code defects), verify the repair independently (structural transcript check, whole-diff review, all gates re-run) and commit it. Start state: branch head 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1 (the R4 proof head over merge head 989fe4651c050ec23619e5208da17d6152b477b0, origin/main 97b6d5040496e2271c41d24c339d039303bbe6b1). No audit runs in R5: the repaired head is audited by a separate macro with its own operator line. No push, no PR update, no signing, no merge.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants and the repair design D1-D10 are written out in the child; numeric allowances (PROPOSED) are in ALLOWANCES.json sha256 15c7be8295d9503a263feccc58f50384a1851ad306d5c1c1261e4ec1738fb9f9 and summarised in each child's I09: macro active <= 75 min, elapsed <= 240 min, child dispatches <= 2, retries 0, child tool calls <= 250, child tokens <= 5,000,000, intermediate model audits 0, final audits 0 (separate macro), post-freeze repair rounds 0, child advisor calls 0, coordinator advisor calls <= 1",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator reply 2026-10-30 to the R4 report, verbatim: 'Repair findings first' (the label of the proposed action; the coordinator then asked which findings and how to re-verify).",
+      "operator answers to the follow-up questions, 2026-10-30: scope = all four groups, namely 'N11, N12, N13a', 'N8 + docs O1-O5', 'N2, N3, N4' and 'N5, N9 (design)'; re-verification = 'Both routes again (Recommended)'. The re-audit is NOT part of R5: the audited head cannot be pinned before the repair exists, so a separate audit macro pinned to the repaired head follows, with its own gate line.",
+      "R4 results (proof head 0ca60b59b, audited merge head 989fe4651c, unsigned): both audits PASS_WITH_RISKS, union of 11 findings (N1 HIGH; N2 N3 N4 N5 N11 MEDIUM; N8 N9 N12 N13 LOW; N10 INFO), all OPEN and all confirmed against source; see proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/COMBINED_ADJUDICATION.md. N1 (live session) and N10 (API drift, Pulse coexistence) are not code repairs and are NOT in R5.",
+      "operator verbatim R4 gate line 2026-10-30 (covers R4 only): AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R4_EXECUTION=YES AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R4_AUDIT_ROUTE_GROK_CLI_GROK_4_5=YES AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R4_AUDIT_ROUTE_AGY_GEMINI_4_ARGON_HIGH=YES. R5 needs its own line.",
+      "Any repair changes the audited subject, so the R4 audits and the R4 proof no longer cover the repaired code; they stay untouched as history."
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "push",
+      "sign"
+    ],
+    "global_stop_conditions": [
+      "operator gate absent: the line named in ISSUANCE.md (AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R5_EXECUTION=YES) is required; the R1 to R4 lines do not authorize R5",
+      "worktree HEAD != 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1 at start, or any tracked file other than the unrelated .codex/config.toml edit is dirty",
+      "any ALLOWANCES.json limit reached or about to be exceeded: stop at the next safe point (TaskStop; never mid-commit), dispatch nothing further, retry nothing, substitute nothing, leave the child's edits uncommitted, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched",
+      "any write outside a workstream allowlist; any commit, push, PR, sign, merge, mark-ready, force-push, history rewrite or `sync_with_base_branch` by the child",
+      "any child advisor call, or a second coordinator advisor call",
+      "a repair design proves unsound against the real API declaration (for example `$.fs.stat` or `$.session.root` behaves differently from the specified design) or needs a structural receipt-schema change: NEEDS_SUPERVISOR, no improvisation",
+      "an existing test regresses without an enumerated legitimate expectation change, or the plugin tests, `tsc`, `plugin validate` or the receipt schema check fail after the allowed narrow repair",
+      "no auditor is run in R5 (the audit round is a separate macro with its own operator line)"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "d91c3519ab388d260dbc886a56990ddc0916695edf5f69e8bd6e0fd48e46cd33"
+    },
+    "authority_ceiling": "Child-specific intersection only; team lead alone commits (explicit pathspec) and never pushes, signs, opens or updates a PR, merges, or runs an auditor",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "8146cfdc8169b2ac587af0d4c98a941d252cecfbebcb214e83382dac2a5f748a"
+      },
+      "objective": "Repair ten of the R4 audit findings in the dopemux-route-ledger mod, test first: N11 (main row with receipts off), N12 (empty effort or advisor id), N13a (toast-once state on reload), N4 (retry the final flush once), N8 (debounce test uses the real constant), N2 (symlink and receipt-directory safety via $.fs.stat), N3 (evict closed segments from memory), N5 (move to the new session after /clear), N9 (Agent description not recorded by default) and the doc and test observations O1-O5. N1 and N10 are not code repairs. You do not commit.",
+      "dependencies": [],
+      "parallel_group": "S1",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/README.md",
+        "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+        "plugins/dopemux-route-ledger/receipt.schema.json",
+        "docs/02-how-to/route-ledger.md"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "route-ledger-repair"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W01 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-ROUTELEDGER-001-R5",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "3f5ffe7707ce319bec1626bb959bd73b46a824c6e466642fb6659066b460dee0"
+      },
+      "objective": "Independently verify W01's repair (structural transcript check, whole-diff review against D1-D10, all gates re-run by the coordinator), then commit it by explicit pathspec and record the proof files. No auditor is run.",
+      "dependencies": [
+        "W01"
+      ],
+      "parallel_group": "S2",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/VERIFY_NOTES.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/GATES_R5.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/REPAIR.diff",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCE_LEDGER.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCE_LEDGER_LIVE.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/MACRO_PACKET.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCES.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ISSUANCE.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W01_TASK_PACKET.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W02_TASK_PACKET.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W01_EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W02_EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SHA256SUMS_PACKAGE.txt"
+      ],
+      "canonical_writers": [
+        "W02-coordinator"
+      ],
+      "semantic_scope": [
+        "route-ledger-repair-verify"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-desktop",
+          "model": "claude-sonnet-5-5",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-ROUTELEDGER-001-R5",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-REPAIR",
+      "requires": [
+        "W01"
+      ],
+      "condition": "plugin tests, validate, tsc and the receipt schema check pass in W01 with the diff inside the six-file allowlist; the child committed nothing",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J02-FREEZE",
+      "requires": [
+        "W01",
+        "W02"
+      ],
+      "condition": "the coordinator verified D1-D10, re-ran every gate, committed the repair and the proof files; freeze the repaired head and stop for the audit macro",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "None in this macro: one independent final audit round on the repaired head follows as a separate macro with its own operator line",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}

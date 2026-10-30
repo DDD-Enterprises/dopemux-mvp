@@ -1,0 +1,154 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W02-SURFACE-001-R2",
+  "project": "dopemux-mvp",
+  "target": "Extend the committed W01 core of `dopemux-route-ledger` with its surface: the status segment (`agents S×4 H×2 · advisor 1`), the toasts when an advisor budget is exceeded, and the `/route-ledger` command (with `/route` as an alias) that prints a TP_ROUTE table, plus tests and the plugin README.",
+  "invariants": [
+    "I01 Scope: write only inside this packet's write_surface. You share the workspace with the coordinator: preserve other edits, never revert unrelated work. A needed change outside the allowlist is a STOP with status NEEDS_SUPERVISOR (name the path and why); do not make it.",
+    "I02 Forbidden actions: commit, push, open a PR, merge, sign, mark ready, force-push, history rewrite, `claude plugin install`, enabling hot reload, any write under ~/.claude. The coordinator alone commits (one commit per workstream, explicit pathspec).",
+    "I03 advisor: FORBIDDEN, budget 0. Do not call the `advisor` tool. Any advisor call (tool_use or server_tool_use named advisor) means STOP with status NEEDS_SUPERVISOR. Report `advisor_calls` as a structural count from your own transcript.",
+    "I04 No recursive delegation: no Agent/subagent calls, no Workflow, no second model. Use deterministic local tools for shell, hashes and schema checks.",
+    "I05 Route is pinned in this packet's execution_requirements: use exactly that runner/model/effort, no substitution. Attempts: one build attempt plus at most one narrowly scoped repair pass for a failing validation. If it still fails, return FAIL with the evidence; do not loop. A timeout does not authorize another attempt.",
+    "I06 Report every gate as PASS, FAIL, NOT_RUN or UNKNOWN literally; never collapse NOT_RUN into PASS. Live runtime behaviour (a real Claude Code session loading the mod) is NOT_RUN in this macro; say what the operator must do to see it. `model_observed` stays UNKNOWN unless a runtime receipt shows it.",
+    "I07 No secrets, no credentials, no network. The mod under construction makes no network call and no `$.http`, `$.process`, `$.model` or prompt-rewriting call. Do not put prompts, file contents or tool output into any receipt or log.",
+    "I08 Return contract (all fields): status (one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject (files and `git diff --stat`), validation (gate table), proof (commands run), audit (NOT_RUN: the final L2 audit is the coordinator's), blockers, advisor_calls, files_written, observed_model (UNKNOWN unless a receipt shows it). Done, accepted and merged are never your status.",
+    "I09 Allowances (PROPOSED until the operator authorizes this revision; they bind from authorization on): active time <= 30 min (the child's own run time as the Agent result reports it); elapsed <= 50 min from dispatch to return (coordinator wall clock); dispatches <= 2 (1 build + at most 1 narrow repair); automatic retries 0 (a timeout, 429 or route error is a STOP, not a retry); tool calls <= 100; total tokens <= 1,500,000 as the Agent result reports `totalTokens` (counting basis UNKNOWN: it may include cache reads); coordinator re-reads of your diff <= 2; advisor calls 0. A figure the runner does not report is UNKNOWN and never counts as within budget. Watch your own tool-call count; if you near a cap, stop and return INCOMPLETE with what you have rather than rush. When ANY limit is reached or about to be exceeded: stop the running child at the next safe point (TaskStop; never mid-commit), dispatch nothing further, retry nothing, substitute nothing, leave the child's edits uncommitted, and report status NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Authoring contract: the coordinator loads the `plugin-authoring` skill at dispatch and passes you the path of that build's claude-code.d.ts and its reference.md. At issuance the declaration was 2.1.304 while the installed CLI was 2.1.309, so a version skew is possible: read the supplied declaration for every event, noun and method you use, and if one differs from what this packet names, STOP with NEEDS_SUPERVISOR and quote the declaration. If the declaration was not supplied, STOP and report.",
+    "Template (read-only): Pulse, on PR #1472. `git show feat/pulse-001:plugins/dopemux-pulse/hooks/register.tsx` (also `register.test.ts`, `.claude-plugin/plugin.json`, `README.md`, `hooks/hooks.json`; try `origin/feat/pulse-001` if the local ref is gone). Copy its layout and its habits: one hooks module, helpers declared at the top of the file taking `$` and the state object as arguments (the engine's static reader follows `$` only through top-level functions), every hook body wrapped so an exception cannot surface. If neither ref resolves, work from the declaration alone and say so.",
+    "Runs after W01 is COMMITTED. Start from the committed files, not from this packet's intent; edit `hooks/register.tsx` and `hooks/register.test.ts` IN PLACE and add `README.md`. W01 and W02 share register.tsx, so they are DEPENDENCY_SERIALIZED: never run beside W01. Do not touch plugin.json, hooks.json or receipt.schema.json (W01's): the receipt format and every `userConfig` key are FROZEN. If you need a receipt field, a config key or a changed W01 hook, STOP with NEEDS_SUPERVISOR.",
+    "Fill W01's `afterRecord($, s, receipt)` body (and add only helpers it needs, declared at the top of the file and taking `$` and the state object as arguments). Do not change W01's `tool.call`, `agent.spawn`, `turn.step` or `session.append` hooks, and do not add any new recording hook: W02 reads the ledger state, it does not record.",
+    "Status segment: `$.ui.status(text)` after every recorded receipt and in `session.start` (after rehydrate), debounced so a burst of steps does not flood. Format: `agents S×4 H×2 · advisor 1`: agents in the fixed order S, O, H, F, then `?` for unknown/other, only the non-zero ones; with no agents the agents part is `agents –`. The `advisor N` part appears only when N > 0, and shows `advisor N/B ⚠` once a budget applies and is exceeded. If receipts are disabled append ` · ledger off`; if `receiptsFailed > 0` append ` · receipts ✗`. Use the glyph rule from W01's `summarize`. `session.end` with `reason === 'clear'` is not an end: keep the status; any other reason: `$.ui.status(undefined)`. Pulse also writes a status line: whether two plugins' status text coexist is UNKNOWN and NOT_RUN here; say so in the README.",
+    "Budget toasts: a subagent loop (an `agentId`) whose advisor count exceeds `childAdvisorBudget` (when it is >= 0) toasts ONCE per agent: it names a shortened agent id, the count and the budget and says that the mod counts advisor calls and cannot block them. The main loop toasts once per crossing when the session total exceeds `sessionAdvisorBudget` (when >= 0). Never repeat a toast for the same (loop, level); never claim a call was prevented. Toasts are `$.ui.toast` with a `timeoutMs`.",
+    "Commands: in `session.start` register `route-ledger` (canonical) and `route` (alias), each with its own `$.command.register(...).catch(() => undefined)` so one refusal never stops the other or the status. `command.run` hooks `{ command: 'route-ledger' }` and `{ command: 'route' }` share ONE handler and answer `{ text }`. `/route` may collide with a built-in or other plugin command in some builds (the collision probe at issuance was inconclusive: `claude plugin validate` did not report even `focus`, which Pulse had to rename); the fallback name `/route-ledger` is PRE-AUTHORIZED, so a runtime refusal of `/route` needs no supervisor round trip. A test must show a refused `route` registration leaves `route-ledger` working.",
+    "`/route-ledger` output, no arguments: a TP_ROUTE-style table, one row per loop seen (a row `main` for the main loop, then one per subagent, at most 60 rows then `+N more`), columns `agent | runner | model requested | model observed | effort requested | match | advisor`; `runner` is `claude-code-agent`; unknown cells are `UNKNOWN`. A footer states: observed = the API-reported response model (response_claimed, not provider attestation); effort observed is UNKNOWN; the mod counts advisor calls and cannot block them. Argument `receipts` prints the receipt file path, the receipt counts and `receiptsEnabled`/`receiptsFailed`. Any other argument prints a one-line usage and changes nothing. The command never writes, never spawns, never reads outside its own state.",
+    "Safety: no new `$.fs` write, no `$.process`, no `$.http`, no `$.model`, no `prompt.*` hook, no `tool.call` change. Every new hook body is wrapped; a failed render or command must not throw (the command answers a short error text instead).",
+    "README.md (new): what it shows (status, toasts, `/route-ledger`, `/route`), how to load (`claude --plugin-dir plugins/dopemux-route-ledger`), every `userConfig` option with its default, where receipts go and their format with the `binding_fields` mapping and the statement that a supervisor merges them and runs `ct bind-record` (the mod never does), and the limits: it counts advisor calls and cannot block them; observed model is API-claimed, effort observed is UNKNOWN; a fork inherits its model; the plugin API is early access; the `/route` collision fallback; the status coexistence with Pulse is unverified; the mod is read-only toward the repository except its own receipt files. Minimum 40 words in the first paragraph.",
+    "Tests (TDD, extend register.test.ts; Pulse's harness): status text for none/one/mixed agents, `?` and `advisor N` and the over-budget form, ` · ledger off` and ` · receipts ✗`; debounce; clear versus end; toast once per agent and once per session crossing and never repeated; `/route-ledger` table for an empty ledger, a mixed ledger and over 60 rows; `receipts` argument; unknown argument; `/route` and `/route-ledger` give the same text; a refused `route` registration leaves `route-ledger` working; no hook throws when the ledger is empty or `summarize` input is odd.",
+    "Validation: `claude plugin validate plugins/dopemux-route-ledger`, `claude plugin test plugins/dopemux-route-ledger`, `tsc -p plugins/dopemux-route-ledger` only if the types were laid (else NOT_RUN with the reason), each PASS/FAIL/NOT_RUN. Live proof is NOT_RUN: state what the operator must do (load the mod, spawn agents, run `/route-ledger`)."
+  ],
+  "depends_on": [
+    "TP-DMX-ROUTELEDGER-W01-CORE-001-R2"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(route-ledger): status segment, /route-ledger table and advisor budget toast",
+    "allowlist": [
+      "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "plugins/dopemux-route-ledger/hooks/register.test.ts",
+      "plugins/dopemux-route-ledger/README.md"
+    ],
+    "verify": [
+      "claude plugin validate plugins/dopemux-route-ledger",
+      "claude plugin test plugins/dopemux-route-ledger",
+      "git diff --name-only | sort   # subset of the allowlist"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): delegation and advisor receipt mod (dopemux-route-ledger)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R2 (W01-W03). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Read the committed W01 module and its tests; read the supplied declaration for `ui.status`, `ui.toast`, `command.register`, `command.run`",
+      "requirements": [
+        "STOP if the declaration was not supplied or W01 is not committed."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "every API used exists in the supplied declaration"
+      ],
+      "context_files": [
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/README.md"
+      ]
+    },
+    {
+      "id": "W02-S2",
+      "task": "TDD: extend the tests, then fill afterRecord, the commands and the README",
+      "requirements": [
+        "Only the allowlisted files.",
+        "Do not change W01's recording hooks or the receipt format."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-route-ledger"
+      ],
+      "expected_files": [
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/README.md"
+      ],
+      "validation": [
+        "tests fail before and pass after; validate PASS"
+      ],
+      "context_files": [
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/README.md"
+      ]
+    },
+    {
+      "id": "W02-S3",
+      "task": "Return",
+      "requirements": [
+        "Per-file summary, gates, the NOT_RUN runtime statement, advisor_calls, files_written."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R2",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-route-ledger/hooks/register.tsx",
+    "plugins/dopemux-route-ledger/hooks/register.test.ts",
+    "plugins/dopemux-route-ledger/README.md"
+  ],
+  "canonical_writers": [
+    "W02-implementer"
+  ],
+  "semantic_scope": [
+    "route-ledger-surface"
+  ],
+  "rollback_boundary": "git revert <W02 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

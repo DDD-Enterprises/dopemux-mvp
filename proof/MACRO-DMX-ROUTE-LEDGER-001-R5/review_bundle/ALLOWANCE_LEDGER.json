@@ -1,0 +1,48 @@
+{
+  "macro": {
+    "elapsed_min_to_ledger_write": 61.2,
+    "cap_elapsed_min": 240,
+    "child_dispatches": 1,
+    "cap_child_dispatches": 2,
+    "automatic_retries": 0,
+    "final_independent_audits": 0,
+    "intermediate_model_audits": 0,
+    "post_freeze_repair_rounds": 0,
+    "child_advisor_calls": 0,
+    "coordinator_advisor_calls": 0,
+    "within_caps": true
+  },
+  "status": "MEASURED vs the PROPOSED caps in ALLOWANCES.json (sha256 15c7be8295d9503a263feccc58f50384a1851ad306d5c1c1261e4ec1738fb9f9); nothing invented",
+  "written_at": "2026-10-30T12:14:54Z",
+  "per_workstream": {
+    "W01": {
+      "dispatches": 1,
+      "cap_dispatches": 2,
+      "active_min": 14.0,
+      "cap_active_min": 75,
+      "elapsed_min": 14.2,
+      "cap_elapsed_min": 120,
+      "tool_use_blocks_transcript": 48,
+      "tool_uses_agent_notification": 42,
+      "cap_tool_calls": 250,
+      "total_tokens": 282698,
+      "cap_tokens": 5000000,
+      "advisor_calls": 0,
+      "agent_calls": 0,
+      "automatic_retries": 0,
+      "within_caps": true
+    },
+    "W02": {
+      "elapsed_min_to_ledger_write": 46.7,
+      "cap_elapsed_min": 60,
+      "note": "includes stalls while the volume was full (waiting for the operator to free space)",
+      "child_dispatches": 0,
+      "coordinator_advisor_calls": 0,
+      "cap_coordinator_advisor_calls": 1,
+      "within_caps": true
+    }
+  },
+  "not_recordable": [
+    "coordinator tokens and active time (UNKNOWN, not budgeted)"
+  ]
+}

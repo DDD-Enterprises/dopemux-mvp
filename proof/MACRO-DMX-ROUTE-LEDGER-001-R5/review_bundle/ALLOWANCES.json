@@ -1,0 +1,60 @@
+{
+  "status": "PROPOSED",
+  "applies_to": "MACRO-DMX-ROUTE-LEDGER-001-R5",
+  "basis": "ESTIMATES. R2 measured a comparable build: W01 core 14.6 min active, 69 tool calls, 217,502 to 433,391 tokens; W02 surface 3.3 min, 16 calls, 113,393 tokens. R5 touches the same two large files with ten interacting repairs and a test-first method, so the child caps are about 5x the R2 W01 figures. Revise by an amended revision after the run.",
+  "units": {
+    "time": "minutes",
+    "tokens": "Agent-result totalTokens, counting basis UNKNOWN",
+    "tool_calls": "Agent-result totalToolUseCount"
+  },
+  "per_workstream": {
+    "W01": {
+      "max_active_min": 75,
+      "max_elapsed_min": 120,
+      "max_dispatches": 2,
+      "max_automatic_retries": 0,
+      "max_child_tool_calls": 250,
+      "max_child_total_tokens": 5000000,
+      "max_coordinator_rereads": 2
+    },
+    "W02": {
+      "max_elapsed_min": 60,
+      "child_dispatches": 0,
+      "max_coordinator_advisor_calls": 1,
+      "executor": "coordinator"
+    }
+  },
+  "macro": {
+    "max_active_min": 75,
+    "max_elapsed_min": 240,
+    "max_child_dispatches": 2,
+    "max_automatic_retries": 0,
+    "max_child_tool_calls": 250,
+    "max_child_total_tokens": 5000000,
+    "max_intermediate_model_audits": 0,
+    "max_final_independent_audits": 0,
+    "final_audits_note": "none in R5: the audit round is a separate macro pinned to the repaired head with its own operator line",
+    "max_post_freeze_repair_rounds": 0,
+    "max_child_advisor_calls": 0,
+    "max_coordinator_advisor_calls": 1
+  },
+  "review_rounds": {
+    "coordinator_diff_rereads_per_workstream": 2,
+    "intermediate_model_audits": 0,
+    "final_independent_audits": 0,
+    "post_freeze_repair_rounds_without_operator": 0
+  },
+  "recordable_measures": {
+    "elapsed": "coordinator wall clock at dispatch and return",
+    "active": "Agent result totalDurationMs",
+    "tool_calls": "Agent result totalToolUseCount",
+    "tokens": "Agent result totalTokens (basis UNKNOWN)",
+    "advisor_calls": "structural count of advisor tool_use/server_tool_use blocks in the child transcript; coordinator calls counted by hand",
+    "not_recordable": [
+      "coordinator's own tokens and active time (UNKNOWN, not budgeted)"
+    ]
+  },
+  "on_limit": "When ANY limit is reached or about to be exceeded: stop the running child at the next safe point (TaskStop; never mid-commit), dispatch nothing further, retry nothing, substitute nothing, leave the child's edits uncommitted, and report status NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+  "enforcement": "Coordinator discipline only (the schemas have no allowance fields; ct validate-macro does not check them). Pinned through each child text, the macro stop-condition and base_policy text, and ALLOWANCES.json by sha256.",
+  "closure": "At close the coordinator writes ALLOWANCE_LEDGER.json (measured vs cap) into the flat review_bundle; no value is invented."
+}
