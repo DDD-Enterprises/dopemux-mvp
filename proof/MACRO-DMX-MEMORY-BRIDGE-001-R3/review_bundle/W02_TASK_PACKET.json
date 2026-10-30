@@ -1,0 +1,153 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-R3-W02-DOCS-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "Repair audit findings N1 and N5: drop the pinned commit hash and test count from the how-to, and correct the README's description of the attempts counter.",
+  "invariants": [
+    "C01 Shared workspace: another worker may edit this checkout at the same time (the other workstream's files). Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head bff3fd46e0953052035f5388476f3bfd99d7e442; base 93050d135ffc2592000c1d0edef82b2912935525. Unrelated changes by other sessions (.codex/config.toml, .agents/) are not yours: do not touch them.",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history; you do not stage. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env* or credential files; never write a secret into a file or return. No network.",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Live behaviour is NOT_RUN (no session ever loaded the mod).",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers, advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when: a needed change is outside your write_surface; the finding cannot be repaired as stated; validation still fails after one fix attempt for the same cause. Do NOT widen the repair: findings N3, N4, N6, N7 of the first audit stay accepted follow-ups and are out of scope.",
+    "C08 Evidence input: the first audit's adjudicated findings are in proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/AUDITOR_REPORT.md and proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle/GROK_ADJUDICATION.md; the operator's follow-up directions are in proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle/FOLLOWUPS.md. Read the finding you repair there. The audited content head was 52855fb35ea40f420bdacdcab9e092f8d15292c6.",
+    "A01 PROPOSED allowances (caps, not forecasts; accepted by authorizing R3): elapsed 20 min from dispatch; subagent tokens 200,000; tool uses 60; attempts: 1 Haiku attempt + 1 Sonnet fallback only on an evidence-backed STOP (the fallback is the retry); team-lead review: 1 diff re-read + at most 1 correction round across the macro.",
+    "A02 The team lead records duration_ms, subagent_tokens and tool_uses from your completion notice. Any exceeded cap or any advisor call ends the workstream: the diff is preserved untouched and the return is NEEDS_SUPERVISOR with the counters.",
+    "D01 Finding N1 (docs/02-how-to/memory-bridge.md): lines 19 and 137-138 cite the commit `1ce149a76` and a count of 105 tests as if it were the delivered head. Remove the pinned commit hash and the test count. Keep the honest status: the **Status** line must still say live behaviour is **NOT_RUN** (no real session has loaded the mod yet) and the Verification section must still say that `claude plugin validate` and `claude plugin test` pass for the committed mod (advisory warnings only), that the unit tests mock the clock, file system, store and process, and that live proof is **NOT_RUN**. After the edit, no commit hash and no PR number may remain in docs/02-how-to/memory-bridge.md or plugins/dopemux-memory-bridge/README.md (check with grep for 7 or more hex characters and for `#` followed by digits).",
+    "D02 Finding N5 (plugins/dopemux-memory-bridge/README.md line 43, the `state`, `attempts` row): it says `a counter of failed delivery attempts`, but the code also counts the final successful emit (a row sent on its first try shows attempts 1). Reword to say it counts delivery attempts that ran, failed ones and the final successful one. Do not change any other README text; the existing lines about when an attempt is counted (README lines 92-100) are already correct.",
+    "D03 Keep docs/02-how-to/memory-bridge.md at 149 lines or fewer (docs conventions: under 150) and keep its YAML frontmatter valid. Do not edit any code, test or manifest file. No other wording changes; do not touch N3, N4, N6.",
+    "D04 Gates (report each PASS/FAIL/NOT_RUN): `python3 scripts/docs_frontmatter_guard.py docs/02-how-to/memory-bridge.md`; `bash scripts/ci/docs_prohibited_patterns.sh docs/02-how-to/memory-bridge.md`; `python3 scripts/docs_validator.py docs/02-how-to/memory-bridge.md`; `wc -l docs/02-how-to/memory-bridge.md`; the grep checks of D01. `.venv/bin/pre-commit` is NOT_RUN (absent in this worktree)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001-R3",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R3",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/memory-bridge-001-b349d8",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(memory-bridge): drop the pinned commit hash from the how-to; correct the attempts description",
+    "allowlist": [
+      "plugins/dopemux-memory-bridge/README.md",
+      "docs/02-how-to/memory-bridge.md"
+    ],
+    "verify": [
+      "python3 scripts/docs_frontmatter_guard.py docs/02-how-to/memory-bridge.md",
+      "bash scripts/ci/docs_prohibited_patterns.sh docs/02-how-to/memory-bridge.md",
+      "python3 scripts/docs_validator.py docs/02-how-to/memory-bridge.md",
+      "wc -l docs/02-how-to/memory-bridge.md   # 149 or fewer",
+      "git status --porcelain   # only the two allowlisted files modified"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod (repaired after the first audit)",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001-R3. Draft until the final independent L2 audit of the repaired head and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Read findings N1 and N5 and the exact lines",
+      "requirements": [
+        "Quote the lines you will change."
+      ],
+      "commands": [
+        "grep -n '1ce149a76\\|105' docs/02-how-to/memory-bridge.md",
+        "sed -n 43p plugins/dopemux-memory-bridge/README.md"
+      ],
+      "expected_files": [],
+      "validation": [
+        "lines located"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/AUDITOR_REPORT.md",
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle/GROK_ADJUDICATION.md",
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle/FOLLOWUPS.md",
+        "docs/02-how-to/memory-bridge.md",
+        "plugins/dopemux-memory-bridge/README.md"
+      ]
+    },
+    {
+      "id": "W02-S2",
+      "task": "Edit the how-to and the README line and run the docs gates",
+      "requirements": [
+        "Only the two allowlisted files."
+      ],
+      "commands": [
+        "python3 scripts/docs_frontmatter_guard.py docs/02-how-to/memory-bridge.md"
+      ],
+      "expected_files": [
+        "docs/02-how-to/memory-bridge.md",
+        "plugins/dopemux-memory-bridge/README.md"
+      ],
+      "validation": [
+        "docs gates pass; no hash or PR number remains"
+      ],
+      "context_files": [
+        "docs/02-how-to/memory-bridge.md",
+        "plugins/dopemux-memory-bridge/README.md"
+      ]
+    },
+    {
+      "id": "W02-S3",
+      "task": "Return",
+      "requirements": [
+        "Status, gate table, the changed lines before and after, advisor_calls, files_written, observed_model, counters."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R3",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001-R3",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-haiku-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [
+      {
+        "runner": "claude-code-agent",
+        "model": "claude-sonnet-5-5",
+        "effort": "UNKNOWN"
+      }
+    ],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-memory-bridge/README.md",
+    "docs/02-how-to/memory-bridge.md"
+  ],
+  "canonical_writers": [
+    "W02-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-docs-repair"
+  ],
+  "rollback_boundary": "git revert <W02 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head bff3fd46e0953052035f5388476f3bfd99d7e442; base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
