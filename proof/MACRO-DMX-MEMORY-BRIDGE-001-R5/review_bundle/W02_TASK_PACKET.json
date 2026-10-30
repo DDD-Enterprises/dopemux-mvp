@@ -1,0 +1,150 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-R5-W02-DOCS-001",
+  "project": "dopemux-mvp",
+  "target": "Document the injective outbox file key in the README and the how-to, derived from the committed W01 code.",
+  "invariants": [
+    "C01 Shared workspace: other sessions may change unrelated files (.codex/config.toml, .agents/): do not touch them. Edit only your write_surface; never revert unrelated work. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head e0b90f5f2ce85833124b3a0912ed765115cba5e4; base 93050d135ffc2592000c1d0edef82b2912935525.",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history; you do not stage. The team lead alone commits (explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env* or credential files. No network. No real `dopemux capture emit`; tests mock `$.process`.",
+    "C05 Truth buckets: PASS / FAIL / NOT_RUN / UNKNOWN literally. Live behaviour is NOT_RUN.",
+    "C06 Return fields: status (READY_FOR_AUDIT | BLOCKED | NEEDS_SUPERVISOR | INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN), blockers, advisor_calls, files_written, observed_model.",
+    "C07 Stop and return evidence instead of improvising when a change is outside your write_surface, the finding cannot be repaired as stated, or validation still fails after one fix attempt. Do NOT widen the repair: N7-N11 stay accepted notes; the relay, replay, ring format, band and /bridge-note behave exactly as before.",
+    "C08 Evidence input: the R4 audit's adjudicated N12 is in proof/MACRO-DMX-MEMORY-BRIDGE-001-R4/AUDITOR_REPORT.md and proof/MACRO-DMX-MEMORY-BRIDGE-001-R4/review_bundle/GROK_ADJUDICATION.md (audited content head 88e7b7de3a43b50b4c4cdac7fc340f21bda03e40).",
+    "A01 PROPOSED allowances (caps, not forecasts; accepted by authorizing R5): elapsed 15 min; subagent tokens 150,000; tool uses 50; attempts: 1 Haiku attempt + 1 Sonnet fallback only on an evidence-backed STOP (the fallback is the retry).",
+    "A02 The team lead records duration_ms, subagent_tokens and tool_uses from your completion notice. Any exceeded cap or advisor call ends the workstream with NEEDS_SUPERVISOR; the diff is preserved.",
+    "D01 Derive the wording from the COMMITTED W01 code. docs/02-how-to/memory-bridge.md line ~36 and plugins/dopemux-memory-bridge/README.md lines ~19 and ~144 name the file as `outbox-<sessionId>.jsonl` / `outbox-<id>.jsonl`. Add, once in each file, one sentence: the key is the session id itself when it uses only letters, digits, `_` and `-` (at most 80 characters, which covers Claude Code's ids); any other id gets a sanitized prefix plus `~` and a 16-hex hash of the whole id, so two sessions never share a file. Change nothing else.",
+    "D02 Keep docs/02-how-to/memory-bridge.md at 149 lines or fewer (it is 149 now: fold the sentence into an existing paragraph or shorten a neighbouring line without losing any fact) with valid frontmatter; no commit hash or PR number.",
+    "D03 Gates: `python3 scripts/docs_frontmatter_guard.py docs/02-how-to/memory-bridge.md`; `bash scripts/ci/docs_prohibited_patterns.sh docs/02-how-to/memory-bridge.md`; `python3 scripts/docs_validator.py docs/02-how-to/memory-bridge.md`; `wc -l docs/02-how-to/memory-bridge.md`; grep both files for 7+ hex characters and PR numbers (none). `.venv/bin/pre-commit` NOT_RUN. Do not edit code, tests or manifests."
+  ],
+  "depends_on": [
+    "TP-DMX-MEMBRIDGE-R5-W01-OUTBOX-KEY-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001-R5",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R5",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/memory-bridge-001-b349d8",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(memory-bridge): document how the outbox file key is derived",
+    "allowlist": [
+      "plugins/dopemux-memory-bridge/README.md",
+      "docs/02-how-to/memory-bridge.md"
+    ],
+    "verify": [
+      "python3 scripts/docs_frontmatter_guard.py docs/02-how-to/memory-bridge.md",
+      "wc -l docs/02-how-to/memory-bridge.md   # 149 or fewer",
+      "git status --porcelain"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod (repaired after three audits)",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001-R5. Draft until the final independent L2 audit of the repaired head and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Read the committed safeId and the doc lines",
+      "requirements": [
+        "Quote them."
+      ],
+      "commands": [
+        "grep -n 'outbox-<' plugins/dopemux-memory-bridge/README.md docs/02-how-to/memory-bridge.md"
+      ],
+      "expected_files": [],
+      "validation": [
+        "located"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md",
+        "docs/02-how-to/memory-bridge.md"
+      ]
+    },
+    {
+      "id": "W02-S2",
+      "task": "Edit and run the docs gates",
+      "requirements": [
+        "Only the two files."
+      ],
+      "commands": [
+        "python3 scripts/docs_frontmatter_guard.py docs/02-how-to/memory-bridge.md"
+      ],
+      "expected_files": [
+        "plugins/dopemux-memory-bridge/README.md",
+        "docs/02-how-to/memory-bridge.md"
+      ],
+      "validation": [
+        "gates pass; 149 lines or fewer"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/README.md",
+        "docs/02-how-to/memory-bridge.md"
+      ]
+    },
+    {
+      "id": "W02-S3",
+      "task": "Return",
+      "requirements": [
+        "Status, gates, changed lines, advisor_calls, files_written, observed_model, counters."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R5",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001-R5",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-haiku-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [
+      {
+        "runner": "claude-code-agent",
+        "model": "claude-sonnet-5-5",
+        "effort": "UNKNOWN"
+      }
+    ],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-memory-bridge/README.md",
+    "docs/02-how-to/memory-bridge.md"
+  ],
+  "canonical_writers": [
+    "W02-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-docs-key"
+  ],
+  "rollback_boundary": "git revert <W02 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head e0b90f5f2ce85833124b3a0912ed765115cba5e4; base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
