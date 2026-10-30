@@ -75,8 +75,11 @@ Each is the supervisor's call unless section 0 quotes the operator.
 ### 5.1 Identity model
 
 - **Principal = runner.** One bearer token per runner: `runner:claude`, `runner:codex`, and in 2B `runner:opencode`, `runner:copilot`, `runner:grok`, `runner:agy`, `runner:commandcode`. The same token is valid on all three servers, so a runner has one principal everywhere.
-- **Workspace and instance are request data, not identity.** They become required arguments on memory writes (G1). The principal says who wrote; workspace and instance say where.
+- **Workspace and instance are request data, not identity.** They become required arguments on every mutating tool and route (G1). The principal says who wrote; workspace and instance say where.
+- **Two independent sources must agree** (after builder check). The stdio route fills `workspace_id` and `instance_id` from the caller's repo (its `.envrc.dopemux-mcp`, found from the working directory), not from the model. Each server is bound to its own workspace (and, for ConPort, its project credentials), set by `dopemux mcp init` for that worktree. A write whose `workspace_id` does not match the server's binding is rejected. This is the check that would have caught the incident in section 1: a container bound to the wrong workspace now rejects writes instead of misfiling them. A runner that calls a server directly (not through the stdio route) must supply matching values itself.
+- **Writes means every mutating tool and route**, on the MCP surfaces and the REST surfaces alike (dope-memory `POST /tools/*`; ConPort `POST /api/decisions`, `/api/progress`, `/api/custom_data`, `/api/context/{ws}`, `PUT /api/progress/{id}`).
 - **ConPort shared data** (unanswered question, supervisor's call): keep shared data as an explicit instance named `shared`. A write with no `instance_id` is rejected; a write with `instance_id: "shared"` lands where `NULL` lands today. Existing `NULL` rows are read as `shared`; no row is rewritten in this wave.
+- **dope-memory stays one container per worktree.** "Per-workspace ledger path" means the ledger path is derived from the container's bound workspace instead of the shared `DOPEMUX_CAPTURE_LEDGER_PATH`; no multi-workspace storage redesign.
 
 ### 5.2 Tokens
 
@@ -92,7 +95,8 @@ Each is the supervisor's call unless section 0 quotes the operator.
   - read the runner's token from the keychain at launch and send `Authorization: Bearer …` on every request;
   - fail with a clear stderr message when either is missing, instead of sending an unauthenticated request.
 - Codex uses this route in 2A. (Codex can also send a bearer token itself through `bearer_token_env_var`; the stdio route is chosen because it also solves per-worktree ports and ConPort's transport, below.)
-- Claude Code keeps its direct HTTP/SSE entries in `.mcp.json` and adds an `Authorization` header that references an env var exported by `.envrc.dopemux-mcp`.
+- **Claude Code uses the same stdio route for the three servers** (after builder check). A header read from an env var would fail for sessions not started from a direnv shell (desktop app, IDE, hook subprocesses, scheduled tasks); the bridge reads the keychain itself, so it works for all of them.
+- **Internal callers** (after builder check) get their own principals: `internal:hooks` (`native_hooks.py`), `internal:cli` (`src/dopemux/memory/capture_client.py`, `src/dopemux/pm/adapters/dope_memory.py`), `internal:wma` (`services/working-memory-assistant/conport_client.py`), `internal:cockpit`. Each reads its token from the keychain the same way the bridge does. Without this, the REST routes would stay an unauthenticated write path and G2 would be false.
 
 ### 5.4 ConPort transport
 
@@ -103,6 +107,7 @@ Each is the supervisor's call unless section 0 quotes the operator.
 ### 5.5 Rollout without cutting anyone off
 
 - **Memory servers** (in-repo code) get an auth mode setting: `off` (today), `log` (accept everything; store the verified principal or `unverified`; count unverified calls), `enforce` (reject unverified calls). Deploy in `log`, migrate configs, then switch to `enforce`. `log` is time-boxed: `dopemux mcp doctor` reports any server left in `log` mode.
+- **`enforce` is switched on per server only after a smoke test passes for both Claude Code and Codex through the stdio route** (after builder check). Claude Code is the primary target and works without a token today; it must not lose memory access at the switch.
 - **Task orchestrator 4.0.0:** whether it has a permissive phase is unknown until W0. If it has none, the upgrade cutover must happen together with every affected config getting a token (see 5.6).
 - **Hooks:** `orchestrator_enforcement.py` and `native_hooks.py:438-444` currently require an `actor` field; 4.0.0 reportedly refuses one. W5 changes them in the same change as the upgrade so they stop requiring it (and, if confirmed, flag its presence).
 
@@ -119,6 +124,19 @@ The task orchestrator on `:7890` is one container for the whole machine. About 2
 3. a token for the target runner exists in the keychain.
 
 If any check fails, the generator writes the preview only and prints which check failed.
+
+**What the gate releases** (after builder check): only the three identity-bearing servers (dope-memory, ConPort, task orchestrator), through the stdio route. The other rows marked `codex: full-sequenced` (serena, dope-context, gpt-researcher, pal-stdio) stay out of the generated Codex config until Wave 2B decides their auth; dope-context indexing is write-capable and verifies no token. Hand-added entries in a user's global Codex config are left alone and reported by the 2B doctor.
+
+### 5.9 Schema changes and migrations (after builder check)
+
+- Adding the principal to stored writes needs a column in dope-memory's SQLite ledger and in ConPort's Postgres schema. Historical rows get `unverified`.
+- The column is nullable with a default, so sidecars on older images keep working against a migrated database during the `log` phase.
+- ConPort's migration runs only as an operator step (a `dopemux` command with a dry run), never automatically on container start. The known migration-gate deadlock on a fresh database applies; the workaround is documented in W2.
+- Each migration ships with a rollback step (drop the column; data written in `log` mode keeps its rows).
+
+### 5.10 Orchestrator upgrade is built, not activated (after builder check)
+
+W5 delivers the 4.0.0 pin, config, hooks change and token file support behind a `dopemux` cutover command that the operator runs (with a dry run and a backup of the orchestrator's database). Merging W5 does not change the running container. Activation waits for the operator's cross-repo decision (section 9).
 
 ### 5.8 ADR
 
@@ -142,10 +160,22 @@ ADR-MCPINT-002's precondition 2 names `actor_authentication.enabled`, a 3.x sett
 | W3 | `dopemux auth` command group and the host hash files. | `src/dopemux/commands/auth_commands.py`, `src/dopemux/cli.py`, tests |
 | W4 | Stdio bridge: envrc port resolution, keychain token, fail-closed. | `src/dopemux/mcp/http_stdio_bridge.py`, tests |
 | W5 | Task orchestrator 4.0.0: image pin, config migration, token auth, hooks changed in the same change, backup and rollback steps. | `scripts/mcp-wrappers/task-orchestrator-*.sh`, `.taskorchestrator/config.yaml`, `.claude/hooks/orchestrator_enforcement.py`, `src/dopemux/claude/native_hooks.py`, tests |
-| W6 | Generator: Codex config through the stdio route, Claude `.mcp.json` headers, the real gate (5.7); catalog updates. | `src/dopemux/mcp/fleet_catalog.py`, `src/dopemux/commands/mcp_commands.py`, `mcp_catalog.yaml`, `src/dopemux/mcp/default_catalog.yaml`, schemas if needed, tests |
+| W6 | Generator: Codex and Claude Code config for the three servers through the stdio route, the real gate (5.7); catalog updates. | `src/dopemux/mcp/fleet_catalog.py`, `src/dopemux/commands/mcp_commands.py`, `mcp_catalog.yaml`, `src/dopemux/mcp/default_catalog.yaml`, schemas if needed, tests |
 | W7 | Docs, agent docs, ADR amendment draft; live acceptance run with Codex (operator-run). | `docs/`, `AGENTS.md`, `.claude/claude.md`, ADR amendment |
+| W8 | Internal callers send their own principals' tokens (5.3). | `src/dopemux/claude/native_hooks.py`, `src/dopemux/memory/capture_client.py`, `src/dopemux/pm/adapters/dope_memory.py`, `services/working-memory-assistant/conport_client.py`, the cockpit client, tests |
 
-Order: W0 first. W1, W2, W3 and W4 are independent of each other after W0. W5 needs W3 (tokens). W6 needs W1-W5. W7 last.
+Order: W0 first. W1, W2, W3 and W4 are independent of each other after W0. W5 and W8 need W3 (tokens). W6 needs W1-W5. W7 last.
+
+## 7a. Calls made after the builder check
+
+An independent reader raised six questions. All were settled as supervisor's calls and are marked "(after builder check)" above:
+
+1. REST write routes are covered too; internal callers get `internal:*` principals (5.1, 5.3, W8).
+2. `workspace_id`/`instance_id` come from the caller's repo through the stdio route and must match the server's own binding (5.1).
+3. The gate releases only the three identity-bearing servers (5.7).
+4. Claude Code uses the stdio route as well; `enforce` waits for a Claude Code and Codex smoke test (5.3, 5.5).
+5. The orchestrator upgrade is built but not activated; the operator runs the cutover (5.10).
+6. Principal column nullable with `unverified` for history; ConPort migration is an operator step with rollback (5.9).
 
 ## 8. Constraints
 
