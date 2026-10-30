@@ -14,6 +14,12 @@ const MESSAGES = [{ role: 'user', text: 'hi', toolUses: [] }] as never
 
 const LEDGER_TIMEOUT_MS = 15_000
 
+// The test runtime has setTimeout, but the 'claude-code' types do not declare it.
+declare function setTimeout(callback: () => void, ms: number): unknown
+
+// Upper bound on the rounds `untilWritten` waits (one settle plus one real macrotask each).
+const WRITE_WAIT_ROUNDS = 200
+
 function isGit(argv: readonly string[]): boolean {
   return argv.length === GIT.length && argv.every((part, i) => part === GIT[i])
 }
@@ -325,6 +331,24 @@ function harness($: Engine, on: On, opts: Options = {}) {
     },
   }
   return api
+}
+
+// `clock.settle()` drains the mock clock's own waits and the event loop, but not a
+// real asynchronous operation still in flight: `append` awaits `crypto.subtle.digest`
+// for the record id, and for an input of 64 bytes or more (an id longer than about
+// 55 characters) that call leaves the main thread and can finish after `settle()`
+// returned, so the outbox write has not happened yet. Alternate `settle()` with a
+// real macrotask yield until `minWrites` writes have landed, or WRITE_WAIT_ROUNDS
+// rounds pass; the caller's own assertion then decides, so a write that never comes
+// still fails the test.
+async function untilWritten(h: ReturnType<typeof harness>, minWrites = 1): Promise<void> {
+  for (let round = 0; round < WRITE_WAIT_ROUNDS; round += 1) {
+    await h.world.clock.settle()
+    if (h.world.writes.length >= minWrites) return
+    await new Promise<void>(resolve => {
+      setTimeout(resolve, 0)
+    })
+  }
 }
 
 // --- the outbox file format, as the module writes it -----------------------------
@@ -855,6 +879,7 @@ test('a torn newer generation is skipped and the older valid one is used', async
   expect(h.world.status).toBe('📮 2 pending')
 
   await h.turn('after recovery', 'ok')
+  await untilWritten(h)
   // The next write goes to the file that held the torn copy, as generation 6.
   const last = h.world.writes[h.world.writes.length - 1]!
   expect(last.path).toBe(alternate('s1'))
@@ -1199,6 +1224,7 @@ test('the root is the nearest .git/.dopemux ancestor, not the session repo root'
   h.world.dirs.add('/repo/sub/.dopemux')
   await h.start()
   await h.turn('x', 'ok')
+  await untilWritten(h)
   expect(h.world.writes[0]!.path.startsWith('/repo/sub/.dopemux/memory-bridge/outbox-s1')).toBe(true)
 })
 
@@ -2006,6 +2032,7 @@ for (const [sid, key] of KEY_CASES) {
     const h = harness($, on, { sid })
     await h.start()
     await h.turn('one', 'done')
+    await untilWritten(h)
     expect(h.world.writes.length).toBeGreaterThan(0)
     expect([...new Set(h.world.writes.map(w => keyOf(w.path)))]).toEqual([key])
   })
@@ -2025,6 +2052,7 @@ test('a session whose id has a disallowed character reloads its own outbox file'
   const h = harness($, on, { sid, files: { [primary(KEY_ODD)]: genText(sid, 1, [taskRow('d1d1d1d1d1d1d1d1d1d1d1d1')]) } })
   await h.start()
   await h.turn('one', 'done')
+  await untilWritten(h)
   expect(h.world.writes.length).toBeGreaterThan(0)
   for (const w of h.world.writes) expect(keyOf(w.path)).toBe(KEY_ODD)
   const kept = outboxAt(h.world.files, KEY_ODD)!.rows.map(r => r.id)
