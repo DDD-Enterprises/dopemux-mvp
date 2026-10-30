@@ -147,7 +147,8 @@
     "N8: fire-and-forget observation in the tool.call hook (design note).",
     "The auditor's evidence for N1, N2, N5, N6 was generic or misdirected; those dispositions rest on the coordinator's source re-verification.",
     "Recap, decision.logged, dope-memory REST replay and ConPort access are NOT_BUILT by design.",
-    "Auditor self-reported grok-4; the CLI init event shows grok-4.5; provider-attested identity UNKNOWN."
+    "Auditor self-reported grok-4; the CLI init event shows grok-4.5; provider-attested identity UNKNOWN.",
+    "Operator decision 2026-10-30: N7-N11 accepted as follow-ups (ACCEPTED_RISK); see review_bundle/FOLLOWUPS.md."
   ],
   "unknowns": [
     "$.fs.write atomicity",
@@ -196,36 +197,36 @@
         "id": "N7",
         "severity": "INFO",
         "title": "Mod has never run in a real Claude Code session; proof is test-kit only.",
-        "status": "OPEN",
-        "body": "How-to Status/Verification and README Tests and live proof state live behaviour NOT_RUN; DISCLOSED LIMITATIONS (i). [docs/02-how-to/memory-bridge.md] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. No real session has loaded the mod; the operator's live smoke test is the clearing action."
+        "status": "ACCEPTED_RISK",
+        "body": "How-to Status/Verification and README Tests and live proof state live behaviour NOT_RUN; DISCLOSED LIMITATIONS (i). [docs/02-how-to/memory-bridge.md] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. No real session has loaded the mod; the operator's live smoke test is the clearing action. OPERATOR: accepted as a follow-up on 2026-10-30 ('accept into notes'); see review_bundle/FOLLOWUPS.md."
       },
       {
         "id": "N8",
         "severity": "INFO",
         "title": "tool.call observes with void after next(e) returns; observation is async fire-and-forget.",
-        "status": "OPEN",
-        "body": "on('tool.call'): const result = await next(e); void observeTool(...); return result; [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, design note; INFO. Unchanged; the host result is never altered or delayed."
+        "status": "ACCEPTED_RISK",
+        "body": "on('tool.call'): const result = await next(e); void observeTool(...); return result; [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, design note; INFO. Unchanged; the host result is never altered or delayed. OPERATOR: accepted as a follow-up on 2026-10-30 ('accept into notes'); see review_bundle/FOLLOWUPS.md."
       },
       {
         "id": "N9",
         "severity": "INFO",
         "title": "$.process on the desktop surface remains UNKNOWN; git segment and ledger replay depend on it.",
-        "status": "OPEN",
-        "body": "emitOnce/dirtyFileCount degrade to unavailable/omit; docs Desktop surface section. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. `$.process` on the desktop surface is UNKNOWN; the code degrades without spending attempts."
+        "status": "ACCEPTED_RISK",
+        "body": "emitOnce/dirtyFileCount degrade to unavailable/omit; docs Desktop surface section. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. `$.process` on the desktop surface is UNKNOWN; the code degrades without spending attempts. OPERATOR: accepted as a follow-up on 2026-10-30 ('accept into notes'); see review_bundle/FOLLOWUPS.md."
       },
       {
         "id": "N10",
         "severity": "INFO",
         "title": "An outer AbovePrompt hook that omits next(e) (e.g. Pulse focus) hides the welcome-back band; plugin order UNKNOWN.",
-        "status": "OPEN",
-        "body": "Accepted Pulse caveat in docs; test 'an outer plugin that draws without next hides the band'. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, accepted caveat; INFO. An outer AbovePrompt hook that omits `next(e)` hides the band; plugin order UNKNOWN; tested."
+        "status": "ACCEPTED_RISK",
+        "body": "Accepted Pulse caveat in docs; test 'an outer plugin that draws without next hides the band'. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, accepted caveat; INFO. An outer AbovePrompt hook that omits `next(e)` hides the band; plugin order UNKNOWN; tested. OPERATOR: accepted as a follow-up on 2026-10-30 ('accept into notes'); see review_bundle/FOLLOWUPS.md."
       },
       {
         "id": "N11",
         "severity": "INFO",
         "title": "Relay residuals: possible dual delivery (ledger no-op) and bounded re-relay after cap-drop of a sent copy; only eight newest earlier files scanned.",
-        "status": "OPEN",
-        "body": "adoptEarlier + MAX_SESSIONS_READ=8; DISCLOSED LIMITATIONS (v). [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosed relay residuals; INFO. Duplicate delivery from an idle live session and a bounded re-relay after a cap drop are ledger no-ops; only the eight newest earlier files are scanned."
+        "status": "ACCEPTED_RISK",
+        "body": "adoptEarlier + MAX_SESSIONS_READ=8; DISCLOSED LIMITATIONS (v). [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosed relay residuals; INFO. Duplicate delivery from an idle live session and a bounded re-relay after a cap drop are ledger no-ops; only the eight newest earlier files are scanned. OPERATOR: accepted as a follow-up on 2026-10-30 ('accept into notes'); see review_bundle/FOLLOWUPS.md."
       }
     ],
     "fixes_applied": [
