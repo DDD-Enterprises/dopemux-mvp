@@ -43,9 +43,9 @@ interface Task {
   energyRequired: string;
 }
 
-// The sequencer only reads the load band; App passes 'optimal' when the band is unknown.
+// The sequencer only reads the load band. 'unknown' leaves the sequence unfiltered.
 interface CognitiveState {
-  status: 'low' | 'optimal' | 'high' | 'critical';
+  status: 'low' | 'optimal' | 'high' | 'critical' | 'unknown';
 }
 
 interface TaskSequencerProps {
@@ -1159,7 +1159,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
         }}
       >
         <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-          Sequencer calibrated for {cognitiveState.status.toUpperCase()} load.
+          {cognitiveState.status === 'unknown'
+            ? 'Load unknown. Sequence order is not adjusted.'
+            : `Sequencer calibrated for ${cognitiveState.status.toUpperCase()} load.`}
         </Typography>
         <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
           <Swords size={12} style={{ marginRight: 6 }} aria-hidden="true" />

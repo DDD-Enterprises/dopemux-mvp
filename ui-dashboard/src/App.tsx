@@ -311,7 +311,7 @@ function DashboardApp() {
           </Tooltip>
         </Box>
 
-        {connectionStatus === 'degraded' && (
+        {(httpError !== null || socketState === 'closed') && (
           <Alert
             severity="warning"
             icon={<AlertTriangle size={20} aria-hidden="true" />}
@@ -380,7 +380,7 @@ function DashboardApp() {
             )}
           </Grid>
           <Grid item xs={12} lg={7}>
-            <TaskSequencer cognitiveState={{ status: status ?? 'optimal' }} onError={setErrorMessage} />
+            <TaskSequencer cognitiveState={{ status: status ?? 'unknown' }} onError={setErrorMessage} />
           </Grid>
           {isCritical ? (
             <Grid item xs={12}>

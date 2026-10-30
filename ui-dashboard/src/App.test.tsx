@@ -60,6 +60,22 @@ test('backend unreachable: shows unknown state and a precise failure, never inve
   expect(screen.queryByText('70%')).not.toBeInTheDocument();
   expect(screen.queryByText('60%')).not.toBeInTheDocument();
   expect(screen.getByText(/Socket ws:\/\/localhost:8097\/ws\/state is closed/)).toBeInTheDocument();
+  expect(screen.getByText('Load unknown. Sequence order is not adjusted.')).toBeInTheDocument();
+  expect(screen.queryByText(/calibrated for OPTIMAL/)).not.toBeInTheDocument();
+});
+
+test('state request fails while the socket is open: still explains the failure', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }));
+  await renderApp();
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+  });
+
+  expect(screen.getByText('[LIVE]')).toBeInTheDocument();
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Failed: GET http://localhost:8097/api/adhd-state returned HTTP 500.'
+  );
+  expect(screen.getByText('Unknown')).toBeInTheDocument();
 });
 
 test('live reading: renders load, state and attention from the backend payload', async () => {

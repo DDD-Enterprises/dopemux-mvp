@@ -96,7 +96,16 @@ export const statusStyles = {
     border: alpha(brandTokens.status.critical, 0.55),
     shadow: `0 0 24px ${alpha(brandTokens.status.critical, 0.18)}`,
   },
+  // No reading yet: grey, no glow. Never derived from a number.
+  unknown: {
+    color: brandTokens.status.unknown,
+    label: 'Unknown',
+    border: alpha(brandTokens.status.unknown, 0.5),
+    shadow: 'none',
+  },
 } as const;
+
+export type LoadStatus = ReturnType<typeof deriveStatus>;
 
 
 const theme = createTheme({

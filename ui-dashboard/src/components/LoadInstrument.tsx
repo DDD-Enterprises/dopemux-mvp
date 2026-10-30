@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import { brandTokens, deriveStatus, statusStyles } from '../theme';
+import { brandTokens, deriveStatus, LoadStatus, statusStyles } from '../theme';
 
 interface LoadInstrumentProps {
   /** Current cognitive load, 0..1. `null` means no reading, which renders as unknown. */
@@ -20,7 +20,7 @@ const ZONES = [
   { status: 'critical', label: 'BREAK', width: 20 },
 ] as const;
 
-const STATE_HINTS: Record<keyof typeof statusStyles, string> = {
+const STATE_HINTS: Record<LoadStatus, string> = {
   low: 'Low load. Good time for a hard task.',
   optimal: 'Load in range. Keep going.',
   high: 'Load rising. Plan a break.',

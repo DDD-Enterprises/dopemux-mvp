@@ -65,8 +65,10 @@ considers the cockpit deprecated; its recent PR activity says no.
 7. **Three palettes disagree.** `index.css` CSS vars (`#7DFBF6` cyan, `#94FADB` mint,
    `#FF8BD1` pink, `#9B78FF` violet) vs `theme.ts` (`#2FFFF0`, `#00FF85`, `#FF00CC`,
    `#C07BFF`) vs `tokens.json`. `theme.ts` also uses the retired Direction A surface
-   `#1A0520` (Direction B overlay is `#081832`) and `#F6F7FB` text (`#E2E8F0`).
-   `.dopemux-roast` renders in a pink that matches neither.
+   `#1A0520` (Direction B overlay is `#081832`) and saint gold `#FFCF78` (design system
+   `#FFC85C`). Its `#F6F7FB` text is **not** drift: the design system declares
+   `--text-web: #F6F7FB` for the web cockpit. `.dopemux-roast` renders in a pink that
+   matches neither palette.
 8. **Degraded is drawn red.** The connection chip uses `errorRed` / `color="error"` for
    `degraded`. Brand: yellow = degraded, red = failed or blocked.
 9. **Personality register on status surfaces.** Every metric card carries a roast plus
@@ -111,12 +113,34 @@ Font note: the design system README names Iosevka Term for mono, while `tokens.j
 `theme.ts` use JetBrains Mono. **UNKNOWN + TODO:** the owner should pick one. This change keeps
 JetBrains Mono (repo canonical).
 
+## Backend contract note (FACT)
+
+`services/adhd_engine/core/engine.py:2031-2047` publishes `state_update` with
+`energy_level`, `attention_state`, `cognitive_load` and `recommendation`, but never
+`predicted_load_15min`. Only `GET /api/adhd-state` carries a forecast. The cockpit treats
+each `state_update` as a full snapshot, so the forecast reads `unknown` after the first
+live update. That reflects the backend, not a display bug. **TODO:** add the forecast to the
+engine's `state_update` payload if a live forecast is wanted.
+
 ## Scope of this change vs follow-up
 
-**In this branch:** findings 1, 3, 4, 5, 6, 7, 8, 9, 10, 12 (copy and unknown state), plus
-the token unification and the shell restyle that follow the Claude Design canvas.
+**Landed in this branch:**
 
-**Follow-up (not in this branch):** wire TaskSequencer and TeamDashboard to real endpoints
-or label them `sample` (2), the TaskSequencer timer and skip defects found by the component pass,
-tab-stop cleanup (13, 14), gremlin-pink status in TaskSequencer (11), notification palette (15),
-and the root `dopemux-ui` shell and `ui-dashboard-backend/` (delete or revive: owner call).
+- Lint gate (6): restored with a flat config. Lint still FAILs on pre-existing code:
+  16 errors and 2 warnings, from a baseline of 23 and 3.
+- Unknown state (1, 12): readings are nullable end to end; the instrument, attention panel
+  and task sequencer say unknown.
+- Labelling (2, partial): the seeded task queue and team board are labelled `[SAMPLE]`;
+  they are not wired to endpoints.
+- Remaining findings: 3, 4, 5, 7, 8, 9 (header, cards, task-queue roast line), 10, 19.
+- New components: `LoadInstrument` (replaces `CognitiveLoadGauge` and `PredictionPanel`),
+  `AttentionStatePanel`, `SignalFeed`.
+
+**Follow-up (not in this branch):**
+
+- Wire TaskSequencer to `/api/task-recommendations` and TeamDashboard to a real source (2).
+- TaskSequencer timer, skip and finish-time defects from the component pass.
+- Tab-stop cleanup in TaskSequencer and TeamDashboard (13, 14).
+- Gremlin pink as status in TaskSequencer (11) and the notification palette (15).
+- The canvas's "Now" task panel and "Start 5-min break" action.
+- Root `dopemux-ui` shell and `ui-dashboard-backend/`: delete or revive (owner call).
