@@ -263,9 +263,20 @@ function relativeTo(root: string, file: string): string | undefined {
   return target.startsWith(prefix) ? target.slice(prefix.length) : undefined
 }
 
+// 32-bit FNV-1a over UTF-16 code units, rendered as 8 lower-case hex digits.
+function fnv1a32(text: string, offset: number): string {
+  let h = offset >>> 0
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619) >>> 0
+  return h.toString(16).padStart(8, '0')
+}
+
+// Injective file key for a session id. Ordinary ids are their own key; any
+// other id becomes `<prefix>~<hash>`, where the hash covers the whole id.
 function safeId(sessionId: string): string {
-  const clean = sessionId.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 80)
-  return clean === '' ? 'unknown' : clean
+  if (/^[A-Za-z0-9_-]{1,80}$/.test(sessionId)) return sessionId
+  const prefix = sessionId.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 56)
+  const hash = fnv1a32(sessionId, 0x811c9dc5) + fnv1a32(`\u0000${sessionId}`, 0x811c9dc5)
+  return `${prefix}~${hash}`
 }
 
 function outboxDir(root: string): string {

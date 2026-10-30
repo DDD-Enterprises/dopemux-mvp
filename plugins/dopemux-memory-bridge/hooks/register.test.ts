@@ -1967,3 +1967,82 @@ test('no HTTP call is made anywhere in a full run, and no decision.logged is emi
   const types = h.world.emits.map(e => e.event.event_type)
   expect(types.sort()).toEqual(['manual.memory_store', 'task.completed', 'task.completed'])
 })
+
+// --- the outbox file key is injective (R5 N12) ----------------------------------
+// An ordinary id keeps its name. Any other id gets `<prefix>~<hash>`, with the
+// hash taken over the whole id, so two different ids cannot share a file.
+
+const KEY_UUID = '3f2c9a10-7b1e-4d2a-9c5e-0a1b2c3d4e5f'
+const KEY_SLASH = 'a_b~3a8e75c1c3759637' // id 'a/b'
+const KEY_COLON = 'a_b~08bd8540a94191e6' // id 'a:b'
+const KEY_EMPTY = '~811c9dc5050c5d1f' // id ''
+const KEY_ODD = 'odd_id_with_spaces~945392c37ab6cb21' // id 'odd/id:with spaces'
+const KEY_LONG_A = 'x'.repeat(56) + '~ad91386c523c989a' // id 'x' x80 + 'a'
+const KEY_LONG_B = 'x'.repeat(56) + '~b0913d25513c9707' // id 'x' x80 + 'b'
+
+const keyOf = (path: string) => path.slice(`${OUT}/outbox-`.length).replace(/(\.alt)?\.jsonl$/, '')
+
+function outboxAt(files: Map<string, string>, key: string) {
+  const a = parseGen(files.get(primary(key)))
+  const b = parseGen(files.get(alternate(key)))
+  if (a === undefined) return b
+  if (b === undefined) return a
+  return a.gen >= b.gen ? a : b
+}
+
+const KEY_CASES: [string, string][] = [
+  [KEY_UUID, KEY_UUID],
+  ['a/b', KEY_SLASH],
+  ['a:b', KEY_COLON],
+  ['', KEY_EMPTY],
+  ['unknown', 'unknown'],
+  ['odd/id:with spaces', KEY_ODD],
+  ['x'.repeat(80) + 'a', KEY_LONG_A],
+  ['x'.repeat(80) + 'b', KEY_LONG_B],
+]
+
+for (const [sid, key] of KEY_CASES) {
+  test(`session id ${JSON.stringify(sid.slice(0, 24))} writes only the outbox key ${key.slice(0, 24)}`, async ($, on) => {
+    const h = harness($, on, { sid })
+    await h.start()
+    await h.turn('one', 'done')
+    expect(h.world.writes.length).toBeGreaterThan(0)
+    expect([...new Set(h.world.writes.map(w => keyOf(w.path)))]).toEqual([key])
+  })
+}
+
+test('every key is well formed, the hashed form has one tilde, and no two keys collide', async () => {
+  const keys = KEY_CASES.map(([, key]) => key)
+  for (const key of keys) {
+    expect(key).toMatch(/^[A-Za-z0-9_~-]{1,73}$/)
+    if (key.includes('~')) expect(key.split('~').length - 1).toBe(1)
+  }
+  expect(new Set(keys).size).toBe(keys.length)
+})
+
+test('a session whose id has a disallowed character reloads its own outbox file', async ($, on) => {
+  const sid = 'odd/id:with spaces'
+  const h = harness($, on, { sid, files: { [primary(KEY_ODD)]: genText(sid, 1, [taskRow('d1d1d1d1d1d1d1d1d1d1d1d1')]) } })
+  await h.start()
+  await h.turn('one', 'done')
+  expect(h.world.writes.length).toBeGreaterThan(0)
+  for (const w of h.world.writes) expect(keyOf(w.path)).toBe(KEY_ODD)
+  const kept = outboxAt(h.world.files, KEY_ODD)!.rows.map(r => r.id)
+  expect(kept).toContain('d1d1d1d1d1d1d1d1d1d1d1d1')
+})
+
+test('another session finds and relays a quiet task row from a file keyed by an odd id', async ($, on) => {
+  const source = { [primary(KEY_ODD)]: genText('odd/id:with spaces', 1, [taskRow('e2e2e2e2e2e2e2e2e2e2e2e2')]) }
+  const h = harness($, on, { files: source })
+  const before = h.world.files.get(primary(KEY_ODD))
+  await h.start()
+  expect(h.world.status).toBe('📮 1 pending')
+  await h.world.clock.advance(61 * SEC)
+  expect(h.world.emits).toHaveLength(1)
+  expect(h.world.emits[0]!.event).toMatchObject({
+    event_type: 'task.completed',
+    event_id: 'e2e2e2e2e2e2e2e2e2e2e2e2',
+    session_id: 'old', // the copy keeps the original writer's session id, as the other adoption tests do
+  })
+  expect(h.world.files.get(primary(KEY_ODD))).toBe(before)
+})
