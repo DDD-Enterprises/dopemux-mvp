@@ -26,7 +26,11 @@ The Dopemux engines exist, but the last mile is broken in ways nothing catches:
 
 - Contract tests that guard the service registry, compose, the MCP fleet catalog, personas and the PAL model catalog live in `tests/arch/` (9 files, 184 tests, all passing in the repo venv). **No CI job runs them.** `.github/workflows/ci-complete.yml` runs only named paths: `tests/unit` plus two named files (`:183-189`), the dope-memory endpoint test (`:197`), `tests/dcp` (`:203-206`), extractor tests and `tests/integration` (`:490`).
 - The ADHD engine's MCP server exposes two tools (`services/adhd_engine/main.py:63-90`). Both call engine methods (`get_energy_level`, `get_attention_state`, `get_cognitive_load`, `assess_task`) that exist **only** on the fallback engine class in `main.py` (`:154-244`). The real engine, `services/adhd_engine/core/engine.py`, defines none of them. With a healthy engine, both MCP tools raise.
-- There is no `dopemux adhd` command. The only CLI default for the engine URL, `src/dopemux/config/manager.py:200` and `:621`, says `http://localhost:3008`; the registry says host port `3025` (`services/registry.yaml:183-186`). Nothing in `src/` reads that default.
+- There is no `dopemux adhd` command, and the engine's address is described four different ways:
+  - compose publishes it on `127.0.0.1:${ADHD_ENGINE_PORT:-3025}` (`compose.yml`, `adhd-engine` service), and the registry agrees (`services/registry.yaml:183-186`);
+  - run directly, the engine listens on `API_PORT`, default `8095` (`services/adhd_engine/config.py:65`);
+  - `src/dopemux/config/manager.py:200` and `:621` default to `http://localhost:3008`, and nothing in `src/` reads it;
+  - two resolvers (`src/dopemux/ui/service_endpoints.py:102-117`, `src/dopemux/profile_detector.py:379-384`) try `DOPEMUX_ADHD_ENGINE_BASE_URL`, then `DOPEMUX_ADHD_ENGINE_PORT`, then probe sockets on `5448` and `8095`. `5448` has no source anywhere in the repo.
 - Ports are hard-coded in several scripts and disagree with the registry (section 6, W4).
 
 The three Claude Code mods built last week (Pulse, Route Ledger, Memory Bridge) have never run in a real session. Building more host-dependent mods on top of unverified host assumptions adds risk. This wave is the opposite: every deliverable can be verified offline and in CI.
@@ -66,7 +70,9 @@ The three Claude Code mods built last week (Pulse, Route Ledger, Memory Bridge) 
 - **Audit route.** The operator approves the route per run with a literal authorization line. Precedent for this repo is Grok via `grok-cli` / `grok-4.5`, tool-less, one attempt. Not assumed.
 - **Merge order.** `main` requires up-to-date branches, and a signed proof binds a PR to its audited head (`docs/92-runbooks/signed-proof-merge-order.md` on PR #1484). This wave's audit should run after #1482, #1472 and #1483 have merged, or accept one re-audit per later merge. Docs PR #1484 overlaps this wave on `AGENTS.md` and `.claude/claude.md`; whichever merges second needs an update.
 - **Pushing a workflow file** needs a token with the `workflow` scope. If the push is refused, the operator pushes.
-- **Tooling.** Python 3.12, `uv --frozen`, pytest with strict markers (`pytest.ini`), new CLI commands under `src/dopemux/commands/` (repo CLAUDE.md). `tests/arch` already runs green in the repo venv; the CI-equivalent environment (`uv sync --frozen --extra test --extra services`) has not been tried and is the first step of W1.
+- **Tooling.** `uv --frozen`, pytest with strict markers (`pytest.ini`), new CLI commands under `src/dopemux/commands/` (repo CLAUDE.md). **CI runs Python 3.11** (`ci-complete.yml:172-174`); the repo venv is 3.12 and `requires-python` is `>=3.11,<3.14`. The 184-pass result for `tests/arch` is from the 3.12 repo venv. The CI-equivalent environment (Python 3.11, `uv sync --frozen --extra test --extra services`) has not been tried and is the first step of W1. Every new test in this wave must pass there; none may be skipped to get green.
+- **Timing (supervisor's call; the operator can override).** Build W1-W5 now. Freeze when all five are committed and their checks pass. Run the one audit after #1482, #1472 and #1483 have merged, so it is not made stale by them. If the operator wants the audit sooner, each later merge costs one re-audit.
+- **Write sets are fixed at issuance.** A child that finds it needs a file outside its set stops and returns. Widening a set is a supervisor amendment to the MacroPacket, recorded with the reason (precedent: MACRO-DMX-CMD-REPAIR-001 AMENDMENT-01 and -02).
 
 ## 6. Workstreams
 
@@ -76,7 +82,7 @@ All write sets are disjoint. The only shared file is `src/dopemux/cli.py`, and o
 
 - **Writes:** `.github/workflows/ci-complete.yml` only.
 - **Decided:** add a separate pytest step for `tests/arch` inside the existing `🧪 Unit Tests` job, so it inherits that job's required-check status. Use a separate process, like the dope-memory step at `:192-198`, so `tests/arch` collection cannot shadow imports for `tests/unit`. Run it with `--no-cov`, like the other gates.
-- **First step:** run `uv run --frozen pytest tests/arch` in a CI-equivalent sync and record the result. If anything fails there that passes in the repo venv, stop and report before writing the step.
+- **First step:** run `uv run --frozen pytest tests/arch` under Python 3.11 with the CI sync (`--extra test --extra services`) and record the result. If anything fails there that passes in the repo venv, stop and return. Fixing a test is outside W1's write set and needs a supervisor amendment.
 - **Consequence to note in the PR:** once #1445 merges, its command drift gate (`tests/arch/test_claude_command_references.py`) runs in CI automatically.
 
 ### W2 - ADHD engine MCP repair
@@ -84,28 +90,36 @@ All write sets are disjoint. The only shared file is `src/dopemux/cli.py`, and o
 - **Writes:** `services/adhd_engine/core/engine.py`; new test `tests/arch/test_adhd_engine_mcp_parity.py`.
 - **Decided:**
   - Add `get_energy_level(user_id)`, `get_attention_state(user_id)`, `get_cognitive_load(user_id)` and `assess_task(title, description)` to the real engine. Return the same shapes the fallback returns: an object with `.level` (str) and `.score` (float); an object with `.state` (str); a float; an object with `.dict()`.
-  - Read the same state `/api/v1/state` reads: `current_energy_levels` and `current_attention_states` (`core/engine.py:140-141`), with the same defaults (`EnergyLevel.MEDIUM`, `AttentionState.FOCUSED`). Load comes from `_calculate_cognitive_load(user_id)` (`:1918`). `assess_task` wraps `assess_task_suitability` (`:384`) the way the fallback does (`main.py:227-244`).
+  - Read the same state `/api/v1/state` reads: `current_energy_levels` and `current_attention_states` (`core/engine.py:140-141`), with the same defaults (`EnergyLevel.MEDIUM`, `AttentionState.FOCUSED`). `.level` and `.state` are the enum's `.value` string, converted the way `/state` converts them. Load comes from `_calculate_cognitive_load(user_id)` (`:1918`).
+  - `assess_task` wraps `assess_task_suitability(user_id, task_data)` (`:384`). Unlike the fallback (`main.py:227-244`, which hard-codes `user_id="default"`), it uses the operator user id from `resolve_operator_user_id()`, as `/state` does. It passes `title` and `description`. Any field the method needs that cannot be derived from the input (the fallback's `complexity_score: 0.5`, `estimated_minutes: 30`) is passed as a documented default and marked in the returned payload, for example `"defaults_used": ["complexity_score", "estimated_minutes"]`, so callers can tell a measured value from a placeholder.
+  - `.score` comes from a fixed, documented table over the energy enum. It is not a measurement and the docstring says so.
   - The test lives in `tests/arch/`, so W1 makes CI run it. `services/adhd_engine/tests/` is not run by CI. It has two parts:
     1. **Static parity:** parse `main.py` with `ast`, collect every `engine.<name>(...)` call inside functions decorated `@mcp.tool()`, and assert each name is defined on both the real engine class and the fallback class. This needs no imports, no Redis and no network.
-    2. **Behavior:** call each new method on a real-engine instance with seeded state and check the returned shapes and values.
-- **Left to the builder:** how to build a real-engine instance offline (the constructor reads settings and creates a PAL client, `core/engine.py:126-137`); whether `.score` comes from a fixed table over the energy enum or stays at the fallback's constant 0.5. The choice must be stated in a docstring and tested, and must not claim more precision than the engine has.
+    2. **Behavior:** call each new method on a real-engine instance with seeded state and check the returned shapes and values. This part must also import and pass under the CI environment (Python 3.11, `--extra services`). If the engine module cannot be imported there, W2 stops and returns; the behavior half is not skipped.
+- **Left to the builder:** how to build a real-engine instance offline (the constructor reads settings and creates a PAL client, `core/engine.py:126-137`), and the score table's values.
 
 ### W3 - `dopemux adhd status`
 
 - **Writes:** new `src/dopemux/commands/adhd_commands.py`; `src/dopemux/cli.py` (one import and one `cli.add_command` line); new `tests/unit/test_adhd_commands.py`.
 - **Decided:**
   - One read-only command, `dopemux adhd status`, with `--json` and `--url` (override).
-  - Read `GET <engine>/api/v1/state`, which needs no API key (`routes.py:1555-1570`). Do not call per-user routes, which need `X-API-Key` when one is configured (`services/adhd_engine/auth.py:12-40`).
-  - Resolve the engine URL the way the dashboard does (`src/dopemux/ui/service_endpoints.py:15`, `:177`), which follows the registry. Do not use the `3008` default in `config/manager.py`.
-  - Accept both key sets: `energy_level` / `attention_state` (added by #1472) first, then `energy` / `attention` (main). The command must work before and after #1472 merges.
+  - **URL resolution (supervisor's call)**, first match wins: `--url`; `DOPEMUX_ADHD_ENGINE_BASE_URL`; `DOPEMUX_ADHD_ENGINE_PORT`; `ADHD_ENGINE_PORT` (the variable compose uses); the registry's host port for `adhd-engine` (`3025`). No socket probing. This follows the supported way to run the engine (compose via `dopemux`). A directly run engine on `8095` is reached with `--url` or an env var. The existing resolvers in `service_endpoints.py` and `profile_detector.py` are **not** reused, because they probe `5448`/`8095` and never yield `3025`. W4 records them.
+  - Two calls, both keyless: `GET /api/v1/state` (`routes.py:1555-1570`) and `GET /health` (`main.py:563`). Do not call per-user routes, which need `X-API-Key` when one is configured (`services/adhd_engine/auth.py:12-40`).
+  - **Degraded detection (supervisor's call).** `/health` reports `"mode": "fallback"` when the engine started on its fallback class (`main.py:176-180`). The command reports that as `degraded`. One case cannot be detected: when `/state` itself fails internally it still answers 200 with fixed defaults (`medium`, `focused`, 0, `routes.py:1593-1602`), the same as a healthy answer. Changing that is in `routes.py`, which this wave does not touch. The reference doc states this limit plainly.
+  - Accept both response shapes, verified on `feat/pulse-001` at `ee00d3655`: #1472's `/state` returns `energy`, `attention`, `energy_level`, `attention_state`, `session_minutes` and `user_id`; main returns the same without the two aliases. Read the aliases first, then the originals. Tests use literal fixtures of both shapes.
   - Show session minutes only when the engine reports more than 0.
-  - Timeout 2 s, matching Pulse.
-  - Exit 0 when the state is read and well-formed; exit 1 when the engine is unreachable, returns non-2xx, or the body is malformed. The message says which. `--json` emits `{"status": "ok" | "unreachable" | "malformed", "url": ..., ...}`.
+  - Timeout 2 s per call, matching Pulse.
+  - **Exit codes (supervisor's call):** 0 ok; 1 unreachable, non-2xx or malformed body; 3 degraded (fallback engine). Code 2 is left to click's usage errors. The message says which case applies. `--json` emits `{"status": "ok" | "degraded" | "unreachable" | "malformed", "url": ..., "url_source": ..., "engine_mode": "normal" | "fallback" | "unknown", ...}`.
 - **Left to the builder:** human output layout (one line, plain words, no color dependence); the HTTP client already used by `src/dopemux` and how tests mock it.
 
 ### W4 - Service port drift tests
 
-- **Writes:** new `tests/arch/test_service_port_drift.py`; `src/dopemux/config/manager.py`; `scripts/dopemux_dashboard.py` only if W4's evidence supports a fix (see below).
+- **Writes:** new `tests/arch/test_service_port_drift.py`; `src/dopemux/config/manager.py`; `scripts/dopemux_dashboard.py`. Not `src/dopemux/ui/service_endpoints.py` or `src/dopemux/profile_detector.py`: their defaults are recorded as exceptions, because changing them changes the live dashboard's behavior.
+- **Comparison rules (supervisor's call):**
+  - Compare host ports only. A compose mapping `"127.0.0.1:${VAR:-N}:M"` has host port `N`; resolve `${VAR:-default}` to its default.
+  - A compose service with no host `ports:` entry, or with `network_mode`, is "not comparable". The test lists it in its output and does not fail on it.
+  - Reuse the compose parsing in `tests/arch/test_registry_compose_alignment.py` if it fits; otherwise put one small parser in the new test.
+  - An exception entry that no longer matches anything fails the test. Every file the table names is tracked, so a missing file means a stale entry.
 - **Gaps to cover.** These are not checked by anything today, per a read-only sweep of `origin/main`:
   1. Registry versus catalog for services present in both.
   2. Registry versus compose for services *not* marked `enabled_in_smoke`. The existing alignment test covers only smoke-enabled services (`tests/arch/test_registry_compose_alignment.py:46-49`).
@@ -115,12 +129,13 @@ All write sets are disjoint. The only shared file is `src/dopemux/cli.py`, and o
 | Where | Difference | Verified by | Action |
 |---|---|---|---|
 | `config/manager.py:200,621` | ADHD engine default `3008`; registry `3025` | supervisor | Fix to `3025`. No reader in `src/`. |
-| `scripts/dopemux_dashboard.py:66-72` | ADHD engine on `8095` (container port); host port is `3025` | supervisor | Fix if the script runs on the host; exception with reason if it runs in a container. Builder decides from how it is launched. |
+| `scripts/dopemux_dashboard.py:66-72` | ADHD engine on `localhost:8095`; compose publishes `3025` | supervisor | Fix to `3025`. No launcher, Dockerfile or compose entry runs this script, and it uses `localhost`, so it is a host-run script (supervisor's call). |
+| `src/dopemux/ui/service_endpoints.py:117`, `src/dopemux/profile_detector.py:379-384` | Resolver defaults probe `5448` and `8095`; neither is the compose host port | supervisor | Exception plus follow-up. `8095` is right for a directly run engine; `5448` has no source. Fixing them changes the dashboard, which is out of scope. |
 | `scripts/dopemux_dashboard.py:74` | ConPort on `8005`, in neither registry nor compose | sweep (not spot-checked) | Exception with follow-up unless the correct port is unambiguous. |
 | `.claude/statusline.sh:224-230` | Probes `localhost:3009` as task-orchestrator; `3009` is `gptr-mcp` | supervisor | Exception plus follow-up. The statusline is out of scope (non-goals). |
 | `mcp_server_health_report.sh:168` | Probes pal at `/mcp`; the catalog says pal's health URL is `/health` | sweep (not spot-checked) | Builder verifies, then fixes or adds an exception. |
 | `services/registry.yaml:152-156` vs catalog `:616-620` | task-orchestrator `8000` vs `7890` | supervisor | Exception: two processes share the name (S2). |
-| registry `dopecon-bridge-alt` vs compose | `3000` vs `3016` | sweep (not spot-checked) | Builder verifies, then fixes or adds an exception. |
+| registry `dopecon-bridge-alt` vs compose | `3000` vs `3016` | sweep (not spot-checked) | Builder verifies, then fixes or adds an exception. The row must name which compose service owns `3016`, because `scripts/dopemux_dashboard.py` also probes `3016`. |
 
 - **Decided:** exceptions live in the test file as a table. Each entry has the file, the value, a one-line reason and a follow-up reference. The test fails on any difference that is not in the table, and also on a table entry that no longer matches anything, so stale exceptions are removed.
 - **Required proof:** a mutation check. Change one port in a temporary copy, run the test, and show it fails. Record the output.
@@ -157,14 +172,26 @@ Order: W1-W4 can run in parallel (disjoint files). W5 starts after W1-W4 are com
 |---|---|
 | W1 | CI-equivalent run of `tests/arch`; workflow syntax hook; the PR's own CI run. |
 | W2 | New parity test passes; it fails when one of the four methods is removed (mutation check). |
-| W3 | Unit tests for ok, unreachable, non-2xx, malformed body, both key sets, `--json` and `--url`. A manual run against a live engine is `NOT_RUN` unless the operator runs one. |
+| W3 | Unit tests for ok, degraded, unreachable, non-2xx, malformed body, both response shapes, `--json`, and each URL-resolution step in order. A manual run against a live engine is `NOT_RUN` unless the operator runs one. |
 | W4 | Drift test passes on the branch; mutation check fails as expected; stale-exception check works. |
 | W5 | Frontmatter guard, docs hygiene, markdownlint (`markdownlint -c .markdownlint.jsonc`), relative-link check. |
 | All | `make lint` on touched Python, `make type-check` where `src/` changes, `validate_change_contract.py` lane report. |
 
 Results are reported as PASS, FAIL or NOT_RUN. NOT_RUN is never folded into PASS.
 
-## 9. Follow-ups this wave creates (not done here)
+## 9. Calls made after the builder check
+
+An independent reader checked this design before approval and raised eight questions. Q7 (the shape of #1472's `/state`) was answered from the branch. The rest were settled as the supervisor's calls. Each is marked in the text above; check these first:
+
+1. `dopemux adhd status` resolves env, then the registry's compose host port `3025`, with no socket probing; the existing resolvers are not reused (W3).
+2. It also calls `/health` and reports `degraded` with exit code 3 for the fallback engine. The `/state` error path stays undetectable and is documented (W3).
+3. The real engine's `assess_task` uses the operator user id and marks placeholder inputs in its output; `.score` is a documented table, not a measurement (W2).
+4. `scripts/dopemux_dashboard.py` is treated as host-run and fixed to `3025` (W4).
+5. Port comparison is host-port only; services without host ports are listed as not comparable; stale exceptions fail (W4).
+6. CI is Python 3.11; every new test must pass there with no skips, and a child that needs a file outside its write set stops for an amendment (section 5).
+7. Build now, audit after #1482, #1472 and #1483 merge (section 5).
+
+## 10. Follow-ups this wave creates (not done here)
 
 - P2 break-writer endpoint and `dopemux adhd break|focus|ack`, after #1472 merges.
 - Register the engine's MCP server in the catalog and `.mcp.json`.
