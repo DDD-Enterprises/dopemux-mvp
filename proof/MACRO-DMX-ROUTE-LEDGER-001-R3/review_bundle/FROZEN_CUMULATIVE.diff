@@ -1,0 +1,2695 @@
+diff --git a/docs/02-how-to/route-ledger.md b/docs/02-how-to/route-ledger.md
+new file mode 100644
+index 000000000..cc876e34c
+--- /dev/null
++++ b/docs/02-how-to/route-ledger.md
+@@ -0,0 +1,143 @@
++---
++id: route-ledger
++title: Route Ledger Mod (dopemux-route-ledger)
++type: how-to
++owner: '@hu3mann'
++author: 'claude-code-agent (claude-haiku-5-5)'
++date: '2026-10-23'
++last_review: '2026-10-23'
++next_review: '2027-01-21'
++prelude: How to load the dopemux-route-ledger mod, read its status segment and toasts, use the /route-ledger table, configure its receipts, and hand receipts to a supervisor for ExecutionBinding merge.
++---
++# Route Ledger Mod (dopemux-route-ledger)
++
++`dopemux-route-ledger` is a read-only Claude Code mod that records which model each
++Agent call requested, which model each step reported back, and every advisor call.
++It shows the result as a status segment, toasts, and a `/route-ledger` table, and
++writes each record as a JSONL receipt. Source: `plugins/dopemux-route-ledger/`.
++
++Live behaviour is NOT VERIFIED. The offline tests in `hooks/register.test.ts` are the
++only evidence so far. Before you rely on the mod, run it in a real session (section 1)
++and check what it shows.
++
++## 1. Load the mod
++
++From the repo root:
++
++```bash
++claude --plugin-dir plugins/dopemux-route-ledger
++```
++
++Offline checks, from the repo root:
++
++```bash
++claude plugin validate plugins/dopemux-route-ledger
++claude plugin test plugins/dopemux-route-ledger
++```
++
++Nothing is installed. The mod lasts for that session
++(`plugins/dopemux-route-ledger/README.md`, "Load it").
++
++## 2. What you see
++
++- **Status segment**, for example `agents S×4 H×2 · advisor 1`. Agents appear in the
++  order S (sonnet), O (opus), H (haiku), F (fable), then `?` for any other or unknown
++  model. Only non-zero counts show. With none, the segment reads `agents –`.
++  `advisor N` (the session total) appears when N > 0. Once `sessionAdvisorBudget`
++  applies and N exceeds it, it reads `advisor N/B ⚠`. A separate `· child M/B ⚠`
++  segment appears once the busiest child's count M exceeds `childAdvisorBudget`, so a
++  clean agent never makes the session total look like a child overage.
++- `· ledger off` is appended when receipts are disabled. `· receipts ✗` is appended
++  when a receipt write failed.
++- **Toasts**, each shown once:
++  - a subagent whose advisor count exceeds `childAdvisorBudget`;
++  - the session, once its total exceeds `sessionAdvisorBudget`;
++  - an Agent call with no model pinned (`unpinnedAgent`).
++  Every advisor toast says the mod counts advisor calls and cannot block them.
++- **`/route-ledger`** prints a table with one row per loop: `main`, then one row per
++  subagent, at most 60 rows and then `+N more`. Columns: `agent | runner | model
++  requested | model observed | effort requested | match | advisor`. Unknown cells read
++  `UNKNOWN`.
++- **`/route-ledger receipts`** prints the receipt file, the receipt counts, and
++  `receiptsEnabled` / `receiptsFailed`. Any other argument prints a one-line usage.
++
++The command reads the ledger and writes nothing.
++
++## 3. The `/route` alias
++
++`/route` is an alias with the same output. It is a best-effort name: it may collide
++with a built-in or another plugin's command, and some builds refuse it. If `/route` is
++refused, use `/route-ledger`. That name is registered on its own and keeps working.
++
++## 4. Options (`userConfig`)
++
++| key | default | meaning |
++| --- | --- | --- |
++| `receiptDir` | `.control-tower/state/route-ledger` | Where `<sessionId>.jsonl` files go. The default is used only when `.control-tower/state` exists. An explicit directory is created on first write. A `..` segment disables receipts. |
++| `unpinnedAgent` | `warn` | `warn` toasts once per Agent call with no model pinned (forks excepted). `off` records only. |
++| `childAdvisorBudget` | `0` | Advisor calls allowed per child agent. `0` means a child's first call exceeds it. A negative number turns the check off. |
++| `sessionAdvisorBudget` | `-1` | Advisor calls allowed per session. `-1` turns it off. |
++| `maxReceiptsPerFile` | `500` | Allowed range 50 to 5000. A new segment starts after this many records. |
++
++## 5. Receipts
++
++Receipts are JSONL under `receiptDir`. The file stem is the session id with any
++character outside `A-Za-z0-9_-` replaced by `_`, so the file is `<stem>.jsonl`, then
++`<stem>.1.jsonl` and so on. Each record has `schema_version`
++`dopemux.route_ledger.receipt.v1`. The format is defined by `receipt.schema.json`.
++
++Three record kinds exist:
++
++- `agent_request`: the requested model and effort. It also carries nullable
++  `spawned_agent_id` and `resolved_model`, filled when `agent.spawn` fires.
++- `step_observed`: the requested model against the `usage.model` the API reported,
++  with token usage.
++- `advisor_call`: one advisor server-tool-use, deduplicated by its id.
++
++Prompts, file contents and tool output never enter a receipt.
++
++### binding_fields
++
++`agent_request` and `step_observed` receipts carry `binding_fields`, a partial mapping:
++
++- `selection` = `{ runner: "claude-code-agent", model, effort }` from the request;
++- `effort_requested` = the requested effort, or `UNKNOWN`;
++- `effort_observed` = always `UNKNOWN`, because the API does not report effort;
++- `response_claimed_model` = the API-reported model, or `UNKNOWN`;
++- `provider_attested_model` = always `UNKNOWN`;
++- `independence_class` = always `UNKNOWN`.
++
++A receipt is not a valid binding. A supervisor merges receipts into an ExecutionBinding
++and runs `ct bind-record`. The mod never runs `ct`.
++
++## 6. What the mod does not do
++
++- It counts advisor calls after the fact. It cannot block, deny or retry any call.
++- The observed model is what the API response claimed. It is not provider attestation.
++  Effort observed is always UNKNOWN.
++- A fork inherits its parent's model, so a fork with no model is recorded as
++  inheriting, not as unpinned.
++- It makes no network, process or model call. It writes nothing to the repository
++  except its own receipt files under `receiptDir`, and nothing to `~/.claude`.
++- Whether it coexists with another plugin's status line, for example dopemux-pulse,
++  is unverified. The mod sets its own status line, and this was not run.
++- The plugin API is early access and may change between Claude Code builds.
++
++## 7. Troubleshooting
++
++- **`· ledger off` in the status, or `receipts are off` in `/route-ledger receipts`.**
++  The default `receiptDir` is used only when `.control-tower/state` exists. Either
++  create that directory, or set `receiptDir` to an explicit path. The receipts text
++  gives the reason.
++- **`· receipts ✗`.** A receipt write failed. Run `/route-ledger receipts` and read
++  `receiptsFailed`. Check that the receipt directory is writable.
++- **Unpinned-agent toast.** An Agent call had no model. Pin the model on the call, or
++  set `unpinnedAgent` to `off` to record without the toast.
++- **`/route` refused.** Use `/route-ledger`.
++- **`UNKNOWN` in the table.** The field was not reported. Do not read it as a pass.
++
++## 8. Next step
++
++To see the mod work, load it with section 1 in a real session, start one Agent call
++with a pinned model, and run `/route-ledger`. Record what you observe. Until someone
++does, treat the runtime behaviour as NOT VERIFIED.
+diff --git a/plugins/dopemux-route-ledger/.claude-plugin/plugin.json b/plugins/dopemux-route-ledger/.claude-plugin/plugin.json
+new file mode 100644
+index 000000000..92c8730e2
+--- /dev/null
++++ b/plugins/dopemux-route-ledger/.claude-plugin/plugin.json
+@@ -0,0 +1,40 @@
++{
++  "name": "dopemux-route-ledger",
++  "version": "0.1.0",
++  "description": "Route ledger for Claude Code: records the model each Agent call requests (warning when none is pinned) and the model and advisor server-tool-uses each model step reports, as JSONL receipts a supervisor can merge into an ExecutionBinding. Read-only: it never rewrites, denies or retries a call.",
++  "userConfig": {
++    "receiptDir": {
++      "type": "string",
++      "title": "Receipt directory",
++      "description": "Where receipt files (<sessionId>.jsonl) are written. The default is used only when .control-tower/state exists; an explicit directory is created on first write. A path containing a .. segment disables receipts.",
++      "default": ".control-tower/state/route-ledger"
++    },
++    "unpinnedAgent": {
++      "type": "string",
++      "title": "Unpinned Agent calls",
++      "description": "warn: toast once for each Agent call with no model pinned (forks excepted). off: record only.",
++      "options": ["warn", "off"],
++      "default": "warn"
++    },
++    "childAdvisorBudget": {
++      "type": "number",
++      "title": "Advisor calls allowed per child agent",
++      "description": "Whole number. 0 (default) means a child's first advisor call exceeds the budget; a negative number disables the check.",
++      "default": 0
++    },
++    "sessionAdvisorBudget": {
++      "type": "number",
++      "title": "Advisor calls allowed per session",
++      "description": "Whole number. -1 (default) turns the session budget off.",
++      "default": -1
++    },
++    "maxReceiptsPerFile": {
++      "type": "number",
++      "title": "Receipts per file",
++      "description": "Whole number from 50 to 5000 (default 500); a new <sessionId>.<n>.jsonl segment starts after this many.",
++      "default": 500,
++      "min": 50,
++      "max": 5000
++    }
++  }
++}
+diff --git a/plugins/dopemux-route-ledger/README.md b/plugins/dopemux-route-ledger/README.md
+new file mode 100644
+index 000000000..05736b31a
+--- /dev/null
++++ b/plugins/dopemux-route-ledger/README.md
+@@ -0,0 +1,54 @@
++# dopemux-route-ledger
++
++dopemux-route-ledger is a read-only Claude Code mod that keeps a ledger of delegation. It records which model each Agent call asked for, which model each model step reported back in the API response, and every advisor server-tool-use, then shows the result as a status segment, as toasts when an advisor budget is exceeded, and as a `/route-ledger` table (alias `/route`). Each record is also written as a JSONL receipt that a supervisor can merge into an ExecutionBinding.
++
++## What it shows
++
++- Status segment, for example `agents S×4 H×2 · advisor 1`. Agents appear in the fixed order S (sonnet), O (opus), H (haiku), F (fable), then `?` for any other or unknown model, and only the non-zero ones; with none the segment reads `agents –`. `advisor N` (the session total) appears when N > 0 and becomes `advisor N/B ⚠` once `sessionAdvisorBudget` B applies and N exceeds it. A separate ` · child M/B ⚠` segment appears once the busiest child agent's count M exceeds `childAdvisorBudget` B, so a clean agent never makes the session total look like a child overage. ` · ledger off` is appended when receipts are disabled and ` · receipts ✗` when a receipt write failed. The line is redrawn at most about once per half second.
++- Toasts. A subagent whose advisor count exceeds `childAdvisorBudget` toasts once, naming a shortened agent id, the count and the budget. The session toasts once when its total exceeds `sessionAdvisorBudget`. An Agent call with no model pinned also toasts once (`unpinnedAgent`). The toasts say the mod counts advisor calls and cannot block them.
++- `/route-ledger` prints a table, one row per loop (`main`, then one per subagent, at most 60 rows then `+N more`) with the columns `agent | runner | model requested | model observed | effort requested | match | advisor`. Unknown cells read `UNKNOWN`. `/route-ledger receipts` prints the receipt file, the receipt counts and `receiptsEnabled` / `receiptsFailed`. Any other argument prints a one-line usage. The command never writes, spawns or reads outside its own state.
++- `/route` is an alias with identical output.
++
++## Load it
++
++```
++claude --plugin-dir plugins/dopemux-route-ledger
++```
++
++Check it offline with `claude plugin validate plugins/dopemux-route-ledger` and `claude plugin test plugins/dopemux-route-ledger`.
++
++## Options (`userConfig`)
++
++| key | default | meaning |
++| --- | --- | --- |
++| `receiptDir` | `.control-tower/state/route-ledger` | Where `<sessionId>.jsonl` files go. The default is used only when `.control-tower/state` exists; an explicit directory is created on first write. A `..` segment disables receipts. |
++| `unpinnedAgent` | `warn` | `warn` toasts once per Agent call with no model pinned (forks excepted); `off` records only. |
++| `childAdvisorBudget` | `0` | Advisor calls allowed per child agent. 0 means a child's first call exceeds it; a negative number turns the check off. |
++| `sessionAdvisorBudget` | `-1` | Advisor calls allowed per session; -1 turns it off. |
++| `maxReceiptsPerFile` | `500` | 50 to 5000; a new `<sessionId>.<n>.jsonl` segment starts after this many. |
++
++## Receipts
++
++Receipts are JSONL under `receiptDir`, one file (segment) per session, named `<sessionId>.jsonl`, then `<sessionId>.1.jsonl` and so on. Three kinds exist: `agent_request` (the requested model and effort, joined to the spawned agent id and resolved model when `agent.spawn` fires), `step_observed` (requested versus the API-reported `usage.model`, with token usage) and `advisor_call`. The format is defined by `receipt.schema.json`. Prompts, file contents and tool output never enter a receipt.
++
++`agent_request` and `step_observed` receipts carry `binding_fields`, a partial mapping a supervisor can merge into an ExecutionBinding:
++
++- `selection` = `{ runner: "claude-code-agent", model, effort }` from what was requested
++- `effort_requested` = the requested effort, or `UNKNOWN`
++- `effort_observed` = always `UNKNOWN` (the API does not report effort)
++- `response_claimed_model` = the API-reported model, or `UNKNOWN`
++- `provider_attested_model` = always `UNKNOWN`
++- `independence_class` = always `UNKNOWN`
++
++A receipt is not a valid binding: the mod knows only these fields. A supervisor merges the receipts into a binding and runs `ct bind-record`; the mod never does.
++
++## Limits
++
++- It counts advisor calls after the fact. It cannot block, deny or retry any call.
++- The observed model is what the API response claimed (`response_claimed`), not provider attestation. Effort observed is UNKNOWN.
++- A fork inherits its parent's model, so a fork with no model is recorded as inheriting, not as unpinned.
++- The plugin API is early access and may change between Claude Code builds.
++- `/route` may collide with a built-in or another plugin's command in some builds. If it is refused, use `/route-ledger`, which is registered independently and keeps working.
++- The mod pins its own status line. Whether it coexists with another plugin's status line (for example dopemux-pulse) is unverified and was not run.
++- The mod is read-only toward the repository except its own receipt files under `receiptDir`. It makes no network, process or model call.
++- Not run yet: a live Claude Code session loading the mod. Offline tests only.
+diff --git a/plugins/dopemux-route-ledger/hooks/hooks.json b/plugins/dopemux-route-ledger/hooks/hooks.json
+new file mode 100644
+index 000000000..4f4495c7a
+--- /dev/null
++++ b/plugins/dopemux-route-ledger/hooks/hooks.json
+@@ -0,0 +1,3 @@
++{
++  "modules": ["./register.tsx"]
++}
+diff --git a/plugins/dopemux-route-ledger/hooks/register.test.ts b/plugins/dopemux-route-ledger/hooks/register.test.ts
+new file mode 100644
+index 000000000..4dd261c78
+--- /dev/null
++++ b/plugins/dopemux-route-ledger/hooks/register.test.ts
+@@ -0,0 +1,1184 @@
++import type { On } from 'claude-code'
++import { expect, mock, test } from 'claude-code/testing'
++import type { Engine, MockClock } from 'claude-code/testing'
++
++import {
++  familyOf,
++  flushSegments,
++  newLedger,
++  parseConfig,
++  summarize,
++  toBindingFields,
++} from './register'
++
++const T0 = 1_792_000_000_000
++const DEFAULT_DIR = '.control-tower/state/route-ledger'
++const FILE = `${DEFAULT_DIR}/sess-1.jsonl`
++const SCHEMA = 'dopemux.route_ledger.receipt.v1'
++const RFC3339 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
++
++const COMMON_KEYS = ['schema_version', 'kind', 'seq', 'session_id', 'recorded_at', 'agent_id']
++const KEYS: Record<string, string[]> = {
++  agent_request: [
++    ...COMMON_KEYS,
++    'tool_use_id',
++    'requested_model',
++    'requested_effort',
++    'subagent_type',
++    'description',
++    'pinned',
++    'inherits',
++    'spawned_agent_id',
++    'resolved_model',
++    'binding_fields',
++  ],
++  step_observed: [
++    ...COMMON_KEYS,
++    'turn_id',
++    'step_index',
++    'requested_model',
++    'requested_effort',
++    'observed_model',
++    'match',
++    'usage',
++    'binding_fields',
++  ],
++  advisor_call: [...COMMON_KEYS, 'advisor_use_id', 'started_at', 'ended_at', 'loop'],
++}
++const BINDING_KEYS = [
++  'effort_observed',
++  'effort_requested',
++  'independence_class',
++  'provider_attested_model',
++  'response_claimed_model',
++  'selection',
++]
++
++type Receipt = Record<string, any>
++type ServerUse = { id: string; name: string; input: unknown; startedAt: number; endedAt?: number }
++
++declare const console: { log: (...args: unknown[]) => void }
++type StepInput = { turnId: string; index: number; model: string; effort?: string; agentId?: string }
++type Usage = {
++  model: string
++  input_tokens: number
++  output_tokens: number
++  cache_read_input_tokens: number
++  cache_creation_input_tokens: number
++}
++
++const USAGE: Usage = {
++  model: 'claude-sonnet-5-5',
++  input_tokens: 10,
++  output_tokens: 20,
++  cache_read_input_tokens: 30,
++  cache_creation_input_tokens: 40,
++}
++
++type Opts = {
++  dirs?: string[]
++  files?: Record<string, string>
++  sessionId?: string
++  // The receiptDir the test configures (the default when left out).
++  dir?: string
++  // 'broken': `$.clock.now()` is refused beneath the plugin.
++  clock?: 'mock' | 'broken'
++}
++
++// Everything beneath the plugin is mocked here: the clock, the file system (in
++// memory, every write recorded), the session id, the toast, and the Agent
++// tool, the spawn and the model step the plugin only observes.
++function harness($: Engine, on: On, opts: Opts = {}) {
++  let clock: MockClock
++  if (opts.clock === 'broken') {
++    on('clock.now', () => ({ deny: 'clock gone' }))
++    clock = {
++      settle: async () => {
++        for (let i = 0; i < 100; i++) await Promise.resolve()
++      },
++    } as MockClock
++  } else {
++    clock = mock.clock(on, { now: T0 })
++  }
++  // The engine hands the plugin's file calls to the hooks beneath as absolute
++  // paths under the session's directory. The mocked file system keeps them
++  // relative to it, learned from the first path that names a known directory.
++  const dir = opts.dir ?? DEFAULT_DIR
++  let root: string | undefined
++  const rel = (path: string): string => {
++    if (root === undefined) {
++      for (const known of ['.control-tower/state', dir]) {
++        const i = path.indexOf(`/${known}`)
++        const end = i + 1 + known.length
++        if (i >= 0 && (end === path.length || path[end] === '/')) {
++          root = path.slice(0, i)
++          break
++        }
++      }
++    }
++    return root !== undefined && path.startsWith(`${root}/`) ? path.slice(root.length + 1) : path
++  }
++  const world = {
++    clock,
++    files: new Map<string, string>(Object.entries(opts.files ?? {})),
++    dirs: new Set<string>(opts.dirs ?? ['.control-tower/state']),
++    writes: [] as { path: string; text: string }[],
++    failWrites: false,
++    toasts: [] as string[],
++    toastTimeouts: [] as (number | undefined)[],
++    statuses: [] as (string | undefined)[],
++    registered: [] as string[],
++    // Command names the engine refuses to register (a built-in collision).
++    refused: new Set<string>(),
++    calls: [] as Receipt[],
++    spawns: [] as Receipt[],
++    stepInputs: [] as Receipt[],
++    // What the next model step answers; the test sets it before each step.
++    usage: USAGE as Usage | null,
++    serverToolUses: undefined as ServerUse[] | undefined,
++    spawnAnswer: { model: 'claude-sonnet-5-5', agentId: 'agent-7' } as Receipt,
++  }
++
++  on('session.start', (_, e) => ({ cwd: e.cwd }))
++  on('session.end', (_, e) => ({ sessionId: e.sessionId }))
++  on('session.id', () => ({ value: opts.sessionId ?? 'sess-1' }))
++  on('ui.toast', (_, e) => {
++    world.toasts.push(e.text)
++    world.toastTimeouts.push(e.timeoutMs)
++    return { value: undefined }
++  })
++  on('ui.status', (_, e) => {
++    world.statuses.push(e.text)
++    return { value: undefined }
++  })
++  on('command.register', (_, e) => {
++    if (world.refused.has(e.name)) return { deny: `${e.name} is a built-in name` }
++    world.registered.push(e.name)
++    return { value: { command: e.name } }
++  })
++  on('fs.write', (_, e) => {
++    const path = rel(e.path)
++    world.writes.push({ path, text: e.text })
++    if (world.failWrites) return { deny: 'disk full' }
++    world.files.set(path, e.text)
++    return { value: undefined }
++  })
++  on('fs.read', (_, e) => {
++    const text = world.files.get(rel(e.path))
++    return text === undefined ? { deny: `ENOENT ${e.path}` } : { value: text }
++  })
++  on('fs.exists', (_, e) => {
++    const path = rel(e.path)
++    return { value: world.dirs.has(path) || world.files.has(path) }
++  })
++  on('fs.list', (_, e) => {
++    const prefix = `${rel(e.path).replace(/\/+$/, '')}/`
++    const entries = [...world.files.keys()]
++      .filter(path => path.startsWith(prefix) && !path.slice(prefix.length).includes('/'))
++      .map(path => ({
++        name: path.slice(prefix.length),
++        kind: 'file' as const,
++        size: 1,
++        mtimeMs: 0,
++        isLink: false,
++      }))
++    return { value: entries }
++  })
++  on('tool.call', (_, e) => {
++    world.calls.push(e as Receipt)
++    return { result: { status: 'ok' }, text: 'done', ref: 0 }
++  })
++  on('agent.spawn', (_, e) => {
++    world.spawns.push(e as Receipt)
++    return world.spawnAnswer as never
++  })
++  on('turn.step', async function* (_, e) {
++    world.stepInputs.push(e as Receipt)
++    yield { kind: 'text', index: 0, text: 'hello' }
++    yield { kind: 'text', index: 0, text: ' world' }
++    return {
++      turnId: e.turnId,
++      index: e.index,
++      answer: 'hello world',
++      toolUses: [],
++      ...(world.serverToolUses === undefined ? {} : { serverToolUses: world.serverToolUses }),
++      stopReason: 'end_turn' as const,
++      usage: world.usage,
++    }
++  })
++
++  const lines = (path: string): Receipt[] => {
++    const text = world.files.get(path)
++    if (text === undefined) return []
++    return text
++      .split('\n')
++      .filter(line => line !== '')
++      .map(line => JSON.parse(line))
++  }
++
++  return {
++    world,
++    lines,
++    receipts: () => lines(FILE),
++    // Receipts printed for the offline jsonschema check against receipt.schema.json.
++    sample() {
++      for (const receipt of lines(FILE)) console.log(`RECEIPT-SAMPLE ${JSON.stringify(receipt)}`)
++    },
++    async start() {
++      await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
++      await clock.settle()
++    },
++    // The last status text the plugin pinned (undefined when cleared or never set).
++    status: () => world.statuses[world.statuses.length - 1],
++    async run(command: string, args = '') {
++      return $.command.run({
++        command,
++        args,
++        origin: { kind: 'composer' },
++        presentation: { isFullscreen: false, columns: 80 },
++      })
++    },
++    async settleStatus() {
++      await clock.advance(DEBOUNCE_MS)
++    },
++    async end(reason: 'clear' | 'other' = 'other') {
++      await $.session.end({ reason, sessionId: 'sess-1', resume: { sessionId: 'sess-1' } as never })
++      await clock.settle()
++    },
++    async agent(args: Receipt = {}) {
++      const before = world.calls.length
++      const result = await $.tool.call({
++        tool: 'Agent',
++        description: 'Write the tests',
++        prompt: 'SECRET-PROMPT-DO-NOT-LOG',
++        ...args,
++      } as never)
++      await clock.settle()
++      return { result, seen: world.calls.slice(before), id: world.calls[world.calls.length - 1]?.tool_use_id as string }
++    },
++    async spawn(toolUseId: string | undefined) {
++      const result = await $.agent.spawn({
++        prompt: 'SECRET-PROMPT-DO-NOT-LOG',
++        description: 'Write the tests',
++        ...(toolUseId === undefined ? {} : { tool_use_id: toolUseId }),
++      } as never)
++      await clock.settle()
++      return result
++    },
++    async step(input: StepInput) {
++      const stream = $.turn.step({ messageCount: 1, ...input } as never)
++      const chunks: unknown[] = []
++      for (;;) {
++        const next = await stream.next()
++        if (next.done) {
++          await clock.settle()
++          return { chunks, result: next.value as Receipt }
++        }
++        chunks.push(next.value)
++      }
++    },
++    // No write may land anywhere but under `dir`.
++    expectWritesUnder(dir: string) {
++      for (const write of world.writes) {
++        expect(write.path.startsWith(`${dir}/`)).toBe(true)
++        expect(write.path.slice(dir.length + 1).includes('/')).toBe(false)
++      }
++    },
++  }
++}
++
++const DEBOUNCE_MS = 1_000
++const STEP: StepInput = { turnId: 'turn-1', index: 0, model: 'claude-sonnet-5-5' }
++
++// ---------------------------------------------------------------- Agent calls
++
++test('a pinned Agent call is recorded and passed on unchanged', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const { result, seen, id } = await h.agent({
++    subagent_type: 'general-purpose',
++    model: 'sonnet',
++    effort: 'high',
++  })
++
++  expect(seen).toHaveLength(1)
++  expect(seen[0]).toEqual({
++    tool: 'Agent',
++    description: 'Write the tests',
++    prompt: 'SECRET-PROMPT-DO-NOT-LOG',
++    subagent_type: 'general-purpose',
++    model: 'sonnet',
++    effort: 'high',
++    tool_use_id: id,
++  })
++  expect(result).toEqual({ result: { status: 'ok' }, text: 'done', ref: 0 })
++  expect(h.world.toasts).toHaveLength(0)
++
++  const receipt = h.receipts()[0]!
++  expect(h.receipts()).toHaveLength(1)
++  expect(receipt).toEqual({
++    schema_version: SCHEMA,
++    kind: 'agent_request',
++    seq: 0,
++    session_id: 'sess-1',
++    recorded_at: new Date(T0).toISOString(),
++    agent_id: null,
++    tool_use_id: id,
++    requested_model: 'sonnet',
++    requested_effort: 'high',
++    subagent_type: 'general-purpose',
++    description: 'Write the tests',
++    pinned: true,
++    inherits: false,
++    spawned_agent_id: null,
++    resolved_model: null,
++    binding_fields: {
++      selection: { runner: 'claude-code-agent', model: 'sonnet', effort: 'high' },
++      effort_requested: 'high',
++      effort_observed: 'UNKNOWN',
++      response_claimed_model: 'UNKNOWN',
++      provider_attested_model: 'UNKNOWN',
++      independence_class: 'UNKNOWN',
++    },
++  })
++  // The prompt never reaches a receipt.
++  expect(h.world.files.get(FILE)?.includes('SECRET-PROMPT')).toBe(false)
++  h.expectWritesUnder(DEFAULT_DIR)
++})
++
++test('an unpinned Agent call toasts once, naming the type and description but not the prompt', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const { seen } = await h.agent({ subagent_type: 'Explore', description: 'Map the repo' })
++
++  expect(seen).toHaveLength(1)
++  expect(h.world.toasts).toHaveLength(1)
++  expect(h.world.toasts[0]!.includes('Explore')).toBe(true)
++  expect(h.world.toasts[0]!.includes('Map the repo')).toBe(true)
++  expect(h.world.toasts[0]!.includes('SECRET-PROMPT')).toBe(false)
++  // The host already names the plugin; a leading `route-ledger:` would print twice.
++  expect(h.world.toasts[0]).not.toMatch(/^route-ledger:/)
++  // An unset timeout falls back to the host default of 4 s, which is easy to miss.
++  expect(h.world.toastTimeouts[0]).toBeGreaterThan(4000)
++
++  const receipt = h.receipts()[0]!
++  expect(receipt.pinned).toBe(false)
++  expect(receipt.inherits).toBe(false)
++  expect(receipt.requested_model).toBe(null)
++  expect(receipt.requested_effort).toBe(null)
++  expect(receipt.binding_fields.selection.model).toBe('UNKNOWN')
++  expect(receipt.binding_fields.selection.effort).toBe('UNKNOWN')
++  h.sample()
++})
++
++test('a fork with no model inherits: recorded as inherits, not unpinned, no toast', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const { seen } = await h.agent({ subagent_type: 'fork' })
++
++  expect(seen).toHaveLength(1)
++  expect(h.world.toasts).toHaveLength(0)
++  const receipt = h.receipts()[0]!
++  expect(receipt.pinned).toBe(false)
++  expect(receipt.inherits).toBe(true)
++  expect(receipt.requested_model).toBe(null)
++  h.sample()
++})
++
++test('unpinnedAgent off records but stays silent', { options: { unpinnedAgent: 'off' } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const { seen } = await h.agent({ subagent_type: 'Explore' })
++
++  expect(seen).toHaveLength(1)
++  expect(h.world.toasts).toHaveLength(0)
++  expect(h.receipts()).toHaveLength(1)
++  expect(h.receipts()[0]!.pinned).toBe(false)
++})
++
++test('a long description is cut to 80 characters', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'haiku', description: 'x'.repeat(200) })
++  expect(h.receipts()[0]!.description).toBe('x'.repeat(80))
++})
++
++test('next runs once with e unchanged when the write fails, and the next receipt heals the file', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.failWrites = true
++  const first = await h.agent({ model: 'sonnet', description: 'first' })
++
++  expect(first.seen).toHaveLength(1)
++  expect(first.seen[0]).toMatchObject({ tool: 'Agent', description: 'first', model: 'sonnet' })
++  expect(first.result).toEqual({ result: { status: 'ok' }, text: 'done', ref: 0 })
++  expect(h.world.files.has(FILE)).toBe(false)
++  // One attempt for the one receipt: no tight retry loop.
++  expect(h.world.writes).toHaveLength(1)
++
++  h.world.failWrites = false
++  const second = await h.agent({ model: 'opus', description: 'second' })
++  expect(second.seen).toHaveLength(1)
++  const receipts = h.receipts()
++  expect(receipts.map(r => r.seq)).toEqual([0, 1])
++  expect(receipts.map(r => r.description)).toEqual(['first', 'second'])
++})
++
++test('next runs once with e unchanged when the clock fails', async ($, on) => {
++  const h = harness($, on, { clock: 'broken' })
++  await h.start()
++  const { seen, result } = await h.agent({ model: 'sonnet' })
++  expect(seen).toHaveLength(1)
++  expect(result).toEqual({ result: { status: 'ok' }, text: 'done', ref: 0 })
++})
++
++// ------------------------------------------------------------ agent.spawn join
++
++test('agent.spawn joins tool_use_id to the spawned agent and resolved model, and passes through', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const a = await h.agent({ model: 'haiku', description: 'same words' })
++  const b = await h.agent({ model: 'opus', description: 'same words' })
++  // The later call spawns: only its own receipt may be joined, not the first
++  // unjoined one (no correlation by order or by description).
++  const answer = await h.spawn(b.id)
++
++  expect(answer).toEqual({ model: 'claude-sonnet-5-5', agentId: 'agent-7' })
++  expect(h.world.spawns).toHaveLength(1)
++  expect(h.world.spawns[0]).toEqual({
++    prompt: 'SECRET-PROMPT-DO-NOT-LOG',
++    description: 'Write the tests',
++    tool_use_id: b.id,
++  })
++
++  const first = h.receipts()[0]!
++  const second = h.receipts()[1]!
++  expect(first.tool_use_id).toBe(a.id)
++  expect(first.spawned_agent_id).toBe(null)
++  expect(first.resolved_model).toBe(null)
++  expect(second.tool_use_id).toBe(b.id)
++  expect(second.spawned_agent_id).toBe('agent-7')
++  expect(second.resolved_model).toBe('claude-sonnet-5-5')
++  expect(h.receipts()).toHaveLength(2)
++  h.sample()
++})
++
++test('agent.spawn without a tool_use_id, or a refused spawn, joins nothing', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'haiku' })
++  await h.spawn(undefined)
++  h.world.spawnAnswer = { deny: 'no' }
++  const refused = await h.spawn(h.world.calls[0]!.tool_use_id)
++
++  expect(refused).toEqual({ deny: 'no' })
++  expect(h.receipts()[0]!.spawned_agent_id).toBe(null)
++})
++
++// ------------------------------------------------------------------ turn.step
++
++test('turn.step passes chunks and result through and records requested versus observed', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const { chunks, result } = await h.step({ ...STEP, effort: 'high' })
++
++  expect(chunks).toEqual([
++    { kind: 'text', index: 0, text: 'hello' },
++    { kind: 'text', index: 0, text: ' world' },
++  ])
++  expect(result).toEqual({
++    turnId: 'turn-1',
++    index: 0,
++    answer: 'hello world',
++    toolUses: [],
++    stopReason: 'end_turn',
++    usage: USAGE,
++  })
++  // The request reached the engine as resolved, unrewritten.
++  expect(h.world.stepInputs[0]).toMatchObject({ model: 'claude-sonnet-5-5', effort: 'high' })
++
++  const receipt = h.receipts()[0]!
++  expect(receipt).toEqual({
++    schema_version: SCHEMA,
++    kind: 'step_observed',
++    seq: 0,
++    session_id: 'sess-1',
++    recorded_at: new Date(T0).toISOString(),
++    agent_id: null,
++    turn_id: 'turn-1',
++    step_index: 0,
++    requested_model: 'claude-sonnet-5-5',
++    requested_effort: 'high',
++    observed_model: 'claude-sonnet-5-5',
++    match: true,
++    usage: {
++      input_tokens: 10,
++      output_tokens: 20,
++      cache_read_input_tokens: 30,
++      cache_creation_input_tokens: 40,
++    },
++    binding_fields: {
++      selection: { runner: 'claude-code-agent', model: 'claude-sonnet-5-5', effort: 'high' },
++      effort_requested: 'high',
++      effort_observed: 'UNKNOWN',
++      response_claimed_model: 'claude-sonnet-5-5',
++      provider_attested_model: 'UNKNOWN',
++      independence_class: 'UNKNOWN',
++    },
++  })
++})
++
++test('a step whose observed model differs records match false; an agent step carries its agent id', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.usage = { ...USAGE, model: 'claude-haiku-4-5' }
++  await h.step({ ...STEP, index: 1, agentId: 'agent-7' })
++
++  const receipt = h.receipts()[0]!
++  expect(receipt.agent_id).toBe('agent-7')
++  expect(receipt.step_index).toBe(1)
++  expect(receipt.requested_effort).toBe(null)
++  expect(receipt.observed_model).toBe('claude-haiku-4-5')
++  expect(receipt.match).toBe(false)
++  expect(receipt.binding_fields.response_claimed_model).toBe('claude-haiku-4-5')
++  expect(receipt.binding_fields.selection.effort).toBe('UNKNOWN')
++  h.sample()
++})
++
++test('a dated observed id still matches its undated request; a bare alias matches its family', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.usage = { ...USAGE, model: 'claude-sonnet-5-5-20261001' }
++  await h.step(STEP)
++  h.world.usage = { ...USAGE, model: 'claude-sonnet-5-5' }
++  await h.step({ ...STEP, index: 1, model: 'sonnet' })
++  h.world.usage = { ...USAGE, model: 'claude-sonnet-5-6' }
++  await h.step({ ...STEP, index: 2 })
++
++  expect(h.receipts().map(r => r.match)).toEqual([true, true, false])
++})
++
++test('null usage and absent serverToolUses: UNKNOWN observed, match null, usage null, no advisor receipt', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.usage = null
++  const { chunks, result } = await h.step(STEP)
++
++  expect(chunks).toHaveLength(2)
++  expect(result.usage).toBe(null)
++  expect(result.serverToolUses).toBe(undefined)
++  const receipts = h.receipts()
++  expect(receipts).toHaveLength(1)
++  expect(receipts[0]!.observed_model).toBe('UNKNOWN')
++  expect(receipts[0]!.match).toBe(null)
++  expect(receipts[0]!.usage).toBe(null)
++  expect(receipts[0]!.binding_fields.response_claimed_model).toBe('UNKNOWN')
++  h.sample()
++})
++
++test('advisor calls are counted once by server-tool-use id, split by loop', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [
++    { id: 'srv-1', name: 'advisor', input: {}, startedAt: 5, endedAt: 9 },
++    { id: 'srv-w', name: 'web_search', input: {}, startedAt: 5, endedAt: 6 },
++  ]
++  const main = await h.step(STEP)
++  // The same id seen again (a replayed step) is not counted twice.
++  await h.step({ ...STEP, index: 1 })
++  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 7 }]
++  await h.step({ ...STEP, index: 2, agentId: 'agent-7' })
++
++  // The result goes back exactly as received, advisor entries included.
++  expect(main.result.serverToolUses).toHaveLength(2)
++
++  const advisors = h.receipts().filter(r => r.kind === 'advisor_call')
++  expect(advisors.map(r => [r.advisor_use_id, r.loop, r.agent_id, r.started_at, r.ended_at])).toEqual([
++    ['srv-1', 'main', null, 5, 9],
++    ['srv-2', 'agent', 'agent-7', 7, null],
++  ])
++  expect(h.receipts().filter(r => r.kind === 'step_observed')).toHaveLength(3)
++  // A duplicate consumes no seq: the numbering has no gap.
++  expect(h.receipts().map(r => r.seq)).toEqual(h.receipts().map((_, i) => i))
++  h.sample()
++})
++
++// ------------------------------------------------------------------- receipts
++
++test('every receipt is a JSON line with exactly the schema keys, seq from 0 without gaps', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  const call = await h.agent({ model: 'sonnet', effort: 'low' })
++  await h.spawn(call.id)
++  await h.step(STEP)
++  await h.agent({})
++
++  const text = h.world.files.get(FILE)!
++  expect(text.endsWith('\n')).toBe(true)
++  const receipts = h.receipts()
++  expect(receipts.map(r => r.kind)).toEqual([
++    'agent_request',
++    'step_observed',
++    'advisor_call',
++    'agent_request',
++  ])
++  receipts.forEach((receipt, i) => {
++    expect(Object.keys(receipt).sort()).toEqual([...KEYS[receipt.kind]!].sort())
++    expect(receipt.schema_version).toBe(SCHEMA)
++    expect(receipt.seq).toBe(i)
++    expect(receipt.session_id).toBe('sess-1')
++    expect(RFC3339.test(receipt.recorded_at)).toBe(true)
++    if (receipt.binding_fields !== undefined) {
++      expect(Object.keys(receipt.binding_fields).sort()).toEqual(BINDING_KEYS)
++      expect(Object.keys(receipt.binding_fields.selection).sort()).toEqual(['effort', 'model', 'runner'])
++    }
++  })
++  h.sample()
++})
++
++test('a segment rolls at maxReceiptsPerFile into <sessionId>.<n>.jsonl', { options: { maxReceiptsPerFile: 50 } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  for (let i = 0; i < 120; i++) await h.step({ ...STEP, index: i })
++
++  const second = `${DEFAULT_DIR}/sess-1.1.jsonl`
++  const third = `${DEFAULT_DIR}/sess-1.2.jsonl`
++  expect(h.receipts()).toHaveLength(50)
++  expect(h.lines(second)).toHaveLength(50)
++  expect(h.lines(third)).toHaveLength(20)
++  expect(h.world.files.has(`${DEFAULT_DIR}/sess-1.3.jsonl`)).toBe(false)
++  expect(h.receipts()[0]!.seq).toBe(0)
++  expect(h.lines(second)[0]!.seq).toBe(50)
++  expect(h.lines(third)[19]!.seq).toBe(119)
++  h.expectWritesUnder(DEFAULT_DIR)
++})
++
++test('after a reload the tallies are rebuilt from the receipt files: seq continues, advisor ids stay deduplicated', async ($, on) => {
++  const old: Receipt[] = [
++    { ...base('agent_request', 0), tool_use_id: 'toolu_old', requested_model: 'haiku', requested_effort: null, subagent_type: null, description: 'old', pinned: true, inherits: false, spawned_agent_id: 'agent-old', resolved_model: 'claude-haiku-4-5', binding_fields: bf('haiku') },
++    { ...base('advisor_call', 1), advisor_use_id: 'srv-1', started_at: 1, ended_at: 2, loop: 'main' },
++    { ...base('advisor_call', 2), advisor_use_id: 'srv-9', started_at: 1, ended_at: 2, loop: 'agent', agent_id: 'agent-old' },
++  ]
++  // The second segment holds the highest seq, as after a rollover.
++  const files = {
++    [FILE]: old.slice(0, 2).map(r => JSON.stringify(r)).join('\n') + '\n',
++    [`${DEFAULT_DIR}/sess-1.1.jsonl`]: JSON.stringify(old[2]) + '\n',
++    [`${DEFAULT_DIR}/other-session.jsonl`]: JSON.stringify({ ...base('advisor_call', 40), advisor_use_id: 'srv-x', started_at: 1, ended_at: 2, loop: 'main' }) + '\n',
++  }
++  const h = harness($, on, { files })
++  await h.start()
++
++  h.world.serverToolUses = [
++    { id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 },
++    { id: 'srv-9', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 },
++    { id: 'srv-new', name: 'advisor', input: {}, startedAt: 3, endedAt: 4 },
++  ]
++  await h.step(STEP)
++
++  // New receipts continue after the highest seq (2) and go to the last segment.
++  const last = h.lines(`${DEFAULT_DIR}/sess-1.1.jsonl`)
++  expect(last.map(r => r.seq)).toEqual([2, 3, 4])
++  expect(last.map(r => r.advisor_use_id ?? r.kind)).toEqual(['srv-9', 'step_observed', 'srv-new'])
++  expect(h.receipts()).toHaveLength(2)
++})
++
++function base(kind: string, seq: number): Receipt {
++  return { schema_version: SCHEMA, kind, seq, session_id: 'sess-1', recorded_at: new Date(T0).toISOString(), agent_id: null }
++}
++function bf(model: string): Receipt {
++  return {
++    selection: { runner: 'claude-code-agent', model, effort: 'UNKNOWN' },
++    effort_requested: 'UNKNOWN',
++    effort_observed: 'UNKNOWN',
++    response_claimed_model: 'UNKNOWN',
++    provider_attested_model: 'UNKNOWN',
++    independence_class: 'UNKNOWN',
++  }
++}
++
++test('receipts are disabled when .control-tower/state is absent: nothing is written, calls still pass', async ($, on) => {
++  const h = harness($, on, { dirs: [] })
++  await h.start()
++  const { seen } = await h.agent({ model: 'sonnet' })
++  await h.step(STEP)
++
++  expect(seen).toHaveLength(1)
++  expect(h.world.writes).toHaveLength(0)
++  expect(h.world.files.size).toBe(0)
++})
++
++test('a receiptDir with a .. segment disables receipts', { options: { receiptDir: '../evil' } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const { seen } = await h.agent({ model: 'sonnet' })
++
++  expect(seen).toHaveLength(1)
++  expect(h.world.writes).toHaveLength(0)
++})
++
++test('a .. segment in the middle of receiptDir is refused too', { options: { receiptDir: 'a/../b' } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  expect(h.world.writes).toHaveLength(0)
++})
++
++test('an explicit receiptDir is written even without .control-tower/state, and nothing else is', { options: { receiptDir: 'out/ledger' } }, async ($, on) => {
++  const h = harness($, on, { dirs: [], dir: 'out/ledger' })
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  await h.step(STEP)
++
++  expect(h.lines('out/ledger/sess-1.jsonl')).toHaveLength(2)
++  h.expectWritesUnder('out/ledger')
++})
++
++test('the session id is sanitized into the file name', async ($, on) => {
++  const h = harness($, on, { sessionId: 'a/b c..d' })
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++
++  expect([...h.world.files.keys()]).toEqual([`${DEFAULT_DIR}/a_b_c__d.jsonl`])
++  expect(h.lines(`${DEFAULT_DIR}/a_b_c__d.jsonl`)[0]!.session_id).toBe('a/b c..d')
++})
++
++// ------------------------------------------------------------------ lifecycle
++
++test('session.end clear is not an end; any other reason stops recording', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet', description: 'one' })
++  await h.end('clear')
++  await h.agent({ model: 'sonnet', description: 'two' })
++  expect(h.receipts().map(r => r.description)).toEqual(['one', 'two'])
++
++  await h.end('other')
++  const { seen } = await h.agent({ model: 'sonnet', description: 'three' })
++  expect(seen).toHaveLength(1)
++  expect(h.receipts().map(r => r.description)).toEqual(['one', 'two'])
++})
++
++// ----------------------------------------------------------------- pure parts
++
++test('toBindingFields maps only what the mod knows and leaves the rest UNKNOWN', async () => {
++  expect(toBindingFields({ requestedModel: 'sonnet', requestedEffort: 'high', observedModel: 'claude-sonnet-5-5' })).toEqual({
++    selection: { runner: 'claude-code-agent', model: 'sonnet', effort: 'high' },
++    effort_requested: 'high',
++    effort_observed: 'UNKNOWN',
++    response_claimed_model: 'claude-sonnet-5-5',
++    provider_attested_model: 'UNKNOWN',
++    independence_class: 'UNKNOWN',
++  })
++  expect(toBindingFields({ requestedModel: null, requestedEffort: null, observedModel: null })).toEqual({
++    selection: { runner: 'claude-code-agent', model: 'UNKNOWN', effort: 'UNKNOWN' },
++    effort_requested: 'UNKNOWN',
++    effort_observed: 'UNKNOWN',
++    response_claimed_model: 'UNKNOWN',
++    provider_attested_model: 'UNKNOWN',
++    independence_class: 'UNKNOWN',
++  })
++  expect(toBindingFields({ requestedModel: 'x', requestedEffort: 3, observedModel: 'UNKNOWN' }).selection.effort).toBe('3')
++})
++
++test('familyOf follows the glyph rule', async () => {
++  expect(familyOf('claude-sonnet-5-5')).toBe('S')
++  expect(familyOf('Opus')).toBe('O')
++  expect(familyOf('claude-haiku-4-5')).toBe('H')
++  expect(familyOf('fable')).toBe('F')
++  expect(familyOf('gpt-5')).toBe('other')
++  expect(familyOf(null)).toBe('other')
++  expect(familyOf(undefined)).toBe('other')
++})
++
++test('summarize counts each agent once, observed model first, falling back to the requested alias', async () => {
++  const s = newLedger({})
++  const agent = (key: string, requested: string | null, observed: string | null, pinned: boolean | null, inherits = false) => {
++    s.agents[key] = { toolUseId: null, agentId: key, requestedModel: requested, observedModel: observed, pinned, inherits }
++  }
++  agent('a1', 'haiku', 'claude-sonnet-5-5', true)
++  agent('a2', 'opus', null, true)
++  agent('a3', null, 'claude-haiku-4-5', false)
++  agent('a4', 'fable', null, true)
++  agent('a5', null, null, false)
++  agent('a6', null, null, false, true)
++  agent('a7', null, 'claude-sonnet-5-5', null)
++  s.advisorMain = 1
++  s.advisorByAgent = { a1: 2, a3: 1 }
++  s.receiptsFailed = 3
++  s.receiptsEnabled = true
++  s.receiptFile = 'x/y.jsonl'
++
++  expect(summarize(s)).toEqual({
++    agents: { S: 2, O: 1, H: 1, F: 1, other: 2 },
++    unpinned: 2,
++    advisorTotal: 4,
++    advisorMain: 1,
++    advisorByAgent: { a1: 2, a3: 1 },
++    receiptsEnabled: true,
++    receiptsFailed: 3,
++    receiptFile: 'x/y.jsonl',
++  })
++})
++
++test('parseConfig falls back to the default for a bad value and clamps the receipt cap', async () => {
++  expect(parseConfig({})).toMatchObject({
++    receiptDir: DEFAULT_DIR,
++    unpinnedAgent: 'warn',
++    childAdvisorBudget: 0,
++    sessionAdvisorBudget: -1,
++    maxReceiptsPerFile: 500,
++  })
++  expect(parseConfig({ maxReceiptsPerFile: 10 }).maxReceiptsPerFile).toBe(50)
++  expect(parseConfig({ maxReceiptsPerFile: 99999 }).maxReceiptsPerFile).toBe(5000)
++  expect(parseConfig({ maxReceiptsPerFile: 'abc' }).maxReceiptsPerFile).toBe(500)
++  expect(parseConfig({ maxReceiptsPerFile: 1.5 }).maxReceiptsPerFile).toBe(500)
++  expect(parseConfig({ unpinnedAgent: 'deny' }).unpinnedAgent).toBe('warn')
++  expect(parseConfig({ unpinnedAgent: 'off' }).unpinnedAgent).toBe('off')
++  expect(parseConfig({ childAdvisorBudget: 2.5 }).childAdvisorBudget).toBe(0)
++  expect(parseConfig({ childAdvisorBudget: -4 }).childAdvisorBudget).toBe(-4)
++  expect(parseConfig({ sessionAdvisorBudget: 3 }).sessionAdvisorBudget).toBe(3)
++  expect(parseConfig({ sessionAdvisorBudget: 'x' }).sessionAdvisorBudget).toBe(-1)
++  expect(parseConfig({ receiptDir: '' }).receiptDir).toBe(DEFAULT_DIR)
++  expect(parseConfig({ receiptDir: 7 }).receiptDir).toBe(DEFAULT_DIR)
++  expect(parseConfig({ receiptDir: ' out/x ' }).receiptDir).toBe('out/x')
++})
++
++test('a failed write is counted in the state, not thrown and not retried', async () => {
++  const s = newLedger({})
++  s.receiptsEnabled = true
++  s.segments = [{ n: 0, path: 'd/x.jsonl', receipts: [{ seq: 0 } as never], bytes: 0, dirty: true }]
++  let attempts = 0
++  const failing = {
++    fs: {
++      write: async () => {
++        attempts += 1
++        throw new Error('disk full')
++      },
++    },
++  }
++
++  await flushSegments(failing as never, s)
++  expect(attempts).toBe(1)
++  expect(s.receiptsFailed).toBe(1)
++  expect(summarize(s).receiptsFailed).toBe(1)
++})
++
++// ----------------------------------------------------------- W02: status segment
++
++const stepAs = (h: ReturnType<typeof harness>, agentId: string, model: string, index = 0) => {
++  h.world.usage = { ...USAGE, model }
++  return h.step({ ...STEP, index, agentId, model })
++}
++
++test('status shows `agents –` with no agents, set in session.start', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  expect(h.status()).toBe('agents –')
++})
++
++test('status counts agents in the fixed order S, O, H, F, ? and only non-zero', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await stepAs(h, 'a1', 'claude-haiku-4-5')
++  await stepAs(h, 'a2', 'claude-sonnet-5-5')
++  await stepAs(h, 'a3', 'claude-sonnet-5-5')
++  await stepAs(h, 'a4', 'gpt-x')
++  await stepAs(h, 'a5', 'claude-opus-5')
++  await stepAs(h, 'a6', 'fable-1')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×2 O×1 H×1 F×1 ?×1')
++
++})
++
++test('status with a single agent reads `agents S×1`', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1')
++})
++
++test('status shows advisor N only when N > 0, and N/B ⚠ once a budget is exceeded', { options: { sessionAdvisorBudget: 1, childAdvisorBudget: -1 } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await h.step(STEP)
++  await h.settleStatus()
++  expect(h.status()).toBe('agents – · advisor 1')
++
++  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await h.step({ ...STEP, index: 1 })
++  await h.settleStatus()
++  expect(h.status()).toBe('agents – · advisor 2/1 ⚠')
++})
++
++test('a child over its budget shows its own count against its own budget, apart from the session total', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1 · advisor 1 · child 1/0 ⚠')
++})
++
++test('the child segment names the worst child, and a session overage shows both segments', { options: { sessionAdvisorBudget: 1, childAdvisorBudget: 0 } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1 · advisor 2/1 ⚠ · child 2/0 ⚠')
++})
++
++test('a clean agent after an over-budget one does not change the figures the status shows', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  h.world.serverToolUses = []
++  await stepAs(h, 'agent-8', 'claude-haiku-5-5')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1 H×1 · advisor 1 · child 1/0 ⚠')
++})
++
++test('status appends ledger off when receipts are disabled, and receipts ✗ after a failed write', async ($, on) => {
++  const off = harness($, on, { dirs: [] })
++  await off.start()
++  expect(off.status()).toBe('agents – · ledger off')
++})
++
++test('status appends receipts ✗ when a receipt write failed', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.failWrites = true
++  await h.agent({ model: 'sonnet' })
++  await h.settleStatus()
++  expect(h.status()).toBe('agents S×1 · receipts ✗')
++})
++
++test('a burst of receipts is debounced into one status update', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const before = h.world.statuses.length
++  for (let i = 0; i < 20; i++) await h.step({ ...STEP, index: i, agentId: `a${i}` })
++  expect(h.world.statuses.length).toBe(before)
++  await h.settleStatus()
++  expect(h.world.statuses.length).toBe(before + 1)
++  expect(h.status()).toBe('agents S×20')
++  await h.settleStatus()
++  expect(h.world.statuses.length).toBe(before + 1)
++})
++
++test('session.end clear keeps the status; any other reason clears it', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'opus' })
++  await h.settleStatus()
++  await h.end('clear')
++  expect(h.status()).toBe('agents O×1')
++  await h.end('other')
++  expect(h.status()).toBe(undefined)
++  // A pending update does not bring the status back after the end.
++  await h.settleStatus()
++  expect(h.status()).toBe(undefined)
++})
++
++// ------------------------------------------------------------------ W02: toasts
++
++test('a child over childAdvisorBudget toasts once per agent, names it, never claims prevention', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-1234567890', 'claude-sonnet-5-5')
++  h.world.serverToolUses = [{ id: 'srv-2', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-1234567890', 'claude-sonnet-5-5', 1)
++  expect(h.world.toasts).toHaveLength(1)
++  const toast = h.world.toasts[0]!
++  expect(toast.includes('agent-12')).toBe(true)
++  expect(toast.includes('agent-1234567890')).toBe(false)
++  expect(toast.includes('1')).toBe(true)
++  expect(toast.includes('0')).toBe(true)
++  expect(toast).toMatch(/cannot block/)
++  expect(toast).not.toMatch(/prevented|blocked a/)
++  expect(toast).not.toMatch(/^route-ledger:/)
++  expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
++
++  // Another agent crosses its own budget: its own toast.
++  h.world.serverToolUses = [{ id: 'srv-3', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-other', 'claude-sonnet-5-5')
++  expect(h.world.toasts).toHaveLength(2)
++})
++
++test('a budget of -1 never toasts for a child', { options: { childAdvisorBudget: -1 } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  await stepAs(h, 'agent-7', 'claude-sonnet-5-5')
++  expect(h.world.toasts).toHaveLength(0)
++})
++
++test('the session total toasts once when it exceeds sessionAdvisorBudget', { options: { sessionAdvisorBudget: 1 } }, async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  for (const id of ['srv-1', 'srv-2', 'srv-3']) {
++    h.world.serverToolUses = [{ id, name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++    await h.step({ ...STEP, index: Number(id.slice(-1)) })
++  }
++  expect(h.world.toasts).toHaveLength(1)
++  expect(h.world.toasts[0]).toMatch(/session/)
++  expect(h.world.toasts[0]).toMatch(/cannot block/)
++  expect(h.world.toasts[0]).not.toMatch(/^route-ledger:/)
++  expect(h.world.toastTimeouts[0]).toBeGreaterThan(0)
++})
++
++// ---------------------------------------------------------------- W02: commands
++
++test('registers route-ledger then route, each on its own', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  expect(h.world.registered).toEqual(['route-ledger', 'route'])
++})
++
++test('a refused route registration leaves route-ledger and the status working', async ($, on) => {
++  const h = harness($, on)
++  h.world.refused.add('route')
++  await h.start()
++  expect(h.world.registered).toEqual(['route-ledger'])
++  expect(h.status()).toBe('agents –')
++  const answer = await h.run('route-ledger')
++  expect(answer.text).toMatch(/model requested/)
++})
++
++test('a refused route-ledger registration does not stop route', async ($, on) => {
++  const h = harness($, on)
++  h.world.refused.add('route-ledger')
++  await h.start()
++  expect(h.world.registered).toEqual(['route'])
++})
++
++test('/route-ledger on an empty ledger prints the main row, UNKNOWN cells and the footer', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const { text } = await h.run('route-ledger')
++  const lines = text!.split('\n')
++  expect(lines[0]).toBe('agent | runner | model requested | model observed | effort requested | match | advisor')
++  expect(lines[1]).toBe('main | claude-code-agent | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | 0')
++  expect(text).toMatch(/response_claimed/)
++  expect(text).toMatch(/effort observed is UNKNOWN/)
++  expect(text).toMatch(/cannot block/)
++})
++
++test('/route-ledger on a mixed ledger has one row per loop', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.step({ ...STEP, effort: 'high' })
++  const call = await h.agent({ model: 'haiku', effort: 'low', description: 'cheap' })
++  await h.spawn(call.id)
++  h.world.serverToolUses = [{ id: 'srv-1', name: 'advisor', input: {}, startedAt: 1, endedAt: 2 }]
++  h.world.usage = { ...USAGE, model: 'claude-haiku-4-5' }
++  await h.step({ ...STEP, index: 1, agentId: 'agent-7', model: 'claude-haiku-4-5' })
++  await h.agent({ subagent_type: 'Explore' })
++
++  const rows = (await h.run('route-ledger')).text!.split('\n').slice(1, 4)
++  expect(rows[0]).toBe('main | claude-code-agent | claude-sonnet-5-5 | claude-sonnet-5-5 | high | yes | 0')
++  expect(rows[1]).toBe('agent-7 | claude-code-agent | haiku | claude-haiku-4-5 | low | yes | 1')
++  expect(rows[2]).toMatch(/^pending:.* \| claude-code-agent \| UNKNOWN \| UNKNOWN \| UNKNOWN \| UNKNOWN \| 0$/)
++})
++
++test('a request that differs from what was observed shows match no', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  const call = await h.agent({ model: 'opus' })
++  await h.spawn(call.id)
++  h.world.usage = { ...USAGE, model: 'claude-sonnet-5-5' }
++  await h.step({ ...STEP, agentId: 'agent-7' })
++  const rows = (await h.run('route-ledger')).text!.split('\n')
++  expect(rows[2]).toBe('agent-7 | claude-code-agent | opus | claude-sonnet-5-5 | UNKNOWN | no | 0')
++})
++
++test('/route-ledger lists at most 60 loops then +N more', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  for (let i = 0; i < 75; i++) await h.step({ ...STEP, index: i, agentId: `a${i}` })
++  const lines = (await h.run('route-ledger')).text!.split('\n')
++  const rows = lines.filter(line => line.includes(' | claude-code-agent | '))
++  expect(rows).toHaveLength(60)
++  expect(rows[0]!.startsWith('main | ')).toBe(true)
++  // main + 75 agents = 76 loops: 16 are cut.
++  expect(lines).toContain('+16 more')
++})
++
++test('/route and /route-ledger answer the same text', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  const a = await h.run('route-ledger')
++  const b = await h.run('route')
++  expect(b.text).toBe(a.text)
++  expect((await h.run('route', 'receipts')).text).toBe((await h.run('route-ledger', 'receipts')).text)
++})
++
++test('the receipts argument prints the file, counts and flags', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  await h.step(STEP)
++  const { text } = await h.run('route-ledger', 'receipts')
++  expect(text).toMatch(new RegExp(FILE.replace(/[.]/g, '\\.')))
++  expect(text).toMatch(/agent_request 1/)
++  expect(text).toMatch(/step_observed 1/)
++  expect(text).toMatch(/advisor_call 0/)
++  expect(text).toMatch(/receiptsEnabled true/)
++  expect(text).toMatch(/receiptsFailed 0/)
++})
++
++test('receipts argument with receipts disabled says so', async ($, on) => {
++  const h = harness($, on, { dirs: [] })
++  await h.start()
++  const { text } = await h.run('route-ledger', 'receipts')
++  expect(text).toMatch(/receiptsEnabled false/)
++  expect(text).toMatch(/none/)
++})
++
++test('an unknown argument prints a usage line and changes nothing', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  const writes = h.world.writes.length
++  const statuses = h.world.statuses.length
++  const { text } = await h.run('route-ledger', 'frobnicate')
++  expect(text!.includes('\n')).toBe(false)
++  expect(text).toMatch(/Usage: \/route-ledger/)
++  expect(h.world.writes.length).toBe(writes)
++  expect(h.world.statuses.length).toBe(statuses)
++  expect(h.receipts()).toHaveLength(1)
++})
++
++test('the command is read-only: running it writes nothing', async ($, on) => {
++  const h = harness($, on)
++  await h.start()
++  await h.agent({ model: 'sonnet' })
++  const writes = h.world.writes.length
++  await h.run('route-ledger')
++  await h.run('route-ledger', 'receipts')
++  await h.run('route', 'nope')
++  expect(h.world.writes.length).toBe(writes)
++})
++
++test('nothing throws when the ledger is empty or odd input reaches summarize', async ($, on) => {
++  const h = harness($, on)
++  h.world.usage = null
++  await h.start()
++  await h.step(STEP)
++  await h.step({ ...STEP, index: 1, agentId: 'a1' })
++  await h.run('route-ledger')
++  await h.settleStatus()
++  expect(h.status()).toBe('agents ?×1')
++
++  const s = newLedger({})
++  s.agents['x'] = { toolUseId: null, agentId: null, requestedModel: 5 as never, observedModel: null, pinned: null, inherits: false }
++  expect(() => summarize(s)).not.toThrow()
++})
+diff --git a/plugins/dopemux-route-ledger/hooks/register.tsx b/plugins/dopemux-route-ledger/hooks/register.tsx
+new file mode 100644
+index 000000000..97925e881
+--- /dev/null
++++ b/plugins/dopemux-route-ledger/hooks/register.tsx
+@@ -0,0 +1,1066 @@
++import type { EngineInterface, Register, Timer } from 'claude-code'
++
++// dopemux-route-ledger (core): records which model each Agent call REQUESTED,
++// which model each model step OBSERVED (the API-reported `usage.model`), and
++// each advisor server-tool-use, as JSONL receipts under `receiptDir`.
++//
++// Read-only. No network, no process, no model call, no prompt or command hook,
++// and no rewrite, deny or retry of anything: `tool.call`, `agent.spawn` and
++// `turn.step` all pass `e` and the result on unchanged. Prompts, file contents
++// and tool output never reach a receipt. Every hook body is wrapped so an
++// exception cannot surface.
++//
++// Receipt files. `$.fs.write` replaces a whole file and there is no append, so
++// the design is READ-MODIFY-WRITE FROM AN IN-MEMORY SEGMENT LIST: every receipt
++// is pushed onto the current segment's array and the whole segment is
++// rewritten. All work (rehydrate, record, write) runs on one promise chain so
++// writes never overlap, and a flush queued behind several records writes them
++// once. A segment rolls to `<sessionId>.<n>.jsonl` at `maxReceiptsPerFile`.
++// Nothing on this chain is ever awaited by a `tool.call` or `turn.step` hook.
++// A failed write is counted (`receiptsFailed`) and left dirty: the next flush
++// rewrites it whole, so there is no retry loop.
++//
++// No `$.state`: a hot reload re-runs `register` and `session.start`, and the
++// tallies are rebuilt from this session's own receipt files there.
++//
++// The engine's static reader follows `$` only through functions declared at
++// the top level, so helpers take `$` and the ledger as arguments.
++
++const SCHEMA_VERSION = 'dopemux.route_ledger.receipt.v1'
++const RUNNER = 'claude-code-agent'
++const UNKNOWN = 'UNKNOWN'
++const STATE_DIR = '.control-tower/state'
++const DEFAULT_RECEIPT_DIR = '.control-tower/state/route-ledger'
++const DEFAULT_MAX_RECEIPTS = 500
++const MIN_MAX_RECEIPTS = 50
++const MAX_MAX_RECEIPTS = 5000
++const DESCRIPTION_MAX = 80
++// `$.fs.write` and `$.fs.read` reject over 4 MiB: roll well before that.
++const SEGMENT_BYTES_MAX = 3_500_000
++// A burst of receipts redraws the status line once, this long after the first.
++const STATUS_DEBOUNCE_MS = 500
++const TOAST_MS = 8000
++const ROUTE_ROWS_MAX = 60
++const SHORT_ID = 8
++
++type Family = 'S' | 'O' | 'H' | 'F' | 'other'
++type Effort = string | number
++
++type Config = {
++  receiptDir: string
++  unpinnedAgent: 'warn' | 'off'
++  childAdvisorBudget: number
++  sessionAdvisorBudget: number
++  maxReceiptsPerFile: number
++}
++
++// The shape a supervisor merges into a GEC v2 ExecutionBinding. A receipt is
++// NOT a valid binding (that schema has about 23 required keys; the mod knows
++// five of them).
++type BindingFields = {
++  selection: { runner: string; model: string; effort: string }
++  effort_requested: string
++  effort_observed: string
++  response_claimed_model: string
++  provider_attested_model: string
++  independence_class: string
++}
++
++type Usage = {
++  input_tokens: number
++  output_tokens: number
++  cache_read_input_tokens: number
++  cache_creation_input_tokens: number
++}
++
++type ReceiptCommon = {
++  schema_version: string
++  seq: number
++  session_id: string
++  recorded_at: string
++  agent_id: string | null
++}
++
++type AgentRequestReceipt = ReceiptCommon & {
++  kind: 'agent_request'
++  tool_use_id: string
++  requested_model: string | null
++  requested_effort: Effort | null
++  subagent_type: string | null
++  description: string
++  pinned: boolean
++  inherits: boolean
++  // Joined from `agent.spawn` by tool_use_id; null until (unless) it fires.
++  spawned_agent_id: string | null
++  resolved_model: string | null
++  binding_fields: BindingFields
++}
++
++type StepObservedReceipt = ReceiptCommon & {
++  kind: 'step_observed'
++  turn_id: string
++  step_index: number
++  requested_model: string | null
++  requested_effort: Effort | null
++  observed_model: string
++  match: boolean | null
++  usage: Usage | null
++  binding_fields: BindingFields
++}
++
++type AdvisorCallReceipt = ReceiptCommon & {
++  kind: 'advisor_call'
++  advisor_use_id: string
++  started_at: number
++  ended_at: number | null
++  loop: 'main' | 'agent'
++}
++
++type Receipt = AgentRequestReceipt | StepObservedReceipt | AdvisorCallReceipt
++
++type Segment = {
++  n: number
++  path: string
++  receipts: Receipt[]
++  bytes: number
++  dirty: boolean
++}
++
++// One Agent the ledger knows of: from its request, its spawn, or its steps.
++type AgentRecord = {
++  toolUseId: string | null
++  agentId: string | null
++  requestedModel: string | null
++  observedModel: string | null
++  // null: no request seen (the agent was only seen stepping).
++  pinned: boolean | null
++  inherits: boolean
++  receipt?: AgentRequestReceipt
++}
++
++// One module load's state; W02 extends it in place. Module-local on purpose:
++// a reload starts fresh and `session.start` rebuilds it from the receipt files.
++type Ledger = {
++  config: Config
++  sessionId: string | undefined
++  fileStem: string | undefined
++  isEnded: boolean
++  isReady: boolean
++  receiptsEnabled: boolean
++  receiptsDisabledReason: string | undefined
++  // Receipts that could not be recorded: a failed write, or no timestamp.
++  receiptsFailed: number
++  // Receipt files that exist but could not be read, so were not rewritten.
++  segmentsUnreadable: number
++  receiptDir: string | undefined
++  // The current segment's path.
++  receiptFile: string | undefined
++  segments: Segment[]
++  nextSegmentN: number
++  nextSeq: number
++  advisorMain: number
++  advisorByAgent: Record<string, number>
++  advisorSeen: Set<string>
++  agents: Record<string, AgentRecord>
++  toasted: Set<string>
++  // A pending debounced status redraw, if any.
++  statusTimer: Timer | undefined
++  chain: Promise<void>
++  flushQueued: boolean
++}
++
++type Summary = {
++  agents: { S: number; O: number; H: number; F: number; other: number }
++  unpinned: number
++  advisorTotal: number
++  advisorMain: number
++  advisorByAgent: Record<string, number>
++  receiptsEnabled: boolean
++  receiptsFailed: number
++  receiptFile: string | undefined
++}
++
++type Settings = Readonly<Record<string, unknown>>
++
++// Facts read from a `tool.call` for Agent, a `turn.step` and an `agent.spawn`
++// before anything is queued, so the queued work holds plain values.
++type AgentCallFacts = {
++  callerAgentId: string | null
++  toolUseId: string
++  model: string | null
++  effort: Effort | null
++  subagentType: string | null
++  description: string
++  at: number
++}
++
++type StepFacts = {
++  agentId: string | null
++  turnId: string
++  index: number
++  requestedModel: string | null
++  requestedEffort: Effort | null
++  observedModel: string
++  usage: Usage | null
++  advisors: { id: string; startedAt: number; endedAt: number | null }[]
++  at: number
++}
++
++// ------------------------------------------------------------------ pure parts
++
++function integerOr(value: unknown, fallback: number): number {
++  return typeof value === 'number' && Number.isInteger(value) ? value : fallback
++}
++
++// A bad value falls back to its default; nothing here throws.
++export function parseConfig(options: Settings): Config {
++  const dir = typeof options.receiptDir === 'string' ? options.receiptDir.trim() : ''
++  const cap = integerOr(options.maxReceiptsPerFile, DEFAULT_MAX_RECEIPTS)
++  return {
++    receiptDir: dir === '' ? DEFAULT_RECEIPT_DIR : dir,
++    unpinnedAgent: options.unpinnedAgent === 'off' ? 'off' : 'warn',
++    childAdvisorBudget: integerOr(options.childAdvisorBudget, 0),
++    sessionAdvisorBudget: integerOr(options.sessionAdvisorBudget, -1),
++    maxReceiptsPerFile: Math.min(MAX_MAX_RECEIPTS, Math.max(MIN_MAX_RECEIPTS, cap)),
++  }
++}
++
++export function newLedger(options: Settings): Ledger {
++  return {
++    config: parseConfig(options),
++    sessionId: undefined,
++    fileStem: undefined,
++    isEnded: false,
++    isReady: false,
++    receiptsEnabled: false,
++    receiptsDisabledReason: undefined,
++    receiptsFailed: 0,
++    segmentsUnreadable: 0,
++    receiptDir: undefined,
++    receiptFile: undefined,
++    segments: [],
++    nextSegmentN: 0,
++    nextSeq: 0,
++    advisorMain: 0,
++    advisorByAgent: {},
++    advisorSeen: new Set(),
++    agents: {},
++    toasted: new Set(),
++    statusTimer: undefined,
++    chain: Promise.resolve(),
++    flushQueued: false,
++  }
++}
++
++// Glyph rule shared with W02: the lower-cased model text decides.
++export function familyOf(model: string | null | undefined): Family {
++  const text = (typeof model === 'string' ? model : '').toLowerCase()
++  if (text.includes('sonnet')) return 'S'
++  if (text.includes('opus')) return 'O'
++  if (text.includes('haiku')) return 'H'
++  if (text.includes('fable')) return 'F'
++  return 'other'
++}
++
++// What a supervisor merges into an ExecutionBinding. `response_claimed_model`
++// is what the API reported in `usage.model`, not provider attestation, and the
++// API never reports the effort, so that stays UNKNOWN.
++export function toBindingFields(input: {
++  requestedModel: string | null | undefined
++  requestedEffort: Effort | null | undefined
++  observedModel: string | null | undefined
++}): BindingFields {
++  const model = input.requestedModel ?? UNKNOWN
++  const effort = input.requestedEffort === null || input.requestedEffort === undefined
++    ? UNKNOWN
++    : String(input.requestedEffort)
++  return {
++    selection: { runner: RUNNER, model, effort },
++    effort_requested: effort,
++    effort_observed: UNKNOWN,
++    response_claimed_model: input.observedModel ?? UNKNOWN,
++    provider_attested_model: UNKNOWN,
++    independence_class: UNKNOWN,
++  }
++}
++
++export function summarize(s: Ledger): Summary {
++  const agents = { S: 0, O: 0, H: 0, F: 0, other: 0 }
++  let unpinned = 0
++  // An agent counts once: its first observed model, else its requested alias.
++  for (const record of Object.values(s.agents)) {
++    agents[familyOf(record.observedModel ?? record.requestedModel)] += 1
++    if (record.pinned === false && !record.inherits) unpinned += 1
++  }
++  let advisorTotal = s.advisorMain
++  for (const count of Object.values(s.advisorByAgent)) advisorTotal += count
++  return {
++    agents,
++    unpinned,
++    advisorTotal,
++    advisorMain: s.advisorMain,
++    advisorByAgent: { ...s.advisorByAgent },
++    receiptsEnabled: s.receiptsEnabled,
++    receiptsFailed: s.receiptsFailed,
++    receiptFile: s.receiptFile,
++  }
++}
++
++function normalizeModel(model: string): string {
++  return model.trim().toLowerCase().replace(/-\d{8}$/, '')
++}
++
++// null when either side is unknown. A dated id matches its undated request, and
++// a bare family alias (`sonnet`) matches any model of that family.
++function sameModel(requested: string | null, observed: string): boolean | null {
++  if (requested === null || observed === UNKNOWN) return null
++  if (normalizeModel(requested) === normalizeModel(observed)) return true
++  const alias = requested.trim().toLowerCase()
++  if (alias === 'sonnet' || alias === 'opus' || alias === 'haiku' || alias === 'fable') {
++    return observed.toLowerCase().includes(alias)
++  }
++  return false
++}
++
++function sanitizeStem(sessionId: string): string {
++  return sessionId.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 120)
++}
++
++function hasDotDot(dir: string): boolean {
++  return dir.split(/[\\/]+/).includes('..')
++}
++
++function text(value: unknown): string | null {
++  return typeof value === 'string' && value !== '' ? value : null
++}
++
++function count(value: unknown): number {
++  return typeof value === 'number' && Number.isFinite(value) ? value : 0
++}
++
++function usageOf(usage: unknown): Usage | null {
++  if (typeof usage !== 'object' || usage === null) return null
++  const u = usage as Record<string, unknown>
++  return {
++    input_tokens: count(u.input_tokens),
++    output_tokens: count(u.output_tokens),
++    cache_read_input_tokens: count(u.cache_read_input_tokens),
++    cache_creation_input_tokens: count(u.cache_creation_input_tokens),
++  }
++}
++
++function segmentText(seg: Segment): string {
++  return seg.receipts.map(receipt => JSON.stringify(receipt)).join('\n') + '\n'
++}
++
++// ------------------------------------------------------------------- the ledger
++
++// Tallies one receipt, whether it was just made or read back from a file.
++// Returns false for an advisor call already counted (dedup by server-tool-use id).
++function tally(s: Ledger, receipt: Receipt): boolean {
++  if (receipt.seq + 1 > s.nextSeq) s.nextSeq = receipt.seq + 1
++
++  if (receipt.kind === 'agent_request') {
++    const key = receipt.spawned_agent_id ?? `tool:${receipt.tool_use_id}`
++    const earlier = s.agents[key]
++    s.agents[key] = {
++      toolUseId: receipt.tool_use_id,
++      agentId: receipt.spawned_agent_id,
++      requestedModel: receipt.requested_model,
++      observedModel: earlier?.observedModel ?? null,
++      pinned: receipt.pinned,
++      inherits: receipt.inherits,
++      receipt,
++    }
++  } else if (receipt.kind === 'step_observed') {
++    if (receipt.agent_id !== null) {
++      const record = s.agents[receipt.agent_id] ?? {
++        toolUseId: null,
++        agentId: receipt.agent_id,
++        requestedModel: null,
++        observedModel: null,
++        pinned: null,
++        inherits: false,
++      }
++      s.agents[receipt.agent_id] = record
++      if (record.observedModel === null && receipt.observed_model !== UNKNOWN) {
++        record.observedModel = receipt.observed_model
++      }
++    }
++  } else {
++    if (s.advisorSeen.has(receipt.advisor_use_id)) return false
++    s.advisorSeen.add(receipt.advisor_use_id)
++    if (receipt.loop === 'main' || receipt.agent_id === null) {
++      s.advisorMain += 1
++    } else {
++      s.advisorByAgent[receipt.agent_id] = (s.advisorByAgent[receipt.agent_id] ?? 0) + 1
++    }
++  }
++  return true
++}
++
++function shortId(id: string): string {
++  return id.slice(0, SHORT_ID)
++}
++
++function advisorTotal(s: Ledger): number {
++  return summarize(s).advisorTotal
++}
++
++// `agents S×4 H×2 · advisor 1`. Pure: the whole status line from the ledger.
++function statusText(s: Ledger): string {
++  const sum = summarize(s)
++  const order: [string, number][] = [
++    ['S', sum.agents.S],
++    ['O', sum.agents.O],
++    ['H', sum.agents.H],
++    ['F', sum.agents.F],
++    ['?', sum.agents.other],
++  ]
++  const present = order.filter(([, n]) => n > 0).map(([glyph, n]) => `${glyph}×${n}`)
++  let line = present.length === 0 ? 'agents –' : `agents ${present.join(' ')}`
++  if (sum.advisorTotal > 0) {
++    const { sessionAdvisorBudget, childAdvisorBudget } = s.config
++    // The session total is only ever read against the session budget, and the
++    // worst child only against the child budget, so neither figure borrows the other's.
++    const overSession = sessionAdvisorBudget >= 0 && sum.advisorTotal > sessionAdvisorBudget
++    line += overSession
++      ? ` · advisor ${sum.advisorTotal}/${sessionAdvisorBudget} ⚠`
++      : ` · advisor ${sum.advisorTotal}`
++    const worstChild = Math.max(0, ...Object.values(sum.advisorByAgent))
++    if (childAdvisorBudget >= 0 && worstChild > childAdvisorBudget) {
++      line += ` · child ${worstChild}/${childAdvisorBudget} ⚠`
++    }
++  }
++  if (!s.receiptsEnabled) line += ' · ledger off'
++  if (s.receiptsFailed > 0) line += ' · receipts ✗'
++  return line
++}
++
++function drawStatus($: EngineInterface, s: Ledger): void {
++  if (s.isEnded) return
++  try {
++    $.ui.status(statusText(s))
++  } catch {
++    // a refused status line must not cost anything else
++  }
++}
++
++// Debounced: the first call arms one timer, calls inside the window ride on it.
++function scheduleStatus($: EngineInterface, s: Ledger): void {
++  if (s.isEnded || s.statusTimer !== undefined) return
++  try {
++    s.statusTimer = $.clock.after(STATUS_DEBOUNCE_MS, () => {
++      s.statusTimer = undefined
++      drawStatus($, s)
++    })
++  } catch {
++    s.statusTimer = undefined
++  }
++}
++
++function toastOnce($: EngineInterface, s: Ledger, key: string, message: string): void {
++  if (s.toasted.has(key)) return
++  s.toasted.add(key)
++  try {
++    $.ui.toast(message, { timeoutMs: TOAST_MS })
++  } catch {
++    // a refused toast must not cost the receipt
++  }
++}
++
++// Advisor budgets. The mod counts calls after the fact and cannot block them.
++function budgetToasts($: EngineInterface, s: Ledger, receipt: AdvisorCallReceipt): void {
++  const { childAdvisorBudget, sessionAdvisorBudget } = s.config
++  if (receipt.loop === 'agent' && receipt.agent_id !== null && childAdvisorBudget >= 0) {
++    const n = s.advisorByAgent[receipt.agent_id] ?? 0
++    if (n > childAdvisorBudget) {
++      toastOnce(
++        $,
++        s,
++        `advisor-child:${receipt.agent_id}`,
++        `agent ${shortId(receipt.agent_id)} made ${n} advisor calls (budget ${childAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
++      )
++    }
++  }
++  if (sessionAdvisorBudget >= 0) {
++    const total = advisorTotal(s)
++    if (total > sessionAdvisorBudget) {
++      toastOnce(
++        $,
++        s,
++        'advisor-session',
++        `session made ${total} advisor calls (budget ${sessionAdvisorBudget}). The mod counts advisor calls and cannot block them.`,
++      )
++    }
++  }
++}
++
++// Called, wrapped, after every recorded receipt: toasts and the status line.
++function afterRecord($: EngineInterface, s: Ledger, receipt: Receipt): void {
++  if (receipt.kind === 'advisor_call') budgetToasts($, s, receipt)
++  scheduleStatus($, s)
++}
++
++// ------------------------------------------------------------------ the command
++
++function cell(value: string | null | undefined): string {
++  return value === null || value === undefined || value === '' ? UNKNOWN : String(value)
++}
++
++// The last step the main loop observed, from the receipts held in memory.
++function lastMainStep(s: Ledger): StepObservedReceipt | undefined {
++  for (let i = s.segments.length - 1; i >= 0; i--) {
++    const receipts = s.segments[i]!.receipts
++    for (let j = receipts.length - 1; j >= 0; j--) {
++      const r = receipts[j]!
++      if (r.kind === 'step_observed' && r.agent_id === null) return r
++    }
++  }
++  return undefined
++}
++
++function matchCell(requested: string | null, observed: string | null): string {
++  if (requested === null || observed === null) return UNKNOWN
++  const same = sameModel(requested, observed)
++  return same === null ? UNKNOWN : same ? 'yes' : 'no'
++}
++
++function row(cells: string[]): string {
++  return cells.join(' | ')
++}
++
++function routeTable(s: Ledger): string {
++  const rows: string[] = []
++  const main = lastMainStep(s)
++  rows.push(
++    row([
++      'main',
++      RUNNER,
++      cell(main?.requested_model),
++      cell(main?.observed_model),
++      cell(main?.requested_effort === null || main === undefined ? null : String(main.requested_effort)),
++      matchCell(main?.requested_model ?? null, main?.observed_model ?? null),
++      String(s.advisorMain),
++    ]),
++  )
++  const seen = new Set<string>()
++  for (const [key, record] of Object.entries(s.agents)) {
++    const id = record.agentId ?? record.receipt?.spawned_agent_id ?? null
++    if (id !== null) seen.add(id)
++    const effort = record.receipt?.requested_effort
++    rows.push(
++      row([
++        id !== null ? shortId(id) : `pending:${shortId(record.toolUseId ?? key)}`,
++        RUNNER,
++        cell(record.requestedModel),
++        cell(record.observedModel),
++        effort === null || effort === undefined ? UNKNOWN : String(effort),
++        matchCell(record.requestedModel, record.observedModel),
++        String(id !== null ? (s.advisorByAgent[id] ?? 0) : 0),
++      ]),
++    )
++  }
++  for (const [id, n] of Object.entries(s.advisorByAgent)) {
++    if (!seen.has(id) && s.agents[id] === undefined) {
++      rows.push(row([shortId(id), RUNNER, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, String(n)]))
++    }
++  }
++  const shown = rows.slice(0, ROUTE_ROWS_MAX)
++  const lines = [
++    row(['agent', 'runner', 'model requested', 'model observed', 'effort requested', 'match', 'advisor']),
++    ...shown,
++  ]
++  if (rows.length > shown.length) lines.push(`+${rows.length - shown.length} more`)
++  lines.push(
++    'observed = the API-reported response model (response_claimed, not provider attestation); effort observed is UNKNOWN.',
++    'The mod counts advisor calls and cannot block them.',
++  )
++  return lines.join('\n')
++}
++
++function receiptsText(s: Ledger): string {
++  const counts = { agent_request: 0, step_observed: 0, advisor_call: 0 }
++  for (const seg of s.segments) {
++    for (const r of seg.receipts) {
++      if (r.kind in counts) counts[r.kind] += 1
++    }
++  }
++  const lines = [
++    `receipt file: ${s.receiptFile ?? 'none'}`,
++    `receipts: agent_request ${counts.agent_request}, step_observed ${counts.step_observed}, advisor_call ${counts.advisor_call}`,
++    `receiptsEnabled ${s.receiptsEnabled}, receiptsFailed ${s.receiptsFailed}`,
++  ]
++  if (!s.receiptsEnabled && s.receiptsDisabledReason !== undefined) {
++    lines.push(`receipts are off: ${s.receiptsDisabledReason}`)
++  }
++  return lines.join('\n')
++}
++
++// `/route-ledger` and its alias `/route`. Reads the ledger, writes nothing.
++function routeAnswer(s: Ledger, args: unknown): string {
++  const arg = typeof args === 'string' ? args.trim() : ''
++  if (arg === '') return routeTable(s)
++  if (arg === 'receipts') return receiptsText(s)
++  return 'Usage: /route-ledger [receipts]  (no argument: the model table; receipts: the receipt file and counts)'
++}
++
++async function registerCommands($: EngineInterface): Promise<void> {
++  // Each name on its own: one refusal never stops the other.
++  try {
++    await $.command
++      .register({
++        name: 'route-ledger',
++        description: 'Show requested versus observed model per agent, and advisor counts.',
++        argumentHint: '[receipts]',
++      })
++      .catch(() => undefined)
++  } catch {
++    // never surface
++  }
++  try {
++    await $.command
++      .register({
++        name: 'route',
++        description: 'Alias of /route-ledger.',
++        argumentHint: '[receipts]',
++      })
++      .catch(() => undefined)
++  } catch {
++    // never surface
++  }
++}
++
++function currentSegment(s: Ledger): Segment {
++  const last = s.segments[s.segments.length - 1]
++  const isOpen =
++    last !== undefined &&
++    last.n === s.nextSegmentN - 1 &&
++    last.receipts.length < s.config.maxReceiptsPerFile &&
++    last.bytes < SEGMENT_BYTES_MAX
++  if (last !== undefined && isOpen) return last
++
++  const n = s.nextSegmentN
++  s.nextSegmentN += 1
++  const name = n === 0 ? `${s.fileStem}.jsonl` : `${s.fileStem}.${n}.jsonl`
++  const seg: Segment = { n, path: `${s.receiptDir}/${name}`, receipts: [], bytes: 0, dirty: false }
++  s.segments.push(seg)
++  return seg
++}
++
++// Writes every dirty segment whole. A failure is counted and the segment stays
++// dirty, so the next flush rewrites it; nothing loops.
++export async function flushSegments($: EngineInterface, s: Ledger): Promise<void> {
++  if (!s.receiptsEnabled) return
++  for (const seg of s.segments) {
++    if (!seg.dirty) continue
++    try {
++      await $.fs.write(seg.path, segmentText(seg))
++      seg.dirty = false
++    } catch {
++      s.receiptsFailed += 1
++    }
++  }
++}
++
++// All receipt work runs here, one task at a time, so seq order is chain order
++// and writes never overlap. A task that throws loses its receipt: counted.
++function enqueue(s: Ledger, task: () => Promise<void>): void {
++  s.chain = s.chain.then(task).catch(() => {
++    s.receiptsFailed += 1
++  })
++}
++
++function scheduleFlush($: EngineInterface, s: Ledger): void {
++  if (s.flushQueued) return
++  s.flushQueued = true
++  enqueue(s, async () => {
++    s.flushQueued = false
++    const failedBefore = s.receiptsFailed
++    await flushSegments($, s)
++    if (s.receiptsFailed !== failedBefore) scheduleStatus($, s)
++  })
++}
++
++function commit($: EngineInterface, s: Ledger, receipt: Receipt): void {
++  const isNew = tally(s, receipt)
++  if (isNew && s.receiptsEnabled) {
++    const seg = currentSegment(s)
++    const line = JSON.stringify(receipt)
++    seg.receipts.push(receipt)
++    seg.bytes += line.length + 1
++    seg.dirty = true
++    s.receiptFile = seg.path
++    scheduleFlush($, s)
++  }
++  try {
++    afterRecord($, s, receipt)
++  } catch {
++    // never surface
++  }
++}
++
++function common(s: Ledger, at: number, agentId: string | null): ReceiptCommon {
++  return {
++    schema_version: SCHEMA_VERSION,
++    seq: s.nextSeq,
++    session_id: s.sessionId ?? '',
++    recorded_at: new Date(at).toISOString(),
++    agent_id: agentId,
++  }
++}
++
++function disable(s: Ledger, reason: string): void {
++  s.receiptsEnabled = false
++  s.receiptsDisabledReason = reason
++}
++
++// Resolves the session and the receipt directory, and rebuilds the tallies from
++// this session's existing segment files. Never throws.
++async function initSession($: EngineInterface, s: Ledger): Promise<void> {
++  try {
++    // Anything still unwritten from this load goes out before the rebuild.
++    await flushSegments($, s)
++
++    s.isReady = true
++    const sessionId = await $.session.id()
++    s.sessionId = sessionId
++    const stem = sanitizeStem(sessionId)
++    const dir = s.config.receiptDir.replace(/[\\/]+$/, '')
++    if (stem === '') return disable(s, 'session id is empty')
++    if (hasDotDot(s.config.receiptDir)) return disable(s, 'receiptDir has a .. segment')
++    if (dir === '') return disable(s, 'receiptDir is the file system root')
++    if (s.config.receiptDir === DEFAULT_RECEIPT_DIR) {
++      // The default is never created: it is used only beside existing state.
++      const hasState = await $.fs.exists(STATE_DIR).catch(() => false)
++      if (!hasState) return disable(s, `${STATE_DIR} does not exist`)
++    }
++
++    s.fileStem = stem
++    s.receiptDir = dir
++    s.receiptsEnabled = true
++    s.receiptsDisabledReason = undefined
++    s.segments = []
++    s.nextSegmentN = 0
++    s.nextSeq = 0
++    s.advisorMain = 0
++    s.advisorByAgent = {}
++    s.advisorSeen = new Set()
++    s.agents = {}
++    s.receiptFile = undefined
++    await rehydrate($, s)
++  } catch {
++    // A failed init never surfaces; receipts stay off and the state says why.
++    disable(s, 'receipt setup failed')
++  }
++}
++
++async function rehydrate($: EngineInterface, s: Ledger): Promise<void> {
++  const entries = await $.fs.list(s.receiptDir).catch(() => [])
++  const pattern = new RegExp(`^${s.fileStem}(?:\\.(\\d+))?\\.jsonl$`)
++  const found: { n: number; name: string }[] = []
++  for (const entry of entries) {
++    const match = pattern.exec(entry.name)
++    if (match !== null) found.push({ n: match[1] === undefined ? 0 : Number(match[1]), name: entry.name })
++  }
++  found.sort((a, b) => a.n - b.n)
++
++  for (const { n, name } of found) {
++    s.nextSegmentN = Math.max(s.nextSegmentN, n + 1)
++    const path = `${s.receiptDir}/${name}`
++    let body: string
++    try {
++      body = (await $.fs.read(path)) as string
++    } catch {
++      // Present but unreadable (missing, over 4 MiB): never rewritten.
++      s.segmentsUnreadable += 1
++      continue
++    }
++    const seg: Segment = { n, path, receipts: [], bytes: 0, dirty: false }
++    for (const line of body.split('\n')) {
++      if (line === '') continue
++      try {
++        const receipt = JSON.parse(line) as Receipt
++        if (receipt?.schema_version !== SCHEMA_VERSION || !Number.isInteger(receipt.seq)) continue
++        seg.receipts.push(receipt)
++        seg.bytes += line.length + 1
++        tally(s, receipt)
++      } catch {
++        // a damaged line is skipped
++      }
++    }
++    s.segments.push(seg)
++    s.receiptFile = path
++  }
++}
++
++async function ensureReady($: EngineInterface, s: Ledger): Promise<void> {
++  if (!s.isReady) await initSession($, s)
++}
++
++async function recordAgentRequest($: EngineInterface, s: Ledger, f: AgentCallFacts): Promise<void> {
++  await ensureReady($, s)
++  const pinned = f.model !== null
++  commit($, s, {
++    ...common(s, f.at, f.callerAgentId),
++    kind: 'agent_request',
++    tool_use_id: f.toolUseId,
++    requested_model: f.model,
++    requested_effort: f.effort,
++    subagent_type: f.subagentType,
++    description: f.description,
++    pinned,
++    // A fork ignores the model parameter: it inherits, so it is not unpinned.
++    inherits: f.subagentType === 'fork' && !pinned,
++    spawned_agent_id: null,
++    resolved_model: null,
++    binding_fields: toBindingFields({
++      requestedModel: f.model,
++      requestedEffort: f.effort,
++      observedModel: null,
++    }),
++  })
++}
++
++async function recordStep($: EngineInterface, s: Ledger, f: StepFacts): Promise<void> {
++  await ensureReady($, s)
++  commit($, s, {
++    ...common(s, f.at, f.agentId),
++    kind: 'step_observed',
++    turn_id: f.turnId,
++    step_index: f.index,
++    requested_model: f.requestedModel,
++    requested_effort: f.requestedEffort,
++    observed_model: f.observedModel,
++    match: sameModel(f.requestedModel, f.observedModel),
++    usage: f.usage,
++    binding_fields: toBindingFields({
++      requestedModel: f.requestedModel,
++      requestedEffort: f.requestedEffort,
++      observedModel: f.observedModel === UNKNOWN ? null : f.observedModel,
++    }),
++  })
++  for (const advisor of f.advisors) {
++    // Deduplicated by the server-tool-use id; never counted twice.
++    if (s.advisorSeen.has(advisor.id)) continue
++    commit($, s, {
++      ...common(s, f.at, f.agentId),
++      kind: 'advisor_call',
++      advisor_use_id: advisor.id,
++      started_at: advisor.startedAt,
++      ended_at: advisor.endedAt,
++      loop: f.agentId === null ? 'main' : 'agent',
++    })
++  }
++}
++
++// Joins an Agent call to the agent it spawned, by tool_use_id alone.
++async function recordSpawn(
++  $: EngineInterface,
++  s: Ledger,
++  toolUseId: string,
++  agentId: string,
++  model: string | null,
++): Promise<void> {
++  await ensureReady($, s)
++  const record = s.agents[`tool:${toolUseId}`]
++  if (record === undefined) return
++  delete s.agents[`tool:${toolUseId}`]
++  const stepped = s.agents[agentId]
++  record.agentId = agentId
++  record.observedModel = record.observedModel ?? stepped?.observedModel ?? null
++  s.agents[agentId] = record
++
++  const receipt = record.receipt
++  if (receipt === undefined) return
++  receipt.spawned_agent_id = agentId
++  receipt.resolved_model = model
++  const seg = s.segments.find(candidate => candidate.receipts.includes(receipt))
++  if (seg !== undefined) {
++    seg.dirty = true
++    scheduleFlush($, s)
++  }
++}
++
++// ------------------------------------------------------------------- hook work
++
++function noteAgentCall($: EngineInterface, s: Ledger, e: Readonly<Record<string, unknown>>): Promise<void> {
++  const facts = readAgentCall(e)
++  const isUnpinned = facts.model === null && facts.subagentType !== 'fork'
++  if (isUnpinned && s.config.unpinnedAgent === 'warn' && !s.toasted.has(facts.toolUseId)) {
++    if (facts.toolUseId !== '') s.toasted.add(facts.toolUseId)
++    try {
++      $.ui.toast(
++        `Agent call "${facts.description}" (${facts.subagentType ?? 'default'}) has no model pinned.`,
++        { timeoutMs: TOAST_MS },
++      )
++    } catch {
++      // a refused toast must not cost the receipt
++    }
++  }
++  return stampThen($, s, at => {
++    facts.at = at
++    enqueue(s, () => recordAgentRequest($, s, facts))
++  })
++}
++
++function readAgentCall(e: Readonly<Record<string, unknown>>): AgentCallFacts {
++  const effort = e.effort
++  return {
++    callerAgentId: text(e.agentId),
++    toolUseId: typeof e.tool_use_id === 'string' ? e.tool_use_id : '',
++    model: text(e.model),
++    effort: typeof effort === 'string' || typeof effort === 'number' ? effort : null,
++    subagentType: text(e.subagent_type),
++    description: (typeof e.description === 'string' ? e.description : '').slice(0, DESCRIPTION_MAX),
++    at: 0,
++  }
++}
++
++// The timestamp comes from `$.clock.now()`; without one the receipt is lost and
++// counted, and the hook goes on.
++async function stampThen($: EngineInterface, s: Ledger, queue: (at: number) => void): Promise<void> {
++  let at: number
++  try {
++    at = await $.clock.now()
++  } catch {
++    s.receiptsFailed += 1
++    return
++  }
++  queue(at)
++}
++
++function noteStep(
++  $: EngineInterface,
++  s: Ledger,
++  e: Readonly<Record<string, unknown>>,
++  r: Readonly<Record<string, unknown>> | undefined,
++): Promise<void> {
++  const usage = (r?.usage ?? null) as Record<string, unknown> | null
++  const serverToolUses = Array.isArray(r?.serverToolUses) ? (r?.serverToolUses as unknown[]) : []
++  const advisors: StepFacts['advisors'] = []
++  for (const use of serverToolUses) {
++    const u = use as Record<string, unknown> | null
++    if (u?.name !== 'advisor' || typeof u.id !== 'string') continue
++    advisors.push({
++      id: u.id,
++      startedAt: typeof u.startedAt === 'number' ? u.startedAt : 0,
++      endedAt: typeof u.endedAt === 'number' ? u.endedAt : null,
++    })
++  }
++  const effort = e.effort
++  const facts: StepFacts = {
++    agentId: text(e.agentId),
++    turnId: typeof e.turnId === 'string' ? e.turnId : '',
++    index: typeof e.index === 'number' ? e.index : 0,
++    requestedModel: text(e.model),
++    requestedEffort: typeof effort === 'string' || typeof effort === 'number' ? effort : null,
++    observedModel: text(usage?.model) ?? UNKNOWN,
++    usage: usageOf(usage),
++    advisors,
++    at: 0,
++  }
++  return stampThen($, s, at => {
++    facts.at = at
++    enqueue(s, () => recordStep($, s, facts))
++  })
++}
++
++function noteSpawn(
++  $: EngineInterface,
++  s: Ledger,
++  e: Readonly<Record<string, unknown>>,
++  r: Readonly<Record<string, unknown>> | undefined,
++): void {
++  const toolUseId = text(e.tool_use_id)
++  const agentId = text(r?.agentId)
++  if (toolUseId === null || agentId === null || r?.deny !== undefined) return
++  const model = text(r?.model)
++  enqueue(s, () => recordSpawn($, s, toolUseId, agentId, model))
++}
++
++export const register: Register = (on, options) => {
++  const s = newLedger(options)
++
++  on('session.start', async ($, e, next) => {
++    try {
++      // Not awaited: the rebuild must not hold the session's start.
++      s.isEnded = false
++      enqueue(s, () => initSession($, s))
++      // After the rehydrate, on the same chain: the status reads rebuilt tallies.
++      enqueue(s, async () => drawStatus($, s))
++      void registerCommands($)
++    } catch {
++      // never surface
++    }
++    return next(e)
++  })
++
++  // Observes the requested model; changes nothing and calls `next(e)` once on
++  // every path. The receipt work is queued, never awaited, ahead of it.
++  on('tool.call', { tool: 'Agent' }, async ($, e, next) => {
++    try {
++      if (!s.isEnded) await noteAgentCall($, s, e)
++    } catch {
++      // never surface
++    }
++    return next(e)
++  })
++
++  // Only joins tool_use_id to the spawned agent id and the resolved model.
++  on('agent.spawn', async ($, e, next) => {
++    const r = await next(e)
++    try {
++      if (!s.isEnded) noteSpawn($, s, e, r)
++    } catch {
++      // never surface
++    }
++    return r
++  })
++
++  // A streaming event: every chunk passes untouched and the result is returned
++  // as received. Only the code after `yield*` is wrapped; errors from beneath
++  // propagate unchanged.
++  on('turn.step', async function* ($, e, next) {
++    const r = yield* next(e)
++    try {
++      if (!s.isEnded) await noteStep($, s, e, r)
++    } catch {
++      // never surface
++    }
++    return r
++  })
++
++  // One handler for the canonical name and the alias.
++  on('command.run', { command: 'route-ledger' }, async (_, e) => {
++    try {
++      return { text: routeAnswer(s, e.args) }
++    } catch {
++      return { text: 'could not read the ledger.' }
++    }
++  })
++  on('command.run', { command: 'route' }, async (_, e) => {
++    try {
++      return { text: routeAnswer(s, e.args) }
++    } catch {
++      return { text: 'could not read the ledger.' }
++    }
++  })
++
++  on('session.end', async ($, e, next) => {
++    // /clear fires session.end with reason 'clear' but the process goes on and
++    // no session.start follows: not an end.
++    if (e.reason === 'clear') return next(e)
++    try {
++      s.isEnded = true
++      s.statusTimer?.cancel()
++      s.statusTimer = undefined
++      $.ui.status(undefined)
++      scheduleFlush($, s)
++      await s.chain
++    } catch {
++      // never surface
++    }
++    return next(e)
++  })
++}
+diff --git a/plugins/dopemux-route-ledger/receipt.schema.json b/plugins/dopemux-route-ledger/receipt.schema.json
+new file mode 100644
+index 000000000..a410b2ae8
+--- /dev/null
++++ b/plugins/dopemux-route-ledger/receipt.schema.json
+@@ -0,0 +1,163 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "title": "dopemux-route-ledger receipt",
++  "$comment": "One JSON object per line of <receiptDir>/<sessionId>.jsonl (rolled segments: <sessionId>.<n>.jsonl, n from 1). seq runs from 0 per session and continues after a hot reload. recorded_at is RFC 3339 UTC from $.clock.now(); started_at and ended_at of an advisor_call are $.clock.now() epoch milliseconds exactly as the engine gave them. agent_id is the loop the event belongs to (null = main loop); on an agent_request it is the CALLING loop, and spawned_agent_id (joined from agent.spawn by tool_use_id alone, null until it fires) is the loop it started. BINDING FIELDS: agent_request and step_observed carry binding_fields, the shape a supervisor merges into a GEC v2 ExecutionBinding (schemas/governed_execution/execution_binding.v2.schema.json): selection.runner, selection.model, selection.effort and the top-level effort_requested, effort_observed, response_claimed_model, provider_attested_model and independence_class map onto the same-named ExecutionBinding keys. A receipt is NOT a valid ExecutionBinding: that schema has about 23 required keys and the mod knows these six; the supervisor supplies the rest and runs `ct bind-record`; the mod never does. selection.model is the requested alias (agent_request) or the model the engine resolved for the step (step_observed), else UNKNOWN. response_claimed_model is the API-reported usage.model of the step; it is what the response claimed, not provider attestation, so provider_attested_model stays UNKNOWN. The API never reports effort, so effort_observed is always UNKNOWN; independence_class is the supervisor's. match (step_observed) is true when the observed model equals the requested one (a trailing -YYYYMMDD ignored, a bare family alias matching its family), false when it differs, null when either side is unknown. advisor_call records a server-side advisor call the mod can count and cannot block; it is keyed by the server-tool-use id and counted once. No prompt, file content or tool output is ever recorded; description is the Agent call's short label cut to 80 characters.",
++  "oneOf": [
++    { "$ref": "#/definitions/agent_request" },
++    { "$ref": "#/definitions/step_observed" },
++    { "$ref": "#/definitions/advisor_call" }
++  ],
++  "definitions": {
++    "binding_fields": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "selection",
++        "effort_requested",
++        "effort_observed",
++        "response_claimed_model",
++        "provider_attested_model",
++        "independence_class"
++      ],
++      "properties": {
++        "selection": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": ["runner", "model", "effort"],
++          "properties": {
++            "runner": { "const": "claude-code-agent" },
++            "model": { "type": "string", "minLength": 1 },
++            "effort": { "type": "string", "minLength": 1 }
++          }
++        },
++        "effort_requested": { "type": "string", "minLength": 1 },
++        "effort_observed": { "const": "UNKNOWN" },
++        "response_claimed_model": { "type": "string", "minLength": 1 },
++        "provider_attested_model": { "const": "UNKNOWN" },
++        "independence_class": { "const": "UNKNOWN" }
++      }
++    },
++    "usage": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "input_tokens",
++        "output_tokens",
++        "cache_read_input_tokens",
++        "cache_creation_input_tokens"
++      ],
++      "properties": {
++        "input_tokens": { "type": "integer", "minimum": 0 },
++        "output_tokens": { "type": "integer", "minimum": 0 },
++        "cache_read_input_tokens": { "type": "integer", "minimum": 0 },
++        "cache_creation_input_tokens": { "type": "integer", "minimum": 0 }
++      }
++    },
++    "agent_request": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "schema_version",
++        "kind",
++        "seq",
++        "session_id",
++        "recorded_at",
++        "agent_id",
++        "tool_use_id",
++        "requested_model",
++        "requested_effort",
++        "subagent_type",
++        "description",
++        "pinned",
++        "inherits",
++        "spawned_agent_id",
++        "resolved_model",
++        "binding_fields"
++      ],
++      "properties": {
++        "schema_version": { "const": "dopemux.route_ledger.receipt.v1" },
++        "kind": { "const": "agent_request" },
++        "seq": { "type": "integer", "minimum": 0 },
++        "session_id": { "type": "string", "minLength": 1 },
++        "recorded_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$" },
++        "agent_id": { "type": ["string", "null"] },
++        "tool_use_id": { "type": "string" },
++        "requested_model": { "type": ["string", "null"] },
++        "requested_effort": { "type": ["string", "number", "null"] },
++        "subagent_type": { "type": ["string", "null"] },
++        "description": { "type": "string", "maxLength": 80 },
++        "pinned": { "type": "boolean" },
++        "inherits": { "type": "boolean" },
++        "spawned_agent_id": { "type": ["string", "null"] },
++        "resolved_model": { "type": ["string", "null"] },
++        "binding_fields": { "$ref": "#/definitions/binding_fields" }
++      }
++    },
++    "step_observed": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "schema_version",
++        "kind",
++        "seq",
++        "session_id",
++        "recorded_at",
++        "agent_id",
++        "turn_id",
++        "step_index",
++        "requested_model",
++        "requested_effort",
++        "observed_model",
++        "match",
++        "usage",
++        "binding_fields"
++      ],
++      "properties": {
++        "schema_version": { "const": "dopemux.route_ledger.receipt.v1" },
++        "kind": { "const": "step_observed" },
++        "seq": { "type": "integer", "minimum": 0 },
++        "session_id": { "type": "string", "minLength": 1 },
++        "recorded_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$" },
++        "agent_id": { "type": ["string", "null"] },
++        "turn_id": { "type": "string" },
++        "step_index": { "type": "integer", "minimum": 0 },
++        "requested_model": { "type": ["string", "null"] },
++        "requested_effort": { "type": ["string", "number", "null"] },
++        "observed_model": { "type": "string", "minLength": 1 },
++        "match": { "type": ["boolean", "null"] },
++        "usage": {
++          "oneOf": [{ "type": "null" }, { "$ref": "#/definitions/usage" }]
++        },
++        "binding_fields": { "$ref": "#/definitions/binding_fields" }
++      }
++    },
++    "advisor_call": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "schema_version",
++        "kind",
++        "seq",
++        "session_id",
++        "recorded_at",
++        "agent_id",
++        "advisor_use_id",
++        "started_at",
++        "ended_at",
++        "loop"
++      ],
++      "properties": {
++        "schema_version": { "const": "dopemux.route_ledger.receipt.v1" },
++        "kind": { "const": "advisor_call" },
++        "seq": { "type": "integer", "minimum": 0 },
++        "session_id": { "type": "string", "minLength": 1 },
++        "recorded_at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$" },
++        "agent_id": { "type": ["string", "null"] },
++        "advisor_use_id": { "type": "string", "minLength": 1 },
++        "started_at": { "type": "integer" },
++        "ended_at": { "type": ["integer", "null"] },
++        "loop": { "enum": ["main", "agent"] }
++      }
++    }
++  }
++}
