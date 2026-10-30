@@ -1,0 +1,63 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1464,
+  "head_sha": "7908ae81cda75e6dfeffdd1e53a9f7037ff9cd81",
+  "generated_at": "2026-10-22T11:28:45Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <sealed> --system-prompt-override \"<SYSTEM_PROMPT.txt>\" --disallowed-tools \"<DISALLOWED_TOOLS.txt: 45 tool ids incl. use_tool/search_tool/x_search>\" --deny \"Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources\" --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1464-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-repair-empty-old-text",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "run_repair calls rewrite_links_and_indices with old_text_by_path={} unlike run_apply, so p",
+        "body": "scripts/check_docs_filename_hygiene.py \u2014 run_repair calls rewrite_links_and_indices with old_text_by_path={} unlike run_apply, so placement/index rewrites after crash recovery may be weaker or behave differently than a clean --apply."
+      },
+      {
+        "id": "F-diverged-after-mutate",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "If planned vs completed rename sets diverge, run_apply still rewrites refs and overwrites ",
+        "body": "scripts/check_docs_filename_hygiene.py \u2014 If planned vs completed rename sets diverge, run_apply still rewrites refs and overwrites the audit before returning 1, leaving a partially mutated tree with a non-zero exit."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "{'severity': 'medium', 'id': 'R-import-re-uncertain', 'summary': 'New _compile_path_ref_pattern uses re.compile / re.Pattern but the shown import hunks only add hashlib and datetime. If import re was not already present, plain-ref rewrite raises NameError at runtime; new unit tests would catch this if executed.'}",
+      "{'severity': 'medium', 'id': 'R-journal-trust', 'summary': '--repair trusts journal JSONL (paths and sha256). A malicious or wrong journal can drive _safe_move under repo_root; main resolves args.repair via (repo_root / args.repair).resolve(), which accepts absolute paths outside the repo. Operator-trusted CLI surface, not remote.'}",
+      "{'severity': 'low', 'id': 'R-toctou', 'summary': 'Preflight _exists_exact then later moves remain TOCTOU under concurrent deletion; journal + --repair mitigate crash windows but not hostile concurrent writers.'}",
+      "{'severity': 'low', 'id': 'R-validation-not-run', 'summary': 'Auditor did not execute tests, import the module, or verify CI against head 7908ae81cda75e6dfeffdd1e53a9f7037ff9cd81; correctness of the new apply/repair paths is inferred from diff and test intent only.'}",
+      "Auditor route: grok-cli / grok-4.5 is a packet-specific operator-approved fallback (operator selected 'Use Grok' on 2026-10-22) because the operator-approved AGY gemini-4-argon-high route returned HTTP 429 RESOURCE_EXHAUSTED (individual quota, reset ~40h) with no verdict.",
+      "Auditor ran with an empty tool list and a replaced system prompt (validation_status=NOT_RUN); test evidence at the audited head comes from CI and the local runs in this packet's validations."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}
