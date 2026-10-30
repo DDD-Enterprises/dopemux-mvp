@@ -73,13 +73,15 @@ Each call has a 2 second timeout (`adhd_commands.py:102`). It never calls per-us
 | `ok` | 0 | `/state` answered with an energy value and `/health` did not report the fallback class. |
 | `unreachable` | 1 | Connection error, timeout, or `/state` returned a non-2xx status. |
 | `malformed` | 1 | `/state` was not JSON, not a JSON object, or had no energy value. |
-| `degraded` | 3 | `/state` answered, and `/health` reports `"mode": "fallback"`. |
+| `degraded` | 3 | `/state` answered, and `/health` reports `"mode": "fallback"` (only an engine started with `ADHD_ENGINE_ALLOW_DEGRADED_STARTUP`). |
 
 Exit code 2 is left to click for usage errors (`adhd_commands.py:21`). The exit codes are in `EXIT_CODES`; the message says which case applied.
 
 ### What `degraded` means
 
-The engine's `main.py` starts a stand-in engine class if the real one fails to start. That stand-in answers `/health` with `"mode": "fallback"` and a `startup_error` (`services/adhd_engine/main.py:176-181`). The command then reports `degraded` and exits 3, and the detail adds the startup error when there is one. The energy and attention shown in that case come from the stand-in, not from real tracking.
+The stand-in engine class exists only as a local/test opt-in. `main.py` creates it when the real engine fails to start **and** `ADHD_ENGINE_ALLOW_DEGRADED_STARTUP` is `1`, `true` or `yes` (`services/adhd_engine/main.py:327-337`). Without that variable the startup exception is re-raised and no engine runs, so nothing is listening and the command reports `unreachable` (exit 1), not `degraded`.
+
+The stand-in answers `/health` with `"mode": "fallback"` and a `startup_error` (`services/adhd_engine/main.py:176-181`). The command then reports `degraded` and exits 3, and the detail adds the startup error when there is one. The energy and attention shown in that case come from the stand-in, not from real tracking.
 
 `engine_mode` in the JSON output:
 
