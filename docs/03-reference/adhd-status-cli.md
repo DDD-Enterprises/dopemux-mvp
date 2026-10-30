@@ -25,8 +25,8 @@ dopemux adhd status --url http://127.0.0.1:8095
 
 | Option | Meaning |
 |---|---|
-| `--json` | Print the result as one JSON object instead of a sentence (`adhd_commands.py:183`). |
-| `--url URL` | Engine base URL. Overrides every environment variable (`adhd_commands.py:184`). |
+| `--json` | Print the result as one JSON object instead of a sentence (`adhd_commands.py:248`). |
+| `--url URL` | Engine base URL. Overrides every environment variable (`adhd_commands.py:249-254`). The URL is normalized (see below); an invalid value is a usage error (exit 2). |
 
 Example output:
 
@@ -38,7 +38,7 @@ ADHD engine unreachable (http://127.0.0.1:3025, registry-default): ConnectionErr
 
 ## Which engine URL it uses
 
-The first match wins (`adhd_commands.py:47-72`). The `url_source` field and the human line say which step matched.
+The first match wins (`adhd_commands.py:79-117`). The `url_source` field and the human line say which step matched.
 
 | Order | Source | `url_source` |
 |---|---|---|
@@ -50,7 +50,9 @@ The first match wins (`adhd_commands.py:47-72`). The `url_source` field and the 
 
 Notes:
 
-- A port variable that is not an integer from 1 to 65535 is ignored. A warning goes to stderr and resolution continues with the next step (`adhd_commands.py:62-70`).
+- A port variable that is not an integer from 1 to 65535 is ignored. A warning goes to stderr and resolution continues with the next step (`adhd_commands.py:109-115`).
+- **URL normalization** (`normalize_base_url`, `adhd_commands.py:52-76`) applies to `--url` and `DOPEMUX_ADHD_ENGINE_BASE_URL`, using the same rules as `_base_from_url` in `src/dopemux/ui/service_endpoints.py`: a missing scheme defaults to `http://` (`--url localhost:8095` becomes `http://localhost:8095`), any path, query string or credentials are dropped (`http://host:9/some/path` becomes `http://host:9`), and the host and port are validated. Only `http` and `https` are accepted. The rules are re-implemented locally because importing `service_endpoints` also imports aiohttp and pydantic.
+- An invalid `--url` (no host, a port outside 1 to 65535 or not a number, another scheme, or an empty string) is a usage error: click prints a message naming `--url` and exits 2, and no request is sent. An invalid `DOPEMUX_ADHD_ENGINE_BASE_URL` is ignored with a stderr warning that names it, like the port variables, and resolution continues.
 - There is no socket probing. The default `3025` is the compose host port, matching `services/registry.yaml` (`adhd-engine`, port 3025). The test `tests/arch/test_service_port_drift.py` fails if `DEFAULT_ADHD_ENGINE_PORT` and the registry disagree.
 - An engine run directly listens on `API_PORT`, default `8095` (`services/adhd_engine/config.py:65`). Reach it with `--url http://127.0.0.1:8095` or an environment variable.
 - The older resolvers in `src/dopemux/ui/service_endpoints.py` and `src/dopemux/profile_detector.py` are not used. They probe `5448` and `8095` and never yield `3025`.
@@ -62,9 +64,9 @@ Notes:
 | `GET <url>/api/v1/state` | energy, attention, session minutes | No |
 | `GET <url>/health` | whether the engine runs on its fallback class | No |
 
-Each call has a 2 second timeout (`adhd_commands.py:102`). It never calls per-user routes, which need `X-API-Key` when a key is configured.
+Each call has a 2 second timeout (`adhd_commands.py:147`). It never calls per-user routes, which need `X-API-Key` when a key is configured.
 
-`/state` is read in both known shapes. The `energy_level` and `attention_state` keys win over `energy` and `attention` when both are present (`adhd_commands.py:130-131`). A response with no energy value is malformed. An attention value is optional.
+`/state` is read in both known shapes. The `energy_level` and `attention_state` keys win over `energy` and `attention` when both are present (`adhd_commands.py:176-177`). A response with no energy value is malformed. An attention value is optional.
 
 ## Statuses and exit codes
 
@@ -75,7 +77,7 @@ Each call has a 2 second timeout (`adhd_commands.py:102`). It never calls per-us
 | `malformed` | 1 | `/state` was not JSON, not a JSON object, or had no energy value. |
 | `degraded` | 3 | `/state` answered, and `/health` reports `"mode": "fallback"` (only an engine started with `ADHD_ENGINE_ALLOW_DEGRADED_STARTUP`). |
 
-Exit code 2 is left to click for usage errors (`adhd_commands.py:21`). The exit codes are in `EXIT_CODES`; the message says which case applied.
+Exit code 2 is left to click for usage errors, including an invalid `--url` (`EXIT_CODES`, `adhd_commands.py:22`). The exit codes are in `EXIT_CODES`; the message says which case applied.
 
 ### What `degraded` means
 
@@ -89,13 +91,13 @@ The stand-in answers `/health` with `"mode": "fallback"` and a `startup_error` (
 |---|---|
 | `normal` | `/health` answered 2xx with a JSON object that is not fallback and has no `error` key. |
 | `fallback` | `/health` has `"mode": "fallback"`. |
-| `unknown` | `/state` failed, or `/health` was unreachable, non-2xx, not JSON, not an object, or carried an `error` key (`adhd_commands.py:84-99`). |
+| `unknown` | `/state` failed, or `/health` was unreachable, non-2xx, not JSON, not an object, or carried an `error` key (`adhd_commands.py:129-144`). |
 
-An `ok` result can still have `engine_mode: "unknown"`: when `/state` answers and `/health` cannot be classified, the status stays `ok` (`adhd_commands.py:141-149`). A `/health` body for an engine that is still starting (`"overall_status": "Starting"`, no `mode`, no `error`) counts as `normal`.
+An `ok` result can still have `engine_mode: "unknown"`: when `/state` answers and `/health` cannot be classified, the status stays `ok` (`adhd_commands.py:186-205`). A `/health` body for an engine that is still starting (`"overall_status": "Starting"`, no `mode`, no `error`) counts as `normal`.
 
 ## JSON output
 
-`--json` prints one object with these keys (the `StatusResult` fields, `adhd_commands.py:27-36`), then exits with the code above:
+`--json` prints one object with these keys (the `StatusResult` fields except the human-output-only `startup_error`, `adhd_commands.py:30-41`), then exits with the code above:
 
 | Key | Value |
 |---|---|
@@ -108,7 +110,7 @@ An `ok` result can still have `engine_mode: "unknown"`: when `/state` answers an
 | `session_minutes` | integer as the engine reported it, or `null` |
 | `detail` | empty for `ok`; the reason otherwise |
 
-`session_minutes` in the JSON is the engine's raw value, including `0`. The human line shows session minutes only when the value is greater than 0 (`adhd_commands.py:169`).
+`session_minutes` in the JSON is the engine's raw value, including `0`. The human line shows session minutes only when the value is greater than 0 (`adhd_commands.py:225`). Engine-supplied strings in the human line (energy, attention and the startup error) are collapsed to single spaces and cut to 200 characters with `…`, so the output is always one line; `--json` keeps the raw values.
 
 ## Known limits
 
