@@ -36,7 +36,12 @@ const eyebrowSx = {
   color: brandTokens.text.secondary,
 } as const;
 
-const toPercent = (value: number) => Math.round(value * 100);
+// Whole percent, except where rounding would land the number on the far side of a zone
+// edge from the band the raw value is in: then one decimal (0.804 reads 80.4%, Break. Now.).
+const toPercent = (value: number): number => {
+  const whole = Math.round(value * 100);
+  return deriveStatus(whole / 100) === deriveStatus(value) ? whole : Math.round(value * 1000) / 10;
+};
 
 const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recommendation }) => {
   const status = load === null ? null : deriveStatus(load);
@@ -44,7 +49,9 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
   const loadPercent = load === null ? null : toPercent(load);
   const forecastPercent = prediction === null ? null : toPercent(prediction);
   const forecastDelta =
-    loadPercent !== null && forecastPercent !== null ? forecastPercent - loadPercent : null;
+    loadPercent !== null && forecastPercent !== null
+      ? Math.round((forecastPercent - loadPercent) * 10) / 10
+      : null;
 
   const valueText =
     loadPercent !== null && status

@@ -35,12 +35,10 @@ const asText = (value: unknown): string | null =>
   typeof value === 'string' && value.trim() !== '' ? value : null;
 
 // Out-of-range values are invalid input, not a reading: they stay unknown rather than
-// being clamped into a plausible 0% or 100%. In-range values round to whole percent
-// here, once, so the number shown and the load band derived from it always agree.
+// being clamped into a plausible 0% or 100%. In-range values pass through unrounded so
+// thresholds (critical > 0.8) see the real value; display rounding is LoadInstrument's job.
 const asRatio = (value: unknown): number | null =>
-  typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1
-    ? Math.round(value * 100) / 100
-    : null;
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1 ? value : null;
 
 export function mapAggregateState(raw: unknown): CognitiveReading {
   if (!isMessageObject(raw)) {

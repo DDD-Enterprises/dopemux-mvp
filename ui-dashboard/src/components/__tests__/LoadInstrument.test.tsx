@@ -41,6 +41,19 @@ test('labels the forecast unknown when the backend sends none', () => {
   expect(screen.queryByText('NEXT:')).not.toBeInTheDocument();
 });
 
+test('shows a decimal only where a whole number would cross a zone edge', () => {
+  const { rerender } = render(<LoadInstrument load={0.804} prediction={null} recommendation={null} />);
+  expect(screen.getByText('80.4%')).toBeInTheDocument();
+  expect(screen.getByText('Break. Now.')).toBeInTheDocument();
+
+  rerender(<LoadInstrument load={0.296} prediction={null} recommendation={null} />);
+  expect(screen.getByText('29.6%')).toBeInTheDocument();
+  expect(screen.getByText('Gentle Glide')).toBeInTheDocument();
+
+  rerender(<LoadInstrument load={0.62} prediction={null} recommendation={null} />);
+  expect(screen.getByText('62%')).toBeInTheDocument();
+});
+
 test('uses the same thresholds as deriveStatus at the zone edges', () => {
   const { rerender } = render(<LoadInstrument load={0.29} prediction={null} recommendation={null} />);
   expect(screen.getByText('Gentle Glide')).toBeInTheDocument();

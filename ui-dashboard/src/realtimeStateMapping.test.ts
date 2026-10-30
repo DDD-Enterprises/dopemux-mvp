@@ -70,14 +70,14 @@ test('a non-object state payload maps to an all-unknown reading', () => {
   });
 });
 
-test('ratios round to whole percent so the shown number and the state band agree', () => {
+test('in-range ratios pass through unrounded so thresholds see the real value', () => {
   const state = mapRealtimeState({
     type: 'state_update',
-    data: { cognitive_load: 0.604, predicted_load_15min: 0.296 },
+    data: { cognitive_load: 0.804, predicted_load_15min: 0.296 },
   });
 
-  expect(state?.load).toBe(0.6);
-  expect(state?.prediction).toBe(0.3);
+  expect(state?.load).toBe(0.804);
+  expect(state?.prediction).toBe(0.296);
 });
 
 test('non-object envelopes are ignored instead of throwing', () => {
