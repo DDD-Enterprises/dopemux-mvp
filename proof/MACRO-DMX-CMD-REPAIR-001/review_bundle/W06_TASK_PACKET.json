@@ -1,0 +1,156 @@
+{
+  "id": "TP-DMX-CMD-REPAIR-W06-AUDIT-REPAIR-001",
+  "project": "dopemux-mvp",
+  "target": "AMENDMENT-02: repair AUDIT-01 findings F1, F2, F3, F5 in four allowlisted files; F4 (pal vs pal-stdio, prose repoints) is recorded and out of scope. Source of truth: task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-01/ADJUDICATION.md.",
+  "invariants": [
+    "AMENDMENT-02, authorized by operator chat: 'Authorize W06 ... edit only mem-search.md, mem-query.md, runbook-update.md and tests/arch/test_claude_command_references.py (fixing F1, F2, F3, F5, with new negative controls)'. The pinned package and AMENDMENT-01 are unchanged.",
+    "Edit ONLY the 4 allowlisted files. No other file, no new files. No git commit/push/stash/checkout/reset/clean. No advisor tool. No agents.",
+    "F1 (mem-search.md, mem-query.md): ConPort search_content searches only decisions and progress (enhanced_server.py:1452 handler; server.py docstring). Caveats live in custom_data (category 'caveats', see caveat.md and bootstrap.md). Rewrite both commands: decisions/progress via mcp__conport__search_content {workspace_id, query}; caveats via mcp__conport__get_custom_data {workspace_id, category: 'caveats'} (optional key). Keep intent, structure and the dope-context pointer. In mem-query.md the Primary/Fallback pair must not be two identical calls: Primary = search_content for decisions/progress, Fallback = get_custom_data for caveats, and state which covers what. Keep the 'read only the top 5 results' note (search_content has no limit).",
+    "F5 (runbook-update.md line ~6): replace the 'small limit (3-5)' advice with advice that is true for the tools named there (search_content has no limit: read only the top 3-5 results; get_decisions and get_progress accept limit).",
+    "F2 (test): _SCRIPT_REF must also match script paths preceded by './' (as well as whitespace, quotes, backticks or '('), and must still not count 'xscripts/a.py' or 'foo/scripts/a.py' as repo-root scripts/ refs. Negative controls: './scripts/set-profile.sh' missing => violation; 'python scripts/x.py' missing => violation; 'foo/scripts/x.py' => no violation.",
+    "F3 (test): _MCP_REF must (a) capture the full tool token including hyphens and a trailing '*', so 'mcp__conport__get_context-foo' is checked as tool 'get_context-foo' (a violation) and not truncated to 'get_context'; (b) treat 'mcp__<server>__*' as a SERVER reference: the server must satisfy check 2 (exists in surfaces, catalog or .mcp.json; with no captured tool list it must be in UNVERIFIED_SERVERS) but no tool-name check applies to '*'; (c) also scan the '/mcp <server> <tool>' prose form (e.g. '/mcp conport search_content') for server and tool under the same rules. Recompute UNVERIFIED_SERVERS from the repaired corpus (wildcard refs add servers such as dope-memory and dope-context). STOP and report if a referenced server is in none of surfaces/catalog/.mcp.json rather than weakening the check. Change UNVERIFIED_SERVERS only to the exact recomputed set and report the diff with reasons.",
+    "Negative controls required: synthetic tmp_path tests for hyphen-truncation tool, wildcard of an unknown server, wildcard of a known server (no violation), '/mcp unknownserver tool', '/mcp conport bad_tool', and ./scripts missing. Evidence run against the pre-repair base commands (git archive 95e95bee88cae5e6c95e6e34f7c28bb423ad9496 .claude/commands into the scratchpad base_commands dir): report per-check counts; check 4 must now count the 4 dead script refs (adr_new.py, docs_manifest.py x2, ./scripts/set-profile.sh).",
+    "Gates on the worktree: pytest tests/arch -q all pass; black --check and flake8 on the test file; the rg dead-name gates over .claude/commands remain empty; git diff --name-only is a subset of the allowlist."
+  ],
+  "depends_on": [
+    "TP-DMX-CMD-REPAIR-W05-FLEET-SNAPSHOT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-CMD-REPAIR-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-CMD-REPAIR-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "fix/cmd-repair-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(commands): close AUDIT-01 findings (caveat search, drift-gate regex blind spots)",
+    "allowlist": [
+      ".claude/commands/mem-search.md",
+      ".claude/commands/mem-query.md",
+      ".claude/commands/runbook-update.md",
+      "tests/arch/test_claude_command_references.py"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest tests/arch -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(commands): repair dead ConPort tool names, stale model pins and dead targets; add reference drift gate",
+    "body": "Implements MACRO-DMX-CMD-REPAIR-001 (W01-W04). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W06-S1",
+      "task": "Read AUDIT-01 findings and the current test file",
+      "requirements": [
+        "STOP on any contradiction with the invariants"
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "findings understood"
+      ],
+      "context_files": [
+        "task-packets/MACRO-DMX-CMD-REPAIR-001/AUDIT-01/ADJUDICATION.md",
+        "tests/arch/test_claude_command_references.py"
+      ]
+    },
+    {
+      "id": "W06-S2",
+      "task": "Repair the three commands (F1, F5)",
+      "requirements": [
+        "only listed files"
+      ],
+      "commands": [],
+      "expected_files": [
+        ".claude/commands/mem-search.md",
+        ".claude/commands/mem-query.md",
+        ".claude/commands/runbook-update.md"
+      ],
+      "validation": [
+        "dead-name rg gates stay empty"
+      ],
+      "context_files": [
+        ".claude/commands/mem-search.md",
+        ".claude/commands/mem-query.md",
+        ".claude/commands/runbook-update.md"
+      ]
+    },
+    {
+      "id": "W06-S3",
+      "task": "Repair test regexes and add controls (F2, F3)",
+      "requirements": [
+        "write failing controls first"
+      ],
+      "commands": [
+        "pytest tests/arch/test_claude_command_references.py -q"
+      ],
+      "expected_files": [
+        "tests/arch/test_claude_command_references.py"
+      ],
+      "validation": [
+        "new controls fail on the old regex and pass on the new"
+      ],
+      "context_files": [
+        "tests/arch/test_claude_command_references.py"
+      ]
+    },
+    {
+      "id": "W06-S4",
+      "task": "Run gates and return",
+      "requirements": [
+        "report exit codes, base-tree counts, UNVERIFIED_SERVERS diff, advisor_calls, files_written"
+      ],
+      "commands": [
+        "pytest tests/arch -q"
+      ],
+      "expected_files": [],
+      "validation": [
+        "tests/arch green; allowlist respected"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-CMD-REPAIR-001",
+  "workstream_id": "W06",
+  "risk_lane": "L2",
+  "audit_group": "AGY-CMD-REPAIR-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    ".claude/commands/mem-search.md",
+    ".claude/commands/mem-query.md",
+    ".claude/commands/runbook-update.md",
+    "tests/arch/test_claude_command_references.py"
+  ],
+  "canonical_writers": [
+    "W06-implementer"
+  ],
+  "semantic_scope": [
+    "audit-01-repairs"
+  ],
+  "rollback_boundary": "git revert <W06 commit> on fix/cmd-repair-001 (REVERT_COMMITS)",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

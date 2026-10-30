@@ -6,7 +6,7 @@ allowed-tools: [
   "mcp__task-orchestrator__query_dependencies",
   "mcp__task-orchestrator__manage_dependencies"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:depends — Create a Dependency Edge

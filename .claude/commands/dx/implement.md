@@ -8,7 +8,7 @@ allowed-tools: [
   "mcp__pal__apilookup",
   "mcp__pal__thinkdeep", "mcp__pal__debug", "mcp__pal__codereview"
 ]
-model: "claude-sonnet-4-5-20250929"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:implement - ADHD Implementation Session
@@ -30,7 +30,7 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 - Query ConPort for specific task:
 
   ```bash
-  Use mcp__conport__conport_get_progress with workspace_id "/Users/hue/code/dopemux-mvp" and limit 100
+  Use mcp__conport__get_progress with workspace_id "/Users/hue/code/dopemux-mvp" and limit 100
   ```
 
 - Find task matching provided ID or description substring
@@ -40,9 +40,9 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 - Query ConPort for TODO tasks:
 
   ```bash
-  Use mcp__conport__conport_get_progress with:
+  Use mcp__conport__get_progress with:
     workspace_id: "/Users/hue/code/dopemux-mvp"
-    status_filter: "TODO"
+    status: "TODO"
     limit: 10
   ```
 
@@ -115,19 +115,20 @@ For the selected task:
 ### Step 2.1: Update ConPort Task Status
 
 ```bash
-Use mcp__conport__conport_update_progress with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
+Use mcp__conport__update_progress with:
   progress_id: TASK_ID
-  status: "IN_PROGRESS"
-  description: "ORIGINAL_DESCRIPTION (session started)"
+  updates: {
+    "status": "IN_PROGRESS",
+    "description": "ORIGINAL_DESCRIPTION (session started)"
+  }
 ```
 
 ### Step 2.2: Update Active Context
 
 ```bash
-Use mcp__conport__conport_update_context with:
+Use mcp__conport__update_context with:
   workspace_id: "/Users/hue/code/dopemux-mvp"
-  patch_content: {
+  context_data: {
     "current_task": "TASK_ID",
     "session_start": "CURRENT_TIMESTAMP",
     "session_type": "implement",
@@ -224,11 +225,12 @@ What's the status?
 ### Step 4.2: Update ConPort
 
 ```bash
-Use mcp__conport__conport_update_progress with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
+Use mcp__conport__update_progress with:
   progress_id: TASK_ID
-  status: USER_SELECTED_STATUS
-  description: "DESCRIPTION (+ brief progress note)"
+  updates: {
+    "status": USER_SELECTED_STATUS,
+    "description": "DESCRIPTION (+ brief progress note)"
+  }
 ```
 
 ### Step 4.3: Break Reminder
@@ -276,9 +278,9 @@ Keep up the great work!
 ### Step 4.5: Update Active Context
 
 ```bash
-Use mcp__conport__conport_update_context with:
+Use mcp__conport__update_context with:
   workspace_id: "/Users/hue/code/dopemux-mvp"
-  patch_content: {
+  context_data: {
     "last_session_end": "CURRENT_TIMESTAMP",
     "last_task_status": "USER_STATUS",
     "session_completed": true

@@ -1,0 +1,109 @@
+{
+  "model_self_reported": "Gemini (Google; exact version string not verifiable from prompt text)",
+  "tools_used": "none",
+  "status": "FAIL",
+  "questions": [
+    {
+      "id": "Q1",
+      "verdict": "PASS",
+      "evidence": "All 48 files in the diff match the declared workstreams: 18 files in .claude/commands for W01, 5 files in .claude/commands for W03, 26 files in .claude/commands for W02 (with 3 files—.claude/commands/dx/context.md, .claude/commands/dx/implement.md, and .claude/commands/dx/next.md—in the intersection of W01 and W02: 18 + 5 + 26 - 3 = 46 command files), 1 new test file tests/arch/test_claude_command_references.py for W04, and 1 catalog file src/dopemux/mcp/fleet_catalog.py for W05. No unrelated files or smuggled changes appear in the diff. Per-commit workstream isolation across the 5 commits is UNKNOWN from the combined diff alone."
+    },
+    {
+      "id": "Q2",
+      "verdict": "FAIL",
+      "evidence": "While all remaining mcp__conport__<tool> names in the diff are among the 17 live tools and their argument keys match the stated signatures, two files still misuse mcp__conport__search_content to search for caveats (custom data), which search_content cannot serve because its docstring is 'Search decisions and progress entries' and caveats are stored via save_custom_data under category 'caveats': (1) .claude/commands/mem-search.md:1-6 states 'Search ConPort for decisions and caveats by project/slice/tag' and explicitly gives the example `mcp__conport__search_content {\"workspace_id\":\"<repo-root>\",\"query\":\"caveat streaming\"}`; (2) .claude/commands/mem-query.md:1-10 states 'Query ConPort decisions and caveats by topic' using only `mcp__conport__search_content` for both Primary and Fallback search (which are now identical). In addition, .claude/commands/runbook-update.md:6 still advises 'prefer ConPort summaries/search with small limit (3-5)', whereas neither workspace_summary nor search_content accepts a limit parameter."
+    },
+    {
+      "id": "Q3",
+      "verdict": "FAIL",
+      "evidence": "Multiple W01 rewrites silently alter command semantics, precision, or token-safety properties beyond the disclosed decisions: (1) Server-side result limits are lost in .claude/commands/bootstrap.md:5,12, .claude/commands/decision.md:17, .claude/commands/doc-pull.md:5, .claude/commands/mem-query.md:5-8, .claude/commands/pattern.md:6, and .claude/commands/search-decisions.md:2-3 because search_content has no limit parameter; instructing the assistant to 'read only the top N results' does not cap the MCP tool payload returned into the context window. (2) Scope contamination in .claude/commands/search-decisions.md:2, .claude/commands/bootstrap.md:5, and .claude/commands/doc-pull.md:5: replacing search_decisions_fts with search_content returns progress entries mixed with decisions. (3) Full-category dumps in .claude/commands/bootstrap.md:5 and .claude/commands/mem/summarize.md:8: replacing search_custom_data_value_fts(limit=5 or 20) with get_custom_data(workspace_id, category=...) fetches every entry in 'caveats', 'mem', and 'scratch' with no server-side query filter or limit. (4) In .claude/commands/dx/implement.md:131,283 and .claude/commands/research-deep.md:16, renaming patch_content to context_data in update_context risks full-object overwrite across session steps if update_context replaces rather than merges (disclosed as UNKNOWN)."
+    },
+    {
+      "id": "Q4",
+      "verdict": "PASS",
+      "evidence": "Across all 26 W02 files, the frontmatter model change is exactly 1 line per file, preserves tier, and strictly follows the pin map: 24 files change `model: \"claude-sonnet-4-5\"` -> `model: \"claude-sonnet-5-5\"`, 1 file (.claude/commands/dx/implement.md:11) changes `model: \"claude-sonnet-4-5-20250929\"` -> `model: \"claude-sonnet-5-5\"`, and 1 file (.claude/commands/tp/validate.md:5) changes `model: \"claude-haiku-4-5-20251001\"` -> `model: \"claude-haiku-5-5\"`. In the 23 W02-only files, nothing else is altered; in the 3 files shared with W01 (dx/context.md, dx/implement.md, dx/next.md), only the W01 ConPort tool references are additionally changed."
+    },
+    {
+      "id": "Q5",
+      "verdict": "UNKNOWN",
+      "evidence": "Removals in .claude/commands/adr-new.md:9,29, .claude/commands/doc-new.md:26, and .claude/commands/safe.md:61 are honest and clearly disclose that no generator/profile script exists. However, the two tool repoints cannot be verified from the diff alone and contain a naming discrepancy: (1) .claude/commands/plan.md:1 repoints sequential_thinking to `PAL planner tool (MCP server pal-stdio)`, whereas .claude/commands/dx/implement.md:8-9 (`mcp__pal__thinkdeep`, etc.) and tests/arch/test_claude_command_references.py:29 (`UNVERIFIED_SERVERS = frozenset({\"pal\", \"gpt-researcher\"})`) identify the server as `pal`, not `pal-stdio`; (2) .claude/commands/plan-tasks.md:2 repoints TaskMaster to `create_work_tree` on `task-orchestrator`, which is not among the `mcp__task-orchestrator__*` tools visible in the diff (complete_tree, advance_item, get_context, query_items, etc.), so its existence in mcp_tool_surfaces.json is UNKNOWN from the diff alone."
+    },
+    {
+      "id": "Q6",
+      "verdict": "FAIL",
+      "evidence": "tests/arch/test_claude_command_references.py is deterministic, offline, free of side effects outside tmp_path, and adds no new pytest markers, and its negative controls exercise the happy-path failure cases. However, it has significant false-pass defects: (1) `_SCRIPT_REF = re.compile(r\"(?<![\\w/-])scripts/[A-Za-z0-9_./-]+\\.(?:py|sh)\\b\")` (line 45) puts `/` inside the negative lookbehind `(?<![\\w/-])`, which prevents matching `./scripts/...` (such as `./scripts/set-profile.sh` removed from .claude/commands/safe.md:63 in W03—had safe.md not been edited, check_script_refs would have falsely passed!); (2) `_MCP_REF = re.compile(r\"mcp__([A-Za-z0-9-]+)__([A-Za-z0-9_]+)\")` (line 44) omits `*` and `-` in tool names and `_` in server names (unlike fleet_catalog.py:31 `_MCP_TOOL_SURFACE_RE`), so wildcard refs like `\"mcp__dope-memory__*\"` in .claude/commands/mem/recap.md:7 are completely ignored by check_mcp_servers and check_mcp_tool_refs, and a hyphenated tool suffix like `mcp__conport__get_context-foo` would truncate to `get_context` and falsely pass; (3) `/mcp <server> <tool>` invocations (e.g., .claude/commands/search-decisions.md:2) and prose tool references (e.g., plan.md:1, plan-tasks.md:2, bootstrap.md:5) are not checked."
+    },
+    {
+      "id": "Q7",
+      "verdict": "UNKNOWN",
+      "evidence": "In src/dopemux/mcp/fleet_catalog.py:34-59, _CONPORT_TOOL_SNAPSHOT is updated to the exact 17 live tool names, sorted alphabetically, with an accurate comment and no other changes in the file (the Snapshot edit itself is PASS). However, whether any other code or tests outside the diff consume _CONPORT_TOOL_SNAPSHOT or expect the old `conport_*` names is UNKNOWN from the diff alone."
+    },
+    {
+      "id": "Q8",
+      "verdict": "PASS",
+      "evidence": "Although .claude/commands/*.md files are slash-command prompt templates written in second-person imperative to an executing AI assistant, nothing in the diff attempts to steer an auditor, fabricate an audit result, override audit instructions, or alter the JSON output contract."
+    },
+    {
+      "id": "Q9",
+      "verdict": "PASS",
+      "evidence": "No secrets, credentials, API keys, tokens, or new PII are added in the diff. (A pre-existing local path `/Users/hue/code/dopemux-mvp` in .claude/commands/dx/implement.md:33,44,129,282 is unchanged from the base file.)"
+    },
+    {
+      "id": "Q10",
+      "verdict": "FAIL",
+      "evidence": "Overall verdict is FAIL due to: (F1/BLOCKING) .claude/commands/mem-search.md and .claude/commands/mem-query.md still instructing the assistant to query caveats using mcp__conport__search_content, which only searches decisions and progress entries and does not search custom_data; and (F2/HIGH, F3/MEDIUM) false-pass regex flaws in tests/arch/test_claude_command_references.py that fail to match `./scripts/...` paths and `mcp__<server>__*` wildcard server references."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "BLOCKING",
+      "file": ".claude/commands/mem-search.md",
+      "summary": "mcp__conport__search_content is still used to search for caveats in mem-search.md and mem-query.md despite search_content not covering custom_data",
+      "evidence": "In .claude/commands/mem-search.md:1-6, the command claims to 'Search ConPort for decisions and caveats' and provides `mcp__conport__search_content {\"workspace_id\":\"<repo-root>\",\"query\":\"caveat streaming\"}`. In .claude/commands/mem-query.md:1-10, the command claims to 'Query ConPort decisions and caveats by topic' using `mcp__conport__search_content` as both Primary and Fallback search. Per AUTHORITY FACTS and .claude/commands/bootstrap.md:5 / .claude/commands/caveat.md:14, caveats are stored via save_custom_data under category 'caveats' and search_content only searches decisions and progress entries.",
+      "status": "OPEN"
+    },
+    {
+      "id": "F2",
+      "severity": "HIGH",
+      "file": "tests/arch/test_claude_command_references.py",
+      "summary": "_SCRIPT_REF negative lookbehind rejects './scripts/...' paths, causing false passes on relative script invocations",
+      "evidence": "Line 45 defines `_SCRIPT_REF = re.compile(r\"(?<![\\w/-])scripts/[A-Za-z0-9_./-]+\\.(?:py|sh)\\b\")`. Because `/` is inside the negative lookbehind `(?<![\\w/-])`, any script path prefixed with `./` (such as `./scripts/set-profile.sh` in .claude/commands/safe.md:63) has `/` immediately preceding `scripts/` and fails to match. Consequently, check_script_refs silently ignores `./scripts/*.py|*.sh` references.",
+      "status": "OPEN"
+    },
+    {
+      "id": "F3",
+      "severity": "MEDIUM",
+      "file": "tests/arch/test_claude_command_references.py",
+      "summary": "_MCP_REF regex ignores wildcard tool references (mcp__<server>__*), hyphenated tool names, and '/mcp <server> <tool>' syntax",
+      "evidence": "Line 44 defines `_MCP_REF = re.compile(r\"mcp__([A-Za-z0-9-]+)__([A-Za-z0-9_]+)\")`, whereas src/dopemux/mcp/fleet_catalog.py:31 uses `r\"\\bmcp__([A-Za-z0-9_-]+)__([A-Za-z0-9_-]+|\\*)\"`. Because `_MCP_REF` lacks `\\*`, `\"mcp__dope-memory__*\"` in .claude/commands/mem/recap.md:7 is completely invisible to check_mcp_servers (so dope-memory is neither checked for a captured tool list nor required in UNVERIFIED_SERVERS). A hyphenated tool name like `mcp__conport__get_context-invalid` also matches the prefix `mcp__conport__get_context` and falsely passes. Furthermore, `/mcp conport search_content` in .claude/commands/search-decisions.md:2 is not matched by `_MCP_REF`.",
+      "status": "OPEN"
+    },
+    {
+      "id": "F4",
+      "severity": "MEDIUM",
+      "file": ".claude/commands/plan.md",
+      "summary": "Server name discrepancy ('pal-stdio' vs 'pal') and unverified prose tool repoints in plan.md and plan-tasks.md",
+      "evidence": ".claude/commands/plan.md:1 repoints sequential_thinking to `Use the PAL planner tool (MCP server pal-stdio)`, whereas .claude/commands/dx/implement.md:8-9 (`mcp__pal__thinkdeep`, `mcp__pal__debug`, etc.) and tests/arch/test_claude_command_references.py:29 (`UNVERIFIED_SERVERS = frozenset({\"pal\", \"gpt-researcher\"})`) name the server `pal`. Similarly, .claude/commands/plan-tasks.md:2 references `create_work_tree` on `task-orchestrator` in prose rather than `mcp__task-orchestrator__create_work_tree`, bypassing check_mcp_tool_refs.",
+      "status": "OPEN"
+    },
+    {
+      "id": "F5",
+      "severity": "LOW",
+      "file": ".claude/commands/search-decisions.md",
+      "summary": "Loss of server-side result limits, decision/progress scope mixing, full custom_data category dumps, and stale limit advice",
+      "evidence": "Replacing `search_decisions_fts(limit=...)` with `search_content(workspace_id, query)` in search-decisions.md:2, bootstrap.md:5, decision.md:17, doc-pull.md:5, mem-query.md:5, and pattern.md:6 removes server-side pagination (returning all matches in the MCP response) and mixes progress entries into decision queries. Replacing `search_custom_data_value_fts` with `get_custom_data` in bootstrap.md:5 and mem/summarize.md:8 dumps entire custom_data categories ('caveats', 'mem', 'scratch') without server-side filtering. Finally, .claude/commands/runbook-update.md:6 still instructs 'prefer ConPort summaries/search with small limit (3-5)' even though neither workspace_summary nor search_content takes a limit parameter.",
+      "status": "OPEN"
+    }
+  ],
+  "needs_more_evidence": [
+    "Contents of mcp_tool_surfaces.json, mcp_catalog.yaml, and .mcp.json to verify whether 'create_work_tree' is a captured tool on 'task-orchestrator', whether 'pal-stdio' vs 'pal' is configured in .mcp.json, and whether 'dope-memory' has a captured tool list.",
+    "Contents of docker/mcp-servers-source/conport/server.py to verify the live 17 tool signatures and whether update_context(workspace_id, context_data) merges or overwrites existing context keys.",
+    "Repository-wide search for references to _CONPORT_TOOL_SNAPSHOT or old conport_* tool names outside the 48 files in the diff.",
+    "Per-commit diffs for the 5 commits between 95e95bee88cae5e6c95e6e34f7c28bb423ad9496 and 70eb50363f2cb1ff59758a9321faf9d033684b40 to verify that W01 and W02 modified .claude/commands/dx/{context,implement,next}.md in separate workstream commits."
+  ],
+  "instruction_like_content": {
+    "detected": false,
+    "notes": "The diff modifies .claude/commands/*.md files, which are slash-command prompt templates addressing an AI assistant in imperative form, but contains no prompt injection, auditor steering, fabricated audit verdicts, or attempts to alter this audit output contract."
+  }
+}
