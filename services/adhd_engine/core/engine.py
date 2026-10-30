@@ -122,7 +122,10 @@ ENERGY_SCORE: Dict[str, float] = {
 
 @dataclass(frozen=True)
 class EnergySnapshot:
-    """Energy level of a user, as served to MCP tools."""
+    """Energy level of a user, as served to MCP tools.
+
+    ``score`` is a nominal position from the fixed ``ENERGY_SCORE`` table, not a measurement.
+    """
 
     level: str
     score: float
@@ -418,7 +421,10 @@ class ADHDAccommodationEngine:
     # Core Accommodation Methods
 
     async def get_energy_level(self, user_id: str) -> EnergySnapshot:
-        """Current energy level for a user (defaults to medium)."""
+        """Current energy level for a user (defaults to medium).
+
+        The returned ``score`` is a nominal position from the fixed ``ENERGY_SCORE`` table, not a measurement.
+        """
         energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
         level = energy.value if hasattr(energy, "value") else str(energy)
         return EnergySnapshot(level=level, score=ENERGY_SCORE.get(level, 0.5))
