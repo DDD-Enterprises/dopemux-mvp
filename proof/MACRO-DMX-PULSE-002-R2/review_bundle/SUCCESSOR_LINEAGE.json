@@ -1,0 +1,132 @@
+{
+  "schema": "dopemux.pulse.successor_lineage.v1",
+  "authority": "NONE",
+  "macro_id": "MACRO-DMX-PULSE-002-R2",
+  "predecessor_pr": 1472,
+  "predecessor_audited_head": "1d2219e8c894c5929ceba6ac5f2650dfe7ba2147",
+  "predecessor_proof_head": "f4115046484ed0dc580cc4337bb8c7cf55d39af7",
+  "predecessor_verdict": "PASS_WITH_RISKS",
+  "predecessor_q3": "FAIL",
+  "predecessor_accepted_risk": {
+    "finding": "F1",
+    "decision": "accepted as a disclosed residual risk",
+    "date": "2026-10-22",
+    "source": "proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md (\"Operator decisions left\" item 1)"
+  },
+  "predecessor_files_sha256": {
+    "proof/MACRO-DMX-PULSE-001/PROOF.json": {
+      "at_base": "81d061667abf1938695ef91d8442bd3f0a7475e271382e8fec1543b2986e5467",
+      "at_C": "81d061667abf1938695ef91d8442bd3f0a7475e271382e8fec1543b2986e5467"
+    },
+    "proof/MACRO-DMX-PULSE-001/PROOF.json.sig": {
+      "at_base": "cec3beb220f910781ad4ed5d2fdb1bd2a69c4909403e2202698d9831756a38c6",
+      "at_C": "cec3beb220f910781ad4ed5d2fdb1bd2a69c4909403e2202698d9831756a38c6"
+    },
+    "proof/MACRO-DMX-PULSE-001/AUDITOR_REPORT.md": {
+      "at_base": "209dc7ae962112b81cf9dab6dd53352b4bc40d4ebcbeb77934bbd2a00de6d6f0",
+      "at_C": "209dc7ae962112b81cf9dab6dd53352b4bc40d4ebcbeb77934bbd2a00de6d6f0"
+    },
+    "proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md": {
+      "at_base": "f58363030af184f1ef6ce53b7e8523e85daf93ced74f551e6041c0d858657429",
+      "at_C": "f58363030af184f1ef6ce53b7e8523e85daf93ced74f551e6041c0d858657429"
+    },
+    "proof/MACRO-DMX-PULSE-001/review_bundle/GROK_AUDIT_RESPONSE.txt": {
+      "at_base": "9e2105f90947a8314336648a2d9eb0438a974a6e7aff9d97804fa668633243bc",
+      "at_C": "9e2105f90947a8314336648a2d9eb0438a974a6e7aff9d97804fa668633243bc"
+    },
+    "proof/pr_merge/embedded-audit/pr-1472/PROOF.json": {
+      "at_base": "bd98b815317af12717f25977b5b1bee095dc0143dc2d6f1653e1cf8631122460",
+      "at_C": "bd98b815317af12717f25977b5b1bee095dc0143dc2d6f1653e1cf8631122460"
+    },
+    "proof/pr_merge/embedded-audit/pr-1472/PROOF.json.sig": {
+      "at_base": "fa8f00afced09ee898f735513f3bd78903a22e0b998f9a9004187fced26dcc0e",
+      "at_C": "fa8f00afced09ee898f735513f3bd78903a22e0b998f9a9004187fced26dcc0e"
+    }
+  },
+  "successor_content_head": "b5dc04dd7d9560ed31a2dc0fd2192218c727ea01",
+  "successor_base": "95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "successor_commits": [
+    {
+      "sha": "b5dc04dd7d9560ed31a2dc0fd2192218c727ea01",
+      "committed_at": "2026-10-23T13:42:44-07:00",
+      "subject": "docs(pulse): /done also resets the continuous-focus count; drop the commit SHA; document the poll guard"
+    },
+    {
+      "sha": "abd128393eddf68830afd4e2c3637feefd10c467",
+      "committed_at": "2026-10-23T13:40:06-07:00",
+      "subject": "fix(pulse): hold the poll guard until the engine fetch settles; toast a refused command registration"
+    }
+  ],
+  "cumulative_diff_sha256": "ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8",
+  "delta_diff_sha256": "393b4beeb74165fd712b21e5ca9c175dc74889e136751b062906193b2545bbd9",
+  "cumulative_diff_paths": [
+    "docs/02-how-to/pulse-status-line.md",
+    "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+    "plugins/dopemux-pulse/README.md",
+    "plugins/dopemux-pulse/hooks/hooks.json",
+    "plugins/dopemux-pulse/hooks/register.test.ts",
+    "plugins/dopemux-pulse/hooks/register.tsx",
+    "services/adhd_engine/api/routes.py",
+    "services/adhd_engine/tests/test_state_contract.py"
+  ],
+  "repair_claims": {
+    "F1": {
+      "status": "CLAIMED_NOT_AUDITED"
+    },
+    "F3": {
+      "status": "CLAIMED_NOT_AUDITED"
+    },
+    "F4": {
+      "status": "CLAIMED_NOT_AUDITED"
+    },
+    "F6": {
+      "status": "CLAIMED_NOT_AUDITED"
+    }
+  },
+  "not_repaired": {
+    "F2": "the mod has still never run in a real session against a live engine (operator step)",
+    "F5": "engine suite failures are pre-existing and identical on base and earlier head; the engine is untouched by this macro",
+    "F7": "pre-existing, documented behaviour of the engine fallback; the engine is untouched by this macro"
+  },
+  "r1_issued_revision": {
+    "preserved_at": "task-packets/MACRO-DMX-PULSE-002/",
+    "status": "superseded by R2, never authorized to run",
+    "MACRO_PACKET.json": "35aaf353a4dba1bd4b0926052af739dc77679d71f05c4bbb243f0263865fbae2",
+    "EXECUTION_BINDING.json": "f64a5b10ff9b17a96308b26556047e0e77931f2320d3a3350271f009fedb1ed6",
+    "W01_TASK_PACKET.json": "465dcf0033da5627e39afeaa5b8a42536938063a6b2ae0274d7903d617373c72",
+    "W02_TASK_PACKET.json": "ceea9408728d37d9d5db079c9a49fd99b6895399f3a430c0d75cc9a07e4e13fc",
+    "ISSUANCE.md": "42fdcf1a42da89b9c3d6cb9b320dd132d362a64e73028b0ddd5fc0a3453c5b30",
+    "dispatches_before_supersession": "W01 (claude-sonnet-5-5) dispatched twice and stopped twice before returning; zero edits; observed model UNKNOWN"
+  },
+  "execution_record": {
+    "started_at": "2026-10-23T20:35:35Z",
+    "children": {
+      "W01": {
+        "requested": "claude-code-agent claude-sonnet-5-5 effort UNKNOWN",
+        "observed_model": "UNKNOWN",
+        "self_reported": "claude-sonnet-5-5",
+        "tokens": 88095,
+        "tool_uses": 32,
+        "duration_ms": 196474,
+        "advisor_calls_self_reported": 0,
+        "commit": "abd128393eddf68830afd4e2c3637feefd10c467"
+      },
+      "W02": {
+        "requested": "claude-code-agent claude-haiku-5-5 effort UNKNOWN",
+        "observed_model": "UNKNOWN",
+        "self_reported": "claude-haiku-5-5",
+        "tokens": 66059,
+        "tool_uses": 22,
+        "duration_ms": 88361,
+        "advisor_calls_self_reported": 0,
+        "commit": "b5dc04dd7d9560ed31a2dc0fd2192218c727ea01"
+      }
+    },
+    "note": "tokens, tool uses and durations are harness-measured per child; observed model identity is UNKNOWN without a runtime receipt; coordinator tokens are not recordable"
+  },
+  "audit": {
+    "status": "NOT_RUN",
+    "route": "PROPOSED:AUDITOR_BINDING_PROPOSED.json",
+    "route_line_sent": false
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "id": "TP-DMX-PULSE-W02-PULSE-MOD-001",
+  "project": "dopemux-mvp",
+  "target": "Build the `dopemux-pulse` Claude Code function-hook mod under plugins/dopemux-pulse/: (M1) a status line that shows real ADHD energy and attention from the engine plus the mod's own session minutes, and (M2) a 25-minute focus clock with /focus, /break and /done commands, a band above the prompt, and a toast at the limit.",
+  "invariants": [
+    "MACRO I01-I08 apply (MACRO-DMX-PULSE-001).",
+    "Authoring contract: the coordinator loads the `plugin-authoring` skill at dispatch and passes you (a) the path of this build's claude-code.d.ts declaration and (b) the reference notes. Read the declaration for every event, noun and method you use; the API is early access. If it was not supplied, STOP and report.",
+    "Files (exactly these): plugins/dopemux-pulse/.claude-plugin/plugin.json, plugins/dopemux-pulse/hooks/hooks.json, plugins/dopemux-pulse/hooks/register.tsx, plugins/dopemux-pulse/hooks/register.test.ts, plugins/dopemux-pulse/README.md. The module is one hooks file, exporting `register(on, options)` typed with `Register` from 'claude-code'. Do not write under ~/.claude, do not enable hot reload, do not run `claude plugin install`.",
+    "M1 status: in `session.start` start `$.clock.every(60000, ...)` that GETs `<engineUrl>/api/v1/state` via `$.http.fetch` with a short timeout and renders `$.ui.status(...)` as e.g. `🎯 14/25 · ⚡ medium · 🧠 focused`. Read the keys `energy` and `attention` (the engine's current keys), falling back to `energy_level` and `attention_state`. Engine unreachable or malformed => status text says so; toast once on an up->down transition, once on recovery. Session minutes are counted by the mod from `session.start` (the engine's `session_minutes` is always 0).",
+    "M2 focus clock: `$.command.register` in `session.start` for `focus` (optional minutes argument, default 25, allowed 5-120), `break`, `done`, answered by `command.run` hooks returning `{ text }`. State in `$.store` or `$.state` as the contract allows (if `$.state` is used, ship types/index.d.ts and name it in plugin.json; that file is then part of the allowlist). A `ui.render` hook on `{ component: 'AbovePrompt' }` shows remaining minutes while a focus block runs and returns `next(e)` when idle. A toast at the limit; a gentler nudge at 90 minutes of continuous focus. All timers cancel on `session.end`.",
+    "Configuration: the engine URL comes from `userConfig` in plugin.json when the loaded skill documents it, default `http://127.0.0.1:3025`; otherwise a single constant. No secrets, no auth headers, no other hosts.",
+    "Safety: no `$.process.run`, no `$.fs` writes, no `prompt.submit` rewriting, no tool.call hooks, no model calls. Every hook body is wrapped so an exception cannot surface to the user; a failed poll must not throw.",
+    "Tests: at least one `*.test.ts` (register.test.ts) covering: status text for healthy/down/alias-key payloads, focus clock arithmetic and the 5-120 bound, toast-once-on-transition, idle band returns next(e). Run `claude plugin validate plugins/dopemux-pulse` and `claude plugin test plugins/dopemux-pulse`, and type-check with `tsc -p` if the types were laid; report each as PASS/FAIL/NOT_RUN with the reason.",
+    "README.md: what it shows, how to load it (`--plugin-dir plugins/dopemux-pulse`), the config option, the engine dependency, the known limitation that engine energy/attention are inferred from hook activity and are proxy data, and that the mod is read-only.",
+    "Live runtime proof (a real session loading the mod against a running engine) is NOT in this packet's reach: report it NOT_RUN and say what the operator must do to see it."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-PULSE-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-PULSE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/pulse-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(pulse): dopemux-pulse mod with truthful status line and focus clock",
+    "allowlist": [
+      "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+      "plugins/dopemux-pulse/hooks/hooks.json",
+      "plugins/dopemux-pulse/hooks/register.tsx",
+      "plugins/dopemux-pulse/hooks/register.test.ts",
+      "plugins/dopemux-pulse/README.md"
+    ],
+    "verify": [
+      "claude plugin validate plugins/dopemux-pulse",
+      "claude plugin test plugins/dopemux-pulse",
+      "git diff --name-only | sort   # subset of the allowlist (types/index.d.ts only if $.state is used and then it must be added by supervisor ruling)"
+    ]
+  },
+  "pr": {
+    "title": "feat(pulse): truthful ADHD status line + focus clock mod; fix ADHD /state key contract",
+    "body": "Implements MACRO-DMX-PULSE-001 (W01-W03). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Read the supplied declaration and design the hook set against it",
+      "requirements": [
+        "STOP if the declaration was not supplied."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "every API used exists in the declaration"
+      ],
+      "context_files": [
+        "plugins/Dopemux/register.php"
+      ]
+    },
+    {
+      "id": "W02-S2",
+      "task": "TDD: tests first for status text and focus clock, then the module",
+      "requirements": [
+        "Only the allowlisted files."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-pulse"
+      ],
+      "expected_files": [
+        "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+        "plugins/dopemux-pulse/hooks/hooks.json",
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts",
+        "plugins/dopemux-pulse/README.md"
+      ],
+      "validation": [
+        "tests fail before and pass after; validate PASS"
+      ],
+      "context_files": [
+        "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+        "plugins/dopemux-pulse/hooks/hooks.json",
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts",
+        "plugins/dopemux-pulse/README.md"
+      ]
+    },
+    {
+      "id": "W02-S3",
+      "task": "Return",
+      "requirements": [
+        "Per-file summary, validate/test/tsc results as PASS/FAIL/NOT_RUN, the runtime NOT_RUN statement, advisor_calls, files_written."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-PULSE-001",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "AGY-PULSE-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+    "plugins/dopemux-pulse/hooks/hooks.json",
+    "plugins/dopemux-pulse/hooks/register.tsx",
+    "plugins/dopemux-pulse/hooks/register.test.ts",
+    "plugins/dopemux-pulse/README.md"
+  ],
+  "canonical_writers": [
+    "W02-implementer"
+  ],
+  "semantic_scope": [
+    "pulse-mod"
+  ],
+  "rollback_boundary": "git revert <W02 commit> on feat/pulse-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

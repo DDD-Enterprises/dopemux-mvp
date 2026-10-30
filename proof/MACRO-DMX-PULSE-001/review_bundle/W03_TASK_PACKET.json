@@ -1,0 +1,137 @@
+{
+  "id": "TP-DMX-PULSE-W03-PULSE-DOCS-001",
+  "project": "dopemux-mvp",
+  "target": "Write the how-to for the Pulse mod at docs/02-how-to/pulse-status-line.md, accurate to what W02 actually built.",
+  "invariants": [
+    "MACRO I01-I08 apply (MACRO-DMX-PULSE-001).",
+    "Runs after W02 and must be derived from the committed W02 files, not from this packet's intent. If the built mod differs from the W02 invariants, document what was built.",
+    "Follow the docs conventions: kebab-case filename, YAML frontmatter required by docs-frontmatter-guard (run `python scripts/docs_frontmatter_guard.py` and the docs placement/filename hooks), a Diataxis how-to shape, under 150 lines.",
+    "Cover: what the status line and focus clock show; how to load the mod; the engine URL option; the ADHD Engine dependency and its default port; the limitation that engine state is proxy-inferred; the /state key fix (W01) and that `session_minutes` is still 0; troubleshooting when the engine is down; that nothing is written to the engine.",
+    "Do not claim runtime behaviour that was not observed; mark live behaviour as not verified."
+  ],
+  "depends_on": [
+    "TP-DMX-PULSE-W02-PULSE-MOD-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-PULSE-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-PULSE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/pulse-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(pulse): how-to for the dopemux-pulse status line and focus clock",
+    "allowlist": [
+      "docs/02-how-to/pulse-status-line.md"
+    ],
+    "verify": [
+      ".venv/bin/python scripts/docs_frontmatter_guard.py --help >/dev/null  # then run it per its usage on the new file",
+      ".venv/bin/pre-commit run --files docs/02-how-to/pulse-status-line.md",
+      "git diff --name-only | sort   # equals the allowlist"
+    ]
+  },
+  "pr": {
+    "title": "feat(pulse): truthful ADHD status line + focus clock mod; fix ADHD /state key contract",
+    "body": "Implements MACRO-DMX-PULSE-001 (W01-W03). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W03-S1",
+      "task": "Read the committed mod and README",
+      "requirements": [
+        "Derive every statement from code."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "facts match the committed W02 files"
+      ],
+      "context_files": [
+        "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+        "plugins/dopemux-pulse/hooks/hooks.json",
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts",
+        "plugins/dopemux-pulse/README.md"
+      ]
+    },
+    {
+      "id": "W03-S2",
+      "task": "Write the how-to and pass the docs hooks",
+      "requirements": [
+        "Only the allowlisted file."
+      ],
+      "commands": [
+        ".venv/bin/pre-commit run --files docs/02-how-to/pulse-status-line.md"
+      ],
+      "expected_files": [
+        "docs/02-how-to/pulse-status-line.md"
+      ],
+      "validation": [
+        "docs hooks pass"
+      ],
+      "context_files": [
+        "docs/02-how-to/pulse-status-line.md"
+      ]
+    },
+    {
+      "id": "W03-S3",
+      "task": "Return",
+      "requirements": [
+        "Summary, hook results, advisor_calls, files_written."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-PULSE-001",
+  "workstream_id": "W03",
+  "risk_lane": "L2",
+  "audit_group": "AGY-PULSE-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-haiku-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [
+      {
+        "runner": "claude-code-agent",
+        "model": "claude-sonnet-5-5",
+        "effort": "UNKNOWN"
+      }
+    ],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "docs/02-how-to/pulse-status-line.md"
+  ],
+  "canonical_writers": [
+    "W03-implementer"
+  ],
+  "semantic_scope": [
+    "pulse-docs"
+  ],
+  "rollback_boundary": "git revert <W03 commit> on feat/pulse-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
