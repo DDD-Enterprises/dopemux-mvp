@@ -28,7 +28,7 @@ const EMPTY_FEED_TEXT = {
   closed: (url: string) => `No signals received. Socket ${url} is closed.`,
 };
 
-const monoSx = { fontFamily: '"JetBrains Mono", monospace' } as const;
+const monoSx = { fontFamily: brandTokens.fonts.mono } as const;
 
 const SignalFeed: React.FC<SignalFeedProps> = ({ notifications, socketUrl, socketState, onDismiss, onClear }) => {
   const isListening = socketState === 'open';
@@ -162,7 +162,7 @@ const SignalFeed: React.FC<SignalFeedProps> = ({ notifications, socketUrl, socke
                     gridColumn: { xs: '1 / 3', sm: 'auto' },
                     gridRow: { xs: 2, sm: 'auto' },
                     color: brandTokens.text.primary,
-                    fontFamily: '"Inter", sans-serif',
+                    fontFamily: brandTokens.fonts.body,
                     fontSize: '0.875rem',
                     overflowWrap: 'anywhere',
                   }}

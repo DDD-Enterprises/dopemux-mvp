@@ -203,6 +203,30 @@ test('the empty feed says connecting while the socket is connecting', async () =
   expect(screen.queryByText(/is closed/)).not.toBeInTheDocument();
 });
 
+test('a slow GET does not overwrite a newer live state_update', async () => {
+  let resolveFetch: (value: unknown) => void = () => {};
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockReturnValue(new Promise((resolve) => (resolveFetch = resolve)))
+  );
+  await renderApp();
+
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+    FakeSocket.instances[0].onmessage?.({
+      data: JSON.stringify({ type: 'state_update', data: { cognitive_load: 0.9 } }),
+    });
+  });
+  expect(screen.getByText('Break. Now.')).toBeInTheDocument();
+
+  await act(async () => {
+    resolveFetch({ ok: true, json: async () => livePayload(0.4) });
+  });
+
+  expect(screen.getByText('Break. Now.')).toBeInTheDocument();
+  expect(screen.queryByText('40%')).not.toBeInTheDocument();
+});
+
 test('a null socket message is reported, not thrown', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.4) }));
   await renderApp();

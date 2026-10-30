@@ -28,7 +28,7 @@ const STATE_HINTS: Record<LoadStatus, string> = {
 };
 
 const eyebrowSx = {
-  fontFamily: '"JetBrains Mono", monospace',
+  fontFamily: brandTokens.fonts.mono,
   fontSize: '0.75rem',
   fontWeight: 600,
   letterSpacing: '0.12em',
@@ -71,7 +71,7 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
         <Typography id="load-instrument-title" component="h2" sx={eyebrowSx}>
           Cognitive Load
         </Typography>
-        <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.75rem', color: brandTokens.text.muted }}>
+        <Typography sx={{ fontFamily: brandTokens.fonts.mono, fontSize: '0.75rem', color: brandTokens.text.muted }}>
           source adhd-engine
         </Typography>
       </Box>
@@ -80,7 +80,7 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
         <Typography
           component="span"
           sx={{
-            fontFamily: '"Space Grotesk", sans-serif',
+            fontFamily: brandTokens.fonts.display,
             fontWeight: 600,
             fontSize: { xs: '4.5rem', md: '5.5rem' },
             lineHeight: 0.9,
@@ -94,7 +94,7 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
           <Typography
             component="span"
             sx={{
-              fontFamily: status ? '"Space Grotesk", sans-serif' : '"JetBrains Mono", monospace',
+              fontFamily: status ? brandTokens.fonts.display : brandTokens.fonts.mono,
               fontWeight: 600,
               fontSize: status ? '1.5rem' : '1.25rem',
               letterSpacing: status ? 0 : '0.08em',
@@ -172,7 +172,7 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
           aria-hidden="true"
           sx={{
             display: 'flex',
-            fontFamily: '"JetBrains Mono", monospace',
+            fontFamily: brandTokens.fonts.mono,
             fontSize: { xs: '0.625rem', sm: '0.6875rem' },
             letterSpacing: { xs: 0, sm: '0.06em' },
             color: brandTokens.text.secondary,
@@ -191,7 +191,7 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
         <Box data-testid="forecast-value" sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
           {forecastPercent !== null ? (
             <>
-              <Typography component="span" sx={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: '1.625rem', fontWeight: 600 }}>
+              <Typography component="span" sx={{ fontFamily: brandTokens.fonts.display, fontSize: '1.625rem', fontWeight: 600 }}>
                 {`${forecastPercent}%`}
               </Typography>
               {forecastDelta !== null && (
@@ -201,7 +201,7 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
               )}
             </>
           ) : (
-            <Typography component="span" sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '1.125rem', fontWeight: 600, color: brandTokens.text.muted }}>
+            <Typography component="span" sx={{ fontFamily: brandTokens.fonts.mono, fontSize: '1.125rem', fontWeight: 600, color: brandTokens.text.muted }}>
               unknown
             </Typography>
           )}
@@ -212,7 +212,7 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
         <Typography sx={{ m: 0, p: 1.5, borderRadius: '10px', bgcolor: alpha(brandTokens.colors.inkBlack, 0.55), fontSize: '0.9375rem' }}>
           <Box
             component="span"
-            sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', color: brandTokens.colors.ritualCyan, mr: 1 }}
+            sx={{ fontFamily: brandTokens.fonts.mono, fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', color: brandTokens.colors.ritualCyan, mr: 1 }}
           >
             NEXT:
           </Box>

@@ -99,7 +99,7 @@ export default function TeamDashboard({ onError }: TeamDashboardProps = {}) {
           <Typography
             component="span"
             sx={{
-              fontFamily: '"JetBrains Mono", monospace',
+              fontFamily: brandTokens.fonts.mono,
               fontSize: '0.6875rem',
               letterSpacing: '0.08em',
               color: brandTokens.text.secondary,

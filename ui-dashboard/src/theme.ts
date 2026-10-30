@@ -49,6 +49,14 @@ export const brandTokens = {
     aftercare: '[AFTERCARE]',
     consent: '[CONSENT CHECK? y/N]',
   },
+  // Dopemux's own Iosevka builds (docs/03-reference/Dopemux Cockpit TUI Design System/fonts).
+  // Canonical Nerd Font names first, then the names older local builds expose, then the
+  // plain builds. Display is mono, as in the cockpit TUI system. Weights: Regular + Medium.
+  fonts: {
+    mono: '"Dopemux Term Nerd Font", "DopemuxTerm Nerd Font Mono", "Dopemux Term", ui-monospace, "SF Mono", monospace',
+    display: '"Dopemux Term Nerd Font", "DopemuxTerm Nerd Font Mono", "Dopemux Term", ui-monospace, "SF Mono", monospace',
+    body: '"Dopemux Editor Nerd Font", "DopemuxEditor Nerd Font", "Dopemux Editor", system-ui, sans-serif',
+  },
   status: {
     low: '#00FF85',
     optimal: '#2FFFF0',
@@ -133,14 +141,14 @@ const theme = createTheme({
     },
   },
   typography: {
-    // hue.body — Inter; hue.display — Space Grotesk; hue.mono — JetBrains Mono
-    fontFamily: '"Inter","SF Pro Display",sans-serif',
-    h1: { fontFamily: '"Space Grotesk",sans-serif', fontSize: '2.75rem', fontWeight: 600, letterSpacing: '0.04em' },
-    h2: { fontFamily: '"Space Grotesk",sans-serif', fontSize: '2rem', fontWeight: 600 },
-    h3: { fontFamily: '"Space Grotesk",sans-serif', fontSize: '1.6rem', fontWeight: 500 },
-    h4: { fontFamily: '"Space Grotesk",sans-serif' },
-    h5: { fontFamily: '"Space Grotesk",sans-serif' },
-    h6: { fontFamily: '"Space Grotesk",sans-serif', letterSpacing: '0.12em', textTransform: 'uppercase' },
+    // body: Dopemux Editor; display and mono: Dopemux Term (brandTokens.fonts)
+    fontFamily: brandTokens.fonts.body,
+    h1: { fontFamily: brandTokens.fonts.display, fontSize: '2.75rem', fontWeight: 600, letterSpacing: '0.04em' },
+    h2: { fontFamily: brandTokens.fonts.display, fontSize: '2rem', fontWeight: 600 },
+    h3: { fontFamily: brandTokens.fonts.display, fontSize: '1.6rem', fontWeight: 500 },
+    h4: { fontFamily: brandTokens.fonts.display },
+    h5: { fontFamily: brandTokens.fonts.display },
+    h6: { fontFamily: brandTokens.fonts.display, letterSpacing: '0.12em', textTransform: 'uppercase' },
     subtitle1: { fontWeight: 500 },
     button: { fontWeight: 600, letterSpacing: '0.08em' },
     fontSize: 15,
@@ -204,7 +212,7 @@ const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          fontFamily: '"JetBrains Mono","IBM Plex Mono",monospace',
+          fontFamily: brandTokens.fonts.mono,
           borderRadius: 999,
           letterSpacing: '0.08em',
           '&:focus-visible': {

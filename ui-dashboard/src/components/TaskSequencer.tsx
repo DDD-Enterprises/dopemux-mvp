@@ -549,21 +549,18 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
             </Typography>
           </Box>
         </Tooltip>
-        <Tooltip title="Sample queue. Not connected to a task source; progress is lost on reload." arrow>
-          <Chip
-            size="small"
-            label="[SAMPLE]"
-            className="dopemux-chip"
-            tabIndex={0}
-            sx={{
-              ml: 'auto',
-              borderColor: brandTokens.borders.strong,
-              color: brandTokens.text.secondary,
-              bgcolor: 'transparent',
-            }}
-            aria-label="Sample queue. Not connected to a task source; progress is lost on reload."
-          />
-        </Tooltip>
+        {/* Plain text, not a tab stop: it explains state and has nothing to activate. */}
+        <Chip
+          size="small"
+          label="[SAMPLE] not connected"
+          className="dopemux-chip"
+          sx={{
+            ml: 'auto',
+            borderColor: brandTokens.borders.strong,
+            color: brandTokens.text.secondary,
+            bgcolor: 'transparent',
+          }}
+        />
       </Box>
 
       {currentTask ? (
@@ -618,7 +615,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
               role="timer"
               aria-label={getTimerAriaLabel(taskTimer)}
               sx={{
-                fontFamily: '"Space Grotesk", sans-serif',
+                fontFamily: brandTokens.fonts.display,
                 mb: 1,
                 color: isOvertime ? brandTokens.colors.gremlinPink : 'inherit',
                 ...(isTimerRunning && {

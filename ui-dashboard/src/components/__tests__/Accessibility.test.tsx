@@ -101,8 +101,8 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   // Total remaining duration
   expect(content).toContain('role="status"');
   expect(content).toMatch(/aria-label=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks completed\. \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\.\$\{finishTimeLabel\s*\?\s*` Estimated completion: \$\{finishTimeLabel\}`\s*:\s*''\}`\s*\}/);
-  expect(content).toMatch(/<Tooltip[^>]*title="Sample queue\. Not connected to a task source; progress is lost on reload\."[^>]*arrow/);
-  expect(content).toContain('aria-label="Sample queue. Not connected to a task source; progress is lost on reload."');
+  expect(content).toContain('label="[SAMPLE] not connected"');
+  expect(content).not.toContain('label="[LIVE]"');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
   // Total remaining duration display and completed-state accessibility
   expect(content).toContain('role="status"');

@@ -1,8 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
-
 /* Direction B tokens: keep in sync with src/theme.ts brandTokens and
-   claudedocs/design/tokens.json. Color encodes state; surfaces stay quiet. */
+   claudedocs/design/tokens.json. Color encodes state; surfaces stay quiet.
+   Fonts are Dopemux's own Iosevka builds, loaded from the local install
+   (no web font request): see docs/03-reference/Dopemux Cockpit TUI Design System/fonts. */
 :root {
+  --font-mono: "Dopemux Term Nerd Font", "DopemuxTerm Nerd Font Mono", "Dopemux Term", ui-monospace, "SF Mono", monospace;
+  --font-body: "Dopemux Editor Nerd Font", "DopemuxEditor Nerd Font", "Dopemux Editor", system-ui, sans-serif;
   --ink-black: #020617;
   --void-navy: #041628;
   --velvet-plum: #081832;
@@ -26,7 +28,9 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
+  /* The families ship Regular and Medium only; never fake a heavier weight. */
+  font-synthesis: none;
   background-color: var(--ink-black);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
@@ -34,12 +38,12 @@ body {
 }
 
 code {
-  font-family: 'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.05em;
 }
 
 .dopemux-chip {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -51,7 +55,7 @@ code {
 
 /* Personality register: aftercare and banner lines only, never status. */
 .dopemux-roast {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--text-dim);
   letter-spacing: 0.05em;

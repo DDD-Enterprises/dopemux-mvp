@@ -47,7 +47,7 @@ const CONNECTION_META: Record<ConnectionStatus, { label: string; color: string }
   degraded: { label: '[DEGRADED]', color: brandTokens.colors.giltEdge },
 };
 
-const monoSx = { fontFamily: '"JetBrains Mono", monospace' } as const;
+const monoSx = { fontFamily: brandTokens.fonts.mono } as const;
 
 // String lengths on purpose: in MUI sx a bare `1` means 100%.
 const visuallyHiddenSx = {
@@ -82,8 +82,11 @@ function DashboardApp() {
   const [showAllPanels, setShowAllPanels] = useState(false);
   const [isSipLogged, setIsSipLogged] = useState(false);
   const sipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Once a live state_update lands, it is newer than any GET still in flight.
+  const liveReadingSeenRef = useRef(false);
 
   const handleRetry = useCallback(() => {
+    liveReadingSeenRef.current = false;
     setHttpError(null);
     setSocketState('connecting');
     setErrorMessage(null);
@@ -163,6 +166,9 @@ function DashboardApp() {
         setHttpError(`Failed: GET ${STATE_ENDPOINT} returned an unexpected payload.`);
         return;
       }
+      if (liveReadingSeenRef.current) {
+        return;
+      }
       applyReading(mapAggregateState(payload));
     }
 
@@ -197,6 +203,7 @@ function DashboardApp() {
       // It also supersedes an earlier failed GET, so that failure stops being shown.
       const nextReading = mapRealtimeState(message);
       if (nextReading) {
+        liveReadingSeenRef.current = true;
         applyReading(nextReading);
         setHttpError(null);
         return;
@@ -288,7 +295,7 @@ function DashboardApp() {
         >
           <Typography
             component="h1"
-            sx={{ m: 0, fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '0.08em' }}
+            sx={{ m: 0, fontFamily: brandTokens.fonts.display, fontWeight: 600, fontSize: '1.125rem', letterSpacing: '0.08em' }}
           >
             DØPEMÜX
             <Box component="span" sx={visuallyHiddenSx}>

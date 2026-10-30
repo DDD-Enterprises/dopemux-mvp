@@ -24,13 +24,13 @@ const ATTENTION_COLORS: Record<string, string> = {
 const humanize = (value: string) => value.replace(/_/g, ' ');
 
 const valueSx = {
-  fontFamily: '"Space Grotesk", sans-serif',
+  fontFamily: brandTokens.fonts.display,
   fontSize: '1.25rem',
   fontWeight: 600,
 } as const;
 
 const unknownSx = {
-  fontFamily: '"JetBrains Mono", monospace',
+  fontFamily: brandTokens.fonts.mono,
   fontSize: '1rem',
   fontWeight: 600,
   color: brandTokens.text.muted,
@@ -49,7 +49,7 @@ const AttentionStatePanel: React.FC<AttentionStatePanelProps> = ({ energyLevel, 
         id="attention-state-title"
         component="h2"
         sx={{
-          fontFamily: '"JetBrains Mono", monospace',
+          fontFamily: brandTokens.fonts.mono,
           fontSize: '0.75rem',
           fontWeight: 600,
           letterSpacing: '0.12em',
