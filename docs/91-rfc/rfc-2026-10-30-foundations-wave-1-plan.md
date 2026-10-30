@@ -18,6 +18,8 @@ prelude: Task-by-task implementation plan for Foundations Wave 1 (tests/arch in 
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> Erratum (2026-10-30): CI runs Python 3.12.13 (uv honors `.python-version`); where this plan says 3.11 for CI, read 3.12.13.
+
 **Goal:** Make the repo's contract tests run in CI, make the ADHD engine's MCP tools work on the real engine, add `dopemux adhd status`, and catch service port drift.
 
 **Architecture:** Four independent code tasks with disjoint write sets (CI workflow; engine adapter methods plus a parity test; a new click command group; a drift test plus config default fixes), then one docs task. All new tests live in `tests/arch/` or `tests/unit/`, both of which CI runs once Task 1 lands.

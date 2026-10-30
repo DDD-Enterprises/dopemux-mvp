@@ -70,7 +70,7 @@ The three Claude Code mods built last week (Pulse, Route Ledger, Memory Bridge) 
 - **Audit route.** The operator approves the route per run with a literal authorization line. Precedent for this repo is Grok via `grok-cli` / `grok-4.5`, tool-less, one attempt. Not assumed.
 - **Merge order.** `main` requires up-to-date branches, and a signed proof binds a PR to its audited head (`docs/92-runbooks/signed-proof-merge-order.md` on PR #1484). This wave's audit should run after #1482, #1472 and #1483 have merged, or accept one re-audit per later merge. Docs PR #1484 overlaps this wave on `AGENTS.md` and `.claude/claude.md`; whichever merges second needs an update.
 - **Pushing a workflow file** needs a token with the `workflow` scope. If the push is refused, the operator pushes.
-- **Tooling.** `uv --frozen`, pytest with strict markers (`pytest.ini`), new CLI commands under `src/dopemux/commands/` (repo CLAUDE.md). **CI runs Python 3.11** (`ci-complete.yml:172-174`); the repo venv is 3.12 and `requires-python` is `>=3.11,<3.14`. The 184-pass result for `tests/arch` is from the 3.12 repo venv. The CI-equivalent environment (Python 3.11, `uv sync --frozen --extra test --extra services`) has not been tried and is the first step of W1. Every new test in this wave must pass there; none may be skipped to get green.
+- **Tooling.** `uv --frozen`, pytest with strict markers (`pytest.ini`), new CLI commands under `src/dopemux/commands/` (repo CLAUDE.md). **CI runs Python 3.12.13.** `actions/setup-python` installs 3.11 (`ci-complete.yml:173`), but `uv sync --frozen --extra test --extra services` (`ci-complete.yml:182`) has no `--python`, so uv honors `.python-version` (3.12.13). `requires-python` is `>=3.11,<3.14`. The 184-pass result for `tests/arch` is from the 3.12 repo venv. The CI-equivalent environment (`uv sync --frozen --extra test --extra services`, no `--python`) has not been tried and is the first step of W1. Every new test in this wave must pass there; none may be skipped to get green.
 - **Timing (supervisor's call; the operator can override).** Build W1-W5 now. Freeze when all five are committed and their checks pass. Run the one audit after #1482, #1472 and #1483 have merged, so it is not made stale by them. If the operator wants the audit sooner, each later merge costs one re-audit.
 - **Write sets are fixed at issuance.** A child that finds it needs a file outside its set stops and returns. Widening a set is a supervisor amendment to the MacroPacket, recorded with the reason (precedent: MACRO-DMX-CMD-REPAIR-001 AMENDMENT-01 and -02).
 
@@ -82,7 +82,7 @@ All write sets are disjoint. The only shared file is `src/dopemux/cli.py`, and o
 
 - **Writes:** `.github/workflows/ci-complete.yml` only.
 - **Decided:** add a separate pytest step for `tests/arch` inside the existing `🧪 Unit Tests` job, so it inherits that job's required-check status. Use a separate process, like the dope-memory step at `:192-198`, so `tests/arch` collection cannot shadow imports for `tests/unit`. Run it with `--no-cov`, like the other gates.
-- **First step:** run `uv run --frozen pytest tests/arch` under Python 3.11 with the CI sync (`--extra test --extra services`) and record the result. If anything fails there that passes in the repo venv, stop and return. Fixing a test is outside W1's write set and needs a supervisor amendment.
+- **First step:** run `uv run --frozen pytest tests/arch` under the CI sync (`--extra test --extra services`; Python 3.12.13 from `.python-version`) and record the result. If anything fails there that passes in the repo venv, stop and return. Fixing a test is outside W1's write set and needs a supervisor amendment.
 - **Consequence to note in the PR:** once #1445 merges, its command drift gate (`tests/arch/test_claude_command_references.py`) runs in CI automatically.
 
 ### W2 - ADHD engine MCP repair
@@ -95,7 +95,7 @@ All write sets are disjoint. The only shared file is `src/dopemux/cli.py`, and o
   - `.score` comes from a fixed, documented table over the energy enum. It is not a measurement and the docstring says so.
   - The test lives in `tests/arch/`, so W1 makes CI run it. `services/adhd_engine/tests/` is not run by CI. It has two parts:
     1. **Static parity:** parse `main.py` with `ast`, collect every `engine.<name>(...)` call inside functions decorated `@mcp.tool()`, and assert each name is defined on both the real engine class and the fallback class. This needs no imports, no Redis and no network.
-    2. **Behavior:** call each new method on a real-engine instance with seeded state and check the returned shapes and values. This part must also import and pass under the CI environment (Python 3.11, `--extra services`). If the engine module cannot be imported there, W2 stops and returns; the behavior half is not skipped.
+    2. **Behavior:** call each new method on a real-engine instance with seeded state and check the returned shapes and values. This part must also import and pass under the CI environment (Python 3.12.13 via `.python-version`, `--extra services`). If the engine module cannot be imported there, W2 stops and returns; the behavior half is not skipped.
 - **Left to the builder:** how to build a real-engine instance offline (the constructor reads settings and creates a PAL client, `core/engine.py:126-137`), and the score table's values.
 
 ### W3 - `dopemux adhd status`
@@ -187,7 +187,7 @@ An independent reader checked this design before approval and raised eight quest
 3. The real engine's `assess_task` uses the operator user id and marks placeholder inputs in its output; `.score` is a documented table, not a measurement (W2).
 4. `scripts/dopemux_dashboard.py` is too stale to fix by changing one port, so it gets per-port exceptions and a follow-up; `manager.py`'s Dope layout defaults are fixed where the registry service is unambiguous (W4; revised during plan recon).
 5. Port comparison is host-port only; services without host ports are listed as not comparable; stale exceptions fail (W4).
-6. CI is Python 3.11; every new test must pass there with no skips, and a child that needs a file outside its write set stops for an amendment (section 5).
+6. CI runs Python 3.12.13 (uv honors `.python-version`); every new test must pass there with no skips, and a child that needs a file outside its write set stops for an amendment (section 5).
 7. Build now, audit after #1482, #1472 and #1483 merge (section 5).
 
 ## 10. Follow-ups this wave creates (not done here)

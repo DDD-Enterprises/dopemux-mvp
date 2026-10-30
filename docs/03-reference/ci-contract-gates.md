@@ -18,12 +18,15 @@ prelude: What the tests/arch contract tests check, how CI now runs them, how to 
 The `🧪 Unit Tests` job in `.github/workflows/ci-complete.yml` has a step named `▶️ Run arch contract gate`:
 
 ```bash
-uv run --frozen pytest tests/arch -n auto --maxfail=1 --disable-warnings --no-cov
+uv run --frozen pytest tests/arch --maxfail=1 --disable-warnings --no-cov
 ```
+
+- It is the last step of the job, so a failure here cannot hide the results of steps that have no `if:`. It runs serially: `-n auto` was slower here (6.8 s serial against 22.7 s).
 
 - It is a separate pytest process from the `tests/unit` step. `tests/arch` imports service packages whose module names could shadow modules that `tests/unit` imports if both were collected together (the same reason as the dope-memory step above it).
 - It inherits the required-check status of the `🧪 Unit Tests` job.
-- CI uses Python 3.11 and `uv sync --frozen --extra test --extra services`. The repo venv is 3.12. Every test in `tests/arch` must pass in the CI environment without skips.
+- The job runs `actions/setup-python` with 3.11, but `uv sync --frozen --extra test --extra services` has no `--python` flag, so uv selects 3.12.13 from `.python-version`, and that is the interpreter CI tests run on. To reproduce CI, run `uv sync --frozen --extra test --extra services` (no `--python`).
+- The tests this wave added have no skip markers. Some existing `tests/arch` files have skip branches, for example `test_mcp_multiproject_contracts.py:513-526` (`test_no_runtime_effect_diff` skips when its git range or the `git` binary is missing), that do not fire in CI, where the checkout has full history (`fetch-depth: 0`).
 - The job stops at the first failure (`--maxfail=1`), so one red test hides the others until it is fixed.
 
 ## What `tests/arch` checks
@@ -55,7 +58,7 @@ From the repo root, with the repo venv (Python 3.12):
 To match CI more closely:
 
 ```bash
-uv run --frozen --extra test --extra services pytest tests/arch -n auto --no-cov
+uv run --frozen --extra test --extra services pytest tests/arch --no-cov
 ```
 
 Pytest markers are strict (`pytest.ini`).
@@ -69,7 +72,7 @@ Pytest markers are strict (`pytest.ini`).
 | Test | Rule |
 |---|---|
 | `test_registry_matches_catalog` | For a service in both the registry and `mcp_catalog.yaml`, the registry port equals the catalog's `reserved_port`, else `default_port_base`, else the port in `url` / `url_template`. |
-| `test_registry_matches_compose_for_non_smoke` | For a registry service not marked `enabled_in_smoke`, the registry port is among the host ports its compose service publishes. Smoke services are covered by `test_registry_compose_alignment.py`. A compose service with no host `ports:` or with `network_mode`, or a missing one, is "not comparable": it is printed (`not comparable: ...`) and does not fail. |
+| `test_registry_matches_compose_for_non_smoke` | For a registry service not marked `enabled_in_smoke`, the registry port is among the host ports its compose service publishes. Smoke services are covered by `test_registry_compose_alignment.py`. A compose service with no host `ports:` or with `network_mode` is "not comparable": it is printed (`not comparable: ...`) and does not fail. A registry `compose_service_name` that does not exist in `compose.yml` fails `test_registry_services_exist_in_compose`, which names the registry service and the missing compose name. |
 | `test_no_unknown_port_literals` | A `localhost:N` or `127.0.0.1:N` literal in the scanned files must be a port in the registry or the catalog. |
 | `test_named_defaults_match_registry` | In `src/dopemux/config/manager.py`, `adhd_engine_url`, `leantime_url`, `serena_url` and `litellm_url` use the registry port of `adhd-engine`, `leantime`, `serena` and `litellm`. The test also fails if it finds no such line, so a rename cannot hide drift. |
 | `test_cli_default_port_matches_registry` | `DEFAULT_ADHD_ENGINE_PORT` in `dopemux.commands.adhd_commands` equals the registry port of `adhd-engine` (3025). |
@@ -79,12 +82,12 @@ Scanned files for the literal rule (`SCANNED_FILES`): `src/dopemux/config/manage
 ### Limits of the literal rule
 
 - It only sees text of the form `localhost:N` or `127.0.0.1:N`. A bare number such as the `5448` and `8095` probes in `service_endpoints.py` and `profile_detector.py`, or a port built from a variable, is invisible to it.
-- It flags a port only if the port is unknown. A port that is valid for a different service passes. For example `.claude/statusline.sh` probes `localhost:3009` as task-orchestrator, but `3009` is `gptr-mcp`, so the test does not flag it.
+- It flags a port only if the port is unknown. A port that is valid for a different service passes. For example `.claude/statusline.sh` probes `localhost:3009` as task-orchestrator, but `3009` is `gpt-researcher` in the registry and `gptr-mcp` in compose and the catalog, so the test does not flag it. `.claude/statusline.sh:220` probes `nc -z -w 1 localhost 8096`; 8096 is in no registry, catalog or compose file, but the literal rule cannot see `nc -z` forms, so it is not flagged either.
 - It checks ports, not paths. `mcp_server_health_report.sh` probes pal at `/mcp` where the catalog's health URL is `/health`; the test does not see that.
 
 ### Fixed in this wave
 
-`src/dopemux/config/manager.py` carried stale defaults for the Dope layout (class defaults and the layout dict). They now use the registry ports: `adhd_engine_url` 3025 (was 3008), `leantime_url` 8080 (was 3007), `serena_url` 3006 (was 3010, which is dope-context). Two other defaults, `conport_url` (3009, which is gpt-researcher) and `activity_capture_url`, have no unambiguous registry service and were left alone (follow-up below).
+`src/dopemux/config/manager.py` carried stale defaults for the Dope layout (class defaults and the layout dict). They now use the registry ports: `adhd_engine_url` 3025 (was 3008), `leantime_url` 8080 (was 3007), `serena_url` 3006 (was 3010, which is dope-context). Two other defaults, `conport_url` (3009, which is `gpt-researcher` in the registry and `gptr-mcp` in compose and the catalog) and `activity_capture_url`, have no unambiguous registry service and were left alone (follow-up below).
 
 ### Add an exception
 
@@ -120,7 +123,7 @@ From section 10 of the [design](../91-rfc/rfc-2026-10-30-foundations-wave-1.md).
 - Break-writer endpoint and `dopemux adhd break|focus|ack`, after PR #1472 merges.
 - Register the engine's MCP server in the catalog and `.mcp.json`.
 - Triage `services/adhd_engine/tests/` and wire it into CI.
-- Fix the task-orchestrator probe in `.claude/statusline.sh`.
+- Fix the task-orchestrator probe in `.claude/statusline.sh` (the `localhost:3009` probe) and the `nc -z -w 1 localhost 8096` probe at `.claude/statusline.sh:220`; the literal rule cannot see `nc -z` forms.
 - Retire `services/adhd_engine/cli/adhd.py`.
 - Resolve the task-orchestrator name collision (S2).
 - Proof-only closure mode for clean merges of `main` (operator decision).
