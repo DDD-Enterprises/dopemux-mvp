@@ -3203,6 +3203,10 @@ from .commands.update_commands import update
 
 cli.add_command(update)
 
+from .commands.adhd_commands import adhd
+
+cli.add_command(adhd)
+
 
 from .commands.profile_commands import profile
 
