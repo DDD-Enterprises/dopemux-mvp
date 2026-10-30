@@ -1,0 +1,116 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-R6-W02-BASE-UPDATE-001",
+  "project": "dopemux-mvp",
+  "target": "After #1482 merges: bring the then-current main into the branch, re-run every gate (including repeated concurrent test runs), freeze the merged head and prepare the R6 audit bundle.",
+  "invariants": [
+    "C01 Shared workspace: other sessions may change unrelated files (.codex/config.toml, .agents/): never commit, discard or overwrite them. Edit only your write_surface. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head c1256c0600 (a local, unpushed merge of origin/main 97b6d5040).",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history; you do not stage. The team lead alone commits (explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env* or credential files. No network. No real `dopemux capture emit`.",
+    "C05 Truth buckets: PASS / FAIL / NOT_RUN / UNKNOWN literally. Live behaviour NOT_RUN.",
+    "C06 Return fields: status (READY_FOR_AUDIT | BLOCKED | NEEDS_SUPERVISOR | INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN), blockers, advisor_calls, files_written, observed_model.",
+    "C07 Stop and return evidence instead of improvising when the root cause is outside your write_surface, or validation still fails after one fix attempt for the same cause.",
+    "A01 PROPOSED allowances: no model call (local-shell, the team lead); elapsed 60 min of work after the gate opens.",
+    "B01 Gate: starts only after PR #1482 (Route Ledger) is MERGED into main (operator merge order 2026-10-30: #1482, then #1483, then #1485 and #1484). Until then it waits; nothing is signed or pushed.",
+    "B02 Bring the then-current origin/main into the branch with the app's sync tool (never `git pull`, never a rebase or history rewrite). Another session's uncommitted `.codex/config.toml` edit may be set aside under a unique stash tag and must be restored byte-identical (same sha256) right after; record both hashes.",
+    "B03 Gates on the merged head: Memory Bridge `claude plugin validate`, `claude plugin test` (sequential, plus six concurrent runs twice: 0 failures), `tsc -p`; `claude plugin test` and `validate` of every other plugin on main (Pulse, and Route Ledger after #1482); `git diff --check origin/main..HEAD`; `validate_change_contract.py --base origin/main --head HEAD`; the Memory Bridge content diff against the new main recorded with its sha256.",
+    "B04 Freeze the merged head as the R6 audit subject and prepare the audit bundle under proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/; the audit itself needs the operator's R6 audit-route line."
+  ],
+  "depends_on": [
+    "TP-DMX-MEMBRIDGE-R6-W01-FLAKY-KEY-TEST-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/memory-bridge-001-b349d8",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "proof(memory-bridge): R6 base update and gate record",
+    "allowlist": [
+      "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6"
+    ],
+    "verify": [
+      "git diff --check origin/main..HEAD",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001-R6. Draft until the final independent L2 audit of the merged head and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Wait for #1482 to merge; then sync main",
+      "requirements": [
+        "Sync tool only; restore other sessions' edits byte-identical."
+      ],
+      "commands": [
+        "gh pr view 1482 --json state,mergedAt"
+      ],
+      "expected_files": [],
+      "validation": [
+        "merged head recorded"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W02-S2",
+      "task": "Run every gate on the merged head and freeze it",
+      "requirements": [
+        "Record results."
+      ],
+      "commands": [
+        "git diff --check origin/main..HEAD"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6"
+      ],
+      "validation": [
+        "all gates PASS"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001-R6",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "local-shell",
+      "model": "NONE",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6"
+  ],
+  "canonical_writers": [
+    "W02-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-base-update"
+  ],
+  "rollback_boundary": "git revert <W02 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head c1256c0600",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
