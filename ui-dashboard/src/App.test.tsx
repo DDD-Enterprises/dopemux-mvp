@@ -227,6 +227,28 @@ test('a slow GET does not overwrite a newer live state_update', async () => {
   expect(screen.queryByText('40%')).not.toBeInTheDocument();
 });
 
+test('a GET that fails after a live update does not bring back a stale failure banner', async () => {
+  let rejectFetch: (reason: unknown) => void = () => {};
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockReturnValue(new Promise((_resolve, reject) => (rejectFetch = reject)))
+  );
+  await renderApp();
+
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+    FakeSocket.instances[0].onmessage?.({
+      data: JSON.stringify({ type: 'state_update', data: { cognitive_load: 0.4 } }),
+    });
+  });
+  await act(async () => {
+    rejectFetch(new TypeError('Failed to fetch'));
+  });
+
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  expect(screen.getByText('40%')).toBeInTheDocument();
+});
+
 test('a null socket message is reported, not thrown', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.4) }));
   await renderApp();

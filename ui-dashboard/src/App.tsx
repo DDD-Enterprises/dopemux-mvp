@@ -131,22 +131,26 @@ function DashboardApp() {
   useEffect(() => {
     let isMounted = true;
 
+    // Once a live state_update has landed, this GET is obsolete: neither its reading
+    // nor its failure may replace what the socket already delivered.
+    const isCurrent = () => isMounted && !liveReadingSeenRef.current;
+    const fail = (message: string) => {
+      if (isCurrent()) {
+        setHttpError(message);
+      }
+    };
+
     // Each failure stage gets its own message so the banner names what actually broke.
     async function loadInitialState() {
       let response: Response;
       try {
         response = await fetch(STATE_ENDPOINT, { headers: dashboardApiHeaders });
       } catch {
-        if (isMounted) {
-          setHttpError(`Failed: GET ${STATE_ENDPOINT}, no response (network error).`);
-        }
-        return;
-      }
-      if (!isMounted) {
+        fail(`Failed: GET ${STATE_ENDPOINT}, no response (network error).`);
         return;
       }
       if (!response.ok) {
-        setHttpError(`Failed: GET ${STATE_ENDPOINT} returned HTTP ${response.status}.`);
+        fail(`Failed: GET ${STATE_ENDPOINT} returned HTTP ${response.status}.`);
         return;
       }
 
@@ -154,22 +158,16 @@ function DashboardApp() {
       try {
         payload = await response.json();
       } catch {
-        if (isMounted) {
-          setHttpError(`Failed: GET ${STATE_ENDPOINT} returned invalid JSON.`);
-        }
-        return;
-      }
-      if (!isMounted) {
+        fail(`Failed: GET ${STATE_ENDPOINT} returned invalid JSON.`);
         return;
       }
       if (!isMessageObject(payload)) {
-        setHttpError(`Failed: GET ${STATE_ENDPOINT} returned an unexpected payload.`);
+        fail(`Failed: GET ${STATE_ENDPOINT} returned an unexpected payload.`);
         return;
       }
-      if (liveReadingSeenRef.current) {
-        return;
+      if (isCurrent()) {
+        applyReading(mapAggregateState(payload));
       }
-      applyReading(mapAggregateState(payload));
     }
 
     void loadInitialState();

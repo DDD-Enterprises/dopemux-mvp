@@ -109,9 +109,11 @@ move on the **load instrument**. Everything else goes quiet: flat ink plus one h
 velvet panels that glow only when they are the active focus, a log-style signal feed,
 and an explicit `unknown` treatment for every readout.
 
-Font note: the design system README names Iosevka Term for mono, while `tokens.json` and
-`theme.ts` use JetBrains Mono. **UNKNOWN + TODO:** the owner should pick one. This change keeps
-JetBrains Mono (repo canonical).
+Font note (resolved by the owner, 2026-10-30): the product uses dopemux's own Iosevka builds,
+**Dopemux Term** (mono and display) and **Dopemux Editor** (body), as defined in
+`docs/03-reference/Dopemux Cockpit TUI Design System/fonts` (DMX-COCKPIT-FONTS-101..103).
+Stacks name `Dopemux Term Nerd Font` first, then `DopemuxTerm Nerd Font Mono` (what older local
+builds expose), then the plain build. Space Grotesk, Inter and JetBrains Mono are no longer used.
 
 ## Backend contract note (FACT)
 
