@@ -64,8 +64,7 @@ def resolve_engine_url(
         port = _valid_port(raw)
         if port is None:
             click.echo(
-                f"warning: ignoring {name}={raw!r}: "
-                "not an integer from 1 to 65535",
+                f"warning: ignoring {name}={raw!r}: " "not an integer from 1 to 65535",
                 err=True,
             )
             continue
@@ -100,9 +99,7 @@ def _engine_mode(base: str, timeout: float) -> Tuple[str, str]:
     return "normal", ""
 
 
-def fetch_status(
-    base_url: str, url_source: str, timeout: float = 2.0
-) -> StatusResult:
+def fetch_status(base_url: str, url_source: str, timeout: float = 2.0) -> StatusResult:
     """Probe ``/api/v1/state`` then ``/health`` and classify the outcome."""
     base = base_url.rstrip("/")
 
@@ -128,9 +125,7 @@ def fetch_status(
     except ValueError:
         return fail("malformed", "GET /api/v1/state did not return JSON")
     if not isinstance(body, dict):
-        return fail(
-            "malformed", "GET /api/v1/state did not return a JSON object"
-        )
+        return fail("malformed", "GET /api/v1/state did not return a JSON object")
 
     # The *_level / *_state aliases win over the original keys.
     energy = _first_str(body, "energy_level", "energy")
@@ -140,9 +135,7 @@ def fetch_status(
 
     minutes = body.get("session_minutes")
     session_minutes = (
-        minutes
-        if isinstance(minutes, int) and not isinstance(minutes, bool)
-        else None
+        minutes if isinstance(minutes, int) and not isinstance(minutes, bool) else None
     )
 
     mode, startup_error = _engine_mode(base, timeout)
@@ -173,7 +166,7 @@ def _human_line(result: StatusResult) -> str:
     parts = [f"energy {result.energy}"]
     if result.attention is not None:
         parts.append(f"attention {result.attention}")
-    if result.session_minutes:
+    if result.session_minutes is not None and result.session_minutes > 0:
         parts.append(f"session {result.session_minutes} min")
     line = f"{head}: {', '.join(parts)}"
     if result.status == "degraded":
@@ -187,12 +180,8 @@ def adhd() -> None:
 
 
 @adhd.command()
-@click.option(
-    "--json", "as_json", is_flag=True, help="Print machine-readable JSON."
-)
-@click.option(
-    "--url", default=None, help="Engine base URL (overrides environment)."
-)
+@click.option("--json", "as_json", is_flag=True, help="Print machine-readable JSON.")
+@click.option("--url", default=None, help="Engine base URL (overrides environment).")
 def status(as_json: bool, url: Optional[str]) -> None:
     """Show ADHD engine status (read-only).
 

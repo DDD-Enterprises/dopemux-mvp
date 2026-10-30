@@ -263,9 +263,7 @@ def test_status_connection_refused_is_unreachable(
 def test_status_timeout_is_unreachable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    result = run_status(
-        monkeypatch, {"/api/v1/state": requests.Timeout("slow")}
-    )
+    result = run_status(monkeypatch, {"/api/v1/state": requests.Timeout("slow")})
     assert result.exit_code == 1
     assert "ADHD engine unreachable" in result.output
 
@@ -273,9 +271,7 @@ def test_status_timeout_is_unreachable(
 def test_status_non_2xx_is_unreachable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    result = run_status(
-        monkeypatch, {"/api/v1/state": (500, {"detail": "err"})}
-    )
+    result = run_status(monkeypatch, {"/api/v1/state": (500, {"detail": "err"})})
     assert result.exit_code == 1
     assert "ADHD engine unreachable" in result.output
     assert "500" in result.output
@@ -284,9 +280,7 @@ def test_status_non_2xx_is_unreachable(
 def test_status_non_json_body_is_malformed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    result = run_status(
-        monkeypatch, {"/api/v1/state": (200, "<html>hi</html>")}
-    )
+    result = run_status(monkeypatch, {"/api/v1/state": (200, "<html>hi</html>")})
     assert result.exit_code == EXIT_CODES["malformed"] == 1
     assert "ADHD engine malformed" in result.output
 
@@ -294,9 +288,7 @@ def test_status_non_json_body_is_malformed(
 def test_status_missing_energy_is_malformed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    result = run_status(
-        monkeypatch, {"/api/v1/state": (200, {"attention": "focused"})}
-    )
+    result = run_status(monkeypatch, {"/api/v1/state": (200, {"attention": "focused"})})
     assert result.exit_code == 1
     assert "ADHD engine malformed" in result.output
 
@@ -332,7 +324,18 @@ def test_session_minutes_hidden_when_zero(
     assert "session" not in run_status(monkeypatch, routes).output
 
     routes["/api/v1/state"] = (200, {**MAIN_STATE, "session_minutes": 12})
-    assert "12" in run_status(monkeypatch, routes).output
+    assert "session 12 min" in run_status(monkeypatch, routes).output
+
+
+@pytest.mark.parametrize("minutes", [-3, 0])
+def test_session_minutes_hidden_when_not_positive(
+    monkeypatch: pytest.MonkeyPatch, minutes: int
+) -> None:
+    routes: Dict[str, Reply] = {
+        "/api/v1/state": (200, {**MAIN_STATE, "session_minutes": minutes}),
+        "/health": (200, NORMAL_HEALTH),
+    }
+    assert "session" not in run_status(monkeypatch, routes).output
 
 
 def test_json_output_schema(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -368,9 +371,7 @@ def test_url_option_overrides_and_is_used(
         return base(url, *args, **kwargs)
 
     monkeypatch.setattr(adhd_commands.requests, "get", spy)
-    result = CliRunner().invoke(
-        adhd, ["status", "--url", "http://example.test:9/"]
-    )
+    result = CliRunner().invoke(adhd, ["status", "--url", "http://example.test:9/"])
     assert result.exit_code == 0
     assert seen == [
         "http://example.test:9/api/v1/state",
