@@ -1,0 +1,138 @@
+{
+  "id": "TP-DMX-PULSE-W01-STATE-CONTRACT-001",
+  "project": "dopemux-mvp",
+  "target": "Fix the ADHD Engine GET /api/v1/state key contract: it returns `energy` and `attention`, but the TUI (src/dopemux/ui/dashboard.py), .claude/hooks/check_energy.sh, services/adhd_engine/scripts/adhd-tmux-status.sh and the dope-memory recap read `energy_level` and `attention_state`, so those consumers silently show defaults. Make the endpoint serve both spellings, non-breaking, with a contract test.",
+  "invariants": [
+    "MACRO I01-I08 apply (MACRO-DMX-PULSE-001).",
+    "Edit services/adhd_engine/api/routes.py ONLY inside get_adhd_state (the `/state` handler, ~line 1555) and add the new test file. Do not touch any consumer; consumers are out of scope.",
+    "Add `energy_level` and `attention_state` to BOTH return paths (the normal return and the exception fallback), with values identical to `energy` and `attention`. Keep `energy`, `attention`, `session_minutes` and `user_id` exactly as they are (non-breaking).",
+    "Do NOT change `session_minutes` behaviour: it is always 0 today because `_session_start_times` is never set anywhere; fixing it needs core/engine.py changes and is a separate decision. State this limitation in the return.",
+    "Test (new file services/adhd_engine/tests/test_state_contract.py, follow the conventions in services/adhd_engine/tests/conftest.py and test_api.py): GET /api/v1/state returns all six keys; alias values equal their primary values; the exception fallback also returns all six keys; an unknown user_id works. Write the failing test first and show it fail before the fix.",
+    "The route is mounted at prefix /api/v1 (services/adhd_engine/main.py:531). Confirm by reading, do not assume.",
+    "No new dependencies, no config or compose changes, no API key requirement changes (the endpoint is deliberately keyless for local hooks)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-PULSE-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-PULSE-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/pulse-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(adhd-engine): serve energy_level/attention_state alongside energy/attention on /state",
+    "allowlist": [
+      "services/adhd_engine/api/routes.py",
+      "services/adhd_engine/tests/test_state_contract.py"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest services/adhd_engine/tests/test_state_contract.py -q",
+      ".venv/bin/python -m pytest services/adhd_engine/tests -q   # report any pre-existing failures separately, do not fix them",
+      ".venv/bin/black --check services/adhd_engine/tests/test_state_contract.py",
+      ".venv/bin/flake8 services/adhd_engine/tests/test_state_contract.py",
+      "git diff --name-only | sort   # must equal the allowlist"
+    ]
+  },
+  "pr": {
+    "title": "feat(pulse): truthful ADHD status line + focus clock mod; fix ADHD /state key contract",
+    "body": "Implements MACRO-DMX-PULSE-001 (W01-W03). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Read the handler, its consumers and the test conventions",
+      "requirements": [
+        "Confirm mount path and the six keys."
+      ],
+      "commands": [
+        "sed -n '1555,1600p' services/adhd_engine/api/routes.py"
+      ],
+      "expected_files": [],
+      "validation": [
+        "current behaviour understood"
+      ],
+      "context_files": [
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/main.py",
+        "services/adhd_engine/tests/conftest.py",
+        "services/adhd_engine/tests/test_api.py"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "TDD: write the contract test, show it fails, then add the alias keys",
+      "requirements": [
+        "Only the /state handler changes."
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest services/adhd_engine/tests/test_state_contract.py -q"
+      ],
+      "expected_files": [
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/tests/test_state_contract.py"
+      ],
+      "validation": [
+        "test fails before, passes after"
+      ],
+      "context_files": [
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/tests/test_state_contract.py"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Return",
+      "requirements": [
+        "Per-file summary, fail-then-pass evidence, verify exit codes, the session_minutes limitation, advisor_calls, files_written."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-PULSE-001",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AGY-PULSE-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "services/adhd_engine/api/routes.py",
+    "services/adhd_engine/tests/test_state_contract.py"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "adhd-state-contract"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on feat/pulse-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
