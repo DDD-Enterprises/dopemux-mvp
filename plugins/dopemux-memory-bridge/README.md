@@ -22,10 +22,13 @@ end of a session) it appends one JSON row to
 `<repo-root>` is the nearest ancestor of the session's working directory that
 holds a `.git` or a `.dopemux` (the same upward walk as
 `src/dopemux/memory/capture_client.py`; in a worktree that is the worktree, not
-the main checkout). The mod writes only when `<repo-root>/.dopemux` **already
-exists** (this repo ignores it: `.gitignore:140` and `:299`; other repos are
-unchecked) and never creates `.dopemux`. Without it, rows stay in memory plus the
-plugin's `$.store`, and the status line says `📮 memory-only`.
+the main checkout). The file key is the session id when it has only letters, digits,
+`_` and `-` (at most 80 characters, which covers Claude Code's ids); any other id gets
+a sanitized prefix, `~` and a 16-hex hash of the whole id, so two sessions never share
+a file. The mod writes only when `<repo-root>/.dopemux` **already exists** (this repo
+ignores it: `.gitignore:140` and `:299`; other repos are unchecked) and never creates
+`.dopemux`. Without it, rows stay in memory plus the plugin's `$.store`, and the status
+line says `📮 memory-only`.
 
 A row holds derived fields only, never a raw prompt, tool output or answer:
 

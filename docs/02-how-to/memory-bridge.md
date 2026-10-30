@@ -36,17 +36,17 @@ appends one JSON row to:
 <repo-root>/.dopemux/memory-bridge/outbox-<sessionId>.jsonl
 ```
 
-`<repo-root>` is the nearest ancestor holding `.git` or `.dopemux`. The mod writes
-only when `<repo-root>/.dopemux` **already exists** and never creates it. This repo
-ignores `.dopemux/` (`.gitignore` lines 140 and 299); other repos are unchecked.
-Without the directory, rows stay in memory and the status line shows
-`📮 memory-only`.
+`<repo-root>` is the nearest ancestor holding `.git` or `.dopemux`. The file key is the
+session id if it has only letters, digits, `_` and `-` (max 80 characters); other ids get
+a sanitized prefix, `~` and a 16-hex hash of the whole id, so sessions never share a file.
+The mod writes only when `<repo-root>/.dopemux` **already exists** and never creates it. This
+repo ignores `.dopemux/` (`.gitignore` lines 140 and 299); other repos are unchecked.
+Without the directory, rows stay in memory and the status line shows `📮 memory-only`.
 
-Rows hold derived fields only: a goal (160 characters), up to 30 relative file
-paths, up to 3 decisions and up to 10 completed todo titles. Raw prompts, tool
-output and answers are not stored. Files are capped at 1 MiB and rows at 8 KB;
-over the cap the oldest `sent` rows go first, then `dead`, then `pending`, and
-each drop shows as `+N dropped`.
+Rows hold derived fields only: a goal (160 characters), up to 30 relative file paths, up to 3
+decisions and up to 10 completed todo titles. Raw prompts, tool output and answers are not
+stored. Files are capped at 1 MiB and rows at 8 KB; over the cap the oldest `sent` rows go
+first, then `dead`, then `pending`, and each drop shows as `+N dropped`.
 
 ## 3. Read the status line
 
