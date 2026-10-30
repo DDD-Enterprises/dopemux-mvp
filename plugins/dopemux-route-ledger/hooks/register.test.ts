@@ -1194,7 +1194,7 @@ test('the receipts argument prints the file, counts and flags', async ($, on) =>
   await h.agent({ model: 'sonnet' })
   await h.step(STEP)
   const { text } = await h.run('route-ledger', 'receipts')
-  expect(text).toMatch(new RegExp(FILE.replace(/[.]/g, '\\.')))
+  expect(text).toContain(FILE)
   expect(text).toMatch(/agent_request 1/)
   expect(text).toMatch(/step_observed 1/)
   expect(text).toMatch(/advisor_call 0/)
