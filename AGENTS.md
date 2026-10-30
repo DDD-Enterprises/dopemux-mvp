@@ -29,6 +29,8 @@ or active entrypoints do not support.
 - Every non-trivial design, implementation, investigation, repair, qualification, finality, or repo-changing execution request starts with one Supervisor MacroPacket issued by the Control Tower supervisor. The team lead executes its legal child workstreams and returns one aggregate result with proof.
 - Ambiguous work: choose the smallest safe slice that preserves authority boundaries instead of inventing scope.
 - Ask only when work is unsafe, impossible, blocked by missing credentials/secrets, or missing a decision that cannot be inferred safely from repo truth.
+- `tests/arch` runs in CI (unit test job); run `pytest tests/arch` before pushing changes to the registry, compose, the MCP catalog, personas or ports. Reference: `docs/03-reference/ci-contract-gates.md`.
+- Read ADHD engine state with `dopemux adhd status` (`--json` for scripts); exit 3 means the engine runs on its fallback class (only with `ADHD_ENGINE_ALLOW_DEGRADED_STARTUP`; a failed start without it is exit 1, unreachable). Reference: `docs/03-reference/adhd-status-cli.md`.
 
 Mandatory operating hierarchy:
 

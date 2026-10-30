@@ -1,0 +1,119 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "macro_id": "MACRO-DMX-FOUNDATIONS-001",
+  "stage": "issuance",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "task-packets/MACRO-DMX-FOUNDATIONS-001/MACRO_PACKET.json",
+    "operator_gate_refs": [
+      "operator chat 2026-10-30, verbatim: \"Foundations first\" (theme)",
+      "operator chat 2026-10-30, verbatim: \"Looks right, write design\" (scope playback)",
+      "operator chat 2026-10-30, verbatim: \"Approve\" (design docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md)",
+      "operator chat 2026-10-30, verbatim: \"Subagent-driven\" (execution method for docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md)"
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "selection": {
+    "runner": "claude-code-desktop",
+    "runner_availability": "PROVEN",
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "connector": "desktop-app",
+    "configured_identity": "claude-opus-5-5",
+    "response_claimed_identity": "claude-opus-5-5",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": []
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read",
+      "validate",
+      "commit"
+    ],
+    "forbidden_actions": [
+      "merge_pr",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "rebase",
+      "mark_ready",
+      "sign_proof"
+    ],
+    "stop_conditions": [
+      "operator gate absent",
+      "authority conflict",
+      "parallel write overlap"
+    ],
+    "custody_constraints": [
+      "mutation only inside /Users/hue/code/dopemux-mvp/.worktrees/foundations-wave-1 on branch feat/foundations-wave-1"
+    ],
+    "context_constraints": [
+      "children receive only their TASK_PACKET plus the plan and design documents it cites"
+    ]
+  },
+  "justification": {
+    "why_runner": "the supervising Claude Code desktop session that issued this package and will coordinate the five serial workstreams",
+    "why_model": "the supervising session is claude-opus-5-5 as stated by the issuing request; team-lead work is coordination, per-workstream freeze checks (plan Task 6) and the final whole-branch advisory review; implementers are pinned to cheaper models in each TASK_PACKET and in MACRO_PACKET execution_route",
+    "why_effort": "high, as requested for the supervising session; the lead's observed effort is not independently attested by this issuer",
+    "alternatives_considered": [
+      {
+        "route": "claude-sonnet-5-5 coordinator",
+        "disposition": "not selected",
+        "reason": "the supervising session is already Opus; the issuer cannot rebind the running session, and lead work is a small share of total tokens versus implementer work"
+      },
+      {
+        "route": "implementer routes (design section 7)",
+        "disposition": "adopted as per-workstream routes",
+        "reason": "W01 claude-haiku-5-5; W02-W05 claude-sonnet-5-5; per-task reviewer claude-sonnet-5-5; fix rounds 4-5 one tier up; final whole-branch review claude-opus-5-5 advisory, not the audit"
+      }
+    ],
+    "cost_latency_tradeoff": "UNKNOWN (no current price evidence recorded)",
+    "evidence": [
+      "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md",
+      "docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "PROPOSED:AUDITOR_BINDING_PROPOSED.json (not selected, not recorded, not run)"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "recorded_at": "2026-10-30T08:10:00Z",
+  "runner_version": "UNKNOWN",
+  "effort_requested": "high",
+  "effort_observed": "UNKNOWN",
+  "auth_profile_ref": "UNKNOWN",
+  "network_posture": "no-network-mutation",
+  "containment_posture": "worktree-scoped",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "not triggered"
+  },
+  "response_claimed_model": "claude-opus-5-5",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "UNKNOWN",
+  "qualification_receipt_ref": "NOT_RUN"
+}
