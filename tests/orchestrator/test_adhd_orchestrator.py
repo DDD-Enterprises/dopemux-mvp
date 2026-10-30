@@ -1,7 +1,13 @@
 
 import sys
 from unittest.mock import MagicMock
-sys.modules["questionary"] = MagicMock()
+
+# Stub questionary only when it is not installed; replacing the real module would
+# leak a MagicMock into every later test in the session.
+try:
+    import questionary  # noqa: F401
+except ImportError:
+    sys.modules["questionary"] = MagicMock()
 
 import pytest
 from unittest.mock import MagicMock, patch

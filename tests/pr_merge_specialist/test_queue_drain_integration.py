@@ -3,8 +3,11 @@ from __future__ import annotations
 import json
 import shutil
 from argparse import Namespace
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
+
+import pytest
 
 from dopemux_pr_merge_specialist import closed_loop_engine
 from dopemux_pr_merge_specialist import engine
@@ -319,9 +322,22 @@ def test_queue_drain_hands_off_post_apply_passive_queued_result(
     assert merge_handoffs == [190]
 
 
-def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
-    monkeypatch, tmp_path: Path
-):
+# Steward artifacts below are stamped 2026-05-31T12:00:00Z and the policy TTL is
+# 10_000_000s, so the artifacts expire at 2026-09-24T05:46:40Z. The gate clock is
+# pinned per test (via ``_steward_gate_now``) so the outcome never depends on the
+# real wall clock.
+_STEWARD_ARTIFACT_GENERATED_AT = "2026-05-31T12:00:00Z"
+_STEWARD_ARTIFACT_TTL_SECONDS = 10_000_000
+_STEWARD_CLOCK_FRESH = datetime(2026, 5, 31, 12, 30, tzinfo=timezone.utc)
+_STEWARD_CLOCK_EXPIRED = datetime(2026, 9, 24, 6, 0, tzinfo=timezone.utc)
+
+
+def _arrange_truthful_handoff_merge(monkeypatch, tmp_path: Path):
+    """Shared arrange step for the ``_merge_prepared_result`` steward-gate tests.
+
+    Returns ``(messages, merge_expected_heads, merge_kwargs)``; callers pin the
+    steward gate clock themselves before invoking ``_merge_prepared_result``.
+    """
     messages: list[tuple[str, str]] = []
     merge_expected_heads: list[str | None] = []
 
@@ -405,7 +421,7 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
     (steward_dir / "MERGE_READINESS.json").write_text(
         json.dumps(
             {
-                "generated_at": "2026-05-31T12:00:00Z",
+                "generated_at": _STEWARD_ARTIFACT_GENERATED_AT,
                 "readiness": "READY",
                 "blockers": [],
                 "pr": {"number": 190, "head_sha": "head-190"},
@@ -418,7 +434,7 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
     (audit_dir / "PROOF.json").write_text(
         json.dumps(
             {
-                "generated_at": "2026-05-31T12:00:00Z",
+                "generated_at": _STEWARD_ARTIFACT_GENERATED_AT,
                 "head_sha": "head-190",
                 "embedded_audit": {"status": "PASS"},
             }
@@ -426,13 +442,13 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
         encoding="utf-8",
     )
 
-    result = queue_drain_module._merge_prepared_result(
+    merge_kwargs = dict(
         args=Namespace(id=190, out_dir=str(tmp_path), repo="DDD-Enterprises/dopemux-mvp", execute=True),
         client=client,
         repo_root=tmp_path,
         policy={
             "steward_gate": {
-                "artifact_ttl_seconds": 10_000_000,
+                "artifact_ttl_seconds": _STEWARD_ARTIFACT_TTL_SECONDS,
                 "merge_readiness_path": "{out_dir}/pr-steward/pr-{pr_id}/MERGE_READINESS.json",
                 "audit_proof_path": "{out_dir}/embedded-audit/pr-{pr_id}/PROOF.json",
             }
@@ -442,11 +458,51 @@ def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
         prepared_result=prepared_result,
         progress_callback=lambda msg, level="INFO": messages.append((level, msg)),
     )
+    return messages, merge_expected_heads, merge_kwargs
+
+
+def test_merge_prepared_result_logs_auto_merge_handoff_truthfully(
+    monkeypatch, tmp_path: Path
+):
+    messages, merge_expected_heads, merge_kwargs = _arrange_truthful_handoff_merge(
+        monkeypatch, tmp_path
+    )
+    monkeypatch.setattr(
+        queue_drain_module, "_steward_gate_now", lambda _value: _STEWARD_CLOCK_FRESH
+    )
+
+    result = queue_drain_module._merge_prepared_result(**merge_kwargs)
 
     assert result.lifecycle_state == PRState.QUEUED_FOR_MERGE.value
     assert ("SUCCESS", "Auto-merge handoff successful") in messages
     assert ("SUCCESS", "Merge successful") not in messages
     assert merge_expected_heads == ["head-190"]
+
+
+def test_merge_prepared_result_denies_stale_steward_artifacts_under_pinned_clock(
+    monkeypatch, tmp_path: Path
+):
+    # Negative control for the clock pin above: the same artifacts and TTL,
+    # observed after expiry, must still be denied by the steward gate.
+    messages, merge_expected_heads, merge_kwargs = _arrange_truthful_handoff_merge(
+        monkeypatch, tmp_path
+    )
+    monkeypatch.setattr(
+        queue_drain_module, "_steward_gate_now", lambda _value: _STEWARD_CLOCK_EXPIRED
+    )
+
+    with pytest.raises(RuntimeError, match="DENY_STALE_ARTIFACT"):
+        queue_drain_module._merge_prepared_result(**merge_kwargs)
+
+    gate_artifact = json.loads(
+        (pr_dir_for(tmp_path, 190) / "STEWARD_FINALIZATION_GATE.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert gate_artifact["allowed"] is False
+    assert gate_artifact["reason_code"] == "DENY_STALE_ARTIFACT"
+    assert merge_expected_heads == []
+    assert ("SUCCESS", "Auto-merge handoff successful") not in messages
 
 
 def test_queue_drain_orchestrates_phase_functions(monkeypatch, tmp_path: Path):

@@ -1,8 +1,12 @@
 import pytest
 from unittest.mock import MagicMock, patch
 import sys
-# Mock questionary before importing modules that use it
-sys.modules["questionary"] = MagicMock()
+# Stub questionary only when it is not installed; replacing the real module would
+# leak a MagicMock into every later test in the session.
+try:
+    import questionary  # noqa: F401
+except ImportError:
+    sys.modules["questionary"] = MagicMock()
 
 from dopemux.orchestrator.adhd_orchestrator import ADHDOrchestrator, AttentionState
 

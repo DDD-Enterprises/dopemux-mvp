@@ -1,0 +1,9 @@
+# Exact invocation record -- PR #1447 L3 embedded audit (operator-approved AGY fallback model, 'YES AGY' 2026-10-19)
+# agy CLI version 1.4.2
+# start=2026-10-19T08:34:37Z end=2026-10-19T08:36:08Z exit=0 duration=91s
+# cwd=sealed dir containing only AUDIT_PROMPT.txt (built by scripts/audit/pal_clink_runner.py --build-prompt)
+# raw output sha256=aad7b7100885b88ec21c84ff888d9221200c751e8caee3f471d062aeb9b5aaea
+# prompt sha256=cb2b8b5ee84dbd2e3a4afa29e57a88e42ca202539b01f2939b6aba26712e238a
+
+agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print="$(cat AUDIT_PROMPT.txt)"
+sealed dir contents after run: AUDIT_PROMPT.txt 

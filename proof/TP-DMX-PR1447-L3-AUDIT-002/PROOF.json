@@ -1,0 +1,379 @@
+{
+  "packet_id": "TP-DMX-PR1447-L3-AUDIT-002",
+  "branch": "claude/rr-renaissance-integration",
+  "base": "main",
+  "base_sha": "95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "head_sha": "3db51791c710d21cccefaab9f4ac7b6a21bcd0e9",
+  "kind": "fix",
+  "risk_lane": "L3",
+  "implementer": "Claude Code is the accountable implementer: Fable High subagents and the claude-opus-5-5 supervisor session authored the MP023/P3/P4 repairs and commits e29976b80..0afc9cd22 assembly, 3a6139360 (questionary isolation) and 3db51791c (Codex-review P2 numeric pr_id + audit findings F-001/F-002); Codex (gpt-6.1-sol, OpenAI) authored the MP020 repair, the skill-mirror sync, the pytest collection change and the test_adhd_ux update inside the frozen 38-file subject (3779dd37...). Both implementer families differ from the auditor family (google-gemini via agy). The claude-opus-5-5 session built the audit prompt with the repo's trusted builder and this proof bundle.",
+  "audited_files": [
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_archive_resolver.py",
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_bundle_loader.py",
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_compatibility_mode.py",
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_packet_launcher.py",
+    ".claude/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_series_loader.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_archive_resolver.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_bundle_loader.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_compatibility_mode.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_packet_launcher.py",
+    ".github/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_series_loader.py",
+    "pytest.ini",
+    "scripts/check_docs_filename_hygiene.py",
+    "scripts/check_docs_hygiene.py",
+    "src/dopemux/agent_orchestrator.py",
+    "src/dopemux/mcp/fleet_catalog.py",
+    "src/dopemux_pr_merge_specialist/dopetask_archive_resolver.py",
+    "src/dopemux_pr_merge_specialist/dopetask_bundle_loader.py",
+    "src/dopemux_pr_merge_specialist/dopetask_compatibility_mode.py",
+    "src/dopemux_pr_merge_specialist/dopetask_packet_launcher.py",
+    "src/dopemux_pr_merge_specialist/dopetask_series_loader.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_archive_resolver.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_bundle_loader.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_compatibility_mode.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_packet_launcher.py",
+    "templates/skills/pr-merge-specialist/scripts/dopemux_pr_merge_specialist/dopetask_series_loader.py",
+    "tests/orchestrator/test_adhd_orchestrator.py",
+    "tests/orchestrator/test_dynamic_layouts.py",
+    "tests/orchestrator/test_status_updates.py",
+    "tests/pr_merge_specialist/test_queue_drain_integration.py",
+    "tests/pr_merge_specialist/test_template_contracts.py",
+    "tests/scripts/test_adhd_ux.py",
+    "tests/scripts/test_docs_filename_hygiene.py",
+    "tests/scripts/test_docs_hygiene.py",
+    "tests/unit/test_agent_manager_lifecycle_guards.py",
+    "tests/unit/test_dopetask_archive_resolver_regression.py",
+    "tests/unit/test_dopetask_bundle_loader_shapes.py",
+    "tests/unit/test_dopetask_compatibility_regression.py",
+    "tests/unit/test_dopetask_packet_launcher_validate_first.py",
+    "tests/unit/test_dopetask_series_loader.py",
+    "tests/unit/test_mcp_fleet_catalog_merge_safety.py",
+    "tests/unit/test_pytest_collection_contract.py"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "fallback_auditor_approval": {
+    "approved_by": "operator",
+    "approval_text": "YES AGY",
+    "approved_at": "2026-10-20",
+    "exact_model": "gemini-4-argon-high",
+    "recorded_auditor_model": "gemini",
+    "bounded_input": "trusted prompt (task, output contract, delimited untrusted metadata + unified diff, repeated trusted trailer) built by scripts/audit/pal_clink_runner.py --build-prompt; no repository checkout, no tools, --sandbox --disable-slash-commands",
+    "no_secret_constraints": "prompt contains only the public PR diff and metadata; no env, tokens, keys or local paths beyond repo-relative file names",
+    "rationale": "Operator-approved packet-specific fallback auditor for a RE-AUDIT: user selected 'YES AGY' on 2026-10-20 (Claude Code desktop session f10afffd-f9c0-4a2e-86ad-17f8109a3a3a, question: re-run the AGY fallback audit (gemini-4-argon-high, ONE attempt) on PR #1447's new head after the Codex-review fix and F-001/F-002). The first approved attempt (2026-10-19, head 3a6139360, verdict PASS, packet TP-DMX-PR1447-L3-AUDIT-001) was invalidated by that semantic change. The audit diff excludes proof/** so no prior audit artifact reached the auditor. Fallback because the docs route #1 exact model gemini-3.1-pro-high is absent from `agy models` (agy 1.4.2). Recorded per docs/ops/embedded-audit.md 'Packet-specific supervisor-approved fallback auditors'."
+  },
+  "auditor_run": {
+    "agy_cli_version": "1.4.2",
+    "conversation_id": "961766b8-a96c-4804-9f77-e51cba656574",
+    "status": "SUCCESS",
+    "duration_seconds": 92.159642,
+    "num_turns": 1,
+    "usage": {
+      "input_tokens": 59265,
+      "output_tokens": 8351,
+      "thinking_tokens": 5993,
+      "cache_read_tokens": 0,
+      "total_tokens": 67616
+    },
+    "init_model": "gemini-4-argon-high",
+    "init_tools": [
+      "ask_custom_permission",
+      "ask_permission",
+      "ask_question",
+      "browser_click_element",
+      "browser_drag_pixel_to_pixel",
+      "browser_get_dom",
+      "browser_get_network_request",
+      "browser_input",
+      "browser_list_network_requests",
+      "browser_mouse_down",
+      "browser_mouse_up",
+      "browser_move_mouse",
+      "browser_press_key",
+      "browser_refresh_page",
+      "browser_resize_window",
+      "browser_scroll",
+      "browser_scroll_dom",
+      "browser_select_option",
+      "browser_subagent",
+      "call_mcp_tool",
+      "capture_browser_console_logs",
+      "capture_browser_screenshot",
+      "click_browser_pixel",
+      "command_status",
+      "define_subagent",
+      "delete_knowledge",
+      "execute_browser_javascript",
+      "find_by_name",
+      "finish",
+      "generate_image",
+      "grep_search",
+      "invoke_subagent",
+      "list_browser_pages",
+      "list_dir",
+      "list_permissions",
+      "list_plugin_accounts",
+      "list_resources",
+      "manage_inbox",
+      "manage_subagents",
+      "manage_task",
+      "multi_replace_file_content",
+      "notebook_edit",
+      "notebook_execution",
+      "open_browser_url",
+      "read_browser_page",
+      "read_resource",
+      "read_url_content",
+      "replace_file_content",
+      "run_command",
+      "run_workflow",
+      "schedule",
+      "search_marketplace",
+      "search_web",
+      "sed_file",
+      "send_command_input",
+      "send_message",
+      "view_file",
+      "wait",
+      "wait_5_seconds",
+      "write_to_file"
+    ],
+    "init_permission_mode": "always-proceed",
+    "step_types_observed": [
+      "agent_response",
+      "user_input"
+    ],
+    "raw_output_sha256": "2f406112dd0a0617f4d9f6bf84a1a45d4cab5bb5ebe414df7263d2a3f9514e1c",
+    "prompt_sha256": "316a9d7d825422c537a7b52e002c979c4a218ebe2b65d0863c8fa98157253242"
+  },
+  "validations": [
+    {
+      "name": "CI: \ud83d\udcca CI Pipeline Summary",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118772972070"
+    },
+    {
+      "name": "CI: CodeQL",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/runs/118768874748"
+    },
+    {
+      "name": "CI: recheck",
+      "result": "FAIL",
+      "detail": "FAILURE at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463477622/job/118768590155"
+    },
+    {
+      "name": "CI: \ud83d\udcda Documentation Check",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768538758"
+    },
+    {
+      "name": "CI: \ud83e\uddea Extractor Full",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768539710"
+    },
+    {
+      "name": "CI: \ud83e\uddea Extractor Smoke",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768538093"
+    },
+    {
+      "name": "CI: independent embedded audit",
+      "result": "FAIL",
+      "detail": "FAILURE at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463130/job/118768539872"
+    },
+    {
+      "name": "CI: \ud83e\uddea Auditor Router",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768538968"
+    },
+    {
+      "name": "CI: \ud83d\udc85 Code Quality & Linting",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768538865"
+    },
+    {
+      "name": "CI: Analyze (javascript-typescript)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463460614/job/118768534285"
+    },
+    {
+      "name": "CI: Analyze (python)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463460614/job/118768534959"
+    },
+    {
+      "name": "CI: \ud83d\udd0d Extractor Lint",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768539064"
+    },
+    {
+      "name": "CI: \ud83d\udd12 Security Review",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768539080"
+    },
+    {
+      "name": "CI: identity-check",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463366/job/118768536992"
+    },
+    {
+      "name": "CI: \ud83e\uddea Unit Tests",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768538862"
+    },
+    {
+      "name": "CI: \ud83d\uddfa\ufe0f Model Routing Consistency",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768538839"
+    },
+    {
+      "name": "CI: \ud83d\udd0d Audit Proof Validator (--all)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768538616"
+    },
+    {
+      "name": "CI: \ud83d\udee1\ufe0f Clobber Guard",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463046/job/118768536492"
+    },
+    {
+      "name": "CI: Analyze (ruby)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463460614/job/118768534288"
+    },
+    {
+      "name": "CI: preflight",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463183/job/118768536845"
+    },
+    {
+      "name": "CI: Analyze (actions)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463460614/job/118768533962"
+    },
+    {
+      "name": "CI: checks",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463176/job/118768536262"
+    },
+    {
+      "name": "CI: identity-check",
+      "result": "PASS",
+      "detail": "SUCCESS at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463458494/job/118768520218"
+    },
+    {
+      "name": "CI: \ud83e\uddea Installer Smoke",
+      "result": "NOT_RUN",
+      "detail": "SKIPPED at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768541206"
+    },
+    {
+      "name": "CI: \ud83d\udcca Scoped Coverage",
+      "result": "NOT_RUN",
+      "detail": "SKIPPED at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768541062"
+    },
+    {
+      "name": "CI: \ud83d\udd17 Integration Tests",
+      "result": "NOT_RUN",
+      "detail": "SKIPPED at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463463162/job/118768541141"
+    },
+    {
+      "name": "CI: PR Steward / final readiness",
+      "result": "FAIL",
+      "detail": "FAILURE at head 3db51791c710d21cccefaab9f4ac7b6a21bcd0e9 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39463528966"
+    },
+    {
+      "name": "full pytest tests at head 3db51791c (real git worktree)",
+      "result": "PASS",
+      "detail": "29 failed / 7891 passed / 5 skipped / 12 errors vs base 95e95bee8 30 failed / 7714 passed / 12 errors; no branch-caused failures: test_project_workflow::test_init_and_start_workflow also fails 3/3 on base alone; test_transitions idempotency_replay fails on both (log line merged into FAILED line). Receipts: ~/Downloads/DMX_RR_RENAISSANCE_MP023_RECOVERY_002/INTEGRATION_BRANCH_SWEEP{,_R2,_R3}/"
+    },
+    {
+      "name": "Codex review P2 fix + F-001/F-002 (3db51791c)",
+      "result": "PASS",
+      "detail": "RED 8 failed (2 numeric pr_id, 6 blank strings) -> GREEN 42 passed; dopetask units + tests/pr_merge_specialist + filename hygiene 507 passed; 4 bundle_loader copies byte-identical; flake8 --isolated E402 clean"
+    },
+    {
+      "name": "per-lane RED->GREEN (supervisor re-run)",
+      "result": "PASS",
+      "detail": "MP020 2F->5P; MP023 loaders 2/22/6/34F -> 5/32/10/42P; filename hygiene 2F->10P; docs placement 4F (case-insensitive APFS) / 5F (case-sensitive APFS) -> 18P both; AgentManager 5F->7P + tests/test_agent_orchestrator.py 63/63 unmodified + 10/10 stability; MCP merge 15F->18P + 537 MCP regression; steward clock -> 377P"
+    },
+    {
+      "name": "questionary isolation fix",
+      "result": "PASS",
+      "detail": "test_status_updates.py + test_adhd_ux.py 1F -> pass; each of 3 orchestrator modules before test_adhd_ux passes"
+    },
+    {
+      "name": "mirror parity",
+      "result": "PASS",
+      "detail": "15/15 dopetask mirror copies byte-identical to src; parity contract extended"
+    },
+    {
+      "name": "MCP real-file smoke",
+      "result": "PASS",
+      "detail": "merge_codex_config_toml old==new byte-identical and idempotent on 5 real .codex/config.toml inputs"
+    },
+    {
+      "name": "make lint / make type-check",
+      "result": "NOT_RUN",
+      "detail": "flake8 on touched files: no new codes vs base/subject; scripts/ outside make lint scope; agent_orchestrator.py fails flake8 at base"
+    },
+    {
+      "name": "auditor validation",
+      "result": "NOT_RUN",
+      "detail": "Sandboxed auditor had no tool or checkout access; validation_status=NOT_RUN in its verdict."
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"  (cwd = sealed dir holding only AUDIT_PROMPT.txt built by scripts/audit/pal_clink_runner.py --build-prompt; conversation_id=961766b8-a96c-4804-9f77-e51cba656574; exact record in review_bundle/AUDIT_INVOCATION.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1447-L3-AUDIT-002/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AUDIT-1447-INFO-1",
+        "severity": "INFO",
+        "title": "_is_valid_identity allows any non-boolean int for pr_id without requiring a positive integ\u2026",
+        "status": "OPEN",
+        "body": "[uncategorized] src/dopemux_pr_merge_specialist/dopetask_bundle_loader.py \u2014 _is_valid_identity allows any non-boolean int for pr_id without requiring a positive integer (value > 0), though in practice PR numbers supplied by context are positive integers."
+      },
+      {
+        "id": "AUDIT-1447-INFO-2",
+        "severity": "INFO",
+        "title": "apply_moves preflight checks _existing_alias against the pre-move filesystem state even if\u2026",
+        "status": "OPEN",
+        "body": "[uncategorized] scripts/check_docs_hygiene.py \u2014 apply_moves preflight checks _existing_alias against the pre-move filesystem state even if an aliased path is vacated earlier in the same batch; this is an intentional fail-closed design documented in comments to avoid cross-platform filesystem ambiguity."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validation tests were not executed inside the sealed embedded-audit session (validation_status=NOT_RUN); merge readiness relies on CI and steward verification of the test suite.",
+      "Enabling default collection of tests/scripts via pytest.ini (--import-mode=importlib and removing scripts from norecursedirs) increases the default pytest collection surface if other script tests assume standalone execution.",
+      "Auditor model fallback: AGY ran gemini-4-argon-high (recorded as auditor_model 'gemini', the schema's generic value) under explicit operator approval; exact-model evidence for gemini-3.1-pro-high is unavailable in agy 1.4.2.",
+      "Auditor ran sandboxed with no tool or checkout access (validation_status=NOT_RUN); test and lint evidence at the audited head comes from CI and the local runs recorded in the packet PROOF.json validations."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

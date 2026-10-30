@@ -124,11 +124,51 @@ def classify_filename(rel_path: str, policy: Dict[str, Any]) -> FilenameRecord:
 
 def iter_docs(repo_root: Path, docs_root: str, requested_paths: Optional[List[str]] = None) -> Iterable[Path]:
     if requested_paths:
+        # Containment boundary for explicit requests: every candidate must stay lexically
+        # inside the repo root (no absolute paths, no '..' traversal) and, after symlink
+        # resolution, must still live under the real repo root. Offending entries are
+        # skipped with a stderr note before anything is opened.
+        try:
+            root_real = Path(os.path.realpath(str(repo_root)))
+        except OSError:
+            root_real = repo_root
         paths = []
         for p in requested_paths:
-            path = repo_root / _normalize_relpath(p)
-            if path.exists() and path.is_file() and path.suffix == ".md":
-                paths.append(path)
+            raw = str(p)
+            raw_posix = raw.replace("\\", "/")
+            if (
+                not raw_posix.strip()
+                or Path(raw).is_absolute()
+                or raw_posix.startswith("/")
+                or re.match(r"^[A-Za-z]:", raw_posix) is not None
+            ):
+                print(f"docs-filename-hygiene: skipping absolute path outside repo scope: {raw}", file=sys.stderr)
+                continue
+            if any(part == ".." for part in raw_posix.split("/")):
+                print(f"docs-filename-hygiene: skipping path traversal outside repo scope: {raw}", file=sys.stderr)
+                continue
+            rel = str(_normalize_relpath(raw))
+            rel_posix = rel.replace("\\", "/")
+            if (
+                not rel_posix
+                or rel_posix.startswith("/")
+                or Path(rel).is_absolute()
+                or any(part == ".." for part in rel_posix.split("/"))
+            ):
+                print(f"docs-filename-hygiene: skipping path outside repo scope: {raw}", file=sys.stderr)
+                continue
+            path = repo_root / rel
+            if path.suffix != ".md":
+                continue
+            if not path.exists() or not path.is_file():
+                continue
+            try:
+                real = Path(os.path.realpath(str(path)))
+                real.relative_to(root_real)
+            except (OSError, ValueError):
+                print(f"docs-filename-hygiene: skipping symlink target outside repo scope: {raw}", file=sys.stderr)
+                continue
+            paths.append(path)
         return sorted(paths)
     base = repo_root / _normalize_relpath(docs_root)
     if not base.exists():

@@ -25,8 +25,21 @@ class DopetaskCompatibilityMode:
     """Detects canonical vs legacy bundles and normalizes missing fields."""
 
     def check(self, bundle: dict) -> CompatibilityResult:
+        if not isinstance(bundle, dict):
+            raise TypeError(
+                "DopetaskCompatibilityMode.check expects a dict bundle, got "
+                f"{type(bundle).__name__}"
+            )
         has_id = bool(bundle.get("id") or bundle.get("tp_id") or bundle.get("pr_id"))
-        body = bundle.get("body", bundle)  # support flat or nested
+        if "body" in bundle:  # support flat or nested
+            body = bundle["body"]
+            if not isinstance(body, dict):
+                raise TypeError(
+                    "DopetaskCompatibilityMode.check expects bundle['body'] to be a "
+                    f"dict when present, got {type(body).__name__}"
+                )
+        else:
+            body = bundle
         missing_body = sorted(CANONICAL_BODY_FIELDS - set(body.keys()))
 
         is_canonical = has_id and len(missing_body) == 0

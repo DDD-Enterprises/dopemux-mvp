@@ -18,6 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
+import unicodedata
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -324,6 +325,35 @@ def _collision_target(path: Path, index: int) -> Path:
     return path.with_name(f"{path.stem}-moved-{index}{path.suffix}")
 
 
+def _alias_key(rel: str) -> str:
+    """Case-insensitive identity of a normalized POSIX relative path.
+
+    NFC-normalized, then casefolded.
+    """
+    return unicodedata.normalize("NFC", rel).casefold()
+
+
+def _existing_alias(repo_root: Path, rel: str) -> Optional[str]:
+    """Return an existing tree path that aliases ``rel``, if any.
+
+    An alias shares ``rel``'s alias key but is spelled differently. ``rel`` is
+    walked component by component using lexical directory listings, so the
+    answer is the same on case-sensitive and case-insensitive filesystems.
+    """
+    current = repo_root
+    seen: List[str] = []
+    for part in _normalize_relpath(rel).split("/"):
+        if not current.is_dir():
+            return None
+        key = _alias_key(part)
+        for entry in sorted(current.iterdir()):
+            if entry.name != part and _alias_key(entry.name) == key:
+                return "/".join(seen + [entry.name])
+        seen.append(part)
+        current = current / part
+    return None
+
+
 def _git_mv(repo_root: Path, src: Path, dst: Path) -> bool:
     result = subprocess.run(
         ["git", "mv", str(src.relative_to(repo_root)), str(dst.relative_to(repo_root))],
@@ -346,15 +376,83 @@ def apply_moves(
     repo_root: Path,
     old_to_target: Dict[str, str],
 ) -> Tuple[Dict[str, str], Dict[str, str]]:
+    # Fail-closed preflight: resolve every destination exactly as the move loop
+    # below would (same sort order, same dedupe/collision rules) WITHOUT touching
+    # the filesystem. If any source would land on a byte-identical existing file,
+    # reject the whole batch before a single move or unlink happens.
+    # Absent sources are dropped exactly once, here, so preflight and apply
+    # walk the same batch (a path created by an earlier move must not pick up
+    # its own mapping).
+    batch = [
+        old_rel
+        for old_rel in sorted(old_to_target.keys())
+        if (repo_root / old_rel).exists()
+    ]
+
+    # Case-insensitive destination aliases (NFC + casefold) are rejected before
+    # any move: two planned destinations with one alias key, a destination
+    # aliasing an existing tree path or batch source, or a case-only
+    # self-rename. Nothing is renamed or normalized; the batch fails closed.
+    collisions: List[Tuple[str, str]] = []
+    aliases: List[Tuple[str, str, str]] = []
+    planned_targets: set[str] = set()
+    planned_keys: Dict[str, str] = {}
+    vacated: set[str] = set()
+    for old_rel in batch:
+        src = repo_root / old_rel
+        src_rel = _normalize_relpath(str(src.relative_to(repo_root)))
+        requested = repo_root / old_to_target[old_rel]
+        candidate = requested
+        counter = 1
+        while True:
+            candidate_rel = _normalize_relpath(str(candidate.relative_to(repo_root)))
+            if candidate_rel in planned_targets:
+                counter += 1
+                candidate = _collision_target(requested, counter)
+                continue
+            candidate_key = _alias_key(candidate_rel)
+            alias_of = planned_keys.get(candidate_key)
+            if alias_of is None and candidate_rel != src_rel:
+                alias_of = _existing_alias(repo_root, candidate_rel)
+            if alias_of is not None:
+                aliases.append((old_rel, candidate_rel, alias_of))
+                break
+            occupied = candidate_rel not in vacated and candidate.exists()
+            if occupied and candidate != src:
+                if _files_identical(src, candidate):
+                    collisions.append((old_rel, candidate_rel))
+                    break
+                counter += 1
+                candidate = _collision_target(requested, counter)
+                continue
+            break
+        planned_targets.add(candidate_rel)
+        planned_keys[candidate_key] = candidate_rel
+        if candidate != src:
+            vacated.add(src_rel)
+
+    if aliases:
+        detail = ", ".join(
+            f"{old} -> {dst} aliases {other}" for old, dst, other in aliases
+        )
+        raise FileExistsError(
+            "docs-hygiene: refusing to apply moves; case-insensitive "
+            "destination aliases would be ambiguous on some filesystems "
+            f"(no files were moved or deleted): {detail}"
+        )
+    if collisions:
+        detail = ", ".join(f"{old} -> {dst}" for old, dst in collisions)
+        raise FileExistsError(
+            "docs-hygiene: refusing to apply moves; identical-destination collisions "
+            f"would destroy source paths (no files were moved or deleted): {detail}"
+        )
+
     old_to_actual: Dict[str, str] = {}
     moved_pairs: Dict[str, str] = {}
     used_targets: set[str] = set()
 
-    for old_rel in sorted(old_to_target.keys()):
+    for old_rel in batch:
         src = repo_root / old_rel
-        if not src.exists():
-            continue
-
         requested = repo_root / old_to_target[old_rel]
         candidate = requested
         counter = 1
@@ -377,10 +475,12 @@ def apply_moves(
 
         actual_rel = _normalize_relpath(str(candidate.relative_to(repo_root)))
         if dedupe:
-            src.unlink()
-            old_to_actual[old_rel] = actual_rel
-            used_targets.add(actual_rel)
-            continue
+            # Preflight rejects every identical-destination and alias case it
+            # can see; reaching this means the tree changed under us mid-run.
+            # Never delete.
+            raise FileExistsError(
+                f"docs-hygiene: identical-destination collision detected during apply: {old_rel} -> {actual_rel}"
+            )
 
         if candidate != src:
             _move_file(repo_root, src, candidate)
