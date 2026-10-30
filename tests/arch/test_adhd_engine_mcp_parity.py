@@ -11,8 +11,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from services.adhd_engine.core.engine import ADHDAccommodationEngine
-from services.adhd_engine.core.models import AttentionState, EnergyLevel
+# The static parity check above the fixture needs no imports from services.*:
+# an engine import error must fail the behavior tests, not collection of the
+# static check. Engine and model imports happen inside the fixture.
 
 REPO_ROOT = Path(__file__).parent.parent.parent
 MAIN_PATH = REPO_ROOT / "services" / "adhd_engine" / "main.py"
@@ -75,12 +76,19 @@ def test_mcp_tool_engine_calls_exist_on_both_engines():
         "get_cognitive_load",
         "assess_task",
     }
-    assert not (called - real_methods), f"missing on ADHDAccommodationEngine: {sorted(called - real_methods)}"
-    assert not (called - fallback_methods), f"missing on _FallbackADHDEngine: {sorted(called - fallback_methods)}"
+    assert not (
+        called - real_methods
+    ), f"missing on ADHDAccommodationEngine: {sorted(called - real_methods)}"
+    assert not (
+        called - fallback_methods
+    ), f"missing on _FallbackADHDEngine: {sorted(called - fallback_methods)}"
 
 
 @pytest.fixture
 def engine():
+    from services.adhd_engine.core.engine import ADHDAccommodationEngine
+    from services.adhd_engine.core.models import AttentionState, EnergyLevel
+
     eng = ADHDAccommodationEngine()
     eng.current_energy_levels["u1"] = EnergyLevel.HIGH
     eng.current_attention_states["u1"] = AttentionState.SCATTERED
@@ -103,7 +111,22 @@ async def test_attention_state_reads_engine_state(engine):
     assert (await engine.get_attention_state("u1")).state == "scattered"
 
 
-async def test_cognitive_load_is_float_in_unit_range(engine, monkeypatch):
+async def test_attention_state_lowercases_non_enum_values(engine):
+    engine.current_attention_states["raw"] = "SCATTERED"
+
+    assert (await engine.get_attention_state("raw")).state == "scattered"
+
+
+async def test_energy_level_lowercases_non_enum_values(engine):
+    engine.current_energy_levels["raw"] = "HIGH"
+
+    snapshot = await engine.get_energy_level("raw")
+
+    assert snapshot.level == "high"
+    assert snapshot.score == 0.7
+
+
+async def test_cognitive_load_returns_float_from_calculation(engine, monkeypatch):
     mock = AsyncMock(return_value=0.42)
     monkeypatch.setattr(engine, "_calculate_cognitive_load", mock)
 
@@ -112,6 +135,15 @@ async def test_cognitive_load_is_float_in_unit_range(engine, monkeypatch):
     assert load == 0.42
     assert isinstance(load, float)
     mock.assert_awaited_once_with("u1")
+
+
+async def test_cognitive_load_unmocked_is_in_unit_range():
+    from services.adhd_engine.core.engine import ADHDAccommodationEngine
+
+    load = await ADHDAccommodationEngine().get_cognitive_load("u1")
+
+    assert isinstance(load, float)
+    assert 0.0 <= load <= 1.0
 
 
 async def test_assess_task_uses_operator_and_marks_defaults(engine, monkeypatch):

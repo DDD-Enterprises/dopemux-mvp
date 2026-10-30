@@ -426,13 +426,16 @@ class ADHDAccommodationEngine:
         The returned ``score`` is a nominal position from the fixed ``ENERGY_SCORE`` table, not a measurement.
         """
         energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
-        level = energy.value if hasattr(energy, "value") else str(energy)
+        # Non-enum values are lowercased, as the /state route does.
+        level = energy.value if hasattr(energy, "value") else str(energy).lower()
         return EnergySnapshot(level=level, score=ENERGY_SCORE.get(level, 0.5))
 
     async def get_attention_state(self, user_id: str) -> AttentionSnapshot:
         """Current attention state for a user (defaults to focused)."""
         state = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
-        return AttentionSnapshot(state=state.value if hasattr(state, "value") else str(state))
+        return AttentionSnapshot(
+            state=state.value if hasattr(state, "value") else str(state).lower()
+        )
 
     async def get_cognitive_load(self, user_id: str) -> float:
         """Current cognitive load for a user as a float."""
