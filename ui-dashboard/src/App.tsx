@@ -17,7 +17,6 @@ import { alpha } from '@mui/material/styles';
 import { AlertTriangle } from 'lucide-react';
 
 import {
-  AggregateDashboardState,
   CognitiveReading,
   EMPTY_READING,
   isMessageObject,
@@ -129,26 +128,42 @@ function DashboardApp() {
   useEffect(() => {
     let isMounted = true;
 
+    // Each failure stage gets its own message so the banner names what actually broke.
     async function loadInitialState() {
+      let response: Response;
       try {
-        const response = await fetch(STATE_ENDPOINT, { headers: dashboardApiHeaders });
-        if (!isMounted) {
-          return;
-        }
-        if (!response.ok) {
-          setHttpError(`Failed: GET ${STATE_ENDPOINT} returned HTTP ${response.status}.`);
-          return;
-        }
-        const payload = (await response.json()) as AggregateDashboardState;
-        if (!isMounted) {
-          return;
-        }
-        applyReading(mapAggregateState(payload));
+        response = await fetch(STATE_ENDPOINT, { headers: dashboardApiHeaders });
       } catch {
         if (isMounted) {
           setHttpError(`Failed: GET ${STATE_ENDPOINT}, no response (network error).`);
         }
+        return;
       }
+      if (!isMounted) {
+        return;
+      }
+      if (!response.ok) {
+        setHttpError(`Failed: GET ${STATE_ENDPOINT} returned HTTP ${response.status}.`);
+        return;
+      }
+
+      let payload: unknown;
+      try {
+        payload = await response.json();
+      } catch {
+        if (isMounted) {
+          setHttpError(`Failed: GET ${STATE_ENDPOINT} returned invalid JSON.`);
+        }
+        return;
+      }
+      if (!isMounted) {
+        return;
+      }
+      if (!isMessageObject(payload)) {
+        setHttpError(`Failed: GET ${STATE_ENDPOINT} returned an unexpected payload.`);
+        return;
+      }
+      applyReading(mapAggregateState(payload));
     }
 
     void loadInitialState();
@@ -186,6 +201,10 @@ function DashboardApp() {
         setHttpError(null);
         return;
       }
+      if (message.type === 'state_update') {
+        setErrorMessage(`Failed: malformed state_update from ${SOCKET_ENDPOINT}.`);
+        return;
+      }
 
       if (message.type === 'dashboard_notification') {
         setNotifications((current) =>
@@ -210,7 +229,10 @@ function DashboardApp() {
       setSocketState('closed');
     };
 
+    // Detach every handler first so a retired socket cannot touch state after a retry.
     return () => {
+      socket.onopen = null;
+      socket.onmessage = null;
       socket.onerror = null;
       socket.onclose = null;
       socket.close();
@@ -428,7 +450,7 @@ function DashboardApp() {
               <SignalFeed
                 notifications={notifications}
                 socketUrl={SOCKET_ENDPOINT}
-                isListening={socketState === 'open'}
+                socketState={socketState}
                 onDismiss={handleDismissNotification}
                 onClear={handleClearNotifications}
               />

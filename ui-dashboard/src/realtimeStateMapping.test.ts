@@ -55,6 +55,21 @@ test('out-of-range ratios are unknown, not clamped into a plausible value', () =
   expect(state?.energyLevel).toBe('medium');
 });
 
+test('a state_update whose data is not an object is malformed, not an empty reading', () => {
+  expect(mapRealtimeState({ type: 'state_update', data: 'invalid' })).toBeNull();
+  expect(mapRealtimeState({ type: 'state_update' })).toBeNull();
+});
+
+test('a non-object state payload maps to an all-unknown reading', () => {
+  expect(mapAggregateState(null)).toEqual({
+    energyLevel: null,
+    attentionState: null,
+    load: null,
+    prediction: null,
+    recommendation: null,
+  });
+});
+
 test('non-object envelopes are ignored instead of throwing', () => {
   expect(mapRealtimeState(null)).toBeNull();
   expect(mapRealtimeState(42)).toBeNull();

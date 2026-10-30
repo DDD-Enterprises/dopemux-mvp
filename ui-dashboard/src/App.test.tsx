@@ -161,6 +161,48 @@ test('a live state_update clears a stale state-request failure', async () => {
   expect(screen.getByText('40%')).toBeInTheDocument();
 });
 
+test('a 200 response with a non-object body is reported as an unexpected payload', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => null }));
+  await renderApp();
+
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Failed: GET http://localhost:8097/api/adhd-state returned an unexpected payload.'
+  );
+});
+
+test('a 200 response with invalid JSON is reported as such, not as a network error', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({ ok: true, json: async () => Promise.reject(new SyntaxError('bad json')) })
+  );
+  await renderApp();
+
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Failed: GET http://localhost:8097/api/adhd-state returned invalid JSON.'
+  );
+});
+
+test('a malformed state_update is reported and does not replace the reading', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.4) }));
+  await renderApp();
+
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+    FakeSocket.instances[0].onmessage?.({ data: JSON.stringify({ type: 'state_update', data: 'invalid' }) });
+  });
+
+  expect(screen.getByRole('alert')).toHaveTextContent('Failed: malformed state_update from ws://localhost:8097/ws/state.');
+  expect(screen.getByText('40%')).toBeInTheDocument();
+});
+
+test('the empty feed says connecting while the socket is connecting', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.4) }));
+  await renderApp();
+
+  expect(screen.getByText('Connecting to ws://localhost:8097/ws/state.')).toBeInTheDocument();
+  expect(screen.queryByText(/is closed/)).not.toBeInTheDocument();
+});
+
 test('a null socket message is reported, not thrown', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.4) }));
   await renderApp();

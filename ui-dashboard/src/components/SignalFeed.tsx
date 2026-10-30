@@ -17,14 +17,21 @@ export interface DashboardNotification {
 interface SignalFeedProps {
   notifications: DashboardNotification[];
   socketUrl: string;
-  isListening: boolean;
+  socketState: 'connecting' | 'open' | 'closed';
   onDismiss: (id: string) => void;
   onClear: () => void;
 }
 
+const EMPTY_FEED_TEXT = {
+  open: (url: string) => `No signals received yet. Listening on ${url}.`,
+  connecting: (url: string) => `Connecting to ${url}.`,
+  closed: (url: string) => `No signals received. Socket ${url} is closed.`,
+};
+
 const monoSx = { fontFamily: '"JetBrains Mono", monospace' } as const;
 
-const SignalFeed: React.FC<SignalFeedProps> = ({ notifications, socketUrl, isListening, onDismiss, onClear }) => {
+const SignalFeed: React.FC<SignalFeedProps> = ({ notifications, socketUrl, socketState, onDismiss, onClear }) => {
+  const isListening = socketState === 'open';
   const headingRef = useRef<HTMLHeadingElement>(null);
   const confirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isConfirmingClear, setIsConfirmingClear] = useState(false);
@@ -181,9 +188,7 @@ const SignalFeed: React.FC<SignalFeedProps> = ({ notifications, socketUrl, isLis
         </Box>
       ) : (
         <Typography sx={{ ...monoSx, fontSize: '0.8125rem', color: brandTokens.text.secondary }}>
-          {isListening
-            ? `No signals received yet. Listening on ${socketUrl}.`
-            : `No signals received. Socket ${socketUrl} is closed.`}
+          {EMPTY_FEED_TEXT[socketState](socketUrl)}
         </Typography>
       )}
     </Paper>

@@ -20,6 +20,9 @@ export interface AggregateDashboardState {
   recommendation?: string;
 }
 
+export const isMessageObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 export const EMPTY_READING: CognitiveReading = {
   energyLevel: null,
   attentionState: null,
@@ -36,7 +39,11 @@ const asText = (value: unknown): string | null =>
 const asRatio = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1 ? value : null;
 
-export function mapAggregateState(payload: AggregateDashboardState): CognitiveReading {
+export function mapAggregateState(raw: unknown): CognitiveReading {
+  if (!isMessageObject(raw)) {
+    return { ...EMPTY_READING };
+  }
+  const payload = raw as AggregateDashboardState;
   return {
     energyLevel: asText(payload.energy?.energy_level),
     attentionState: asText(payload.attention?.attention_state),
@@ -46,16 +53,16 @@ export function mapAggregateState(payload: AggregateDashboardState): CognitiveRe
   };
 }
 
-export const isMessageObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-/** Maps a `/ws/state` message; returns `null` for anything that is not a `state_update`. */
+/**
+ * Maps a `/ws/state` message. Returns `null` for anything that is not a well-formed
+ * `state_update`, including one whose `data` is missing or not an object.
+ */
 export function mapRealtimeState(message: unknown): CognitiveReading | null {
-  if (!isMessageObject(message) || message.type !== 'state_update') {
+  if (!isMessageObject(message) || message.type !== 'state_update' || !isMessageObject(message.data)) {
     return null;
   }
 
-  const data = (message.data || {}) as Record<string, unknown>;
+  const data = message.data;
   return {
     energyLevel: asText(data.energy_level),
     attentionState: asText(data.attention_state),
