@@ -1,0 +1,121 @@
+gates run at 2026-10-30T10:39:36Z on frozen merge head 989fe4651c050ec23619e5208da17d6152b477b0 (expected 989fe4651c050ec23619e5208da17d6152b477b0)
+tracked dirty: [ M .codex/config.toml;] (only the unrelated .codex/config.toml edit is allowed)
+engine-laid plugins/dopemux-route-ledger/tsconfig.json present: yes (untracked, not part of the commit)
+
+### claude plugin validate plugins/dopemux-route-ledger
+  ❯ ./register.tsx gating hook without .catch: agent.spawn
+  ❯ ./register.tsx calls: $.clock.after (via scheduleStatus), $.clock.now (via stampThen), $.command.register (via registerCommands), $.fs.exists (via initSession), $.fs.list (via rehydrate), $.fs.read (via rehydrate), $.fs.write (via flushSegments), $.session.id (via initSession), $.ui.status, $.ui.toast (via noteAgentCall, toastOnce)
+
+Plugin directory checks for /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger. The plugin directory is the catalog that plugins are submitted to; this is a subset of what it runs.
+
+⚠ Found 1 plugin directory warning:
+
+  ❯ .claude-plugin/plugin.json icon: No icon (ICON_MISSING). No icon found in the plugin. The validator looked for `icon` in plugin.json and for a file at .claude-plugin/icon.png or .svg, assets/icon.png or .svg, or a similar path.
+    Fix: Add a square PNG to the plugin folder at .claude-plugin/icon.png, or set `icon` in plugin.json to the path of a square PNG or JPEG in the plugin: 512 to 2048 px on each side, under 2 MB. SVG and WebP are not accepted. That file may become the listing icon only once: the first time the plugin is saved or submitted in the developer portal. Adding or changing it later does not change the icon.
+
+About these checks:
+
+  ❯ The repository root was taken to be /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032, the nearest parent folder with a .git folder or file. LICENSE was taken from it, because this plugin folder has none of its own. For a plugin submitted from a git repository, the repository root is the top folder of that repository, with only what is committed there, so check that the folder named above is that top folder.
+  ❯ hooks/hooks.json names a hooks module (a code file listed under `modules`). The plugin directory has rules of its own for such code, and these checks apply none of them, so passing here does not mean the directory accepts the plugin. The developer portal's own validation applies those rules.
+
+These plugin directory checks do not change the result below.
+
+The directory also runs a safety scan and a policy review that this command does not.
+
+ℹ Advice (does not change the verdict):
+
+  ❯ /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger/README.md: This README has no line that installs "dopemux-route-ledger" from a marketplace. Add the install line, which works in one step on Claude Code 2.1.275 or later. Validate the folder that holds its marketplace.json to have <owner>/<repo> filled in, and the name its marketplace lists it under.
+      /plugin install dopemux-route-ledger --marketplace <owner>/<repo>
+
+✔ Validation passed with warnings
+exit=0
+
+### claude plugin test plugins/dopemux-route-ledger
+(pass) receipts argument with receipts disabled says so [11.65ms]
+(pass) an unknown argument prints a usage line and changes nothing [11.98ms]
+(pass) the command is read-only: running it writes nothing [15.67ms]
+(pass) nothing throws when the ledger is empty or odd input reaches summarize [12.93ms]
+
+ 55 pass
+ 0 fail
+Ran 55 tests across 1 file. [1.04s]
+exit=0
+counts:  55 pass  0 fail
+
+### tsc -p plugins/dopemux-route-ledger --noEmit (in tree, default options)
+exit=0
+
+### jsonschema: receipts printed by the tests vs receipt.schema.json
+valid receipts 15 {'step_observed': 6, 'agent_request': 6, 'advisor_call': 3} ; extra-key negative control rejected: True
+exit=0
+
+### validate_change_contract --base origin/main --head 989fe4651c050ec23619e5208da17d6152b477b0
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/AGY_RUN_RECORD.md
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/AGY_TIMES.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/AGY_VERSION.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/AUDIT_PROMPT.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/FROZEN_CUMULATIVE.diff
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GATES_PRE_AUDIT.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_AUDIT_RESPONSE_RAW.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_AUDIT_STDERR.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_AUDIT_STREAM.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_DISALLOWED.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_INVOCATION.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_PROBE1_STDERR.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_PROBE1_STREAM.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_PROBE2_STDERR.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_PROBE2_STREAM.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_PROBE_PROMPT.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_RUN_RECORD.md
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_SYSTEM_PROMPT.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/GROK_TIMES.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/PRIOR_FINDINGS_AS_CLAIMS.md
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/PROMPT_BUILD_NOTES.md
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/SHA256SUMS_AGY.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/SHA256SUMS_GROK.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/SHA256SUMS_INPUTS.txt
+exit=0
+
+(only the status lines of the change contract are kept above: the last 25 lines)
+
+### git diff --check 93969e7a3..989fe4651c050ec23619e5208da17d6152b477b0 (content)
+exit=0
+
+### pre-commit run --files <the seven content paths> (SKIP=markdownlint)
+Evidence-economy change-contract preflight.................................................Passed
+Validate Control Tower kit contracts...................................(no files to check)Skipped
+Validate YAML frontmatter in docs..........................................................Passed
+Block deprecated memory backends in slash commands.....................(no files to check)Skipped
+Validate templates/skills SKILL.md frontmatter.........................(no files to check)Skipped
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+Validate proof bundle embedded_audit schema............................(no files to check)Skipped
+Validate GitHub Actions workflow syntax................................(no files to check)Skipped
+markdownlint..............................................................................Skipped
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+exit=0
+
+### markdownlint hook
+NOT_RUN: its Node environment cannot install on this host (nodeenv cannot parse a node pre-release version string); CI covers it.
+
+### live Claude Code session loading the repaired code
+NOT_RUN: no operator-reported result for the repaired code (the pre-repair code was loaded live by the operator on 2026-10-30).
+
+### validate_change_contract --base origin/main --head 989fe4651c050ec23619e5208da17d6152b477b0 (status lines, the first lines of the literal output; the 77-path list above was truncated to its last 25 lines)
+status=PASS
+max_lane=L2
+model_audit_required=True
+proof_only=False
+paths=77
+  [L2] docs/02-how-to/route-ledger.md
+(raw exit code not captured by this pipeline under zsh; status=PASS above is the contract result)
