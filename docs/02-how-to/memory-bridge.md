@@ -52,15 +52,15 @@ each drop shows as `+N dropped`.
 
 | Shown | Meaning |
 |---|---|
-| `📮 N pending` | N `task` or `note` rows wait for the ledger |
+| `📮 N pending` | N `task` or `note` rows this session will deliver: its own, and relayed ones (section 5) |
 | `📮 N pending (ledger unavailable)` | the last replay call did not succeed |
 | `📮 clear` | nothing waits for the ledger |
 | `📮 memory-only` | `.dopemux` is absent; rows live in memory only |
 | `⚠ outbox write failed` | a write failed or hung past 3 s; rows are kept and retried |
 | `⚠ N undeliverable` | N rows hit five failed attempts and will not be retried |
 
-Only `task` and `note` rows count as pending. `turn`, `compact` and `end` rows are
-local history for the band and are never sent.
+Only `task` and `note` rows count as pending, and only those this session will
+deliver. `turn`, `compact` and `end` rows are local history and are never sent.
 
 ## 4. Read the welcome-back band
 
@@ -76,7 +76,7 @@ decision segment appears only when one exists. `idleMinutes` defaults to 30 and
 accepts 5 to 1440; set it in the plugin config or settings `pluginConfigs`.
 
 Decisions are captured only from an answer line starting with `Decision:` or
-`DECISION:` (optionally bold).
+`DECISION:` (optionally bold), in the first 200,000 characters of the answer.
 
 **Pulse caveat:** if Pulse is the outer render hook, the band is hidden during a
 Pulse focus block. Which is outer is UNKNOWN; accepted as a limit.
@@ -85,19 +85,22 @@ Pulse focus block. Which is outer is UNKNOWN; accepted as a limit.
 
 A completed todo and each `/bridge-note` are replayed by running
 `dopemux capture emit --event <json> --mode plugin --repo-root <repo-root>`.
-Only `task.completed` and `manual.memory_store` events are sent. The row id is the
-`event_id`, so a resend does not duplicate. Rows land in
-`<repo-root>/.dopemux/chronicle.sqlite`, table `raw_activity_events`.
+Only `task.completed` and `manual.memory_store` events are sent; the row id is the
+`event_id`, so a resend does not duplicate. Rows land in `<repo-root>/.dopemux/chronicle.sqlite`, table `raw_activity_events`.
 
 - A timer runs once a minute, only while a row waits, and sends at most three rows.
 - A row becomes `sent` only after exit 0. Any other result leaves it `pending`
   and counts one attempt; after five attempts it becomes `dead` and is not retried.
 - If `$.process` cannot start, the row stays `pending` and no attempt is counted.
 
+Relay: at session start, a session copies into its outbox the undelivered `task` and
+`note` rows of earlier sessions in this repo whose file has been quiet for 10 minutes,
+if the row is at most 7 days old (50 per start, oldest first). A copy keeps the row id
+and gets `adopted_from`, so the ledger stores a row delivered twice once. The earlier file is never written; a live session's rows stay with that session.
+
 Limits: CLI only; needs `dopemux` on `PATH` with a build that has `capture emit`;
 works only where `services/working-memory-assistant` sits under the repo root
-(elsewhere rows go `dead`); raw rows only, so they are not recallable yet; only
-this session's own file is replayed.
+(elsewhere rows go `dead`); raw rows only, so they are not recallable yet.
 
 ## 6. Write a note with `/bridge-note`
 
@@ -144,4 +147,3 @@ unavailable. The outbox and status line do not need `$.process`.
 | `decision.logged` | Repo doctrine logs decisions in ConPort only, and ConPort already emits this event | An operator change to the doctrine; until then decisions stay local for the band |
 | dope-memory REST replay (`POST /tools/memory_store`) | Not idempotent (random source id per call), no authentication, `summary` and `reasoning` not redacted | Idempotency key, authentication and redaction on the service, then an operator ruling |
 | Any ConPort read or write | `GET /api/context` inserts a row, so it is not read-only; the workspace must always be sent explicitly | An operator ruling limiting reads to `/api/decisions` and `/api/recent-activity` with an explicit workspace id |
-| Replay of other sessions' pending rows | Needs a safe rule for adopting another writer's file; not designed | A designed and reviewed adoption rule |

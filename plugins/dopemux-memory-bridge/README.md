@@ -41,6 +41,7 @@ A row holds derived fields only, never a raw prompt, tool output or answer:
 | `note` | `note` rows only: the user's own text, redacted, at most 500 characters |
 | `intended_event` | `task.completed` on a `task` row, `manual.memory_store` on a `note` row, otherwise `null` |
 | `state`, `attempts` | `pending` / `sent` / `dead`, and a counter of delivery attempts that ran (failed ones plus the final successful one) |
+| `adopted_from` | optional; on a copy relayed from an earlier session, that session's outbox file key. The earlier file is never written |
 
 Subagent loops (`agentId` set) never write a `turn` row, change the goal, or count
 todos. File edits made inside a subagent count toward the turn that spawned it.
@@ -49,7 +50,7 @@ todos. File edits made inside a subagent count toward the turn that spawned it.
 
 A decision is captured only from a line of the assistant's answer that **starts**
 with `Decision:` or `DECISION:` (optionally bold: `**Decision:**`,
-`**DECISION**:`). Nothing else is inferred. Decisions stay in the outbox for the
+`**DECISION**:`). Nothing else is inferred. Only the first 200,000 characters of an answer are scanned. Decisions stay in the outbox for the
 band. `decision.logged` is **never emitted**: repo doctrine logs decisions in
 ConPort only.
 
@@ -102,10 +103,17 @@ IGNORE`). Those two types are the only ones ever emitted. The rules:
 - **One call at a time, even when one hangs.** A call is raced against a 16 s
   timer, but a raced call is not cancelled: a flag stays set until it really
   settles, and no new call starts before then.
-- **Scope.** Only this session's own outbox file is replayed (one writer per
-  file). Pending rows left by other sessions' files are counted but not sent. A
-  session that ends within a minute of a completed todo leaves that row
-  `pending` in its file.
+- **Scope.** This session's own outbox file is replayed (one writer per file),
+  and so are the copies it relays from earlier sessions (see Relay below). Rows
+  of an earlier session whose file is still live are neither counted nor sent
+  here; that session delivers them. A session that ends within a minute of a
+  completed todo leaves that row `pending` in its file.
+- **Relay.** At session start, undelivered `task` and `note` rows of earlier
+  sessions in this repo are copied into this session's outbox when their file has
+  been quiet for 10 minutes and the row is at most 7 days old (50 per start, oldest
+  first). A copy keeps the row id and gets `adopted_from`, so the ledger stores a row
+  delivered twice once. The earlier file is never written. Adoption runs once per
+  session start, not on `/clear`, and not in memory-only mode.
 
 What the route is and is not (W01 Q5): CLI only; it writes `raw_activity_events`
 only and nothing local promotes those rows into the work log; it loads the
@@ -147,8 +155,8 @@ One line, beside Pulse's: `📮 N pending`, `📮 N pending (ledger unavailable)
 `📮 clear`, `📮 memory-only`, `⚠ outbox write failed`, each with a ` +N dropped`
 suffix after a cap drop, and `⚠ N undeliverable` (with the pending part after a
 ` · `) when dead rows exist. **Pending means waiting for the ledger**: `N` counts
-`task` and `note` rows still `pending` in this session, plus those found in the
-newest eight other sessions' files at start. A `turn`, `compact` or `end` row is
+`task` and `note` rows this session will deliver: its own, plus the relayed copies
+of quiet earlier sessions' rows (see Scope and Relay above). A `turn`, `compact` or `end` row is
 local history for the band: it is never sent, so it is not counted (it keeps
 `state: pending` in the file, which only means "not delivered"). A session with
 only turns shows `📮 clear`; a completed todo makes it `📮 1 pending`, and it goes
@@ -181,7 +189,6 @@ config row or in settings `pluginConfigs`.
 | ConPort in any form | W01: reads are limited to two routes and need an operator ruling; ConPort is the single home for decisions |
 | `decision.logged` | W01 NOT_BUILT: ConPort already emits it, and doctrine says decisions are logged in ConPort only. Marker-detected decisions stay local, for the band |
 | Recap / injection into the session | W01 NO_GO until `DMX-MEMSPINE-IDENTITY-005` (or an operator-accepted equivalent) is on main |
-| Replay of other sessions' pending rows | Needs a safe adoption rule for another writer's file; not designed |
 
 ## Known limits
 
