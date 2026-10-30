@@ -118,7 +118,10 @@ project root. An absolute `receiptDir` is allowed by design, subject to the link
 directory checks. Before it writes a segment file for the first time, the mod looks at
 the file itself: a symbolic link there turns receipts off and nothing is written. A stat
 that rejects means "not there"; if no part of the directory can be inspected, receipts
-are off.
+are off. When the directory is read back at the start of a session and listing it
+fails, an absent directory starts empty, but one that exists (or whose existence cannot
+be checked) turns receipts off, so a listing error never restarts the sequence and
+overwrites files already there. Segment size is counted in UTF-8 bytes.
 
 ### Memory, session end and /clear
 

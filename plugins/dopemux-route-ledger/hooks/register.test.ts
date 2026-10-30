@@ -1951,6 +1951,109 @@ test('a segment also rolls by bytes, before maxReceiptsPerFile is reached', asyn
   }
 })
 
+// Codex review of 0b46b8755. A listing error is not an empty directory: reading it
+// as empty restarts seq at 0 and the first write replaces the persisted file.
+function withFs(env: ReturnType<typeof fakeEnv>, fs: Record<string, unknown>): never {
+  const base = env.$ as unknown as { fs: Record<string, unknown> }
+  return { ...(env.$ as object), fs: { ...base.fs, ...fs } } as never
+}
+
+test('rehydrate: a receipt directory that exists but cannot be listed turns receipts off and overwrites nothing', async () => {
+  const text = jsonl([stepRec(0), stepRec(1)])
+  const env = fakeEnv({ [FILE]: text })
+  const $ = withFs(env, {
+    list: async () => {
+      throw new Error('EIO')
+    },
+  })
+  const s = newLedger({})
+  await initSession($, s)
+
+  expect(s.receiptsEnabled).toBe(false)
+  expect(s.receiptsDisabledReason).toMatch(/list/)
+  commit($, s, asReceipt(stepRec(9)))
+  await s.chain
+  expect(env.files.get(FILE)).toBe(text)
+  expect(env.writes).toHaveLength(0)
+})
+
+test('rehydrate: when the listing fails and the directory is absent, the ledger starts empty and enabled', async () => {
+  const env = fakeEnv()
+  const $ = withFs(env, {
+    list: async () => {
+      throw new Error('ENOENT')
+    },
+    exists: async (path: string) => path === '.control-tower/state',
+  })
+  const s = newLedger({})
+  await initSession($, s)
+
+  expect(s.receiptsEnabled).toBe(true)
+  commit($, s, asReceipt(stepRec(0)))
+  await s.chain
+  expect(env.files.has(FILE)).toBe(true)
+})
+
+test('rehydrate: when the listing fails and the directory cannot be checked, receipts stay off', async () => {
+  const env = fakeEnv({ [FILE]: jsonl([stepRec(0)]) })
+  const $ = withFs(env, {
+    list: async () => {
+      throw new Error('EIO')
+    },
+    exists: async (path: string) => {
+      if (path === '.control-tower/state') return true
+      throw new Error('EIO')
+    },
+  })
+  const s = newLedger({})
+  await initSession($, s)
+
+  expect(s.receiptsEnabled).toBe(false)
+  expect(env.writes).toHaveLength(0)
+})
+
+// Codex review of 0b46b8755. `$.fs.write` limits bytes, not characters.
+const CJK = '漢'.repeat(80)
+const byteLength = (text: string): number => new TextEncoder().encode(text).length
+
+test('segment size counts UTF-8 bytes, not characters', async () => {
+  const env = fakeEnv()
+  const s = readyLedger()
+  for (let i = 0; i < 5; i++) commit(env.$, s, asReceipt(reqRec(i, { description: CJK })))
+  await s.chain
+
+  const written = env.files.get(FILE)!
+  expect(byteLength(written)).toBeGreaterThan(written.length)
+  expect(s.segments[0]!.bytes).toBe(byteLength(written))
+})
+
+test('rehydrate counts UTF-8 bytes of what it reads', async () => {
+  const env = fakeEnv({ [FILE]: jsonl([reqRec(0, { description: CJK }), reqRec(1, { description: CJK })]) })
+  const s = newLedger({})
+  await initSession(env.$, s)
+
+  expect(s.segments[0]!.bytes).toBe(byteLength(env.files.get(FILE)!))
+})
+
+test('a segment of multi-byte descriptions rolls on bytes, so no written file passes the limit by more than one line', async () => {
+  const saved = limits.segmentBytesMax
+  limits.segmentBytesMax = 2_500
+  try {
+    const s = readyLedger()
+    const env = fakeEnv()
+    for (let i = 0; i < 12; i++) commit(env.$, s, asReceipt(reqRec(i, { description: CJK })))
+    await s.chain
+
+    expect(s.segments.length).toBeGreaterThan(1)
+    for (const text of env.files.values()) {
+      const lastLine = text.slice(0, -1).split('\n').pop()!
+      expect(byteLength(text) - byteLength(lastLine) - 1).toBeLessThan(2_500)
+    }
+  } finally {
+    limits.segmentBytesMax = saved
+  }
+})
+
 test('rehydrate leaves an unreadable segment alone and skips a corrupt line, nothing throws', async ($, on) => {
   const unreadable = `${DEFAULT_DIR}/sess-1.1.jsonl`
   const files = {

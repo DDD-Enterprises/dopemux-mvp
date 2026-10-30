@@ -706,10 +706,30 @@ function currentSegment(s: Ledger): Segment {
   return seg
 }
 
+// The UTF-8 size of a string. `$.fs.write` limits bytes, and `String.length`
+// counts UTF-16 units, which undercounts any non-ASCII text (a CJK character is
+// one unit and three bytes). Done by hand so no runtime global is assumed.
+function utf8Length(text: string): number {
+  let bytes = 0
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i)
+    if (c < 0x80) bytes += 1
+    else if (c < 0x800) bytes += 2
+    else if (c >= 0xd800 && c <= 0xdbff && i + 1 < text.length) {
+      const next = text.charCodeAt(i + 1)
+      if (next >= 0xdc00 && next <= 0xdfff) {
+        bytes += 4
+        i += 1
+      } else bytes += 3
+    } else bytes += 3
+  }
+  return bytes
+}
+
 // Puts a receipt in a segment and counts it. The one place receipts enter one.
 function place(s: Ledger, seg: Segment, receipt: Receipt, line: string): void {
   seg.receipts.push(receipt)
-  seg.bytes += line.length + 1
+  seg.bytes += utf8Length(line) + 1
   seg.count += 1
   if (receipt.kind in s.counts) s.counts[receipt.kind] += 1
 }
@@ -947,7 +967,18 @@ function restoreBudgetToasted(s: Ledger): void {
 }
 
 async function rehydrate($: EngineInterface, s: Ledger): Promise<void> {
-  const entries = await $.fs.list(s.receiptDir).catch(() => [])
+  let entries: Awaited<ReturnType<EngineInterface['fs']['list']>>
+  try {
+    entries = await $.fs.list(s.receiptDir)
+  } catch {
+    // A listing error is not an empty directory: reading it as empty would start
+    // seq and the segment number at 0 and the first write would replace what is
+    // persisted. Only a directory known to be absent starts empty; if it exists,
+    // or cannot be checked, receipts stay off and nothing is written.
+    const present = await $.fs.exists(s.receiptDir ?? '').catch(() => true)
+    if (present) return disable(s, 'could not list the receipt directory')
+    entries = []
+  }
   const pattern = new RegExp(`^${s.fileStem}(?:\\.(\\d+))?\\.jsonl$`)
   const found: { n: number; name: string }[] = []
   for (const entry of entries) {
