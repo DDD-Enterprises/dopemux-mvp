@@ -41,7 +41,18 @@ FORBIDDEN_PATHS = [
     re.compile(r"^scripts/" + r"dopetask\Z"),
     re.compile(r"^scripts/" + r"taskx\Z"),
     re.compile(r"^services/task-orchestrator/.*\Z", re.DOTALL),
-    re.compile(r"^services/dopecon-bridge/.*\Z", re.DOTALL),
+    # DCP-RED-MERGE-SEAM-0001 narrow carve-out (ADR-227, Runner Memory Wave 2A R2 W09;
+    # status proposed until the operator accepts it): exactly the two services/dopecon-bridge/
+    # files named in the W05 write allowlist (the ConPort REST callers). File-exact negative
+    # lookaheads anchored with `\Z`; no directory exemption, so no `..` companion is needed.
+    # Every other path under services/dopecon-bridge/ stays hard-blocked.
+    re.compile(
+        r"^services/dopecon-bridge/"
+        r"(?!dopecon_bridge/clients\.py\Z)"
+        r"(?!ddg_mcp_stdio\.py\Z)"
+        r".*\Z",
+        re.DOTALL,
+    ),
     # DCP-RED-MERGE-SEAM-0001 narrow carve-out (ADR-226, TP-DOPECONTEXT-VECTOR-SPACE-0004
     # governance amendment 2026-09-03, extended by amendment A2 2026-09-04): the offline
     # benchmark harness directory services/dope-context/eval/ and exactly the five service
@@ -81,8 +92,44 @@ FORBIDDEN_PATHS = [
     # escape the block. Applies to the whole service subtree; an exact `..` segment is
     # the only thing it matches (`something..` or `..foo` are ordinary names).
     re.compile(r"^services/dope-context/(?:.*/)?\.\.(?:/|\Z)", re.DOTALL),
-    re.compile(r"^services/working-memory-assistant/.*\Z", re.DOTALL),
-    re.compile(r"^docker/mcp-servers-source/conport/.*\Z", re.DOTALL),
+    # DCP-RED-MERGE-SEAM-0001 narrow carve-out (ADR-227, Runner Memory Wave 2A R2 W09;
+    # status proposed until the operator accepts it): exactly the nine
+    # services/working-memory-assistant/ files named in the W01 write allowlist (dope-memory
+    # identity on HTTP writes, the principal column, and the CI-run endpoint test) and the
+    # nine docker/mcp-servers-source/conport/ files named in W02 (ConPort identity, the
+    # principal migration and its rollback). File-exact negative lookaheads anchored with
+    # `\Z`; no directory exemption, so no `..` companion is needed. Every other path under
+    # either tree (including same-named files in other directories, suffix, prefix and case
+    # variants) remains hard-blocked. TEXT_RULES content scanning in red_lane_scanner.py is
+    # untouched and still applies to the exempted paths.
+    re.compile(
+        r"^services/working-memory-assistant/"
+        r"(?!dope_memory_main\.py\Z)"
+        r"(?!mcp_http\.py\Z)"
+        r"(?!auth_identity\.py\Z)"
+        r"(?!eventbus_consumer\.py\Z)"
+        r"(?!chronicle/store\.py\Z)"
+        r"(?!chronicle/schema\.sql\Z)"
+        r"(?!chronicle/sqlite_migrations\.py\Z)"
+        r"(?!chronicle/migrations/v1_3_0_add_write_principal\.sql\Z)"
+        r"(?!tests/test_mcp_http_endpoint\.py\Z)"
+        r".*\Z",
+        re.DOTALL,
+    ),
+    re.compile(
+        r"^docker/mcp-servers-source/conport/"
+        r"(?!server\.py\Z)"
+        r"(?!enhanced_server\.py\Z)"
+        r"(?!instance_detector\.py\Z)"
+        r"(?!conport_mcp_stdio\.py\Z)"
+        r"(?!auth_identity\.py\Z)"
+        r"(?!schema\.sql\Z)"
+        r"(?!migrations/008_write_principal\.sql\Z)"
+        r"(?!migrations/008_rollback\.sql\Z)"
+        r"(?!migrations/conport_migration_gate\.py\Z)"
+        r".*\Z",
+        re.DOTALL,
+    ),
     re.compile(r"^src/conport/.*\Z", re.DOTALL),
 ]
 

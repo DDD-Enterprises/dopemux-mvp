@@ -439,6 +439,106 @@ def test_exact_case_exempt_path_still_allowed_after_fold():
 
 
 # ---------------------------------------------------------------------------
+# ADR-227 / Runner Memory Wave 2A R2 W09: narrow memory-spine carve-out.
+# Exactly 20 file-exact exemptions (W01 dope-memory, W02 ConPort, W05 bridge
+# callers), each a negative lookahead anchored with `\\Z`. No directory is
+# exempt, so there is no `..` companion rule. Exhaustive per-file coverage
+# lives in tests/unit/runner_memory_2a_r2_w09/.
+# ---------------------------------------------------------------------------
+
+_MEMORY_SPINE_CARVED_OUT = (
+    "services/working-memory-assistant/dope_memory_main.py",
+    "services/working-memory-assistant/mcp_http.py",
+    "services/working-memory-assistant/auth_identity.py",
+    "services/working-memory-assistant/eventbus_consumer.py",
+    "services/working-memory-assistant/chronicle/store.py",
+    "services/working-memory-assistant/chronicle/schema.sql",
+    "services/working-memory-assistant/chronicle/sqlite_migrations.py",
+    "services/working-memory-assistant/chronicle/migrations/v1_3_0_add_write_principal.sql",
+    "services/working-memory-assistant/tests/test_mcp_http_endpoint.py",
+    "docker/mcp-servers-source/conport/server.py",
+    "docker/mcp-servers-source/conport/enhanced_server.py",
+    "docker/mcp-servers-source/conport/instance_detector.py",
+    "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+    "docker/mcp-servers-source/conport/auth_identity.py",
+    "docker/mcp-servers-source/conport/schema.sql",
+    "docker/mcp-servers-source/conport/migrations/008_write_principal.sql",
+    "docker/mcp-servers-source/conport/migrations/008_rollback.sql",
+    "docker/mcp-servers-source/conport/migrations/conport_migration_gate.py",
+    "services/dopecon-bridge/dopecon_bridge/clients.py",
+    "services/dopecon-bridge/ddg_mcp_stdio.py",
+)
+
+_MEMORY_SPINE_STILL_BLOCKED = (
+    "services/working-memory-assistant/conport_client.py",
+    "services/working-memory-assistant/chronicle/capture_client.py",
+    "services/working-memory-assistant/tests/test_other.py",
+    "services/working-memory-assistant/Dockerfile",
+    "services/working-memory-assistant/src/mcp/server.py",
+    "docker/mcp-servers-source/conport/direct_server.py",
+    "docker/mcp-servers-source/conport/info_server.py",
+    "docker/mcp-servers-source/conport/unified_queries.py",
+    "docker/mcp-servers-source/conport/Dockerfile",
+    "docker/mcp-servers-source/conport/migrations/007_worktree_support_simple.sql",
+    "services/dopecon-bridge/main.py",
+    "services/dopecon-bridge/dopecon_bridge/app.py",
+    "services/dopecon-bridge/dopecon_bridge/auth.py",
+    "services/dopecon-bridge/Dockerfile",
+    "services/task-orchestrator/app/main.py",
+    # near-misses of exempt names
+    "services/working-memory-assistant/mcp_http.py.bak",
+    "services/working-memory-assistant/xmcp_http.py",
+    "services/working-memory-assistant/sub/mcp_http.py",
+    "services/working-memory-assistant/MCP_HTTP.py",
+    "services/working-memory-assistant/chronicle/../mcp_http.py",
+    "docker/mcp-servers-source/conport/sub/server.py",
+    "docker/mcp-servers-source/conport/migrations/008_write_principal.sql.orig",
+    "docker/mcp-servers-source/conport/migrations/server.py",
+    "services/dopecon-bridge/clients.py",  # exempt file is dopecon_bridge/clients.py
+    "services/dopecon-bridge/dopecon_bridge/clients.py.bak",
+)
+
+
+def test_memory_spine_carved_out_paths_are_editable():
+    assert len(_MEMORY_SPINE_CARVED_OUT) == 20
+    for rel in _MEMORY_SPINE_CARVED_OUT:
+        for tool in ("Edit", "Write", "NotebookEdit"):
+            inp = {"file_path": str(_ROOT / rel)}
+            assert surface_guard_block(tool, inp, _ROOT) is None, (tool, rel)
+
+
+def test_memory_spine_other_paths_remain_blocked():
+    for rel in _MEMORY_SPINE_STILL_BLOCKED:
+        result = surface_guard_block("Edit", {"file_path": str(_ROOT / rel)}, _ROOT)
+        assert result is not None, rel
+        assert RED_LANE_ID in result, rel
+
+
+def test_memory_spine_newline_variants_are_not_falsely_exempt():
+    for rel in _MEMORY_SPINE_CARVED_OUT:
+        for suffix in ("\n", "\nextra.py"):
+            assert _matches_forbidden_pattern(rel + suffix), repr(rel + suffix)
+            result = surface_guard_block("Edit", {"file_path": str(_ROOT / rel) + suffix}, _ROOT)
+            assert result is not None, repr(rel + suffix)
+
+
+def test_memory_spine_trailing_slash_is_not_exempt_at_regex_level():
+    for rel in _MEMORY_SPINE_CARVED_OUT:
+        assert _matches_forbidden_pattern(rel + "/"), rel
+
+
+def test_task_orchestrator_remains_fully_blocked_after_memory_spine_carveout():
+    for rel in (
+        "services/task-orchestrator/auth_identity.py",
+        "services/task-orchestrator/mcp_http.py",
+        "services/task-orchestrator/app/main.py",
+    ):
+        result = surface_guard_block("Edit", {"file_path": str(_ROOT / rel)}, _ROOT)
+        assert result is not None, rel
+        assert RED_LANE_ID in result, rel
+
+
+# ---------------------------------------------------------------------------
 # Sync test: fallback ⊆ live FORBIDDEN_PATHS
 # ---------------------------------------------------------------------------
 
