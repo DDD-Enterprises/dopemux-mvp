@@ -1,0 +1,79 @@
+{
+  "status": "completed",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "low",
+      "path": "ui-dashboard/src/App.tsx",
+      "lines": "195-203",
+      "summary": "WebSocket state_update messages overwrite reading state as a full snapshot, clearing the initial HTTP 15-minute forecast to null ('unknown') when the backend WebSocket payload omits predicted_load_15min.",
+      "details": "In ui-dashboard/src/App.tsx:195-203 and ui-dashboard/src/cognitiveReading.ts:61-74, mapRealtimeState treats every state_update message as a complete snapshot rather than merging partial fields. As documented in claudedocs/design/ui-dashboard-audit-2026-10-30.md:118-125, services/adhd_engine/core/engine.py does not currently publish predicted_load_15min in state_update payloads, so the 15-minute forecast displays after the initial GET /api/adhd-state and then transitions to 'unknown' on the first WebSocket update."
+    },
+    {
+      "id": "F-2",
+      "severity": "low",
+      "path": "ui-dashboard/eslint.config.js",
+      "lines": "1-31",
+      "summary": "ESLint flat configuration is restored, but pre-existing lint errors in untouched files and missing CI enforcement remain.",
+      "details": "ui-dashboard/eslint.config.js restores a working ESLint 10 flat config, but claudedocs/design/ui-dashboard-audit-2026-10-30.md:27-37 and :131-132 note that 16 errors and 2 warnings remain in untouched files and no GitHub Actions workflow runs ui-dashboard lint or unit tests."
+    }
+  ],
+  "risks": [
+    "Validation commands (tsc, eslint, vitest, vite build) were not executed during this embedded audit because tools and candidate code execution are disabled by policy (validation_status=NOT_RUN).",
+    "Pre-existing ESLint errors (16 errors, 2 warnings) in untouched ui-dashboard files and the absence of a CI workflow gating ui-dashboard mean lint/test regressions are not automatically blocked in CI.",
+    "TaskSequencer (ui-dashboard/src/components/TaskSequencer.tsx:553-563) and TeamDashboard (ui-dashboard/src/components/TeamDashboard.tsx:99-113) still render static seeded data, though they are now explicitly labeled '[SAMPLE] not connected' instead of '[LIVE]'.",
+    "Candidate file claudedocs/design/ui-dashboard-audit-2026-10-30.md contains audit terminology (role names, PASS/FAIL tables) which was treated strictly as untrusted candidate data."
+  ],
+  "rationale": "The diff for PR #1486 (head 962434ad61bde3efdd6bd938f81ffdfbe358e71c against base 97b6d5040496e2271c41d24c339d039303bbe6b1 in DDD-Enterprises/dopemux-mvp) remediates fabricated telemetry and UI/accessibility defects in ui-dashboard. Specifically: (1) ui-dashboard/src/cognitiveReading.ts and ui-dashboard/src/App.tsx replace hardcoded fallback metrics (0.7 energy, 0.6 attention, 0.5 load) with nullable CognitiveReading fields so unmeasured or out-of-range values render as 'unknown'; (2) App.tsx tracks HTTP and WebSocket failures separately, prevents slow initial GET responses from overwriting newer live WebSocket updates via liveReadingSeenRef, detaches socket handlers on cleanup, and surfaces actionable failure alerts; (3) LoadInstrument, AttentionStatePanel, and SignalFeed replace CognitiveLoadGauge and PredictionPanel with accessible semantics (role='meter', role='log', two-step clear confirmation) and honest '[CONSENT: UNKNOWN]' and '[SAMPLE] not connected' labels; (4) index.css and theme.ts remove the contrast-reducing body::after scanline overlay, global '* { transition: all 0.25s ease }', and external Google Fonts import in favor of Direction B tokens and local Dopemux font stacks; and (5) unit/integration tests in App.test.tsx, LoadInstrument.test.tsx, and realtimeStateMapping.test.ts cover failure, race-condition, and boundary cases. Residual risks around unexecuted validation in this embedded environment, remaining lint issues in untouched files, and backend WebSocket forecast parity justify PASS_WITH_RISKS.",
+  "inspected_paths": [
+    ".gitignore",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "src/dopemux/ui/theme.py",
+    "ui-dashboard/eslint.config.js",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx",
+    "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+    "ui-dashboard/src/components/LoadInstrument.tsx",
+    "ui-dashboard/src/components/PredictionPanel.tsx",
+    "ui-dashboard/src/components/SignalFeed.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/TeamDashboard.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+    "ui-dashboard/src/index.css",
+    "ui-dashboard/src/realtimeStateMapping.test.ts",
+    "ui-dashboard/src/theme.ts",
+    "ui-dashboard/src/time.ts"
+  ],
+  "evidence_refs": [
+    ".gitignore:441-442",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md:118-148",
+    "src/dopemux/ui/theme.py:302-303",
+    "ui-dashboard/eslint.config.js:1-31",
+    "ui-dashboard/src/cognitiveReading.ts:26-74",
+    "ui-dashboard/src/App.tsx:73-253",
+    "ui-dashboard/src/App.tsx:316-393",
+    "ui-dashboard/src/App.tsx:416-470",
+    "ui-dashboard/src/App.test.tsx:43-286",
+    "ui-dashboard/src/components/LoadInstrument.tsx:41-231",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx:10-63",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx:39-120",
+    "ui-dashboard/src/components/SignalFeed.tsx:33-196",
+    "ui-dashboard/src/components/TaskSequencer.tsx:46-49",
+    "ui-dashboard/src/components/TaskSequencer.tsx:552-563",
+    "ui-dashboard/src/components/TaskSequencer.tsx:1158-1161",
+    "ui-dashboard/src/components/TeamDashboard.tsx:99-113",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx:104-105",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx:104",
+    "ui-dashboard/src/index.css:5-38",
+    "ui-dashboard/src/realtimeStateMapping.test.ts:5-87",
+    "ui-dashboard/src/theme.ts:5-79",
+    "ui-dashboard/src/time.ts:2-8"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true
+}

@@ -1,0 +1,14 @@
+pre-existing ac78f2184 ui-dashboard/src/components/TaskSequencer.tsx:91
+pre-existing 3c18bf4e2 ui-dashboard/src/components/TaskSequencer.tsx:117
+pre-existing 73563404e ui-dashboard/src/components/TaskSequencer.tsx:146
+pre-existing 71f60c601 ui-dashboard/src/components/TaskSequencer.tsx:149
+pre-existing 6bec96ebe ui-dashboard/src/components/TaskSequencer.tsx:374
+pre-existing 71f60c601 ui-dashboard/src/components/TaskSequencer.tsx:381
+pre-existing ac78f2184 ui-dashboard/src/components/TaskSequencer.tsx:388
+pre-existing ac78f2184 ui-dashboard/src/components/TaskSequencer.tsx:439
+pre-existing 71f60c601 ui-dashboard/src/components/__tests__/Accessibility.test.tsx:2
+pre-existing 73563404e ui-dashboard/src/features/repository-planner/PortfolioTable.tsx:22
+pre-existing 73563404e ui-dashboard/src/features/repository-planner/PortfolioTable.tsx:25
+pre-existing 8a2f7283a ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx:80
+pre-existing 8a2f7283a ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx:84
+pre-existing 8a2f7283a ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx:89
