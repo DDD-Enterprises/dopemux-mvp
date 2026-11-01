@@ -1,0 +1,90 @@
+{
+  "status": "complete",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "severity": "low",
+      "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+      "summary": "Overtime text still uses brandTokens.colors.gremlinPink on the timer line this diff edits. theme.ts and index.css both define that token as a brand accent and not a status color.",
+      "evidence": "TaskSequencer timer sx keeps color: isOvertime ? brandTokens.colors.gremlinPink : 'inherit' while only the fontFamily changes to brandTokens.fonts.display."
+    },
+    {
+      "severity": "low",
+      "path": "ui-dashboard/src/components/LoadInstrument.tsx",
+      "summary": "Zone geometry and deriveStatus disagree at the exact 0.6 and 0.8 edges. The needle at 60% and 80% sits on the next zone (PRESSURE, BREAK) while the text stays in the previous band (Flow Ritual, Pressure Build).",
+      "evidence": "ZONES widths are 30/30/20/20. toPercent keeps whole percents when deriveStatus(whole/100) matches. LoadInstrument.test.tsx expects load 0.6 to read 60% Flow Ritual and load 0.8 to read 80% Pressure Build. deriveStatus treats high as >0.6 and critical as >0.8."
+    }
+  ],
+  "risks": [
+    {
+      "severity": "medium",
+      "summary": "A state_update replaces the whole CognitiveReading. Omitted fields become null. A GET forecast in predicted_load_15min is cleared by a later socket snapshot that lacks that field. App.tsx comments and realtimeStateMapping.test.ts lock this full-snapshot behavior. Partial socket payloads will blank energy, attention, forecast, or recommendation that an earlier GET had shown."
+    },
+    {
+      "severity": "medium",
+      "summary": "TaskSequencer and TeamDashboard still render a fixed sample queue and team board. The visible label is [SAMPLE] not connected, and the false [LIVE] / consent-verified copy is gone. Those controls remain operable mock workflows."
+    },
+    {
+      "severity": "medium",
+      "summary": "validation_status is NOT_RUN. Tests, typecheck, ESLint, and GitHub workflow status were not executed. The diff adds ui-dashboard/eslint.config.js and does not add a workflow that runs it. Whether flat/recommended and react-hooks flat configs match the installed packages is unconfirmed. Candidate markdown claims of passing tests or remaining lint counts were not used as evidence."
+    },
+    {
+      "severity": "low",
+      "summary": "index.css drops the Google Fonts import and sets font-synthesis:none. No @font-face or font files are in the diff. The cockpit uses Dopemux Term and Dopemux Editor only when those families are already installed; otherwise it falls back to system fonts at Regular weight."
+    },
+    {
+      "severity": "low",
+      "summary": "Closed socket and failed GET copy uses the word Failed inside a warning alert and the gilt [DEGRADED] chip. Parse and task failures use the red error banner. Hard outage and degraded waiting share one yellow treatment."
+    },
+    {
+      "severity": "low",
+      "summary": "handleRetry sets liveReadingSeenRef to false before the effect detaches the previous socket. A message already queued on that socket can set the ref true again and cause the replacement GET to be ignored."
+    },
+    {
+      "severity": "low",
+      "summary": "time.test.ts assigns process.env.TZ at module load and expects America/Los_Angeles clock output. Runtime TZ changes are not reliable on every Node or Vitest worker, so the 07:01:55 assertion is host-sensitive."
+    },
+    {
+      "severity": "low",
+      "summary": "claudedocs/design/ui-dashboard-audit-2026-10-30.md is candidate-authored. It names an auditor and asserts typecheck, lint, and test results. Those statements were reviewed only as data."
+    }
+  ],
+  "rationale": "The supplied diff for DDD-Enterprises/dopemux-mvp PR 1486 at trusted head 0c031b26589f5ae07bc1a6801387b7c02f8e73ff (base 97b6d5040496e2271c41d24c339d039303bbe6b1) removes invented cognitive defaults. DashboardApp starts from EMPTY_READING. asRatio accepts only finite numbers in [0,1]. asOneOf accepts only the engine energy and attention enums. mapAggregateState nulls recommendation when task_recommendations carries an error. App.test.tsx asserts that a rejected fetch plus a closed socket shows unknown energy and attention, names GET http://localhost:8097/api/adhd-state, and does not render 70% or 60%. The same file covers stale GET versus socket ordering, upstream section errors, malformed state_update, and critical-panel collapse. index.css removes the body::after scanline and the universal transition. Consent is the static string [CONSENT: UNKNOWN]. Sample surfaces are labelled [SAMPLE] not connected. Git object identity, CI, and test execution were not rechecked; judgment is of this diff only.",
+  "inspected_paths": [
+    ".gitignore",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "src/dopemux/ui/theme.py",
+    "ui-dashboard/eslint.config.js",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx",
+    "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+    "ui-dashboard/src/components/LoadInstrument.tsx",
+    "ui-dashboard/src/components/PredictionPanel.tsx",
+    "ui-dashboard/src/components/SignalFeed.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/TeamDashboard.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx",
+    "ui-dashboard/src/components/__tests__/SignalFeed.test.tsx",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+    "ui-dashboard/src/index.css",
+    "ui-dashboard/src/realtimeStateMapping.test.ts",
+    "ui-dashboard/src/theme.ts",
+    "ui-dashboard/src/time.test.ts",
+    "ui-dashboard/src/time.ts"
+  ],
+  "evidence_refs": [
+    "ui-dashboard/src/cognitiveReading.ts EMPTY_READING, asRatio, asOneOf, mapAggregateState, mapRealtimeState, upstreamErrorSections",
+    "ui-dashboard/src/App.tsx initial useState(EMPTY_READING), liveReadingSeenRef, STATE_ENDPOINT/SOCKET_ENDPOINT error strings, CONNECTION_META gilt for degraded",
+    "ui-dashboard/src/App.test.tsx backend unreachable asserts unknown and rejects 70% and 60%; slow GET does not overwrite a newer state_update",
+    "ui-dashboard/src/components/LoadInstrument.tsx toPercent and ZONES",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx exact edges 0.3, 0.6, 0.8 and 0.8001",
+    "ui-dashboard/src/index.css removal of body::after and transition:all 0.25s ease",
+    "ui-dashboard/src/components/TaskSequencer.tsx [SAMPLE] not connected and isOvertime gremlinPink",
+    "ui-dashboard/src/theme.ts gremlinPink comment and deriveStatus thresholds implied by LoadInstrument tests",
+    "ui-dashboard/eslint.config.js flat recommended config; no workflow file in the diff"
+  ],
+  "validation_status": "NOT_RUN"
+}

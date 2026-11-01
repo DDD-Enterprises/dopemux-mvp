@@ -1,0 +1,212 @@
+{
+  "packet_id": "TP-DMX-PR1486-L2-AUDIT-002",
+  "tp_id": "TP-DMX-PR1486-L2-AUDIT-002",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1486,
+  "branch": "feat/ui-dashboard-cockpit-refresh",
+  "base": "main",
+  "base_sha": "97b6d5040496e2271c41d24c339d039303bbe6b1",
+  "head_sha": "0c031b26589f5ae07bc1a6801387b7c02f8e73ff",
+  "audited_head_sha": "0c031b26589f5ae07bc1a6801387b7c02f8e73ff",
+  "kind": "fix",
+  "risk_lane": "L2",
+  "supersedes": {
+    "packet_id": "TP-DMX-PR1486-L2-AUDIT-001",
+    "audited_head_sha": "962434ad61bde3efdd6bd938f81ffdfbe358e71c",
+    "reason": "code changed after that audit (0c031b265 fixes Copilot C3-C7 and Grok F1); the -001 directory is kept unchanged as the round-5 record"
+  },
+  "implementer": "Claude Code (claude-opus-5-5, desktop session d3cf0485) authored all code commits; 0c031b265 was written by two claude-sonnet-5-5 subagent lanes under that session and verified by it.",
+  "audited_files": [
+    ".gitignore",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "src/dopemux/ui/theme.py",
+    "ui-dashboard/eslint.config.js",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx",
+    "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+    "ui-dashboard/src/components/LoadInstrument.tsx",
+    "ui-dashboard/src/components/PredictionPanel.tsx",
+    "ui-dashboard/src/components/SignalFeed.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/TeamDashboard.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx",
+    "ui-dashboard/src/components/__tests__/SignalFeed.test.tsx",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+    "ui-dashboard/src/index.css",
+    "ui-dashboard/src/realtimeStateMapping.test.ts",
+    "ui-dashboard/src/theme.ts",
+    "ui-dashboard/src/time.test.ts",
+    "ui-dashboard/src/time.ts"
+  ],
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "claude-opus-5-5 supervisor (Co-Authored-By trailer on every code commit incl. 0c031b265) with claude-sonnet-5-5 subagent lanes requested for 0c031b265 (observed child model UNKNOWN); self-reported, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "fallback_auditor_approval": {
+    "approved_by": "operator",
+    "approval_text": "let's audit with agy argon 4, codex astra, and grok too",
+    "approved_at": "2026-10-30T10:37:01Z",
+    "reaudit_approval_text": "Fix and re-audit",
+    "reaudit_approved_at": "2026-11-01T03:10:28Z",
+    "scope_approval_text": "Add Grok F1 (Recommended)",
+    "scope_approved_at": "2026-11-01T03:13:03Z",
+    "approval_source": "user messages in Claude Code session d3cf0485 (~/.claude/projects/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645.jsonl)",
+    "exact_model": "gemini-4-argon-high",
+    "recorded_auditor_model": "gemini",
+    "bounded_input": "trusted prompt only (task, output contract, delimited untrusted metadata and the unified diff base..head minus the round-5 proof dirs); no checkout, no repository access",
+    "no_secret_constraints": "prompt built from git diff only; review_bundle scanned with scripts/audit/build_evidence_bundle.py secret patterns plus an email pattern (clean after redaction)"
+  },
+  "auditor_run": {
+    "agy_cli_version": "1.4.12",
+    "conversation_id": "d2d128f6-9db9-466a-913b-536140a5ce4f",
+    "launched": "2026-11-01T03:22:47Z",
+    "wrapper_end": "2026-11-01T03:27:49Z",
+    "attempts": 1,
+    "verdict": "PASS_WITH_RISKS",
+    "validation_status": "NOT_RUN",
+    "prompt_sha256": "5753b3fc914226ec7aec2d5c2348eb1d5ab17e5f73cfa1a68cc0cf3f8e30dec3",
+    "raw_stream_sha256": "fa61891bdcdcc789b9b1c016fc4ac4db29a448fb4648fa35ee5a73da96cb2ce2",
+    "conversation_store_sha256": "15161d9fc23979be5168c081465e531aea7f95dfc2d8d3662b899fee8ace3d8e"
+  },
+  "corroborating_audits": {
+    "grok": {
+      "verdict": "PASS_WITH_RISKS",
+      "model_receipt": "grok-4.7-build",
+      "governing": false,
+      "session_id": "01a19521-9742-7631-b793-1bfd600f7c7c",
+      "launched": "2026-11-01T03:22:47Z",
+      "record": "review_bundle/GROK_CORROBORATION.md"
+    },
+    "codex": {
+      "role": "advisory only",
+      "result": "NOT_RUN this round"
+    }
+  },
+  "evidence": {
+    "label": "AUDITOR_WRITTEN_RAW_RETAINED",
+    "custody": "~/.local/share/dopemux/evidence/pr1486/r6"
+  },
+  "validations": [
+    {
+      "name": "📊 CI Pipeline Summary",
+      "result": "PASS",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41268884854/job/124739927187"
+    },
+    {
+      "name": "🧪 Unit Tests",
+      "result": "PASS",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41268884854/job/124737346323"
+    },
+    {
+      "name": "independent embedded audit",
+      "result": "FAIL",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41268884909/job/124737346995"
+    },
+    {
+      "name": "PR Steward / final readiness",
+      "result": "FAIL",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41268911447"
+    },
+    {
+      "name": "local: npx tsc --noEmit (ui-dashboard)",
+      "result": "PASS",
+      "detail": "exit 0 at 0c031b265 (LOCAL_VALIDATION.txt)"
+    },
+    {
+      "name": "local: npx vitest run (ui-dashboard)",
+      "result": "PASS",
+      "detail": "11 files, 91 tests passed, exit 0"
+    },
+    {
+      "name": "local: npx vite build (ui-dashboard)",
+      "result": "PASS",
+      "detail": "exit 0, output outside the repo"
+    },
+    {
+      "name": "local: npx eslint src (ui-dashboard)",
+      "result": "FAIL",
+      "detail": "exit 1, 18 problems (16 errors, 2 warnings), the same count as r5; none in a file changed by 0c031b265 (TaskSequencer, Accessibility.test, PortfolioTable, RepositoryPlannerPage and its test); no CI job runs ui-dashboard lint or tests"
+    },
+    {
+      "name": "audit: validation inside the sealed AGY session",
+      "result": "NOT_RUN",
+      "detail": "auditor reported NOT_RUN"
+    }
+  ],
+  "operator_decisions": [
+    "2026-11-01T03:10:28Z: operator chose 'Fix and re-audit' for Copilot review findings C3-C7.",
+    "2026-11-01T03:13:03Z: operator added r5 Grok F1 to the fix scope; other r5 findings stayed out of scope.",
+    "Round-6 findings are OPEN; none is ACCEPTED_RISK. Independence attestation and signatures: operator."
+  ],
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1486; signing, push and merge are operator gates",
+  "generated_at": "2026-11-01T03:40:48Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt (cwd = sealed dir holding only AUDIT_PROMPT.txt from scripts.audit.pal_clink_runner --build-prompt; AGY CLI 1.4.12; conversation_id=d2d128f6-9db9-466a-913b-536140a5ce4f; launched 2026-11-01T03:22:47Z, wrapper end 2026-11-01T03:27:49Z; one attempt; raw stream retained in review_bundle/AGY_OUTPUT_RAW.jsonl)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1486-L2-AUDIT-002/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AGY-F-01",
+        "severity": "LOW",
+        "title": "WebSocket state_update snapshots overwrite initial HTTP 15-minute forecast with null and clear upstream HTTP error banners unconditionally",
+        "status": "OPEN",
+        "body": "[ui-dashboard/src/App.tsx:211-221] In App.tsx, onmessage treats every valid 'state_update' WebSocket message as a complete reading replacement via applyReading(nextReading) and clears httpError. As documented in claudedocs/design/ui-dashboard-audit-2026-10-30.md:120-125, the backend state_update event does not include predicted_load_15min, so any forecast obtained from GET /api/adhd-state drops to null ('unknown') on the first live socket event. Additionally, setHttpError(null) clears partial upstream error warnings from the initial GET even if the socket update also omits those fields. OPERATOR: decision pending (round 6)."
+      },
+      {
+        "id": "AGY-F-02",
+        "severity": "LOW",
+        "title": "Restored ESLint flat config leaves pre-existing lint errors unresolved and unguarded in CI",
+        "status": "OPEN",
+        "body": "[ui-dashboard/eslint.config.js:1-31] ui-dashboard/eslint.config.js restores ESLint v9/v10 flat configuration, but claudedocs/design/ui-dashboard-audit-2026-10-30.md:27-37 and 131-132 document that linting still fails with 16 errors and 2 warnings on pre-existing code in ui-dashboard/src and that no GitHub Actions workflow runs ui-dashboard lint or unit tests. OPERATOR: decision pending (round 6)."
+      },
+      {
+        "id": "AGY-F-03",
+        "severity": "LOW",
+        "title": "TaskSequencer and TeamDashboard remain backed by static sample data",
+        "status": "OPEN",
+        "body": "[ui-dashboard/src/components/TaskSequencer.tsx:46-50, 552-563] TaskSequencer.tsx and TeamDashboard.tsx (lines 99-113) relabel their headers to '[SAMPLE] not connected' instead of '[LIVE]', resolving the false live-sync claim, but both components remain unwired to live backend task/team endpoints. OPERATOR: decision pending (round 6)."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validation was not run inside the sealed audit sessions (validation_status=NOT_RUN); local tsc, vitest (91/91) and vite build pass at the audited head.",
+      "ui-dashboard eslint exits 1 with 18 pre-existing problems in files this round did not touch; no CI job runs ui-dashboard lint or tests (AGY F-02).",
+      "A state_update is a full snapshot: the GET forecast goes unknown on the first socket update, and a good update also clears the GET upstream-error warning (AGY F-01).",
+      "TaskSequencer and TeamDashboard still render sample data labelled '[SAMPLE] not connected' (AGY F-03).",
+      "Corroborating Grok G-1 (LOW, OPEN): Overtime text still uses brandTokens.colors.gremlinPink on the timer line this diff edits. theme.ts and index.css both define that token as a brand accent and not a status color.",
+      "Corroborating Grok G-2 (LOW, OPEN): Zone geometry and deriveStatus disagree at the exact 0.6 and 0.8 edges. The needle at 60% and 80% sits on the next zone (PRESSURE, BREAK) while the text stays in the previous band (Flow Ritual, Pressure Build).",
+      "Corroborating Grok risk (LOW): time.test.ts sets process.env.TZ at module load; runtime TZ changes may not hold on every Node/Vitest worker.",
+      "Corroborating Grok risk (LOW): handleRetry resets liveReadingSeenRef before the old socket's handlers detach, so a queued message could make the retry GET ignored.",
+      "Audit scope: the diff excluded the 29 round-5 proof-only files (EXCLUDED_PROOF_FILES.txt); those are unchanged since the r5 packet and no code.",
+      "Auditor model identity: requested gemini-4-argon-high; provider-attested identity UNKNOWN; recorded as the schema family value 'gemini'.",
+      "AGY tool permissions were always-proceed; containment rests on the observed absence of tool steps.",
+      "Codex (advisory route from the original request) was not run this round."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  }
+}
