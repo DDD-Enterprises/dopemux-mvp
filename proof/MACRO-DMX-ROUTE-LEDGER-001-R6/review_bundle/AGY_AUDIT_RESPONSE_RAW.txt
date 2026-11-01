@@ -1,0 +1,122 @@
+{
+  "model_self_reported": "unknown",
+  "tools_used": "none",
+  "status": "PASS_WITH_RISKS",
+  "questions": [
+    {
+      "id": "Q1",
+      "verdict": "PASS",
+      "evidence": "All diff headers in the DIFF section touch only the seven intended content files: docs/02-how-to/route-ledger.md, plugins/dopemux-route-ledger/.claude-plugin/plugin.json, plugins/dopemux-route-ledger/README.md, plugins/dopemux-route-ledger/hooks/hooks.json, plugins/dopemux-route-ledger/hooks/register.test.ts, plugins/dopemux-route-ledger/hooks/register.tsx, and plugins/dopemux-route-ledger/receipt.schema.json. No unrelated or smuggled files appear. Note: the prompt payload ends with '<truncated 2662 bytes>' at line 99 of plugins/dopemux-route-ledger/receipt.schema.json (whose hunk header is @@ -0,0 +1,163 @@, accounting for the remaining 64 lines of that schema file and the closing diff marker)."
+    },
+    {
+      "id": "Q2",
+      "verdict": "PASS",
+      "evidence": "Read-only and host-safety checks pass in plugins/dopemux-route-ledger/hooks/register.tsx: (1) Only $.fs.write is called (register.tsx:392) on seg.path, which is always ${s.receiptDir}/${s.fileStem}[.<n>].jsonl (register.tsx:325-327, 493-501). (2) No $.process, $.http, $.model, $.state, $.store, $.agent.spawn, prompt hooks, or tool-rewrite APIs are used. (3) receiptDir validation (register.tsx:110-113, 161-163, 405-458): empty strings fall back to DEFAULT_RECEIPT_DIR; trailing slashes are stripped before comparing DEFAULT_RECEIPT_DIR and checking $.fs.exists('.control-tower/state'); '..' segments are rejected by hasDotDot; '/' (empty after stripping slashes) is rejected; receiptDirProblem walks up to the nearest existing directory with $.fs.stat and rejects if stat fails everywhere, if found.isLink is true, if found.kind !== 'dir', or (when relative) if found.realPath is not under $.session.root()'s realPath; flushSegments (register.tsx:383-390) checks $.fs.stat(seg.path, { resolve: false }) before first write and disables receipts if stat?.isLink === true. (4) sanitizeStem (register.tsx:157-159) replaces characters outside [A-Za-z0-9_-] with '_' and slices to 120 chars; empty stem disables receipts (register.tsx:449). (5) Every hook body (session.start, tool.call, agent.spawn, turn.step, command.run, session.end at register.tsx:662-753) wraps mod logic in try/catch, and s.chain catches task rejections (register.tsx:400-402). (6) tool.call (register.tsx:676-683) never mutates e and calls return next(e) unconditionally outside the try/catch on every path. (7) turn.step (register.tsx:699-707) delegates via const r = yield* next(e) and returns r unchanged after try/catch. (8) session.start queues initSession and drawStatus on s.chain without awaiting them and fires void registerCommands($); tool.call and turn.step only await $.clock.now() in stampThen (register.tsx:639-646) before enqueueing; session.end awaits flushAtEnd($, s) (at most 2 flushes on s.chain, register.tsx:409-416, 734, 749)."
+    },
+    {
+      "id": "Q3",
+      "verdict": "UNKNOWN",
+      "evidence": "Verdict is UNKNOWN solely because the last 2662 bytes of the prompt were truncated at plugins/dopemux-route-ledger/receipt.schema.json:99 (cutting off the schema definitions of step_observed and advisor_call), and HARD RULE 1 forbids reading files with tools. For everything visible in the diff: (1) agent_request, binding_fields, and usage in receipt.schema.json:1-98 match register.tsx:42-90, 149-167, 550-601 and KEYS/BINDING_KEYS in register.test.ts:25-57. (2) seq is monotonic from 0 without gaps: duplicate advisor_use_id entries are filtered via s.advisorSeen in recordStep (register.tsx:593) and tally (register.tsx:226) before place() or s.nextSeq increment. (3) Segment rollover happens at maxReceiptsPerFile or limits.segmentBytesMax (3.5 MB in UTF-8 bytes via utf8Length, register.tsx:314-360). When recordSpawn mutates spawned_agent_id and resolved_model in place (register.tsx:601-608), seg.bytes is not updated by the ~30-50 byte delta, which stays well inside the ~694 KB margin below the 4 MiB host cap. (4) Rehydrate (register.tsx:480-539) sorts segments, skips corrupt lines, increments s.segmentsUnreadable on unreadable files without overwriting them (since s.nextSegmentN advances past them), and disables receipts if $.fs.list fails while the directory exists or $.fs.exists throws (register.tsx:481-492). (5) Coalesced flushes and whole-file rewrites are serialized on s.chain via s.flushQueued (register.tsx:399-413). (6) evictClosed (register.tsx:375-380) frees seg.receipts on closed, clean segments unless holdsUnjoined(s, seg) is true (note: if an Agent call is denied or never spawns, holdsUnjoined remains true for that segment for the session). (7) Prompts, file contents, and tool outputs are never recorded; description is '' by default and truncated to 80 chars when recordDescription is true (register.tsx:629-637)."
+    },
+    {
+      "id": "Q4",
+      "verdict": "PASS",
+      "evidence": "In register.tsx:654-664, noteStep inspects r?.serverToolUses and collects only entries where u?.name === 'advisor' && typeof u.id === 'string' && u.id !== ''. Deduplication by id occurs in recordStep (register.tsx:593) and tally (register.tsx:226-227). Loop attribution is 'main' when agentId === null and 'agent' otherwise (register.tsx:228-232, 599). budgetToasts (register.tsx:287-309) checks childAdvisorBudget >= 0 per child agent and sessionAdvisorBudget >= 0 for the session total. Toast messages (register.tsx:295, 305), table footer (register.tsx:365), README.md:8,57, and docs/02-how-to/route-ledger.md:58,160 consistently state the mod only counts advisor calls and cannot block them. Not registering session.append is consistent with all documentation."
+    },
+    {
+      "id": "Q5",
+      "verdict": "PASS",
+      "evidence": "recordSpawn (register.tsx:588-610) joins exclusively via s.agents['tool:' + toolUseId]. sameModel (register.tsx:148-155) normalizes trailing -YYYYMMDD dates and matches bare family aliases (sonnet, opus, haiku, fable) against observed model strings, returning null if either side is unknown. familyOf (register.tsx:139-146) maps sonnet->S, opus->O, haiku->H, fable->F, else other (?). Forks without a model set inherits: true and pinned: false (register.tsx:560) and do not trigger unpinned warnings (register.tsx:614) or unpinned counts (register.tsx:177). toBindingFields (register.tsx:149-167) sets effort_observed, provider_attested_model, and independence_class to 'UNKNOWN' and maps observedModel to response_claimed_model. README.md:35-44,58, docs/02-how-to/route-ledger.md:146-162, and receipt.schema.json:4 clearly warn that a receipt is not a valid ExecutionBinding, is not provider attestation, and that the mod never runs ct. Minor defect (N3 in findings): noteAgentCall (register.tsx:615-616) records facts.toolUseId in s.toasted synchronously before enqueueing recordAgentRequest; if s.isReady is false (e.g. first call after /clear), initSession subsequently runs Object.assign(s, freshSession(), ...) (register.tsx:461), wiping that tool_use_id from s.toasted in memory."
+    },
+    {
+      "id": "Q6",
+      "verdict": "PASS",
+      "evidence": "statusText (register.tsx:246-274) formats agents in fixed order S, O, H, F, ? (or 'agents –'), appends ' · advisor N' or ' · advisor N/B ⚠' against sessionAdvisorBudget, independently appends ' · child M/B ⚠' for the busiest child against childAdvisorBudget, and appends ' · ledger off' and ' · receipts ✗' when applicable. Redraws are debounced by STATUS_DEBOUNCE_MS = 500 (register.tsx:48, 284-294). session.end with reason 'clear' (register.tsx:732-743) flushes via flushAtEnd, redraws and keeps the status line, and either sets s.clearPending = true (if dirty) or resets via freshSession(); other reasons set s.isEnded = true, clear status via $.ui.status(undefined), and await flushAtEnd. routeTable (register.tsx:327-368) renders main from s.lastMain, then agent and pending:<shortId> rows up to 60 total rows followed by '+N more'. registerCommands (register.tsx:391-413) registers 'route-ledger' and 'route' with independent try/.catch blocks. Minor logic issues (N2, N3 in findings): (1) command.run does not call ensureReady, so running '/route-ledger receipts' immediately after '/clear' before the next recorded event reports 'receipt file: none' and 'receiptsEnabled false'; (2) s.toasted is modified in noteAgentCall before ensureReady/initSession runs when !s.isReady."
+    },
+    {
+      "id": "Q7",
+      "verdict": "PASS",
+      "evidence": "register.test.ts:15 imports from './register' without an extension. The test suite is non-vacuous, asserting exact receipt schemas, seq continuity, debounce boundaries (STATUS_DEBOUNCE_MS - 1 and + 1 at register.test.ts:535-549), UTF-8 byte rollover, symlink/traversal rejection, listing failures, and /clear dirty-tail retention. Untested gaps: (1) live Claude Code runtime execution on the repaired head; (2) running '/route-ledger receipts' immediately after '/clear' before the next hook event; (3) noteAgentCall toast deduplication across '/clear' when the very first post-clear event is an unpinned Agent call; (4) real host behavior of $.fs.stat(path, { resolve: true }) on symlinks (the mock in register.test.ts:175-193 returns isLink: false unless overridden)."
+    },
+    {
+      "id": "Q8",
+      "verdict": "PASS",
+      "evidence": "README.md, docs/02-how-to/route-ledger.md, plugin.json, and the visible $comment in receipt.schema.json:4 accurately describe the code and honestly disclose that live behavior is NOT VERIFIED, status line coexistence with dopemux-pulse is unverified, /clear session-id rotation is UNKNOWN, and /route is a best-effort alias that may be refused. Two minor nuances are omitted from the docs: (1) after /clear and before the next recorded event, '/route-ledger receipts' also shows 'receipt file: none' and 'receiptsEnabled false' because initSession has not re-run yet; (2) for relative receiptDir paths, receiptDirProblem calls $.fs.stat(probe, { resolve: true }), whose isLink reporting on symlinks in the real host is unverified live."
+    },
+    {
+      "id": "Q9",
+      "verdict": "PASS",
+      "evidence": "No instruction-like content aimed at steering an auditor, faking an audit verdict, or altering the output contract was found in any of the seven files in the diff."
+    },
+    {
+      "id": "Q10",
+      "verdict": "PASS",
+      "evidence": "No secrets, credentials, tokens, or PII are present in the diff; only synthetic test constants such as 'SECRET-PROMPT-DO-NOT-LOG' and 'sess-1' appear."
+    },
+    {
+      "id": "Q11",
+      "verdict": "PASS",
+      "evidence": "The cumulative change set at frozen head b275543fe1011bf3a9351a10448c24d94f205370 is well-engineered, defensive, and read-only, with no blocking defects found in the visible diff (top-level status is PASS_WITH_RISKS due to the absence of live runtime verification on the repaired head and the 2662-byte prompt truncation at the tail of receipt.schema.json). Before relying on the mod in production, an operator must run a live Claude Code session to verify: (1) loading with 'claude --plugin-dir plugins/dopemux-route-ledger', initial status rendering, and coexistence with any other status line plugin (e.g. dopemux-pulse); (2) pinned, unpinned, and fork Agent tool calls, verifying toast display/timeout and agent.spawn tool_use_id join; (3) main-loop and subagent turn.step usage.model observation and serverToolUses advisor counting/budget toasts; (4) '/route-ledger', '/route-ledger receipts', and whether '/route' is accepted; (5) real host $.fs.stat(path, { resolve: true }) symlink/realPath behavior; (6) '/clear' and session exit behavior (session id rotation and flushAtEnd hook time budget); and (7) validation of emitted JSONL files against the full receipt.schema.json."
+    },
+    {
+      "id": "Q12",
+      "verdict": "PASS",
+      "evidence": "Every claimed repair and subsequent fix is present in the code and pinned by tests in register.test.ts: D1/N11 (s.lastMain kept on Ledger and rebuilt on rehydrate: register.tsx:96,212,316; register.test.ts:750-769); D2/N12 (empty effort -> null/UNKNOWN, empty advisor id skipped: register.tsx:157-160,171-174,658; register.test.ts:773-819); D3/N13 (restoreToasted and restoreBudgetToasted on rehydrate: register.tsx:470-491; register.test.ts:823-863); D4/N4 (flushAtEnd retries once when dirty: register.tsx:409-416; register.test.ts:867-931); D5/N8 (exported STATUS_DEBOUNCE_MS tested at -1ms and +1ms: register.tsx:48; register.test.ts:535-549); D6/N2 (trailing slash normalization, $.fs.stat symlink/dir/root checks on receiptDir and segment files: register.tsx:383-390,405-458; register.test.ts:937-1055); D7/N3 (evictClosed and s.counts: register.tsx:360,375-380; register.test.ts:1059-1152); D8/N5 + 61c371f28 (/clear flushes via flushAtEnd, keeps status, defers reset via clearPending/finishClear when dirty: register.tsx:525-538,732-743; register.test.ts:1156-1267); D9/N9 (recordDescription default false omits description from receipts and toasts: register.tsx:115,618-637; register.test.ts:1271-1305); D10/O1-O5 (docs updated, comment fixed to 'six' at register.tsx:53, last_review updated at route-ledger.md:8, tests added at register.test.ts:1309-1438); N6/N7 from 4fcdc9761 (TOAST_MS on unpinned toast, separate child M/B ⚠ status segment, no doubled prefix: register.tsx:257-270,620-622); 13ceb5020 (expect(text).toContain(FILE) at register.test.ts:659); and 3d2af4b20 (failed $.fs.list checks $.fs.exists and fails closed if present; utf8Length counts UTF-8 bytes: register.tsx:339-354,481-492; register.test.ts:1337-1431)."
+    },
+    {
+      "id": "Q13",
+      "verdict": "PASS",
+      "evidence": "No blocking regressions or contradictions with README.md or docs/02-how-to/route-ledger.md were introduced since 989fe4651c050ec23619e5208da17d6152b477b0. Two minor edge cases exist in the D8/D3 interactions (recorded as LOW findings N2 and N3): (1) immediately after /clear and before the next recorded hook event triggers ensureReady, '/route-ledger receipts' reports 'receiptsEnabled false' and 'receipt file: none' because freshSession() resets receiptsEnabled to false; (2) when s.isReady is false (e.g. on the first Agent call after /clear), noteAgentCall updates s.toasted before ensureReady/initSession runs Object.assign(s, freshSession(), ...), clearing that call's tool_use_id from s.toasted in memory."
+    }
+  ],
+  "findings": [
+    {
+      "id": "N1",
+      "severity": "HIGH",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "Repaired frozen head has not been verified in a live Claude Code session, and host $.fs.stat(path, { resolve: true }) symlink semantics are only tested against a local mock.",
+      "evidence": "As disclosed in limitation (i) and docs/02-how-to/route-ledger.md:19-21, the frozen head b275543fe1011bf3a9351a10448c24d94f205370 has only been run against the offline mock harness in register.test.ts. In particular, receiptDirProblem (register.tsx:409) calls $.fs.stat(probe, { resolve: true }) for relative paths and checks found.isLink (register.tsx:414); whether the real host engine's stat with resolve: true preserves isLink: true on a symlink whose target resolves inside the project root, how /clear handles session IDs live, and whether status text coexists with dopemux-pulse remain unverified in a live session.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N2",
+      "severity": "LOW",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "Running '/route-ledger receipts' immediately after '/clear' (before the next recorded event) reports 'receiptsEnabled false' and 'receipt file: none'.",
+      "evidence": "On session.end with reason 'clear' (register.tsx:740) or in finishClear (register.tsx:532), Object.assign(s, freshSession()) sets isReady: false, receiptsEnabled: false, and receiptFile: undefined (register.tsx:120-124). Because the command.run handlers (register.tsx:710-722) read s directly via routeAnswer without calling ensureReady($, s), running '/route-ledger receipts' after '/clear' but before the next tool.call/turn.step/agent.spawn reports 'receipt file: none' and 'receiptsEnabled false' even when receipts are enabled.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N3",
+      "severity": "LOW",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "noteAgentCall checks and mutates s.toasted synchronously before ensureReady/initSession runs, so initSession's freshSession() reset wipes the first unpinned tool_use_id toasted while !s.isReady.",
+      "evidence": "In noteAgentCall (register.tsx:615-626), s.toasted.has(facts.toolUseId) and s.toasted.add(facts.toolUseId) run synchronously before enqueue(s, () => recordAgentRequest($, s, facts)). When s.isReady is false (such as on the first Agent call after /clear, or if tool.call fires while session.start's initSession is still awaiting $.session.id()/$.fs.stat), initSession executes Object.assign(s, freshSession(), ...) (register.tsx:461) before rehydrate and before commit, replacing s.toasted with a new Set() and losing the in-memory toasted entry for that new call (and checking s.toasted before rehydrate has restored pre-clear toasts).",
+      "status": "OPEN"
+    },
+    {
+      "id": "N4",
+      "severity": "LOW",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "Segments containing an agent_request whose agent.spawn was refused or never fired are never evicted from memory during the session.",
+      "evidence": "evictClosed (register.tsx:375-380) skips any closed segment where holdsUnjoined(s, seg) (register.tsx:364-371) is true (r.kind === 'agent_request' && r.spawned_agent_id === null && s.agents['tool:' + r.tool_use_id]?.receipt === r). When agent.spawn is denied (r?.deny !== undefined in noteSpawn, register.tsx:679) or never occurs, s.agents['tool:' + toolUseId] is never cleared or marked failed, so that segment's receipts remain in memory for the lifetime of the session.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N5",
+      "severity": "INFO",
+      "file": "plugins/dopemux-route-ledger/receipt.schema.json",
+      "summary": "The final 2662 bytes of the prompt were truncated at line 99 of receipt.schema.json, leaving the step_observed and advisor_call JSON schema definitions uninspected.",
+      "evidence": "plugins/dopemux-route-ledger/receipt.schema.json has diff header @@ -0,0 +1,163 @@, but the prompt ends at line 99 inside definitions.step_observed.required with '<truncated 2662 bytes>'. Per HARD RULE 1, no tools were used to read the file from disk.",
+      "status": "OPEN"
+    }
+  ],
+  "needs_more_evidence": [
+    "The untruncated tail (last 2662 bytes, lines 100-163) of plugins/dopemux-route-ledger/receipt.schema.json covering definitions.step_observed and definitions.advisor_call, which was cut off at the end of the prompt message.",
+    "A live Claude Code session run on the frozen head b275543fe1011bf3a9351a10448c24d94f205370 verifying status line coexistence, $.fs.stat(..., { resolve: true }) symlink behavior, /clear session ID behavior, and session.end flush timing."
+  ],
+  "instruction_like_content": {
+    "detected": false,
+    "notes": "No prompt injection or attempt to steer the auditor or alter the output contract was found anywhere in the diff."
+  }
+}

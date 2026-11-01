@@ -1,0 +1,6 @@
+probe1 start=2026-11-01T02:15:28Z end=2026-11-01T02:15:57Z exit=0
+probe2 start=2026-11-01T02:15:57Z end=2026-11-01T02:16:25Z exit=0
+real start=2026-11-01T02:16:25Z end=2026-11-01T02:21:47Z exit=0
+probe1 duration_seconds=24.245974 num_turns=1 status=SUCCESS usage={'input_tokens': 13067, 'output_tokens': 50, 'thinking_tokens': 40, 'cache_read_tokens': 0, 'total_tokens': 13117}
+probe2 duration_seconds=23.954217 num_turns=1 status=SUCCESS usage={'input_tokens': 13114, 'output_tokens': 2592, 'thinking_tokens': 1730, 'cache_read_tokens': 0, 'total_tokens': 15706}
+real duration_seconds=318.370234 num_turns=1 status=SUCCESS usage={'input_tokens': 74128, 'output_tokens': 30407, 'thinking_tokens': 24431, 'cache_read_tokens': 0, 'total_tokens': 104535}

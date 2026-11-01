@@ -1,0 +1,181 @@
+GATES_PRE_AUDIT for head 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0 (worktree root, branch claude/route-ledger-001-8d8032). Output below is literal, unedited; long outputs are shown in full unless marked.
+Untracked engine-laid plugins/dopemux-route-ledger/tsconfig.json: PRESENT during the tsc gate (not part of the audited commit).
+
+##### G1 claude plugin validate plugins/dopemux-route-ledger
+Validating plugin manifest: /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger/.claude-plugin/plugin.json
+
+⚠ Found 1 warning:
+
+  ❯ author: No author information provided. Consider adding author details for plugin attribution
+
+Validating hooks: /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger/hooks/hooks.json
+
+  ❯ ./register.tsx hooks: session.start, tool.call{tool=Agent}, agent.spawn, turn.step, command.run{command=route-ledger}, command.run{command=route}, session.end
+  ❯ ./register.tsx answers its own command: command.run{command=route-ledger}
+  ❯ ./register.tsx answers its own command: command.run{command=route}
+  ❯ ./register.tsx gating hook without .catch: tool.call{tool=Agent}
+  ❯ ./register.tsx gating hook without .catch: agent.spawn
+  ❯ ./register.tsx calls: $.clock.after (via scheduleStatus), $.clock.now (via stampThen), $.command.register (via registerCommands), $.fs.exists (via initSession), $.fs.list (via rehydrate), $.fs.read (via rehydrate), $.fs.write (via flushSegments), $.session.id (via initSession), $.ui.status, $.ui.toast (via noteAgentCall, toastOnce)
+
+Plugin directory checks for /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger. The plugin directory is the catalog that plugins are submitted to; this is a subset of what it runs.
+
+⚠ Found 1 plugin directory warning:
+
+  ❯ .claude-plugin/plugin.json icon: No icon (ICON_MISSING). No icon found in the plugin. The validator looked for `icon` in plugin.json and for a file at .claude-plugin/icon.png or .svg, assets/icon.png or .svg, or a similar path.
+    Fix: Add a square PNG to the plugin folder at .claude-plugin/icon.png, or set `icon` in plugin.json to the path of a square PNG or JPEG in the plugin: 512 to 2048 px on each side, under 2 MB. SVG and WebP are not accepted. That file may become the listing icon only once: the first time the plugin is saved or submitted in the developer portal. Adding or changing it later does not change the icon.
+
+About these checks:
+
+  ❯ The repository root was taken to be /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032, the nearest parent folder with a .git folder or file. LICENSE was taken from it, because this plugin folder has none of its own. For a plugin submitted from a git repository, the repository root is the top folder of that repository, with only what is committed there, so check that the folder named above is that top folder.
+  ❯ hooks/hooks.json names a hooks module (a code file listed under `modules`). The plugin directory has rules of its own for such code, and these checks apply none of them, so passing here does not mean the directory accepts the plugin. The developer portal's own validation applies those rules.
+
+These plugin directory checks do not change the result below.
+
+The directory also runs a safety scan and a policy review that this command does not.
+
+ℹ Advice (does not change the verdict):
+
+  ❯ /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger/README.md: This README has no line that installs "dopemux-route-ledger" from a marketplace. Add the install line, which works in one step on Claude Code 2.1.275 or later. Validate the folder that holds its marketplace.json to have <owner>/<repo> filled in, and the name its marketplace lists it under.
+      /plugin install dopemux-route-ledger --marketplace <owner>/<repo>
+
+✔ Validation passed with warnings
+exit=0
+RESULT G1: PASS (exit 0; 1 manifest warning author; 1 directory warning icon; 1 advice README marketplace-install line)
+
+##### G2 claude plugin test plugins/dopemux-route-ledger (full output)
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":0,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"agent_request","tool_use_id":"toolu_7ec927e32cf14e819ef267956eb3e555","requested_model":null,"requested_effort":null,"subagent_type":"Explore","description":"Map the repo","pinned":false,"inherits":false,"spawned_agent_id":null,"resolved_model":null,"binding_fields":{"selection":{"runner":"claude-code-agent","model":"UNKNOWN","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"UNKNOWN","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":0,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"agent_request","tool_use_id":"toolu_cbcd8462c16b47b28ed16248589f6feb","requested_model":null,"requested_effort":null,"subagent_type":"fork","description":"Write the tests","pinned":false,"inherits":true,"spawned_agent_id":null,"resolved_model":null,"binding_fields":{"selection":{"runner":"claude-code-agent","model":"UNKNOWN","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"UNKNOWN","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":0,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"agent_request","tool_use_id":"toolu_c5838b1954a743e596179b793e9cf34f","requested_model":"haiku","requested_effort":null,"subagent_type":null,"description":"same words","pinned":true,"inherits":false,"spawned_agent_id":null,"resolved_model":null,"binding_fields":{"selection":{"runner":"claude-code-agent","model":"haiku","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"UNKNOWN","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":1,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"agent_request","tool_use_id":"toolu_957ebc9af6754dbebc518e0a9eecdda9","requested_model":"opus","requested_effort":null,"subagent_type":null,"description":"same words","pinned":true,"inherits":false,"spawned_agent_id":"agent-7","resolved_model":"claude-sonnet-5-5","binding_fields":{"selection":{"runner":"claude-code-agent","model":"opus","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"UNKNOWN","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":0,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":"agent-7","kind":"step_observed","turn_id":"turn-1","step_index":1,"requested_model":"claude-sonnet-5-5","requested_effort":null,"observed_model":"claude-haiku-4-5","match":false,"usage":{"input_tokens":10,"output_tokens":20,"cache_read_input_tokens":30,"cache_creation_input_tokens":40},"binding_fields":{"selection":{"runner":"claude-code-agent","model":"claude-sonnet-5-5","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"claude-haiku-4-5","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":0,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"step_observed","turn_id":"turn-1","step_index":0,"requested_model":"claude-sonnet-5-5","requested_effort":null,"observed_model":"UNKNOWN","match":null,"usage":null,"binding_fields":{"selection":{"runner":"claude-code-agent","model":"claude-sonnet-5-5","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"UNKNOWN","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":0,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"step_observed","turn_id":"turn-1","step_index":0,"requested_model":"claude-sonnet-5-5","requested_effort":null,"observed_model":"claude-sonnet-5-5","match":true,"usage":{"input_tokens":10,"output_tokens":20,"cache_read_input_tokens":30,"cache_creation_input_tokens":40},"binding_fields":{"selection":{"runner":"claude-code-agent","model":"claude-sonnet-5-5","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"claude-sonnet-5-5","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":1,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"advisor_call","advisor_use_id":"srv-1","started_at":5,"ended_at":9,"loop":"main"}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":2,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"step_observed","turn_id":"turn-1","step_index":1,"requested_model":"claude-sonnet-5-5","requested_effort":null,"observed_model":"claude-sonnet-5-5","match":true,"usage":{"input_tokens":10,"output_tokens":20,"cache_read_input_tokens":30,"cache_creation_input_tokens":40},"binding_fields":{"selection":{"runner":"claude-code-agent","model":"claude-sonnet-5-5","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"claude-sonnet-5-5","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":3,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":"agent-7","kind":"step_observed","turn_id":"turn-1","step_index":2,"requested_model":"claude-sonnet-5-5","requested_effort":null,"observed_model":"claude-sonnet-5-5","match":true,"usage":{"input_tokens":10,"output_tokens":20,"cache_read_input_tokens":30,"cache_creation_input_tokens":40},"binding_fields":{"selection":{"runner":"claude-code-agent","model":"claude-sonnet-5-5","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"claude-sonnet-5-5","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":4,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":"agent-7","kind":"advisor_call","advisor_use_id":"srv-2","started_at":7,"ended_at":null,"loop":"agent"}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":0,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"agent_request","tool_use_id":"toolu_5cf28e13bb5b442386c65db7a8300252","requested_model":"sonnet","requested_effort":"low","subagent_type":null,"description":"Write the tests","pinned":true,"inherits":false,"spawned_agent_id":"agent-7","resolved_model":"claude-sonnet-5-5","binding_fields":{"selection":{"runner":"claude-code-agent","model":"sonnet","effort":"low"},"effort_requested":"low","effort_observed":"UNKNOWN","response_claimed_model":"UNKNOWN","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":1,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"step_observed","turn_id":"turn-1","step_index":0,"requested_model":"claude-sonnet-5-5","requested_effort":null,"observed_model":"claude-sonnet-5-5","match":true,"usage":{"input_tokens":10,"output_tokens":20,"cache_read_input_tokens":30,"cache_creation_input_tokens":40},"binding_fields":{"selection":{"runner":"claude-code-agent","model":"claude-sonnet-5-5","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"claude-sonnet-5-5","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":2,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"advisor_call","advisor_use_id":"srv-1","started_at":1,"ended_at":2,"loop":"main"}
+RECEIPT-SAMPLE {"schema_version":"dopemux.route_ledger.receipt.v1","seq":3,"session_id":"sess-1","recorded_at":"2026-10-14T17:46:40.000Z","agent_id":null,"kind":"agent_request","tool_use_id":"toolu_d4107f954d924791889263f72663d402","requested_model":null,"requested_effort":null,"subagent_type":null,"description":"Write the tests","pinned":false,"inherits":false,"spawned_agent_id":null,"resolved_model":null,"binding_fields":{"selection":{"runner":"claude-code-agent","model":"UNKNOWN","effort":"UNKNOWN"},"effort_requested":"UNKNOWN","effort_observed":"UNKNOWN","response_claimed_model":"UNKNOWN","provider_attested_model":"UNKNOWN","independence_class":"UNKNOWN"}}
+
+hooks/register.test.ts:
+(pass) a pinned Agent call is recorded and passed on unchanged [42.39ms]
+(pass) an unpinned Agent call toasts once, naming the type and description but not the prompt [18.64ms]
+(pass) a fork with no model inherits: recorded as inherits, not unpinned, no toast [15.73ms]
+(pass) unpinnedAgent off records but stays silent [16.60ms]
+(pass) a long description is cut to 80 characters [15.15ms]
+(pass) next runs once with e unchanged when the write fails, and the next receipt heals the file [15.94ms]
+(pass) next runs once with e unchanged when the clock fails [15.45ms]
+(pass) agent.spawn joins tool_use_id to the spawned agent and resolved model, and passes through [23.51ms]
+(pass) agent.spawn without a tool_use_id, or a refused spawn, joins nothing [15.82ms]
+(pass) turn.step passes chunks and result through and records requested versus observed [17.57ms]
+(pass) a step whose observed model differs records match false; an agent step carries its agent id [15.87ms]
+(pass) a dated observed id still matches its undated request; a bare alias matches its family [17.22ms]
+(pass) null usage and absent serverToolUses: UNKNOWN observed, match null, usage null, no advisor receipt [20.70ms]
+(pass) advisor calls are counted once by server-tool-use id, split by loop [18.00ms]
+(pass) every receipt is a JSON line with exactly the schema keys, seq from 0 without gaps [17.77ms]
+(pass) a segment rolls at maxReceiptsPerFile into <sessionId>.<n>.jsonl [84.72ms]
+(pass) after a reload the tallies are rebuilt from the receipt files: seq continues, advisor ids stay deduplicated [18.56ms]
+(pass) receipts are disabled when .control-tower/state is absent: nothing is written, calls still pass [14.87ms]
+(pass) a receiptDir with a .. segment disables receipts [13.19ms]
+(pass) a .. segment in the middle of receiptDir is refused too [13.02ms]
+(pass) an explicit receiptDir is written even without .control-tower/state, and nothing else is [13.50ms]
+(pass) the session id is sanitized into the file name [12.90ms]
+(pass) session.end clear is not an end; any other reason stops recording [17.94ms]
+(pass) toBindingFields maps only what the mod knows and leaves the rest UNKNOWN [0.20ms]
+(pass) familyOf follows the glyph rule [0.12ms]
+(pass) summarize counts each agent once, observed model first, falling back to the requested alias [0.18ms]
+(pass) parseConfig falls back to the default for a bad value and clamps the receipt cap [0.22ms]
+(pass) a failed write is counted in the state, not thrown and not retried [0.15ms]
+(pass) status shows `agents –` with no agents, set in session.start [12.42ms]
+(pass) status counts agents in the fixed order S, O, H, F, ? and only non-zero [15.54ms]
+(pass) status with a single agent reads `agents S×1` [12.94ms]
+(pass) status shows advisor N only when N > 0, and N/B ⚠ once a budget is exceeded [19.14ms]
+(pass) a child over its budget shows its own count against its own budget, apart from the session total [13.43ms]
+(pass) the child segment names the worst child, and a session overage shows both segments [14.01ms]
+(pass) a clean agent after an over-budget one does not change the figures the status shows [13.63ms]
+(pass) status appends ledger off when receipts are disabled, and receipts ✗ after a failed write [13.17ms]
+(pass) status appends receipts ✗ when a receipt write failed [17.74ms]
+(pass) a burst of receipts is debounced into one status update [23.52ms]
+(pass) session.end clear keeps the status; any other reason clears it [17.97ms]
+(pass) a child over childAdvisorBudget toasts once per agent, names it, never claims prevention [14.87ms]
+(pass) a budget of -1 never toasts for a child [17.03ms]
+(pass) the session total toasts once when it exceeds sessionAdvisorBudget [14.77ms]
+(pass) registers route-ledger then route, each on its own [11.78ms]
+(pass) a refused route registration leaves route-ledger and the status working [12.32ms]
+(pass) a refused route-ledger registration does not stop route [14.74ms]
+(pass) /route-ledger on an empty ledger prints the main row, UNKNOWN cells and the footer [11.35ms]
+(pass) /route-ledger on a mixed ledger has one row per loop [14.70ms]
+(pass) a request that differs from what was observed shows match no [13.76ms]
+(pass) /route-ledger lists at most 60 loops then +N more [51.75ms]
+(pass) /route and /route-ledger answer the same text [13.81ms]
+(pass) the receipts argument prints the file, counts and flags [13.30ms]
+(pass) receipts argument with receipts disabled says so [14.73ms]
+(pass) an unknown argument prints a usage line and changes nothing [12.29ms]
+(pass) the command is read-only: running it writes nothing [13.27ms]
+(pass) nothing throws when the ledger is empty or odd input reaches summarize [14.23ms]
+
+ 55 pass
+ 0 fail
+Ran 55 tests across 1 file. [1.07s]
+exit=0
+RESULT G2: PASS (55 pass, 0 fail)
+
+##### G3 tsc -p plugins/dopemux-route-ledger --noEmit (in-tree)
+exit=0
+RESULT G3: PASS (exit 0, no output)
+
+##### G4 JSON-schema check of RECEIPT-SAMPLE lines in G2 vs plugins/dopemux-route-ledger/receipt.schema.json (script run with /Users/hue/code/dopemux-mvp/.venv/bin/python -I, jsonschema installed already, negative control = one extra key)
+/private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-route-ledger-001-8d8032/533ad7a9-4330-4030-b51a-2a7763cbe828/scratchpad/schemacheck.py:14: DeprecationWarning: Accessing jsonschema.__version__ is deprecated and will be removed in a future release. Use importlib.metadata directly to query for jsonschema's version.
+  print("jsonschema", jsonschema.__version__, "draft-validator", type(v).__name__)
+jsonschema 4.25.1 draft-validator Draft7Validator
+samples 15 {'agent_request': 6, 'step_observed': 6, 'advisor_call': 3} invalid 0 negative_control_rejected True
+RESULT PASS
+exit=0
+RESULT G4: PASS
+
+##### G5 python3 scripts/governance/validate_change_contract.py --base origin/main --head 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0 --format text (head: status/max_lane/proof_only lines, then the rest is the full list, first 6 lines shown)
+status=PASS
+max_lane=L2
+model_audit_required=True
+proof_only=False
+paths=43
+  [L2] docs/02-how-to/route-ledger.md
+... (full file list omitted here, see tail)
+exit=0
+RESULT G5: PASS (status=PASS max_lane=L2 proof_only=False)
+
+##### G6 git diff --check 93969e7a3ca2775c7b435e1ce1b6528ad2173c4a 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0
+exit=0
+RESULT G6: PASS
+
+##### G7 SKIP=markdownlint pre-commit run --from-ref b0b80261785d8ace79854ef31da1c67444e7db54 --to-ref 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0
+[WARNING] Unstaged files detected.
+[INFO] Stashing unstaged files to /Users/hue/.cache/pre-commit/patch1793352060-19155.
+Evidence-economy change-contract preflight.................................................Passed
+Validate Control Tower kit contracts...................................(no files to check)Skipped
+Validate YAML frontmatter in docs..........................................................Passed
+Block deprecated memory backends in slash commands.....................(no files to check)Skipped
+Validate templates/skills SKILL.md frontmatter.........................(no files to check)Skipped
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+Validate proof bundle embedded_audit schema............................(no files to check)Skipped
+Validate GitHub Actions workflow syntax................................(no files to check)Skipped
+markdownlint..............................................................................Skipped
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+[INFO] Restored changes from /Users/hue/.cache/pre-commit/patch1793352060-19155.
+exit=0
+RESULT G7: PASS (exit 0; markdownlint hook skipped via SKIP)
+
+##### G8 markdownlint: NOT_RUN (its Node environment cannot install on this host)
+##### G9 live Claude Code session loading the repaired code: NOT_RUN (no operator-reported result supplied)

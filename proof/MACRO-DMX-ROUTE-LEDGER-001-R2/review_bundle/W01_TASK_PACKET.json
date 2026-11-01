@@ -1,0 +1,186 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W01-CORE-001-R2",
+  "project": "dopemux-mvp",
+  "target": "Build the core of the `dopemux-route-ledger` Claude Code function-hook mod under plugins/dopemux-route-ledger/: record the requested model on every Agent tool call (warning when none is pinned), record the observed model and advisor server-tool-uses per model step, and write the receipts as JSONL in a documented, schema-checked format whose binding fields a supervisor can merge into a `ct bind-record` ExecutionBinding. The status segment, /route command and budget toast belong to W02; leave the `afterRecord` hook point for it.",
+  "invariants": [
+    "I01 Scope: write only inside this packet's write_surface. You share the workspace with the coordinator: preserve other edits, never revert unrelated work. A needed change outside the allowlist is a STOP with status NEEDS_SUPERVISOR (name the path and why); do not make it.",
+    "I02 Forbidden actions: commit, push, open a PR, merge, sign, mark ready, force-push, history rewrite, `claude plugin install`, enabling hot reload, any write under ~/.claude. The coordinator alone commits (one commit per workstream, explicit pathspec).",
+    "I03 advisor: FORBIDDEN, budget 0. Do not call the `advisor` tool. Any advisor call (tool_use or server_tool_use named advisor) means STOP with status NEEDS_SUPERVISOR. Report `advisor_calls` as a structural count from your own transcript.",
+    "I04 No recursive delegation: no Agent/subagent calls, no Workflow, no second model. Use deterministic local tools for shell, hashes and schema checks.",
+    "I05 Route is pinned in this packet's execution_requirements: use exactly that runner/model/effort, no substitution. Attempts: one build attempt plus at most one narrowly scoped repair pass for a failing validation. If it still fails, return FAIL with the evidence; do not loop. A timeout does not authorize another attempt.",
+    "I06 Report every gate as PASS, FAIL, NOT_RUN or UNKNOWN literally; never collapse NOT_RUN into PASS. Live runtime behaviour (a real Claude Code session loading the mod) is NOT_RUN in this macro; say what the operator must do to see it. `model_observed` stays UNKNOWN unless a runtime receipt shows it.",
+    "I07 No secrets, no credentials, no network. The mod under construction makes no network call and no `$.http`, `$.process`, `$.model` or prompt-rewriting call. Do not put prompts, file contents or tool output into any receipt or log.",
+    "I08 Return contract (all fields): status (one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject (files and `git diff --stat`), validation (gate table), proof (commands run), audit (NOT_RUN: the final L2 audit is the coordinator's), blockers, advisor_calls, files_written, observed_model (UNKNOWN unless a receipt shows it). Done, accepted and merged are never your status.",
+    "I09 Allowances (PROPOSED until the operator authorizes this revision; they bind from authorization on): active time <= 45 min (the child's own run time as the Agent result reports it); elapsed <= 75 min from dispatch to return (coordinator wall clock); dispatches <= 2 (1 build + at most 1 narrow repair); automatic retries 0 (a timeout, 429 or route error is a STOP, not a retry); tool calls <= 150; total tokens <= 3,000,000 as the Agent result reports `totalTokens` (counting basis UNKNOWN: it may include cache reads); coordinator re-reads of your diff <= 2; advisor calls 0. A figure the runner does not report is UNKNOWN and never counts as within budget. Watch your own tool-call count; if you near a cap, stop and return INCOMPLETE with what you have rather than rush. When ANY limit is reached or about to be exceeded: stop the running child at the next safe point (TaskStop; never mid-commit), dispatch nothing further, retry nothing, substitute nothing, leave the child's edits uncommitted, and report status NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Authoring contract: the coordinator loads the `plugin-authoring` skill at dispatch and passes you the path of that build's claude-code.d.ts and its reference.md. At issuance the declaration was 2.1.304 while the installed CLI was 2.1.309, so a version skew is possible: read the supplied declaration for every event, noun and method you use, and if one differs from what this packet names, STOP with NEEDS_SUPERVISOR and quote the declaration. If the declaration was not supplied, STOP and report.",
+    "Template (read-only): Pulse, on PR #1472. `git show feat/pulse-001:plugins/dopemux-pulse/hooks/register.tsx` (also `register.test.ts`, `.claude-plugin/plugin.json`, `README.md`, `hooks/hooks.json`; try `origin/feat/pulse-001` if the local ref is gone). Copy its layout and its habits: one hooks module, helpers declared at the top of the file taking `$` and the state object as arguments (the engine's static reader follows `$` only through top-level functions), every hook body wrapped so an exception cannot surface. If neither ref resolves, work from the declaration alone and say so.",
+    "Files (exactly these): plugins/dopemux-route-ledger/.claude-plugin/plugin.json, plugins/dopemux-route-ledger/hooks/hooks.json, plugins/dopemux-route-ledger/hooks/register.tsx, plugins/dopemux-route-ledger/hooks/register.test.ts, plugins/dopemux-route-ledger/receipt.schema.json. The module is ONE hooks file exporting `register(on, options)` typed `Register` from 'claude-code'. Do NOT use `$.state` and do NOT add types/index.d.ts: tallies survive a hot reload by being rebuilt from the session's own receipt file in `session.start` (a reload re-runs `register` and `session.start`; module variables restart). If you conclude `$.state` or a type contract is unavoidable, STOP with NEEDS_SUPERVISOR; adding that file needs a supervisor ruling.",
+    "Hook 1, `tool.call` with matcher `{ tool: 'Agent' }`: record from `e` the requested `model` alias, `effort`, `subagent_type`, `description` (truncated to 80 characters; NEVER the prompt), `tool_use_id`, and `agentId` of the calling loop. The hook changes nothing: no rewrite, no deny, and it calls `next(e)` exactly once with `e` unchanged on EVERY path, including the error path. Do all bookkeeping before `next(e)` inside try/catch and do not await a file write ahead of it. `pinned` means `model` is defined; a call with `subagent_type === 'fork'` with no model is recorded as `inherits: true` (a fork ignores the model parameter) and is NOT unpinned.",
+    "Unpinned warning: config `unpinnedAgent` is `warn` (default) or `off`. When `warn` and the call is unpinned and not a fork, call `$.ui.toast` once for that call (text names the subagent_type and description, never the prompt). `off` records and stays silent. There is NO deny mode in this macro: refusing an Agent call is a gating hook with a different risk posture (it would need the `.catch(next.called ? next(e) : { deny })` guard from reference.md) and is scoped out: do not add it.",
+    "Hook 2, `agent.spawn`: use it only to join `tool_use_id` to the spawned `agentId` and the resolved model, if this build's declaration exposes them on the input or the result (check `AgentSpawnInput` and `AgentSpawnResult`). It must pass `next(e)` through untouched. If the join is not available from `agent.spawn` or from the `tool.call` result, STOP with NEEDS_SUPERVISOR and quote the declaration. Do NOT correlate by description or by order.",
+    "Hook 3, `turn.step`, is a STREAMING event: the hook must be `async function* ($, e, next) { const r = yield* next(e); /* own bookkeeping in try/catch */ return r }`. A plain function is a type error here. Pass every chunk through untouched; never rewrite `model`, `effort` or any chunk; always `return r` unchanged. Own code after `yield*` is wrapped in try/catch; do NOT wrap the `yield*` itself, errors from beneath propagate unchanged. Per step record: requested = `e.model` and `e.effort` (the request as resolved), observed = `r.usage?.model` (the API-reported model; `UNKNOWN` when `usage` is null), `e.agentId` (absent = main loop), `e.turnId`, `e.index`, token counts from `r.usage`. For each entry of `r.serverToolUses ?? []` with `name === 'advisor'` write one `advisor_call` receipt keyed by that entry's `id`, with `startedAt`/`endedAt` as given. The mod can COUNT advisor calls and cannot block, rewrite or refuse one; no `tool.call` chain runs for them.",
+    "Hook 4, `session.append`: `turn.step` is the authoritative source for model and advisor counts, and advisor calls are deduplicated by the server-tool-use `id`. Register `session.append` ONLY if this build's declaration shows the row exposes an advisor `server_tool_use` block or a model (rows carried neither at issuance), and then only as a secondary source that dedups on `id`. If it adds nothing, do not register it and say so in the return. Never double count.",
+    "Hooks 5-6, `session.start` and `session.end`: `session.start` resolves config, picks the receipt file for this `sessionId`, rebuilds the tallies from the existing segment files for that id (read bounded; a missing file is fine), and never throws. `session.end` with `reason === 'clear'` is NOT an end (the process goes on and no session.start follows): do nothing there. Any other reason: flush and stop.",
+    "Receipts: JSONL, one JSON object per line, written ONLY under `receiptDir`. `$.fs.write` replaces the whole file and `$.fs.read` is capped at 4 MiB, so there is no append: choose and NAME your design in the return (the expected design is read-modify-write of the current segment from an in-memory array, serialized by a promise chain so writes never overlap, rolling to a new segment `<sessionId>.<n>.jsonl` at `maxReceiptsPerFile`). A failed write is counted (`receiptsFailed`) and surfaced to W02 through the state object; it is never thrown and never retried in a tight loop. The file name is `<sanitized sessionId>.jsonl` (letters, digits, `-`, `_`).",
+    "Receipt directory: default `.control-tower/state/route-ledger` (the repo already gitignores `.control-tower/state/*`). If the default's parent `.control-tower/state` does not exist, receipts are DISABLED (no directory is created, nothing is written) and the state object says `receiptsEnabled: false`. An explicitly configured `receiptDir` is created on first write. Reject any `receiptDir` containing a `..` segment (receipts disabled, state says why). The mod writes nothing else anywhere and touches nothing under plugins/, docs/ or the repo's tracked files.",
+    "Receipt record (draft-07 `receipt.schema.json`, `additionalProperties: false`, `$comment` documenting the mapping): common keys `schema_version` = `dopemux.route_ledger.receipt.v1`, `kind` (`agent_request` | `step_observed` | `advisor_call`), `seq` (integer, per session, from 0, continuing after a rehydrate), `session_id`, `recorded_at` (RFC 3339 UTC from `$.clock.now()`), `agent_id` (string or null for main). `agent_request`: `tool_use_id`, `requested_model` (alias or null), `requested_effort` (or null), `subagent_type`, `description`, `pinned`, `inherits`. `step_observed`: `turn_id`, `step_index`, `requested_model`, `requested_effort`, `observed_model` (or `UNKNOWN`), `match` (true, false, or null when either side is unknown), `usage` (the four token counts or null). `advisor_call`: `advisor_use_id`, `started_at`, `ended_at` (or null), `loop` (`main` | `agent`). `agent_request` and `step_observed` also carry `binding_fields`.",
+    "`binding_fields` (the shape a supervisor merges into a GEC v2 ExecutionBinding; the mod NEVER runs `ct`, never writes `.control-tower/state/bindings/`, and a receipt is NOT a valid binding: that schema has about 23 required keys and the mod knows five): `{ selection: { runner: 'claude-code-agent', model: <requested alias or resolved id, else 'UNKNOWN'>, effort: <requested effort or 'UNKNOWN'> }, effort_requested: <as requested or 'UNKNOWN'>, effort_observed: 'UNKNOWN', response_claimed_model: <observed model or 'UNKNOWN'>, provider_attested_model: 'UNKNOWN', independence_class: 'UNKNOWN' }`. `response_claimed_model` is what the API reported in `usage.model`; it is not provider attestation. Effort observed is never reported by the API, so it is always UNKNOWN. Export the mapping as a pure top-level function `toBindingFields(...)` so tests and W02 can use it.",
+    "Config in `plugin.json` `userConfig` (W01 owns ALL keys now so W02 never edits plugin.json; check the loaded reference.md for the types `userConfig` supports and use the strictest supported): `receiptDir` (string, default `.control-tower/state/route-ledger`), `unpinnedAgent` (`warn` | `off`, default `warn`), `childAdvisorBudget` (integer; default 0 = a child's first advisor call exceeds it; negative disables), `sessionAdvisorBudget` (integer; default -1 = off), `maxReceiptsPerFile` (integer, default 500, clamp 50-5000). Parse defensively: a bad value falls back to its default. W01 only parses the budgets; the toast that uses them is W02's. No `userConfig` key may carry a secret.",
+    "Contract with W02 (keep these names so W02 can extend in place): a top-level `type Receipt`, a top-level `type Ledger` (the per-load state object: config, receipt file info, `receiptsEnabled`, `receiptsFailed`, per-loop advisor counts, per-agent records), a pure `function summarize(s: Ledger): Summary` returning at least `{ agents: { S, O, H, F, other }, unpinned, advisorTotal, advisorMain, advisorByAgent, receiptsEnabled, receiptsFailed, receiptFile }`, and an empty `function afterRecord($: EngineInterface, s: Ledger, receipt: Receipt): void {}` called, wrapped in try/catch, after every recorded receipt. Family glyph rule (shared with W02): the model text lower-cased contains `sonnet` -> S, `opus` -> O, `haiku` -> H, `fable` -> F, else other; observed model wins over the requested alias; an agent is counted once, by its first observed model, falling back to its requested alias.",
+    "Safety: no `$.process`, no `$.http`, no `$.model`, no `$.agent.spawn`, no `prompt.*` or `command.*` hooks (W02 owns commands), no `ui.render` hook, no `$.ui.status` (W02). `$.fs` is used only to write receipt files and to read/stat for rehydrate and the receipt-directory check. Every hook body is wrapped so an exception cannot surface to the person or to the host; `next` is called exactly once on every path.",
+    "Tests (TDD: write register.test.ts first and show it fail before the module exists; follow Pulse's `claude-code/testing` harness): pinned, unpinned and fork Agent calls; the unpinned toast once under `warn` and silent under `off`; `next` called once with `e` unchanged in every case, including when `$.fs.write` rejects, `usage` is null and `serverToolUses` is absent; `turn.step` chunks pass through unchanged and the result is returned as received; advisor counting with dedup by `id`, split main versus agent loop; requested versus observed `match`; receipts are valid JSON lines that satisfy the schema keys; rollover at the cap; rehydrate after a simulated reload continues `seq` and the counts; receipts disabled when `.control-tower/state` is absent and when `receiptDir` has `..`; the mocked fs records that no path outside `receiptDir` is ever written.",
+    "Validation: run and report each as PASS/FAIL/NOT_RUN with the reason: `claude plugin validate plugins/dopemux-route-ledger`, `claude plugin test plugins/dopemux-route-ledger`, `tsc -p plugins/dopemux-route-ledger` only if the types were laid (else NOT_RUN with the reason), `python3 -m json.tool` on plugin.json, hooks.json and receipt.schema.json, a jsonschema check of sample receipts from the tests against receipt.schema.json (`.venv/bin/python`; NOT_RUN if jsonschema is missing). `ct bind-record` check, run from a scratch directory outside the repo and WITHOUT running bind-record: merge one `binding_fields` sample into a copy of a valid binding and require `.control-tower/bin/ct validate-binding --file <scratch copy>` to PASS; bind-record itself writes repo state and is not run.",
+    "Live runtime proof (a real session loading the mod, a real Agent spawn, a real advisor call) is NOT_RUN in this packet's reach. Say what the operator must do to see it: `claude --plugin-dir plugins/dopemux-route-ledger`, spawn one pinned and one unpinned agent, and read the receipt file."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(route-ledger): dopemux-route-ledger mod core with agent and advisor receipts",
+    "allowlist": [
+      "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+      "plugins/dopemux-route-ledger/hooks/hooks.json",
+      "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "plugins/dopemux-route-ledger/hooks/register.test.ts",
+      "plugins/dopemux-route-ledger/receipt.schema.json"
+    ],
+    "verify": [
+      "claude plugin validate plugins/dopemux-route-ledger",
+      "claude plugin test plugins/dopemux-route-ledger",
+      "python3 -m json.tool plugins/dopemux-route-ledger/.claude-plugin/plugin.json >/dev/null",
+      "python3 -m json.tool plugins/dopemux-route-ledger/hooks/hooks.json >/dev/null",
+      "python3 -m json.tool plugins/dopemux-route-ledger/receipt.schema.json >/dev/null",
+      "git status --porcelain   # untracked/modified paths are a subset of the allowlist; nothing under .control-tower/ or ~/.claude",
+      "git diff --name-only | sort   # subset of the allowlist"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): delegation and advisor receipt mod (dopemux-route-ledger)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R2 (W01-W03). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Read the supplied declaration, the Pulse template and the binding schema; fix the hook set against them",
+      "requirements": [
+        "STOP if the declaration was not supplied.",
+        "Confirm in the declaration: `tool.call` Agent input (model, effort, subagent_type), `agent.spawn` input/result, `turn.step` streaming shape, `serverToolUses`, `$.fs`, `userConfig` types."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "every API used exists in the supplied declaration"
+      ],
+      "context_files": [
+        "schemas/governed_execution/execution_binding.v2.schema.json"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "TDD: tests first, then the module, schema, manifest and hooks.json",
+      "requirements": [
+        "Only the allowlisted files.",
+        "Show the tests fail before the module exists."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-route-ledger"
+      ],
+      "expected_files": [
+        "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+        "plugins/dopemux-route-ledger/hooks/hooks.json",
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/receipt.schema.json"
+      ],
+      "validation": [
+        "tests fail before and pass after; validate PASS"
+      ],
+      "context_files": [
+        "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+        "plugins/dopemux-route-ledger/hooks/hooks.json",
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/receipt.schema.json"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Run the validation list and the scratch ct validate-binding check",
+      "requirements": [
+        "Report PASS/FAIL/NOT_RUN per gate."
+      ],
+      "commands": [
+        "claude plugin validate plugins/dopemux-route-ledger",
+        ".control-tower/bin/ct validate-binding --file <scratch copy outside the repo>"
+      ],
+      "expected_files": [],
+      "validation": [
+        "gates reported literally"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W01-S4",
+      "task": "Return",
+      "requirements": [
+        "Per-file summary, the receipt-writing design you chose, gates, the NOT_RUN runtime statement, advisor_calls, files_written."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R2",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+    "plugins/dopemux-route-ledger/hooks/hooks.json",
+    "plugins/dopemux-route-ledger/hooks/register.tsx",
+    "plugins/dopemux-route-ledger/hooks/register.test.ts",
+    "plugins/dopemux-route-ledger/receipt.schema.json"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "route-ledger-core"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

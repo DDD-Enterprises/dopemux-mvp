@@ -1,0 +1,6 @@
+probe1 start=2026-11-01T02:11:04Z end=2026-11-01T02:11:10Z exit=0
+probe2 start=2026-11-01T02:11:23Z end=2026-11-01T02:11:29Z exit=0
+real start=2026-11-01T02:11:46Z end=2026-11-01T02:13:20Z exit=0
+probe1 duration_ms=4426 total_cost_usd=0.01855176 num_turns=1 is_error=False
+probe2 duration_ms=4363 total_cost_usd=0.011743056 num_turns=1 is_error=False
+real duration_ms=92902 total_cost_usd=0.066405536 num_turns=1 is_error=False

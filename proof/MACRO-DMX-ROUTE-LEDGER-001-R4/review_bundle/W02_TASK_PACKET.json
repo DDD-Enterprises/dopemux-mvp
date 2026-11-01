@@ -1,0 +1,180 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W02-AUDIT-GROK-001-R4",
+  "project": "dopemux-mvp",
+  "target": "Run the PRIMARY final audit of the frozen Route Ledger head with grok-cli grok-4.5 in the tool-less recipe: sealed directory, two probes, one attempt, zero retries, no fallback, verdict-blind custody committed before any verdict is read.",
+  "invariants": [
+    "I01 Scope: the coordinator writes only the files in this packet's write_surface and its sealed run directory (a fresh, timestamped directory under the session scratchpad, never inside the repository, never removed by `rm`).",
+    "I02 Forbidden actions: push, open a PR, merge, sign, mark ready, force-push, history rewrite, reading the verdict before custody is committed, a second attempt, a fallback route, any use of the other route's output. Sending is limited to the one sealed prompt (AUDIT_PROMPT.txt, hash-checked against W01's SHA256SUMS_INPUTS.txt) to the pinned Grok route.",
+    "I03 advisor: the coordinator makes NO advisor call in this workstream.",
+    "I04 No delegation: the coordinator runs the commands itself with deterministic shell.",
+    "I05 Route (exact, no substitution): `grok` CLI (record `grok --version`; 1.0.70 at issuance, 1.0.67 in R2), model `grok-4.5`, `--effort high`, the tool-less recipe of the R2 bundle: proof/MACRO-DMX-ROUTE-LEDGER-001-R2/review_bundle/GROK_INVOCATION.txt, GROK_DISALLOWED.txt, GROK_SYSTEM_PROMPT.txt and GROK_PROBE_PROMPT.txt (their sha256 must equal the R2 values recorded in proof/MACRO-DMX-ROUTE-LEDGER-001-R2/review_bundle/SHA256SUMS_AUDIT.txt; copy them byte-exact). ONE audit attempt, ZERO retries, NO fallback. Probes are not audit attempts: at most three (probe 1, probe 2, and ONE re-probe if probe 2 lists tools because the newer CLI added tool ids absent from the deny list; then add exactly those ids to this round's GROK_DISALLOWED.txt, record the delta and the reason, and re-run probe 2 once).",
+    "I06 Report every gate PASS, FAIL, NOT_RUN or UNKNOWN literally. Provider-attested identity is UNKNOWN: the CLI init event shows the configured model; whatever the auditor says about itself is a claim.",
+    "I07 No secrets: the sealed directory holds only AUDIT_PROMPT.txt (and the probe prompt for the probes); no repository mount, no environment values in any record. Residual: the CLI injects home-level instruction names and global MCP server names with no tools exposed; say so, as R2 did.",
+    "I08 Containment gate (verdict-blind): the real run is allowed only after probe 2 shows `init.tools == []` and 0 tool_use blocks. After the run check ONLY metadata: event types, init.tools, tool_use count, num_turns, duration, cost, exit code, stderr size. Do not read, summarize or parse the assistant's answer text in this workstream. Write GROK_RUN_RECORD.md (facts only: subject, route, attempts, times, containment evidence, custody, residuals) BEFORE the verdict is read, copy every raw artifact flat into the bundle (rename `.jsonl` to `.txt`), write SHA256SUMS_GROK.txt, then commit by explicit pathspec.",
+    "I09 Allowances (PROPOSED): audit attempts 1; retries 0; probes <= 3; wall clock probes plus run <= 20 min (the run itself <= 10 min); cost <= USD 0.30 as the streams report it (record each stream's total_cost_usd); prompt size as W01 recorded; coordinator advisor calls 0. A figure the runner does not report is UNKNOWN and never counts as within budget. When ANY limit is reached or about to be exceeded: stop at the next safe point, dispatch nothing further, retry nothing, substitute nothing, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Stop conditions: launch, sandbox, auth or quota failure; probe 2 still non-empty after the one allowed re-probe; any tool_use in the real run; non-zero exit; empty or non-JSON final result (judged by shape only, not content). On any of these: no retry, no fallback, keep every artifact as custody, commit it, and report NEEDS_SUPERVISOR. W03 is not started after a W02 STOP."
+  ],
+  "depends_on": [
+    "TP-DMX-ROUTELEDGER-W01-FREEZE-001-R4"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "proof(route-ledger-001-r3): custody of the Grok final-audit run, committed before the verdict was read",
+    "allowlist": [
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE_PROMPT.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE1_STREAM.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE1_STDERR.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE2_STREAM.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE2_STDERR.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_STREAM.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_RESPONSE_RAW.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_STDERR.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_INVOCATION.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_SYSTEM_PROMPT.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_DISALLOWED.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_TIMES.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_RUN_RECORD.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_GROK.txt"
+    ],
+    "verify": [
+      "git diff --name-only | sort   # equals the allowlist plus unrelated untracked/unstaged files already present at start",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): dopemux-route-ledger mod (R4 final audit round)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R4 (W02). The PR is #1482 and is owned by the operator: no push, sign or merge here.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Preflight and seal",
+      "requirements": [
+        "Fresh timestamped sealed directory outside the repo; verify the prompt hash."
+      ],
+      "commands": [
+        "grok --version",
+        "shasum -a 256 proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_TIMES.txt"
+      ],
+      "validation": [
+        "prompt hash equals W01 record",
+        "recipe files equal R2 hashes"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R2/review_bundle/GROK_INVOCATION.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R2/review_bundle/SHA256SUMS_AUDIT.txt"
+      ]
+    },
+    {
+      "id": "W02-S2",
+      "task": "Probe 1 and probe 2",
+      "requirements": [
+        "init.tools == [] required before the real run."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE1_STREAM.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE2_STREAM.txt"
+      ],
+      "validation": [
+        "probe 2 init.tools == []"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R2/review_bundle/GROK_PROBE_PROMPT.txt"
+      ]
+    },
+    {
+      "id": "W02-S3",
+      "task": "The real run, one attempt",
+      "requirements": [
+        "Exact command is the recipe with the sealed prompt."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_STREAM.txt"
+      ],
+      "validation": [
+        "exit 0",
+        "0 tool_use"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W02-S4",
+      "task": "Metadata-only containment check, run record, custody commit",
+      "requirements": [
+        "Do not read the answer."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_RUN_RECORD.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_GROK.txt"
+      ],
+      "validation": [
+        "custody committed"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R4",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE_PROMPT.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE1_STREAM.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE1_STDERR.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE2_STREAM.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE2_STDERR.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_STREAM.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_RESPONSE_RAW.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_STDERR.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_INVOCATION.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_SYSTEM_PROMPT.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_DISALLOWED.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_TIMES.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_RUN_RECORD.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_GROK.txt"
+  ],
+  "canonical_writers": [
+    "W02-coordinator"
+  ],
+  "semantic_scope": [
+    "route-ledger-grok-audit"
+  ],
+  "rollback_boundary": "git revert <W02 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); proof-only commits above the audited head 989fe4651c050ec23619e5208da17d6152b477b0",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

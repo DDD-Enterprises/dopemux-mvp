@@ -1,0 +1,457 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+  "objective": "Route Ledger final audit round R4 (successor to R2 and to R3). Freeze the MERGE head 989fe4651c050ec23619e5208da17d6152b477b0 (the branch with origin/main 97b6d5040496e2271c41d24c339d039303bbe6b1, which contains PR 1472, merged in as a merge commit; its seven audited content files are byte-identical to the operator-directed repair commit 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0) and obtain TWO independent final audits of it on different-family routes: grok-cli grok-4.5 (primary, tool-less recipe) and agy gemini-4-argon-high (corroborating, sealed, session-only request-review hardening), one attempt each, no retry, no fallback, verdict-blind custody; adjudicate every finding against source, apply the stricter-outcome rule, and write an unsigned PROOF.json for operator attestation. R3 audited 4fcdc9761 alone and is superseded by the operator's retarget (the proof binds to the audited head, so merging main afterwards would break proof-only closure). No push, no PR update, no signing, no merge.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants are written out in each child; numeric allowances (PROPOSED) are in ALLOWANCES.json sha256 8935893413be3a0a11b5c49eb5f0957d26150acd8dec0abb291623e5efb4d8d5 and summarised in each child's I09: macro active <= 30 min (audit wall time), elapsed <= 150 min, child dispatches 0 (no model dispatch in this revision), retries 0, intermediate model audits 0, final audits 2 (operator-ratified exception: two routes, one frozen head, one attempt each), post-freeze repair rounds 0, child advisor calls 0, coordinator advisor calls <= 1 at the adjudication freeze",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator reply in the Route Ledger session (Claude Code desktop) 2026-10-30, verbatim: 'all 3'. It authorized the repair of N6 (unpinned toast timeout), N7 (status advisor semantics) and the doubled toast prefix, committed as 4fcdc9761 on a direct instruction and WITHOUT a MacroPacket; the R3 and R4 packages record that commit as an operator-directed repair outside R2's allowance of 0 post-freeze repair rounds.",
+      "operator reply 2026-10-30, verbatim: '1: both grok and agy (argon 4), 2successor, 3 yes'. Decision 1: two audit routes, grok-cli grok-4.5 AND agy with the Gemini 4 Argon model; decision 2: successor macro (not an addendum to R2); decision 3: the auditors receive the earlier findings as untrusted claims.",
+      "operator answers to two questions in the same session 2026-10-30: Argon tier 'gemini-4-argon-high (Recommended)' and primary auditor 'Grok primary (Recommended)'. These confirm the two coordinator readings recorded in R3's issuance (the exact model id gemini-4-argon-high; Grok primary with its verdict in embedded_audit, AGY Argon corroborating).",
+      "operator verbatim R3 gate line 2026-10-30: AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R3_EXECUTION=YES AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R3_AUDIT_ROUTE_GROK_CLI_GROK_4_5=YES AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R3_AUDIT_ROUTE_AGY_GEMINI_4_ARGON_HIGH=YES. It covers R3 (subject 4fcdc9761) ONLY. R3 ran W01 (committed c02748b05), W02 (Grok ran once on 4fcdc9761; custody 4b8838cf3; verdict UNREAD) and W03 (the one AGY attempt was stopped by the coordinator, no verdict; custody ad8a141c6). R3 is SUPERSEDED by R4; R4 needs its own verbatim line.",
+      "relay 2026-10-30 from session local_901ed6d9-e250-47e7-bd52-6f2fdc18ca3c of an operator decision: asked 'Which way should the merge train go?' the operator answered, verbatim, 'Run it in order' (order: PR 1482 first, then 1483, 1485, 1484), which the relaying session read as including retargeting the Route Ledger audit so its subject includes current main (PR 1472 merged; main 97b6d5040) as a merge commit, not a rebase, because main requires up-to-date branches and a signed proof binds to the audited head. The relay states that it authorizes nothing the packet gates on a literal operator line; the coordinator performed the local merge (989fe4651c, nothing pushed) on that decision and R4 asks for its own line.",
+      "R2 audit lineage: MACRO-DMX-ROUTE-LEDGER-001-R2, Grok PASS_WITH_RISKS on content head 93969e7a3, verdict accepted by the operator 2026-10-24 at proof head b0b802617 (proof/MACRO-DMX-ROUTE-LEDGER-001-R2/); that proof is untouched and does not cover the repaired code."
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "push",
+      "sign"
+    ],
+    "global_stop_conditions": [
+      "operator gate absent: the line named in ISSUANCE.md (AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R4_EXECUTION=YES with the two route tokens) is required; the R1, R2 and R3 lines do not authorize R4",
+      "worktree HEAD != 989fe4651c050ec23619e5208da17d6152b477b0 at start, any tracked file other than the unrelated .codex/config.toml edit dirty, `git diff 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0 989fe4651c050ec23619e5208da17d6152b477b0 -- <the seven content paths>` non-empty, or a fresh `git fetch origin main` shows origin/main != 97b6d5040496e2271c41d24c339d039303bbe6b1 (main moved: the subject needs another retarget before any audit)",
+      "any ALLOWANCES.json limit reached or about to be exceeded: stop at the next safe point, dispatch nothing further, retry nothing, substitute nothing, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+      "any write outside a workstream allowlist",
+      "any model dispatch (this revision dispatches none), or a coordinator advisor call before the adjudication freeze",
+      "an audit probe shows a tool or MCP capability being USED, a probe or real-run agy init event whose permission_mode is not request-review, or any real-run stream with tool use: that route's run is inadmissible, nothing further is sent to it, NEEDS_SUPERVISOR",
+      "either auditor route fails to launch, hits a quota or sandbox error, times out or returns no parseable verdict: one attempt only, no retry, no fallback and NO promotion of the other route to primary; report NEEDS_SUPERVISOR with the evidence",
+      "either verdict is read before BOTH custody commits exist (verdict-blind custody)",
+      "the frozen subject changes after the audit prompt is built: any commit after 989fe4651c050ec23619e5208da17d6152b477b0 other than this macro's own proof commits, or any further merge of main",
+      "any push, PR update, signing, merge, mark-ready, force-push or history rewrite (operator-owned), and any second `sync_with_base_branch` merge",
+      "final audit FAIL or NEEDS_SUPERVISOR from either route after adjudication"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "cfaf3ca97494fb7820337464fe8c639729e53c8c0f980e335467730bfc2694c5"
+    },
+    "authority_ceiling": "Child-specific intersection only; team lead alone commits (one commit per workstream, explicit pathspec) and never pushes, signs, opens or updates a PR, or merges",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "79ae04f581b0b0ba49fb2b0b4d75cdac2854c08673137a46ae0637299a7c99d8"
+      },
+      "objective": "Freeze the retargeted audit subject (the merge head 989fe4651 of origin/main into the branch) and build the audit inputs by exact substitution from the R3 prompt: verify the pin, run the deterministic gates, write and compare the byte-exact diffs, derive and scan the prompt, record the superseded R3 facts. No model dispatch, no auditor run.",
+      "dependencies": [],
+      "parallel_group": "S1",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_CUMULATIVE.diff",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PRIOR_FINDINGS_AS_CLAIMS.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GATES_PRE_AUDIT.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PROMPT_BUILD_NOTES.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SUPERSEDED_R3_NOTE.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_INPUTS.txt"
+      ],
+      "canonical_writers": [
+        "W01-coordinator"
+      ],
+      "semantic_scope": [
+        "route-ledger-audit-inputs"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W01 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); proof-only commits above the audited head 989fe4651c050ec23619e5208da17d6152b477b0",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-desktop",
+          "model": "claude-sonnet-5-5",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-ROUTELEDGER-001-R4",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "73bc83866f261f20a4fa37b9d5bdb23d060db692cad395150c9b6f6818bdb2dc"
+      },
+      "objective": "Run the PRIMARY final audit of the frozen Route Ledger head with grok-cli grok-4.5 in the tool-less recipe: sealed directory, two probes, one attempt, zero retries, no fallback, verdict-blind custody committed before any verdict is read.",
+      "dependencies": [
+        "W01"
+      ],
+      "parallel_group": "S2",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE_PROMPT.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE1_STREAM.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE1_STDERR.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE2_STREAM.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_PROBE2_STDERR.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_STREAM.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_RESPONSE_RAW.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_AUDIT_STDERR.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_INVOCATION.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_SYSTEM_PROMPT.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_DISALLOWED.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_TIMES.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_RUN_RECORD.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_GROK.txt"
+      ],
+      "canonical_writers": [
+        "W02-coordinator"
+      ],
+      "semantic_scope": [
+        "route-ledger-grok-audit"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); proof-only commits above the audited head 989fe4651c050ec23619e5208da17d6152b477b0",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "grok-cli",
+          "model": "grok-4.5",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-ROUTELEDGER-001-R4",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "d64f671e97789b527d6475c5d1371ba29f05e89bc2265a75c5c458661732372c"
+      },
+      "objective": "Run the CORROBORATING final audit of the same frozen head with agy and the Gemini 4 Argon model in a sealed, tool-less shape: one attempt, zero retries, no fallback, containment decided from the stream, verdict-blind custody committed before any verdict is read.",
+      "dependencies": [
+        "W02"
+      ],
+      "parallel_group": "S3",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_VERSION.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_MODELS_LIST.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE_PROMPT.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE1_STREAM.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE1_STDERR.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE2_STREAM.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_PROBE2_STDERR.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_STREAM.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_RESPONSE_RAW.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_AUDIT_STDERR.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_INVOCATION.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_TIMES.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_RUN_RECORD.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_AGY.txt"
+      ],
+      "canonical_writers": [
+        "W03-coordinator"
+      ],
+      "semantic_scope": [
+        "route-ledger-agy-audit"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W03 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); proof-only commits above the audited head 989fe4651c050ec23619e5208da17d6152b477b0",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "agy",
+          "model": "gemini-4-argon-high",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-ROUTELEDGER-001-R4",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W04",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W04/TASK_PACKET.json",
+        "sha256": "ebebcef29b9af7a35032bb3f6b89552a0ff012f73ab22c460fa744c9d556b909"
+      },
+      "objective": "Adjudicate both audit verdicts against the source, apply the stricter-outcome rule, and write the unsigned PROOF.json, AUDITOR_REPORT.md, allowance ledger and the flattened issuance package for operator attestation and signing.",
+      "dependencies": [
+        "W03"
+      ],
+      "parallel_group": "S4",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/AUDITOR_REPORT.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GROK_ADJUDICATION.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AGY_ADJUDICATION.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/COMBINED_ADJUDICATION.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GATES.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCE_LEDGER.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCE_LEDGER_LIVE.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/MACRO_PACKET.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ALLOWANCES.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ISSUANCE.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W01_TASK_PACKET.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W02_TASK_PACKET.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W03_TASK_PACKET.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W04_TASK_PACKET.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W01_EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W02_EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W03_EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W04_EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_PACKAGE.txt"
+      ],
+      "canonical_writers": [
+        "W04-coordinator"
+      ],
+      "semantic_scope": [
+        "route-ledger-adjudication"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W04 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); proof-only commits above the audited head 989fe4651c050ec23619e5208da17d6152b477b0",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-desktop",
+          "model": "claude-sonnet-5-5",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-ROUTELEDGER-001-R4",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-INPUTS",
+      "requires": [
+        "W01"
+      ],
+      "condition": "HEAD == 989fe4651c050ec23619e5208da17d6152b477b0 with origin/main == 97b6d5040496e2271c41d24c339d039303bbe6b1; gates recorded on the merge head; diffs byte-identical to R3; prompt derived, scanned and hashed; inputs committed",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J02-CUSTODY",
+      "requires": [
+        "W02",
+        "W03"
+      ],
+      "condition": "both audit runs finished or STOPPED, both custody commits exist, neither verdict read",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J03-FREEZE",
+      "requires": [
+        "W01",
+        "W02",
+        "W03",
+        "W04"
+      ],
+      "condition": "adjudication and unsigned proof validated; freeze the proof head and stop for operator attestation and signing",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "Two independent final audits of one frozen L2 subject, operator-ratified exception; no intermediate audit",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}
