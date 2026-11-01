@@ -1,11 +1,11 @@
-# Successor note: R3's interrupted AGY run has a measured usage figure
+# Successor note: R3's interrupted AGY run has a measured usage figure (corrects the R4 records)
 
-Additive. No other file in this bundle is edited. `ALLOWANCES.json` is hash-pinned by this round's macro packet and listed in `SHA256SUMS_PACKAGE.txt`, and it is byte-identical to the issuance snapshot under `task-packets/`, so it stays as issued; this note is the correction. Raised by review comments on PR 1482 and checked against the retained R3 stream by the R6 coordinator. The R3 side is in `proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/SUCCESSOR_NOTE_RESULT_EVENT.md`.
+Additive. It lives in the R6 bundle, not in the R4 bundle: the local acceptance engine admits only `proof/pr_merge/embedded-audit/pr-1482/` and `proof/MACRO-DMX-ROUTE-LEDGER-001-R6/` as changes after the audited head, so the R3 and R4 bundles stay byte-identical to the audited head. No file of the R4 bundle is edited. R4's `ALLOWANCES.json` is hash-pinned by that round's macro packet and listed in its `SHA256SUMS_PACKAGE.txt`, and it is byte-identical to the issuance snapshot under `task-packets/`, so it stays as issued; this note is the correction. Raised by review comments on PR 1482 and checked against the retained R3 stream by the R6 coordinator. The R3 side is in `SUCCESSOR_NOTE_R3_RESULT_EVENT.md` in this same directory.
 
 ## The fact
 Line 3 of `proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/AGY_AUDIT_STREAM.txt` is a `result` event: status `ERROR`, `error` and `finished_reason` `interrupted`, `duration_seconds` 60.661235, empty `response`, `usage` input 55,666, output 5,453, thinking 5,453, **total 61,119**. No verdict was produced; USD cost is UNKNOWN.
 
-## What it corrects in this bundle
+## What it corrects in the R4 bundle (`proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/`)
 | Place | As written | Corrected |
 |---|---|---|
 | `ALLOWANCES.json` `basis` (R3 sunk cost) | "about 26k AGY probe tokens, the AGY real run stopped without a usage figure" | R3 AGY sunk spend: 26,443 probe tokens (12,963 + 13,480) plus 61,119 tokens for the interrupted real run, 87,562 in all; USD UNKNOWN. These are R3 sunk cost, separate from R4's budget, which is unchanged. The later sentence "The AGY run is UNMEASURED at issuance" described R4's own run and stays true. |
