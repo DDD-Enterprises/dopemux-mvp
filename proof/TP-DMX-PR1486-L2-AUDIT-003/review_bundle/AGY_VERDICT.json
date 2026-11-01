@@ -1,0 +1,66 @@
+{
+  "status": "completed",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "low",
+      "path": "ui-dashboard/src/time.test.ts",
+      "lines": "5-6",
+      "title": "Module-level process.env.TZ mutation is not restored after tests",
+      "detail": "ui-dashboard/src/time.test.ts sets process.env.TZ = 'America/Los_Angeles' at module scope without restoring the original TZ value in afterAll. While safe when Vitest isolates each test file, running tests in a shared worker (--no-isolate) could leak the timezone override to subsequent test files."
+    },
+    {
+      "id": "F-2",
+      "severity": "low",
+      "path": "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+      "lines": "135-136",
+      "title": "ESLint flat config restored but pre-existing lint errors and missing CI gate remain",
+      "detail": "ui-dashboard/eslint.config.js restores a working ESLint 10 flat configuration, but the audit report notes 16 errors and 2 warnings remain in untouched files and no CI workflow currently runs ui-dashboard lint or unit tests."
+    }
+  ],
+  "risks": [
+    "Validation commands (tsc, vitest, eslint, vite build) were not executed during this audit because tools and MCP are disabled by the embedded-audit contract (validation_status=NOT_RUN).",
+    "TaskSequencer and TeamDashboard remain backed by static sample data rather than live backend endpoints, though both surfaces now explicitly render '[SAMPLE] not connected' instead of '[LIVE]'.",
+    "Pre-existing lint violations in untouched ui-dashboard files (16 errors, 2 warnings per claudedocs/design/ui-dashboard-audit-2026-10-30.md) and the absence of a CI job for ui-dashboard leave lint/test regressions unguarded in automation."
+  ],
+  "rationale": "Provenance checks match across trusted authority and candidate metadata for DDD-Enterprises/dopemux-mvp PR #1486 at head SHA aaa2d1ae05048443da7e0e68104f54bbc53075c2 and base SHA 6fb9d81798cbcca7f99c96f1b9fd07b6d3c7db68, with no instruction-like content detected. The diff eliminates fabricated fallback metrics (0.7/0.6/0.5) by introducing nullable CognitiveReading mappers in ui-dashboard/src/cognitiveReading.ts, surfaces partial HTTP 200 upstream section errors and WebSocket failures accurately in ui-dashboard/src/App.tsx, preserves 15-minute forecast TTL across partial state_update messages via carryForecast, replaces CognitiveLoadGauge and PredictionPanel with LoadInstrument (with boundary-safe percentage rounding) and AttentionStatePanel, relabels static task/team boards as '[SAMPLE] not connected', removes the global '* { transition: all 0.25s ease }' rule and scanline overlay in ui-dashboard/src/index.css, and adds unit/integration test coverage across App.test.tsx, LoadInstrument.test.tsx, SignalFeed.test.tsx, realtimeStateMapping.test.ts, and time.test.ts. Verdict is PASS_WITH_RISKS due to unexecuted runtime validation in this tool-disabled audit context and documented follow-up items.",
+  "inspected_paths": [
+    ".gitignore",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "src/dopemux/ui/theme.py",
+    "ui-dashboard/eslint.config.js",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx",
+    "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+    "ui-dashboard/src/components/LoadInstrument.tsx",
+    "ui-dashboard/src/components/PredictionPanel.tsx",
+    "ui-dashboard/src/components/SignalFeed.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/TeamDashboard.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx",
+    "ui-dashboard/src/components/__tests__/SignalFeed.test.tsx",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+    "ui-dashboard/src/index.css",
+    "ui-dashboard/src/realtimeStateMapping.test.ts",
+    "ui-dashboard/src/theme.ts",
+    "ui-dashboard/src/time.test.ts",
+    "ui-dashboard/src/time.ts"
+  ],
+  "evidence_refs": [
+    "ui-dashboard/src/cognitiveReading.ts:12-141 (nullable CognitiveReading model, enum/ratio validators, upstreamErrorSections, mapAggregateState, mapRealtimeState, carryForecast with 15-min FORECAST_TTL_MS, remainingUpstreamSections)",
+    "ui-dashboard/src/App.tsx:84-291 (EMPTY_READING initial state, race-safe loadInitialState with liveReadingSeenRef guard, WebSocket state_update forecast carry and partial upstream error clearing, handler detachment on socket cleanup)",
+    "ui-dashboard/src/components/LoadInstrument.tsx:56-63 (toPercent zone-edge-aware rounding preventing status/percentage band contradiction)",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx:37-118 (definition-list rendering of energyLevel and attentionState with explicit unknown fallback)",
+    "ui-dashboard/src/components/SignalFeed.tsx:135-195 (persistent role='log' aria-live='polite' ordered list with empty-state text outside the log region and Escape-cancelable two-step clear confirmation)",
+    "ui-dashboard/src/components/TaskSequencer.tsx:552-563,1158-1162 ('[SAMPLE] not connected' chip and unknown load status handling)",
+    "ui-dashboard/src/components/TeamDashboard.tsx:99-113 ('[SAMPLE] not connected' badge)",
+    "ui-dashboard/src/index.css:24-38 (removal of global transition:all, scanline body::after overlay, and external Google Fonts import)",
+    "ui-dashboard/src/time.ts:3-23 (asUtcIso zone-less UTC normalization with 3-digit millisecond truncation and formatClockTime)",
+    "ui-dashboard/src/App.test.tsx:44-464 (integration tests covering unreachable backend, HTTP 500, invalid JSON, malformed state_update, slow GET race against live socket update, partial upstream errors, and 15-min forecast TTL expiry)"
+  ],
+  "validation_status": "NOT_RUN"
+}
