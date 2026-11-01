@@ -1,0 +1,21 @@
+#!/bin/bash
+# MACRO-DMX-ROUTE-LEDGER-001-R3 W03: agy, model gemini-4-argon-high, sealed print mode. usage: run.sh <A> probe1|probe2|real
+A="$1"; MODE="$2"
+SETTINGS='{"toolPermission":"request-review","allowNonWorkspaceAccess":false,"permissions":{"allow":[]}}'
+case "$MODE" in
+  probe1) SEAL="$A/seal_probe"; PROMPT="$(sed -n 1p "$A/seal_probe/AGY_PROBE_PROMPT.txt")"; TMO=3m ;;
+  probe2) SEAL="$A/seal_probe"; PROMPT="$(sed -n 2p "$A/seal_probe/AGY_PROBE_PROMPT.txt")"; TMO=3m ;;
+  real)   SEAL="$A/seal_real";  PROMPT="$(cat "$A/seal_real/AUDIT_PROMPT.txt")";          TMO=10m ;;
+  *) echo "bad mode" >&2; exit 91 ;;
+esac
+cd "$SEAL" || exit 90
+date -u +%Y-%m-%dT%H:%M:%SZ > "$A/out/$MODE.start"
+env -i HOME="$HOME" PATH="$PATH" agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout "$TMO" --settings "$SETTINGS" --print="$PROMPT" > "$A/out/$MODE.jsonl" 2> "$A/out/$MODE.err"
+echo $? > "$A/out/$MODE.exit"
+date -u +%Y-%m-%dT%H:%M:%SZ > "$A/out/$MODE.end"
+
+# sealed directories (outside the repo, never removed): /private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-route-ledger-001-8d8032/533ad7a9-4330-4030-b51a-2a7763cbe828/scratchpad/r3/agy_20261030T093113Z
+# environment: env -i HOME PATH only
+# session-only hardening (never saved): --settings toolPermission=request-review, allowNonWorkspaceAccess=false, permissions.allow=[] (saved user settings: toolPermission=always-proceed, allowNonWorkspaceAccess=true, an allow list incl. git commit and gh)
+# coordinator stop note:
+2026-10-30T09:34:56Z coordinator sent SIGTERM to agy pid 37792 on the operator's retarget (relayed by session local_901ed6d9)

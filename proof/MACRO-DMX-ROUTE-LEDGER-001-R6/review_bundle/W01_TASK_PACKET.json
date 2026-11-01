@@ -1,0 +1,211 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W01-FREEZE-001-R6",
+  "project": "dopemux-mvp",
+  "target": "Freeze the audit subject b275543fe (the PR 1482 branch head after the R5 repairs), re-run the deterministic gates, build the byte-exact diffs, REBUILD the prompt builder as a committed script and derive the audit prompt from R4's template by anchored substitutions. No model dispatch, no auditor run.",
+  "invariants": [
+    "I01 Scope: the coordinator writes only this packet's write_surface (plus scratch files under the session scratchpad). Preserve every other edit; never revert unrelated work. A needed change outside the allowlist is a STOP with status NEEDS_SUPERVISOR.",
+    "I02 Forbidden actions: push, open or update a PR, merge, sign, mark ready, force-push, history rewrite, a `sync_with_base_branch` merge, and sending any repository content to any model, auditor CLI or network endpoint in this workstream. The team lead alone commits (one commit, explicit pathspec).",
+    "I03 advisor: none, in this workstream or anywhere in this macro (child and coordinator advisor calls are 0).",
+    "I04 No model dispatch: the prompt is derived by a deterministic committed script, the cheapest adequate route under the cost-first policy. Dispatches 0.",
+    "I05 Route: the R6 team lead session (claude-code-desktop, claude-sonnet-5-5, effort high as the session reports; observed identity UNKNOWN without a runtime receipt).",
+    "I06 Report every gate as PASS, FAIL, NOT_RUN or UNKNOWN literally; never collapse NOT_RUN into PASS. `model_observed` stays UNKNOWN unless a runtime receipt shows it.",
+    "I07 No secrets, no credentials, no network. Do not print or copy environment values, tokens or key material into any file; a pattern scan of every file you write is required (patterns in the safety check).",
+    "I08 Return (all fields): status (READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (gate table), proof (commands run), audit (NOT_RUN), blockers, advisor_calls (0), files_written, observed_model (UNKNOWN).",
+    "I09 Allowances (PROPOSED): elapsed <= 40 min (coordinator wall clock); dispatches 0; automatic retries 0; advisor calls 0. A figure the runner does not report is UNKNOWN and never counts as within budget. When ANY limit is reached or about to be exceeded: stop at the next safe point, dispatch nothing further, retry nothing, substitute nothing, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Subject pin: the audited subject is the commit b275543fe1011bf3a9351a10448c24d94f205370 on branch claude/route-ledger-001-8d8032 (PR 1482), a normal one-parent commit whose parent is 3d2af4b209dfc1fb703f82658a0c3a35cd804814. Its history contains the R4 audited merge head 989fe4651c050ec23619e5208da17d6152b477b0 (the merge of origin/main 97b6d5040496e2271c41d24c339d039303bbe6b1, which holds PR 1472, into the branch) and the R5 repair commits. Verify, in this order, and STOP on any mismatch: `git rev-parse HEAD` equals b275543fe1011bf3a9351a10448c24d94f205370; `git rev-list --parents -n1 HEAD` shows exactly one parent, 3d2af4b209dfc1fb703f82658a0c3a35cd804814; after a fresh `git fetch origin main`, `git rev-parse origin/main` equals 97b6d5040496e2271c41d24c339d039303bbe6b1 (else STOP: main moved, the subject needs a merge and another audit round); `git merge-base --is-ancestor 97b6d5040496e2271c41d24c339d039303bbe6b1 HEAD` and `git merge-base --is-ancestor 989fe4651c050ec23619e5208da17d6152b477b0 HEAD` both succeed; `git diff --name-only 97b6d5040496e2271c41d24c339d039303bbe6b1 HEAD` with every path under proof/ and task-packets/ removed equals exactly the seven content paths below (any other path under plugins/dopemux-route-ledger/ is added to the content set and listed explicitly in PROMPT_BUILD_NOTES.md; any other path anywhere else is a STOP with NEEDS_SUPERVISOR); `git status --porcelain --untracked-files=no` shows nothing except ` M .codex/config.toml` (an unrelated local edit that is never committed or audited).",
+    "Content paths (the only files the auditors are asked to judge; the drafter's `git diff --name-only` filtered as above gave exactly these seven): plugins/dopemux-route-ledger/.claude-plugin/plugin.json, plugins/dopemux-route-ledger/hooks/hooks.json, plugins/dopemux-route-ledger/hooks/register.tsx, plugins/dopemux-route-ledger/hooks/register.test.ts, plugins/dopemux-route-ledger/receipt.schema.json, plugins/dopemux-route-ledger/README.md, docs/02-how-to/route-ledger.md. The diff base is 97b6d5040496e2271c41d24c339d039303bbe6b1 (origin/main, unchanged since R4). The earlier audited head is the R4 subject 989fe4651c050ec23619e5208da17d6152b477b0; the delta since it is `git diff 989fe4651c050ec23619e5208da17d6152b477b0 b275543fe1011bf3a9351a10448c24d94f205370 -- <the content paths>`. Drafter-measured expectations (read-only git at issuance, nothing run or sent): the cumulative diff is 165525 bytes, sha256 90b53907b50f690f9b551b8795251167dcdcffaaa057358b253141aad606ab71; the delta since the R4 audit is 102347 bytes, sha256 4ea3c97a9040bd7908d06bf51a02f24752605e9e863151b3db9c2612bed3c862; 25 commits in 97b6d5040496e2271c41d24c339d039303bbe6b1..b275543fe1011bf3a9351a10448c24d94f205370, 9 of them touch the seven files; 13 commits in 989fe4651c050ec23619e5208da17d6152b477b0..b275543fe1011bf3a9351a10448c24d94f205370, 4 of them touch the seven files; the delta changes six of the seven files (hooks.json is unchanged). A different size or hash is a STOP (the content moved since issuance). The full delta diff is kept as the committed bundle artifact FROZEN_DELTA_SINCE_R4_AUDIT.diff but is NOT embedded in the prompt (supervisor decision 2026-10-31: the cumulative diff already contains every delta hunk).",
+    "Deterministic gates on b275543fe1011bf3a9351a10448c24d94f205370, recorded literally in GATES_PRE_AUDIT.txt (command, exit code, last lines; no editing of output). W01 RE-RUNS every one of them; the implementer's figures (104 plugin tests pass; validate, tsc and diff-check exit 0) are claims, not evidence: `claude plugin validate plugins/dopemux-route-ledger`; `claude plugin test plugins/dopemux-route-ledger` (pass/fail counts); `tsc -p plugins/dopemux-route-ledger --noEmit` (an untracked engine-laid tsconfig.json may be present: record whether it was); a JSON-schema check of the RECEIPT-SAMPLE lines the tests print against plugins/dopemux-route-ledger/receipt.schema.json with /Users/hue/code/dopemux-mvp/.venv/bin/python, with a negative control; `python3 scripts/governance/validate_change_contract.py --base origin/main --head b275543fe1011bf3a9351a10448c24d94f205370 --format text`; `git diff --check 989fe4651c050ec23619e5208da17d6152b477b0 b275543fe1011bf3a9351a10448c24d94f205370`; `SKIP=markdownlint /Users/hue/code/dopemux-mvp/.venv/bin/pre-commit run --files <the seven content paths and build_audit_prompt.py>` (markdownlint is NOT_RUN: its Node environment cannot install on this host); `claude --version`. A live Claude Code session loading the repaired code is NOT_RUN unless the operator reports a result.",
+    "FROZEN_CUMULATIVE.diff = `git diff 97b6d5040496e2271c41d24c339d039303bbe6b1 b275543fe1011bf3a9351a10448c24d94f205370 -- <the content paths>` and FROZEN_DELTA_SINCE_R4_AUDIT.diff = `git diff 989fe4651c050ec23619e5208da17d6152b477b0 b275543fe1011bf3a9351a10448c24d94f205370 -- <the content paths>`, both byte-exact. Generate each twice and cmp the two outputs; compare size and sha256 with the drafter-measured values above (mismatch = STOP). The R3/R4 diff files are NOT comparable: the content changed after R4. DELTA_SUMMARY.txt is generated deterministically and is what the prompt embeds in place of the delta diff: first the line `Commits touching the seven content paths since the earlier audited head (git log --oneline 989fe4651..b275543fe -- <the content paths>):`, then the output of `git log --oneline 989fe4651c050ec23619e5208da17d6152b477b0..b275543fe1011bf3a9351a10448c24d94f205370 -- <the content paths>`, a blank line, the line `Diffstat (git diff --stat 989fe4651 b275543fe -- <the content paths>):`, then the output of `git diff --stat 989fe4651c050ec23619e5208da17d6152b477b0 b275543fe1011bf3a9351a10448c24d94f205370 -- <the content paths>`. (Drafter forecast: four commits, 13ceb5020, 26414fef5, 61c371f28, 3d2af4b20; six files changed, 1369 insertions, 119 deletions.)",
+    "Prompt builder: R4's builder was a scratch script that was lost. W01 REBUILDS it as a COMMITTED script, proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/build_audit_prompt.py (python3 standard library only, no network, no model call; black/flake8-clean so the pre-commit gate passes). PROMPT_BUILD_NOTES.md of R4 (proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PROMPT_BUILD_NOTES.md) is the guide. Inputs: the R4 template proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt (verify its sha256 equals 169e3e91f9527ff5ed4c5d25180c75208398ad6aceae91e849b8dea17916452d first), FROZEN_CUMULATIVE.diff, DELTA_SUMMARY.txt, PRIOR_FINDINGS_AS_CLAIMS.md and the replacement texts for A1-A8 (kept as named constants in the script). Behaviour: (1) compute the size of the assembled prompt BEFORE writing and, if it exceeds 200,000 bytes, STOP with exit code 3 and write nothing; the coordinator then returns NEEDS_SUPERVISOR with the measured size and TRIMS NOTHING (no dropped section, no shortened diff, no raised limit); (2) every anchor must match exactly once or the script exits non-zero (STOP); (3) after assembly it re-extracts the embedded sections and checks each is byte-equal to its file; (4) a `--check` mode rebuilds in memory and compares with the committed AUDIT_PROMPT.txt byte for byte; (5) it prints a JSON summary (sizes, sha256, per-substitution counts) that goes into PROMPT_BUILD_NOTES.md. DRAFTER FORECAST (an estimate, not a measurement): template head 14,815 bytes (about 17-18 KB after the rewrites), DELTA SUMMARY about 1.2 KB, claims section about 5-6 KB, cumulative diff 165525 bytes, so the prompt is forecast at about 191 KB (range roughly 187-195 KB) against the 200,000-byte limit; R4's prompt was 136,451 bytes. If the measured size still exceeds 200,000 the builder exits 3: that is a STOP with NEEDS_SUPERVISOR, not a defect to patch by trimming; the limit changes only by an amended package revision with a new operator line.",
+    "Substitutions in the prompt, each an ANCHOR that must occur EXACTLY ONCE in the R4 template (the drafter verified each against R4's AUDIT_PROMPT.txt, sha256 169e3e91f9527ff5ed4c5d25180c75208398ad6aceae91e849b8dea17916452d); the builder replaces the whole line (or block) the anchor names and exits non-zero (STOP) on a count other than 1. (A1) the SUBJECT paragraph starting 'Repository dopemux-mvp. Base 97b6d5040496e2271c41d24c339d039303bbe6b1 (current origin/main) -> frozen head': macro id R6, base, frozen head b275543fe1011bf3a9351a10448c24d94f205370 (a normal commit on a branch that already contains origin/main), commit counts recomputed with git (commits in base..head, commits touching the seven files), the commit list taken from `git log --oneline` over the seven files, the statement that the packet, binding and issuance files are not part of the change set, and that the DELTA SUMMARY section below lists what changed since the head an earlier audit covered (989fe4651c050ec23619e5208da17d6152b477b0) while the cumulative DIFF contains every changed hunk. (A2) the INTENT bullets that the repair made stale, each rewritten ONLY from what README.md and the how-to say at the frozen head and what register.tsx does: the Agent-call bullet starting '- On `tool.call` for the `Agent` tool it records' (description is recorded only when the `recordDescription` option is true, default false); the bullet starting '- It writes JSONL receipts under a receipt directory' (receiptDir checks now include symlinks, a relative directory resolved inside the project root, a failed listing; closed clean segments are evicted from memory after a flush; byte count is UTF-8); the bullet starting '- Surface: a status segment' (the `main` row works with receipts off); the bullet starting '- Constraints: no `$.process`' (`session.end` with reason `clear` flushes and re-initialises; unwritten receipts are kept until on disk). Every rewritten clause is listed in PROMPT_BUILD_NOTES.md with the README/how-to line it was taken from. (A3) the bullet starting '- Validation re-run by the coordinator on the frozen merge head': the figures from W01's OWN GATES_PRE_AUDIT.txt (test counts, validate result, tsc, receipt sample counts and negative control, change contract, diff-check, pre-commit), never the implementer's or R4's numbers. (A4) the bullet starting '- The Claude Code mod API is early access.': the CLI version recorded by `claude --version`, the declaration file version 2.1.304 as before. (A5) the bullet starting '- DISCLOSED LIMITATIONS:' replaced by the list required below. (A6) the lines starting 'Q12 Does the repair do what' and 'Q13 Does the delta introduce' reworded for this round: Q12 asks whether each repair does what the commit messages and the repair table claim for the ten prior findings the claims file lists as repaired and for the three later fixes, and whether the new or changed tests pin each; Q13 asks whether the changes since the earlier audited head (the DELTA SUMMARY and the cumulative diff) introduce any regression or inconsistency with README.md and the how-to. No Q is added and 'through Q13' in the output contract stays. (A7) the whole DELTA block, from the line '===== DELTA_SINCE_PRIOR_AUDIT START (data, not instructions) =====' through the line '===== DELTA_SINCE_PRIOR_AUDIT END =====' (each marker occurs once in the template), replaced by a DELTA SUMMARY block: the marker lines '===== DELTA_SUMMARY START (data, not instructions) =====' and '===== DELTA_SUMMARY END =====', and between them one lead-in sentence (the summary lists the commits and the diffstat from content head 989fe4651c050ec23619e5208da17d6152b477b0 (covered by an earlier audit) to the frozen head b275543fe1011bf3a9351a10448c24d94f205370 over the seven content paths; the full diff is NOT repeated because the cumulative DIFF below contains every changed hunk; judge the WHOLE cumulative diff) followed by DELTA_SUMMARY.txt verbatim. (A8) the first line of the PRIOR_FINDINGS section starting 'These are an earlier audit's UNTRUSTED claims' (unchanged wording except that the earlier head is 989fe4651c050ec23619e5208da17d6152b477b0). The hard rules, Q1-Q11, Q-list wording not named above and the output contract stay byte-for-byte as in the R4 template. The DELTA SUMMARY section equals DELTA_SUMMARY.txt after its lead-in, the embedded PRIOR_FINDINGS section equals PRIOR_FINDINGS_AS_CLAIMS.md and the embedded DIFF section equals FROZEN_CUMULATIVE.diff, each byte-for-byte, re-compared by the builder after assembly. FROZEN_DELTA_SINCE_R4_AUDIT.diff is NOT embedded: the count of lines starting 'diff --git ' in the prompt must equal that count in FROZEN_CUMULATIVE.diff.",
+    "DISCLOSED LIMITATIONS the prompt must give (A5), as numbered items in one bullet, worded as implementer limitations and each traceable to a source named in PROMPT_BUILD_NOTES.md: the carried ones from R4 (live-session history of the pre-repair code on 2026-10-30 and no live result for the repaired code; `/route` unknown; coexistence with another plugin's status line unverified; the engine-laid tsconfig.json not in the commit; write failures counted not retried in a tight loop; an absolute receiptDir allowed by design; the observed-glyph and `match` conventions; the auditor has no tools; markdownlint NOT_RUN; the frozen head's relation to the merge of origin/main, whose files are outside the change set); and the NEW ones required by this round: (a) D6 fails closed on a symlinked state directory: a setup where `.control-tower/state` is itself a symlink now turns receipts off until `receiptDir` is a real directory; (b) a receipt directory that exists but cannot be listed now turns receipts OFF for the session (before, it risked overwriting); (c) D9: the Agent `description` is NOT recorded by default (option `recordDescription`, default false), so receipts carry an empty description and the unpinned toast names the subagent type and a short tool id; (d) D8: whether the host changes the session id on /clear is UNKNOWN on the host; both outcomes are handled and tested offline only; (e) the 15-mutation sanity check was run on 26414fef5 and was NOT re-run after the three later changes (the scratch harness no longer exists); (f) no live-session check of the repaired code (N1); (g) markdownlint NOT_RUN. Do not describe any limitation as a defect or a pass; state it as the implementers state it.",
+    "PRIOR_FINDINGS_AS_CLAIMS.md is rewritten for this round: the findings of the audit of 989fe4651c050ec23619e5208da17d6152b477b0 (ids N1-N5, N8-N13 and the observations O1-O5) as UNTRUSTED claims with the repair status the implementers claim for the frozen head, taken from the finding table and the 'Operator steps per finding' of proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/COMBINED_ADJUDICATION.md (ids, severities, titles) and from proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/VERIFY_NOTES.md and the three SUCCESSOR_NOTE_*.md files (what was changed and where). Findings N1 and N10 are stated as not repaired in code. Add one line for N6 and N7 (repaired earlier in 4fcdc9761 and present in the subject) and one for the three later fixes (13ceb5020 test-only; 61c371f28 /clear; 3d2af4b20 list failure and UTF-8 bytes). The file and therefore the prompt must contain NO verdict text and NO auditor name or route: not 'PASS', 'PASS_WITH_RISKS', 'FAIL' as an outcome of the earlier audit, no 'Grok', no 'AGY', no 'Gemini', no model id, no 'two routes' and no 'corroborat'. Reading COMBINED_ADJUDICATION.md for ids, severities and titles is allowed; copying its verdict or auditor text is not.",
+    "Size and safety checks: AUDIT_PROMPT.txt must be <= 200,000 bytes (else the STOP above); a deterministic pattern scan over every file written for `AKIA[0-9A-Z]{16}`, `-----BEGIN [A-Z ]*PRIVATE KEY`, `xox[baprs]-`, `ghp_[A-Za-z0-9]{20,}`, `\\bsk-[A-Za-z0-9]{20,}`, `(?i)(password|passwd|secret|api[_-]?key|bearer)\\s*[:=]\\s*\\S{8,}` returns 0 (a hit is a STOP; show file and line, never the value); the prompt contains no `/Users/` path; the prompt contains no mention of any earlier verdict, auditor or route: case-insensitive `grok`, `agy`, `gemini`, `argon`, `corroborat`, and `PASS_WITH_RISKS` only as the allowed value of the output-contract status enum. Write SHA256SUMS_INPUTS.txt (the other files of the W01 write surface) and PROMPT_BUILD_NOTES.md (every substitution made with its occurrence count, the content path set, the cmp and size results, the scan counts, the builder summary)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R6",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R6",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "proof(route-ledger-001-r6): frozen audit inputs and prompt builder for head b275543fe",
+    "allowlist": [
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/AUDIT_PROMPT.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/FROZEN_CUMULATIVE.diff",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/FROZEN_DELTA_SINCE_R4_AUDIT.diff",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/DELTA_SUMMARY.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/PRIOR_FINDINGS_AS_CLAIMS.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/GATES_PRE_AUDIT.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/PROMPT_BUILD_NOTES.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/SHA256SUMS_INPUTS.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/build_audit_prompt.py"
+    ],
+    "verify": [
+      "git diff --name-only | sort   # equals the allowlist plus unrelated untracked/unstaged files already present at start",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): dopemux-route-ledger mod (R6 final audit round)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R6 (W01). The PR is #1482 and is owned by the operator: no push, sign or merge here.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Verify the subject pin and the content path set",
+      "requirements": [
+        "Stop on any mismatch."
+      ],
+      "commands": [
+        "git rev-parse HEAD",
+        "git rev-list --parents -n1 HEAD",
+        "git fetch origin main && git rev-parse origin/main",
+        "git merge-base --is-ancestor 97b6d5040496e2271c41d24c339d039303bbe6b1 HEAD",
+        "git merge-base --is-ancestor 989fe4651c050ec23619e5208da17d6152b477b0 HEAD",
+        "git diff --name-only 97b6d5040496e2271c41d24c339d039303bbe6b1 HEAD",
+        "git status --porcelain --untracked-files=no"
+      ],
+      "expected_files": [],
+      "validation": [
+        "HEAD == b275543fe1011bf3a9351a10448c24d94f205370",
+        "one parent 3d2af4b209dfc1fb703f82658a0c3a35cd804814",
+        "origin/main == 97b6d5040496e2271c41d24c339d039303bbe6b1",
+        "both ancestors present",
+        "content path set equals the seven paths"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W01-S2",
+      "task": "Run the deterministic gates into GATES_PRE_AUDIT.txt",
+      "requirements": [
+        "Literal output, no editing."
+      ],
+      "commands": [
+        "claude plugin validate plugins/dopemux-route-ledger",
+        "claude plugin test plugins/dopemux-route-ledger",
+        "tsc -p plugins/dopemux-route-ledger --noEmit",
+        "claude --version"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/GATES_PRE_AUDIT.txt"
+      ],
+      "validation": [
+        "every gate PASS/FAIL/NOT_RUN/UNKNOWN literally"
+      ],
+      "context_files": [
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Write the two diffs, the delta summary and the prior-findings claims file",
+      "requirements": [
+        "Byte-exact; each diff generated twice and cmp-equal; size and sha256 equal to the drafter-measured values."
+      ],
+      "commands": [
+        "git diff 97b6d5040496e2271c41d24c339d039303bbe6b1 b275543fe1011bf3a9351a10448c24d94f205370 -- plugins/dopemux-route-ledger/.claude-plugin/plugin.json plugins/dopemux-route-ledger/hooks/hooks.json plugins/dopemux-route-ledger/hooks/register.tsx plugins/dopemux-route-ledger/hooks/register.test.ts plugins/dopemux-route-ledger/receipt.schema.json plugins/dopemux-route-ledger/README.md docs/02-how-to/route-ledger.md",
+        "git diff 989fe4651c050ec23619e5208da17d6152b477b0 b275543fe1011bf3a9351a10448c24d94f205370 -- plugins/dopemux-route-ledger/.claude-plugin/plugin.json plugins/dopemux-route-ledger/hooks/hooks.json plugins/dopemux-route-ledger/hooks/register.tsx plugins/dopemux-route-ledger/hooks/register.test.ts plugins/dopemux-route-ledger/receipt.schema.json plugins/dopemux-route-ledger/README.md docs/02-how-to/route-ledger.md"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/FROZEN_CUMULATIVE.diff",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/FROZEN_DELTA_SINCE_R4_AUDIT.diff",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/DELTA_SUMMARY.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/PRIOR_FINDINGS_AS_CLAIMS.md"
+      ],
+      "validation": [
+        "cumulative 165525 bytes sha256 90b53907b50f690f9b551b8795251167dcdcffaaa057358b253141aad606ab71",
+        "delta 102347 bytes sha256 4ea3c97a9040bd7908d06bf51a02f24752605e9e863151b3db9c2612bed3c862",
+        "claims file free of verdict and auditor text"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/COMBINED_ADJUDICATION.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/VERIFY_NOTES.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SUCCESSOR_NOTE_CODEQL.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SUCCESSOR_NOTE_CODEX_CLEAR.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SUCCESSOR_NOTE_CODEX_LIST_BYTES.md"
+      ]
+    },
+    {
+      "id": "W01-S4",
+      "task": "Write build_audit_prompt.py, derive AUDIT_PROMPT.txt, write the notes, scan, hash",
+      "requirements": [
+        "Exact single-occurrence substitutions; size check before writing; trim nothing; exit 3 means STOP with NEEDS_SUPERVISOR."
+      ],
+      "commands": [
+        "python3 proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/build_audit_prompt.py",
+        "python3 proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/build_audit_prompt.py --check",
+        "wc -c proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/AUDIT_PROMPT.txt",
+        "shasum -a 256 proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/*"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/AUDIT_PROMPT.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/build_audit_prompt.py",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/PROMPT_BUILD_NOTES.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/SHA256SUMS_INPUTS.txt"
+      ],
+      "validation": [
+        "<= 200,000 bytes",
+        "pattern scan 0 hits",
+        "embedded sections re-compared",
+        "--check byte-equal",
+        "pre-commit on the builder exit 0"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PROMPT_BUILD_NOTES.md"
+      ]
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R6",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R6",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-desktop",
+      "model": "claude-sonnet-5-5",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/AUDIT_PROMPT.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/FROZEN_CUMULATIVE.diff",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/FROZEN_DELTA_SINCE_R4_AUDIT.diff",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/DELTA_SUMMARY.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/PRIOR_FINDINGS_AS_CLAIMS.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/GATES_PRE_AUDIT.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/PROMPT_BUILD_NOTES.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/SHA256SUMS_INPUTS.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/build_audit_prompt.py"
+  ],
+  "canonical_writers": [
+    "W01-coordinator"
+  ],
+  "semantic_scope": [
+    "route-ledger-audit-inputs"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); proof-only commits above the audited head b275543fe1011bf3a9351a10448c24d94f205370",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

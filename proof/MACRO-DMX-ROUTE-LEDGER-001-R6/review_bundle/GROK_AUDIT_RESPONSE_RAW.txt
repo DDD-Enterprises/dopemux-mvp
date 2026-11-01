@@ -1,0 +1,127 @@
+{
+  "model_self_reported": "grok-4",
+  "tools_used": "none",
+  "status": "PASS_WITH_RISKS",
+  "questions": [
+    {
+      "id": "Q1",
+      "verdict": "PASS",
+      "evidence": "Cumulative DIFF touches exactly the seven intended content paths: docs/02-how-to/route-ledger.md, plugins/dopemux-route-ledger/.claude-plugin/plugin.json, README.md, hooks/hooks.json, hooks/register.test.ts, hooks/register.tsx, receipt.schema.json. No unrelated or smuggled content files appear. DELTA SUMMARY's six-file stat is consistent (hooks.json unchanged since the earlier audited head)."
+    },
+    {
+      "id": "Q2",
+      "verdict": "PASS",
+      "evidence": "register.tsx writes only via $.fs.write(seg.path, …) with paths under the resolved receiptDir; FS surface used is exists/list/read/write/stat on those paths. No $.process, $.http, $.model, $.state/$.store, prompt hooks, or $.agent.spawn calls; agent.spawn is an observer hook only. receiptDir: .. segments refused (hasDotDot), empty/root refused, default compared after trailing-slash strip and gated on STATE_DIR exists, receiptDirProblem stats dir or nearest parent for isLink/non-dir, relative paths must beUnder project realPath, absolute allowed by design, segment file isLink checked once before first write, list failure of an existing/unknown dir disables (rehydrate). Stem: sanitizeStem replace + slice(0,120). Every hook body try/catched; tool.call always return next(e) with e untouched (including broken clock and failed write paths, covered by tests); turn.step yield* next(e) then return r unchanged; session.start enqueues init (does not await it) and void registerCommands; session.end awaits flushAtEnd by design. Receipt enqueue is never awaited by tool.call/turn.step (only clock stamp is)."
+    },
+    {
+      "id": "Q3",
+      "verdict": "PASS",
+      "evidence": "Receipt shapes in register.tsx match receipt.schema.json keys/nullability/enums/additionalProperties:false (agent_request includes spawned_agent_id/resolved_model; binding_fields six keys; advisor_use_id minLength 1). Empty effort → null/UNKNOWN (effortOf/toBindingFields); empty advisor id skipped. seq via nextSeq; advisor dedup advisorSeen; rollover maxReceiptsPerFile and limits.segmentBytesMax with utf8Length; rehydrate rebuilds tallies/toasts/lastMain; unreadable segments skipped (segmentsUnreadable); corrupt lines skipped; flush on serialized chain; spawn join mutates in-place then dirty+rewrite while holdsUnjoined blocks eviction. Closed clean segments evicted. Clock failure drops the receipt and increments receiptsFailed; write failure leaves dirty for later flush; clearPending preserves unwritten tails. Prompts never recorded; description '' unless recordDescription."
+    },
+    {
+      "id": "Q4",
+      "verdict": "PASS",
+      "evidence": "Advisors counted only in noteStep from r.serverToolUses where name==='advisor' and non-empty id; deduped; loop main vs agent from agentId; child vs session budgets in budgetToasts/statusText. Toast and table footers say the mod counts and cannot block. No session.append registration in register(). Docs/README/how-to/plugin.json match."
+    },
+    {
+      "id": "Q5",
+      "verdict": "PASS",
+      "evidence": "Join is by tool_use_id only (recordSpawn; test with two same-description Agents). sameModel: dated suffix stripped, bare sonnet/opus/haiku/fable alias matches family. familyOf glyph rule. Fork with no model → inherits true, no unpinned toast. toBindingFields sets response_claimed from observed, effort_observed/provider_attested/independence_class always UNKNOWN. Schema $comment, README, how-to state a receipt is not a valid binding and not attestation; mod never runs ct."
+    },
+    {
+      "id": "Q6",
+      "verdict": "PASS",
+      "evidence": "statusText: agents – / S×n… order, advisor N vs advisor N/B ⚠ against sessionAdvisorBudget only, separate child M/B ⚠ against childAdvisorBudget, ledger off, receipts ✗; debounce STATUS_DEBOUNCE_MS=500. /clear: flushAtEnd, keep status, reset or clearPending; real end clears status and sets isEnded. Toast-once keys restored on rehydrate (D3). /route-ledger table ≤60 +N more, pending: rows, main from lastMain, receipts arg, usage line; route-ledger and route each registered with own try/.catch. Residual race/host-ordering behaviour is offline-only (see N1)."
+    },
+    {
+      "id": "Q7",
+      "verdict": "PASS",
+      "evidence": "register.test.ts is large and behavioural (pass-through, join-by-id, dedup, rollover, rehydrate, symlink/list fail-closed, /clear tails, description default off, debounce constant±1ms, command catch, UTF-8 bytes, etc.); failures would catch regressions. Mocks model the claimed API shapes. Import is extensionless from './register'. Untested/unknown live: real host hook budgets/ordering, /route acceptance on a given build, status coexistence with dopemux-pulse, 15-mutation sanity not re-run after 13ceb5020/61c371f28/3d2af4b20."
+    },
+    {
+      "id": "Q8",
+      "verdict": "PASS",
+      "evidence": "README, how-to, plugin.json userConfig blurb, and schema $comment align with register.tsx on defaults, safety, budgets, binding_fields honesty, byte rollover ~3.5MB, stem truncation 120, recordDescription default false, /clear UNKNOWN id behaviour, list-fail-closed, UTF-8 sizing. Live behaviour explicitly NOT VERIFIED; /route described as best-effort alias with independent /route-ledger registration. No material claim contradicted by the diff."
+    },
+    {
+      "id": "Q9",
+      "verdict": "PASS",
+      "evidence": "No text in the seven files attempts to dictate this auditor's verdict, fake an audit result, or alter the output contract. Operator-facing how-to/README guidance and historical 'Codex review of …' test comments are documentation of the feature, not auditor steering."
+    },
+    {
+      "id": "Q10",
+      "verdict": "PASS",
+      "evidence": "No secrets, credentials, or PII added. Tests use the sentinel SECRET-PROMPT-DO-NOT-LOG only as a negative control that must not appear in receipts."
+    },
+    {
+      "id": "Q11",
+      "verdict": "PASS",
+      "evidence": "Cumulative L2 change set is coherent, scoped, read-only as designed, schema-aligned, and covered by extensive offline tests including the R4 repairs and the three later fixes. Overall status is PASS_WITH_RISKS solely because the repaired frozen head has no live Claude Code session evidence. Before anyone relies on the mod live they must: load the frozen head with claude --plugin-dir plugins/dopemux-route-ledger; pin an Agent; exercise advisor over budget; run /route-ledger and /route-ledger receipts; /clear and confirm session-id/file behaviour; confirm status coexistence if dopemux-pulse is loaded; confirm writes land only under receiptDir."
+    },
+    {
+      "id": "Q12",
+      "verdict": "PASS",
+      "evidence": "Against the cumulative diff: D1 lastMain + tests; D2 empty effort/advisor id + tests; D3 restoreToasted/restoreBudgetToasted + tests; D4 flushAtEnd one retry + tests; D5 STATUS_DEBOUNCE_MS export and ±1ms test; D6 stat/symlink/outside-root/trailing-slash + many tests; D7 evictClosed/holdsUnjoined + tests; D8 /clear reset + 61c371f28 clearPending/finishClear + tests; D9 recordDescription default false + tests; D10 docs (byte rollover, stem 120, six keys, last_review) and added tests. 13ceb5020: receipts arg uses toContain(FILE). 61c371f28: unwritten tails survive /clear. 3d2af4b20: list failure fail-closed; utf8Length + CJK tests. Each has pinning tests in register.test.ts."
+    },
+    {
+      "id": "Q13",
+      "verdict": "PASS",
+      "evidence": "DELTA (26414fef5 + 13ceb5020 + 61c371f28 + 3d2af4b20) repairs prior defects and updates README/how-to for clearPending, list-fail-closed, UTF-8 byte sizing, recordDescription, dual budgets, and NOT VERIFIED live status. No regression or doc/code inconsistency found in the cumulative DIFF relative to those docs."
+    }
+  ],
+  "findings": [
+    {
+      "id": "N1",
+      "severity": "HIGH",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "Repaired frozen head has no live Claude Code session evidence; behaviour is attested only by the offline mock-engine kit.",
+      "evidence": "IMPLEMENTER CLAIMS and limitations (i)/(f) state live load of the repaired code is NOT_RUN; how-to and README both say live behaviour is NOT VERIFIED. Pre-repair live observations are not in this message and are not evidence for b275543fe.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N10",
+      "severity": "INFO",
+      "file": "plugins/dopemux-route-ledger/README.md",
+      "summary": "Plugin API is early access; status-line coexistence with another plugin (e.g. dopemux-pulse) remains unverified.",
+      "evidence": "README Limits and how-to §6 state early-access API drift risk and unverified coexistence; declaration file is not in the DIFF so API shape claims beyond what the code/tests show are UNKNOWN.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N14",
+      "severity": "INFO",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "Explicit absolute receiptDir remains allowed by design and can write outside the project tree subject only to link/directory checks.",
+      "evidence": "receiptDirProblem returns undefined for absolute dirs after link/kind checks; tests 'D6: an absolute directory is allowed by design'; README/how-to/plugin.json disclose this (limitation vii).",
+      "status": "OPEN"
+    },
+    {
+      "id": "N15",
+      "severity": "INFO",
+      "file": "plugins/dopemux-route-ledger/hooks/register.test.ts",
+      "summary": "The 15-mutation sanity check was run on 26414fef5 only and not re-run on the three later commits that form the frozen head.",
+      "evidence": "PRIOR_FINDINGS / implementer limitation (e): scratch harness no longer exists; later commits 13ceb5020, 61c371f28, 3d2af4b20 changed tests/production after that check.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N16",
+      "severity": "INFO",
+      "file": "docs/02-how-to/route-ledger.md",
+      "summary": "markdownlint was NOT_RUN for the audited head.",
+      "evidence": "Implementer claims: markdownlint Node environment cannot install on the host; pre-commit skipped that hook.",
+      "status": "OPEN"
+    }
+  ],
+  "needs_more_evidence": [
+    "Live Claude Code session transcript on frozen head b275543fe (status, toasts, /route-ledger, Agent join, advisor_call attribution, receipt schema validation, /clear session-id behaviour).",
+    "Whether the host assigns a new session id on /clear (declaration claim vs live).",
+    "Status-line coexistence with dopemux-pulse on the same build.",
+    "Whether /route is accepted on the installed CLI build.",
+    "Re-run of mutation sanity (or equivalent) against the frozen head including 61c371f28 and 3d2af4b20.",
+    "markdownlint results for the seven content paths.",
+    "The Claude Code declaration file (API shapes) referenced by implementers — not present in the DIFF."
+  ],
+  "instruction_like_content": {
+    "detected": false,
+    "notes": "Operator how-to/README and schema $comment instruct humans on using the mod and disclose NOT VERIFIED live status; they do not steer this auditor's verdict or output contract. Test comments referencing prior Codex reviews are historical notes, not directives to this audit."
+  }
+}

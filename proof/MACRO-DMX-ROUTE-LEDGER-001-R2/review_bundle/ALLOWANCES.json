@@ -1,0 +1,71 @@
+{
+  "status": "PROPOSED",
+  "applies_to": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+  "basis": "ESTIMATES. No recorded per-child active time or token totals exist for a comparable macro (Pulse recorded neither; its commits span 2026-10-21 14:10 to 22:18 PDT with operator waits and a session restart between, so elapsed is not calibratable). Sized from deliverable scope: W01 is a streaming hook plus fs rewrite plus schema plus tests; W02 extends it in place; W03 is a short doc. Treat every number as a cap to be revised after the first measured run, by an amended revision.",
+  "units": {
+    "time": "minutes",
+    "tokens": "Agent-result totalTokens, counting basis UNKNOWN",
+    "tool_calls": "Agent-result totalToolUseCount"
+  },
+  "per_workstream": {
+    "W01": {
+      "max_active_min": 45,
+      "max_elapsed_min": 75,
+      "max_dispatches": 2,
+      "max_automatic_retries": 0,
+      "max_child_tool_calls": 150,
+      "max_child_total_tokens": 3000000,
+      "max_coordinator_rereads": 2
+    },
+    "W02": {
+      "max_active_min": 30,
+      "max_elapsed_min": 50,
+      "max_dispatches": 2,
+      "max_automatic_retries": 0,
+      "max_child_tool_calls": 100,
+      "max_child_total_tokens": 1500000,
+      "max_coordinator_rereads": 2
+    },
+    "W03": {
+      "max_active_min": 10,
+      "max_elapsed_min": 25,
+      "max_dispatches": 2,
+      "max_automatic_retries": 0,
+      "max_child_tool_calls": 40,
+      "max_child_total_tokens": 400000,
+      "max_coordinator_rereads": 2
+    }
+  },
+  "macro": {
+    "max_active_min": 85,
+    "max_elapsed_min": 240,
+    "max_child_dispatches": 6,
+    "max_automatic_retries": 0,
+    "max_child_tool_calls": 290,
+    "max_child_total_tokens": 4900000,
+    "max_intermediate_model_audits": 0,
+    "max_final_independent_audits": 1,
+    "max_post_freeze_repair_rounds": 0,
+    "max_child_advisor_calls": 0,
+    "max_coordinator_advisor_calls": 1
+  },
+  "review_rounds": {
+    "coordinator_diff_rereads_per_workstream": 2,
+    "intermediate_model_audits": 0,
+    "final_independent_audits": 1,
+    "post_freeze_repair_rounds_without_operator": 0
+  },
+  "recordable_measures": {
+    "elapsed": "coordinator wall clock at dispatch and at return",
+    "active": "Agent result totalDurationMs",
+    "tool_calls": "Agent result totalToolUseCount",
+    "tokens": "Agent result totalTokens (basis UNKNOWN)",
+    "advisor_calls": "structural count of advisor tool_use/server_tool_use blocks in the child's transcript",
+    "not_recordable": [
+      "coordinator's own tokens and active time (UNKNOWN, not budgeted)"
+    ]
+  },
+  "on_limit": "When ANY limit is reached or about to be exceeded: stop the running child at the next safe point (TaskStop; never mid-commit), dispatch nothing further, retry nothing, substitute nothing, leave the child's edits uncommitted, and report status NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+  "enforcement": "Coordinator discipline only. Neither macro_packet.v2 nor execution_binding.v2 has a field for allowances and `ct validate-macro` does not check them (UNKNOWN whether any other tool does). The numbers are pinned through each child's I09 invariant and the macro's global_stop_conditions text, and ALLOWANCES.json is pinned by sha256 in the macro's base_policy.",
+  "closure": "At close the coordinator writes ALLOWANCE_LEDGER.json (measured vs cap, per child and macro) into the flat review_bundle; no value is invented."
+}

@@ -1,0 +1,14 @@
+Commits touching the seven content paths since the earlier audited head (git log --oneline 989fe4651..b275543fe -- <the content paths>):
+3d2af4b20 fix(route-ledger): fail closed when the receipt directory cannot be listed; count segment size in UTF-8 bytes
+61c371f28 fix(route-ledger): keep unwritten receipts across /clear until they are on disk
+13ceb5020 fix(route-ledger): match the receipt file name literally in its test (CodeQL js/incomplete-sanitization)
+26414fef5 fix(route-ledger): repair the ten R4 audit findings
+
+Diffstat (git diff --stat 989fe4651 b275543fe -- <the content paths>):
+ docs/02-how-to/route-ledger.md                     |  72 +-
+ .../.claude-plugin/plugin.json                     |  10 +-
+ plugins/dopemux-route-ledger/README.md             |  23 +-
+ .../dopemux-route-ledger/hooks/register.test.ts    | 940 ++++++++++++++++++++-
+ plugins/dopemux-route-ledger/hooks/register.tsx    | 441 ++++++++--
+ plugins/dopemux-route-ledger/receipt.schema.json   |   2 +-
+ 6 files changed, 1369 insertions(+), 119 deletions(-)
