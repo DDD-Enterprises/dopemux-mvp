@@ -67,3 +67,21 @@ NOT_RUN: its Node environment cannot install on this host; CI covers it.
 
 ### validate_change_contract.py --proof-only closure
 Run against the proof head after this commit exists (the head cannot name itself); the result is recorded in the follow-up commit, as in R4.
+
+### validate_change_contract.py --proof-only --base b275543fe1011bf3a9351a10448c24d94f205370 --head 767e0c2b2aec0b07e1f98378889dcaa5948f4a29 --content-head b275543fe1011bf3a9351a10448c24d94f205370 --audited-head b275543fe1011bf3a9351a10448c24d94f205370 --proof-head 767e0c2b2aec0b07e1f98378889dcaa5948f4a29 --format json (run 2026-11-01T02:31:09Z)
+status FAIL | proof_only False | max_lane L0 | paths 58
+finding: proof_only_escaped_path | error | proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/build_audit_prompt.py
+RESULT: FAIL. The proof-only closure does NOT hold at this head: the committed prompt builder (a .py file) is outside the proof-only path allowlist.
+  Rule: scripts/governance/validate_change_contract.py _PROOF_ARTIFACT allows only review_bundle/<name>.(txt|json|md|diff); W01's packet ordered the builder committed as review_bundle/build_audit_prompt.py.
+  Moving it is outside this workstream's write surface (W04), so it was NOT changed. Clearing action: a proof-only commit that renames build_audit_prompt.py to a .txt name (e.g. build_audit_prompt.py.txt; the builder resolves its bundle from __file__ and is run as 'python3 <path>'), with the references in PROMPT_BUILD_NOTES.md / SHA256SUMS_INPUTS.txt updated, under an amended packet and the supervisor's say.
+
+### the same check on a hypothetical, unreferenced commit 17607ede0ddbf509a728937d8760baa5a693a99f (this proof head with the builder renamed to build_audit_prompt.py.txt; never checked out, no ref points to it)
+status FAIL | proof_only True | max_lane L0 | paths 58
+finding: proof_only_missing_signature | error | proof/MACRO-DMX-ROUTE-LEDGER-001-R6/PROOF.json
+RESULT: with the rename, only proof_only_missing_signature remains (PROOF.json.sig is the operator's signing step).
+
+### git diff --check b275543fe1011bf3a9351a10448c24d94f205370..767e0c2b2aec0b07e1f98378889dcaa5948f4a29
+  FROZEN_DELTA_SINCE_R4_AUDIT.diff: 56 x trailing whitespace.
+  GATES_PRE_AUDIT.txt: 1 x trailing whitespace.
+exit=2 (57 trailing-whitespace hits, all inside byte-exact artifacts that are not edited: 56 context lines of FROZEN_DELTA_SINCE_R4_AUDIT.diff, which is a git diff of the audited files, and 1 line of literal tool output in GATES_PRE_AUDIT.txt; none is in a content file; the same kind of hit occurred in R4)
+delta b275543fe1011bf3a9351a10448c24d94f205370..767e0c2b2aec0b07e1f98378889dcaa5948f4a29:       58 paths, 0 outside proof/
