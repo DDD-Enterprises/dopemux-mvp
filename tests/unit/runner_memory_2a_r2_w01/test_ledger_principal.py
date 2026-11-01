@@ -201,11 +201,14 @@ def test_should_let_capture_client_write_to_a_migrated_ledger(tmp_path, monkeypa
     try:
         assert set(COLUMNS) <= _columns(conn, "raw_activity_events")
         row = conn.execute(
-            "SELECT write_principal FROM raw_activity_events WHERE id = ?", (result.event_id,)
+            "SELECT write_principal, write_principal_self_asserted"
+            " FROM raw_activity_events WHERE id = ?",
+            (result.event_id,),
         ).fetchone()
     finally:
         conn.close()
-    assert row[0] == "unverified"
+    # W06: the capture client records its self-asserted principal.
+    assert tuple(row) == ("internal:cli", 1)
 
 
 # --- store API -------------------------------------------------------------------
