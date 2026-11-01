@@ -85,3 +85,10 @@ RESULT: with the rename, only proof_only_missing_signature remains (PROOF.json.s
   GATES_PRE_AUDIT.txt: 1 x trailing whitespace.
 exit=2 (57 trailing-whitespace hits, all inside byte-exact artifacts that are not edited: 56 context lines of FROZEN_DELTA_SINCE_R4_AUDIT.diff, which is a git diff of the audited files, and 1 line of literal tool output in GATES_PRE_AUDIT.txt; none is in a content file; the same kind of hit occurred in R4)
 delta b275543fe1011bf3a9351a10448c24d94f205370..767e0c2b2aec0b07e1f98378889dcaa5948f4a29:       58 paths, 0 outside proof/
+
+### validate_change_contract.py --proof-only --base b275543fe1011bf3a9351a10448c24d94f205370 --head 0626a8918e8650d893b13bfdb81910ab84dde8b0 --content-head b275543fe1011bf3a9351a10448c24d94f205370 --audited-head b275543fe1011bf3a9351a10448c24d94f205370 --proof-head 0626a8918e8650d893b13bfdb81910ab84dde8b0 --format json (run 2026-11-01T03:10:49Z, after the operator-approved rename of the builder to build_audit_prompt.py.txt)
+status FAIL | proof_only True | max_lane L0 | paths 58
+finding: proof_only_missing_signature | error | proof/MACRO-DMX-ROUTE-LEDGER-001-R6/PROOF.json
+delta b275543fe1011bf3a9351a10448c24d94f205370..0626a8918e8650d893b13bfdb81910ab84dde8b0: 58 paths, 0 outside proof/
+RESULT: only proof_only_missing_signature remains (PROOF.json.sig is the operator's signing step). The earlier FAIL (proof_only_escaped_path on the .py builder) recorded above is superseded by this run; it is kept as it was.
+validate_audit_proof.py after the rename: PASS (1/1).
