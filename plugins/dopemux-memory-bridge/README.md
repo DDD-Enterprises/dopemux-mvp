@@ -25,10 +25,16 @@ holds a `.git` or a `.dopemux` (the same upward walk as
 the main checkout). The file key is the session id when it has only letters, digits,
 `_` and `-` (at most 80 characters, which covers Claude Code's ids); any other id gets
 a sanitized prefix, `~` and a 16-hex hash of the whole id, so two sessions never share
-a file. The mod writes only when `<repo-root>/.dopemux` **already exists** (this repo
-ignores it: `.gitignore:140` and `:299`; other repos are unchecked) and never creates
-`.dopemux`. Without it, rows stay in memory plus the plugin's `$.store`, and the status
-line says `📮 memory-only`.
+a file. The outbox writer writes only when `<repo-root>/.dopemux` **already exists**
+(this repo ignores it: `.gitignore:140` and `:299`; other repos are unchecked) and
+never creates `.dopemux` itself. Without it, rows stay in memory plus the plugin's
+`$.store`, which Claude Code keeps as a JSON file in your Claude Code config
+directory across sessions (the newest 3 sessions, at most 256 KiB each), and the
+status line says `📮 memory-only`: no outbox file, not "nothing on disk". The
+ledger replay below still runs, and in a dopemux-mvp checkout or worktree it
+creates `<repo-root>/.dopemux/` for the ledger when the default ledger path is
+used (`capture_client.py` makes the ledger's parent directory). The writer checks
+for `.dopemux` on every write, so from then on rows go to the outbox file.
 
 A row holds derived fields only, never a raw prompt, tool output or answer:
 
@@ -86,8 +92,9 @@ manual.memory_store { event_type, payload: { category: "implementation",
                       entry_type: "manual_note", summary }, ts_utc, session_id, event_id }
 ```
 
-`event_id` is the row id, so a resend is a no-op in the ledger (`INSERT OR
-IGNORE`). Those two types are the only ones ever emitted. The rules:
+`event_id` is the row id, and the ledger stores it as the `id` primary key of
+`raw_activity_events`, so a resend is a no-op (`INSERT OR IGNORE`). Those two
+types are the only ones ever emitted. The rules:
 
 - **One minute, three rows.** A timer ticks every 60 s, and only while a row is
   waiting; each tick sends at most 3 rows, one at a time (a call costs about
@@ -229,8 +236,8 @@ until a todo is completed or a note queued); set
 To see the replay, use a dopemux-mvp checkout or worktree with `dopemux` on
 `PATH`, complete a todo (TodoWrite) or run `/bridge-note hello`, and wait about a
 minute: the row's `state` in the outbox file turns `sent`, and
-`sqlite3 .dopemux/chronicle.sqlite "select event_type, event_id from
+`sqlite3 .dopemux/chronicle.sqlite "select event_type, id from
 raw_activity_events order by created_at_utc desc limit 3"` shows the event with
-the row's `id`. That writes the real ledger. If the row stays `pending` and the
+the row's `id` (the table has no `event_id` column). That writes the real ledger. If the row stays `pending` and the
 status line says `ledger unavailable`, `$.process` is probably unavailable on
 your surface (on the desktop app this is UNKNOWN until you try).

@@ -39,9 +39,13 @@ appends one JSON row to:
 `<repo-root>` is the nearest ancestor holding `.git` or `.dopemux`. The file key is the
 session id if it has only letters, digits, `_` and `-` (max 80 characters); other ids get
 a sanitized prefix, `~` and a 16-hex hash of the whole id, so sessions never share a file.
-The mod writes only when `<repo-root>/.dopemux` **already exists** and never creates it. This
-repo ignores `.dopemux/` (`.gitignore` lines 140 and 299); other repos are unchecked.
-Without the directory, rows stay in memory and the status line shows `📮 memory-only`.
+The outbox writer writes only when `<repo-root>/.dopemux` **already exists** and never creates
+it. This repo ignores `.dopemux/` (`.gitignore` lines 140 and 299); other repos are unchecked.
+Without the directory, rows stay in memory and in the plugin's `$.store`, a JSON file that
+Claude Code keeps in your Claude Code config directory across sessions (the newest 3 sessions,
+at most 256 KiB each); the status line shows `📮 memory-only`, which means "no outbox file",
+not "nothing on disk". The replay (section 5) can still create `.dopemux/`; from the next
+write on, rows go to the outbox file.
 
 Rows hold derived fields only: a goal (160 characters), up to 30 relative file paths, up to 3
 decisions and up to 10 completed todo titles. Raw prompts, tool output and answers are not
@@ -55,7 +59,7 @@ first, then `dead`, then `pending`, and each drop shows as `+N dropped`.
 | `📮 N pending` | N `task` or `note` rows this session will deliver: its own, and relayed ones (section 5) |
 | `📮 N pending (ledger unavailable)` | the last replay call did not succeed |
 | `📮 clear` | nothing waits for the ledger |
-| `📮 memory-only` | `.dopemux` is absent; rows live in memory only |
+| `📮 memory-only` | `.dopemux` is absent; rows live in memory and the plugin's `$.store` file (section 2), not in an outbox file |
 | `⚠ outbox write failed` | a write failed or hung past 3 s; rows are kept and retried |
 | `⚠ N undeliverable` | N rows hit five failed attempts and will not be retried |
 
@@ -86,7 +90,11 @@ Pulse focus block. Which is outer is UNKNOWN; accepted as a limit.
 A completed todo and each `/bridge-note` are replayed by running
 `dopemux capture emit --event <json> --mode plugin --repo-root <repo-root>`.
 Only `task.completed` and `manual.memory_store` events are sent; the row id is the
-`event_id`, so a resend does not duplicate. Rows land in `<repo-root>/.dopemux/chronicle.sqlite`, table `raw_activity_events`.
+`event_id`, which the ledger stores in the `id` primary key, so a resend does not duplicate.
+Rows land in `<repo-root>/.dopemux/chronicle.sqlite`, table `raw_activity_events`. The replay
+runs whether or not `.dopemux` exists: in a dopemux-mvp checkout or worktree with the default
+ledger path, `dopemux capture emit` creates `<repo-root>/.dopemux/` for the ledger file. In any
+other repo it fails before that, so nothing is created there.
 
 - A timer runs once a minute, only while a row waits, and sends at most three rows.
 - A row becomes `sent` only after exit 0. Any other result leaves it `pending`
@@ -117,6 +125,10 @@ not stored. With no text it prints usage and writes nothing.
 - Stored strings are redacted first: API-key shapes, JWTs, `Bearer` values, URL
   userinfo, emails, `KEY=value` secrets, PEM blocks, and home-directory prefixes.
   Redaction is best effort, not a guarantee.
+- Where rows rest on disk: the outbox file under `.dopemux/memory-bridge/`, or, without
+  `.dopemux`, the plugin's `$.store` JSON file in your Claude Code config directory (newest
+  3 sessions); after a replay, also `.dopemux/chronicle.sqlite`. Leaving out `.dopemux` does
+  not keep notes and goals off disk.
 - No network call. The only subprocesses are `git status --porcelain` and the
   `dopemux capture emit` replay. No ConPort, dope-memory or ADHD-engine access.
 
@@ -129,7 +141,8 @@ unavailable. The outbox and status line do not need `$.process`.
 
 ## 9. Troubleshooting
 
-- `📮 memory-only`: create `.dopemux/` yourself in the repo root.
+- `📮 memory-only`: create `.dopemux/` yourself in the repo root (in a dopemux-mvp checkout
+  the first successful replay also creates it).
 - `ledger unavailable` with rows `pending`: check `dopemux` is on `PATH` and
   `dopemux capture emit --help` exits 0.
 - `⚠ outbox write failed`: the next append retries; rows stay in memory meanwhile.
