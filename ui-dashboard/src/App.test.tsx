@@ -31,6 +31,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -352,4 +353,112 @@ test('a later good state_update clears a socket error banner', async () => {
   // The alert sits in a Collapse, so it leaves the DOM after its exit transition.
   await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   expect(screen.getByText('55%')).toBeInTheDocument();
+});
+
+const sendStateUpdate = async (data: Record<string, unknown>) =>
+  act(async () => {
+    FakeSocket.instances[0].onmessage?.({ data: JSON.stringify({ type: 'state_update', data }) });
+  });
+
+const forecastGet = (predicted: number) => ({
+  ok: true,
+  json: async () => ({ ...livePayload(0.4), cognitive_load: { cognitive_load: 0.4, predicted_load_15min: predicted } }),
+});
+
+test('a state_update without a forecast keeps a GET forecast that is under 15 minutes old', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-31T10:00:00Z'));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
+  await renderApp();
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('50%');
+
+  vi.setSystemTime(new Date('2026-10-31T10:14:59Z'));
+  await sendStateUpdate({ cognitive_load: 0.45 });
+
+  expect(screen.getByText('45%')).toBeInTheDocument();
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('50%');
+});
+
+test('a carried forecast is not refreshed by later snapshots: it expires 15 minutes after it arrived', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-31T10:00:00Z'));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
+  await renderApp();
+
+  vi.setSystemTime(new Date('2026-10-31T10:10:00Z'));
+  await sendStateUpdate({ cognitive_load: 0.45 });
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('50%');
+
+  vi.setSystemTime(new Date('2026-10-31T10:15:00Z'));
+  await sendStateUpdate({ cognitive_load: 0.46 });
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+});
+
+test('a state_update after 15 minutes drops the old forecast to unknown', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-31T10:00:00Z'));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
+  await renderApp();
+
+  vi.setSystemTime(new Date('2026-10-31T10:16:00Z'));
+  await sendStateUpdate({ cognitive_load: 0.45 });
+
+  expect(screen.getByText('45%')).toBeInTheDocument();
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+});
+
+test('a state_update that carries a forecast replaces the previous one', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
+  await renderApp();
+
+  await sendStateUpdate({ cognitive_load: 0.45, predicted_load_15min: 0.7 });
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('70%');
+
+  // An invalid forecast is unknown, not the previous value.
+  await sendStateUpdate({ cognitive_load: 0.45, predicted_load_15min: 7 });
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+});
+
+const upstreamGet = (overrides: Record<string, unknown> = {}) => ({
+  ok: true,
+  json: async () => ({
+    health: { status: 'ok' },
+    energy: { error: 'engine down' },
+    attention: { attention_state: 'focused' },
+    cognitive_load: { cognitive_load: 0.4 },
+    task_recommendations: { error: 'recommender down' },
+    ...overrides,
+  }),
+});
+
+test('a snapshot that covers only some failed GET sections keeps a warning naming the rest', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(upstreamGet()));
+  await renderApp();
+  expect(screen.getByRole('alert')).toHaveTextContent('upstream errors for energy, recommendation.');
+
+  await sendStateUpdate({ cognitive_load: 0.45, energy_level: 'medium' });
+
+  const alert = screen.getByRole('alert');
+  expect(alert).toHaveTextContent('Failed: GET http://localhost:8097/api/adhd-state returned upstream errors for recommendation.');
+  expect(alert).not.toHaveTextContent('energy');
+  expect(screen.getByTestId('energy-value')).toHaveTextContent('medium');
+});
+
+test('a snapshot that covers every failed GET section clears the warning', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(upstreamGet()));
+  await renderApp();
+
+  await sendStateUpdate({ cognitive_load: 0.45, energy_level: 'medium', recommendation: 'Take a break.' });
+
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
+
+test('a GET transport failure is cleared by any valid snapshot', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }));
+  await renderApp();
+  expect(screen.getByRole('alert')).toHaveTextContent('returned HTTP 500.');
+
+  await sendStateUpdate({ cognitive_load: 0.4 });
+
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });

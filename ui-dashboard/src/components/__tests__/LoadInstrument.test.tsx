@@ -96,6 +96,37 @@ test('keeps whole percents on the exact zone edges, in the band deriveStatus giv
   expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '30');
 });
 
+test('draws the needle fully inside the band deriveStatus gives an exact zone edge', () => {
+  const { rerender } = render(<LoadInstrument load={0.6} prediction={null} recommendation={null} />);
+  expect(screen.getByTestId('load-needle')).toHaveStyle({ left: '60%', transform: 'translateX(-100%)' });
+
+  rerender(<LoadInstrument load={0.8} prediction={null} recommendation={null} />);
+  expect(screen.getByTestId('load-needle')).toHaveStyle({ left: '80%', transform: 'translateX(-100%)' });
+
+  rerender(<LoadInstrument load={0.3} prediction={null} recommendation={null} />);
+  expect(screen.getByTestId('load-needle')).toHaveStyle({ left: '30%', transform: 'translateX(0)' });
+
+  rerender(<LoadInstrument load={0.45} prediction={null} recommendation={null} />);
+  expect(screen.getByTestId('load-needle')).toHaveStyle({ left: '45%', transform: 'translateX(-50%)' });
+});
+
+test('draws the forecast marker fully inside the band deriveStatus gives an exact zone edge', () => {
+  const { rerender } = render(<LoadInstrument load={0.5} prediction={0.6} recommendation={null} />);
+  expect(screen.getByTestId('forecast-marker')).toHaveStyle({ left: '60%', transform: 'translateX(-100%)' });
+
+  rerender(<LoadInstrument load={0.5} prediction={0.8} recommendation={null} />);
+  expect(screen.getByTestId('forecast-marker')).toHaveStyle({ left: '80%', transform: 'translateX(-100%)' });
+
+  rerender(<LoadInstrument load={0.5} prediction={0.3} recommendation={null} />);
+  // 30 belongs to the upper zone and the marker's border already starts at the edge: unchanged.
+  expect(screen.getByTestId('forecast-marker')).toHaveStyle({ left: '30%' });
+  expect(screen.getByTestId('forecast-marker')).not.toHaveStyle({ transform: 'translateX(-100%)' });
+
+  rerender(<LoadInstrument load={0.5} prediction={0.45} recommendation={null} />);
+  expect(screen.getByTestId('forecast-marker')).toHaveStyle({ left: '45%' });
+  expect(screen.getByTestId('forecast-marker')).not.toHaveStyle({ transform: 'translateX(-100%)' });
+});
+
 test('applies the same edge-safe rounding to the forecast and its delta', () => {
   render(<LoadInstrument load={0.62} prediction={0.8001} recommendation={null} />);
 

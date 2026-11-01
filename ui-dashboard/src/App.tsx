@@ -17,11 +17,13 @@ import { alpha } from '@mui/material/styles';
 import { AlertTriangle } from 'lucide-react';
 
 import {
+  carryForecast,
   CognitiveReading,
   EMPTY_READING,
   isMessageObject,
   mapAggregateState,
   mapRealtimeState,
+  remainingUpstreamSections,
   upstreamErrorSections,
 } from './cognitiveReading';
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
@@ -38,10 +40,15 @@ type SocketState = 'connecting' | 'open' | 'closed';
 type ConnectionStatus = 'connecting' | 'live' | 'degraded';
 // Where an error banner came from: only socket errors are cleared by a later good state_update.
 type ErrorBanner = { source: 'socket' | 'task'; message: string };
+// `upstreamSections` is set only for a GET that answered 200 with failed sections; transport failures leave it null.
+type HttpError = { message: string; upstreamSections: string[] | null };
 
 const STATE_ENDPOINT = `${dashboardApiUrl}/api/adhd-state`;
 const SOCKET_ENDPOINT = `${dashboardWsUrl}/ws/state`;
 const MAX_SIGNALS = 5;
+
+const upstreamErrorMessage = (sections: string[]) =>
+  `Failed: GET ${STATE_ENDPOINT} returned upstream errors for ${sections.join(', ')}.`;
 
 // Brand: cyan = live, yellow = degraded or waiting. Red is reserved for failed/blocked.
 const CONNECTION_META: Record<ConnectionStatus, { label: string; color: string }> = {
@@ -78,7 +85,7 @@ function DashboardApp() {
   const [reading, setReading] = useState<CognitiveReading>(EMPTY_READING);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
-  const [httpError, setHttpError] = useState<string | null>(null);
+  const [httpError, setHttpError] = useState<HttpError | null>(null);
   const [socketState, setSocketState] = useState<SocketState>('connecting');
   const [errorBanner, setErrorBanner] = useState<ErrorBanner | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
@@ -87,6 +94,9 @@ function DashboardApp() {
   const sipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Once a live state_update lands, it is newer than any GET still in flight.
   const liveReadingSeenRef = useRef(false);
+  // Latest reading, and when its forecast arrived (null = none), for the state_update merge.
+  const readingRef = useRef<CognitiveReading>(EMPTY_READING);
+  const forecastReceivedAtRef = useRef<number | null>(null);
 
   const handleRetry = useCallback(() => {
     liveReadingSeenRef.current = false;
@@ -117,7 +127,13 @@ function DashboardApp() {
   const handleClearNotifications = useCallback(() => setNotifications([]), []);
 
   // "Show all" lasts one critical episode: any non-critical reading re-arms the collapse.
-  const applyReading = useCallback((next: CognitiveReading) => {
+  const applyReading = useCallback((next: CognitiveReading, forecastCarried = false) => {
+    if (next.prediction === null) {
+      forecastReceivedAtRef.current = null;
+    } else if (!forecastCarried) {
+      forecastReceivedAtRef.current = Date.now();
+    }
+    readingRef.current = next;
     setReading(next);
     setLastUpdated(new Date());
     if (next.load === null || deriveStatus(next.load) !== 'critical') {
@@ -140,9 +156,9 @@ function DashboardApp() {
     // Once a live state_update has landed, this GET is obsolete: neither its reading
     // nor its failure may replace what the socket already delivered.
     const isCurrent = () => isMounted && !liveReadingSeenRef.current;
-    const fail = (message: string) => {
+    const fail = (message: string, upstreamSections: string[] | null = null) => {
       if (isCurrent()) {
-        setHttpError(message);
+        setHttpError({ message, upstreamSections });
       }
     };
 
@@ -176,7 +192,7 @@ function DashboardApp() {
         // HTTP 200 does not mean every upstream call worked: keep the partial reading, say what is missing.
         const failed = upstreamErrorSections(payload);
         if (failed.length > 0) {
-          fail(`Failed: GET ${STATE_ENDPOINT} returned upstream errors for ${failed.join(', ')}.`);
+          fail(upstreamErrorMessage(failed), failed);
         }
       }
     }
@@ -208,13 +224,30 @@ function DashboardApp() {
         return;
       }
 
-      // A state_update is a full snapshot: fields it omits become unknown, not stale.
-      // It also supersedes an earlier failed GET, so that failure stops being shown.
-      const nextReading = mapRealtimeState(message);
-      if (nextReading) {
+      // A state_update is a full snapshot: fields it omits become unknown, not stale, except
+      // the forecast (never sent live), which carries over until it is 15 minutes old.
+      // It supersedes an earlier GET failure: a transport one fully, an upstream-section one
+      // only for the sections the snapshot now supplies.
+      const snapshot = mapRealtimeState(message);
+      if (snapshot) {
+        const nextReading = carryForecast(
+          snapshot,
+          message,
+          readingRef.current,
+          forecastReceivedAtRef.current,
+          Date.now()
+        );
         liveReadingSeenRef.current = true;
-        applyReading(nextReading);
-        setHttpError(null);
+        applyReading(nextReading, nextReading.prediction !== snapshot.prediction);
+        setHttpError((current) => {
+          if (current?.upstreamSections == null) {
+            return null;
+          }
+          const remaining = remainingUpstreamSections(current.upstreamSections, nextReading);
+          return remaining.length === 0
+            ? null
+            : { message: upstreamErrorMessage(remaining), upstreamSections: remaining };
+        });
         // A good snapshot ends a socket problem, but not a clipboard or board failure.
         setErrorBanner((current) => (current?.source === 'socket' ? null : current));
         return;
@@ -386,7 +419,7 @@ function DashboardApp() {
           >
             {httpError && (
               <Typography sx={{ ...monoSx, fontSize: '0.875rem', fontWeight: 600, color: brandTokens.colors.giltEdge }}>
-                {httpError}
+                {httpError.message}
               </Typography>
             )}
             {socketState === 'closed' && (

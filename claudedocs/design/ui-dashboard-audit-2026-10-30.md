@@ -120,9 +120,13 @@ builds expose), then the plain build. Space Grotesk, Inter and JetBrains Mono ar
 `services/adhd_engine/core/engine.py:2031-2047` publishes `state_update` with
 `energy_level`, `attention_state`, `cognitive_load` and `recommendation`, but never
 `predicted_load_15min`. Only `GET /api/adhd-state` carries a forecast. The cockpit treats
-each `state_update` as a full snapshot, so the forecast reads `unknown` after the first
-live update. That reflects the backend, not a display bug. **TODO:** add the forecast to the
-engine's `state_update` payload if a live forecast is wanted.
+each `state_update` as a full snapshot, except that a snapshot without
+`predicted_load_15min` keeps the forecast received from `GET` while it is under 15 minutes
+old (it is a 15-minute forecast), then shows `unknown`; a snapshot that includes the key
+always wins. A valid snapshot also clears a `GET` failure, except that an "upstream errors
+for ..." warning stays for any section the snapshot does not supply (energy, attention,
+load, recommendation). **TODO:** add the forecast to the engine's `state_update` payload if
+a live forecast is wanted.
 
 ## Scope of this change vs follow-up
 

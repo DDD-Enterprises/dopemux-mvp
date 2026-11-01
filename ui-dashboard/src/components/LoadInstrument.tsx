@@ -12,13 +12,26 @@ interface LoadInstrumentProps {
   recommendation: string | null;
 }
 
-// Zone widths mirror deriveStatus: <30 low, 30-60 optimal, 60-80 high, >80 critical.
+// Zone widths mirror deriveStatus: <30 low, [30,60] optimal, (60,80] high, >80 critical.
+// Each edge belongs to the zone deriveStatus gives it: 30 to the upper zone, 60 and 80 to the lower.
 const ZONES = [
   { status: 'low', label: 'GLIDE', width: 30 },
   { status: 'optimal', label: 'FLOW', width: 30 },
   { status: 'high', label: 'PRESSURE', width: 20 },
   { status: 'critical', label: 'BREAK', width: 20 },
 ] as const;
+
+// Right-hand edge of each zone, in percent: 30, 60, 80, 100.
+const ZONE_ENDS = ZONES.map((_, i) => ZONES.slice(0, i + 1).reduce((sum, zone) => sum + zone.width, 0));
+
+// A marker exactly on an inner zone edge is drawn wholly inside the zone its value's band owns, not
+// centred on the edge: 'left' of it for the lower zone, 'right' of it for the upper. null = off an edge.
+const edgeSide = (percent: number, band: LoadStatus): 'left' | 'right' | null => {
+  const edge = ZONE_ENDS.indexOf(percent);
+  if (edge < 0 || edge === ZONES.length - 1) return null;
+  const zone = ZONES.findIndex((z) => z.status === band);
+  return zone === edge ? 'left' : zone === edge + 1 ? 'right' : null;
+};
 
 const STATE_HINTS: Record<LoadStatus, string> = {
   low: 'Low load. Good time for a hard task.',
@@ -54,6 +67,9 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
   const stateColor = status ? statusStyles[status].color : brandTokens.status.unknown;
   const loadPercent = load === null ? null : toPercent(load);
   const forecastPercent = prediction === null ? null : toPercent(prediction);
+  const needleSide = loadPercent !== null && load !== null ? edgeSide(loadPercent, deriveStatus(load)) : null;
+  const forecastSide =
+    forecastPercent !== null && prediction !== null ? edgeSide(forecastPercent, deriveStatus(prediction)) : null;
   const forecastDelta =
     loadPercent !== null && forecastPercent !== null
       ? Math.round((forecastPercent - loadPercent) * 10) / 10
@@ -153,10 +169,12 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
           {status && forecastPercent !== null && (
             <Box
               aria-hidden="true"
+              data-testid="forecast-marker"
               sx={{
                 position: 'absolute',
                 top: 10,
                 left: `${forecastPercent}%`,
+                ...(forecastSide === 'left' && { transform: 'translateX(-100%)' }),
                 height: 26,
                 borderLeft: `2px dashed ${brandTokens.text.secondary}`,
                 transition: 'left 0.6s ease',
@@ -166,11 +184,12 @@ const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recom
           {status && loadPercent !== null && (
             <Box
               aria-hidden="true"
+              data-testid="load-needle"
               sx={{
                 position: 'absolute',
                 top: 0,
                 left: `${loadPercent}%`,
-                transform: 'translateX(-50%)',
+                transform: needleSide === 'left' ? 'translateX(-100%)' : needleSide === 'right' ? 'translateX(0)' : 'translateX(-50%)',
                 width: 4,
                 height: 44,
                 borderRadius: '2px',

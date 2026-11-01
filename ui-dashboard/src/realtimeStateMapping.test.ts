@@ -1,6 +1,14 @@
 import { expect, test } from 'vitest';
 
-import { mapAggregateState, mapRealtimeState, upstreamErrorSections } from './cognitiveReading';
+import {
+  carryForecast,
+  EMPTY_READING,
+  FORECAST_TTL_MS,
+  mapAggregateState,
+  mapRealtimeState,
+  remainingUpstreamSections,
+  upstreamErrorSections,
+} from './cognitiveReading';
 
 test('state_update messages map into a cognitive reading', () => {
   const state = mapRealtimeState({
@@ -138,4 +146,31 @@ test('a failed task recommender never leaks its error text as the recommendation
   expect(
     mapAggregateState({ recommendation: 'Take a break.', task_recommendations: [] }).recommendation
   ).toBe('Take a break.');
+});
+
+test('carryForecast keeps a fresh forecast only when the snapshot omits the key', () => {
+  const previous = { ...EMPTY_READING, load: 0.4, prediction: 0.5 };
+  const withoutKey = { type: 'state_update', data: { cognitive_load: 0.45 } };
+  const next = mapRealtimeState(withoutKey)!;
+
+  expect(carryForecast(next, withoutKey, previous, 1000, 1000 + FORECAST_TTL_MS - 1).prediction).toBe(0.5);
+  expect(carryForecast(next, withoutKey, previous, 1000, 1000 + FORECAST_TTL_MS).prediction).toBeNull();
+  expect(carryForecast(next, withoutKey, previous, null, 1000).prediction).toBeNull();
+  expect(carryForecast(next, withoutKey, EMPTY_READING, 1000, 1001).prediction).toBeNull();
+
+  const withKey = { type: 'state_update', data: { cognitive_load: 0.45, predicted_load_15min: 0.9 } };
+  expect(carryForecast(mapRealtimeState(withKey)!, withKey, previous, 1000, 1001).prediction).toBe(0.9);
+  const invalidKey = { type: 'state_update', data: { predicted_load_15min: 2 } };
+  expect(carryForecast(mapRealtimeState(invalidKey)!, invalidKey, previous, 1000, 1001).prediction).toBeNull();
+});
+
+test('remainingUpstreamSections drops only the sections the reading has a value for', () => {
+  const failed = ['energy', 'attention', 'cognitive load', 'recommendation'];
+  expect(remainingUpstreamSections(failed, EMPTY_READING)).toEqual(failed);
+  expect(
+    remainingUpstreamSections(failed, { ...EMPTY_READING, energyLevel: 'low', load: 0.2 })
+  ).toEqual(['attention', 'recommendation']);
+  expect(
+    remainingUpstreamSections(failed, { energyLevel: 'low', attentionState: 'focused', load: 0.2, prediction: null, recommendation: 'x' })
+  ).toEqual([]);
 });

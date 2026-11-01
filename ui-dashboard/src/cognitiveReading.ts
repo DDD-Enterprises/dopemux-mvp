@@ -103,3 +103,39 @@ export function mapRealtimeState(message: unknown): CognitiveReading | null {
     recommendation: asText(data.recommendation),
   };
 }
+
+/** The engine's `predicted_load_15min` describes the next 15 minutes, so it expires after them. */
+export const FORECAST_TTL_MS = 15 * 60 * 1000;
+
+/**
+ * A `state_update` that omits `predicted_load_15min` (the engine never sends it) keeps the
+ * previous forecast while it is under 15 minutes old; an older one is unknown. When the key
+ * is present, the snapshot's own mapped value wins, even if that is `null`.
+ */
+export function carryForecast(
+  next: CognitiveReading,
+  message: unknown,
+  previous: CognitiveReading,
+  forecastReceivedAt: number | null,
+  now: number
+): CognitiveReading {
+  if (!isMessageObject(message) || !isMessageObject(message.data) || 'predicted_load_15min' in message.data) {
+    return next;
+  }
+  const isFresh = forecastReceivedAt !== null && now - forecastReceivedAt < FORECAST_TTL_MS;
+  return isFresh && previous.prediction !== null ? { ...next, prediction: previous.prediction } : next;
+}
+
+/**
+ * Which failed GET sections a reading does not yet cover: a section is superseded only
+ * when the reading has a value for it.
+ */
+export function remainingUpstreamSections(failed: readonly string[], reading: CognitiveReading): string[] {
+  const covered: Record<string, boolean> = {
+    energy: reading.energyLevel !== null,
+    attention: reading.attentionState !== null,
+    'cognitive load': reading.load !== null,
+    recommendation: reading.recommendation !== null,
+  };
+  return failed.filter((section) => !covered[section]);
+}
