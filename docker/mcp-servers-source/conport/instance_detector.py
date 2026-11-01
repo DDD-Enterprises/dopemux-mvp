@@ -49,6 +49,36 @@ class SimpleInstanceDetector:
     ENV_INSTANCE_ID = "DOPEMUX_INSTANCE_ID"
     ENV_WORKSPACE_ID = "DOPEMUX_WORKSPACE_ID"
 
+    # Wave 2A R2: a write's instance_id is request data.  The value "shared"
+    # lands where NULL lands (the existing shared rows), so a caller can name
+    # the shared scope explicitly instead of omitting the id.
+    SHARED_INSTANCE_ID = "shared"
+
+    @classmethod
+    def normalize_instance_id(cls, value: Optional[str]) -> Optional[str]:
+        """Map a request ``instance_id`` to the stored value.
+
+        ``None``, empty and ``shared`` (any case) mean the shared scope and are
+        stored as NULL; anything else is stored as given (surrounding spaces
+        trimmed).
+        """
+        if value is None:
+            return None
+        text = str(value).strip()
+        if not text or text.lower() == cls.SHARED_INSTANCE_ID:
+            return None
+        return text
+
+    @classmethod
+    def get_bound_workspace_id(cls) -> Optional[str]:
+        """The workspace this server is bound to, from env only.
+
+        Unlike ``get_workspace_id`` there is no cwd fallback: a write binding
+        must be explicit, so an unset binding returns None and writes are
+        rejected (fail closed).
+        """
+        return os.getenv(cls.ENV_WORKSPACE_ID) or None
+
     @classmethod
     def get_instance_id(cls) -> Optional[str]:
         """
@@ -176,6 +206,19 @@ class SimpleInstanceDetector:
 
 
 # Convenience functions for common use cases
+SHARED_INSTANCE_ID = SimpleInstanceDetector.SHARED_INSTANCE_ID
+
+
+def normalize_instance_id(value: Optional[str]) -> Optional[str]:
+    """Map a request instance_id to the stored value (convenience function)."""
+    return SimpleInstanceDetector.normalize_instance_id(value)
+
+
+def get_bound_workspace_id() -> Optional[str]:
+    """Get the explicit workspace binding for writes (convenience function)."""
+    return SimpleInstanceDetector.get_bound_workspace_id()
+
+
 def get_instance_id() -> Optional[str]:
     """Get current instance ID (convenience function)."""
     return SimpleInstanceDetector.get_instance_id()

@@ -11,6 +11,8 @@ import logging
 import signal
 import json
 import hashlib
+import time
+from contextvars import ContextVar
 from typing import Dict, Any, Optional, List
 import subprocess
 from pathlib import Path
@@ -45,6 +47,33 @@ try:
 except ImportError:
     logger.warning("⚠️ Instance detector not available")
     SimpleInstanceDetector = None
+
+# Wave 2A R2: verified write identity. Not guarded: if this module is missing
+# from the image the server must not start with writes silently unauthenticated.
+from auth_identity import (
+    PROXY_PRINCIPAL,
+    REST_WRITE_TOOLS,
+    UNVERIFIED_CALLER_HEADER,
+    UNVERIFIED_PRINCIPAL,
+    AuthGate,
+    PrincipalStorageUnavailable,
+    Unauthorized,
+    WriteIdentityError,
+    WriteRejected,
+    caller_label,
+    validate_write_ids,
+)
+
+# Per-request identity of the write being handled (set by auth_middleware).
+_WRITE_PRINCIPAL: ContextVar[str] = ContextVar("conport_write_principal", default=UNVERIFIED_PRINCIPAL)
+# The caller's Authorization header, so the /mcp custom_data tools can forward it
+# on their loopback call to this server's own REST routes.
+_CALLER_AUTHORIZATION: ContextVar[Optional[str]] = ContextVar("conport_caller_authorization", default=None)
+
+# Tables that carry the write_principal column (migration 008).
+PRINCIPAL_TABLES = ("workspace_contexts", "decisions", "progress_entries", "custom_data")
+_PRINCIPAL_RECHECK_SECONDS = 30.0
+_UNSAFE_METHODS = frozenset({"POST", "PUT", "DELETE", "PATCH"})
 
 # DopeconBridge event publishing
 try:
@@ -145,10 +174,19 @@ class EnhancedConPortServer:
         self.auto_save_task = None
         self.auto_fork_progress = os.getenv('DOPEMUX_AUTO_FORK_PROGRESS', '1') == '1'
 
+        # Write identity (Wave 2A R2): mode from CONPORT_AUTH_MODE, hashes from CONPORT_AUTH_DIR
+        self.auth_gate = AuthGate.from_env()
+        self._principal_present: set = set()
+        self._principal_checked_at: Optional[float] = None
+        self._principal_warned = False
+        logger.info(f"🔐 ConPort write auth mode: {self.auth_gate.mode}")
+
         # Setup monitoring middleware
         if MONITORING_AVAILABLE and self.monitoring:
             self.app.middlewares.append(self.monitoring_middleware)
-        
+        # Auth runs inside monitoring so 401s are still metered
+        self.app.middlewares.append(self.auth_middleware)
+
         # Setup routes
         self.setup_routes()
 
@@ -356,6 +394,133 @@ class EnhancedConPortServer:
         finally:
             self.monitoring.requests_in_progress.labels(**self.monitoring.core_labels).dec()
 
+    # ------------------------------------------------------------------
+    # Write identity (Wave 2A R2)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _mcp_write_count(payload: Any) -> int:
+        """1 if a REST ``/mcp`` JSON-RPC body calls a mutating tool, else 0."""
+        if not isinstance(payload, dict):
+            return 0
+        method = payload.get('method')
+        if method in ('tools/call', 'tool/call'):
+            params = payload.get('params')
+            name = params.get('name') if isinstance(params, dict) else None
+        else:
+            name = method  # direct ``conport_*`` method calls
+        return 1 if name in REST_WRITE_TOOLS else 0
+
+    async def _count_writes(self, request) -> int:
+        if request.method not in _UNSAFE_METHODS:
+            return 0
+        if request.path == '/mcp':
+            try:
+                payload = await request.json()
+            except Exception:
+                return 0
+            return self._mcp_write_count(payload)
+        # Every non-safe route under /api/ mutates; a new route fails closed.
+        return 1 if request.path.startswith('/api/') else 0
+
+    @web.middleware
+    async def auth_middleware(self, request, handler):
+        """Verify the bearer token of a write and expose its principal to the handler."""
+        if not await self._count_writes(request):
+            return await handler(request)
+
+        authorization = request.headers.get('Authorization')
+        forwarded = request.headers.get(UNVERIFIED_CALLER_HEADER)
+        caller = caller_label(forwarded or request.headers.get('User-Agent'), request.remote)
+        try:
+            identity = self.auth_gate.authorize_write(authorization, caller)
+        except Unauthorized:
+            return web.json_response(
+                {'error': 'unauthorized',
+                 'detail': 'a valid bearer token is required for writes'},
+                status=401,
+                headers={'WWW-Authenticate': 'Bearer'},
+            )
+        if identity.verified and identity.principal == PROXY_PRINCIPAL and forwarded:
+            # The in-image proxy vouches only for itself; it tells us its caller was not verified.
+            self.auth_gate.record_unverified(caller_label(forwarded, None))
+
+        principal_token = _WRITE_PRINCIPAL.set(identity.principal)
+        authorization_token = _CALLER_AUTHORIZATION.set(authorization)
+        try:
+            return await handler(request)
+        finally:
+            _WRITE_PRINCIPAL.reset(principal_token)
+            _CALLER_AUTHORIZATION.reset(authorization_token)
+
+    @staticmethod
+    def _rejected(error: WriteRejected):
+        return web.json_response({'error': str(error)}, status=error.status)
+
+    def _write_ids(self, data: Dict[str, Any], *, require_instance: bool,
+                   workspace_id: Optional[str] = None, instance_id: Optional[str] = None):
+        """Validate a write's ids against this server's binding.
+
+        Returns ``(workspace_id, stored_instance_id)``; ``shared`` (and empty)
+        is stored as NULL.  Raises ``WriteIdentityError``.
+        """
+        if SimpleInstanceDetector is None:
+            raise WriteIdentityError("instance detector unavailable; writes are rejected")
+        ws = workspace_id if workspace_id is not None else data.get('workspace_id')
+        body_ws = data.get('workspace_id')
+        if workspace_id is not None and body_ws not in (None, workspace_id):
+            raise WriteIdentityError("workspace_id in the body does not match the workspace in the path")
+        inst = instance_id if instance_id is not None else data.get('instance_id')
+        validate_write_ids(ws, inst, SimpleInstanceDetector.get_bound_workspace_id(),
+                           require_instance=require_instance)
+        return ws, SimpleInstanceDetector.normalize_instance_id(inst)
+
+    async def _principal_tables(self) -> set:
+        """Tables that currently have the write_principal column (cached)."""
+        complete = len(self._principal_present) == len(PRINCIPAL_TABLES)
+        recently_checked = (
+            self._principal_checked_at is not None
+            and time.monotonic() - self._principal_checked_at < _PRINCIPAL_RECHECK_SECONDS
+        )
+        if complete or recently_checked:
+            return self._principal_present
+        async with self.db_pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT table_name FROM information_schema.columns
+                 WHERE table_schema = 'public'
+                   AND column_name = 'write_principal'
+                   AND table_name = ANY($1::text[])
+                """,
+                list(PRINCIPAL_TABLES),
+            )
+        self._principal_present = {r['table_name'] for r in rows}
+        self._principal_checked_at = time.monotonic()
+        return self._principal_present
+
+    async def _principal_status(self) -> str:
+        present = await self._principal_tables()
+        if len(present) == len(PRINCIPAL_TABLES):
+            return 'ok'
+        return 'partial' if present else 'missing'
+
+    async def _principal_storage(self, table: str) -> bool:
+        """True if ``table`` can store the principal; fail closed in ``enforce`` mode."""
+        if table in await self._principal_tables():
+            return True
+        if self.auth_gate.mode == 'enforce':
+            raise PrincipalStorageUnavailable(
+                "write principal column missing (ConPort migration 008 not applied); "
+                "writes are rejected while the auth mode is 'enforce'"
+            )
+        if not self._principal_warned:
+            self._principal_warned = True
+            logger.warning(
+                "ConPort migration 008 (write_principal) is not applied; writes are stored "
+                "without a principal until the operator applies it"
+            )
+        return False
+
     @with_error_handling("health_check", retry_policy="api_retry")
     async def health_check(self, request):
         """Health check endpoint with connection status"""
@@ -375,7 +540,9 @@ class EnhancedConPortServer:
                 'port': self.port,
                 'database': db_status,
                 'redis': redis_status,
-                'timestamp': asyncio.get_event_loop().time()
+                'timestamp': asyncio.get_event_loop().time(),
+                **self.auth_gate.health_fields(),
+                'auth_principal_column': await self._principal_status(),
             })
         except Exception as e:
             # Use DopemuxError for consistent error handling
@@ -592,26 +759,33 @@ class EnhancedConPortServer:
             if "error" in result:
                 return web.json_response(result, status=500)
             return web.json_response(result)
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error(f"❌ Error in update_context: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
     async def _update_context(self, workspace_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """Internal logic for update_context"""
+        # Wave 2A R2: ids come from the request (workspace_contexts carries instance_id)
+        workspace_id, current_instance_id = self._write_ids(
+            data, require_instance=True, workspace_id=workspace_id)
+        principal = _WRITE_PRINCIPAL.get()
+        store_principal = await self._principal_storage('workspace_contexts')
         try:
-            # Worktree multi-instance: Update instance-specific context
-            current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
+            principal_sql = ",\n                        write_principal = $8" if store_principal else ""
+            principal_args = (principal,) if store_principal else ()
 
             async with self.db_pool.acquire() as conn:
                 # Update database (instance-aware)
-                await conn.execute("""
+                await conn.execute(f"""
                     UPDATE workspace_contexts
                     SET active_context = COALESCE($2, active_context),
                         last_activity = COALESCE($3, last_activity),
                         session_time = COALESCE($4, session_time),
                         focus_state = COALESCE($5, focus_state),
                         session_milestone = COALESCE($6, session_milestone),
-                        updated_at = NOW()
+                        updated_at = NOW(){principal_sql}
                     WHERE workspace_id = $1
                       AND (instance_id IS NULL AND $7::text IS NULL
                            OR instance_id = $7)
@@ -621,7 +795,8 @@ class EnhancedConPortServer:
                     data.get('session_time'),
                     data.get('focus_state'),
                     data.get('session_milestone'),
-                    current_instance_id)
+                    current_instance_id,
+                    *principal_args)
 
                 # Get updated context
                 row = await conn.fetchrow("""
@@ -665,29 +840,42 @@ class EnhancedConPortServer:
             if "error" in result:
                 return web.json_response(result, status=500)
             return web.json_response(result)
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error(f"❌ Error in log_decision: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
     async def _log_decision(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Internal logic for log_decision"""
+        # Wave 2A R2: workspace_id required and bound; decisions keep created_by_instance
+        # (the request's instance_id when given, NULL for shared/absent).
+        _, created_by_instance = self._write_ids(data, require_instance=False)
+        principal = _WRITE_PRINCIPAL.get()
+        store_principal = await self._principal_storage('decisions')
         try:
             decision_id = str(uuid.uuid4())
 
+            columns = ("id, workspace_id, summary, rationale, alternatives, tags, "
+                       "confidence_level, decision_type, created_by_instance")
+            values = [decision_id,
+                      data.get('workspace_id'),
+                      data.get('summary'),
+                      data.get('rationale'),
+                      json.dumps(data.get('alternatives', [])),
+                      data.get('tags', []),
+                      data.get('confidence_level', 'medium'),
+                      data.get('decision_type', 'implementation'),
+                      created_by_instance]
+            if store_principal:
+                columns += ", write_principal"
+                values.append(principal)
+            placeholders = ", ".join(f"${i}" for i in range(1, len(values) + 1))
+
             async with self.db_pool.acquire() as conn:
-                await conn.execute("""
-                    INSERT INTO decisions
-                    (id, workspace_id, summary, rationale, alternatives, tags,
-                     confidence_level, decision_type)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                """, decision_id,
-                    data.get('workspace_id'),
-                    data.get('summary'),
-                    data.get('rationale'),
-                    json.dumps(data.get('alternatives', [])),
-                    data.get('tags', []),
-                    data.get('confidence_level', 'medium'),
-                    data.get('decision_type', 'implementation'))
+                await conn.execute(
+                    f"INSERT INTO decisions ({columns}) VALUES ({placeholders})",
+                    *values)
 
                 # Get the inserted decision
                 row = await conn.fetchrow("""
@@ -991,19 +1179,24 @@ class EnhancedConPortServer:
             if "error" in result:
                 return web.json_response(result, status=500 if result.get('error') != 'workspace_id required' else 400)
             return web.json_response(result)
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error(f"❌ Error in fork_instance: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
     async def _fork_instance(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Internal logic for fork_instance"""
-        workspace_id = data.get('workspace_id')
-        source_instance = data.get('source_instance')  # None or '' means shared
-        target_instance = data.get('target_instance') or (SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None)
-        if not workspace_id:
-            return {'error': 'workspace_id required'}
+        # Wave 2A R2: the target instance is request data (``target_instance``, or
+        # ``instance_id``); no fallback to the server's own instance.  The source
+        # is the shared scope when None, empty or ``shared``.
+        workspace_id, target_instance = self._write_ids(
+            data, require_instance=True, instance_id=data.get('target_instance') or data.get('instance_id'))
         if not target_instance:
-            return {'error': 'target_instance not detected'}
+            raise WriteIdentityError("target_instance must name a real instance, not 'shared'")
+        source_instance = SimpleInstanceDetector.normalize_instance_id(data.get('source_instance'))
+        principal = _WRITE_PRINCIPAL.get()
+        store_principal = await self._principal_storage('progress_entries')
         try:
             count = 0
             async with self.db_pool.acquire() as conn:
@@ -1020,13 +1213,15 @@ class EnhancedConPortServer:
                 )
                 for r in rows:
                     pid = str(uuid.uuid4())
+                    principal_column = ", write_principal" if store_principal else ""
+                    principal_value = ", $11" if store_principal else ""
                     await conn.execute(
-                        """
+                        f"""
                         INSERT INTO progress_entries
                         (id, workspace_id, description, status, percentage,
                          linked_decision_id, priority, estimated_hours, actual_hours,
-                         instance_id, created_at, updated_at)
-                        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW())
+                         instance_id, created_at, updated_at{principal_column})
+                        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW(){principal_value})
                         """,
                         pid,
                         r['workspace_id'],
@@ -1038,6 +1233,7 @@ class EnhancedConPortServer:
                         r['estimated_hours'],
                         r['actual_hours'],
                         target_instance,
+                        *((principal,) if store_principal else ()),
                     )
                     count += 1
             return {'status': 'forked', 'workspace_id': workspace_id, 'source_instance': source_instance, 'target_instance': target_instance, 'count': count}
@@ -1056,28 +1252,37 @@ class EnhancedConPortServer:
                 if result['error'] == 'not found': status = 404
                 return web.json_response(result, status=status)
             return web.json_response(result)
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error(f"❌ Error in promote_progress: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
     async def _promote_progress(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Internal logic for promote_progress"""
+        workspace_id, _ = self._write_ids(data, require_instance=True)
         progress_id = data.get('progress_id')
         if not progress_id:
             return {'error': 'progress_id required'}
+        principal = _WRITE_PRINCIPAL.get()
+        store_principal = await self._principal_storage('progress_entries')
         try:
             async with self.db_pool.acquire() as conn:
                 row = await conn.fetchrow("SELECT * FROM progress_entries WHERE id = $1", progress_id)
                 if not row:
                     return {'error': 'not found'}
+                if row['workspace_id'] != workspace_id:
+                    raise WriteIdentityError("progress entry belongs to a different workspace; write rejected")
+                principal_sql = ",\n                           write_principal = $2" if store_principal else ""
                 await conn.execute(
-                    """
+                    f"""
                     UPDATE progress_entries
                        SET instance_id = NULL,
-                           updated_at = NOW()
+                           updated_at = NOW(){principal_sql}
                      WHERE id = $1
                     """,
                     progress_id,
+                    *((principal,) if store_principal else ()),
                 )
 
             # Publish event for DDG
@@ -1092,6 +1297,8 @@ class EnhancedConPortServer:
                 )
 
             return {'status': 'promoted', 'progress_id': progress_id}
+        except WriteRejected:
+            raise
         except Exception as e:
             logger.error(f"❌ Promote progress internal failed: {e}")
             return {'error': str(e)}
@@ -1104,19 +1311,20 @@ class EnhancedConPortServer:
             if "error" in result:
                 return web.json_response(result, status=400)
             return web.json_response(result)
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error(f"❌ Error in promote_all: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
     async def _promote_all(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Internal logic for promote_all"""
-        workspace_id = data.get('workspace_id')
-        if not workspace_id:
-            return {'error': 'workspace_id required'}
+        workspace_id, current_instance_id = self._write_ids(data, require_instance=True)
+        if not current_instance_id:
+            raise WriteIdentityError("instance_id must name a real instance, not 'shared'")
+        principal = _WRITE_PRINCIPAL.get()
+        store_principal = await self._principal_storage('progress_entries')
         try:
-            current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
-            if not current_instance_id:
-                return {'error': 'No current instance detected'}
             count = 0
             async with self.db_pool.acquire() as conn:
                 rows = await conn.fetch(
@@ -1131,10 +1339,17 @@ class EnhancedConPortServer:
                     current_instance_id,
                 )
                 for r in rows:
-                    await conn.execute(
-                        "UPDATE progress_entries SET instance_id = NULL, updated_at = NOW() WHERE id = $1",
-                        r['id'],
-                    )
+                    if store_principal:
+                        await conn.execute(
+                            "UPDATE progress_entries SET instance_id = NULL, updated_at = NOW(), "
+                            "write_principal = $2 WHERE id = $1",
+                            r['id'], principal,
+                        )
+                    else:
+                        await conn.execute(
+                            "UPDATE progress_entries SET instance_id = NULL, updated_at = NOW() WHERE id = $1",
+                            r['id'],
+                        )
                     count += 1
                     if self.dopecon_bridge:
                         await self.dopecon_bridge.publish_progress_updated(
@@ -1158,12 +1373,19 @@ class EnhancedConPortServer:
             if "error" in result:
                 return web.json_response(result, status=400 if 'required' in result['error'] else 500)
             return web.json_response(result)
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error(f"❌ Error in log_progress: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
     async def _log_progress(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Internal logic for log_progress"""
+        # Wave 2A R2: progress_entries carries instance_id, so it is required here;
+        # ``shared`` is stored as NULL, which is where existing shared rows are.
+        _, entry_instance_id = self._write_ids(data, require_instance=True)
+        principal = _WRITE_PRINCIPAL.get()
+        store_principal = await self._principal_storage('progress_entries')
         try:
             pid = str(uuid.uuid4())
             workspace_id = data.get('workspace_id')
@@ -1178,13 +1400,16 @@ class EnhancedConPortServer:
             estimated_hours = data.get('estimated_hours')
             actual_hours = data.get('actual_hours')
 
+            principal_column = ", write_principal" if store_principal else ""
+            principal_value = ", $11" if store_principal else ""
             async with self.db_pool.acquire() as conn:
                 await conn.execute(
-                    """
+                    f"""
                     INSERT INTO progress_entries
                     (id, workspace_id, description, status, percentage,
-                     linked_decision_id, priority, estimated_hours, actual_hours)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                     linked_decision_id, priority, estimated_hours, actual_hours,
+                     instance_id{principal_column})
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10{principal_value})
                     """,
                     pid,
                     workspace_id,
@@ -1195,6 +1420,8 @@ class EnhancedConPortServer:
                     priority,
                     estimated_hours,
                     actual_hours,
+                    entry_instance_id,
+                    *((principal,) if store_principal else ()),
                 )
 
                 row = await conn.fetchrow("SELECT * FROM progress_entries WHERE id = $1", pid)
@@ -1240,19 +1467,27 @@ class EnhancedConPortServer:
             if "error" in result:
                 return web.json_response(result, status=404 if result['error'] == 'Progress entry not found' else 500)
             return web.json_response(result)
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error(f"❌ Error in update_progress: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
     async def _update_progress(self, progress_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """Internal logic for update_progress"""
+        # Wave 2A R2: ids come from the request, and the entry must belong to the bound workspace.
+        workspace_id, current_instance_id = self._write_ids(data, require_instance=True)
+        principal = _WRITE_PRINCIPAL.get()
+        store_principal = await self._principal_storage('progress_entries')
+        async with self.db_pool.acquire() as conn:
+            owner = await conn.fetchrow("SELECT workspace_id FROM progress_entries WHERE id = $1", progress_id)
+        if owner is not None and owner['workspace_id'] != workspace_id:
+            raise WriteIdentityError("progress entry belongs to a different workspace; write rejected")
         try:
             new_status = data.get('status')
 
             # Worktree multi-instance: Handle status transitions
             if new_status:
-                current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
-
                 if SimpleInstanceDetector and SimpleInstanceDetector.is_isolated_status(new_status):
                     # Transitioning to isolated status
                     final_instance_id = current_instance_id
@@ -1260,9 +1495,10 @@ class EnhancedConPortServer:
                     # Transitioning to shared status
                     final_instance_id = None
 
+                principal_sql = ",\n                            write_principal = $8" if store_principal else ""
                 # Update with instance_id transition
                 async with self.db_pool.acquire() as conn:
-                    await conn.execute("""
+                    await conn.execute(f"""
                         UPDATE progress_entries
                         SET status = $2,
                             instance_id = $3,
@@ -1270,7 +1506,7 @@ class EnhancedConPortServer:
                             description = COALESCE($5, description),
                             priority = COALESCE($6, priority),
                             actual_hours = COALESCE($7, actual_hours),
-                            updated_at = NOW()
+                            updated_at = NOW(){principal_sql}
                         WHERE id = $1
                     """, progress_id,
                         new_status,
@@ -1278,23 +1514,26 @@ class EnhancedConPortServer:
                         data.get('percentage'),
                         data.get('description'),
                         data.get('priority'),
-                        data.get('actual_hours'))
+                        data.get('actual_hours'),
+                        *((principal,) if store_principal else ()))
             else:
                 # No status change - update other fields only
+                principal_sql = ",\n                            write_principal = $6" if store_principal else ""
                 async with self.db_pool.acquire() as conn:
-                    await conn.execute("""
+                    await conn.execute(f"""
                         UPDATE progress_entries
                         SET percentage = COALESCE($2, percentage),
                             description = COALESCE($3, description),
                             priority = COALESCE($4, priority),
                             actual_hours = COALESCE($5, actual_hours),
-                            updated_at = NOW()
+                            updated_at = NOW(){principal_sql}
                         WHERE id = $1
                     """, progress_id,
                         data.get('percentage'),
                         data.get('description'),
                         data.get('priority'),
-                        data.get('actual_hours'))
+                        data.get('actual_hours'),
+                        *((principal,) if store_principal else ()))
 
             # Get updated progress entry
             async with self.db_pool.acquire() as conn:
@@ -1569,18 +1808,33 @@ class EnhancedConPortServer:
             key = data.get('key')
             value = data.get('value')
 
+            # Wave 2A R2: workspace_id required and bound (custom_data has no instance column)
+            self._write_ids(data, require_instance=False)
+
             if not all([workspace_id, category, key, value is not None]):
                 return web.json_response({
                     'error': 'Missing required fields: workspace_id, category, key, value'
                 }, status=400)
 
-            async with self.db_pool.acquire() as conn:
-                await conn.execute("""
+            principal = _WRITE_PRINCIPAL.get()
+            if await self._principal_storage('custom_data'):
+                insert_sql = """
+                    INSERT INTO custom_data (workspace_id, category, key, value, updated_at, write_principal)
+                    VALUES ($1, $2, $3, $4, NOW(), $5)
+                    ON CONFLICT (workspace_id, category, key)
+                    DO UPDATE SET value = $4, updated_at = NOW(), write_principal = $5
+                """
+                insert_args = (workspace_id, category, key, json.dumps(value), principal)
+            else:
+                insert_sql = """
                     INSERT INTO custom_data (workspace_id, category, key, value, updated_at)
                     VALUES ($1, $2, $3, $4, NOW())
                     ON CONFLICT (workspace_id, category, key)
                     DO UPDATE SET value = $4, updated_at = NOW()
-                """, workspace_id, category, key, json.dumps(value))
+                """
+                insert_args = (workspace_id, category, key, json.dumps(value))
+            async with self.db_pool.acquire() as conn:
+                await conn.execute(insert_sql, *insert_args)
 
             # Invalidate cache
             cache_key = f"custom_data:{workspace_id}:{category}:{key}"
@@ -1595,6 +1849,8 @@ class EnhancedConPortServer:
                 'key': key
             })
 
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error(f"Error saving custom data: {e}")
             return web.json_response({'error': str(e)}, status=500)
@@ -1690,6 +1946,9 @@ class EnhancedConPortServer:
             category = request.query.get('category')
             key = request.query.get('key')
 
+            # Wave 2A R2: workspace_id required and bound
+            self._write_ids({'workspace_id': workspace_id}, require_instance=False)
+
             if not all([workspace_id, category, key]):
                 return web.json_response({
                     'error': 'Missing required parameters: workspace_id, category, key'
@@ -1714,6 +1973,8 @@ class EnhancedConPortServer:
                 'key': key
             })
 
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error(f"Error deleting custom data: {e}")
             return web.json_response({'error': str(e)}, status=500)
@@ -1735,6 +1996,9 @@ class EnhancedConPortServer:
             key = data.get('key')
             value = data.get('value')
 
+            # Wave 2A R2: workspace_id required and bound (custom_data has no instance column)
+            self._write_ids(data, require_instance=False)
+
             if not all([workspace_id, category, key, value is not None]):
                 return web.json_response({
                     'error': 'Missing required fields: workspace_id, category, key, value'
@@ -1752,14 +2016,19 @@ class EnhancedConPortServer:
                     'result': 'MISSING_FINGERPRINT'
                 }, status=400)
 
+            principal = _WRITE_PRINCIPAL.get()
+            store_principal = await self._principal_storage('custom_data')
+            principal_column = ", write_principal" if store_principal else ""
+            principal_value = ", $5" if store_principal else ""
             async with self.db_pool.acquire() as conn:
                 async with conn.transaction():
-                    row = await conn.fetchrow("""
-                        INSERT INTO custom_data (workspace_id, category, key, value, updated_at)
-                        VALUES ($1, $2, $3, $4, NOW())
+                    row = await conn.fetchrow(f"""
+                        INSERT INTO custom_data (workspace_id, category, key, value, updated_at{principal_column})
+                        VALUES ($1, $2, $3, $4, NOW(){principal_value})
                         ON CONFLICT (workspace_id, category, key) DO NOTHING
                         RETURNING value
-                    """, workspace_id, category, key, json.dumps(value))
+                    """, workspace_id, category, key, json.dumps(value),
+                        *((principal,) if store_principal else ()))
 
                     if row is not None:
                         persisted = json.loads(row['value'])
@@ -1806,6 +2075,8 @@ class EnhancedConPortServer:
                         'value': existing,
                     })
 
+        except WriteRejected as e:
+            return self._rejected(e)
         except Exception as e:
             logger.error("Error claiming custom data: %s", e)
             return web.json_response({
@@ -1897,6 +2168,8 @@ class EnhancedConPortServer:
             if isinstance(result, dict) and "error" in result:
                 return self._jsonrpc_error(req_id, -32000, result["error"])
             return self._jsonrpc_result(req_id, result)
+        except WriteRejected as e:
+            return self._jsonrpc_error(req_id, -32602, str(e))
         except Exception as e:
             logger.error(f"Tool execution error ({tool_name}): {e}")
             return self._jsonrpc_error(req_id, -32603, str(e))
@@ -1934,8 +2207,15 @@ class EnhancedConPortServer:
         if method in {"GET", "DELETE"}:
             url = f"{url}?{urlencode(query)}"
 
+        # Wave 2A R2: the loopback call goes through this server's own auth, so it
+        # carries the original caller's Authorization header (never logged).
+        headers = {}
+        authorization = _CALLER_AUTHORIZATION.get()
+        if method != "GET" and authorization:
+            headers["Authorization"] = authorization
+
         timeout = aiohttp.ClientTimeout(total=10)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
             if method == "GET":
                 response_ctx = session.get(url)
             elif method == "POST":
@@ -1961,9 +2241,11 @@ class EnhancedConPortServer:
         return await self._request_custom_data_tool("GET", args)
 
     async def _save_custom_data_tool(self, args):
+        self._write_ids(args, require_instance=False)  # fail early with a clear error
         return await self._request_custom_data_tool("POST", args)
 
     async def _delete_custom_data_tool(self, args):
+        self._write_ids(args, require_instance=False)
         return await self._request_custom_data_tool("DELETE", args)
 
     async def _search_content_tool(self, args):
