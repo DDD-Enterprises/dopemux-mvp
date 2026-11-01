@@ -3,7 +3,7 @@
   "project": "dopemux-mvp",
   "target": "After #1482 merges: bring the then-current main into the branch, re-run every gate (including repeated concurrent test runs), freeze the merged head and prepare the R6 audit bundle.",
   "invariants": [
-    "C01 Shared workspace: other sessions may change unrelated files (.codex/config.toml, .agents/): never commit, discard or overwrite them. Edit only your write_surface. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head c1256c0600 (a local, unpushed merge of origin/main 97b6d5040).",
+    "C01 Shared workspace: other sessions may change unrelated files (.codex/config.toml, .agents/): never commit, discard or overwrite them. Edit only your write_surface. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head = the W03 commit (local, unpushed, on top of the merge c1256c0600 of origin/main 97b6d5040 and W01 4f66e7ea6).",
     "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history; you do not stage. The team lead alone commits (explicit pathspec) after re-reading your diff.",
     "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
     "C04 Secrets: never read or print .env* or credential files. No network. No real `dopemux capture emit`.",
@@ -17,7 +17,8 @@
     "B04 Freeze the merged head as the R6 audit subject and prepare the audit bundle under proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/; the audit itself needs the operator's R6 audit-route line."
   ],
   "depends_on": [
-    "TP-DMX-MEMBRIDGE-R6-W01-FLAKY-KEY-TEST-001"
+    "TP-DMX-MEMBRIDGE-R6-W01-FLAKY-KEY-TEST-001",
+    "TP-DMX-MEMBRIDGE-R6-W03-COPILOT-DOCS-001"
   ],
   "repo_binding": {
     "project_id": "dopemux-mvp",

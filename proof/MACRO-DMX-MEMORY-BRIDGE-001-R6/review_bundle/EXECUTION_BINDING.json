@@ -6,7 +6,7 @@
   "authority_refs": {
     "task_packet_ref": "task-packets/MACRO-DMX-MEMORY-BRIDGE-001-R6/MACRO_PACKET.json",
     "operator_gate_refs": [
-      "operator chat 2026-10-30: 'Update main first' then 'Fix it first'; merge order relayed: #1482 then #1483. R6 execution NOT authorized until AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R6_EXECUTION=YES"
+      "operator chat 2026-11-01: 'Yes, amend R6' (answer to: fold the four Copilot findings on PR #1483 into R6 so the one R6 audit covers them); R6 lines on file: AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R6_EXECUTION=YES and AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R6_AUDIT_ROUTE=grok-cli:grok-4.5:ONE_ATTEMPT"
     ]
   },
   "policy_refs": {
@@ -25,7 +25,7 @@
     "runner": "claude-code-desktop",
     "runner_availability": "PROVEN",
     "model": "claude-opus-5-5",
-    "effort": "high",
+    "effort": "xhigh",
     "connector": "desktop-app",
     "configured_identity": "claude-opus-5-5",
     "response_claimed_identity": "claude-opus-5-5",
@@ -60,9 +60,9 @@
     ]
   },
   "justification": {
-    "why_runner": "issuing supervisor session (Claude Code desktop, claude-opus-5-5)",
+    "why_runner": "issuing supervisor session (Claude Code desktop, claude-opus-5-5); it also executes W02 (local shell) and W03 (three doc corrections whose source evidence it already holds)",
     "why_model": "the operator switched the coordinator session to claude-opus-5-5 (/model) and asked for the N3 redesign to be done with Opus",
-    "why_effort": "session effort observed via $CLAUDE_EFFORT=high",
+    "why_effort": "session effort observed via $CLAUDE_EFFORT=xhigh at amendment time (it was high at issuance)",
     "alternatives_considered": [
       {
         "route": "claude-opus-5-5 coordinator",
@@ -92,10 +92,10 @@
       "effort": "NOT_RUN"
     }
   },
-  "recorded_at": "2026-10-30T10:40:10Z",
+  "recorded_at": "2026-11-01T03:13:01Z",
   "runner_version": "UNKNOWN",
-  "effort_requested": "high",
-  "effort_observed": "high",
+  "effort_requested": "xhigh",
+  "effort_observed": "xhigh",
   "auth_profile_ref": "UNKNOWN",
   "network_posture": "no-network-mutation",
   "containment_posture": "worktree-scoped",
