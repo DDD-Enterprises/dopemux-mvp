@@ -1,0 +1,134 @@
+gates run at 2026-11-01T01:59:17Z on frozen head b275543fe1011bf3a9351a10448c24d94f205370 (expected b275543fe1011bf3a9351a10448c24d94f205370)
+tracked dirty: [ M .codex/config.toml;] (only the unrelated .codex/config.toml edit is allowed)
+engine-laid plugins/dopemux-route-ledger/tsconfig.json present: yes (untracked, not part of the commit)
+
+### claude plugin validate plugins/dopemux-route-ledger
+Validating plugin manifest: /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger/.claude-plugin/plugin.json
+
+⚠ Found 1 warning:
+
+  ❯ author: No author information provided. Consider adding author details for plugin attribution
+
+Validating hooks: /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger/hooks/hooks.json
+
+  ❯ ./register.tsx hooks: session.start, tool.call{tool=Agent}, agent.spawn, turn.step, command.run{command=route-ledger}, command.run{command=route}, session.end
+  ❯ ./register.tsx answers its own command: command.run{command=route-ledger}
+  ❯ ./register.tsx answers its own command: command.run{command=route}
+  ❯ ./register.tsx gating hook without .catch: tool.call{tool=Agent}
+  ❯ ./register.tsx gating hook without .catch: agent.spawn
+  ❯ ./register.tsx calls: $.clock.after (via scheduleStatus), $.clock.now (via stampThen), $.command.register (via registerCommands), $.fs.exists (via initSession, rehydrate), $.fs.list (via rehydrate), $.fs.read (via rehydrate), $.fs.stat (via statOrNone), $.fs.write (via flushSegments), $.session.id (via initSession), $.session.root (via receiptDirProblem), $.ui.status, $.ui.toast (via noteAgentCall, toastOnce)
+
+Plugin directory checks for /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger. The plugin directory is the catalog that plugins are submitted to; this is a subset of what it runs.
+
+⚠ Found 1 plugin directory warning:
+
+  ❯ .claude-plugin/plugin.json icon: No icon (ICON_MISSING). No icon found in the plugin. The validator looked for `icon` in plugin.json and for a file at .claude-plugin/icon.png or .svg, assets/icon.png or .svg, or a similar path.
+    Fix: Add a square PNG to the plugin folder at .claude-plugin/icon.png, or set `icon` in plugin.json to the path of a square PNG or JPEG in the plugin: 512 to 2048 px on each side, under 2 MB. SVG and WebP are not accepted. That file may become the listing icon only once: the first time the plugin is saved or submitted in the developer portal. Adding or changing it later does not change the icon.
+
+About these checks:
+
+  ❯ The repository root was taken to be /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032, the nearest parent folder with a .git folder or file. LICENSE was taken from it, because this plugin folder has none of its own. For a plugin submitted from a git repository, the repository root is the top folder of that repository, with only what is committed there, so check that the folder named above is that top folder.
+  ❯ hooks/hooks.json names a hooks module (a code file listed under `modules`). The plugin directory has rules of its own for such code, and these checks apply none of them, so passing here does not mean the directory accepts the plugin. The developer portal's own validation applies those rules.
+
+These plugin directory checks do not change the result below.
+
+The directory also runs a safety scan and a policy review that this command does not.
+
+ℹ Advice (does not change the verdict):
+
+  ❯ /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger/README.md: This README has no line that installs "dopemux-route-ledger" from a marketplace. Add the install line, which works in one step on Claude Code 2.1.275 or later. Validate the folder that holds its marketplace.json to have <owner>/<repo> filled in, and the name its marketplace lists it under.
+      /plugin install dopemux-route-ledger --marketplace <owner>/<repo>
+
+✔ Validation passed with warnings
+exit=0
+
+### claude plugin test plugins/dopemux-route-ledger
+(pass) rehydrate counts UTF-8 bytes of what it reads [0.13ms]
+(pass) a segment of multi-byte descriptions rolls on bytes, so no written file passes the limit by more than one line [0.26ms]
+(pass) rehydrate leaves an unreadable segment alone and skips a corrupt line, nothing throws [12.89ms]
+(pass) the command handlers answer `could not read the ledger.` when the table cannot be built [15.88ms]
+
+ 104 pass
+ 0 fail
+Ran 104 tests across 1 file. [1.79s]
+exit=0
+counts:  104 pass  0 fail 
+
+### tsc -p plugins/dopemux-route-ledger --noEmit (in tree, default options)
+exit=0
+
+### jsonschema: receipts printed by the tests vs receipt.schema.json
+valid receipts 30 {'agent_request': 14, 'step_observed': 11, 'advisor_call': 5} ; invalid 0 ; extra-key negative control rejected: True
+exit=0
+
+### validate_change_contract --base origin/main --head b275543fe1011bf3a9351a10448c24d94f205370 (full literal output)
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W01_EXECUTION_BINDING.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W01_TASK_PACKET.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W02_EXECUTION_BINDING.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W02_TASK_PACKET.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W03_EXECUTION_BINDING.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W03_TASK_PACKET.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W04_EXECUTION_BINDING.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/W04_TASK_PACKET.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCES.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCE_LEDGER.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ALLOWANCE_LEDGER_LIVE.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/EXECUTION_BINDING.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/GATES_R5.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ISSUANCE.md
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/MACRO_PACKET.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/REPAIR.diff
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SHA256SUMS_PACKAGE.txt
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SUCCESSOR_NOTE_CODEQL.md
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SUCCESSOR_NOTE_CODEX_CLEAR.md
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/SUCCESSOR_NOTE_CODEX_LIST_BYTES.md
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/VERIFY_NOTES.md
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W01_EXECUTION_BINDING.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W01_TASK_PACKET.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W02_EXECUTION_BINDING.json
+  [L0] proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/W02_TASK_PACKET.json
+exit=0
+(only the last 25 lines are kept above)
+
+### git diff --check 989fe4651c050ec23619e5208da17d6152b477b0 b275543fe1011bf3a9351a10448c24d94f205370 (content)
+exit=0
+
+### claude --version
+2.1.316 (Claude Code)
+exit=0
+
+### validate_change_contract status lines (the first lines of the literal output above; the path list there is truncated to its last 25 lines)
+status=PASS
+max_lane=L2
+model_audit_required=True
+proof_only=False
+paths=151
+
+### markdownlint hook
+NOT_RUN: its Node environment cannot install on this host (nodeenv cannot parse a node pre-release version string); CI covers it.
+
+### live Claude Code session loading the repaired code
+NOT_RUN: no operator-reported result for the repaired code (the pre-repair code was loaded live by the operator on 2026-10-30).
+
+### pre-commit run --files <the seven content paths and build_audit_prompt.py> (SKIP=markdownlint)
+Evidence-economy change-contract preflight.................................................Passed
+Validate Control Tower kit contracts...................................(no files to check)Skipped
+Validate YAML frontmatter in docs..........................................................Passed
+Block deprecated memory backends in slash commands.....................(no files to check)Skipped
+Validate templates/skills SKILL.md frontmatter.........................(no files to check)Skipped
+Validate documentation against knowledge graph schema......................................Passed
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)..........................Passed
+Validate prelude ≤100 tokens for efficient embeddings......................................Passed
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+Validate proof bundle embedded_audit schema............................(no files to check)Skipped
+Validate GitHub Actions workflow syntax................................(no files to check)Skipped
+markdownlint..............................................................................Skipped
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+exit=0

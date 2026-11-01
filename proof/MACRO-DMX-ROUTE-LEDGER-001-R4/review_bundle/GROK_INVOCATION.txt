@@ -1,0 +1,19 @@
+#!/bin/bash
+# MACRO-DMX-ROUTE-LEDGER-001-R3 W02: grok-cli grok-4.5, tool-less recipe (R2 recipe files, byte-identical). usage: run.sh <D> probe1|probe2|real
+D="$1"; MODE="$2"
+DENY="Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources"
+COMMON=(--no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json)
+case "$MODE" in
+  probe1) SEAL="$D/seal_probe"; PROMPT=GROK_PROBE_PROMPT.txt; EXTRA=() ;;
+  probe2) SEAL="$D/seal_probe"; PROMPT=GROK_PROBE_PROMPT.txt; EXTRA=(--system-prompt-override "$(cat "$D/recipe/GROK_SYSTEM_PROMPT.txt")" --disallowed-tools "$(cat "$D/recipe/GROK_DISALLOWED.txt")") ;;
+  real)   SEAL="$D/seal_real";  PROMPT=AUDIT_PROMPT.txt;       EXTRA=(--system-prompt-override "$(cat "$D/recipe/GROK_SYSTEM_PROMPT.txt")" --disallowed-tools "$(cat "$D/recipe/GROK_DISALLOWED.txt")") ;;
+  *) echo "bad mode" >&2; exit 91 ;;
+esac
+cd "$SEAL" || exit 90
+date -u +%Y-%m-%dT%H:%M:%SZ > "$D/out/$MODE.start"
+env -i HOME="$HOME" PATH="$PATH" grok -m grok-4.5 --effort high --sandbox workspace --cwd "$SEAL" "${EXTRA[@]}" --deny "$DENY" "${COMMON[@]}" --prompt-file "$PROMPT" > "$D/out/$MODE.jsonl" 2> "$D/out/$MODE.err"
+echo $? > "$D/out/$MODE.exit"
+date -u +%Y-%m-%dT%H:%M:%SZ > "$D/out/$MODE.end"
+
+# sealed directories (outside the repo, never removed): /private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-route-ledger-001-8d8032/533ad7a9-4330-4030-b51a-2a7763cbe828/scratchpad/r4/grok_20261030T104138Z
+# environment: env -i HOME PATH only (no exported variable of the tool shell was passed to grok)

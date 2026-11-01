@@ -1,0 +1,99 @@
+{
+ "macro": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+ "macro_start": "2026-10-23T20:35:40Z",
+ "events": [
+  {
+   "ws": "W01",
+   "event": "dispatch",
+   "t": "2026-10-23T20:35:54Z"
+  },
+  {
+   "ws": "W01",
+   "event": "return",
+   "t": "2026-10-23T20:49:50Z",
+   "note": "approximate: report received before 20:50:24Z",
+   "agent_result": {
+    "totalDurationMs": 857811,
+    "totalToolUseCount": 65,
+    "totalTokens": 215889
+   }
+  },
+  {
+   "ws": "W01",
+   "event": "commit",
+   "sha": "01aa4a1233700ca7d6a55edb603e327820aa5f9a",
+   "observed_model_from_transcript": "claude-sonnet-5-5 (113 assistant messages)",
+   "advisor_blocks": 0,
+   "agent_calls": 0,
+   "transcript_tool_use_blocks": 129
+  },
+  {
+   "ws": "W02",
+   "event": "dispatch",
+   "t": "2026-10-23T20:51:18Z"
+  },
+  {
+   "ws": "W02",
+   "event": "return",
+   "t": "2026-10-23T20:54:20Z",
+   "note": "approx",
+   "agent_result": {
+    "totalDurationMs": 197101,
+    "totalToolUseCount": 16,
+    "totalTokens": 113393
+   }
+  },
+  {
+   "ws": "W02",
+   "event": "commit",
+   "sha": "ff61c185fbe99e07c3b7f401f18e269a3098cc75",
+   "observed_model_from_transcript": "claude-sonnet-5-5 (26 assistant messages)",
+   "advisor_blocks": 0,
+   "agent_calls": 0,
+   "transcript_tool_use_blocks": 31
+  },
+  {
+   "ws": "W03",
+   "event": "dispatch",
+   "t": "2026-10-23T20:55:00Z",
+   "note": "approx, after W02 commit"
+  },
+  {
+   "ws": "W03",
+   "event": "return",
+   "t": "2026-10-23T20:56:00Z",
+   "note": "approx",
+   "agent_result": {
+    "totalDurationMs": 58372,
+    "totalToolUseCount": 18,
+    "totalTokens": 60756
+   }
+  },
+  {
+   "ws": "W03",
+   "event": "commit",
+   "sha": "5dd7e998aea73df0a998f22242aef7b5238f52db",
+   "observed_model_from_transcript": "claude-haiku-5-5 (28 assistant messages)",
+   "advisor_blocks": 0,
+   "agent_calls": 0,
+   "transcript_tool_use_blocks": 35,
+   "note": "one narrow repair pass by the child (markdownlint MD038), no fallback to Sonnet"
+  },
+  {
+   "ws": "W01",
+   "event": "repair_dispatch_and_return",
+   "note": "SendMessage resume of the W01 child, approx 20:57:30Z to 20:57:55Z",
+   "agent_result": {
+    "totalDurationMs": 19521,
+    "totalToolUseCount": 4,
+    "totalTokens": 217502,
+    "tokens_note": "may be cumulative with the build run (215889) or additive; both bounds recorded"
+   }
+  },
+  {
+   "event": "freeze",
+   "t": "2026-10-23T20:59:30Z",
+   "head": "93969e7a3ca2775c7b435e1ce1b6528ad2173c4a"
+  }
+ ]
+}
