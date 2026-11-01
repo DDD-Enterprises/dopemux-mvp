@@ -76,13 +76,17 @@ def test_should_not_render_mount_for_a_missing_directory(tmp_path):
     assert 'DOPE_MEMORY_AUTH_MODE: "log"' in block  # mode still travels
 
 
-def test_should_leave_the_conport_service_untouched(tmp_path):
+def test_should_keep_dope_memory_auth_settings_out_of_the_conport_service(tmp_path):
+    # W02 (B06) gives ConPort its own CONPORT_AUTH_* env and mount; the
+    # dope-memory settings must stay in the dope-memory block only.
     auth_dir = tmp_path / "auth"
     auth_dir.mkdir()
     text = _override(auth_mode="enforce", auth_dir=auth_dir)
     conport = _service_block(text, "conport")
-    assert "AUTH" not in conport and "dopemux-auth" not in conport
-    assert text.count("dopemux-auth:ro") == 1
+    memory = _service_block(text, "dope-memory")
+    assert "DOPE_MEMORY_AUTH" not in conport
+    assert conport.count("dopemux-auth:ro") == 1
+    assert memory.count("dopemux-auth:ro") == 1
 
 
 def test_should_reject_an_unknown_mode():
