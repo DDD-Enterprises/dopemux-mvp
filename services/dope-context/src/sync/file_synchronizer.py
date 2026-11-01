@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from ..utils.workspace import get_snapshot_dir
+from ..utils.workspace_guard import contained_in_workspace, validate_patterns
 
 logger = logging.getLogger(__name__)
 
@@ -175,6 +176,8 @@ class FileSynchronizer:
         # Walk workspace
         for file_path in self.workspace_path.rglob("*"):
             if not file_path.is_file():
+                continue
+            if not contained_in_workspace(file_path, self.workspace_path):
                 continue
 
             # Get relative path

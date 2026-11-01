@@ -18,6 +18,9 @@ def _make_consumer(tmp_path, monkeypatch=None, **kwargs):
     ledger = tmp_path / "chronicle.sqlite"
     if monkeypatch:
         monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger))
+        # Isolate from the ambient shell's own-identity env (fail-closed intake).
+        monkeypatch.delenv("DOPE_MEMORY_WORKSPACE_ID", raising=False)
+        monkeypatch.delenv("DOPE_MEMORY_INSTANCE_ID", raising=False)
     else:
         os.environ["DOPEMUX_CAPTURE_LEDGER_PATH"] = str(ledger)
     return EventBusConsumer(

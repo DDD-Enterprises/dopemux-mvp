@@ -675,6 +675,10 @@ class ConPortEventAdapter:
         """
         Get progress entries from ConPort via HTTP API.
         """
+        if not self.workspace_id or not str(self.workspace_id).strip():
+            logger.error("Cannot read ConPort progress: workspace_id is empty")
+            return []
+
         if not self.http_session:
             await self.initialize()
 

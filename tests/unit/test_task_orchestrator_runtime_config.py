@@ -50,7 +50,8 @@ def test_task_orchestrator_compose_and_registry_ports_are_single_valued() -> Non
         if service["name"] == "task-orchestrator"
     )
 
-    assert compose_service["ports"] == ["${TASK_ORCHESTRATOR_PORT:-8000}:8000"]
+    # Published ports bind loopback only (MCP fleet R1, finding W4-F02).
+    assert compose_service["ports"] == ["127.0.0.1:${TASK_ORCHESTRATOR_PORT:-8000}:8000"]
     assert f"PORT={TASK_ORCHESTRATOR_PORT}" in compose_service["environment"]
     assert registry_service["port"] == TASK_ORCHESTRATOR_PORT
     assert registry_service["container_port"] == TASK_ORCHESTRATOR_PORT

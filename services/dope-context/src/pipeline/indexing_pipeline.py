@@ -29,6 +29,7 @@ from ..index_profile import (
 )
 from ..preprocessing.code_chunker import ChunkingConfig, CodeChunk, CodeChunker
 from ..search.dense_search import MultiVectorSearch
+from ..utils.workspace_guard import contained_in_workspace, validate_patterns
 from ..sync.incremental_indexer import ChunkMetadata, ChunkSnapshot, IncrementalIndexer
 
 logger = logging.getLogger(__name__)
@@ -201,9 +202,15 @@ class IndexingPipeline:
         """
         files: Set[Path] = set()
 
+        validate_patterns(self.config.include_patterns)
+        validate_patterns(self.config.exclude_patterns)
+        workspace_real = self.config.workspace_path.resolve()
         for pattern in self.config.include_patterns:
             matched = self.config.workspace_path.glob(f"**/{pattern}")
-            files.update(matched)
+            for candidate in matched:
+                # Skip symlinks (file or via directory) that leave the workspace.
+                if contained_in_workspace(candidate, workspace_real):
+                    files.add(candidate)
 
         # Apply exclusions
         filtered_files = []

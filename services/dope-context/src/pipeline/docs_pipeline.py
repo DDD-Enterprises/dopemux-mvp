@@ -21,6 +21,7 @@ from ..index_profile import (
 from ..preprocessing.document_processor import DocumentProcessor
 from ..preprocessing.models import DocumentChunk
 from ..search.docs_search import DocumentSearch
+from ..utils.workspace_guard import contained_in_workspace, validate_patterns
 
 logger = logging.getLogger(__name__)
 
@@ -145,10 +146,13 @@ class DocIndexingPipeline:
         self, include_patterns: Optional[List[str]] = None
     ) -> List[Path]:
         patterns = include_patterns or self.DEFAULT_INCLUDE_PATTERNS
+        validate_patterns(patterns)
         files: Set[Path] = set()
         for pattern in patterns:
             for candidate in self.workspace_path.glob(f"**/{pattern}"):
                 if not candidate.is_file():
+                    continue
+                if not contained_in_workspace(candidate, self.workspace_path):
                     continue
                 relative = candidate.relative_to(self.workspace_path)
                 if not self._should_exclude(relative):

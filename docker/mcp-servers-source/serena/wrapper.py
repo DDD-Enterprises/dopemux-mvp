@@ -30,7 +30,6 @@ class SerenaServer:
             '--transport', 'sse',
             '--port', str(self.port),
             '--host', '0.0.0.0',
-            '--allow-origin', '*',
             '--',
             'serena', 'start-mcp-server'
         ]

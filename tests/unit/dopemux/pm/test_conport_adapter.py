@@ -108,3 +108,23 @@ class TestConPortAdapterRecordProgress:
         assert len(data) == 5
         task_ids = {entry["task_id"] for entry in data}
         assert task_ids == {f"task-{i}" for i in range(5)}
+
+
+class TestSearchDecisionsRequiresWorkspace:
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("ws", [None, "", "  "])
+    @patch("dopemux.pm.adapters.conport.ConPortAdapter._request")
+    async def test_missing_workspace_fails_without_request(self, mock_request, ws):
+        adapter = ConPortAdapter()
+        with pytest.raises(ValueError, match="workspace_id"):
+            await adapter.search_decisions(workspace_id=ws, limit=5)
+        mock_request.assert_not_called()
+
+    @pytest.mark.asyncio
+    @patch("dopemux.pm.adapters.conport.ConPortAdapter._request")
+    async def test_sends_workspace(self, mock_request):
+        resp = MagicMock()
+        resp.json = MagicMock(return_value={"decisions": []})
+        mock_request.return_value = resp
+        await ConPortAdapter().search_decisions(workspace_id="/ws/a", limit=5)
+        assert mock_request.call_args.kwargs["params"]["workspace_id"] == "/ws/a"

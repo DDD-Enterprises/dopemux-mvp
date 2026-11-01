@@ -26,11 +26,6 @@ die() {
   exit 1
 }
 
-get_resolution_field() {
-  local key="$1"
-  printf '%s\n' "${resolution}" | awk -F= -v k="${key}" '$1 == k { sub(/^[^=]*=/, ""); print; exit }'
-}
-
 parse_image_ref() {
   awk -F'"' '/^IMAGE="/ { print $2; exit }' "${STDIO_SCRIPT}"
 }
@@ -139,29 +134,20 @@ refuse_foreign_port_owner() {
 [[ -x "${STDIO_SCRIPT}" ]] || die "missing executable stdio wrapper at ${STDIO_SCRIPT}"
 [[ -f "${LOGBACK_CONFIG}" ]] || die "missing logback config at ${LOGBACK_CONFIG}"
 
-resolution="$("${STDIO_SCRIPT}" --print-resolution)"
-workspace_root="$(get_resolution_field workspace_root)"
-project_root="$(get_resolution_field project_root)"
-workspace_id="$(get_resolution_field state_id)"
-data_dir="$(get_resolution_field data_dir)"
-database_path="$(get_resolution_field database_path)"
-config_root="$(get_resolution_field config_root)"
+source "${SCRIPT_DIR}/_lib.sh"
+# Same shared derivation as the stdio launcher and rollback (one env precedence).
+resolve_task_orchestrator_identity || die "could not resolve task-orchestrator identity (set TASK_ORCHESTRATOR_PROJECT_ROOT / DOPEMUX_PROJECT_ROOT to an existing directory)"
+workspace_root="${TO_WORKSPACE_ROOT}"
+project_root="${TO_PROJECT_ROOT}"
+data_dir="${TO_DATA_DIR}"
+database_path="${data_dir}/current-tasks.db"
+config_root="${TO_CONFIG_ROOT}"
 image="$(parse_image_ref)"
 port="${TASK_ORCHESTRATOR_HTTP_PORT:-7890}"
-
-# Prefer explicit Dopemux identity env when provided by mcp start / lifecycle.
-# Container naming must use lifecycle project identity (slug-hash project_id),
-# not DOPEMUX_INSTANCE_ID from .envrc (often a short worktree hash).
-project_root="${DOPEMUX_PROJECT_ROOT:-${TASK_ORCHESTRATOR_PROJECT_ROOT:-${project_root}}}"
-workspace_root="${DOPEMUX_WORKTREE_ROOT:-${DOPEMUX_WORKSPACE_ROOT:-${workspace_root}}}"
-project_id="${DOPEMUX_PROJECT_ID:-$(basename "${project_root}")}"
-# state_id for container name: project identity first, then resolution state_id,
-# then instance id only as last resort (avoids worktree-hash name mismatch).
-if [[ -n "${DOPEMUX_PROJECT_ID:-}" ]]; then
-  workspace_id="${DOPEMUX_PROJECT_ID}"
-elif [[ -z "${workspace_id:-}" && -n "${DOPEMUX_INSTANCE_ID:-}" ]]; then
-  workspace_id="${DOPEMUX_INSTANCE_ID}"
-fi
+project_id="${TO_PROJECT_ID}"
+# Container/state naming uses the lifecycle project identity when provided,
+# else the hash state id (avoids worktree-hash name mismatch).
+workspace_id="${TO_HTTP_ID}"
 
 [[ -n "${workspace_root}" ]] || die "could not derive workspace_root (set DOPEMUX_WORKTREE_ROOT)"
 [[ -n "${project_root}" ]] || die "could not derive project_root (set DOPEMUX_PROJECT_ROOT / TASK_ORCHESTRATOR_PROJECT_ROOT)"
@@ -172,7 +158,7 @@ fi
 [[ -n "${image}" ]] || die "could not parse IMAGE from ${STDIO_SCRIPT}"
 require_numeric_port "${port}"
 
-container_name="task-orchestrator-${workspace_id}"
+container_name="${TO_HTTP_CONTAINER_NAME}"
 
 docker_args=(
   run

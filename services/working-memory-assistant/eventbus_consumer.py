@@ -31,6 +31,9 @@ from trajectory.manager import TrajectoryManager
 logger = logging.getLogger(__name__)
 
 # Configuration
+from identity_match import PLACEHOLDER_WORKSPACE_IDS as _PLACEHOLDER_WORKSPACE_IDS
+from identity_match import workspace_matches as _workspace_matches
+
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 INPUT_STREAM = os.getenv("DOPE_MEMORY_INPUT_STREAM", "activity.events.v1")
@@ -236,6 +239,15 @@ class EventBusConsumer:
         self.consumer_group = consumer_group
         self.consumer_name = f"consumer-{uuid.uuid4().hex[:8]}"
 
+        # Own identity (optional). Blank/unset => that check is not enforced.
+        self.own_workspace_id = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "").strip()
+        self.own_instance_id = os.getenv("DOPE_MEMORY_INSTANCE_ID", "").strip()
+        self.metrics: dict[str, int] = {
+            "rejected_missing_identity": 0,
+            "rejected_foreign_workspace": 0,
+            "rejected_foreign_instance": 0,
+        }
+
         self.redis_client: Optional[redis.Redis] = None
         self.redactor = Redactor()
         self.promotion_engine = PromotionEngine()
@@ -368,8 +380,37 @@ class EventBusConsumer:
             logger.warning(f"⚠️  Failed to parse event {msg_id}: {e}")
             return
 
-        workspace_id = event.get("workspace_id", "default")
-        instance_id = event.get("instance_id", "A")
+        # Fail closed (W2-F02): no "default"/"A" fallbacks. Events without a
+        # usable identity, or addressed to a different workspace/instance than
+        # this consumer's own, are counted, logged and acked (return normally)
+        # but never stored or promoted.
+        workspace_id = str(event.get("workspace_id") or "").strip()
+        instance_id = str(event.get("instance_id") or "").strip()
+        if not workspace_id or not instance_id:
+            self.metrics["rejected_missing_identity"] += 1
+            logger.warning(
+                "Rejected event %s: missing/blank workspace_id or instance_id (not promoted)",
+                event.get("id", msg_id),
+            )
+            return
+        if (
+            self.own_workspace_id
+            and self.own_workspace_id not in _PLACEHOLDER_WORKSPACE_IDS
+            and not _workspace_matches(self.own_workspace_id, workspace_id)
+        ):
+            self.metrics["rejected_foreign_workspace"] += 1
+            logger.warning(
+                "Rejected event %s: workspace_id %r != own %r (not promoted)",
+                event.get("id", msg_id), workspace_id, self.own_workspace_id,
+            )
+            return
+        if self.own_instance_id and instance_id != self.own_instance_id:
+            self.metrics["rejected_foreign_instance"] += 1
+            logger.warning(
+                "Rejected event %s: instance_id %r != own %r (not promoted)",
+                event.get("id", msg_id), instance_id, self.own_instance_id,
+            )
+            return
         event_type = event.get("type", "unknown")
         source = event.get("source", "unknown")
         data = event.get("data", {})

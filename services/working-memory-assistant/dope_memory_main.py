@@ -13,7 +13,9 @@ Per registry.yaml:
 
 import asyncio
 import base64
+import functools
 import hashlib
+import inspect
 import json
 import logging
 import os
@@ -38,6 +40,7 @@ from pydantic import BaseModel, Field
 # Use absolute imports now that we've fixed the path
 from canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
 from chronicle.store import ChronicleStore
+from identity_match import write_identity_error
 from mcp_http import FASTMCP_AVAILABLE, build_mcp_http_app, build_mcp_server
 from promotion.redactor import Redactor
 from promotion.promotion import PromotionEngine
@@ -97,6 +100,30 @@ ALLOWED_ORIGINS = [
 # ═══════════════════════════════════════════════════════════════════════════════
 # MCP Server (Inline to avoid import issues)
 # ═══════════════════════════════════════════════════════════════════════════════
+
+
+def _write_guarded(func):
+    """Reject WRITE calls whose workspace/instance identity is unacceptable.
+
+    Own identity is read from the DOPE_MEMORY_* env vars themselves (not the
+    "A" instance fallback). Shared by REST (HTTP 400) and MCP (ToolError).
+    """
+    sig = inspect.signature(func)
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        bound = sig.bind(self, *args, **kwargs)
+        err = write_identity_error(
+            bound.arguments.get("workspace_id"),
+            bound.arguments.get("instance_id"),
+            os.getenv("DOPE_MEMORY_WORKSPACE_ID", ""),
+            os.getenv("DOPE_MEMORY_INSTANCE_ID", ""),
+        )
+        if err:
+            return ToolResponse(success=False, data={}, error=err)
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 
 @dataclass
@@ -284,6 +311,7 @@ class DopeMemoryMCPServer:
             logger.error(f"memory_search error: {e}")
             return ToolResponse(success=False, data={}, error=str(e))
 
+    @_write_guarded
     def memory_store(
         self,
         workspace_id: str,
@@ -428,6 +456,7 @@ class DopeMemoryMCPServer:
             logger.error(f"memory_recap error: {e}")
             return ToolResponse(success=False, data={}, error=str(e))
 
+    @_write_guarded
     def memory_mark_issue(
         self,
         workspace_id: str,
@@ -449,6 +478,7 @@ class DopeMemoryMCPServer:
             logger.error(f"memory_mark_issue error: {e}")
             return ToolResponse(success=False, data={}, error=str(e))
 
+    @_write_guarded
     def memory_link_resolution(
         self,
         workspace_id: str,
@@ -557,6 +587,7 @@ class DopeMemoryMCPServer:
             logger.error(f"memory_replay_session error: {e}")
             return ToolResponse(success=False, data={}, error=str(e))
 
+    @_write_guarded
     def memory_correct(
         self,
         workspace_id: str,
@@ -605,6 +636,7 @@ class DopeMemoryMCPServer:
     # Phase 2: Reflection + Trajectory
     # ─────────────────────────────────────────────────────────────────
 
+    @_write_guarded
     def memory_generate_reflection(
         self,
         workspace_id: str,

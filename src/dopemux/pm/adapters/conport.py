@@ -71,9 +71,17 @@ class ConPortAdapter:
             logger.error(f"Failed to get custom data from ConPort: {e}")
             raise
             
-    async def search_decisions(self, tag: Optional[str] = None, text: Optional[str] = None, limit: int = 5) -> Dict[str, Any]:
-        """Search decisions in the knowledge graph."""
-        params = {"limit": limit}
+    async def search_decisions(
+        self,
+        tag: Optional[str] = None,
+        text: Optional[str] = None,
+        limit: int = 5,
+        workspace_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Search decisions in the knowledge graph (workspace_id is required)."""
+        if not isinstance(workspace_id, str) or not workspace_id.strip():
+            raise ValueError("workspace_id is required to read ConPort decisions")
+        params = {"limit": limit, "workspace_id": workspace_id}
             
         try:
             response = await self._request("GET", "/api/decisions", params=params)

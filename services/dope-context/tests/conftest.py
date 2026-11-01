@@ -352,3 +352,17 @@ def resolve_tool():
         return getattr(tool, "fn", tool)
 
     return _resolve
+
+
+@pytest.fixture(autouse=True)
+def _allow_test_workspace_roots(tmp_path_factory, monkeypatch):
+    """Workspace containment guard: allow pytest temp dirs as workspace roots."""
+    import os
+    import tempfile
+    from pathlib import Path
+
+    roots = [
+        str(Path(tmp_path_factory.getbasetemp()).resolve()),
+        str(Path(tempfile.gettempdir()).resolve()),
+    ]
+    monkeypatch.setenv("DOPE_CONTEXT_ALLOWED_ROOTS", os.pathsep.join(roots))
