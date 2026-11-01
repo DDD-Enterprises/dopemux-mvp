@@ -363,13 +363,14 @@ def _adr_text() -> str:
     return _ADR.read_text(encoding="utf-8")
 
 
-def test_adr_frontmatter_status_proposed_and_relations():
+def test_adr_frontmatter_status_accepted_and_relations():
+    # Operator accepted ADR-227 on 2026-10-31 (ADR227_ACCEPTANCE.md, J01-CARVEOUT).
     text = _adr_text()
     assert text.startswith("---\n")
     front = text.split("---\n", 2)[1]
     assert re.search(r"^id: ADR-227$", front, re.M)
     assert re.search(r"^type: adr$", front, re.M)
-    assert re.search(r"^status: proposed$", front, re.M)
+    assert re.search(r"^status: accepted$", front, re.M)
     relates = front.split("relates_to:", 1)[1]
     for ref in ("MACRO-DMX-RUNNER-MEMORY-2A-001", "ADR-224", "ADR-226", "ADR-MCPINT-002"):
         assert ref in relates, ref
@@ -391,7 +392,7 @@ def test_adr_states_boundaries():
         "services/task-orchestrator/",
         "Rollback",
         "git revert",
-        "Proposed",
+        "Accepted by the operator",
     ):
         assert needle in text, needle
     assert "no `..` companion" in text
