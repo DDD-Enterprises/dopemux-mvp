@@ -1,5 +1,6 @@
 """Dope-Memory backend adapter for PM-plane chronicle integration."""
 
+import asyncio
 import logging
 import os
 from typing import Any, Dict, List, Optional
@@ -7,11 +8,44 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
+# Wave 2A R2 W05: writes carry this principal's token (design 5.3).
+_PRINCIPAL = "internal:cli"
+
+
+def _bearer_headers() -> Dict[str, str]:
+    """Authorization header for this caller's principal, or {} when no token is available.
+
+    A missing token never fails a write: in log mode the server records it as
+    unverified. Only the principal name is logged, never a token.
+    """
+    try:
+        from dopemux.auth import AuthError, get_token
+    except ImportError:
+        logger.info("dopemux.auth is unavailable; sending %s writes without a token", _PRINCIPAL)
+        return {}
+    try:
+        return {"Authorization": f"Bearer {get_token(_PRINCIPAL)}"}
+    except AuthError:
+        logger.info("no token for %s; sending the write without Authorization", _PRINCIPAL)
+        return {}
+
+
 class DopeMemoryAdapter:
     """Adapter for communicating with the dope-memory HTTP API."""
 
-    def __init__(self, base_url: Optional[str] = None):
+    def __init__(self, base_url: Optional[str] = None, instance_id: Optional[str] = None):
         self.base_url = (base_url or os.getenv("DOPE_MEMORY_URL", "http://localhost:3020")).rstrip("/")
+        # dope-memory requires instance_id on writes; the envrc exports it as DOPE_MEMORY_INSTANCE_ID.
+        # workspace_id stays the caller's argument and must equal the server's DOPE_MEMORY_WORKSPACE_ID.
+        self.instance_id = instance_id or os.getenv("DOPE_MEMORY_INSTANCE_ID") or None
+
+    async def _write(self, path: str, payload: Dict[str, Any]) -> httpx.Response:
+        """POST a write with this caller's token and instance id (omitted when unknown)."""
+        if self.instance_id:
+            payload = {**payload, "instance_id": self.instance_id}
+        headers = await asyncio.to_thread(_bearer_headers)
+        kwargs: Dict[str, Any] = {"headers": headers} if headers else {}
+        return await self._request("POST", path, json=payload, **kwargs)
 
     async def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
         """Helper to make an HTTP request."""
@@ -79,7 +113,7 @@ class DopeMemoryAdapter:
         payload = {k: v for k, v in payload.items() if v is not None}
 
         try:
-            response = await self._request("POST", "/tools/memory_store", json=payload)
+            response = await self._write("/tools/memory_store", payload)
             response.raise_for_status()
             return response.json()
         except Exception as e:
@@ -107,7 +141,7 @@ class DopeMemoryAdapter:
         payload = {k: v for k, v in payload.items() if v is not None}
 
         try:
-            response = await self._request("POST", "/tools/memory_correct", json=payload)
+            response = await self._write("/tools/memory_correct", payload)
             response.raise_for_status()
             return response.json()
         except Exception as e:

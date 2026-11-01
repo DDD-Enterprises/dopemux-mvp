@@ -21,6 +21,28 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_CONPORT_PORT = 3004
 
+# Wave 2A R2 W05: writes carry this principal's token (design 5.3). custom_data
+# rows have no instance column, so the only id a write needs is workspace_id.
+_PRINCIPAL = "internal:cli"
+
+
+def _bearer_headers() -> dict:
+    """Authorization header for this caller's principal, or {} when no token is available.
+
+    A missing token never fails a write: in log mode the server records it as
+    unverified. Only the principal name is logged, never a token.
+    """
+    try:
+        from dopemux.auth import AuthError, get_token
+    except ImportError:
+        logger.info("dopemux.auth is unavailable; sending %s writes without a token", _PRINCIPAL)
+        return {}
+    try:
+        return {"Authorization": f"Bearer {get_token(_PRINCIPAL)}"}
+    except AuthError:
+        logger.info("no token for %s; sending the write without Authorization", _PRINCIPAL)
+        return {}
+
 
 @dataclass
 class InstanceState:
@@ -178,6 +200,7 @@ class InstanceStateManager:
             async with self.session.post(
                 f"{self.conport_url}/api/custom_data",
                 json=data,
+                headers=await asyncio.to_thread(_bearer_headers),
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
                 self._mark_conport_ok()
@@ -400,6 +423,7 @@ class InstanceStateManager:
             async with self.session.delete(
                 f"{self.conport_url}/api/custom_data",
                 params=params,
+                headers=await asyncio.to_thread(_bearer_headers),
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
                 self._mark_conport_ok()

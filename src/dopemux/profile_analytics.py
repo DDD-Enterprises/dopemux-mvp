@@ -24,6 +24,28 @@ from dopemux.ui.theme import styled_table
 
 from .console import console
 
+# Wave 2A R2 W05: writes carry this principal's token (design 5.3). custom_data
+# rows have no instance column, so the only id a write needs is workspace_id.
+_PRINCIPAL = "internal:cli"
+
+
+def _bearer_headers() -> Dict[str, str]:
+    """Authorization header for this caller's principal, or {} when no token is available.
+
+    A missing token never fails a write: in log mode the server records it as
+    unverified. Only the principal name is logged, never a token.
+    """
+    try:
+        from dopemux.auth import AuthError, get_token
+    except ImportError:
+        logger.info("dopemux.auth is unavailable; sending %s writes without a token", _PRINCIPAL)
+        return {}
+    try:
+        return {"Authorization": f"Bearer {get_token(_PRINCIPAL)}"}
+    except AuthError:
+        logger.info("no token for %s; sending the write without Authorization", _PRINCIPAL)
+        return {}
+
 
 @dataclass
 class ProfileSwitch:
@@ -114,10 +136,12 @@ class ProfileAnalytics:
                     "value": switch_data
                 }
 
+                headers = await asyncio.to_thread(_bearer_headers)
                 async with session.post(
                     f"{self.conport_url}/api/custom_data",
                     json=data,
-                    timeout=aiohttp.ClientTimeout(total=5.0)
+                    timeout=aiohttp.ClientTimeout(total=5.0),
+                    **({"headers": headers} if headers else {}),
                 ) as response:
                     return response.status == 200
 
@@ -223,10 +247,12 @@ class ProfileAnalytics:
                     "key": key,
                     "value": payload,
                 }
+                headers = await asyncio.to_thread(_bearer_headers)
                 async with session.post(
                     f"{self.conport_url}/api/custom_data",
                     json=data,
                     timeout=aiohttp.ClientTimeout(total=5.0),
+                    **({"headers": headers} if headers else {}),
                 ) as response:
                     return response.status == 200
         except Exception:

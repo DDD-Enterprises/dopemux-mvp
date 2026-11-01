@@ -6,6 +6,7 @@ were absent.  This module now implements them against the ConPort HTTP
 API (localhost:${CONPORT_HTTP_PORT:-3004} or CONPORT_URL).
 """
 
+import logging
 import os
 import sys
 from typing import Any, Optional
@@ -15,6 +16,8 @@ import requests
 
 from ..console import console
 from ..ui.theme import styled_panel, styled_table
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -35,6 +38,47 @@ def _workspace_id() -> str:
     return os.environ.get(
         "DOPEMUX_WORKSPACE_ID",
         os.environ.get("TASK_ORCHESTRATOR_PROJECT_ROOT", os.getcwd()),
+    )
+
+
+# Wave 2A R2 W05: decision writes carry this principal's token (design 5.3).
+_PRINCIPAL = "internal:cli"
+
+
+def _bearer_headers() -> dict[str, str]:
+    """Authorization header for this caller's principal, or {} when no token is available.
+
+    A missing token never fails a write: in log mode the server records it as
+    unverified. Only the principal name is logged, never a token.
+    """
+    try:
+        from dopemux.auth import AuthError, get_token
+    except ImportError:
+        logger.info("dopemux.auth is unavailable; sending %s writes without a token", _PRINCIPAL)
+        return {}
+    try:
+        return {"Authorization": f"Bearer {get_token(_PRINCIPAL)}"}
+    except AuthError:
+        logger.info("no token for %s; sending the write without Authorization", _PRINCIPAL)
+        return {}
+
+
+def _post_decision(workspace_id: str, summary: str, rationale: str) -> requests.Response:
+    """POST one decision. instance_id (optional for decisions) rides along when the envrc exports it."""
+    payload: dict[str, Any] = {
+        "workspace_id": workspace_id,
+        "summary": summary,
+        "rationale": rationale,
+        "alternatives": [],
+    }
+    if instance_id := os.environ.get("DOPEMUX_INSTANCE_ID"):
+        payload["instance_id"] = instance_id
+    headers = _bearer_headers()
+    return requests.post(
+        f"{_conport_url()}/api/decisions",
+        json=payload,
+        timeout=10,
+        **({"headers": headers} if headers else {}),
     )
 
 
@@ -194,15 +238,10 @@ def decisions_review(decision_id: str, note: str, workspace: Optional[str]):
         console.logger.error(f"[red]Decision {decision_id} not found; review not logged.[/red]")
         sys.exit(1)
     try:
-        r = requests.post(
-            f"{_conport_url()}/api/decisions",
-            json={
-                "workspace_id": wid,
-                "summary": f"[Review of {decision_id}] {note}",
-                "rationale": f"Follow-up review note for decision {decision_id}.",
-                "alternatives": [],
-            },
-            timeout=10,
+        r = _post_decision(
+            wid,
+            f"[Review of {decision_id}] {note}",
+            f"Follow-up review note for decision {decision_id}.",
         )
         r.raise_for_status()
         result = r.json()
@@ -233,15 +272,10 @@ def decisions_update_outcome(decision_id: str, outcome: str, workspace: Optional
         console.logger.error(f"[red]Decision {decision_id} not found; outcome not logged.[/red]")
         sys.exit(1)
     try:
-        r = requests.post(
-            f"{_conport_url()}/api/decisions",
-            json={
-                "workspace_id": wid,
-                "summary": f"[Outcome of {decision_id}] {outcome}",
-                "rationale": f"Real-world outcome recorded for decision {decision_id}.",
-                "alternatives": [],
-            },
-            timeout=10,
+        r = _post_decision(
+            wid,
+            f"[Outcome of {decision_id}] {outcome}",
+            f"Real-world outcome recorded for decision {decision_id}.",
         )
         r.raise_for_status()
         result = r.json()

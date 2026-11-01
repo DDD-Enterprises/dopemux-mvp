@@ -4,8 +4,10 @@ DopeconBridge Clients - MCP and ConPort HTTP clients.
 Extracted from main.py lines 417-656.
 """
 
+import asyncio
 import json
 import logging
+import os
 from datetime import datetime
 from typing import Any, Dict, Optional
 
@@ -18,6 +20,40 @@ from .core import cache_manager
 
 
 logger = logging.getLogger(__name__)
+
+# Wave 2A R2 W05: ConPort writes carry this principal's token (design 5.3). The
+# bridge runs in a Linux container (compose.yml dopecon-bridge, Dockerfile), where
+# the macOS keychain does not exist, so get_token fails there and the write goes
+# out unauthenticated (unverified in log mode). Moving a token into the container
+# is a design decision, not made here.
+_PRINCIPAL = "internal:dopecon"
+_WRITE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+
+
+def _bearer_headers() -> Dict[str, str]:
+    """Authorization header for this caller's principal, or {} when no token is available.
+
+    A missing token never fails a write: in log mode the server records it as
+    unverified. Only the principal name is logged, never a token.
+    """
+    try:
+        from dopemux.auth import AuthError, get_token
+    except ImportError:
+        logger.info("dopemux.auth is unavailable; sending %s writes without a token", _PRINCIPAL)
+        return {}
+    try:
+        return {"Authorization": f"Bearer {get_token(_PRINCIPAL)}"}
+    except AuthError:
+        logger.info("no token for %s; sending the write without Authorization", _PRINCIPAL)
+        return {}
+
+
+def _with_instance(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """A copy of ``payload`` carrying DOPEMUX_INSTANCE_ID when set (never overrides the caller's)."""
+    instance_id = os.getenv("DOPEMUX_INSTANCE_ID")
+    if instance_id and "instance_id" not in payload:
+        return {**payload, "instance_id": instance_id}
+    return payload
 
 
 def _build_mcp_error_detail(
@@ -185,7 +221,14 @@ class ConPortClient:
             await self.initialize()
 
         url = f"{self.base_url}{path}"
-        async with self.session.request(method, url, params=params, json=json_body) as response:
+        request_kwargs: Dict[str, Any] = {}
+        if method.upper() in _WRITE_METHODS:
+            headers = await asyncio.to_thread(_bearer_headers)
+            if headers:
+                request_kwargs["headers"] = headers
+        async with self.session.request(
+            method, url, params=params, json=json_body, **request_kwargs
+        ) as response:
             raw_text = await response.text()
             if response.status >= 400:
                 detail = raw_text or f"ConPort request failed with status {response.status}"
@@ -228,7 +271,7 @@ class ConPortClient:
         return await self._request("GET", f"/api/search/{workspace_id}", params=params)
 
     async def log_decision(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        return await self._request("POST", "/api/decisions", json_body=payload)
+        return await self._request("POST", "/api/decisions", json_body=_with_instance(payload))
 
     async def list_progress(
         self,
@@ -243,7 +286,7 @@ class ConPortClient:
         return await self._request("GET", "/api/progress", params=params)
 
     async def log_progress(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        return await self._request("POST", "/api/progress", json_body=payload)
+        return await self._request("POST", "/api/progress", json_body=_with_instance(payload))
 
     async def save_custom_data(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         return await self._request("POST", "/api/custom_data", json_body=payload)

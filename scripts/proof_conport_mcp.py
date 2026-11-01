@@ -38,7 +38,7 @@ async def generate_proof():
             "jsonrpc": "2.0", 
             "id": 2, 
             "method": "tools/call", 
-            "params": {"name": "conport_log_progress", "arguments": {"workspace_id": "ws-test", "description": "mcp smoke"}}
+            "params": {"name": "conport_log_progress", "arguments": {"workspace_id": "ws-test", "instance_id": "shared", "description": "mcp smoke"}}
         }
         resp_call = await srv.mcp_endpoint(req_call)
         call_json = json.loads(resp_call.body)
