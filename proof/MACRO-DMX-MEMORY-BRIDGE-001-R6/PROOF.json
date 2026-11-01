@@ -150,7 +150,7 @@
     "R2 wall-time cap breach (C4) is corrected by an erratum; ratification or a NEEDS_SUPERVISOR record for R2 is the operator's decision.",
     "Recap, decision.logged, dope-memory REST replay and ConPort access are NOT_BUILT by design.",
     "Auditor self-reported grok; the CLI init event shows grok-4.5; provider-attested identity UNKNOWN.",
-    "N7-N11 are OPEN at this head: the operator accepted them for the R5 head only."
+    "Operator decision 2026-11-01: N7-N11 accepted for the R6 head (ACCEPTED_RISK); see review_bundle/FOLLOWUPS.md."
   ],
   "unknowns": [
     "$.fs.write atomicity",
@@ -199,36 +199,36 @@
         "id": "N7",
         "severity": "INFO",
         "title": "Mod has never run in a real Claude Code session; proof is test-kit only.",
-        "status": "OPEN",
-        "body": "Docs and disclosures: live behaviour NOT_RUN; tests only. [docs/02-how-to/memory-bridge.md] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. The operator's live smoke test is the clearing action. OPERATOR: accepted for the R5 head bce150b58 on 2026-10-30; not yet accepted for this head."
+        "status": "ACCEPTED_RISK",
+        "body": "Docs and disclosures: live behaviour NOT_RUN; tests only. [docs/02-how-to/memory-bridge.md] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. The operator's live smoke test is the clearing action. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
       },
       {
         "id": "N8",
         "severity": "INFO",
         "title": "tool.call observes with void after next(e) returns; observation is async fire-and-forget.",
-        "status": "OPEN",
-        "body": "tool.call returns next result then void observeTool(...).catch. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, design note; INFO. The host result is never altered or delayed. OPERATOR: accepted for the R5 head bce150b58 on 2026-10-30; not yet accepted for this head."
+        "status": "ACCEPTED_RISK",
+        "body": "tool.call returns next result then void observeTool(...).catch. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, design note; INFO. The host result is never altered or delayed. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
       },
       {
         "id": "N9",
         "severity": "INFO",
         "title": "$.process on the desktop surface remains UNKNOWN; git segment and ledger replay depend on it.",
-        "status": "OPEN",
-        "body": "Docs: $.process on desktop UNKNOWN. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. The code degrades without spending attempts. OPERATOR: accepted for the R5 head bce150b58 on 2026-10-30; not yet accepted for this head."
+        "status": "ACCEPTED_RISK",
+        "body": "Docs: $.process on desktop UNKNOWN. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. The code degrades without spending attempts. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
       },
       {
         "id": "N10",
         "severity": "INFO",
         "title": "An outer AbovePrompt hook that omits next(e) (e.g. Pulse focus) hides the welcome-back band; plugin order UNKNOWN.",
-        "status": "OPEN",
-        "body": "Accepted Pulse prepend-without-next test; plugin order UNKNOWN. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, accepted caveat; INFO. OPERATOR: accepted for the R5 head bce150b58 on 2026-10-30; not yet accepted for this head."
+        "status": "ACCEPTED_RISK",
+        "body": "Accepted Pulse prepend-without-next test; plugin order UNKNOWN. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, accepted caveat; INFO. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
       },
       {
         "id": "N11",
         "severity": "INFO",
         "title": "Relay residuals: possible dual delivery (ledger no-op) and bounded re-relay after cap-drop of a sent copy; only eight newest earlier files scanned.",
-        "status": "OPEN",
-        "body": "Disclosed relay residuals (idle>10min double-delivery no-op; re-relay after cap drop; eight newest files). [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosed relay residuals; INFO. OPERATOR: accepted for the R5 head bce150b58 on 2026-10-30; not yet accepted for this head."
+        "status": "ACCEPTED_RISK",
+        "body": "Disclosed relay residuals (idle>10min double-delivery no-op; re-relay after cap drop; eight newest files). [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosed relay residuals; INFO. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
       }
     ],
     "fixes_applied": [
