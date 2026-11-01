@@ -63,6 +63,23 @@ The operator ruled "Later, with 2B (Recommended)" and added the suite-wide keych
   args = ["-m", "dopemux.mcp.http_stdio_bridge", "--server", "dope-memory", "--principal", "runner:codex"]
   ```
 
+## Follow-up round under Amendment 03
+
+The operator ruled "Allow log mode (Recommended)" (`AMENDMENT_03.md`, `4bf49fb32`).
+
+**What changed:**
+- Gate check 1 now passes for `auth_mode` `log` or `enforce`. `identity_required_writes` must still be `True`, and ConPort's `auth_principal_column` must still be `ok`. `off` fails with `auth_mode is 'off', expected 'log' or 'enforce'`.
+- When the gate holds with any server in `log` mode, the apply prints one notice: Codex's writes are verified as `runner:codex`, and writers without a token are still accepted and recorded `unverified` until `enforce`.
+- The help text, the `--allow-sequenced` error and the preview header now say "log or enforce".
+
+**Commit and route:** `f88e99dcd` on top of `4bf49fb32`; files `mcp_commands.py`, `fleet_catalog.py` and the W07 gate test. The round took 143 s, 294,022 tokens (as the completion notice reported them) and 35 tool uses. advisor calls 0.
+
+**Validation (team lead re-ran):** W07, catalog, arch and repair tests: 276 passed. The catalogs are byte-identical. `git diff --check` and pre-commit PASS.
+
+**TDD:** this round the child wrote the code before the tests and recorded no failing run. The new assertions match the new messages exactly, so they cannot pass on the old code.
+
+**Checked, not new:** `fleet_catalog.py:19` imports `mcp_commands` at module level, and that import exists at the base `97b6d5040`. `mcp_commands` imports `fleet_catalog` lazily, inside a function, and all three modules import cleanly in a fresh interpreter.
+
 ## Residual risks (for the audit and the live Codex run)
 
 1. **Bare `python`** may not resolve to an interpreter with `dopemux` installed. If it doesn't, the server doesn't start (fails closed).
