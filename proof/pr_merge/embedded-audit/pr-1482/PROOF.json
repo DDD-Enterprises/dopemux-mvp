@@ -7,13 +7,6 @@
       "runner": "grok-cli",
       "runtime_family": "xai-grok-cli"
     },
-    "corroborating_auditor": {
-      "effort": "high (encoded in the model id)",
-      "model": "gemini-4-argon-high",
-      "model_family": "google-gemini",
-      "runner": "agy",
-      "runtime_family": "google-antigravity-cli"
-    },
     "implementer": {
       "model": "claude-sonnet-5-5 (R5 repair child, R6 team lead W01 and W04; observed model identity UNKNOWN where no runtime receipt exists)",
       "model_family": "anthropic-claude",

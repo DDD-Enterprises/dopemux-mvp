@@ -213,7 +213,15 @@
       "model": "gemini-4-argon-high",
       "input_truncated_by_agy": true,
       "q3": "UNKNOWN",
-      "path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/ (files AGY_*)"
+      "path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/ (files AGY_*)",
+      "audit_identity": {
+        "effort": "high (encoded in the model id)",
+        "model": "gemini-4-argon-high",
+        "model_family": "google-gemini",
+        "runner": "agy",
+        "runtime_family": "google-antigravity-cli"
+      },
+      "audit_identity_note": "the acceptance engine requires audit_identity to hold exactly auditor, implementer and independence, so the corroborating route's identity record lives here and in embedded_audit.invocation"
     }
   },
   "audit_identity": {
@@ -223,13 +231,6 @@
       "model_family": "xai-grok",
       "runner": "grok-cli",
       "runtime_family": "xai-grok-cli"
-    },
-    "corroborating_auditor": {
-      "effort": "high (encoded in the model id)",
-      "model": "gemini-4-argon-high",
-      "model_family": "google-gemini",
-      "runner": "agy",
-      "runtime_family": "google-antigravity-cli"
     },
     "implementer": {
       "model": "claude-sonnet-5-5 (R5 repair child, R6 team lead W01 and W04; observed model identity UNKNOWN where no runtime receipt exists)",
