@@ -343,9 +343,12 @@ and the `.codex/config.toml` managed `mcp_servers` region. Parity gates in
 `tests/arch/test_mcp_fleet_catalog_contract.py` fail CI on drift; exposure changes are
 catalog `agents:` edits followed by `dopemux mcp generate --apply`.
 
-`agents:` matrix semantics — `full`: direct config now. `full-sequenced`: full config only
-after DMX-MEMSPINE-IDENTITY-005 and task-orchestrator `actor_authentication.enabled` land
-(`--allow-sequenced` is refused until then). `read-plane`: reads via the dcp-readonly-facade
+`agents:` matrix semantics — `full`: direct config now (for `conport` and `dope-memory` on
+`codex`, the in-repo `.codex/config.toml` write is behind the memory gate in section 12.7).
+`full-sequenced`: preview only; no in-repo Codex config is written for these rows
+(task-orchestrator, serena, dope-context, gpt-researcher, pal-stdio). The task-orchestrator
+row still waits for task-orchestrator `actor_authentication.enabled`, which moves to Wave 2C
+(not built). `--allow-sequenced` was removed and always errors. `read-plane`: reads via the dcp-readonly-facade
 plus read-safe direct singletons. `facade`: remote facade per ADR-DCP-MCP-RO-0009. `none`:
 no agent surface. The facade is the only cross-plane read projection for non-attributed
 agents (ADR-MCPINT-002). Implicit context is Claude-only, entering through exactly one
@@ -382,6 +385,44 @@ Canonical command surface (`dopemux mcp <verb>`):
 Never start fleet services outside `dopemux mcp` (compose/docker-run/shell wrappers are being removed under
 design packet P-22). While ConPort/dope-memory/serena remain worktree-scoped, N worktrees cost 3N containers —
 this is expected, not a bug, until the gates above land.
+
+### 12.7 Runner memory identity (Wave 2A)
+
+Operator steps with rollbacks: `docs/02-how-to/runner-memory-identity.md`. Design:
+`docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md` (revision 2). ADR-MCPINT-002
+amendment: `docs/90-adr/adr-mcpint-002-amendment-runner-identity.md` (**proposed**, not accepted).
+
+**Built (committed on `feat/runner-memory-2a`; none of it observed live):**
+- dope-memory and ConPort reject an HTTP write without `workspace_id` (and `instance_id` where
+  the row carries one) in every auth mode, and take an auth mode `off|log|enforce`
+  (`DOPE_MEMORY_AUTH_MODE`, `CONPORT_AUTH_MODE`; sidecar default `log`,
+  `src/dopemux/mcp/docker_runtime.py`). A valid token stores the verified principal; any other
+  write is stored `unverified` and counted.
+- `dopemux auth issue|rotate|revoke|list <principal>` keeps tokens in the macOS keychain and
+  SHA-256 hashes in `~/.config/dopemux/auth/` (writes are dry runs without `--apply`).
+- `dopemux.mcp.http_stdio_bridge --server dope-memory|conport --principal <p>` sends the
+  token and fills the repo ids; it fails closed without a token or envrc.
+- `dopemux mcp generate --agent-matrix --apply --output-dir <dir>` writes the managed
+  `conport`/`dope-memory` region of `.codex/config.toml` only when both servers report
+  `auth_mode` `log` or `enforce`, `identity_required_writes` true (ConPort also
+  `auth_principal_column` `ok`) and a `runner:codex` keychain token exists. Otherwise it
+  writes the preview and names the failed checks. In `log` mode Codex's writes are verified as
+  `runner:codex`; tokenless writers are still accepted and recorded `unverified`.
+- Both memory images must be rebuilt (they now `COPY auth_identity.py`; ADR-227 Amendment 1).
+- Health evidence: each server's `/health` shows `auth_mode`, `identity_required_writes`,
+  `auth_hash_file`, `auth_unverified_calls` (ConPort also `auth_principal_column`).
+
+**Not built — do not claim or instruct as available:**
+- `enforce` mode in 2A. Blocked by container callers with no keychain, unknown container ids,
+  the bridge progress route dropping `instance_id`, Claude Code on direct HTTP until 2B, and
+  other writers (`services/task-orchestrator`, `pm/adapters/conport.py`,
+  `services/dope-memory/mcp_stdio_adapter.py`).
+- `dopemux mcp doctor` reporting of unverified writers (use `/health`).
+- Claude Code on the bridge: the tracked `.mcp.json` and `dopemux mcp init|ensure` keep
+  direct HTTP entries; the Claude bridge renderer exists but is unused (Wave 2B).
+- The task orchestrator (token auth and the `actor_authentication.enabled` precondition,
+  Wave 2C) and the Grok, AGY, Command Code, OpenCode and Copilot renderers (Wave 2B).
+- A live Codex run: step 10 of the how-to is `NOT_RUN`.
 
 Respond terse like smart caveman. All technical substance stay. Only fluff die.
 
