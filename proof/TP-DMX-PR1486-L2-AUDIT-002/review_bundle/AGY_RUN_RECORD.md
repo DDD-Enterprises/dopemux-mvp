@@ -1,11 +1,14 @@
 # AGY run record (governing auditor, round 6)
 
 Label: **AUDITOR_WRITTEN_RAW_RETAINED**. The raw stream, stderr and the wrapper's exit line were written to durable storage
-and are copied here unchanged (`AGY_OUTPUT_RAW.jsonl`, `AGY_STDERR.txt`, `AUDIT_INVOCATION.txt`).
+and are copied here unchanged (`AGY_OUTPUT_RAW.txt`, `AGY_STDERR.txt`, `AUDIT_INVOCATION.txt`).
+The raw stream is JSON Lines. The command in `AUDIT_INVOCATION.txt` wrote it to `AGY_OUTPUT_RAW.jsonl`. The bundle copy
+is named `.txt` because the proof-only closure allows only `.txt`, `.json`, `.md` and `.diff` files in `review_bundle/`.
+The rename came after signing and the bytes are unchanged (sha256 `fa61891b…`, the same as before the rename).
 
 | Evidence | Where | What it shows |
 |---|---|---|
-| Raw stream | `AGY_OUTPUT_RAW.jsonl` | step types ['agent_response', 'user_input'] only (no tool steps); final `result` status SUCCESS, 297 s, usage {"input_tokens": 65184, "output_tokens": 5700, "thinking_tokens": 3808, "cache_read_tokens": 0, "total_tokens": 70884} |
+| Raw stream | `AGY_OUTPUT_RAW.txt` (JSON Lines) | step types ['agent_response', 'user_input'] only (no tool steps); final `result` status SUCCESS, 297 s, usage {"input_tokens": 65184, "output_tokens": 5700, "thinking_tokens": 3808, "cache_read_tokens": 0, "total_tokens": 70884} |
 | Verdict | `AGY_VERDICT.json` | the JSON object in the `result.response` string, parsed unchanged |
 | Exit | `AUDIT_INVOCATION.txt` | wrapper line `agy exit=0 2026-11-01T03:27:49Z` (observed, not inferred) |
 | CLI log | `AGY_CLI_LOG.txt` (redacted copy, see `REDACTIONS.md`; original in custody `agy/cli-20261031_202247.log`) | CLI 1.4.12, print mode, `promptLength=169875`, `model="gemini-4-argon-high"`, terminal sandbox on |
