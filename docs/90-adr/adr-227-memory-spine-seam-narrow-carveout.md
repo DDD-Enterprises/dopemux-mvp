@@ -8,7 +8,7 @@ date: '2026-10-31'
 last_review: '2026-10-31'
 next_review: '2027-01-31'
 prelude: Narrow DCP-RED-MERGE-SEAM-0001 carve-out that exempts exactly 20 named files under services/working-memory-assistant/, docker/mcp-servers-source/conport/ and services/dopecon-bridge/ so Runner Memory Wave 2A can add verified runner identity to dope-memory and ConPort (adr) for dopemux documentation and developer workflows.
-status: proposed
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: medium
@@ -24,10 +24,13 @@ graph_metadata:
 
 ## Status
 
-* Proposed. This text is a deliverable of `TP-DMX-RUNNERMEM2A-R2-W09-REDLANE-CARVEOUT-001`
-  (workstream W09 of `MACRO-DMX-RUNNER-MEMORY-2A-001-R2`). It becomes Accepted only when the
-  operator accepts it. No workstream (W01, W02, W05) edits a red-lane path before that
-  acceptance (design section 5.6, packet invariant C12).
+* Accepted by the operator on 2026-10-31 (chat, verbatim "Accept ADR-227"; recorded in
+  `proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/ADR227_ACCEPTANCE.md`). The text
+  accepted is this file at commit `95c54c4ec`; only this status entry and the front-matter
+  `status` changed on acceptance.
+* Drafted by `TP-DMX-RUNNERMEM2A-R2-W09-REDLANE-CARVEOUT-001` (workstream W09 of
+  `MACRO-DMX-RUNNER-MEMORY-2A-001-R2`). No workstream (W01, W02, W05) edited a red-lane path
+  before this acceptance (design section 5.6, packet invariant C12).
 * The operator chose this route on 2026-10-31 (`OPERATOR_RULINGS_R2.md`, ruling 1: "Narrow
   carve-out ADR (Recommended)").
 
