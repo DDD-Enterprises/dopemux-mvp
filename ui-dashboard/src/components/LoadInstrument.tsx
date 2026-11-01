@@ -38,9 +38,15 @@ const eyebrowSx = {
 
 // Whole percent, except where rounding would land the number on the far side of a zone
 // edge from the band the raw value is in: then one decimal (0.804 reads 80.4%, Break. Now.).
+// If even one decimal lands on the edge (0.8001 -> 80.0), round away from it toward the raw
+// value so the displayed number is always inside the raw value's band (80.1%).
 const toPercent = (value: number): number => {
+  const band = deriveStatus(value);
   const whole = Math.round(value * 100);
-  return deriveStatus(whole / 100) === deriveStatus(value) ? whole : Math.round(value * 1000) / 10;
+  if (deriveStatus(whole / 100) === band) return whole;
+  const tenth = Math.round(value * 1000) / 10;
+  if (deriveStatus(tenth / 100) === band) return tenth;
+  return (tenth / 100 < value ? Math.ceil(value * 1000) : Math.floor(value * 1000)) / 10;
 };
 
 const LoadInstrument: React.FC<LoadInstrumentProps> = ({ load, prediction, recommendation }) => {

@@ -130,8 +130,9 @@ const SignalFeed: React.FC<SignalFeedProps> = ({ notifications, socketUrl, socke
         )}
       </Box>
 
-      {notifications.length > 0 ? (
-        <Box component="ol" role="log" aria-live="polite" sx={{ m: 0, p: 0, listStyle: 'none' }}>
+      <Box>
+        {/* Mounted even when empty so assistive tech already tracks it when the first signal arrives. */}
+        <Box component="ol" role="log" aria-live="polite" aria-labelledby="signal-feed-title" sx={{ m: 0, p: 0, listStyle: 'none' }}>
           {notifications.map((notification, index) => {
             const color = getNotificationColor(notification.notificationType);
             const time = formatClockTime(notification.timestamp);
@@ -186,11 +187,12 @@ const SignalFeed: React.FC<SignalFeedProps> = ({ notifications, socketUrl, socke
             );
           })}
         </Box>
-      ) : (
-        <Typography sx={{ ...monoSx, fontSize: '0.8125rem', color: brandTokens.text.secondary }}>
-          {EMPTY_FEED_TEXT[socketState](socketUrl)}
-        </Typography>
-      )}
+        {notifications.length === 0 && (
+          <Typography sx={{ ...monoSx, fontSize: '0.8125rem', color: brandTokens.text.secondary }}>
+            {EMPTY_FEED_TEXT[socketState](socketUrl)}
+          </Typography>
+        )}
+      </Box>
     </Paper>
   );
 };

@@ -22,6 +22,7 @@ import {
   isMessageObject,
   mapAggregateState,
   mapRealtimeState,
+  upstreamErrorSections,
 } from './cognitiveReading';
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import AttentionStatePanel from './components/AttentionStatePanel';
@@ -31,10 +32,12 @@ import TaskSequencer from './components/TaskSequencer';
 import TeamDashboard from './components/TeamDashboard';
 import RepositoryPlannerPage from './features/repository-planner/RepositoryPlannerPage';
 import theme, { brandTokens, deriveStatus } from './theme';
-import { formatClockTime } from './time';
+import { asUtcIso, formatClockTime } from './time';
 
 type SocketState = 'connecting' | 'open' | 'closed';
 type ConnectionStatus = 'connecting' | 'live' | 'degraded';
+// Where an error banner came from: only socket errors are cleared by a later good state_update.
+type ErrorBanner = { source: 'socket' | 'task'; message: string };
 
 const STATE_ENDPOINT = `${dashboardApiUrl}/api/adhd-state`;
 const SOCKET_ENDPOINT = `${dashboardWsUrl}/ws/state`;
@@ -77,7 +80,7 @@ function DashboardApp() {
   const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
   const [httpError, setHttpError] = useState<string | null>(null);
   const [socketState, setSocketState] = useState<SocketState>('connecting');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorBanner, setErrorBanner] = useState<ErrorBanner | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
   const [showAllPanels, setShowAllPanels] = useState(false);
   const [isSipLogged, setIsSipLogged] = useState(false);
@@ -89,7 +92,7 @@ function DashboardApp() {
     liveReadingSeenRef.current = false;
     setHttpError(null);
     setSocketState('connecting');
-    setErrorMessage(null);
+    setErrorBanner(null);
     setRetryTrigger((prev) => prev + 1);
   }, []);
 
@@ -103,6 +106,9 @@ function DashboardApp() {
       sipTimeoutRef.current = null;
     }, 2000);
   }, []);
+
+  const reportSocketError = useCallback((message: string) => setErrorBanner({ source: 'socket', message }), []);
+  const reportTaskError = useCallback((message: string) => setErrorBanner({ source: 'task', message }), []);
 
   const handleDismissNotification = useCallback((id: string) => {
     setNotifications((current) => current.filter((n) => n.id !== id));
@@ -167,6 +173,11 @@ function DashboardApp() {
       }
       if (isCurrent()) {
         applyReading(mapAggregateState(payload));
+        // HTTP 200 does not mean every upstream call worked: keep the partial reading, say what is missing.
+        const failed = upstreamErrorSections(payload);
+        if (failed.length > 0) {
+          fail(`Failed: GET ${STATE_ENDPOINT} returned upstream errors for ${failed.join(', ')}.`);
+        }
       }
     }
 
@@ -189,11 +200,11 @@ function DashboardApp() {
       try {
         message = JSON.parse(event.data);
       } catch {
-        setErrorMessage(`Failed: could not parse a message from ${SOCKET_ENDPOINT}.`);
+        reportSocketError(`Failed: could not parse a message from ${SOCKET_ENDPOINT}.`);
         return;
       }
       if (!isMessageObject(message)) {
-        setErrorMessage(`Failed: unexpected message from ${SOCKET_ENDPOINT}.`);
+        reportSocketError(`Failed: unexpected message from ${SOCKET_ENDPOINT}.`);
         return;
       }
 
@@ -204,10 +215,12 @@ function DashboardApp() {
         liveReadingSeenRef.current = true;
         applyReading(nextReading);
         setHttpError(null);
+        // A good snapshot ends a socket problem, but not a clipboard or board failure.
+        setErrorBanner((current) => (current?.source === 'socket' ? null : current));
         return;
       }
       if (message.type === 'state_update') {
-        setErrorMessage(`Failed: malformed state_update from ${SOCKET_ENDPOINT}.`);
+        reportSocketError(`Failed: malformed state_update from ${SOCKET_ENDPOINT}.`);
         return;
       }
 
@@ -218,7 +231,7 @@ function DashboardApp() {
               id: String(message.id || Date.now().toString() + Math.random().toString(36).substring(2, 9)),
               message: String(message.message || 'Notification received'),
               notificationType: String(message.notification_type || 'info'),
-              timestamp: String(message.timestamp || new Date().toISOString()),
+              timestamp: asUtcIso(String(message.timestamp || new Date().toISOString())),
             },
             ...current,
           ].slice(0, MAX_SIGNALS)
@@ -242,7 +255,7 @@ function DashboardApp() {
       socket.onclose = null;
       socket.close();
     };
-  }, [retryTrigger, applyReading]);
+  }, [retryTrigger, applyReading, reportSocketError]);
 
   const status = reading.load === null ? null : deriveStatus(reading.load);
   const isCritical = status === 'critical' && !showAllPanels;
@@ -392,11 +405,11 @@ function DashboardApp() {
           </Alert>
         )}
 
-        <Collapse in={Boolean(errorMessage)} unmountOnExit>
+        <Collapse in={errorBanner !== null} unmountOnExit>
           <Alert
             severity="error"
             icon={<AlertTriangle size={20} aria-hidden="true" />}
-            onClose={() => setErrorMessage(null)}
+            onClose={() => setErrorBanner(null)}
             closeText="Dismiss error notification"
             slotProps={{
               closeButton: {
@@ -409,7 +422,7 @@ function DashboardApp() {
               border: `1px solid ${brandTokens.colors.errorRed}`,
             }}
           >
-            {errorMessage}
+            {errorBanner?.message}
           </Alert>
         </Collapse>
 
@@ -421,7 +434,7 @@ function DashboardApp() {
             )}
           </Grid>
           <Grid item xs={12} lg={7}>
-            <TaskSequencer cognitiveState={{ status: status ?? 'unknown' }} onError={setErrorMessage} />
+            <TaskSequencer cognitiveState={{ status: status ?? 'unknown' }} onError={reportTaskError} />
           </Grid>
           {isCritical ? (
             <Grid item xs={12}>
@@ -463,7 +476,7 @@ function DashboardApp() {
           )}
           {showTeamDashboard && (
             <Grid item xs={12}>
-              <TeamDashboard onError={setErrorMessage} />
+              <TeamDashboard onError={reportTaskError} />
             </Grid>
           )}
         </Grid>

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 
 import App from './App';
@@ -283,4 +283,73 @@ test('signal feed lists notifications as log rows that can be dismissed', async 
 
   fireEvent.click(within(log).getByRole('button', { name: /Dismiss decision signal/ }));
   expect(screen.queryByText('Logged decision 212')).not.toBeInTheDocument();
+});
+
+test('a 200 response with nested upstream errors keeps the partial reading and shows a retryable banner', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        health: { status: 'ok' },
+        energy: { error: 'engine down', detail: 'timeout' },
+        attention: { error: 'engine down', detail: 'timeout' },
+        cognitive_load: { cognitive_load: 0.4, predicted_load_15min: 0.5 },
+        recommendation: 'Take a break.',
+        task_recommendations: [],
+      }),
+    })
+  );
+  await renderApp();
+
+  const alert = screen.getByRole('alert');
+  expect(alert).toHaveTextContent(
+    'Failed: GET http://localhost:8097/api/adhd-state returned upstream errors for energy, attention.'
+  );
+  expect(within(alert).getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+  expect(screen.getByText('40%')).toBeInTheDocument();
+  expect(screen.getByTestId('energy-value')).toHaveTextContent('unknown');
+  expect(screen.getByTestId('attention-value')).toHaveTextContent('unknown');
+});
+
+test('a failed task recommender does not render its error text as the recommendation', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...livePayload(0.4),
+        recommendation: 'recommender exploded',
+        task_recommendations: { error: 'recommender exploded' },
+      }),
+    })
+  );
+  await renderApp();
+
+  expect(screen.getByText('40%')).toBeInTheDocument();
+  expect(screen.getByRole('alert')).toHaveTextContent('upstream errors for recommendation');
+  expect(screen.queryByText(/recommender exploded/)).not.toBeInTheDocument();
+});
+
+test('a later good state_update clears a socket error banner', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => livePayload(0.4) }));
+  await renderApp();
+
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+    FakeSocket.instances[0].onmessage?.({ data: '{not json' });
+  });
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Failed: could not parse a message from ws://localhost:8097/ws/state.'
+  );
+
+  await act(async () => {
+    FakeSocket.instances[0].onmessage?.({
+      data: JSON.stringify({ type: 'state_update', data: { cognitive_load: 0.55 } }),
+    });
+  });
+
+  // The alert sits in a Collapse, so it leaves the DOM after its exit transition.
+  await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  expect(screen.getByText('55%')).toBeInTheDocument();
 });

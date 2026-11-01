@@ -1,19 +1,17 @@
 import React from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 
+import { AttentionState, ENERGY_LEVELS, EnergyLevel } from '../cognitiveReading';
 import { brandTokens } from '../theme';
 
 interface AttentionStatePanelProps {
   /** Raw ADHD engine enum, e.g. `medium`. `null` when no reading. */
-  energyLevel: string | null;
+  energyLevel: EnergyLevel | null;
   /** Raw ADHD engine enum, e.g. `focused`. `null` when no reading. */
-  attentionState: string | null;
+  attentionState: AttentionState | null;
 }
 
-// Ordered as the ADHD engine reports them; the meter lights one step per level.
-const ENERGY_LEVELS = ['very_low', 'low', 'medium', 'high', 'hyperfocus'];
-
-const ATTENTION_COLORS: Record<string, string> = {
+const ATTENTION_COLORS: Record<AttentionState, string> = {
   focused: brandTokens.colors.ritualCyan,
   hyperfocused: brandTokens.colors.ritualCyan,
   transitioning: brandTokens.text.primary,
@@ -104,7 +102,7 @@ const AttentionStatePanel: React.FC<AttentionStatePanelProps> = ({ energyLevel, 
           {attentionState ? (
             <Typography
               component="span"
-              sx={{ ...valueSx, color: ATTENTION_COLORS[attentionState] ?? brandTokens.text.primary }}
+              sx={{ ...valueSx, color: ATTENTION_COLORS[attentionState] }}
             >
               {humanize(attentionState)}
             </Typography>

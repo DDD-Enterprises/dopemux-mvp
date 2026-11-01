@@ -61,3 +61,45 @@ test('uses the same thresholds as deriveStatus at the zone edges', () => {
   rerender(<LoadInstrument load={0.81} prediction={null} recommendation={null} />);
   expect(screen.getByText('Break. Now.')).toBeInTheDocument();
 });
+
+test('rounds away from a zone edge when one decimal still lands on it', () => {
+  const { rerender } = render(<LoadInstrument load={0.8001} prediction={null} recommendation={null} />);
+  expect(screen.getByText('80.1%')).toBeInTheDocument();
+  expect(screen.getByText('Break. Now.')).toBeInTheDocument();
+  expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '80.1');
+
+  rerender(<LoadInstrument load={0.6001} prediction={null} recommendation={null} />);
+  expect(screen.getByText('60.1%')).toBeInTheDocument();
+  expect(screen.getByText('Pressure Build')).toBeInTheDocument();
+  expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '60.1');
+
+  rerender(<LoadInstrument load={0.29999} prediction={null} recommendation={null} />);
+  expect(screen.getByText('29.9%')).toBeInTheDocument();
+  expect(screen.getByText('Gentle Glide')).toBeInTheDocument();
+  expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '29.9');
+});
+
+test('keeps whole percents on the exact zone edges, in the band deriveStatus gives them', () => {
+  const { rerender } = render(<LoadInstrument load={0.8} prediction={null} recommendation={null} />);
+  expect(screen.getByText('80%')).toBeInTheDocument();
+  expect(screen.getByText('Pressure Build')).toBeInTheDocument();
+  expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '80');
+
+  rerender(<LoadInstrument load={0.6} prediction={null} recommendation={null} />);
+  expect(screen.getByText('60%')).toBeInTheDocument();
+  expect(screen.getByText('Flow Ritual')).toBeInTheDocument();
+  expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '60');
+
+  rerender(<LoadInstrument load={0.3} prediction={null} recommendation={null} />);
+  expect(screen.getByText('30%')).toBeInTheDocument();
+  expect(screen.getByText('Flow Ritual')).toBeInTheDocument();
+  expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '30');
+});
+
+test('applies the same edge-safe rounding to the forecast and its delta', () => {
+  render(<LoadInstrument load={0.62} prediction={0.8001} recommendation={null} />);
+
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('80.1%');
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('+18.1 pts');
+  expect(screen.getByRole('meter').getAttribute('aria-valuetext')).toContain('forecast 80.1%');
+});
