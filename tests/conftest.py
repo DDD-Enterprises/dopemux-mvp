@@ -182,6 +182,23 @@ def _block_live_conport_writes(monkeypatch):
     )
 
 
+@pytest.fixture(autouse=True)
+def _no_real_keychain(monkeypatch):
+    """Keep every test off the real macOS keychain.
+
+    `dopemux.auth.get_token` shells out to `security`; on a Mac with issued
+    runner tokens an unguarded test would read the real keychain. Pointing
+    SECURITY_BIN at a missing path makes every `get_token` raise KeychainError
+    (the Linux-container case) unless a test installs its own stub, as the
+    dopemux.auth tests do. Does nothing if `dopemux.auth` cannot be imported.
+    """
+    try:
+        import dopemux.auth.keychain  # noqa: F401
+    except Exception:  # pragma: no cover - import shape varies across envs
+        return
+    monkeypatch.setattr("dopemux.auth.keychain.SECURITY_BIN", "/nonexistent/security")
+
+
 def pytest_collection_modifyitems(config, items):
     """Skip @pytest.mark.database tests unless explicitly opted in.
 

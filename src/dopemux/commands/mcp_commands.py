@@ -21,6 +21,9 @@ import shutil
 import socket
 import sys
 import subprocess
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from subprocess import CalledProcessError
@@ -30,6 +33,7 @@ from urllib.parse import urlparse
 import click
 import yaml
 
+from ..auth import AuthError, get_token
 from ..coldstart.network import ensure_docker_networks
 from ..console import console
 from ..mcp.project_identity import ProjectIdentityError, resolve_project_identity
@@ -616,6 +620,50 @@ def _port_is_free(port: int, host: str = "127.0.0.1") -> bool:
         sock.close()
 
 
+# Wave 2A: the memory servers reach runners through the authenticating stdio
+# route (`dopemux.mcp.http_stdio_bridge --server NAME --principal P`), which
+# finds the checkout's ports in `.envrc.dopemux-mcp` and reads P's token from
+# the keychain. The bridge is the same in every worktree, so these entries are
+# rendered from this table, not from the catalog's per-worktree `url_template`
+# (which still feeds health probes, port allocation and compose alignment).
+# In Wave 2A only the Codex config uses it by default; Claude Code's bridge
+# entry (`_render_claude_memory_bridge_entry`) exists but is not wired in.
+#
+# The interpreter is the bare name `python`, the same choice the legacy
+# `--base-url` entries make (config/manager.py): a fixed string keeps the
+# generated files, the Codex parity gate and `ensure` drift detection
+# independent of which interpreter ran the generator.
+MEMORY_BRIDGE_SERVERS: Tuple[str, ...] = ("conport", "dope-memory")
+MEMORY_BRIDGE_PYTHON = "python"
+MEMORY_BRIDGE_MODULE = "dopemux.mcp.http_stdio_bridge"
+CLAUDE_MEMORY_PRINCIPAL = "runner:claude"
+CODEX_MEMORY_PRINCIPAL = "runner:codex"
+
+
+def _memory_bridge_command(server: str, principal: str) -> Tuple[str, List[str]]:
+    """`(command, args)` that start the stdio route for one memory server."""
+    return MEMORY_BRIDGE_PYTHON, ["-m", MEMORY_BRIDGE_MODULE, "--server", server, "--principal", principal]
+
+
+def _render_claude_memory_bridge_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Claude Code stdio entry that runs the authenticating bridge as `runner:claude`.
+
+    Not used by default: in Wave 2A Claude Code keeps its direct HTTP/SSE
+    entries from `_render_local_entry` (AMENDMENT_02); Wave 2B wires this up.
+    The entry carries no `env` because the bridge reads the checkout's envrc
+    itself.
+    """
+    if name not in MEMORY_BRIDGE_SERVERS:
+        raise click.ClickException(
+            f"`{name}` has no stdio bridge profile (expected one of {', '.join(MEMORY_BRIDGE_SERVERS)})."
+        )
+    command, args = _memory_bridge_command(name, CLAUDE_MEMORY_PRINCIPAL)
+    entry: Dict[str, Any] = {"type": "stdio", "command": command, "args": args}
+    if spec.get("description"):
+        entry["description"] = spec["description"]
+    return entry
+
+
 def _render_local_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
     """
     Render a per-worktree catalog entry as a Claude Code .mcp.json mcpServers value.
@@ -901,6 +949,174 @@ def _build_local_mcp_json(server_names: List[str], catalog: Dict[str, Any]) -> D
 
 
 # ---------------------------------------------------------------------------
+# Codex memory gate (Wave 2A design 5.7): replaces `--allow-sequenced`.
+#
+# Before `generate --apply` writes a write-capable Codex config for the memory
+# servers it checks (1) that dope-memory and ConPort report enforce mode with
+# identity-required writes, and (2) that a keychain token exists for the target
+# runner. Any failure leaves only the preview and names the check.
+# ---------------------------------------------------------------------------
+
+ALLOW_SEQUENCED_REMOVED_MESSAGE = (
+    "--allow-sequenced was removed in Wave 2A. The in-repo .codex/config.toml write is now "
+    "gated by two checks that `dopemux mcp generate --agent-matrix --apply` runs itself: "
+    "(1) the dope-memory and ConPort /health endpoints report auth_mode 'enforce' and "
+    "identity_required_writes true (ConPort also auth_principal_column 'ok'); "
+    f"(2) a keychain token exists for {CODEX_MEMORY_PRINCIPAL} "
+    f"(`dopemux auth issue {CODEX_MEMORY_PRINCIPAL} --apply`). "
+    "When a check fails only the preview is written and the check is named. "
+    "Re-run without --allow-sequenced."
+)
+
+_HEALTH_TIMEOUT_SECONDS = 3.0
+# Loopback health probes carry no credentials; an empty ProxyHandler keeps them
+# off any environment proxy.
+_HEALTH_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+# (server, envrc key holding the port that serves its REST /health, extra
+# fields that must equal a value). ConPort's REST port is CONPORT_HTTP_PORT,
+# not the MCP port the bridge uses.
+_MEMORY_HEALTH_TARGETS: Tuple[Tuple[str, str, Tuple[Tuple[str, str], ...]], ...] = (
+    ("dope-memory", "DOPE_MEMORY_PORT", ()),
+    ("conport", "CONPORT_HTTP_PORT", (("auth_principal_column", "ok"),)),
+)
+
+
+class _HealthProbeError(Exception):
+    """A server's /health could not be located or read (message is safe to print)."""
+
+
+@dataclass(frozen=True)
+class GateCheck:
+    name: str
+    ok: bool
+    detail: str
+
+
+@dataclass(frozen=True)
+class CodexMemoryGate:
+    """Outcome of every gate check; carries messages only, never a token."""
+
+    checks: Tuple[GateCheck, ...]
+
+    @property
+    def ok(self) -> bool:
+        return all(check.ok for check in self.checks)
+
+    @property
+    def failures(self) -> Tuple[str, ...]:
+        return tuple(check.detail for check in self.checks if not check.ok)
+
+
+def _fetch_health(port: int) -> Dict[str, Any]:
+    """GET http://127.0.0.1:<port>/health and return the JSON object (200 only)."""
+    import http.client
+
+    url = f"http://127.0.0.1:{port}/health"
+    try:
+        with _HEALTH_OPENER.open(url, timeout=_HEALTH_TIMEOUT_SECONDS) as response:
+            if response.status != 200:
+                raise _HealthProbeError(f"{url} answered HTTP {response.status}")
+            raw = response.read(1 << 16)
+    except _HealthProbeError:
+        raise
+    except urllib.error.HTTPError as exc:
+        raise _HealthProbeError(f"{url} answered HTTP {exc.code}") from None
+    except (OSError, ValueError, http.client.HTTPException) as exc:
+        raise _HealthProbeError(f"{url} is unreachable ({type(exc).__name__})") from None
+    try:
+        body = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        raise _HealthProbeError(f"{url} did not return JSON") from None
+    if not isinstance(body, dict):
+        raise _HealthProbeError(f"{url} did not return a JSON object")
+    return body
+
+
+def _health_port(repo_path: Path, key: str) -> int:
+    """The `key` port from the checkout's envrc, reading no other value from it."""
+    from ..mcp import http_stdio_bridge as bridge
+    from ..mcp.envrc import safe_port_int
+
+    envrc = bridge._find_envrc(repo_path)
+    if envrc is None:
+        raise _HealthProbeError(
+            f"no {bridge.ENVRC_FILENAME} from {repo_path} up to the checkout root; "
+            "run `dopemux mcp init` in this checkout"
+        )
+    try:
+        values = bridge._read_selected_keys(envrc, frozenset({key}))
+    except bridge.BridgeStartupError as exc:
+        raise _HealthProbeError(str(exc)) from None
+    port = safe_port_int(values, key)
+    if port is None:
+        raise _HealthProbeError(
+            f"{envrc} has no valid {key}; run `dopemux mcp init` / `dopemux mcp start` in this checkout"
+        )
+    return port
+
+
+def _short(value: Any) -> str:
+    # Brackets would read as console markup when the message is logged.
+    text = repr(value).replace("[", "(").replace("]", ")")
+    return text if len(text) <= 40 else text[:37] + "..."
+
+
+def _check_memory_server_health(
+    repo_path: Path,
+    server: str,
+    port_key: str,
+    extra: Tuple[Tuple[str, str], ...],
+) -> GateCheck:
+    prefix = f"gate check 1 (server health) {server}"
+    name = f"memory-health:{server}"
+    try:
+        body = _fetch_health(_health_port(repo_path, port_key))
+    except _HealthProbeError as exc:
+        return GateCheck(name, False, f"{prefix}: {exc}")
+    problems: List[str] = []
+    if body.get("auth_mode") != "enforce":
+        problems.append(f"auth_mode is {_short(body.get('auth_mode'))}, expected 'enforce'")
+    if body.get("identity_required_writes") is not True:
+        problems.append(
+            f"identity_required_writes is {_short(body.get('identity_required_writes'))}, expected true"
+        )
+    for key, expected in extra:
+        if body.get(key) != expected:
+            problems.append(f"{key} is {_short(body.get(key))}, expected {expected!r}")
+    if problems:
+        return GateCheck(name, False, f"{prefix}: " + "; ".join(problems))
+    return GateCheck(name, True, f"{prefix}: enforce, identity-required writes")
+
+
+def _check_runner_token(principal: str) -> GateCheck:
+    name = f"runner-token:{principal}"
+    try:
+        get_token(principal)  # existence check only: the value is discarded unread
+    except AuthError as exc:
+        return GateCheck(
+            name,
+            False,
+            f"gate check 2 (runner token) {principal}: no usable keychain token "
+            f"({type(exc).__name__}: {exc}); issue one with `dopemux auth issue {principal} --apply`",
+        )
+    return GateCheck(name, True, f"gate check 2 (runner token) {principal}: present")
+
+
+def evaluate_codex_memory_gate(
+    repo_path: Path,
+    principal: str = CODEX_MEMORY_PRINCIPAL,
+) -> CodexMemoryGate:
+    """Run every gate check for the checkout at `repo_path`; never raises for a failed check."""
+    checks = [
+        _check_memory_server_health(repo_path, server, port_key, extra)
+        for server, port_key, extra in _MEMORY_HEALTH_TARGETS
+    ]
+    checks.append(_check_runner_token(principal))
+    return CodexMemoryGate(tuple(checks))
+
+
+# ---------------------------------------------------------------------------
 # `mcp generate` / `ensure` / `init` / `add` / `remove` / `list` / `doctor` / `sync-globals`
 # ---------------------------------------------------------------------------
 
@@ -917,8 +1133,8 @@ def _build_local_mcp_json(server_names: List[str], catalog: Dict[str, Any]) -> D
     "allow_sequenced",
     is_flag=True,
     help=(
-        "Also write the full-sequenced .codex/config.toml mcp_servers block in-repo. "
-        "Refused by default until the ADR-MCPINT-002 G1 prerequisites land."
+        "Removed (Wave 2A). Passing it is an error: the .codex/config.toml write is "
+        "controlled by the memory-server gate, not by a flag."
     ),
 )
 @click.option(
@@ -957,9 +1173,18 @@ def mcp_generate_cmd(
     Agent-matrix mode (``--agent-matrix``): ADR-MCPINT-001 projections for local
     .mcp.json, Claude globals, Codex/OpenCode/Copilot fragments, health probes.
     Dry-run is the default; writes require both --apply and --output-dir.
+
+    With --agent-matrix, --apply also writes the in-repo .codex/config.toml, but
+    only when the memory gate holds (dope-memory and ConPort report enforce and
+    identity-required writes, and a keychain token exists for runner:codex).
+    Otherwise only the preview under --output-dir is written and the failed
+    checks are named.
     """
     from dopemux.mcp import fleet_catalog
     from dopemux.mcp import profile_policy
+
+    if allow_sequenced:
+        raise click.ClickException(ALLOW_SEQUENCED_REMOVED_MESSAGE)
 
     catalog = _load_catalog()
 
@@ -1014,8 +1239,8 @@ def mcp_generate_cmd(
         if not use_profile_plane:
             console.logger.info(
                 "[info]--apply also updates in-repo agent configs: opencode.jsonc (managed "
-                "mcp section), mcp-proxy-config.copilot.yaml, and — only with "
-                "--allow-sequenced — .codex/config.toml.[/info]"
+                "mcp section), mcp-proxy-config.copilot.yaml, and — only when the "
+                "memory gate holds — .codex/config.toml.[/info]"
             )
         return
 
@@ -1029,13 +1254,12 @@ def mcp_generate_cmd(
         console.logger.info(f"[success]Wrote {target}[/success]")
 
     if not use_profile_plane:
-        _apply_in_repo_agent_configs(catalog, output_dir, allow_sequenced)
+        _apply_in_repo_agent_configs(catalog, output_dir)
 
 
 def _apply_in_repo_agent_configs(
     catalog: Dict[str, Any],
     output_dir: Path,
-    allow_sequenced: bool,
 ) -> None:
     """Write the in-repo agent config targets owned by the generate pipeline.
 
@@ -1043,9 +1267,10 @@ def _apply_in_repo_agent_configs(
     configs. opencode.jsonc is a managed-merge — only the marker-delimited `mcp`
     section is replaced; user keys (`permission`, `instructions`, …) are
     preserved. mcp-proxy-config.copilot.yaml is fully generated.
-    .codex/config.toml is `full-sequenced` (ADR-MCPINT-002 G1): the in-repo
-    write is refused without --allow-sequenced while a preview always lands
-    under the output dir.
+    .codex/config.toml carries write-capable memory servers, so the in-repo write
+    happens only when `fleet_catalog.evaluate_codex_memory_gate` holds, and then
+    only the released servers are written; a preview of every Codex-renderable
+    server always lands under the output dir.
     """
     from dopemux.mcp import fleet_catalog
 
@@ -1076,32 +1301,31 @@ def _apply_in_repo_agent_configs(
     console.logger.info(f"[success]Wrote {copilot_path}[/success]")
 
     codex_path = repo_path / ".codex" / "config.toml"
-    if allow_sequenced:
+    gate = evaluate_codex_memory_gate(repo_path)
+    if gate.ok:
         existing_codex = codex_path.read_text(encoding="utf-8") if codex_path.exists() else None
         try:
-            merged_codex = fleet_catalog.merge_codex_config_toml(existing_codex, catalog)
+            merged_codex = fleet_catalog.merge_codex_config_toml(
+                existing_codex, catalog, released_only=True
+            )
         except fleet_catalog.MCPFleetCatalogError as exc:
             raise click.ClickException(str(exc)) from exc
         codex_path.parent.mkdir(parents=True, exist_ok=True)
         codex_path.write_text(merged_codex, encoding="utf-8")
         console.logger.info(
-            f"[success]Wrote {codex_path} (managed mcp_servers section; existing keys preserved)[/success]"
+            f"[success]Wrote {codex_path} (managed mcp_servers section, released servers only; "
+            "existing keys preserved)[/success]"
         )
     else:
         console.logger.info(
-            "[warning]Refused to write .codex/config.toml: codex exposure is "
-            "`full-sequenced` (ADR-MCPINT-002 G1) and the sequencing prerequisites "
-            "are unmet:[/warning]"
+            "[warning]Refused to write .codex/config.toml: the memory gate does not hold. "
+            "Failed checks:[/warning]"
         )
+        for failure in gate.failures:
+            console.logger.info(f"  - {failure}")
         console.logger.info(
-            "  1. DMX-MEMSPINE-IDENTITY-005 — per-request memory-spine identity with fail-closed writes"
-        )
-        console.logger.info(
-            "  2. task-orchestrator `actor_authentication.enabled` — authenticated actor attribution"
-        )
-        console.logger.info(
-            f"[info]Preview written to {output_dir / 'codex' / 'config.toml'}; re-run with "
-            "--allow-sequenced once both prerequisites have landed.[/info]"
+            f"[info]Preview written to {output_dir / 'codex' / 'config.toml'}; "
+            "fix the failed checks and re-run `dopemux mcp generate --agent-matrix --apply`.[/info]"
         )
 
 

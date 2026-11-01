@@ -13,6 +13,21 @@ from dopemux.commands import mcp_commands
 from dopemux.mcp.project_identity import resolve_project_identity
 
 
+@pytest.fixture(autouse=True)
+def _no_live_memory_gate_inputs(monkeypatch):
+    """`generate --apply` runs the Codex memory gate: never touch the keychain or a socket here."""
+    from dopemux.auth import TokenNotFoundError
+
+    def _no_token(principal):
+        raise TokenNotFoundError(f"test double: no token for {principal}")
+
+    def _unreachable(port):
+        raise mcp_commands._HealthProbeError("test double: no live server")
+
+    monkeypatch.setattr(mcp_commands, "get_token", _no_token)
+    monkeypatch.setattr(mcp_commands, "_fetch_health", _unreachable)
+
+
 def _identity(path):
     return SimpleNamespace(project_root=path)
 
@@ -510,13 +525,18 @@ def test_mcp_generate_apply_writes_output_dir_and_in_repo_agent_targets(tmp_path
     # In-repo agent targets are written by --apply (ADR-MCPINT-001 §2)…
     assert (repo_dir / "opencode.jsonc").exists()
     assert (repo_dir / "mcp-proxy-config.copilot.yaml").exists()
-    # …except the sequenced codex target, which is refused without --allow-sequenced.
+    # …except the codex target, which is written only when the memory gate holds
+    # (no envrc and no token in this temp repo, so it does not).
     assert not (repo_dir / ".codex" / "config.toml").exists()
-    assert "DMX-MEMSPINE-IDENTITY-005" in result.output
-    assert "actor_authentication.enabled" in result.output
+    assert (output_dir / "codex" / "config.toml").is_file()
+    assert "Refused to write .codex/config.toml" in result.output
+    assert "gate check 1 (server health) dope-memory" in result.output
+    assert "gate check 1 (server health) conport" in result.output
+    assert "gate check 2 (runner token) runner:codex" in result.output
+    assert "actor_authentication" not in result.output
 
 
-def test_mcp_generate_apply_allow_sequenced_merges_codex_config(tmp_path, monkeypatch):
+def test_mcp_generate_apply_merges_codex_config_when_the_memory_gate_holds(tmp_path, monkeypatch):
     catalog = _singleton_catalog()
     output_dir = tmp_path / "out"
     repo_dir = tmp_path / "repo"
@@ -526,10 +546,15 @@ def test_mcp_generate_apply_allow_sequenced_merges_codex_config(tmp_path, monkey
     )
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
     monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo_dir))
+    monkeypatch.setattr(
+        mcp_commands,
+        "evaluate_codex_memory_gate",
+        lambda _repo: mcp_commands.CodexMemoryGate((mcp_commands.GateCheck("all", True, "ok"),)),
+    )
 
     result = CliRunner().invoke(
         mcp_commands.mcp_generate_cmd,
-        ["--apply", "--output-dir", str(output_dir), "--allow-sequenced"],
+        ["--apply", "--output-dir", str(output_dir)],
     )
 
     assert result.exit_code == 0, result.output
@@ -538,6 +563,27 @@ def test_mcp_generate_apply_allow_sequenced_merges_codex_config(tmp_path, monkey
     assert "[agents]" in codex_text
     assert "# BEGIN dopemux-managed mcp_servers" in codex_text
     assert '[mcp_servers."exa"]' in codex_text
+
+
+def test_mcp_generate_rejects_allow_sequenced_and_names_the_new_gate(tmp_path, monkeypatch):
+    catalog = _singleton_catalog()
+    repo_dir = tmp_path / "repo"
+    repo_dir.mkdir()
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo_dir))
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp_generate_cmd,
+        ["--apply", "--output-dir", str(tmp_path / "out"), "--allow-sequenced"],
+    )
+
+    assert result.exit_code != 0
+    assert "--allow-sequenced was removed" in result.output
+    assert "auth_mode" in result.output
+    assert "runner:codex" in result.output
+    assert "actor_authentication" not in result.output
+    assert not (repo_dir / ".codex").exists()
+    assert not (tmp_path / "out").exists()
 
 
 def test_mcp_generate_apply_preserves_opencode_user_keys(tmp_path, monkeypatch):
