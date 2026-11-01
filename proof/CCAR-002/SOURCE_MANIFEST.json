@@ -10,23 +10,23 @@
     },
     "active_agents": {
         "_index": {
-            "sha256": "8797bab6ab5c2d9ab635137cd4013d0e21bfbf6e138b76b163e1d1db28367067",
+            "sha256": "35987153f6eb3b94ac44e87d53bf5b4b48d9fb7d1a78774f3175e2be437519ca",
             "path": ".claude/agents/_index.md"
         },
         "architect": {
-            "sha256": "b2cf17b5b0a7fd5347f6f5e1d2a50da5dfcf66d1a3912ab132522662dc3498e7",
+            "sha256": "5ef1249986740489af0fae863a38f4730b41685e10899fefce7472a96d69b2dd",
             "path": ".claude/agents/architect.md"
         },
         "developer": {
-            "sha256": "f077f5dabb5858b47346174772560bda34f9c49b34cc5817b9f0eac93bcf7b13",
+            "sha256": "bbecbd6c31d17acaab5fe04a8e492727b2b203bee85396c17102c1405dd8d1fe",
             "path": ".claude/agents/developer.md"
         },
         "project-manager": {
-            "sha256": "d8ba14956a3bc08f29685ceb1256ffee9bb082f99b514ac24627d1ba2bbff42b",
+            "sha256": "a260688282d9840dc7315eb2593caaecef1edaf946c33f0cd8750efdc39e74cd",
             "path": ".claude/agents/project-manager.md"
         },
         "researcher": {
-            "sha256": "9404689bbca3e2123d089d96bed0d9667c58bde14079e6a63cb15f8e3de9bfde",
+            "sha256": "ee547b17e16147552257a07cfe40e14923e1fbd553ab2e0c051cc5442aa14014",
             "path": ".claude/agents/researcher.md"
         }
     },

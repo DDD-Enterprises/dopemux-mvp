@@ -4,7 +4,7 @@
 **Observed**: 2026-10-02 against `~/.claude/plugins/installed_plugins.json` (14 installed, user scope), 14 claude.ai-synced plugins, and `claude plugin list`
 **Enforced by**: project `.claude/settings.json` `enabledPlugins` (25 explicit entries; marketplaces `openai-codex` and `karpathy-skills` registered in `extraKnownMarketplaces`). Project scope overrides user scope; `.claude/settings.local.json` overrides project.
 **Scope**: Claude Code runtime only. Codex/Gemini/OpenCode do not load these plugins.
-**Authority**: Subordinate to AGENTS.md and `.claude/claude.md`. When a plugin skill conflicts with repo doctrine, doctrine wins; follow the skill only where it agrees.
+**Authority**: Subordinate to AGENTS.md and `.claude/CLAUDE.md`. When a plugin skill conflicts with repo doctrine, doctrine wins; follow the skill only where it agrees.
 
 ## Enabled — use automatically
 

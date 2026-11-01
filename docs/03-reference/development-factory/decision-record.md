@@ -32,7 +32,7 @@ Decisions made in the design conversation that produced this packet series.
 
 | Surface | Actual Path | Notes |
 |---------|-------------|-------|
-| Project doctrine | `.claude/claude.md` | No root `CLAUDE.md` — `.claude/claude.md` is loaded by harness |
+| Project doctrine | `.claude/CLAUDE.md` | No root `CLAUDE.md` — `.claude/CLAUDE.md` is loaded by harness |
 | Agent authority | `AGENTS.md` | Root-level, authoritative |
 | Governance rules | `docs/03-reference/governance/rules.md` + `rules-2.md` | Two variants — canonical TBD |
 | System boundaries | `docs/03-reference/systems/system-boundaries.md` | No root `SYSTEM_BOUNDARIES.md` |

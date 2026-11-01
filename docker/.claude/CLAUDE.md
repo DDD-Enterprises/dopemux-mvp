@@ -65,7 +65,7 @@ MCP server source is in `docker/mcp-servers-source/` (symlinked from `docker/mcp
 
 Do not keep a port/transport table here — it drifts. Authorities:
 - **Host ports**: `services/registry.yaml`
-- **Client transports/URLs**: `.mcp.json` and the transport table in root `.claude/claude.md` (AGENTS.md §12)
+- **Client transports/URLs**: `.mcp.json` and the transport table in root `.claude/CLAUDE.md` (AGENTS.md §12)
 - **MCP catalog**: `mcp_catalog.yaml`
 
 ---

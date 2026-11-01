@@ -136,7 +136,7 @@ class HealthChecker:
             config_files = [
                 dopemux_dir / "config.json",
                 claude_dir / "config.json",
-                claude_dir / "claude.md",
+                claude_dir / "CLAUDE.md",
             ]
 
             missing_files = [f for f in config_files if not f.exists()]

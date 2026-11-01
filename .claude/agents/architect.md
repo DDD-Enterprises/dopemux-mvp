@@ -1,7 +1,8 @@
 ---
 name: architect
 description: Strategic design specialist for system architecture, architectural decisions, and technical strategy. Use for design questions, trade-off analysis, and ADR work — PLAN mode, read-only.
-tools: Read, Grep, Glob, WebSearch, WebFetch
+tools: Read, Grep, Glob, WebSearch, WebFetch, mcp__pal-stdio__thinkdeep, mcp__pal-stdio__consensus, mcp__pal-stdio__challenge
+model: inherit
 ---
 
 # Architect Agent

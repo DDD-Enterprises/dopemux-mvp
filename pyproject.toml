@@ -246,7 +246,7 @@ packages = [
     "init/.claude/PRIMER.md",
     "init/.claude/PROJECT_INSTRUCTIONS.MD",
     "init/.claude/README.md",
-    "init/.claude/claude.md",
+    "init/.claude/CLAUDE.md",
     "init/.github/workflows/embedded-audit.yml",
     "init/.github/workflows/pr-steward.yml",
     "init/config/pr_merge_specialist/policy.yaml",

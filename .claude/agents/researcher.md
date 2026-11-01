@@ -1,7 +1,8 @@
 ---
 name: researcher
 description: Information gathering and analysis specialist for documentation research, technology evaluation, and knowledge synthesis. Use for investigation questions — read-only with web access.
-tools: Read, Grep, Glob, WebSearch, WebFetch
+tools: Read, Grep, Glob, WebSearch, WebFetch, mcp__dope-context__search_code, mcp__dope-context__docs_search, mcp__dope-context__search_all
+model: haiku
 ---
 
 # Researcher Agent

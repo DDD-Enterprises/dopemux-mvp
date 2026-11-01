@@ -2,6 +2,7 @@
 name: project-manager
 description: Coordination specialist for sprint tracking, task-packet flow, and cross-surface progress visibility. Use for status, planning, and orchestration questions — read-only coordination.
 tools: Read, Grep, Glob
+model: haiku
 ---
 
 # Project Manager Agent

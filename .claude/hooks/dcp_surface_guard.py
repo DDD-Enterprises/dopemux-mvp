@@ -129,7 +129,7 @@ def _has_control_chars(s: str) -> bool:
 
 def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) -> str | None:
     """Return a block reason when an edit targets a red-lane seam file, else None."""
-    if tool_name not in {"Edit", "Write", "NotebookEdit"}:
+    if tool_name not in {"Edit", "Write", "MultiEdit", "NotebookEdit"}:
         return None
     file_path = str((tool_input or {}).get("file_path") or "")
     if not file_path:
@@ -234,7 +234,7 @@ def surface_guard_warnings(
     session_id: str | None = None,
 ) -> list[str]:
     """Return once-per-(session, path) advisory when editing a contract surface."""
-    if tool_name not in {"Edit", "Write", "NotebookEdit"}:
+    if tool_name not in {"Edit", "Write", "MultiEdit", "NotebookEdit"}:
         return []
     file_path = str((tool_input or {}).get("file_path") or "")
     if not file_path:

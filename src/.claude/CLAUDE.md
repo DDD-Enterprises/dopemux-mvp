@@ -96,7 +96,7 @@ except ServiceError as e:
 ## Testing
 
 ```bash
-# Run all tests (from repo root) — see tests/.claude/claude.md
+# Run all tests (from repo root) — see tests/.claude/CLAUDE.md
 make test
 
 # Check coverage

@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 ACTIVE_DOCS = [
-    ".claude/claude.md",
+    ".claude/CLAUDE.md",
     ".claude/modules/shared/adhd-patterns.md",
     ".claude/modules/shared/superclaude-workflows.md",
     ".claude/modules/custom-commands.md",

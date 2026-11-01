@@ -28,7 +28,7 @@ class TestClaudeConfigurator:
         assert dopemux_dir.exists()
 
         # Verify configuration files were created
-        assert (claude_dir / "claude.md").exists()
+        assert (claude_dir / "CLAUDE.md").exists()
         assert (claude_dir / "session.md").exists()
         assert (claude_dir / "context.md").exists()
         assert (claude_dir / "llms.md").exists()
@@ -43,7 +43,7 @@ class TestClaudeConfigurator:
         claude_dir = temp_project_dir / ".claude"
 
         # Check that JavaScript-specific content is in the files
-        claude_md_content = (claude_dir / "claude.md").read_text()
+        claude_md_content = (claude_dir / "CLAUDE.md").read_text()
         assert "JavaScript" in claude_md_content
         assert "TypeScript" in claude_md_content
 
@@ -56,17 +56,17 @@ class TestClaudeConfigurator:
         claude_dir = temp_project_dir / ".claude"
 
         # Check that Rust-specific content is in the files
-        claude_md_content = (claude_dir / "claude.md").read_text()
+        claude_md_content = (claude_dir / "CLAUDE.md").read_text()
         assert "Rust" in claude_md_content
         assert "cargo" in claude_md_content
 
     def test_create_claude_md_content(self, config_manager, temp_project_dir):
-        """Test that claude.md contains expected ADHD accommodations."""
+        """Test that CLAUDE.md contains expected ADHD accommodations."""
         configurator = ClaudeConfigurator(config_manager)
 
         configurator.setup_project_config(temp_project_dir, template="python")
 
-        claude_md = temp_project_dir / ".claude" / "claude.md"
+        claude_md = temp_project_dir / ".claude" / "CLAUDE.md"
         content = claude_md.read_text()
 
         # Verify ADHD-specific content
@@ -382,7 +382,7 @@ class TestClaudeConfigurator:
         assert status["dopemux_initialized"] is True
         assert status["claude_configured"] is True
         assert status["project_type"] == "python"
-        assert status["config_files"]["claude.md"] is True
+        assert status["config_files"]["CLAUDE.md"] is True
         assert status["config_files"]["config.yaml"] is True
         assert "adhd_features" in status
 
@@ -394,7 +394,7 @@ class TestClaudeConfigurator:
 
         assert status["dopemux_initialized"] is False
         assert status["claude_configured"] is False
-        assert status["config_files"]["claude.md"] is False
+        assert status["config_files"]["CLAUDE.md"] is False
 
     def test_copy_template_files_nonexistent(self, config_manager, temp_project_dir):
         """Test copying template files when template directory doesn't exist."""
@@ -469,7 +469,7 @@ class TestClaudeConfigurator:
         configurator.setup_project_config(temp_project_dir, template="rust")
 
         # Check multiple files contain template-specific content
-        claude_md = (temp_project_dir / ".claude" / "claude.md").read_text()
+        claude_md = (temp_project_dir / ".claude" / "CLAUDE.md").read_text()
         session_md = (temp_project_dir / ".claude" / "session.md").read_text()
         context_md = (temp_project_dir / ".claude" / "context.md").read_text()
         llms_md = (temp_project_dir / ".claude" / "llms.md").read_text()
@@ -488,7 +488,7 @@ class TestClaudeConfigurator:
 
         # Read all files
         files = {}
-        for filename in ["claude.md", "session.md", "context.md", "llms.md"]:
+        for filename in ["CLAUDE.md", "session.md", "context.md", "llms.md"]:
             files[filename] = (temp_project_dir / ".claude" / filename).read_text()
 
         # Verify JavaScript/TypeScript references throughout
@@ -507,7 +507,7 @@ class TestPersonaInjection:
 
     Persona activation calls ``setup_project_config(project_path, role=role)``.
     It must inject the role's assembled guidelines WITHOUT clobbering existing
-    doctrine files (claude.md / session.md / etc.).
+    doctrine files (CLAUDE.md / session.md / etc.).
     """
 
     PERSONA_SENTINEL = "DEVELOPER_PERSONA_SENTINEL guidelines body"
@@ -553,10 +553,10 @@ class TestPersonaInjection:
     def test_role_does_not_clobber_existing_claude_md(
         self, config_manager, temp_project_dir
     ):
-        """Existing claude.md doctrine content is preserved; a reference is added."""
+        """Existing CLAUDE.md doctrine content is preserved; a reference is added."""
         claude_dir = temp_project_dir / ".claude"
         claude_dir.mkdir(parents=True, exist_ok=True)
-        (claude_dir / "claude.md").write_text(
+        (claude_dir / "CLAUDE.md").write_text(
             "# Project Doctrine\n\nEXISTING_DOCTRINE_SENTINEL must survive.\n"
         )
         self._write_persona(temp_project_dir, "developer")
@@ -564,7 +564,7 @@ class TestPersonaInjection:
 
         configurator.setup_project_config(temp_project_dir, role="developer")
 
-        claude_md = (claude_dir / "claude.md").read_text()
+        claude_md = (claude_dir / "CLAUDE.md").read_text()
         assert "EXISTING_DOCTRINE_SENTINEL must survive." in claude_md
         assert "active-persona.md" in claude_md
 
@@ -572,14 +572,14 @@ class TestPersonaInjection:
         """Re-activating the same role does not duplicate the reference block."""
         claude_dir = temp_project_dir / ".claude"
         claude_dir.mkdir(parents=True, exist_ok=True)
-        (claude_dir / "claude.md").write_text("# Doctrine\n\nbody\n")
+        (claude_dir / "CLAUDE.md").write_text("# Doctrine\n\nbody\n")
         self._write_persona(temp_project_dir, "developer")
         configurator = ClaudeConfigurator(config_manager)
 
         configurator.setup_project_config(temp_project_dir, role="developer")
         configurator.setup_project_config(temp_project_dir, role="developer")
 
-        claude_md = (claude_dir / "claude.md").read_text()
+        claude_md = (claude_dir / "CLAUDE.md").read_text()
         assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:START") == 1
         assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:END") == 1
 
@@ -634,7 +634,7 @@ class TestPersonaInjection:
         claude_dir = temp_project_dir / ".claude"
         claude_dir.mkdir(parents=True, exist_ok=True)
         # Malformed prior state: an END marker with no matching START.
-        (claude_dir / "claude.md").write_text(
+        (claude_dir / "CLAUDE.md").write_text(
             "# Doctrine\n\nKEEP_ME line.\n\n<!-- DOPEMUX:ACTIVE-PERSONA:END -->\n"
         )
         self._write_persona(temp_project_dir, "developer")
@@ -643,7 +643,7 @@ class TestPersonaInjection:
         configurator.setup_project_config(temp_project_dir, role="developer")
         configurator.setup_project_config(temp_project_dir, role="developer")
 
-        claude_md = (claude_dir / "claude.md").read_text()
+        claude_md = (claude_dir / "CLAUDE.md").read_text()
         assert "KEEP_ME line." in claude_md
         assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:START") == 1
         assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:END") == 1
@@ -652,7 +652,7 @@ class TestPersonaInjection:
         """Activating role B after role A replaces the block (no stale role A)."""
         claude_dir = temp_project_dir / ".claude"
         claude_dir.mkdir(parents=True, exist_ok=True)
-        (claude_dir / "claude.md").write_text("# Doctrine\n\nbody\n")
+        (claude_dir / "CLAUDE.md").write_text("# Doctrine\n\nbody\n")
         self._write_persona(temp_project_dir, "developer")
         self._write_persona(temp_project_dir, "reviewer")
         configurator = ClaudeConfigurator(config_manager)
@@ -660,7 +660,7 @@ class TestPersonaInjection:
         configurator.setup_project_config(temp_project_dir, role="developer")
         configurator.setup_project_config(temp_project_dir, role="reviewer")
 
-        claude_md = (claude_dir / "claude.md").read_text()
+        claude_md = (claude_dir / "CLAUDE.md").read_text()
         assert claude_md.count("DOPEMUX:ACTIVE-PERSONA:START") == 1
         assert "Role **reviewer** is active" in claude_md
         assert "Role **developer** is active" not in claude_md
@@ -760,29 +760,29 @@ class TestF1CatalogAliases:
     def test_unresolvable_role_clears_stale_managed_block(
         self, config_manager, temp_project_dir
     ):
-        """When a role resolves to no persona, the managed block in claude.md is removed (F1)."""
+        """When a role resolves to no persona, the managed block in CLAUDE.md is removed (F1)."""
         claude_dir = temp_project_dir / ".claude"
         claude_dir.mkdir(parents=True, exist_ok=True)
-        # Pre-plant a claude.md with a managed block from a prior activation.
+        # Pre-plant a CLAUDE.md with a managed block from a prior activation.
         prior_block = (
             "# Doctrine\n\nKEEP_ME.\n\n"
             "<!-- DOPEMUX:ACTIVE-PERSONA:START -->\n"
             "## Active Persona\n\n@active-persona.md\n"
             "<!-- DOPEMUX:ACTIVE-PERSONA:END -->\n"
         )
-        (claude_dir / "claude.md").write_text(prior_block)
+        (claude_dir / "CLAUDE.md").write_text(prior_block)
         configurator = ClaudeConfigurator(config_manager)
 
         configurator.setup_project_config(temp_project_dir, role="no-such-role")
 
-        content = (claude_dir / "claude.md").read_text()
+        content = (claude_dir / "CLAUDE.md").read_text()
         assert "KEEP_ME." in content
         assert "DOPEMUX:ACTIVE-PERSONA:START" not in content
         assert "DOPEMUX:ACTIVE-PERSONA:END" not in content
 
 
 class TestF2CreateMinimalClaudeMd:
-    """F2: When claude.md does not exist, _inject_persona must create a minimal
+    """F2: When CLAUDE.md does not exist, _inject_persona must create a minimal
     one that imports the persona via @active-persona.md.
     """
 
@@ -794,15 +794,15 @@ class TestF2CreateMinimalClaudeMd:
     def test_creates_minimal_claude_md_when_absent(
         self, config_manager, temp_project_dir
     ):
-        """Injecting a persona must create a minimal claude.md if none exists (F2)."""
+        """Injecting a persona must create a minimal CLAUDE.md if none exists (F2)."""
         self._write_persona(temp_project_dir, "developer")
         configurator = ClaudeConfigurator(config_manager)
 
         result = configurator.setup_project_config(temp_project_dir, role="developer")
 
         assert result is True
-        claude_md = temp_project_dir / ".claude" / "claude.md"
-        assert claude_md.exists(), "claude.md must be created when absent"
+        claude_md = temp_project_dir / ".claude" / "CLAUDE.md"
+        assert claude_md.exists(), "CLAUDE.md must be created when absent"
         content = claude_md.read_text()
         # Must contain the @import so the harness loads the persona.
         assert "@active-persona.md" in content
@@ -812,23 +812,23 @@ class TestF2CreateMinimalClaudeMd:
     def test_minimal_claude_md_not_clobbered_when_exists(
         self, config_manager, temp_project_dir
     ):
-        """Existing claude.md is never overwritten by F2 creation logic."""
+        """Existing CLAUDE.md is never overwritten by F2 creation logic."""
         claude_dir = temp_project_dir / ".claude"
         claude_dir.mkdir(parents=True, exist_ok=True)
         original = "# Pre-existing Doctrine\n\nIMPORTANT_CONTENT_MUST_SURVIVE.\n"
-        (claude_dir / "claude.md").write_text(original)
+        (claude_dir / "CLAUDE.md").write_text(original)
         self._write_persona(temp_project_dir, "developer")
         configurator = ClaudeConfigurator(config_manager)
 
         configurator.setup_project_config(temp_project_dir, role="developer")
 
-        content = (claude_dir / "claude.md").read_text()
+        content = (claude_dir / "CLAUDE.md").read_text()
         assert "IMPORTANT_CONTENT_MUST_SURVIVE." in content
 
     def test_minimal_claude_md_is_loadable_on_re_activation(
         self, config_manager, temp_project_dir
     ):
-        """Re-activating a role after the minimal claude.md was auto-created is
+        """Re-activating a role after the minimal CLAUDE.md was auto-created is
         idempotent — no duplicate markers."""
         self._write_persona(temp_project_dir, "developer")
         configurator = ClaudeConfigurator(config_manager)
@@ -836,7 +836,7 @@ class TestF2CreateMinimalClaudeMd:
         configurator.setup_project_config(temp_project_dir, role="developer")
         configurator.setup_project_config(temp_project_dir, role="developer")
 
-        content = (temp_project_dir / ".claude" / "claude.md").read_text()
+        content = (temp_project_dir / ".claude" / "CLAUDE.md").read_text()
         assert content.count("DOPEMUX:ACTIVE-PERSONA:START") == 1
         assert content.count("DOPEMUX:ACTIVE-PERSONA:END") == 1
 
@@ -994,13 +994,13 @@ class TestF5AtImportSyntax:
         """The managed block must contain @active-persona.md, not a [link](...) (F5)."""
         claude_dir = temp_project_dir / ".claude"
         claude_dir.mkdir(parents=True, exist_ok=True)
-        (claude_dir / "claude.md").write_text("# Doctrine\n\nbody\n")
+        (claude_dir / "CLAUDE.md").write_text("# Doctrine\n\nbody\n")
         self._write_persona(temp_project_dir, "developer")
         configurator = ClaudeConfigurator(config_manager)
 
         configurator.setup_project_config(temp_project_dir, role="developer")
 
-        content = (claude_dir / "claude.md").read_text()
+        content = (claude_dir / "CLAUDE.md").read_text()
         # Must have the @import syntax.
         assert "@active-persona.md" in content, (
             "The managed block must use @active-persona.md import syntax"
@@ -1013,13 +1013,13 @@ class TestF5AtImportSyntax:
     def test_minimal_created_claude_md_uses_at_import(
         self, config_manager, temp_project_dir
     ):
-        """The auto-created minimal claude.md (F2) must also use @import syntax (F5)."""
+        """The auto-created minimal CLAUDE.md (F2) must also use @import syntax (F5)."""
         self._write_persona(temp_project_dir, "developer")
         configurator = ClaudeConfigurator(config_manager)
 
         configurator.setup_project_config(temp_project_dir, role="developer")
 
-        content = (temp_project_dir / ".claude" / "claude.md").read_text()
+        content = (temp_project_dir / ".claude" / "CLAUDE.md").read_text()
         assert "@active-persona.md" in content
         assert "[active-persona.md](active-persona.md)" not in content
 
@@ -1027,13 +1027,13 @@ class TestF5AtImportSyntax:
         """Re-activating a role preserves @import syntax — no regression to link form."""
         claude_dir = temp_project_dir / ".claude"
         claude_dir.mkdir(parents=True, exist_ok=True)
-        (claude_dir / "claude.md").write_text("# Doctrine\n\nbody\n")
+        (claude_dir / "CLAUDE.md").write_text("# Doctrine\n\nbody\n")
         self._write_persona(temp_project_dir, "developer")
         configurator = ClaudeConfigurator(config_manager)
 
         configurator.setup_project_config(temp_project_dir, role="developer")
         configurator.setup_project_config(temp_project_dir, role="developer")
 
-        content = (claude_dir / "claude.md").read_text()
+        content = (claude_dir / "CLAUDE.md").read_text()
         assert "@active-persona.md" in content
         assert "[active-persona.md](active-persona.md)" not in content

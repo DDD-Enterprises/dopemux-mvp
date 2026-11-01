@@ -1,6 +1,6 @@
 import pathlib
 roots = [
-  ".claude/claude.md",
+  ".claude/CLAUDE.md",
   ".claude/context.md",
   ".claude/WORKTREE_MCP_SETUP.md",
   "docs/03-reference/services/task-orchestrator.md",

@@ -314,7 +314,7 @@ class TestClaudeConfiguratorIntegration:
                 assert claude_dir.exists()
 
                 # Verify configuration files were created
-                expected_files = ["claude.md", "session.md", "context.md", "llms.md"]
+                expected_files = ["CLAUDE.md", "session.md", "context.md", "llms.md"]
                 for filename in expected_files:
                     assert (claude_dir / filename).exists()
 

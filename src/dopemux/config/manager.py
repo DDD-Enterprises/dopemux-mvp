@@ -830,7 +830,7 @@ class ConfigManager:
         return {
             "python": {
                 "files": [
-                    ".claude/claude.md",
+                    ".claude/CLAUDE.md",
                     ".claude/session.md",
                     ".claude/context.md",
                     ".claude/llms.md",
@@ -848,7 +848,7 @@ class ConfigManager:
             },
             "javascript": {
                 "files": [
-                    ".claude/claude.md",
+                    ".claude/CLAUDE.md",
                     ".claude/session.md",
                     ".claude/context.md",
                     ".claude/llms.md",
@@ -861,7 +861,7 @@ class ConfigManager:
             },
             "rust": {
                 "files": [
-                    ".claude/claude.md",
+                    ".claude/CLAUDE.md",
                     ".claude/session.md",
                     ".claude/context.md",
                     ".claude/llms.md",

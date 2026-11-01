@@ -66,7 +66,7 @@ Within the Supervisor MacroPacket, ChatGPT/Codex must execute this lifecycle for
 3. Use the packet-authorized dedicated worktree, or create a fresh one from the verified base branch when none is designated.
 4. Verify the worktree root, remote, branch, markers, clean status, and that execution is not in the primary checkout.
 5. Validate the supervisor-issued MacroPacket and its two or more genuine child workstreams. Each child must have its own scoped Task Packet and risk lane L0–L3 per `docs/03-reference/governance/evidence-economy.md`.
-6. Validate each Task Packet against `dopetask-canonical-spec.json` when the schema is present; otherwise perform and report a manual schema check.
+6. Validate each Task Packet against `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` when the schema is present; otherwise perform and report a manual schema check.
 7. After scope validation and before execution, create and validate the MacroPacket coordinator's Control Tower ExecutionBinding and each executing child's own binding. The coordinator binding cannot authorize child mutation. Exact runner/model/effort belongs to ExecutionBinding, never DCP RouteDecision.
 8. Implement only files in each TP allowlist, in commit-sized slices (one mutating implementer per workstream; proven-disjoint legal siblings may run concurrently).
 9. After each meaningful slice, run the smallest relevant **deterministic** validation and inspect the diff before continuing. Do **not** run intermediate model audits.
@@ -91,7 +91,7 @@ Before every MacroPacket or child Task Packet, emit `TP_ROUTE` with `runner`, ex
 `model`, `effort`, and a one-sentence `why`; use `NONE` or `UNKNOWN` honestly.
 See the full format in `.claude/modules/shared/governance-principles.md`.
 
-Task Packets must conform to `dopetask-canonical-spec.json` when that schema is available.
+Task Packets must conform to `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` when that schema is available.
 
 Required root fields:
 - `id`
@@ -211,7 +211,7 @@ Governance, process, schema, prompt, proof, and authority-boundary packets requi
 
 ## 10a. Claude-Code Doctrine Alignment
 
-This file is the Codex-facing authority. The Claude-Code-facing companion is `.claude/claude.md`, which embeds a brief governance section and links to the full canonical module at `.claude/modules/shared/governance-principles.md`.
+This file is the Codex-facing authority. The Claude-Code-facing companion is `.claude/CLAUDE.md`, which embeds a brief governance section and links to the full canonical module at `.claude/modules/shared/governance-principles.md`.
 
 The canonical module elaborates the same Truth Order (§2), proof-and-finality regime (§9), and architecture-boundary discipline (§6) for Claude-Code sessions. It additionally covers:
 
@@ -227,7 +227,7 @@ When updating doctrine, keep these four files in sync:
 
 - `AGENTS.md` (this file) — Codex authority, Task Packet rules, PAL chains, proof bundle requirements
 - `.claude/PROJECT_INSTRUCTIONS.md` — supervisor hierarchy and project governance
-- `.claude/claude.md` — Claude-Code-facing summary + non-negotiables checklist
+- `.claude/CLAUDE.md` — Claude-Code-facing summary + non-negotiables checklist
 - `.claude/modules/shared/governance-principles.md` — full canonical doctrine, referenced by both
 
 ## 11. OpenCode Auto-Load Behavior (2026-06)
@@ -382,22 +382,6 @@ Canonical command surface (`dopemux mcp <verb>`):
 Never start fleet services outside `dopemux mcp` (compose/docker-run/shell wrappers are being removed under
 design packet P-22). While ConPort/dope-memory/serena remain worktree-scoped, N worktrees cost 3N containers —
 this is expected, not a bug, until the gates above land.
-
-Respond terse like smart caveman. All technical substance stay. Only fluff die.
-
-Rules:
-- Drop: articles (a/an/the), filler (just/really/basically), pleasantries, hedging
-- Fragments OK. Short synonyms. Technical terms exact. Code unchanged.
-- Pattern: [thing] [action] [reason]. [next step].
-- Not: "Sure! I'd be happy to help you with that."
-- Yes: "Bug in auth middleware. Fix:"
-
-Switch level: /caveman lite|full|ultra|wenyan
-Stop: "stop caveman" or "normal mode"
-
-Auto-Clarity: drop caveman for security warnings, irreversible actions, user confused. Resume after.
-
-Boundaries: code/commits/PRs written normal.
 
 <!-- CONTROL_TOWER_MANAGED_BEGIN -->
 ## Control Tower Supervisor

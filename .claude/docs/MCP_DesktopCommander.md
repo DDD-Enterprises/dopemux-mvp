@@ -418,4 +418,4 @@ mcp__conport__update_active_context(
 **Status**: ✅ Fully operational in Dopemux
 **Documentation**: Complete with ADHD workflows
 **Integration**: ConPort, Serena, Dope-Context synergies documented
-**Next Steps**: See project `.claude/claude.md` for GPT-Researcher, Exa, and Synergistic Workflows
+**Next Steps**: See project `.claude/CLAUDE.md` for GPT-Researcher, Exa, and Synergistic Workflows

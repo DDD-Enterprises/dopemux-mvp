@@ -120,7 +120,7 @@ diff .claude.json .claude.json.test
 
 - [ ] Update SERVER_REGISTRY.md with /info endpoint status
 - [ ] Add migration guide to docker/mcp-servers/README.md
-- [ ] Update .claude/claude.md with service discovery pattern
+- [ ] Update .claude/CLAUDE.md with service discovery pattern
 
 ### Phase 4: CI/CD Integration
 
