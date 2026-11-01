@@ -1,0 +1,69 @@
+W04 gates for MACRO-DMX-ROUTE-LEDGER-001-R6, run 2026-11-01T02:29:40Z on audited head b275543fe1011bf3a9351a10448c24d94f205370
+
+### validate_audit_proof.py proof/MACRO-DMX-ROUTE-LEDGER-001-R6/PROOF.json
+PASS  proof/MACRO-DMX-ROUTE-LEDGER-001-R6/PROOF.json
+
+Result: 1/1 PASS
+exit=0
+
+### embedded_audit vs schemas/proof/embedded_audit.schema.json (jsonschema)
+embedded_audit errors: none
+status PASS_WITH_RISKS | tool grok-cli | model grok-4.5 | findings 9
+severity counts: {'BLOCKING': 0, 'HIGH': 1, 'MEDIUM': 0, 'LOW': 3, 'INFO': 5}
+
+### proof identity fields
+packet_id: MACRO-DMX-ROUTE-LEDGER-001-R6
+audited_head_sha: b275543fe1011bf3a9351a10448c24d94f205370
+independence: UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING
+
+### flattened package vs originals (cmp)
+MACRO_PACKET.json identical
+EXECUTION_BINDING.json identical
+ALLOWANCES.json identical
+ISSUANCE.md identical
+W01 task packet and binding identical
+W02 task packet and binding identical
+W03 task packet and binding identical
+W04 task packet and binding identical
+SHA256SUMS_PACKAGE.txt: 12 of 12 members OK
+
+
+### secret scan over the new W04 files (21 files, all six patterns of the packet; counts only)
+AKIA[0-9A-Z]{16}: 0
+private key header: 0
+xox[baprs]-: 0
+ghp_[A-Za-z0-9]{20,}: 0
+sk-[A-Za-z0-9]{20,}: 0
+password/secret/api-key/bearer assignment: 0
+
+### git diff --cached --check (the 21 staged W04 files)
+exit=0
+
+### pre-commit run --files <the 21 staged W04 files> (SKIP=markdownlint)
+Evidence-economy change-contract preflight.................................................Passed
+Validate Control Tower kit contracts...................................(no files to check)Skipped
+Validate YAML frontmatter in docs......................................(no files to check)Skipped
+Block deprecated memory backends in slash commands.....................(no files to check)Skipped
+Validate templates/skills SKILL.md frontmatter.........................(no files to check)Skipped
+Validate documentation against knowledge graph schema..................(no files to check)Skipped
+Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)......(no files to check)Skipped
+Validate prelude ≤100 tokens for efficient embeddings..................(no files to check)Skipped
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).........................(no files to check)Skipped
+Enforce docs filename hygiene (kebab-case).............................(no files to check)Skipped
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+Validate proof bundle embedded_audit schema................................................Passed
+Validate GitHub Actions workflow syntax................................(no files to check)Skipped
+markdownlint..............................................................................Skipped
+trim trailing whitespace...............................................(no files to check)Skipped
+fix end of files.......................................................(no files to check)Skipped
+check yaml.............................................................(no files to check)Skipped
+exit=0
+
+### markdownlint hook
+NOT_RUN: its Node environment cannot install on this host; CI covers it.
+
+### validate_change_contract.py --proof-only closure
+Run against the proof head after this commit exists (the head cannot name itself); the result is recorded in the follow-up commit, as in R4.

@@ -1,0 +1,339 @@
+{
+  "tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R6",
+  "packet_id": "MACRO-DMX-ROUTE-LEDGER-001-R6",
+  "tp_path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/MACRO_PACKET.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032",
+  "branch": "claude/route-ledger-001-8d8032",
+  "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git (origin matches repo_binding.origin_hint DDD-Enterprises/dopemux-mvp)",
+  "base_sha": "97b6d5040496e2271c41d24c339d039303bbe6b1",
+  "audited_head_sha": "b275543fe1011bf3a9351a10448c24d94f205370",
+  "head_sha": "b275543fe1011bf3a9351a10448c24d94f205370",
+  "commit_sha": "Audited head b275543fe1011bf3a9351a10448c24d94f205370 (a normal one-parent commit; parent 3d2af4b209dfc1fb703f82658a0c3a35cd804814). Proof-only commits follow it: 37c63922e (frozen audit inputs), ced97d784 (Grok custody, before the verdict was read), 91bf32291 (AGY custody, before the verdict was read), then the commits holding this file (see git log for the final head).",
+  "pr_url_or_blocker": "PR 1482 (https://github.com/DDD-Enterprises/dopemux-mvp/pull/1482) is open on the remote at the audited head b275543fe1011bf3a9351a10448c24d94f205370; this local branch is ahead of it by proof-only commits that are not pushed. Merge is blocked by the missing signed audit evidence for this head (audit_not_executed / audit_provenance_missing / local_proof_absent) until the operator attests independence, signs and pushes.",
+  "slices": [
+    {
+      "id": "R2-R4",
+      "note": "earlier rounds (core, surface, how-to, repair 4fcdc9761, R3/R4 audits): see proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json",
+      "status": "PASS",
+      "round": "R2-R4"
+    },
+    {
+      "id": "R5-W01",
+      "commit": "26414fef53df4970e39269a3ba9ed93afd6b8f32",
+      "files": 6,
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS",
+      "note": "observed = assistant message.model in the child transcript (74 messages), response-claimed, not provider attestation (R5 VERIFY_NOTES.md); repair of ten findings D1-D10; 0 advisor blocks",
+      "round": "R5"
+    },
+    {
+      "id": "R5-fixes",
+      "commit": "13ceb5020 / 61c371f28 / 3d2af4b20",
+      "files": 3,
+      "model_requested": "claude-sonnet-5-5 (session)",
+      "model_observed": "UNKNOWN",
+      "status": "PASS",
+      "note": "three fixes after review feedback (CodeQL test-only; Codex P2 on /clear; Codex P2 x2 on list failure and UTF-8 bytes), each with tests written first; no runtime receipt of the model",
+      "round": "R5"
+    },
+    {
+      "id": "W01",
+      "commit": "37c63922e",
+      "files": 9,
+      "model_requested": "claude-sonnet-5-5 / effort high",
+      "model_observed": "UNKNOWN",
+      "status": "PASS",
+      "note": "frozen inputs, committed prompt builder (194244-byte prompt, --check byte-equal); no model dispatch; advisor calls 0",
+      "round": "R6"
+    },
+    {
+      "id": "W02",
+      "commit": "ced97d784",
+      "files": 14,
+      "model_requested": "grok-4.5 / effort high",
+      "model_observed": "grok-4.5 (init event, configured; attestation UNKNOWN)",
+      "status": "PASS",
+      "note": "primary audit, tool-less recipe, 1 attempt, 0 retries; custody committed before the verdict was read",
+      "round": "R6"
+    },
+    {
+      "id": "W03",
+      "commit": "91bf32291",
+      "files": 14,
+      "model_requested": "gemini-4-argon-high",
+      "model_observed": "gemini-4-argon-high (init event, configured; attestation UNKNOWN)",
+      "status": "PASS",
+      "note": "corroborating audit, request-review hardening, 1 attempt, 0 retries; AGY's copy of the prompt truncated at the tail (Q3 UNKNOWN); custody committed before the verdict was read",
+      "round": "R6"
+    },
+    {
+      "id": "W04",
+      "commit": "see git log (the commit holding this file)",
+      "files": 20,
+      "model_requested": "claude-sonnet-5-5 / effort high",
+      "model_observed": "UNKNOWN",
+      "status": "PASS",
+      "note": "adjudication of both verdicts, unsigned proof, report, ledgers, package verification; advisor calls 0",
+      "round": "R6"
+    }
+  ],
+  "files_changed": [
+    "docs/02-how-to/route-ledger.md",
+    "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+    "plugins/dopemux-route-ledger/README.md",
+    "plugins/dopemux-route-ledger/hooks/hooks.json",
+    "plugins/dopemux-route-ledger/hooks/register.test.ts",
+    "plugins/dopemux-route-ledger/hooks/register.tsx",
+    "plugins/dopemux-route-ledger/receipt.schema.json"
+  ],
+  "validations": [
+    {
+      "command": "claude plugin validate plugins/dopemux-route-ledger",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "warnings only (author, icon, README marketplace advice); review_bundle/GATES_PRE_AUDIT.txt"
+    },
+    {
+      "command": "claude plugin test plugins/dopemux-route-ledger",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "104 pass / 0 fail at the audited head"
+    },
+    {
+      "command": "tsc -p plugins/dopemux-route-ledger --noEmit",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "in tree; the untracked engine-laid tsconfig.json was present"
+    },
+    {
+      "command": "jsonschema: 30 receipts printed by the tests vs receipt.schema.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "14 agent_request, 11 step_observed, 5 advisor_call; extra-key negative control rejected"
+    },
+    {
+      "command": "scripts/governance/validate_change_contract.py --base origin/main --head b275543fe1011bf3a9351a10448c24d94f205370",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "status PASS, max lane L2, proof_only False (151 paths)"
+    },
+    {
+      "command": "git diff --check 989fe4651..b275543fe (content)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "clean"
+    },
+    {
+      "command": "SKIP=markdownlint pre-commit run --files <seven content paths and build_audit_prompt.py>",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "markdownlint hook NOT_RUN"
+    },
+    {
+      "command": "build_audit_prompt.py --check",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "AUDIT_PROMPT.txt byte-equal to a fresh in-memory build; 194244 bytes (limit 200000)"
+    },
+    {
+      "command": "markdownlint hook",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "note": "Node environment cannot install on this host; CI covers it"
+    },
+    {
+      "command": "live Claude Code session loading the repaired head",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "note": "operator step (N1)"
+    }
+  ],
+  "codereview_status": "Two independent final audits, both PASS_WITH_RISKS: PRIMARY grok-cli grok-4.5 (tool-less, Q1-Q13 PASS, 5 findings) and CORROBORATING agy gemini-4-argon-high (sealed, request-review hardening, Q1/Q2/Q4-Q13 PASS, Q3 UNKNOWN because AGY's copy of the prompt was truncated at the tail, 5 findings). Union 9 findings (1 HIGH, 3 LOW, 5 INFO), none BLOCKING, all OPEN and all adjudicated against source by the coordinator. Corroboration is PARTIAL (operator decision). No PAL codereview run.",
+  "precommit_status": "PASS (SKIP=markdownlint pre-commit run --files over the seven content paths and the prompt builder; markdownlint NOT_RUN: its Node environment cannot install on this host)",
+  "residual_risks": [
+    "N1 HIGH: The frozen head has not run in a real Claude Code session; the host's fs.stat symlink semantics are mock-tested only.",
+    "N17 LOW: /route-ledger receipts typed right after /clear prints receipt file none and receiptsEnabled false until the next hook.",
+    "N18 LOW: The first unpinned Agent call after a start or /clear loses its in-memory toast-once entry.",
+    "N19 LOW: A segment holding an Agent request whose agent.spawn never completes or is denied is never evicted from memory.",
+    "N10 INFO: The plugin API is early access; coexistence with another plugin's status line is unverified.",
+    "N14 INFO: An explicit absolute receiptDir is allowed by design.",
+    "N15 INFO: The 15-mutation check was not re-run after 13ceb5020, 61c371f28 and 3d2af4b20 (it ran on 26414fef5).",
+    "N16 INFO: markdownlint NOT_RUN.",
+    "N20 INFO: AGY's copy of the prompt was truncated at the tail (about 2.3-2.7 KB of receipt.schema.json); AGY's Q3 is UNKNOWN, so the corroboration is PARTIAL. The operator decides whether that is acceptable or a further AGY run on a shorter prompt (new package revision, new operator line) is wanted.",
+    "Implementer limitation: D6 fails closed on a symlinked state directory: a setup where .control-tower/state is itself a symlink turns receipts off until receiptDir is a real directory.",
+    "Implementer limitation: a receipt directory that exists but cannot be listed turns receipts off for the session (commit 3d2af4b20).",
+    "Implementer limitation: D9 records no Agent description by default (recordDescription is false), so receipts carry an empty description.",
+    "Implementer limitation: whether the host changes the session id on /clear (D8) is UNKNOWN; both outcomes are handled and tested offline only.",
+    "Implementer limitation: the 15-mutation sanity check was not re-run after R5.",
+    "Implementer limitation: no live-session check of the repaired code (N1).",
+    "Implementer limitation: markdownlint NOT_RUN.",
+    "The three Codex review threads (4425125083, 4425202538, 4425202528) are answered in code and replied to but unresolved on GitHub; resolving them is the operator's.",
+    "Exact-model evidence for the schema-required gemini-3.1-pro-high is unavailable (that id is no longer listed): the AGY leg is recorded as auditor_tool agy with the generic model gemini and the exact id gemini-4-argon-high in the invocation text; PR Steward may not treat the proof as READY.",
+    "Identity: Grok answered grok-4 while the CLI was run with -m grok-4.5 (init events show grok-4.5); AGY answered unknown; provider attestation UNKNOWN for both."
+  ],
+  "unknowns": [
+    "Live behaviour of the repaired head in a real Claude Code session (NOT_RUN); the pre-repair code was loaded live on 2026-10-30.",
+    "Coexistence with another plugin status line (dopemux-pulse).",
+    "Whether /route is accepted by the installed build.",
+    "Whether the host changes the session id on /clear (D8).",
+    "Real host behaviour of $.fs.stat(path, { resolve: true }) on symlinks (the local declaration documents isLink as the path itself).",
+    "Provider-attested identity of both auditors (UNKNOWN); Grok answered grok-4 while configured grok-4.5.",
+    "Whether the AGY model had any capability beyond what its stream shows (60 built-in tools were present; the stream shows no tool step); the cause of AGY's input truncation.",
+    "The markdownlint result (NOT_RUN on this host).",
+    "Real hook time budgets and ordering beyond the mock kit and the 2026-10-30 live sessions on the pre-repair code."
+  ],
+  "cleanup_status": "Worktree and branch retained; no running processes; nothing pushed; the macro packages under task-packets/ (R1-R6) are untracked and R6 is flattened into review_bundle/; the unrelated local edit to .codex/config.toml is not committed; untracked .agents/ and the engine-laid plugins/dopemux-route-ledger/tsconfig.json are not committed; sealed audit run directories remain under the session scratchpad.",
+  "audit_evidence": {
+    "grok": {
+      "prompt_sha256": "37561264c18acc86aef2104b9630a331e0507585b49318ee05c00e26c94964c0",
+      "response_sha256": "4cfc38c42e1b78ffa876aeb58561cb48db35a1c054295ff82525429ea18b53fb",
+      "frozen_diff_sha256": "90b53907b50f690f9b551b8795251167dcdcffaaa057358b253141aad606ab71",
+      "delta_diff_sha256": "4ea3c97a9040bd7908d06bf51a02f24752605e9e863151b3db9c2612bed3c862",
+      "stream_sha256": "fd06aa187e528ab031c4fde003c11c03fbc2c18607b05cff62af7e13a1ac055f",
+      "probe1_stream_sha256": "8f44d0c0b77f8f0a1f5762dc6459a054bc440e97d91fa3b81bdbc3d1a4b99a79",
+      "probe2_stream_sha256": "d0bb19076e55e1c43d09435c5443f5d381ed8487f099363ee4bdeba74d0a74d6",
+      "gates_sha256": "49f54b769ba3c7bac33334c143400e1ce98fe81be249baebf2d09b3fb38e19dd",
+      "path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/ (files GROK_*)"
+    },
+    "agy": {
+      "prompt_sha256": "37561264c18acc86aef2104b9630a331e0507585b49318ee05c00e26c94964c0",
+      "response_sha256": "922071137744a73391d2f02a9ee3fd9624cb407fc133bc917b53cadffd62b883",
+      "stream_sha256": "62f82852a33f769b93af24f2dd72f8f2ac82973f56a69fc647dce9450e607562",
+      "probe1_stream_sha256": "aa592b31cb5bfdf2a3ec74b1e62720c78967e3a7dad3028caed060deca35a266",
+      "probe2_stream_sha256": "10eeea4ac2a432fc43b7ba8aa585ba5848e6429ad8dd68b9cd817f4d2b7ba645",
+      "models_list_sha256": "b5b30c9504b8ad22aa15ca127a002fbb92049b85be0dd4b42f0a6b9d5b5c898a",
+      "version": "1.4.11",
+      "model": "gemini-4-argon-high",
+      "input_truncated_by_agy": true,
+      "q3": "UNKNOWN",
+      "path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/review_bundle/ (files AGY_*)"
+    }
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "corroborating_auditor": {
+      "effort": "high (encoded in the model id)",
+      "model": "gemini-4-argon-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "google-antigravity-cli"
+    },
+    "implementer": {
+      "model": "claude-sonnet-5-5 (R5 repair child, R6 team lead W01 and W04; observed model identity UNKNOWN where no runtime receipt exists)",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "PRIMARY: sealed directory holding only AUDIT_PROMPT.txt (194244 bytes, sha256 37561264c18acc86aef2104b9630a331e0507585b49318ee05c00e26c94964c0); grok CLI 1.0.70 with the tool-less recipe (the R2 recipe files, byte-identical: GROK_DISALLOWED, GROK_SYSTEM_PROMPT, GROK_PROBE_PROMPT); env -i HOME PATH; -m grok-4.5 --effort high --sandbox workspace --max-turns 2; probe 2 confirmed init.tools == [], real run init.tools == [] with 0 tool_use blocks; launched 2026-11-01T02:11:46Z, finished 02:13:20Z, exit 0; exact script in review_bundle/GROK_INVOCATION.txt; one attempt, no retries. CORROBORATING run recorded in audit_evidence.agy: agy 1.4.11 --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 15m with session-only --settings toolPermission=request-review, allowNonWorkspaceAccess=false, permissions.allow=[]; launched 2026-11-01T02:16:25Z, finished 02:21:47Z, exit 0; exact script, driver and gate in review_bundle/AGY_INVOCATION.txt; AGY's copy of the prompt was truncated at the tail (Q3 UNKNOWN); exact-model evidence for gemini-3.1-pro-high unavailable (auditor_model would be the generic gemini); one attempt, no retries.",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R6/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "N1",
+        "severity": "HIGH",
+        "title": "The frozen head has not run in a real Claude Code session; the host's fs.stat symlink semantics are mock-tested only.",
+        "status": "OPEN",
+        "body": "Raised by: both auditors (Grok HIGH, AGY HIGH). Adjudication: CONFIRMED (live gap); AGY's stat(resolve) doubt is not supported by the local declaration (isLink describes the path itself; resolve only adds realPath), live behaviour UNVERIFIABLE. GATES_PRE_AUDIT.txt records the live check as NOT_RUN; README and how-to say NOT VERIFIED. Operator step: load the frozen head in a real session, one pinned advisor-calling child, one clean child, one unpinned Agent call, /route-ledger, /route-ledger receipts, a /clear (note the session id), a symlinked relative receiptDir."
+      },
+      {
+        "id": "N17",
+        "severity": "LOW",
+        "title": "/route-ledger receipts typed right after /clear, before the next hook, prints receipt file none and receiptsEnabled false.",
+        "status": "OPEN",
+        "body": "Raised by: AGY only (its N2). Adjudication: CONFIRMED. register.tsx:270-279 (freshSession), :636-647 (receiptsText), :1293-1306 (command.run handlers do not call ensureReady). State quirk, no data loss; how-to line 142 says the table and counts are empty until the next recorded event."
+      },
+      {
+        "id": "N18",
+        "severity": "LOW",
+        "title": "The first unpinned Agent call after a start or /clear loses its in-memory toast-once entry when initSession replaces the set.",
+        "status": "OPEN",
+        "body": "Raised by: AGY only (its N3). Adjudication: CONFIRMED (mechanism); impact bounded. register.tsx:1147-1156 adds the id and shows the toast before recordAgentRequest/ensureReady runs initSession (:931-937, toasted new Set at :286). The toast was already shown; only a repeated identical tool_use id could toast twice."
+      },
+      {
+        "id": "N19",
+        "severity": "LOW",
+        "title": "A segment holding an Agent request whose agent.spawn never completes or is denied is never evicted from memory.",
+        "status": "OPEN",
+        "body": "Raised by: AGY only (its N4). Adjudication: CONFIRMED; by design, disclosed. register.tsx:739-757 (holdsUnjoined, evictClosed), :1235 (noteSpawn returns on deny). README Memory and the how-to say such a segment stays whole."
+      },
+      {
+        "id": "N10",
+        "severity": "INFO",
+        "title": "The plugin API is early access; coexistence with another plugin's status line is unverified.",
+        "status": "OPEN",
+        "body": "Raised by: Grok only. Adjudication: CONFIRMED. README Limits and how-to section 6; the declaration file is not in the diff."
+      },
+      {
+        "id": "N14",
+        "severity": "INFO",
+        "title": "An explicit absolute receiptDir is allowed, subject to the link and directory checks.",
+        "status": "OPEN",
+        "body": "Raised by: Grok only. Adjudication: CONFIRMED; by design, disclosed. register.tsx:874; test 'D6: an absolute directory is allowed by design' (register.test.ts:1615); disclosed limitation (vii)."
+      },
+      {
+        "id": "N15",
+        "severity": "INFO",
+        "title": "The 15-mutation sanity check was run on 26414fef5 only and not re-run after 13ceb5020, 61c371f28 and 3d2af4b20.",
+        "status": "OPEN",
+        "body": "Raised by: Grok only. Adjudication: CONFIRMED; disclosed. SUCCESSOR_NOTE_CODEX_CLEAR.md and SUCCESSOR_NOTE_CODEX_LIST_BYTES.md say 'Not re-run' (the scratch harness no longer exists)."
+      },
+      {
+        "id": "N16",
+        "severity": "INFO",
+        "title": "markdownlint was NOT_RUN for the audited head.",
+        "status": "OPEN",
+        "body": "Raised by: Grok only. Adjudication: CONFIRMED; disclosed. GATES_PRE_AUDIT.txt; the hook's Node environment cannot install on this host (carried from the R5 notes)."
+      },
+      {
+        "id": "N20",
+        "severity": "INFO",
+        "title": "AGY's copy of the audit prompt was truncated at the tail (<truncated 2662 bytes> after about line 99 of receipt.schema.json); its Q3 is UNKNOWN.",
+        "status": "OPEN",
+        "body": "Raised by: AGY only (its N5). Adjudication: CONFIRMED (as to what AGY received); our prompt was intact. AUDIT_PROMPT.txt is 194,244 bytes, ends with the closing diff marker, has no truncation marker and was cmp-equal to the committed file; schema content line 99 ends 2,313 bytes before the end (AGY's cut point is 349 bytes earlier). Cause on AGY's side, UNKNOWN. See AGY_ADJUDICATION.md."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "N1 HIGH: The frozen head has not run in a real Claude Code session; the host's fs.stat symlink semantics are mock-tested only.",
+      "N17 LOW: /route-ledger receipts typed right after /clear prints receipt file none and receiptsEnabled false until the next hook.",
+      "N18 LOW: The first unpinned Agent call after a start or /clear loses its in-memory toast-once entry.",
+      "N19 LOW: A segment holding an Agent request whose agent.spawn never completes or is denied is never evicted from memory.",
+      "N10 INFO: The plugin API is early access; coexistence with another plugin's status line is unverified.",
+      "N14 INFO: An explicit absolute receiptDir is allowed by design.",
+      "N15 INFO: The 15-mutation check was not re-run after 13ceb5020, 61c371f28 and 3d2af4b20 (it ran on 26414fef5).",
+      "N16 INFO: markdownlint NOT_RUN.",
+      "N20 INFO: AGY's copy of the prompt was truncated at the tail (about 2.3-2.7 KB of receipt.schema.json); AGY's Q3 is UNKNOWN, so the corroboration is PARTIAL. The operator decides whether that is acceptable or a further AGY run on a shorter prompt (new package revision, new operator line) is wanted.",
+      "Implementer limitation: D6 fails closed on a symlinked state directory: a setup where .control-tower/state is itself a symlink turns receipts off until receiptDir is a real directory.",
+      "Implementer limitation: a receipt directory that exists but cannot be listed turns receipts off for the session (commit 3d2af4b20).",
+      "Implementer limitation: D9 records no Agent description by default (recordDescription is false), so receipts carry an empty description.",
+      "Implementer limitation: whether the host changes the session id on /clear (D8) is UNKNOWN; both outcomes are handled and tested offline only.",
+      "Implementer limitation: the 15-mutation sanity check was not re-run after R5.",
+      "Implementer limitation: no live-session check of the repaired code (N1).",
+      "Implementer limitation: markdownlint NOT_RUN.",
+      "The three Codex review threads (4425125083, 4425202538, 4425202528) are answered in code and replied to but unresolved on GitHub; resolving them is the operator's.",
+      "Exact-model evidence for the schema-required gemini-3.1-pro-high is unavailable (that id is no longer listed): the AGY leg is recorded as auditor_tool agy with the generic model gemini and the exact id gemini-4-argon-high in the invocation text; PR Steward may not treat the proof as READY.",
+      "Identity: Grok answered grok-4 while the CLI was run with -m grok-4.5 (init events show grok-4.5); AGY answered unknown; provider attestation UNKNOWN for both."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

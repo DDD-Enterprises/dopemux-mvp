@@ -1,0 +1,80 @@
+{
+  "macro": {
+    "first_recorded_timestamp": "2026-11-01T01:59:17Z",
+    "elapsed_min_to_ledger_write": 30.05,
+    "elapsed_basis": "from the first recorded timestamp (the W01 gates run); the gate line was typed before it and is not timestamped, so the true elapsed is longer by an UNKNOWN amount",
+    "cap_elapsed_min": 150,
+    "child_dispatches": 0,
+    "cap_child_dispatches": 0,
+    "automatic_retries": 0,
+    "final_independent_audits": 2,
+    "cap_final_independent_audits": 2,
+    "intermediate_model_audits": 0,
+    "post_freeze_repair_rounds": 0,
+    "child_advisor_calls": 0,
+    "coordinator_advisor_calls": 0,
+    "cap_coordinator_advisor_calls": 0,
+    "within_caps": true
+  },
+  "status": "MEASURED vs the PROPOSED caps in ALLOWANCES.json (sha256 2749fa37c8425cea7085b96db97c181c90f4a1133829e7960dc492ba71adb20c); nothing invented, UNKNOWN where the runner reports nothing",
+  "written_at": "2026-11-01T02:29:19Z",
+  "per_workstream": {
+    "W01": {
+      "elapsed_min": 10.9,
+      "elapsed_basis": "first recorded timestamp to the W01 commit time (lower bound)",
+      "cap_elapsed_min": 40,
+      "dispatches": 0,
+      "cap_dispatches": 0,
+      "retries": 0,
+      "advisor_calls": 0,
+      "prompt_bytes": 194244,
+      "prompt_limit_bytes": 200000,
+      "within_caps": true
+    },
+    "W02": {
+      "audit_attempts": 1,
+      "cap_attempts": 1,
+      "retries": 0,
+      "probes": 2,
+      "cap_probes": 3,
+      "wall_min_probes_and_run": 2.27,
+      "cap_wall_min": 30,
+      "run_wall_min": 1.57,
+      "cap_run_min": 15,
+      "cost_usd": 0.096700352,
+      "cap_cost_usd": 0.3,
+      "advisor_calls": 0,
+      "within_caps": true
+    },
+    "W03": {
+      "audit_attempts": 1,
+      "cap_attempts": 1,
+      "retries": 0,
+      "probes": 2,
+      "cap_probes": 2,
+      "wall_min_probes_and_run": 6.32,
+      "cap_wall_min": 30,
+      "run_wall_min": 5.37,
+      "cap_run_min": 15,
+      "run_total_tokens": 104535,
+      "total_tokens_with_probes": 133358,
+      "cap_tokens": 400000,
+      "cost_usd": "UNKNOWN",
+      "advisor_calls": 0,
+      "within_caps": true
+    },
+    "W04": {
+      "elapsed_min": 6.3,
+      "elapsed_basis": "AGY custody commit time to this ledger write",
+      "cap_elapsed_min": 45,
+      "dispatches": 0,
+      "retries": 0,
+      "advisor_calls": 0,
+      "within_caps": true
+    }
+  },
+  "unknown": [
+    "coordinator tokens and active time (not budgeted, not recordable)",
+    "AGY cost in USD (the stream reports tokens only)"
+  ]
+}
