@@ -102,6 +102,9 @@ FORBIDDEN_PATHS = [
     # either tree (including same-named files in other directories, suffix, prefix and case
     # variants) remains hard-blocked. TEXT_RULES content scanning in red_lane_scanner.py is
     # untouched and still applies to the exempted paths.
+    # Amendment 1 (2026-10-31, W10) adds exactly two more file-exact exemptions, the memory
+    # image build files (services/working-memory-assistant/Dockerfile.dope-memory and
+    # docker/mcp-servers-source/conport/Dockerfile), for 22 in total.
     re.compile(
         r"^services/working-memory-assistant/"
         r"(?!dope_memory_main\.py\Z)"
@@ -113,6 +116,11 @@ FORBIDDEN_PATHS = [
         r"(?!chronicle/sqlite_migrations\.py\Z)"
         r"(?!chronicle/migrations/v1_3_0_add_write_principal\.sql\Z)"
         r"(?!tests/test_mcp_http_endpoint\.py\Z)"
+        # ADR-227 Amendment 1 (2026-10-31, W10): the image build file must COPY auth_identity.py.
+        # The regex layer (PR Steward gate, red_lane_scanner) exempts exactly this capitalized
+        # name. Claude Code's PreToolUse guard still blocks Edit-tool edits to it, because it also
+        # tests the lowercase reading of every path; a later guard change resolves that.
+        r"(?!Dockerfile\.dope-memory\Z)"
         r".*\Z",
         re.DOTALL,
     ),
@@ -127,6 +135,10 @@ FORBIDDEN_PATHS = [
         r"(?!migrations/008_write_principal\.sql\Z)"
         r"(?!migrations/008_rollback\.sql\Z)"
         r"(?!migrations/conport_migration_gate\.py\Z)"
+        # ADR-227 Amendment 1 (2026-10-31, W10): the image build file must COPY auth_identity.py.
+        # Same as above: the regex layer exempts exactly this capitalized name; the PreToolUse
+        # guard's lowercase reading still blocks Claude Code edits to it.
+        r"(?!Dockerfile\Z)"
         r".*\Z",
         re.DOTALL,
     ),

@@ -1,8 +1,9 @@
 """W09 (Runner Memory Wave 2A, R2): ADR-227 narrow DCP-RED-MERGE-SEAM-0001 carve-out.
 
-Exactly 20 files named by W01, W02 and W05 are exempt from the path-level block,
-each as a file-exact negative lookahead anchored with ``\\Z``. Everything else in
-the three trees, and ``services/task-orchestrator/``, stays blocked.
+Exactly 22 files named by W01, W02, W05 and (Amendment 1, W10) the two memory-image
+Dockerfiles are exempt from the path-level block, each as a file-exact negative
+lookahead anchored with ``\\Z``. Everything else in the three trees, and
+``services/task-orchestrator/``, stays blocked.
 """
 from __future__ import annotations
 
@@ -43,6 +44,7 @@ EXEMPT_BY_TREE = {
         "chronicle/sqlite_migrations.py",
         "chronicle/migrations/v1_3_0_add_write_principal.sql",
         "tests/test_mcp_http_endpoint.py",
+        "Dockerfile.dope-memory",  # ADR-227 Amendment 1 (W10)
     ),
     CONPORT: (
         "server.py",
@@ -54,6 +56,7 @@ EXEMPT_BY_TREE = {
         "migrations/008_write_principal.sql",
         "migrations/008_rollback.sql",
         "migrations/conport_migration_gate.py",
+        "Dockerfile",  # ADR-227 Amendment 1 (W10)
     ),
     BRIDGE: (
         "dopecon_bridge/clients.py",
@@ -68,13 +71,12 @@ STILL_BLOCKED = (
     WMA + "chronicle/capture_client.py",
     WMA + "chronicle/migrations/v1_2_0_something.sql",
     WMA + "tests/test_other.py",
-    WMA + "Dockerfile",
+    WMA + "Dockerfile",  # the suffix-less name is NOT the exempt Dockerfile.dope-memory
     WMA + "requirements.txt",
     WMA + "src/mcp/server.py",
     CONPORT + "direct_server.py",
     CONPORT + "info_server.py",
     CONPORT + "unified_queries.py",
-    CONPORT + "Dockerfile",
     CONPORT + "migrations/007_worktree_support_simple.sql",
     CONPORT + "migrations/008_other.sql",
     CONPORT + "tests/test_anything.py",
@@ -114,16 +116,87 @@ def _near_misses(rel: str) -> list[str]:
         f"{d}/../{rel.rsplit('/', 1)[0].rsplit('/', 1)[-1]}/{base}",  # spelled via ..
         f"{d}/./sub/../{base}",  # ..-segment inside the subtree
     ]
-    return out
+    # `.title()` leaves names such as `Dockerfile` unchanged; a "variant" equal to the
+    # exempt path itself is not a near-miss.
+    return [v for v in out if v != rel]
 
 
 # ---------------------------------------------------------------------------
-# The exempt set is exactly the 20 packet-B01 files, as the rules file spells it
+# The exempt set is exactly the 22 files (20 from W09 plus the two Amendment 1
+# Dockerfiles), as the rules file spells it
 # ---------------------------------------------------------------------------
 
-def test_exempt_list_is_exactly_twenty_paths():
-    assert len(EXEMPT) == 20
-    assert len(set(EXEMPT)) == 20
+def test_exempt_list_is_exactly_twenty_two_paths():
+    assert len(EXEMPT) == 22
+    assert len(set(EXEMPT)) == 22
+
+
+AMENDMENT_1_DOCKERFILES = (WMA + "Dockerfile.dope-memory", CONPORT + "Dockerfile")
+
+# Other Dockerfile-shaped names in the two trees: none of them inherits the exemption.
+DOCKERFILE_NEAR_MISSES = (
+    WMA + "Dockerfile",  # the suffix-less name
+    WMA + "Dockerfile.dope-memory.bak",  # suffix
+    WMA + "Dockerfile.dope-memory~",
+    WMA + "Dockerfile.dope-memory2",
+    WMA + "xDockerfile.dope-memory",  # prefix
+    WMA + "Dockerfile.dope",  # truncated
+    WMA + "Dockerfile.other",  # another Dockerfile name in the same tree
+    WMA + "Dockerfile.dev",
+    WMA + "dockerfile.dope-memory",  # case variants, including the all-lowercase spelling
+    WMA + "DOCKERFILE.DOPE-MEMORY",
+    WMA + "Dockerfile.Dope-Memory",
+    WMA + "dockerFile.dope-memory",
+    WMA + "sub/Dockerfile.dope-memory",  # nested same-named file
+    WMA + "tests/Dockerfile.dope-memory",
+    WMA + "chronicle/../Dockerfile.dope-memory",  # spelled via ..
+    WMA + "Dockerfile.dope-memory/x",  # a path below the "file"
+    CONPORT + "Dockerfile.bak",
+    CONPORT + "Dockerfile~",
+    CONPORT + "Dockerfile.dev",
+    CONPORT + "Dockerfile.dope-memory",  # the other tree's exempt name
+    CONPORT + "Dockerfile2",
+    CONPORT + "xDockerfile",
+    CONPORT + "dockerfile",  # the all-lowercase spelling is not exempt either
+    CONPORT + "xdockerfile",
+    CONPORT + "dockerfile.bak",
+    CONPORT + "DOCKERFILE",
+    CONPORT + "DockerFile",
+    CONPORT + "sub/Dockerfile",
+    CONPORT + "migrations/Dockerfile",
+    CONPORT + "migrations/../direct_server.py",
+    BRIDGE + "Dockerfile",  # a third tree is untouched by Amendment 1
+    BRIDGE + "Dockerfile.dope-memory",
+    "services/task-orchestrator/Dockerfile",
+)
+
+
+@pytest.mark.parametrize("rel", AMENDMENT_1_DOCKERFILES)
+def test_amendment_1_dockerfiles_are_exempt_at_the_regex_layer(rel):
+    """FORBIDDEN_PATHS (read by PR Steward's gate and red_lane_scanner) exempts exactly these."""
+    assert not _regex_blocked(rel), rel
+
+
+@pytest.mark.parametrize("rel", AMENDMENT_1_DOCKERFILES)
+def test_amendment_1_dockerfiles_still_denied_by_the_claude_code_guard(rel):
+    """Known, accepted, fail-closed: the PreToolUse guard also tests the case-folded
+    (lower-case) reading of every path (ADR-226 residual F-001-A), and ``dockerfile`` /
+    ``dockerfile.dope-memory`` match the deny pattern, so Edit-tool edits to these two
+    capitalized names stay blocked. A later guard change, not this carve-out, resolves it."""
+    for tool in ("Edit", "Write", "NotebookEdit"):
+        result = _edit(rel, tool)
+        assert result is not None, (tool, rel)
+        assert RED_LANE_ID in result, (tool, rel)
+        assert rel.lower() in result, (tool, rel)  # the denial names the case-folded reading
+
+
+@pytest.mark.parametrize("rel", DOCKERFILE_NEAR_MISSES)
+def test_other_dockerfile_names_stay_blocked(rel):
+    for tool in ("Edit", "Write", "NotebookEdit"):
+        result = _edit(rel, tool)
+        assert result is not None, (tool, rel)
+        assert RED_LANE_ID in result, (tool, rel)
+    assert _regex_blocked(rel), rel
 
 
 def _lookahead_names(tree: str) -> set[str]:
@@ -140,6 +213,11 @@ def _lookahead_names(tree: str) -> set[str]:
 @pytest.mark.parametrize("tree", list(EXEMPT_BY_TREE))
 def test_rules_file_lookaheads_match_the_pinned_list(tree):
     assert _lookahead_names(tree) == set(EXEMPT_BY_TREE[tree])
+
+
+def test_rules_file_has_exactly_22_lookaheads():
+    total = sum(len(_lookahead_names(tree)) for tree in EXEMPT_BY_TREE)
+    assert total == 22
 
 
 @pytest.mark.parametrize("tree", list(EXEMPT_BY_TREE))
@@ -160,10 +238,17 @@ def test_no_traversal_companion_pattern_was_added():
 # Every exempted path is allowed (all three edit tools)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("rel", EXEMPT)
+@pytest.mark.parametrize("rel", [p for p in EXEMPT if p not in AMENDMENT_1_DOCKERFILES])
 def test_exempt_path_is_editable(rel):
+    # The two Amendment 1 Dockerfiles are exempt at the regex layer only; the guard layer is
+    # asserted separately (test_amendment_1_dockerfiles_still_denied_by_the_claude_code_guard).
     for tool in ("Edit", "Write", "NotebookEdit"):
         assert _edit(rel, tool) is None, (tool, rel)
+    assert not _regex_blocked(rel), rel
+
+
+@pytest.mark.parametrize("rel", EXEMPT)
+def test_every_exempt_path_is_exempt_at_the_regex_layer(rel):
     assert not _regex_blocked(rel), rel
 
 
@@ -396,3 +481,22 @@ def test_adr_states_boundaries():
     ):
         assert needle in text, needle
     assert "no `..` companion" in text
+
+
+def test_adr_amendment_1_records_the_two_dockerfiles_and_the_new_total():
+    text = _adr_text()
+    assert "## Amendment 1 (2026-10-31)" in text
+    amendment = text.split("## Amendment 1 (2026-10-31)", 1)[1]
+    for rel in AMENDMENT_1_DOCKERFILES:
+        assert rel in amendment, rel
+    assert "22" in amendment
+    assert "AMENDMENT_01.md" in amendment
+    assert "PreToolUse guard still blocks Edit-tool edits" in amendment
+    assert "F-001-A" in amendment
+    assert "companion lookahead is added" in amendment
+    assert "Yes, extend 2A" in amendment
+    assert "auth_identity.py" in amendment
+    front = text.split("---\n", 2)[1]
+    assert re.search(r"^status: accepted$", front, re.M)
+    prelude = re.search(r"^prelude: (.*)$", front, re.M).group(1)
+    assert "exactly 22 named files" in prelude

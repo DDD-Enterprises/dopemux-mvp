@@ -7,7 +7,7 @@ author: '@hu3mann'
 date: '2026-10-31'
 last_review: '2026-10-31'
 next_review: '2027-01-31'
-prelude: Narrow DCP-RED-MERGE-SEAM-0001 carve-out that exempts exactly 20 named files under services/working-memory-assistant/, docker/mcp-servers-source/conport/ and services/dopecon-bridge/ so Runner Memory Wave 2A can add verified runner identity to dope-memory and ConPort (adr) for dopemux documentation and developer workflows.
+prelude: Narrow DCP-RED-MERGE-SEAM-0001 carve-out that exempts exactly 22 named files under services/working-memory-assistant/, docker/mcp-servers-source/conport/ and services/dopecon-bridge/ so Runner Memory Wave 2A can add verified runner identity to dope-memory and ConPort (adr) for dopemux documentation and developer workflows.
 status: accepted
 graph_metadata:
   node_type: ADR
@@ -250,3 +250,60 @@ the tests and this ADR. Nothing is pushed or deployed by this change.
 * The guard reduces a trailing slash with `pathlib.Path`, so `file.py/` reaches it as
   `file.py`. A write to that spelling fails with `ENOTDIR`; the regex layer still treats the
   slash variant as not exempt.
+
+────────────────────────────────────────────────────────────
+
+## Amendment 1 (2026-10-31)
+
+Status of the ADR stays `accepted`. This amendment adds two more file-exact exemptions, so the
+total goes from 20 to **22**.
+
+### The two added files
+
+| File | Why |
+|---|---|
+| `services/working-memory-assistant/Dockerfile.dope-memory` | The dope-memory image copies application modules one file at a time and does not copy the new `auth_identity.py`, which `dope_memory_main.py` and `mcp_http.py` import unguarded. A rebuilt image would fail at import. |
+| `docker/mcp-servers-source/conport/Dockerfile` | The ConPort image has the same defect: it copies modules one by one, and `server.py`, `enhanced_server.py` and `conport_mcp_stdio.py` import the new `auth_identity.py`. |
+
+Each file gets one `COPY` line for `auth_identity.py` and no other change. Both files are
+red-lane paths that this ADR did not exempt and that no R2 write surface listed (found by W02
+and W06, `W02_RETURN.md` and `W06_RETURN.md`, open item 1).
+
+### Authorization
+
+The operator authorized the extension on 2026-10-31 (chat, verbatim "Yes, extend 2A", answering
+"Extend 2A to fix the two Dockerfiles and the broken CI test?"). The record is
+`proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AMENDMENT_01.md`. The work is
+workstream W10 of `MACRO-DMX-RUNNER-MEMORY-2A-001-R2`.
+
+### Construction and boundaries
+
+* Same construction as the other 20: a negative lookahead per file, `(?!Dockerfile\.dope-memory\Z)`
+  inside the `^services/working-memory-assistant/` pattern and `(?!Dockerfile\Z)` inside the
+  `^docker/mcp-servers-source/conport/` pattern, both under the existing `\Z` anchor and
+  `re.DOTALL`. There is still no directory exemption and no `..` companion rule.
+* **The exemption is case-exact, at the regex layer.** `FORBIDDEN_PATHS` is read by PR
+  Steward's gate (`tools/pr_steward/security_release_gate.py`) and by `red_lane_scanner.py`,
+  both case-sensitively on git paths. They exempt exactly the two capitalized names above;
+  `dockerfile`, `dockerfile.dope-memory` and every other case variant stay blocked there.
+* **Claude Code's PreToolUse guard still blocks Edit-tool edits to these two files.**
+  `.claude/hooks/dcp_surface_guard.py` also tests the lower-case reading of every path
+  (ADR-226 residual F-001-A), and `dockerfile` / `dockerfile.dope-memory` match the deny
+  pattern, so a name with a capital letter never survives that reading. The other 20 names are
+  already lower-case. This fails closed and is accepted. A later change to the guard, not this
+  ADR, resolves it; no lower-case companion lookahead is added, because it would also exempt
+  those spellings from the PR gate and the scanner on a case-sensitive system, which the
+  operator did not authorize.
+* W10's two `COPY ... auth_identity.py` lines (one in each Dockerfile) were made under this
+  amendment, in a session where the guard did not fire for the worktree paths.
+* Every other Dockerfile name in those trees stays blocked: `services/working-memory-assistant/Dockerfile`
+  (no suffix), `Dockerfile.dope-memory.bak`, `xDockerfile.dope-memory`, `Dockerfile.dev`,
+  nested and case variants, and every Dockerfile under `services/dopecon-bridge/` and
+  `services/task-orchestrator/`.
+* `red_lane_scanner.py` content rules, `security_release_gate.py` and `dcp_surface_guard.py` are
+  unchanged.
+* Rollback: `git revert` the W10 commit restores the 20-file set.
+
+Verification: `tests/unit/runner_memory_2a_r2_w09/` and `tests/test_dcp_surface_guard.py` assert
+the 22-file set and the near-misses; `tests/unit/runner_memory_2a_r2_w10/` checks statically that
+each image copies the local modules its entry points import.
