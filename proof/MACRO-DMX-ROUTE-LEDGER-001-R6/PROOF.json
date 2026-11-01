@@ -131,10 +131,10 @@
       "note": "markdownlint hook NOT_RUN"
     },
     {
-      "command": "build_audit_prompt.py --check",
+      "command": "build_audit_prompt.py.txt --check",
       "exit_code": 0,
       "bucket": "PASS",
-      "note": "AUDIT_PROMPT.txt byte-equal to a fresh in-memory build; 194244 bytes (limit 200000)"
+      "note": "AUDIT_PROMPT.txt byte-equal to a fresh in-memory build; 194244 bytes (limit 200000); re-run after the operator-approved rename of the builder from .py to .txt (the proof-only closure allowlist admits only text-like names)"
     },
     {
       "command": "markdownlint hook",
