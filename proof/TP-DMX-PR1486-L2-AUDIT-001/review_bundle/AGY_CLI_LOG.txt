@@ -134,8 +134,8 @@ I1030 04:25:57.487397       1 hooks_manager.go:53] loaded 0 named hooks from 0 h
 I1030 04:25:57.487428       1 printmode.go:407] Print mode: not authenticated, trying silent auth
 I1030 04:25:57.515669     388 keyring.go:64] keyringAuth: loaded token, expiry=2026-10-30 04:40:46.719351 -0700 PDT expired=false
 I1030 04:25:57.515875       1 auth.go:157] ChainedAuth: authenticated via keyring (effective: keyring)
-I1030 04:25:57.516050       1 server_oauth.go:224] applyAuthResult: email=hukrohman@gmail.com, authMethod=consumer, quotaProject=
-I1030 04:25:57.516529       1 server_oauth.go:229] OAuth: authenticated successfully as hukrohman@gmail.com
+I1030 04:25:57.516050       1 server_oauth.go:224] applyAuthResult: email=<REDACTED:operator-account-email>, authMethod=consumer, quotaProject=
+I1030 04:25:57.516529       1 server_oauth.go:229] OAuth: authenticated successfully as <REDACTED:operator-account-email>
 I1030 04:25:57.516649       1 server_oauth.go:238] b.codeAssistClient.AuthProvider (0x54658110d950) is same as b.cliAuth (0x54658110d950)
 W1030 04:25:57.518110     409 cache.go:177] Failed to refresh cache in background: admin controls not applicable
 W1030 04:25:57.518150     316 cache.go:177] Failed to refresh cache in background: admin controls not applicable
