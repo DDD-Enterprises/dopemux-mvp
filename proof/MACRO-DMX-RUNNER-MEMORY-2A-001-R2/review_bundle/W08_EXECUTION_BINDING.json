@@ -99,7 +99,7 @@
   "audit": {
     "effective_required": true,
     "effective_requirement_sources": [
-      "delivery:L3"
+      "delivery:L2"
     ],
     "upstream_obligations": [],
     "selected_auditor_binding": "NOT_RUN"
