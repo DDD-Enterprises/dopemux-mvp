@@ -143,7 +143,13 @@
       "note": "Node environment cannot install on this host; CI covers it"
     },
     {
-      "command": "live Claude Code session loading the repaired head",
+      "command": "headless live session with the repaired plugin loaded (claude --plugin-dir ... -p, scratch project)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "post-audit evidence: 9 receipts (2 agent_request pinned/unpinned, 7 step_observed) all schema-valid, joined by tool_use_id, description empty by default; review_bundle/LIVE_CHECK_HEADLESS.md; N1 stays OPEN"
+    },
+    {
+      "command": "interactive live session (status line, toasts, /route-ledger, /clear, advisor-calling child, dopemux-pulse coexistence)",
       "exit_code": null,
       "bucket": "NOT_RUN",
       "note": "operator step (N1)"
@@ -173,7 +179,7 @@
     "Identity: Grok answered grok-4 while the CLI was run with -m grok-4.5 (init events show grok-4.5); AGY answered unknown; provider attestation UNKNOWN for both."
   ],
   "unknowns": [
-    "Live behaviour of the repaired head in a real Claude Code session (NOT_RUN); the pre-repair code was loaded live on 2026-10-30.",
+    "Interactive live behaviour of the repaired head (status line, toasts, /route-ledger table, /clear, advisor budgets); only a headless run is recorded (NOT_RUN interactive); the pre-repair code was loaded live on 2026-10-30.",
     "Coexistence with another plugin status line (dopemux-pulse).",
     "Whether /route is accepted by the installed build.",
     "Whether the host changes the session id on /clear (D8).",
