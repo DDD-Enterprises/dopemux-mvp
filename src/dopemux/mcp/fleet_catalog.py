@@ -326,17 +326,19 @@ def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
     This is the preview/projection output: every codex-renderable row, released
     or not. The in-repo `.codex/config.toml` write is gated (ADR-MCPINT-002 G1,
     Wave 2A design 5.7): `dopemux mcp generate --apply` writes it only when the
-    memory servers report enforce and identity-required writes and a keychain
-    token exists for runner:codex, and then writes only the released rows.
+    memory servers report auth_mode log or enforce with identity-required writes
+    and a keychain token exists for runner:codex, and then writes only the
+    released rows.
     """
 
     lines = [
         "# Generated from mcp_catalog.yaml by `dopemux mcp generate`.",
         "# Dry-run is the default; review before copying into .codex/config.toml.",
         "# In-repo apply is gated: `generate --agent-matrix --apply` writes .codex/config.toml",
-        "# only when dope-memory and ConPort report auth_mode enforce with identity-required",
-        "# writes and a keychain token exists for runner:codex; only released rows are written",
-        "# (conport and dope-memory through the stdio route). Other rows here are preview only.",
+        "# only when dope-memory and ConPort report auth_mode log or enforce with",
+        "# identity-required writes and a keychain token exists for runner:codex; only released",
+        "# rows are written (conport and dope-memory through the stdio route).",
+        "# Other rows here are preview only.",
         *_codex_server_lines(catalog),
     ]
     return "\n".join(lines) + "\n"
@@ -1239,7 +1241,7 @@ def validate_codex_config_toml_parity(repo_root: Path) -> list[str]:
     """Parity gate for the gated .codex/config.toml target (ADR-MCPINT-002 G1).
 
     Until a gated `dopemux mcp generate --apply` lands the managed region (it
-    needs enforce-mode memory servers and a runner:codex token), the gate only
+    needs log- or enforce-mode memory servers and a runner:codex token), the gate only
     enforces that no `[mcp_servers.*]` tables drift into the file outside
     generator ownership. Once the managed region exists it must equal the fresh
     catalog render of the released rows (what `generate --apply` writes), and

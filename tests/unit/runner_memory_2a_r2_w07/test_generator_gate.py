@@ -106,11 +106,12 @@ def test_should_never_carry_the_token_in_the_result(checkout, seams):
 @pytest.mark.parametrize(
     "server_port, key, value, needle",
     [
-        (MEMORY_PORT, "auth_mode", "log", "dope-memory"),
         (MEMORY_PORT, "auth_mode", "off", "dope-memory"),
+        (MEMORY_PORT, "auth_mode", "enforced", "dope-memory"),
+        (MEMORY_PORT, "auth_mode", None, "dope-memory"),
         (MEMORY_PORT, "identity_required_writes", False, "dope-memory"),
         (MEMORY_PORT, "identity_required_writes", "true", "dope-memory"),
-        (CONPORT_PORT, "auth_mode", "log", "conport"),
+        (CONPORT_PORT, "auth_mode", "off", "conport"),
         (CONPORT_PORT, "identity_required_writes", False, "conport"),
         (CONPORT_PORT, "auth_principal_column", "missing", "conport"),
         (CONPORT_PORT, "auth_principal_column", "partial", "conport"),
@@ -125,6 +126,66 @@ def test_should_fail_when_one_health_field_is_wrong(checkout, seams, server_port
     assert len(gate.failures) == 1
     assert needle in gate.failures[0]
     assert key in gate.failures[0]
+
+
+def test_should_name_the_new_accepted_modes_when_auth_mode_is_off(checkout, seams):
+    seams["health"][MEMORY_PORT]["auth_mode"] = "off"
+
+    gate = mcp_commands.evaluate_codex_memory_gate(checkout)
+
+    assert gate.ok is False
+    assert "auth_mode is 'off', expected 'log' or 'enforce'" in gate.failures[0]
+
+
+@pytest.mark.parametrize("mode", ["log", "enforce"])
+@pytest.mark.parametrize("port", [MEMORY_PORT, CONPORT_PORT])
+def test_should_hold_for_either_accepted_mode_on_either_server(checkout, seams, port, mode):
+    seams["health"][port]["auth_mode"] = mode
+
+    gate = mcp_commands.evaluate_codex_memory_gate(checkout)
+
+    assert gate.ok is True
+    assert gate.failures == ()
+
+
+def test_should_still_require_identity_required_writes_in_log_mode(checkout, seams):
+    seams["health"][MEMORY_PORT].update(auth_mode="log", identity_required_writes=False)
+
+    gate = mcp_commands.evaluate_codex_memory_gate(checkout)
+
+    assert gate.ok is False
+    assert "identity_required_writes" in gate.failures[0]
+
+
+def test_should_still_require_the_conport_principal_column_in_log_mode(checkout, seams):
+    seams["health"][CONPORT_PORT].update(auth_mode="log", auth_principal_column="missing")
+
+    gate = mcp_commands.evaluate_codex_memory_gate(checkout)
+
+    assert gate.ok is False
+    assert "auth_principal_column" in gate.failures[0]
+
+
+def test_should_still_require_the_runner_token_in_log_mode(checkout, seams):
+    seams["health"][MEMORY_PORT]["auth_mode"] = "log"
+    seams["health"][CONPORT_PORT]["auth_mode"] = "log"
+    seams["token"] = TokenNotFoundError("no item")
+
+    gate = mcp_commands.evaluate_codex_memory_gate(checkout)
+
+    assert gate.ok is False
+    assert len(gate.failures) == 1
+    assert "gate check 2" in gate.failures[0]
+
+
+def test_should_report_which_servers_are_in_log_mode(checkout, seams):
+    seams["health"][CONPORT_PORT]["auth_mode"] = "log"
+
+    gate = mcp_commands.evaluate_codex_memory_gate(checkout)
+
+    assert gate.log_mode_servers == ("conport",)
+    seams["health"][CONPORT_PORT]["auth_mode"] = "enforce"
+    assert mcp_commands.evaluate_codex_memory_gate(checkout).log_mode_servers == ()
 
 
 def test_should_fail_when_a_required_health_field_is_absent(checkout, seams):
@@ -198,7 +259,7 @@ def test_should_fail_and_name_any_other_auth_error(checkout, seams):
 
 
 def test_should_report_every_failed_check_together(checkout, seams):
-    seams["health"][MEMORY_PORT]["auth_mode"] = "log"
+    seams["health"][MEMORY_PORT]["auth_mode"] = "off"
     seams["health"][CONPORT_PORT]["auth_principal_column"] = "missing"
     seams["token"] = TokenNotFoundError("no item")
 
@@ -245,6 +306,75 @@ def test_should_write_the_codex_config_when_the_gate_holds(generate_env):
     assert set(servers) == {"conport", "dope-memory"}
 
 
+LOG_NOTICE_NEEDLES = (
+    "log mode",
+    "runner:codex",
+    "without a token",
+    "unverified",
+    "until enforce",
+)
+
+
+def test_should_print_the_log_mode_notice_once_when_a_server_is_in_log_mode(generate_env, seams):
+    repo, out = generate_env
+    seams["health"][MEMORY_PORT]["auth_mode"] = "log"
+
+    result = _invoke(out)
+
+    assert result.exit_code == 0, result.output
+    assert (repo / ".codex" / "config.toml").is_file()
+    notice_lines = [line for line in result.output.splitlines() if "log mode" in line]
+    assert len(notice_lines) == 1
+    for needle in LOG_NOTICE_NEEDLES:
+        assert needle in " ".join(result.output.split())
+    assert "dope-memory" in notice_lines[0]
+
+
+def test_should_print_one_notice_naming_both_servers_when_both_are_in_log_mode(generate_env, seams):
+    _repo, out = generate_env
+    seams["health"][MEMORY_PORT]["auth_mode"] = "log"
+    seams["health"][CONPORT_PORT]["auth_mode"] = "log"
+
+    result = _invoke(out)
+
+    assert result.exit_code == 0, result.output
+    assert sum("log mode" in line for line in result.output.splitlines()) == 1
+    assert "conport" in result.output and "dope-memory" in result.output
+
+
+def test_should_print_the_notice_for_a_mixed_log_and_enforce_pair(generate_env, seams):
+    repo, out = generate_env
+    seams["health"][CONPORT_PORT]["auth_mode"] = "log"
+
+    result = _invoke(out)
+
+    assert result.exit_code == 0, result.output
+    assert (repo / ".codex" / "config.toml").is_file()
+    assert sum("log mode" in line for line in result.output.splitlines()) == 1
+
+
+def test_should_print_no_log_notice_when_both_servers_enforce(generate_env):
+    repo, out = generate_env
+
+    result = _invoke(out)
+
+    assert result.exit_code == 0, result.output
+    assert (repo / ".codex" / "config.toml").is_file()
+    assert "log mode" not in result.output
+    assert "unverified" not in result.output
+
+
+def test_should_print_no_log_notice_when_the_gate_fails(generate_env, seams):
+    _repo, out = generate_env
+    seams["health"][MEMORY_PORT]["auth_mode"] = "log"
+    seams["token"] = TokenNotFoundError("none")
+
+    result = _invoke(out)
+
+    assert "Refused to write .codex/config.toml" in result.output
+    assert "Memory servers in log mode" not in result.output
+
+
 def test_should_keep_unreleased_servers_out_of_the_written_file(generate_env):
     repo, out = generate_env
 
@@ -268,7 +398,7 @@ def test_should_still_preview_unreleased_servers_without_writing_them(generate_e
 @pytest.mark.parametrize(
     "break_it, needle",
     [
-        (lambda s: s["health"][MEMORY_PORT].update(auth_mode="log"), "dope-memory"),
+        (lambda s: s["health"][MEMORY_PORT].update(auth_mode="off"), "dope-memory"),
         (lambda s: s["health"][CONPORT_PORT].update(identity_required_writes=False), "conport"),
         (lambda s: s["health"][CONPORT_PORT].update(auth_principal_column="missing"), "auth_principal_column"),
         (lambda s: s.update(token=TokenNotFoundError("none")), "runner:codex"),
@@ -320,6 +450,7 @@ def test_should_reject_allow_sequenced_and_name_the_new_gate(generate_env, seams
     assert result.exit_code != 0
     assert "--allow-sequenced" in result.output
     assert "auth_mode" in result.output
+    assert "'log' or 'enforce'" in " ".join(result.output.split())
     assert "runner:codex" in result.output
     assert not (repo / ".codex" / "config.toml").exists()
     assert not out.exists()
@@ -634,6 +765,18 @@ def test_should_release_only_the_memory_servers_to_codex_in_the_catalog():
 
     assert released == {"conport", "dope-memory"}
     assert sequenced == {"task-orchestrator", "serena", "dope-context", "gpt-researcher", "pal-stdio"}
+
+
+def test_should_say_log_or_enforce_in_the_help_text_and_the_preview_header():
+    help_text = " ".join(
+        CliRunner().invoke(mcp_commands.mcp_generate_cmd, ["--help"]).output.split()
+    )
+    header = " ".join(fleet_catalog.render_codex_config_fragment(_real_catalog()).replace("# ", "").split())
+
+    assert "auth_mode log or enforce" in help_text
+    assert "auth_mode log or enforce" in header
+    assert "enforce and identity" not in help_text
+    assert "auth_mode enforce" not in header
 
 
 def test_should_not_name_the_removed_orchestrator_setting_in_generator_code_or_output():

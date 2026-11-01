@@ -952,21 +952,26 @@ def _build_local_mcp_json(server_names: List[str], catalog: Dict[str, Any]) -> D
 # Codex memory gate (Wave 2A design 5.7): replaces `--allow-sequenced`.
 #
 # Before `generate --apply` writes a write-capable Codex config for the memory
-# servers it checks (1) that dope-memory and ConPort report enforce mode with
-# identity-required writes, and (2) that a keychain token exists for the target
-# runner. Any failure leaves only the preview and names the check.
+# servers it checks (1) that dope-memory and ConPort report log or enforce mode
+# with identity-required writes (AMENDMENT_03), and (2) that a keychain token
+# exists for the target runner. Any failure leaves only the preview and names
+# the check.
 # ---------------------------------------------------------------------------
 
 ALLOW_SEQUENCED_REMOVED_MESSAGE = (
     "--allow-sequenced was removed in Wave 2A. The in-repo .codex/config.toml write is now "
     "gated by two checks that `dopemux mcp generate --agent-matrix --apply` runs itself: "
-    "(1) the dope-memory and ConPort /health endpoints report auth_mode 'enforce' and "
+    "(1) the dope-memory and ConPort /health endpoints report auth_mode 'log' or 'enforce' and "
     "identity_required_writes true (ConPort also auth_principal_column 'ok'); "
     f"(2) a keychain token exists for {CODEX_MEMORY_PRINCIPAL} "
     f"(`dopemux auth issue {CODEX_MEMORY_PRINCIPAL} --apply`). "
     "When a check fails only the preview is written and the check is named. "
     "Re-run without --allow-sequenced."
 )
+
+# `off` and anything else fail. In `log` mode the servers still store the
+# verified principal for every request that carries a token.
+_GATE_ACCEPTED_AUTH_MODES = ("log", "enforce")
 
 _HEALTH_TIMEOUT_SECONDS = 3.0
 # Loopback health probes carry no credentials; an empty ProxyHandler keeps them
@@ -991,6 +996,10 @@ class GateCheck:
     name: str
     ok: bool
     detail: str
+    # Server name and its reported auth_mode for a passing health check; lets
+    # the apply output say when servers are still in log mode.
+    server: Optional[str] = None
+    auth_mode: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -1006,6 +1015,15 @@ class CodexMemoryGate:
     @property
     def failures(self) -> Tuple[str, ...]:
         return tuple(check.detail for check in self.checks if not check.ok)
+
+    @property
+    def log_mode_servers(self) -> Tuple[str, ...]:
+        """Servers whose passing health check reported `log` (not yet `enforce`)."""
+        return tuple(
+            check.server
+            for check in self.checks
+            if check.ok and check.auth_mode == "log" and check.server
+        )
 
 
 def _fetch_health(port: int) -> Dict[str, Any]:
@@ -1075,8 +1093,9 @@ def _check_memory_server_health(
     except _HealthProbeError as exc:
         return GateCheck(name, False, f"{prefix}: {exc}")
     problems: List[str] = []
-    if body.get("auth_mode") != "enforce":
-        problems.append(f"auth_mode is {_short(body.get('auth_mode'))}, expected 'enforce'")
+    mode = body.get("auth_mode")
+    if mode not in _GATE_ACCEPTED_AUTH_MODES:
+        problems.append(f"auth_mode is {_short(mode)}, expected 'log' or 'enforce'")
     if body.get("identity_required_writes") is not True:
         problems.append(
             f"identity_required_writes is {_short(body.get('identity_required_writes'))}, expected true"
@@ -1086,7 +1105,7 @@ def _check_memory_server_health(
             problems.append(f"{key} is {_short(body.get(key))}, expected {expected!r}")
     if problems:
         return GateCheck(name, False, f"{prefix}: " + "; ".join(problems))
-    return GateCheck(name, True, f"{prefix}: enforce, identity-required writes")
+    return GateCheck(name, True, f"{prefix}: {mode}, identity-required writes", server=server, auth_mode=mode)
 
 
 def _check_runner_token(principal: str) -> GateCheck:
@@ -1175,8 +1194,9 @@ def mcp_generate_cmd(
     Dry-run is the default; writes require both --apply and --output-dir.
 
     With --agent-matrix, --apply also writes the in-repo .codex/config.toml, but
-    only when the memory gate holds (dope-memory and ConPort report enforce and
-    identity-required writes, and a keychain token exists for runner:codex).
+    only when the memory gate holds (dope-memory and ConPort report auth_mode log
+    or enforce with identity-required writes, and a keychain token exists for
+    runner:codex).
     Otherwise only the preview under --output-dir is written and the failed
     checks are named.
     """
@@ -1316,6 +1336,12 @@ def _apply_in_repo_agent_configs(
             f"[success]Wrote {codex_path} (managed mcp_servers section, released servers only; "
             "existing keys preserved)[/success]"
         )
+        if gate.log_mode_servers:
+            console.logger.info(
+                f"[warning]Memory servers in log mode ({', '.join(gate.log_mode_servers)}): "
+                "Codex's writes are verified as runner:codex; writers without a token are "
+                "still accepted and recorded as unverified until enforce.[/warning]"
+            )
     else:
         console.logger.info(
             "[warning]Refused to write .codex/config.toml: the memory gate does not hold. "
