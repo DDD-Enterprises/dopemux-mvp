@@ -31,11 +31,20 @@ if str(_THIS_DIR) not in sys.path:
     sys.path.insert(0, str(_THIS_DIR))
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 # Use absolute imports now that we've fixed the path
+from auth_identity import (
+    AuthGate,
+    Identity,
+    Unauthorized,
+    WriteAuthMiddleware,
+    WriteIdentityError,
+    caller_label,
+    validate_write_ids,
+)
 from canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
 from chronicle.store import ChronicleStore
 from mcp_http import FASTMCP_AVAILABLE, build_mcp_http_app, build_mcp_server
@@ -54,8 +63,15 @@ MCP_SERVER_PORT = int(os.getenv("MCP_SERVER_PORT", str(PORT)))
 SERVICE_NAME = os.getenv("SERVICE_NAME", "dope-memory")
 HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
 DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memory")))
+# Defaults for READS only (read request models, the backend's store keying).
+# Writes take no default: workspace_id and instance_id are required on every
+# write and checked against BOUND_WORKSPACE_ID (Wave 2A R2 W01).
 DEFAULT_WORKSPACE_ID = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "default")
 DEFAULT_INSTANCE_ID = os.getenv("DOPE_MEMORY_INSTANCE_ID", "A")
+# The workspace this container is bound to; unset means every write is rejected.
+BOUND_WORKSPACE_ID = (os.getenv("DOPE_MEMORY_WORKSPACE_ID") or "").strip() or None
+# Auth mode (off/log/enforce) and the hash directory come from the environment.
+AUTH_GATE = AuthGate.from_env()
 
 # ADHD-aware recap (ported from legacy WMA adhd_integration.py): annotate
 # memory_recap with the operator's live attention/energy state so consumers
@@ -298,6 +314,7 @@ class DopeMemoryMCPServer:
         importance_score: int = 6,
         tags: Optional[list[str]] = None,
         links: Optional[dict[str, Any]] = None,
+        write_principal: Optional[str] = None,
     ) -> ToolResponse:
         """Store a manual work log entry."""
         try:
@@ -337,6 +354,7 @@ class DopeMemoryMCPServer:
                 linked_files=linked_files,
                 linked_commits=links.get("commits") if links else None,
                 linked_chat_range=links.get("chat_range") if links else None,
+                write_principal=write_principal,
             )
 
             return ToolResponse(success=True, data={"entry_id": entry_id, "created": True})
@@ -457,6 +475,7 @@ class DopeMemoryMCPServer:
         resolution_entry_id: str,
         confidence: float = 0.8,
         evidence_window_min: int = 30,
+        write_principal: Optional[str] = None,
     ) -> ToolResponse:
         """Link an issue entry to its resolution."""
         try:
@@ -473,6 +492,7 @@ class DopeMemoryMCPServer:
                 resolution_entry_id=resolution_entry_id,
                 confidence=confidence,
                 evidence_window_min=evidence_window_min,
+                write_principal=write_principal,
             )
             return ToolResponse(success=True, data={"linked": True})
         except Exception as e:
@@ -569,6 +589,7 @@ class DopeMemoryMCPServer:
         corrected_entry_type: Optional[str] = None,
         corrected_outcome: Optional[str] = None,
         idempotency_key: Optional[str] = None,
+        write_principal: Optional[str] = None,
     ) -> ToolResponse:
         """Supersede an existing work log entry with a corrected version.
         
@@ -585,6 +606,7 @@ class DopeMemoryMCPServer:
                 summary=corrected_summary or "Retraction" if correction_type == "retraction" else corrected_summary or "Correction",
                 outcome=corrected_outcome,
                 idempotency_key=idempotency_key,
+                write_principal=write_principal,
             )
             return ToolResponse(
                 success=True,
@@ -611,6 +633,7 @@ class DopeMemoryMCPServer:
         instance_id: str,
         session_id: Optional[str] = None,
         window_hours: int = 2,
+        write_principal: Optional[str] = None,
     ) -> ToolResponse:
         """Generate a reflection card from recent work.
         
@@ -651,7 +674,7 @@ class DopeMemoryMCPServer:
                 )
             
             # Store reflection card
-            store.insert_reflection_card(reflection)
+            store.insert_reflection_card(reflection, write_principal=write_principal)
             
             # Update trajectory state using TrajectoryManager
             trajectory_mgr = TrajectoryManager(store)
@@ -776,8 +799,9 @@ if FASTMCP_AVAILABLE:
     mcp_http_app = build_mcp_http_app(
         build_mcp_server(
             lambda: mcp_server,
-            default_workspace_id=DEFAULT_WORKSPACE_ID,
-            default_instance_id=DEFAULT_INSTANCE_ID,
+            bound_workspace_id=BOUND_WORKSPACE_ID,
+            read_default_instance_id=DEFAULT_INSTANCE_ID,
+            gate=AUTH_GATE,
         )
     )
 else:
@@ -812,8 +836,8 @@ class MemorySearchRequest(BaseModel):
 class MemoryStoreRequest(BaseModel):
     """Request for memory_store tool."""
 
-    workspace_id: str = DEFAULT_WORKSPACE_ID
-    instance_id: str = DEFAULT_INSTANCE_ID
+    workspace_id: str
+    instance_id: str
     category: str
     entry_type: str
     summary: str
@@ -839,8 +863,8 @@ class MemoryRecapRequest(BaseModel):
 class MemoryMarkIssueRequest(BaseModel):
     """Request for memory_mark_issue tool."""
 
-    workspace_id: str = DEFAULT_WORKSPACE_ID
-    instance_id: str = DEFAULT_INSTANCE_ID
+    workspace_id: str
+    instance_id: str
     issue_entry_id: str
     description: str
     confidence: float = Field(default=0.7, ge=0.0, le=1.0)
@@ -851,8 +875,8 @@ class MemoryMarkIssueRequest(BaseModel):
 class MemoryLinkResolutionRequest(BaseModel):
     """Request for memory_link_resolution tool."""
 
-    workspace_id: str = DEFAULT_WORKSPACE_ID
-    instance_id: str = DEFAULT_INSTANCE_ID
+    workspace_id: str
+    instance_id: str
     issue_entry_id: str
     resolution_entry_id: str
     confidence: float = Field(default=0.8, ge=0.0, le=1.0)
@@ -873,8 +897,8 @@ class MemoryReplaySessionRequest(BaseModel):
 class MemoryCorrectRequest(BaseModel):
     """Request for memory_correct tool (Packet F §6.5)."""
 
-    workspace_id: str = DEFAULT_WORKSPACE_ID
-    instance_id: str = DEFAULT_INSTANCE_ID
+    workspace_id: str
+    instance_id: str
     entry_id: str
     correction_type: str = Field(pattern=r"^(summary|tags|category|outcome|retraction)$")
     corrected_summary: Optional[str] = None
@@ -888,8 +912,8 @@ class MemoryCorrectRequest(BaseModel):
 class MemoryGenerateReflectionRequest(BaseModel):
     """Request for memory_generate_reflection tool."""
 
-    workspace_id: str = DEFAULT_WORKSPACE_ID
-    instance_id: str = DEFAULT_INSTANCE_ID
+    workspace_id: str
+    instance_id: str
     session_id: Optional[str] = None
     window_hours: int = Field(default=2, ge=1, le=24)
 
@@ -1106,6 +1130,31 @@ app.add_middleware(
 )
 
 
+# HTTP 401 for an unverified mutating MCP tools/call in enforce mode (the tools
+# re-check; this adds the early status). The gate is looked up per request.
+app.add_middleware(WriteAuthMiddleware, get_gate=lambda: AUTH_GATE)
+
+
+def write_identity(request: Request) -> Identity:
+    """Dependency for mutating routes: verify the caller per the auth mode."""
+    client = request.client
+    caller = caller_label(request.headers.get("user-agent"), client.host if client else None)
+    try:
+        return AUTH_GATE.authorize_write(request.headers.get("authorization"), caller)
+    except Unauthorized as exc:
+        raise HTTPException(
+            status_code=401, detail=str(exc), headers={"WWW-Authenticate": "Bearer"}
+        ) from None
+
+
+def require_write_ids(workspace_id: Optional[str], instance_id: Optional[str]) -> None:
+    """Reject a write with missing ids or a workspace that is not this server's."""
+    try:
+        validate_write_ids(workspace_id, instance_id, BOUND_WORKSPACE_ID)
+    except WriteIdentityError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Health & Info Endpoints
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1119,6 +1168,7 @@ async def health_check():
         "service": SERVICE_NAME,
         "version": "1.0.0",
         "timestamp": datetime.utcnow().isoformat() + "Z",
+        **AUTH_GATE.health_fields(),
     }
 
 
@@ -1178,8 +1228,11 @@ async def memory_search(request: MemorySearchRequest):
 
 
 @app.post("/tools/memory_store")
-async def memory_store(request: MemoryStoreRequest):
+async def memory_store(
+    request: MemoryStoreRequest, identity: Identity = Depends(write_identity)
+):
     """Store a manual work log entry."""
+    require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
@@ -1196,6 +1249,7 @@ async def memory_store(request: MemoryStoreRequest):
         importance_score=request.importance_score,
         tags=request.tags,
         links=request.links,
+        write_principal=identity.principal,
     )
 
     if not result.success:
@@ -1223,8 +1277,11 @@ async def memory_recap(request: MemoryRecapRequest):
 
 
 @app.post("/tools/memory_mark_issue")
-async def memory_mark_issue(request: MemoryMarkIssueRequest):
+async def memory_mark_issue(
+    request: MemoryMarkIssueRequest, identity: Identity = Depends(write_identity)
+):
     """Mark an entry as an issue source."""
+    require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
@@ -1244,8 +1301,11 @@ async def memory_mark_issue(request: MemoryMarkIssueRequest):
 
 
 @app.post("/tools/memory_link_resolution")
-async def memory_link_resolution(request: MemoryLinkResolutionRequest):
+async def memory_link_resolution(
+    request: MemoryLinkResolutionRequest, identity: Identity = Depends(write_identity)
+):
     """Link an issue entry to its resolution."""
+    require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
@@ -1256,6 +1316,7 @@ async def memory_link_resolution(request: MemoryLinkResolutionRequest):
         resolution_entry_id=request.resolution_entry_id,
         confidence=request.confidence,
         evidence_window_min=request.evidence_window_min,
+        write_principal=identity.principal,
     )
 
     if not result.success:
@@ -1284,8 +1345,11 @@ async def memory_replay_session(request: MemoryReplaySessionRequest):
 
 
 @app.post("/tools/memory_correct")
-async def memory_correct(request: MemoryCorrectRequest):
+async def memory_correct(
+    request: MemoryCorrectRequest, identity: Identity = Depends(write_identity)
+):
     """Supersede a work log entry with a corrected version (Packet F)."""
+    require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
@@ -1300,6 +1364,7 @@ async def memory_correct(request: MemoryCorrectRequest):
         corrected_entry_type=request.corrected_entry_type,
         corrected_outcome=request.corrected_outcome,
         idempotency_key=request.idempotency_key,
+        write_principal=identity.principal,
     )
 
     if not result.success:
@@ -1308,8 +1373,11 @@ async def memory_correct(request: MemoryCorrectRequest):
 
 
 @app.post("/tools/memory_generate_reflection")
-async def memory_generate_reflection(request: MemoryGenerateReflectionRequest):
+async def memory_generate_reflection(
+    request: MemoryGenerateReflectionRequest, identity: Identity = Depends(write_identity)
+):
     """Generate a reflection card from recent work."""
+    require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
@@ -1318,6 +1386,7 @@ async def memory_generate_reflection(request: MemoryGenerateReflectionRequest):
         instance_id=request.instance_id,
         session_id=request.session_id,
         window_hours=request.window_hours,
+        write_principal=identity.principal,
     )
 
     if not result.success:

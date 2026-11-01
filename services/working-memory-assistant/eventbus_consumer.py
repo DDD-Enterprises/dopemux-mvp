@@ -37,6 +37,12 @@ INPUT_STREAM = os.getenv("DOPE_MEMORY_INPUT_STREAM", "activity.events.v1")
 OUTPUT_STREAM = os.getenv("DOPE_MEMORY_OUTPUT_STREAM", "memory.derived.v1")
 CONSUMER_GROUP = os.getenv("DOPE_MEMORY_CONSUMER_GROUP", "dope-memory-ingestor")
 
+# Principal recorded on every ledger row this consumer writes. It reads Redis
+# and writes the SQLite ledger directly, so it carries no bearer token: the
+# principal is self-asserted and marked as such (Wave 2A R2 W01, design 5.3).
+WRITE_PRINCIPAL = "internal:wma"
+PRINCIPAL_SELF_ASSERTED = True
+
 # Phase 2 Configuration
 # All timing parameters are configurable via environment variables
 DOPE_MEMORY_IDLE_MINUTES = int(os.getenv("DOPE_MEMORY_IDLE_MINUTES", "20"))
@@ -410,6 +416,8 @@ class EventBusConsumer:
             payload=redacted_data,
             ts_utc=event.get("ts", datetime.now(timezone.utc).isoformat()),
             session_id=event.get("session_id"),
+            write_principal=WRITE_PRINCIPAL,
+            principal_self_asserted=PRINCIPAL_SELF_ASSERTED,
         )
 
         # Step 3: Attempt promotion
@@ -433,6 +441,8 @@ class EventBusConsumer:
                 instance_id=instance_id,
                 promoted=entry,
                 session_id=event.get("session_id"),
+                write_principal=WRITE_PRINCIPAL,
+                principal_self_asserted=PRINCIPAL_SELF_ASSERTED,
             )
 
             logger.info(f"✅ Promoted {event_type} -> {entry.category}/{entry.entry_type} ({entry_id})")
@@ -669,7 +679,11 @@ class EventBusConsumer:
                         return
                 
                 # Persist reflection
-                store.insert_reflection_card(card)
+                store.insert_reflection_card(
+                    card,
+                    write_principal=WRITE_PRINCIPAL,
+                    principal_self_asserted=PRINCIPAL_SELF_ASSERTED,
+                )
                 
                 # Emit reflection.created event
                 await self._publish_derived_event(

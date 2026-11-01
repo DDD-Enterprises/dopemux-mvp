@@ -36,6 +36,12 @@ except ImportError:
 
 MAX_CHAIN_DEPTH = 10
 
+# Who wrote a row (Wave 2A R2 W01, migration v1.3.0). HTTP writers pass the
+# principal verified from their bearer token; local writers pass a
+# self-asserted internal principal with principal_self_asserted=True;
+# everything else is recorded as "unverified".
+UNVERIFIED_PRINCIPAL = "unverified"
+
 # Enum values mirror the CHECK constraints in schema.sql (work_log_entries).
 # Keep in sync — schema.sql is the canonical writer.
 VALID_CATEGORIES = frozenset({
@@ -283,6 +289,8 @@ class ChronicleStore:
         session_id: Optional[str] = None,
         redaction_level: str = "strict",
         ttl_days: int = 7,
+        write_principal: Optional[str] = None,
+        principal_self_asserted: bool = False,
     ) -> str:
         """Insert a raw activity event.
 
@@ -297,6 +305,8 @@ class ChronicleStore:
             session_id: Optional session identifier
             redaction_level: Level of redaction applied
             ttl_days: Days before automatic cleanup
+            write_principal: Principal that wrote the row (default "unverified")
+            principal_self_asserted: True when the principal was not verified
 
         Returns:
             The event ID (generated or provided)
@@ -310,8 +320,9 @@ class ChronicleStore:
             INSERT OR IGNORE INTO raw_activity_events (
                 id, workspace_id, instance_id, session_id,
                 ts_utc, event_type, source,
-                payload_json, redaction_level, ttl_days, created_at_utc
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                payload_json, redaction_level, ttl_days, created_at_utc,
+                write_principal, write_principal_self_asserted
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 final_event_id,
@@ -325,6 +336,8 @@ class ChronicleStore:
                 redaction_level,
                 ttl_days,
                 datetime.now(timezone.utc).isoformat(),  # Always use current time for created_at
+                write_principal or UNVERIFIED_PRINCIPAL,
+                1 if principal_self_asserted else 0,
             ),
         )
         conn.commit()
@@ -379,6 +392,8 @@ class ChronicleStore:
         parent_entry_id: Optional[str] = None,
         supersedes_entry_id: Optional[str] = None,
         duration_sec: Optional[int] = None,
+        write_principal: Optional[str] = None,
+        principal_self_asserted: bool = False,
     ) -> str:
         """Insert a curated work log entry with provenance.
         
@@ -484,8 +499,9 @@ class ChronicleStore:
                 source_event_id, source_event_type, source_adapter,
                 source_event_ts_utc, promotion_rule, promotion_ts_utc,
                 supersedes_entry_id,
-                created_at_utc, updated_at_utc
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                created_at_utc, updated_at_utc,
+                write_principal, write_principal_self_asserted
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 entry_id,
@@ -517,6 +533,8 @@ class ChronicleStore:
                 supersedes_entry_id,
                 created_at_utc,
                 created_at_utc,  # updated_at_utc = created_at_utc for immutable entries
+                write_principal or UNVERIFIED_PRINCIPAL,
+                1 if principal_self_asserted else 0,
             ),
         )
         conn.commit()
@@ -551,6 +569,8 @@ class ChronicleStore:
         instance_id: str,
         promoted: Any,  # PromotedEntry from promotion.promotion
         session_id: Optional[str] = None,
+        write_principal: Optional[str] = None,
+        principal_self_asserted: bool = False,
     ) -> str:
         """Convenience method to insert a PromotedEntry object."""
         return self.insert_work_log_entry(
@@ -577,6 +597,8 @@ class ChronicleStore:
             linked_chat_range=promoted.linked_chat_range,
             supersedes_entry_id=promoted.supersedes_entry_id,
             duration_sec=promoted.duration_sec,
+            write_principal=write_principal,
+            principal_self_asserted=principal_self_asserted,
         )
 
     def insert_corrected_work_log_entry(
@@ -593,6 +615,8 @@ class ChronicleStore:
         outcome: Optional[str] = None,
         importance_score: Optional[int] = None,
         idempotency_key: Optional[str] = None,
+        write_principal: Optional[str] = None,
+        principal_self_asserted: bool = False,
     ) -> str:
         """Insert a corrected entry that supersedes an existing one (Packet F §3.3).
         
@@ -671,6 +695,8 @@ class ChronicleStore:
             outcome=final_outcome,
             importance_score=final_importance_score,
             supersedes_entry_id=supersedes_entry_id,
+            write_principal=write_principal,
+            principal_self_asserted=principal_self_asserted,
         )
     
     def replay_work_log(
@@ -913,6 +939,8 @@ class ChronicleStore:
         *,
         confidence: float = 0.7,
         evidence_window_min: int = 30,
+        write_principal: Optional[str] = None,
+        principal_self_asserted: bool = False,
     ) -> str:
         """Link an issue entry to its resolution."""
         link_id = str(uuid.uuid4())
@@ -924,8 +952,9 @@ class ChronicleStore:
             INSERT INTO issue_links (
                 id, workspace_id, instance_id,
                 issue_entry_id, resolution_entry_id,
-                confidence, evidence_window_min, created_at_utc
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                confidence, evidence_window_min, created_at_utc,
+                write_principal, write_principal_self_asserted
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 link_id,
@@ -936,6 +965,8 @@ class ChronicleStore:
                 confidence,
                 evidence_window_min,
                 now_utc,
+                write_principal or UNVERIFIED_PRINCIPAL,
+                1 if principal_self_asserted else 0,
             ),
         )
         conn.commit()
@@ -945,11 +976,19 @@ class ChronicleStore:
     # Phase 2: Reflection Cards
     # ─────────────────────────────────────────────────────────────────
 
-    def insert_reflection_card(self, card: dict[str, Any]) -> str:
+    def insert_reflection_card(
+        self,
+        card: dict[str, Any],
+        *,
+        write_principal: Optional[str] = None,
+        principal_self_asserted: bool = False,
+    ) -> str:
         """Insert a reflection card.
 
         Args:
             card: Reflection card dict with all required fields
+            write_principal: Principal that wrote the row (default "unverified")
+            principal_self_asserted: True when the principal was not verified
 
         Returns:
             The reflection_id
@@ -963,8 +1002,9 @@ class ChronicleStore:
                 trajectory, top_decisions_json, top_blockers_json,
                 progress_json, next_suggested_json,
                 promotion_candidates_json, created_at_utc,
-                source_entry_ids_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                source_entry_ids_json,
+                write_principal, write_principal_self_asserted
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 card["reflection_id"],
@@ -982,6 +1022,8 @@ class ChronicleStore:
                 json.dumps(card.get("promotion_candidates", [])),
                 datetime.now(timezone.utc).isoformat(),
                 json.dumps(card.get("source_entry_ids", [])),
+                write_principal or UNVERIFIED_PRINCIPAL,
+                1 if principal_self_asserted else 0,
             ),
         )
         conn.commit()
