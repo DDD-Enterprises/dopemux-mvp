@@ -2,7 +2,7 @@
 description: "Validate a Task Packet against dopetask-canonical-spec.json + AGENTS.md §5 constraints; emit pass/fail table and proof-bundle status"
 arguments: "<TP-ID-or-path> [--strict] [--proof]"
 allowed-tools: ["Bash", "Read", "Glob", "Grep"]
-model: "claude-haiku-4-5-20251001"
+model: haiku
 ---
 
 # /tp:validate — Task Packet Validator
@@ -108,17 +108,15 @@ if agent == 'gemini' and not pal_enabled:
 **3d — Commit-sized**: `commit` must be a dict or non-empty string (not null,
 not `"UNKNOWN"`). WARN if `commit == "UNKNOWN"` (not yet assigned).
 
-**3e — PAL chain present**: If `pal_chain.enabled = true`, the chain sequence must
-be non-empty. Minimum expected: `analyze`, `planner`, `codereview`, `precommit`.
+**3e — PAL chain present**: If `pal_chain.enabled = true`, `pal_chain.steps` must be a
+non-empty list. The stages themselves are not mandated: the deep chain is optional per
+AGENTS.md section 5 (`analyze -> planner -> implement`, plus one final audit for L2/L3).
 
 ```python
 if pal_chain_enabled:
-    chain = packet.get('pal_chain', {}).get('chain', [])
-    if len(chain) < 4:
-        WARN: 'PAL chain has fewer than 4 stages (minimum: analyze, planner, codereview, precommit)'
-    for stage in ['analyze', 'planner', 'codereview', 'precommit']:
-        if stage not in chain:
-            WARN: f'PAL chain missing expected stage: {stage}'
+    steps = packet.get('pal_chain', {}).get('steps', [])
+    if not steps:
+        WARN: 'pal_chain.enabled=true but pal_chain.steps is empty'
 ```
 
 **3f — Steps non-empty**: `steps` must be a non-empty list.
@@ -171,7 +169,7 @@ Constraint: repo_binding             PASS
 Constraint: series                   PASS
 Constraint: commit                   WARN     value="UNKNOWN" (not yet assigned)
 Constraint: steps non-empty          PASS     N steps
-PAL chain stages                     PASS     analyze→planner→codereview→precommit
+PAL chain steps                      PASS     N steps
 Proof bundle                         NOT_RUN  --proof not passed
 ─────────────────────────────────────────────────────
 Verdict: ✅ PASS (1 WARN)
@@ -196,7 +194,6 @@ Verdict: ✅ PASS (1 WARN)
 ## Notes for Claude
 
 - This command is **read-only** — never modifies the packet or proof files.
-- Model: `claude-haiku-4-5-20251001` — mechanical validation, no judgment needed.
 - The schema path `docs/03-reference/spec/dopetask/dopetask-canonical-spec.json` is
   authoritative; do not restate the schema rules inline.
 - `commit: "UNKNOWN"` is a WARN (not yet assigned), not a FAIL — packets are often

@@ -9,7 +9,7 @@ allowed-tools: [
   "mcp__dope-context__docs_search",
   "mcp__dope-context__get_index_status"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /ctx:index-search — Index + Search (dope-context)
@@ -22,7 +22,7 @@ Index a path, then search it with **dope-context**.
 
 ## Steps
 
-1. Confirm dope-context MCP is connected; if not, stop with `dopemux mcp sync-globals` + `docker compose up -d dope-context` remediation.
+1. Confirm dope-context MCP is connected; if not, stop with `dopemux mcp sync-globals` remediation and say dope-context should be started through `dopemux mcp`.
 2. Resolve `<PATH>` to absolute under repo root.
 3. Call `get_index_status`; if stale/missing, call `index_workspace` (code) and/or `index_docs` when `--docs` passed.
 4. Run `search_code` or `docs_search` for `<QUERY>`; return top 5 hits as `file — score — snippet`.

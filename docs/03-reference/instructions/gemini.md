@@ -70,9 +70,6 @@ This workspace integrates custom MCP servers inherited from the `dopemux-mvp` pr
 For PR/commit-driven docs reconciliation, use:
 
 - `templates/skills/pr-docgen-sync/`
-- `templates/skills/pr-docgen-sync-gemini/`
-- `templates/skills/pr-docgen-sync-copilot/`
-- `templates/skills/pr-docgen-sync-claude/`
 
 Install/sync templates into Codex home:
 

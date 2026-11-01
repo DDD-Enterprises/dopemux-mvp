@@ -57,8 +57,3 @@ To return to dangerous mode (development only):
 ```bash
 /dangerous
 ```
-
-Or use the profile management script:
-```bash
-./scripts/set-profile.sh set dangerous
-```

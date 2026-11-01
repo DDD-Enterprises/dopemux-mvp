@@ -2,7 +2,7 @@
 
 > **TL;DR**: Multi-stage builds, non-root users, HEALTHCHECK required. Use compose files for different stacks. MCP servers in `mcp-servers/`.
 
-**Inherits**: Root context (MCP tools, Do/Don't rules)
+**Inherits**: the root `AGENTS.md` and `.claude/claude.md`, which load alongside this file.
 
 ---
 
@@ -73,7 +73,8 @@ Do not keep a port/transport table here — it drifts. Authorities:
 ## Commands
 
 ```bash
-# Smoke stack (core)
+# Smoke stack (core). Sanctioned test-only exception to the `dopemux mcp` rule below:
+# smoke_up.sh runs its own .env.smoke stack with raw compose.
 scripts/smoke_up.sh
 
 # Full stack (MCP servers, bridge, orchestrator, app services) — always via the CLI,

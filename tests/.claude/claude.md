@@ -2,7 +2,7 @@
 
 > **TL;DR**: pytest with AAA pattern. Fast unit tests (<100ms), slower integration. Use fixtures, mock external services. Coverage target 80%.
 
-**Inherits**: Root context (MCP tools, Do/Don't rules)
+**Inherits**: the root `AGENTS.md` and `.claude/claude.md`, which load alongside this file.
 
 ---
 

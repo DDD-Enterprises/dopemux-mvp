@@ -11,5 +11,3 @@ Call: `mcp__conport__conport_save_custom_data`
 ```
 
 Cleared on `/switch` by archiving scratch entries to decisions/runbooks if needed, then starting fresh context.
-
-> Token thrift: prefer summaries/search with small `limit` (3–5) before full context.

@@ -34,10 +34,6 @@ prelude: Canonical catalog of active documentation indexes, policy files, and do
 ## Documentation Automation
 
 - Core PR doc sync skill template: `templates/skills/pr-docgen-sync/`
-- Wrapper templates:
-  - `templates/skills/pr-docgen-sync-gemini/`
-  - `templates/skills/pr-docgen-sync-copilot/`
-  - `templates/skills/pr-docgen-sync-claude/`
 - Skill sync installer: `scripts/skills/sync_repo_skills.py`
 - Legacy compatibility sync: `scripts/skills/sync_testgen_skills.py`
 

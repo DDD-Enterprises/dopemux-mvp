@@ -6,7 +6,7 @@ allowed-tools: [
   "mcp__task-orchestrator__query_dependencies",
   "mcp__task-orchestrator__manage_dependencies"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:depends — Create a Dependency Edge
@@ -80,7 +80,7 @@ The operation is **atomic**: cycle detection and duplicate detection apply acros
 ```
 Next actions:
   /dx:blocked              → see the new block reflected in the blocked list
-  /dx:backlinks <to-id>    → what blocks <to>? (when wrapper ships; else query_dependencies direction=incoming)
+  /dx:backlinks <to-id>    → what blocks <to>?
   /dx:context <to-id>      → confirm <to> shows the dependency
 ```
 

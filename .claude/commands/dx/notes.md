@@ -5,7 +5,7 @@ allowed-tools: [
   "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__query_notes"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:notes — List Notes on a Work-Item (read-only)

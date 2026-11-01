@@ -2,7 +2,7 @@
 
 > **TL;DR**: Build ADHD-friendly microservices. Register in `registry.yaml`, add `/health` endpoint, use FastAPI. Check existing services before creating new ones.
 
-**Inherits**: Root context (MCP tools, Do/Don't rules)
+**Inherits**: the root `AGENTS.md` and `.claude/claude.md`, which load alongside this file.
 
 ---
 
@@ -73,9 +73,9 @@ async def health():
 
 ## Docker Guidelines
 
-- Use `docker/` for Dockerfiles
+- Keep the Dockerfile in the service's own directory (`services/<name>/Dockerfile`, as `compose.yml` does for every service built from this directory); `docker/` holds MCP server images and shared infrastructure
 - Add to appropriate compose file:
-  - `compose.yml` - Canonical stack (use `scripts/smoke_up.sh` for core smoke subset)
+  - `compose.yml` - Canonical stack (use `scripts/smoke_up.sh` for the core smoke subset; it is the sanctioned test-only exception to starting services only through `dopemux mcp`)
 - Include HEALTHCHECK in Dockerfile
 
 ---

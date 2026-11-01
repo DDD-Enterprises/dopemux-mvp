@@ -1,2 +1,2 @@
-Generate a task list with **TaskMaster** from the last spec or prompt.
-Call: /mcp task-master-ai create_tasks {"spec":"<project description>"}
+Turn the last spec or prompt into a planned task list in **ConPort**, which holds progress (AGENTS.md §6; workflow transitions stay with task-orchestrator).
+Show the proposed tasks first and log only the ones the user confirms. For each confirmed task, call: `mcp__conport__conport_log_progress` {"workspace_id":"<repo-root>","description":"<task>","status":"PLANNED","priority":"medium"}

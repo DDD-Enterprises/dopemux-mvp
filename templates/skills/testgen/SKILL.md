@@ -23,9 +23,10 @@ Provide one normalized request:
 Run these phases in order and fail closed on ambiguity.
 
 1. Intake and normalization.
-2. Requirement decomposition and risk modeling (`thinkdeep` when available).
-3. Deterministic sequencing (`planner` when available).
-4. Edge-case and failure challenge pass (`consensus` when available).
+2. Requirement decomposition and risk modeling.
+3. Deterministic sequencing.
+4. Edge-case and failure challenge pass.
+   PAL `thinkdeep`, `planner`, and `consensus` are optional aids for these phases: use them only when the caller or task packet requests them (AGENTS.md §5).
 5. Specialist authoring pass:
    - Primary: subagent (`clink`) when available.
    - Fallback: built-in test-specialist persona.

@@ -5,10 +5,10 @@ allowed-tools: [
   "Bash", "Read", "Write", "Edit", "Grep", "Glob", "TodoWrite",
   "mcp__conport__*",
   "mcp__serena__*",
-  "mcp__pal__apilookup",
-  "mcp__pal__thinkdeep", "mcp__pal__debug", "mcp__pal__codereview"
+  "mcp__pal-stdio__apilookup",
+  "mcp__pal-stdio__thinkdeep", "mcp__pal-stdio__debug", "mcp__pal-stdio__codereview"
 ]
-model: "claude-sonnet-4-5-20250929"
+model: sonnet
 ---
 
 # /dx:implement - ADHD Implementation Session
@@ -30,7 +30,7 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 - Query ConPort for specific task:
 
   ```bash
-  Use mcp__conport__conport_get_progress with workspace_id "/Users/hue/code/dopemux-mvp" and limit 100
+  Use mcp__conport__conport_get_progress with workspace_id "<repo-root>" and limit 100
   ```
 
 - Find task matching provided ID or description substring
@@ -41,8 +41,8 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 
   ```bash
   Use mcp__conport__conport_get_progress with:
-    workspace_id: "/Users/hue/code/dopemux-mvp"
-    status_filter: "TODO"
+    workspace_id: "<repo-root>"
+    status: "PLANNED"
     limit: 10
   ```
 
@@ -62,7 +62,7 @@ For the selected task:
 
    ```bash
    Use Bash tool:
-   curl -s -X POST http://localhost:8095/api/v1/assess-task \
+   curl -s -X POST http://localhost:${ADHD_ENGINE_PORT:-3025}/api/v1/assess-task \
      -H "Content-Type: application/json" \
      -d '{
        "user_id": "current_user",
@@ -83,9 +83,9 @@ For the selected task:
    ADHD Task Assessment
    ═══════════════════════════════════════════
 
-   ⚡ Energy Match: [suitability_score as percentage]
+   ⚡ Energy Match: [energy_match as percentage]
    🧠 Cognitive Load: [cognitive_load_level]
-   ✅ Suitability: [energy_match as percentage]
+   ✅ Suitability: [suitability_score as percentage]
 
    Recommendations:
    [Loop through recommendations array and display each]
@@ -116,7 +116,7 @@ For the selected task:
 
 ```bash
 Use mcp__conport__conport_update_progress with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
+  workspace_id: "<repo-root>"
   progress_id: TASK_ID
   status: "IN_PROGRESS"
   description: "ORIGINAL_DESCRIPTION (session started)"
@@ -126,7 +126,7 @@ Use mcp__conport__conport_update_progress with:
 
 ```bash
 Use mcp__conport__conport_update_context with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
+  workspace_id: "<repo-root>"
   patch_content: {
     "current_task": "TASK_ID",
     "session_start": "CURRENT_TIMESTAMP",
@@ -225,9 +225,9 @@ What's the status?
 
 ```bash
 Use mcp__conport__conport_update_progress with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
+  workspace_id: "<repo-root>"
   progress_id: TASK_ID
-  status: USER_SELECTED_STATUS
+  status: USER_SELECTED_STATUS  # PLANNED | IN_PROGRESS | COMPLETED | BLOCKED (map DONE to COMPLETED)
   description: "DESCRIPTION (+ brief progress note)"
 ```
 
@@ -268,7 +268,7 @@ If status is DONE:
 Next steps:
 - Take that well-deserved break
 - Then: /dx:implement for next task
-- Or: /dx:stats to see your progress
+- Or: /dx:context to see where things stand
 
 Keep up the great work!
 ```
@@ -277,7 +277,7 @@ Keep up the great work!
 
 ```bash
 Use mcp__conport__conport_update_context with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
+  workspace_id: "<repo-root>"
   patch_content: {
     "last_session_end": "CURRENT_TIMESTAMP",
     "last_task_status": "USER_STATUS",
@@ -304,7 +304,7 @@ Use mcp__conport__conport_update_context with:
 
 - That's okay! ADHD-friendly design
 - Work is saved if user used Write/Edit tools
-- Can resume with /dx:session resume
+- Can resume with /dx:context --session
 
 ---
 

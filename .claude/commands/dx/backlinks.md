@@ -5,7 +5,7 @@ allowed-tools: [
   "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__query_dependencies"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:backlinks — What Blocks This Item? (read-only)

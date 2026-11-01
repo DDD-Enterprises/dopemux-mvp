@@ -186,9 +186,6 @@ Status: [LOGGED] Topology Complete
 - [Developer Onboarding](02-how-to/developer-onboarding.md)
 - PR Docgen Sync skill templates:
   - `templates/skills/pr-docgen-sync/`
-  - `templates/skills/pr-docgen-sync-gemini/`
-  - `templates/skills/pr-docgen-sync-copilot/`
-  - `templates/skills/pr-docgen-sync-claude/`
 - PR Merge Specialist skill template:
   - `templates/skills/pr-merge-specialist/`
 - Skill install/sync script: `scripts/skills/sync_repo_skills.py`

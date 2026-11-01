@@ -30,12 +30,12 @@ allowed-tools: [
   "mcp__task-orchestrator__<tool>",
   "...only the tools this command actually calls..."
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 ```
 
 - `allowed-tools` is a **least-privilege allowlist** — list only the MCP tools the command invokes. Read commands never list write tools.
-- `model: claude-sonnet-4-5` is the established default for `/dx:` commands.
+- `model: sonnet` is the established default for `/dx:` commands; the alias tracks the current Sonnet (see `config/ai/model-routing.policy.yaml`).
 
 ## Required body structure
 
@@ -105,7 +105,7 @@ Verified against the loaded MCP schemas (2026-05-27). Re-verify if the orchestra
 ## Authoring checklist
 
 - [ ] File at `.claude/commands/dx/<name>.md`; nothing non-command in that dir.
-- [ ] Frontmatter: description, arguments, least-privilege `allowed-tools`, `model: claude-sonnet-4-5`.
+- [ ] Frontmatter: description, arguments, least-privilege `allowed-tools`, `model: sonnet`.
 - [ ] Authority line present and verbatim.
 - [ ] Phases 1–4 + Error Handling + Success Criteria + Notes for Claude.
 - [ ] Read-only declaration (read cmd) **or** Safety & Confirmation subsection (write cmd).

@@ -23,8 +23,8 @@ Before touching any code, run the exact failing command provided in the prompt t
 If you cannot reproduce it, check if you need to install dependencies or if it's an environment issue.
 
 ### Step 2: Auto-Fixers First
-If the failure is related to formatting, linting, or type checking, always attempt to use the ecosystem's auto-fixer first.
-*Python:* `ruff check --fix .`, `black .`, `isort .`
+If the failure is related to formatting, linting, or type checking, always attempt to use the ecosystem's auto-fixer first, pointed at the files named in the failure rather than the whole repository so edits stay inside the task's allowlist.
+*Python:* `ruff check --fix <failing paths>`, `black <failing paths>`, `isort <failing paths>`
 *Node/JS:* `npm run lint:fix`, `eslint --fix`, `prettier --write`
 *Rust:* `cargo fmt`
 *Go:* `go fmt`

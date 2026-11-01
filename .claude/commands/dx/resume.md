@@ -6,7 +6,7 @@ allowed-tools: [
   "mcp__task-orchestrator__get_context",
   "mcp__task-orchestrator__advance_item"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:resume — Unblock a Work-Item (resume trigger)

@@ -20,11 +20,6 @@ Show a 1-page refresher that includes:
 - `/adr:new "Title"` - Create MADR-style ADR
 - `/doc:pull "<ticket>"` - Pull context from MCP
 - `pre-commit run -a` - Run all quality checks
-- `mkdocs serve` - Serve local docs site
 
 Then list common mistakes and quick fixes.
-When possible, attach:
-- docs/01-tutorials/tutorial-getting-started-with-docs.md
-- docs/04-explanation/feature-docs-governance.md
-- docs/03-reference/docs-structure-and-naming.md
-- docs/templates/rfc.md and docs/templates/adr.madr.md when available
+When possible, attach `docs/03-reference/filesystem-guide.md` and `docs/90-adr/template-adr.md`.

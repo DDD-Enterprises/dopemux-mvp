@@ -7,7 +7,7 @@ Run a fast multi-engine search via the gpt-researcher MCP server. Synthesis is l
 - `/research-quick "what does Starlette's Route() take as arguments"`
 
 **What you do**
-1) Verify the MCP server is reachable. If `docker ps --filter name=dopemux-mcp-gptr-mcp --format '{{.Status}}'` doesn't show `Up ... (healthy)`, tell me to run `docker compose -f compose.yml up -d gptr-mcp` and stop.
+1) Verify the MCP server is reachable. If `docker ps --filter name=dopemux-mcp-gptr-mcp --format '{{.Status}}'` doesn't show `Up ... (healthy)`, tell me gptr-mcp is down and should be started through `dopemux mcp` (not raw `docker compose up`), and stop.
 2) Call `mcp__gpt-researcher__quick_search` with `query=<the quoted argument>`.
 3) Print the results inline. No file is written, no `research_id` is saved. Lead with a 1–2 sentence synthesis, then list sources as a bullet list of `[title](url)` — most relevant first.
 4) End with a one-line nudge: if the answer needs depth or comparison, suggest `/research-deep` with a refined query.

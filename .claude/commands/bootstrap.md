@@ -2,8 +2,8 @@ Summarize the current task in ≤5 bullets.
 Then:
 1) Use **dope-context**: `/ctx:search-here` for hot files likely impacted by the task query.
 2) Use **gpt-researcher** or **WebSearch**: fetch docs for mentioned libs at exact versions; quote relied-on sections.
-3) Query **ConPort**: `search_decisions_fts` + `search_custom_data_value_fts` for open decisions & caveats (limit 5).
-4) Confirm constraints (lint/types/tests ≥60% coverage; RFC-7807; interface contracts).
+3) Query **ConPort**: `mcp__conport__conport_search_content` for open decisions & caveats (read the top 5 hits).
+4) Confirm constraints (lint/types/tests ≥90% coverage on touched code, as tdd-loop and testgen enforce; RFC-7807; interface contracts).
 5) Propose a tiny test-first plan (≤5 steps), no edits yet; await "OK".
 
 > Token thrift:

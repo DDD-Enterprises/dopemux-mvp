@@ -5,10 +5,8 @@ Call: `mcp__conport__conport_log_progress`
 ```json
 {
   "workspace_id": "<repo-root>",
-  "status": "PENDING",
-  "description": "<follow-up text>",
-  "linked_item_type": "custom_data",
-  "linked_item_id": "followup:<slug>"
+  "status": "PLANNED",
+  "description": "<follow-up text>"
 }
 ```
 

@@ -31,7 +31,4 @@ Emit:
 
 ## Stop Protocol (Orchestrator Enforcement)
 
-- **CRITICAL**: You are executing a SINGLE PHASE of a larger orchestrated loop.
-- Once you emit the `<workflow-checkpoint>` XML, you MUST yield control back to the orchestrator.
-- Do NOT proceed to the next phase (e.g., research, plan, implement).
-- End your response with `[STOP_TURN]` to explicitly signal phase completion.
+This skill runs a single phase of a larger orchestrated loop, and the orchestrator decides what runs next. After you emit the `<workflow-checkpoint>` XML, yield control: do not start the next phase (research, plan, implement). End your response with `[STOP_TURN]` so the orchestrator can detect phase completion.

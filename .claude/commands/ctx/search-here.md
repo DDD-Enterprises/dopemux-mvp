@@ -8,7 +8,7 @@ allowed-tools: [
   "mcp__dope-context__search_all",
   "mcp__dope-context__get_index_status"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /ctx:search-here — Semantic Search (dope-context)

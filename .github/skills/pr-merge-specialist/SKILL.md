@@ -16,6 +16,7 @@ Deterministic, policy-governed PR remediation and queue management with advanced
 ## When NOT to Use
 - Architectural design from scratch.
 - Bypassing mandatory human security reviews.
+- Merging, marking ready, closing, or enabling auto-merge on a PR without explicit operator authority (AGENTS.md §9); run `--auto-pilot` and `queue-drain` only with that authority.
 
 ## Key Subsystems & Workflow
 1.  **State Analyzer**: Ingests PR state via GraphQL, including review threads and CI statuses.

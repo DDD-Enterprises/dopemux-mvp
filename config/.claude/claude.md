@@ -1,8 +1,8 @@
 # Configuration Context
 
-> **TL;DR**: Pydantic settings with env var binding. profiles/ for ADHD, mcp/ for MCP servers. Validate early, fail fast.
+> **TL;DR**: Pydantic settings with env var binding. profiles/ for ADHD; MCP client config is `.mcp.json` at the repo root. Validate early, fail fast.
 
-**Inherits**: Root context (MCP tools, Do/Don't rules)
+**Inherits**: the root `AGENTS.md` and `.claude/claude.md`, which load alongside this file.
 
 ---
 

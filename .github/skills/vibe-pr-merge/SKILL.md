@@ -1,6 +1,6 @@
 ---
 name: vibe-pr-merge
-description: Vibe-guardrailed PR queue remediation and merge orchestration via dopemux vibe pr-merge commands. Use for supervised or autonomous PR drain under Vibe policy — not for architecture design or bypassing security review.
+description: Vibe-guardrailed PR queue remediation and merge orchestration via `dopemux pr-merge` commands. Use for supervised or autonomous PR drain under Vibe policy — not for architecture design or bypassing security review.
 ---
 
 # Skill: Vibe PR Merge Specialist
@@ -9,13 +9,14 @@ description: Vibe-guardrailed PR queue remediation and merge orchestration via d
 Deterministic, policy-governed PR remediation and queue management with advanced throughput optimization, integrated with Vibe guardrails.
 
 ## When to Use
-- **`dopemux vibe pr-merge flight`**: Real-time queue visualization and manual control.
-- **`dopemux vibe pr-merge flight --auto-pilot`**: Supervised, automated remediation of the PR queue.
-- **`dopemux vibe pr-merge queue-drain`**: Fully autonomous, headless queue processing.
+- **`dopemux pr-merge flight`**: Real-time queue visualization and manual control.
+- **`dopemux pr-merge flight --auto-pilot`**: Supervised, automated remediation of the PR queue.
+- **`dopemux pr-merge queue-drain`**: Fully autonomous, headless queue processing.
 
 ## When NOT to Use
 - Architectural design from scratch.
 - Bypassing mandatory human security reviews.
+- Merging, marking ready, closing, or enabling auto-merge on a PR without explicit operator authority (AGENTS.md §9); run `--auto-pilot` and `queue-drain` only with that authority.
 
 ## Key Subsystems & Workflow
 1.  **State Analyzer**: Ingests PR state via GraphQL, including review threads and CI statuses.

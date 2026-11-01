@@ -287,8 +287,8 @@
       "type": "skill",
       "path": ".claude/commands/plan-tasks.md",
       "tier": "L0.5",
-      "evidence": [".claude/commands/plan-tasks.md:2 calls /mcp task-master-ai create_tasks"],
-      "fleet_deps": ["task-master-ai MCP"]
+      "evidence": [".claude/commands/plan-tasks.md:2 calls mcp__conport__conport_log_progress"],
+      "fleet_deps": ["ConPort MCP"]
     },
     {
       "id": "command/research",

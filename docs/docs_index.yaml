@@ -175,9 +175,6 @@ scripts:
   skills_sync: scripts/skills/sync_repo_skills.py
 skills:
   pr_docgen_sync_core: templates/skills/pr-docgen-sync/SKILL.md
-  pr_docgen_sync_gemini: templates/skills/pr-docgen-sync-gemini/SKILL.md
-  pr_docgen_sync_copilot: templates/skills/pr-docgen-sync-copilot/SKILL.md
-  pr_docgen_sync_claude: templates/skills/pr-docgen-sync-claude/SKILL.md
   workflow_brief_drafter: templates/skills/brief-drafter/SKILL.md
   workflow_task_breakdown: templates/skills/task-breakdown/SKILL.md
   workflow_code_researcher: templates/skills/code-researcher/SKILL.md

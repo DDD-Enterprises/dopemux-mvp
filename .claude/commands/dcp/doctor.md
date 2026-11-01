@@ -2,7 +2,7 @@
 description: "DCP read-only facade preflight: registry contract, backend probes, ConPort auto-fork hazard, facade test suite"
 arguments: "[--live] [--project <id>]"
 allowed-tools: ["Bash", "Read", "Grep", "Glob"]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dcp:doctor — DCP Facade Preflight
@@ -21,8 +21,8 @@ Use before starting a ChatGPT tunnel session, or to diagnose unexpected tool fai
 `~/.dopemux/dcp-facade-registry.yaml`. If missing:
 ```
 ❌ Registry not found.
-Fix: cp services/dcp-readonly-facade/registry.example.yaml ~/.dopemux/dcp-facade-registry.yaml
-     then fill in your workspace_path and project details.
+Fix: create the v1 registry per docs/03-reference/dcp/chatgpt-mcp-readonly/MULTI_PROJECT_REGISTRY_CONTRACT.md
+     (registry.example.yaml is the v2 shape, see REGISTRY_V2_CONTRACT.md, and is not loadable as v1).
 ```
 The facade fail-closes without a valid registry (expected, not a bug).
 
@@ -138,4 +138,3 @@ End with **tunnel-readiness verdict**:
 - The dope-context BLOCKED state is intentional (Phase-1 architectural decision, not a bug).
   Report it as expected-blocked, not as a failure.
 - This command is read-only — it never modifies the registry, containers, or tests.
-- Model: `claude-sonnet-4-5` per routing policy.

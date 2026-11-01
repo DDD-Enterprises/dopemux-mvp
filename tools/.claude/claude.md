@@ -2,7 +2,7 @@
 
 > **TL;DR**: Development and operational tools. Well-documented, standalone, with clear CLI interfaces.
 
-**Inherits**: Root context (MCP tools, Do/Don't rules)
+**Inherits**: the root `AGENTS.md` and `.claude/claude.md`, which load alongside this file.
 
 ---
 

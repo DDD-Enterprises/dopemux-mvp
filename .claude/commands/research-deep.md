@@ -7,18 +7,18 @@ Run a comprehensive multi-source research job via the gpt-researcher MCP server.
 - `/research-deep "how do Linear, Asana, and Height handle real-time collaboration internals"`
 
 **What you do**
-1) Verify the MCP server is reachable. If `docker ps --filter name=dopemux-mcp-gptr-mcp --format '{{.Status}}'` doesn't show `Up ... (healthy)`, tell me to run `docker compose -f compose.yml up -d gptr-mcp` and stop.
+1) Verify the MCP server is reachable. If `docker ps --filter name=dopemux-mcp-gptr-mcp --format '{{.Status}}'` doesn't show `Up ... (healthy)`, tell me gptr-mcp is down and should be started through `dopemux mcp` (not raw `docker compose up`), and stop.
 2) Call `mcp__gpt-researcher__deep_research` with `query=<the quoted argument>` and wait for the tool response. Capture the `research_id` from the completed response.
-3) Save the `research_id` and query to ConPort active context so I can resume later:
+3) Save the `research_id` and query to ConPort custom data so I can resume later:
    ```
-   mcp__conport__conport_update_context(
+   mcp__conport__conport_save_custom_data(
      workspace_id="$(git rev-parse --show-toplevel)",
-     patch_content={
-       "last_research": {
-         "id": "<research_id>",
-         "query": "<original query>",
-         "started_at": "<ISO timestamp>"
-       }
+     category="research",
+     key="last_research",
+     value={
+       "id": "<research_id>",
+       "query": "<original query>",
+       "started_at": "<ISO timestamp>"
      }
    )
    ```

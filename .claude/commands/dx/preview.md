@@ -5,7 +5,7 @@ allowed-tools: [
   "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__get_next_status"
 ]
-model: "claude-sonnet-4-5"
+model: sonnet
 ---
 
 # /dx:preview — Preview the Next Transition (read-only)

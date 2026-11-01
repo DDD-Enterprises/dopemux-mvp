@@ -55,12 +55,14 @@ In dangerous mode, the AI can:
 - Modify critical system files
 - Make unrestricted network requests
 - Access sensitive data and credentials
-- Commit and push code changes automatically
+- Run git commands without permission prompts (AGENTS.md section 9 still requires explicit operator authority to push, merge, or force-push)
 - Install packages and modify system configuration
 
 ## Session Scope
 
 ⚠️  **Dangerous mode is SESSION-ONLY** - settings are not persisted to `.env` file.
+
+The mode expires after one hour (`DOPEMUX_DANGEROUS_EXPIRES`), and `dopemux start --dangerous` asks two confirmation questions before activating it.
 
 ## Reverting
 

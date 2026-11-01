@@ -1,2 +1,2 @@
 Retrieve recent decisions from **ConPort**.
-Call: /mcp conport get_decisions {"limit":10}
+Call: `mcp__conport__conport_get_decisions` {"workspace_id":"<repo-root>","limit":10}
