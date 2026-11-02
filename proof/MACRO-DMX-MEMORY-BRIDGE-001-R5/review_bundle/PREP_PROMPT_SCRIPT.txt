@@ -1,0 +1,71 @@
+import hashlib
+import pathlib
+import shutil
+import subprocess
+import sys
+
+N = pathlib.Path("/private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-memory-bridge-001-b349d8/491dc243-44df-4aca-99aa-4aa904cb7e60/scratchpad/audit5")
+REPO = pathlib.Path("/Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8")
+R4B = REPO / "proof/MACRO-DMX-MEMORY-BRIDGE-001-R4/review_bundle"
+BASE = "93050d135ffc2592000c1d0edef82b2912935525"
+HEAD = subprocess.run(["git", "-C", str(REPO), "rev-parse", sys.argv[1]], capture_output=True, text=True, check=True).stdout.strip()
+PATHS = ["plugins/dopemux-memory-bridge", "docs/02-how-to/memory-bridge.md"]
+VALIDATION = sys.argv[2]
+
+N.mkdir(parents=True, exist_ok=True)
+for src, dst in (("GROK_DISALLOWED.txt", "DISALLOWED.txt"), ("GROK_SYSTEM_PROMPT.txt", "SYSTEM_PROMPT.txt")):
+    shutil.copy(R4B / src, N / dst)
+assert hashlib.sha256((N / "DISALLOWED.txt").read_bytes()).hexdigest().startswith("0c3f1773")
+assert hashlib.sha256((N / "SYSTEM_PROMPT.txt").read_bytes()).hexdigest().startswith("416516c4")
+
+t = (R4B / "AUDIT_PROMPT_TEMPLATE.txt").read_text()
+
+
+def rep(old, new):
+    global t
+    assert t.count(old) == 1, old[:70]
+    t = t.replace(old, new)
+
+
+def rep_line(start, new):
+    global t
+    i = t.index(start)
+    assert t.count(start) == 1, start[:60]
+    j = t.index("\n", i)
+    t = t[:i] + new + t[j:]
+
+
+rep("Macro MACRO-DMX-MEMORY-BRIDGE-001-R4, the second repair successor (audited twice before: R2 at content head 52855fb35ea40f420bdacdcab9e092f8d15292c6 and R3 at content head c71e7c1f436349f477037d28ce479218c63a53a4, both PASS_WITH_RISKS).",
+    "Macro MACRO-DMX-MEMORY-BRIDGE-001-R5, the third repair successor (audited three times before: R2 at content head 52855fb35ea40f420bdacdcab9e092f8d15292c6, R3 at c71e7c1f436349f477037d28ce479218c63a53a4 and R4 at 88e7b7de3a43b50b4c4cdac7fc340f21bda03e40, all PASS_WITH_RISKS).")
+rep("Decision capture scans only the first 200,000 characters of an answer.",
+    "Decision capture scans only the first 200,000 characters of an answer.\n(e3) FILE KEY (new in this revision): an outbox file and `$.store` key is the session id itself when the id is 1-80 characters of letters, digits, `_` and `-` (Claude Code's own ids); any other id (other characters, empty, or longer than 80) gets the key `<prefix>~<h>`, where `<prefix>` is the id with every other character replaced by `_`, cut to 56 characters (possibly empty), and `<h>` is 16 hex digits from two synchronous 32-bit FNV-1a passes over the whole id (the second over the id prefixed by a NUL character). Keys of the first form never contain `~`, so the forms cannot meet; existing files keyed by ordinary ids keep their names.")
+rep_line("- AUDIT HISTORY (other runs, same method; claims to re-test, not evidence):",
+    "- AUDIT HISTORY (other runs, same method; claims to re-test, not evidence): the first audit (content head 52855fb35) gave PASS_WITH_RISKS with Q9 FAIL; its N1, N2, N5 were repaired in R3. The second audit (c71e7c1f4) gave every question PASS; its N3, N4, N6 were repaired in R4 (the relay in (e2), the 200,000-character scan bound, the removed dead branch). "
+    "The third audit (88e7b7de3) gave PASS_WITH_RISKS with every question PASS, confirmed N3, N4 and N6 REPAIRED and N1, N2, N5 still repaired, and listed open: N7 (INFO) never run live; N8 (INFO) the tool.call hook observes with `void` after returning next(e)'s result; N9 (INFO) `$.process` availability on the desktop surface is UNKNOWN; N10 (INFO) an outer plugin that draws AbovePrompt without next(e) hides the band; N11 (INFO) the relay residuals in (v); N12 (LOW) `safeId` replaced characters outside `[A-Za-z0-9_-]` with `_` and cut to 80, so two distinct unusual session ids could share one outbox file and store key, and the empty id became `unknown`. "
+    "This change claims: N12 repaired by the file key rule in (e3). N7 to N11 are deliberately unchanged. Re-test the claim and check that N1 to N6 stay repaired.")
+rep("(ix) N7 and N8 of the second audit are unchanged by decision (see above).",
+    "(ix) N7 to N11 of the third audit are unchanged by decision (see above).")
+i = t.index("Q12 Closure of the second audit:")
+j = t.index("Q13 Relay safety:")
+t = t[:i] + "Q12 Closure of the third audit: for N12 answer REPAIRED, PARTIAL or NOT_REPAIRED with evidence from the diff; for N1 to N6 answer STILL_REPAIRED or REGRESSED; for N7 to N11 say STILL_PRESENT, CHANGED or NOT_PRESENT; name any regression or new defect introduced by this change.\n" + t[j:]
+rep("Q13 Relay safety: does the relay keep",
+    "Q13 File key and relay safety: is the new outbox file key injective as claimed in (e3), are the ordinary keys exactly unchanged, and does every caller (file paths, the `$.store` key, the own-key set in readPrior, `adopted_from`) use it consistently, including the file-name pattern readPrior parses? And: does the relay keep")
+rep("... for N1 through N8 ],", "... for N1 through N12 ],")
+(N / "AUDIT_PROMPT_TEMPLATE.txt").write_text(t)
+
+diff = subprocess.run(["git", "-C", str(REPO), "diff", BASE, HEAD, "--"] + PATHS, capture_output=True, text=True, check=True).stdout
+(N / "FROZEN_CUMULATIVE.diff").write_text(diff)
+commits = subprocess.run(["git", "-C", str(REPO), "rev-list", "--count", f"{BASE}..{HEAD}", "--"] + PATHS, capture_output=True, text=True, check=True).stdout.strip()
+files = subprocess.run(["git", "-C", str(REPO), "diff", "--name-only", BASE, HEAD, "--"] + PATHS, capture_output=True, text=True, check=True).stdout.split()
+for key, value in (("{{BASE_SHA}}", BASE), ("{{HEAD_SHA}}", HEAD), ("{{COMMIT_COUNT}}", commits), ("{{FILE_COUNT}}", str(len(files))), ("{{VALIDATION_SUMMARY}}", VALIDATION)):
+    assert key in t, key
+    t = t.replace(key, value)
+assert t.count("{{DIFF}}") == 1
+t = t.replace("{{DIFF}}", diff)
+(N / "real_seal").mkdir(exist_ok=True)
+(N / "probe_seal").mkdir(exist_ok=True)
+(N / "real_seal" / "AUDIT_PROMPT.txt").write_text(t)
+(N / "probe_seal" / "PROBE_PROMPT.txt").write_text("Probe only: reply with the single word OK. Do not use any tool.\n")
+print("head", HEAD, "commits", commits, "files", len(files))
+print("prompt bytes", len(t.encode()), hashlib.sha256(t.encode()).hexdigest())
+print("diff bytes", len(diff.encode()), hashlib.sha256(diff.encode()).hexdigest())

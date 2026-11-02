@@ -1,0 +1,136 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-R6-W01-FLAKY-KEY-TEST-001",
+  "project": "dopemux-mvp",
+  "target": "Fix the flaky R5 key-table test in register.test.ts: wait deterministically for the outbox write before asserting; prove the fix with repeated concurrent runs.",
+  "invariants": [
+    "C01 Shared workspace: other sessions may change unrelated files (.codex/config.toml, .agents/): never commit, discard or overwrite them. Edit only your write_surface. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head c1256c0600 (a local, unpushed merge of origin/main 97b6d5040).",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history; you do not stage. The team lead alone commits (explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env* or credential files. No network. No real `dopemux capture emit`.",
+    "C05 Truth buckets: PASS / FAIL / NOT_RUN / UNKNOWN literally. Live behaviour NOT_RUN.",
+    "C06 Return fields: status (READY_FOR_AUDIT | BLOCKED | NEEDS_SUPERVISOR | INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN), blockers, advisor_calls, files_written, observed_model.",
+    "C07 Stop and return evidence instead of improvising when the root cause is outside your write_surface, or validation still fails after one fix attempt for the same cause.",
+    "A01 PROPOSED allowances (accepted by authorizing R6): elapsed 30 min; subagent tokens 300,000; tool uses 100; attempts: 1 Sonnet attempt + 1 retry after a failed validation with a named cause. Exceeding a cap or any advisor call ends the workstream with NEEDS_SUPERVISOR; the diff is preserved.",
+    "F01 Defect (found by the coordinator at c1256c0600, after the R5 audit): in plugins/dopemux-memory-bridge/hooks/register.test.ts the table test `session id ... writes only the outbox key ...` (the `KEY_CASES` loop) asserts `expect(h.world.writes.length).toBeGreaterThan(0)` right after `await h.turn('one', 'done')`. Under parallel load it fails intermittently with `Received: 0` for the two ids longer than 80 characters (2 of 6 concurrent runs; 0 of 7 sequential runs). The suspected cause is that the outbox write follows a real asynchronous `crypto.subtle.digest` in `append`, which the mock clock's `settle()` does not wait for. Confirm or refute this, and explain why only the two long-id cases fail.",
+    "F02 Reproduce first: run `claude plugin test plugins/dopemux-memory-bridge` six times concurrently (for example a shell loop with `&` and `wait`) and record the failing test names and counts.",
+    "F03 Fix in the TEST only (plugins/dopemux-memory-bridge/hooks/register.test.ts): make the table test wait deterministically until the session's outbox write has landed before asserting (for example a bounded wait helper that alternates `await h.world.clock.settle()` with a real macrotask yield until a write appears or a bound is reached, then asserts), and apply the same helper anywhere else in the file where a test asserts on writes immediately after a turn and the same race exists. Do not weaken any assertion, do not skip or delete a test, do not add sleeps without a bound. If the cause turns out to be in register.tsx (a real product race), STOP and return NEEDS_SUPERVISOR with the evidence: register.tsx is outside this packet.",
+    "F04 Verify: the six-way concurrent run passes 6/6 at least twice in a row (12 runs, 0 failures), and one sequential run passes; `claude plugin validate plugins/dopemux-memory-bridge`; `tsc -p` with the coordinator's tsconfig. Report `git diff --numstat` (only plugins/dopemux-memory-bridge/hooks/register.test.ts)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/memory-bridge-001-b349d8",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "test(memory-bridge): wait for the outbox write before asserting in the key-table tests",
+    "allowlist": [
+      "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+    ],
+    "verify": [
+      "claude plugin test plugins/dopemux-memory-bridge   # x6 concurrent, twice",
+      "claude plugin validate plugins/dopemux-memory-bridge",
+      "git diff --numstat",
+      "git status --porcelain"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001-R6. Draft until the final independent L2 audit of the merged head and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Reproduce under concurrent load and locate the race",
+      "requirements": [
+        "Record failing names and counts."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-memory-bridge"
+      ],
+      "expected_files": [],
+      "validation": [
+        "flake reproduced or not"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "Fix the test and prove it",
+      "requirements": [
+        "Only the test file."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-memory-bridge"
+      ],
+      "expected_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ],
+      "validation": [
+        "12 concurrent runs, 0 failures"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Return",
+      "requirements": [
+        "Root cause, fix description, run counts, gates, advisor_calls, files_written, observed_model."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the test file"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001-R6",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-test-stability"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head c1256c0600",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
