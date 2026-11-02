@@ -61,6 +61,14 @@ The incident behind ADR-MCPINT-002 (writes filed under another repo's workspace)
 | Route | claude-code-agent, `claude-sonnet-5-5` |
 | Caps | 90 min, 1.0M tokens, 200 tool uses |
 
+## Addendum: W12 write surface extended (team lead, within this ruling)
+
+W12 returned NEEDS_SUPERVISOR. `docker/mcp-servers-source/conport/conport_mcp_stdio.py`, ConPort's stdio MCP surface, still declares the ids required on its write tools, and the packet's write surface left it out. That was the team lead's omission when writing the packet.
+
+The ruling covers "the already-exempt dope-memory/ConPort server files", and the file is one of ADR-227's nine exempt ConPort files. So W12's write surface is extended by that one file, under this amendment, for B03 ("every MCP write tool marks workspace_id and instance_id optional"). Its tool signatures get the same treatment as `server.py`, with a schema test.
+
+W12 uses its one correction round for this. No other path is added.
+
 ## Still not authorized
 
 Push or PR; signing; the audit route; token issuance; migrations against a real database; the enforce switch; the ADR-MCPINT-002 amendment's acceptance; image rebuilds; the live Codex run; merge.
