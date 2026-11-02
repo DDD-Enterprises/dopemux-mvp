@@ -1,11 +1,12 @@
 import asyncio
 import json
 import os
-from typing import Any, Callable, Optional, List
+from typing import Annotated, Any, Callable, Optional, List
 from urllib.parse import quote, quote_plus, urlencode
 
 import aiohttp
 from mcp.server.fastmcp import Context, FastMCP
+from pydantic import Field
 
 from auth_identity import (
     PROXY_WRITE_TOOLS,
@@ -13,6 +14,7 @@ from auth_identity import (
     WriteAuthMiddleware,
     rest_write_headers_for_call,
 )
+from instance_detector import get_bound_workspace_id
 
 CONPORT_URL = os.getenv("CONPORT_URL", "http://localhost:3004")
 MCP_PORT = int(os.getenv("MCP_SERVER_PORT", 3005))
@@ -29,6 +31,24 @@ AUTH_GATE = AuthGate.from_env()
 # image yet, so there is no production source: the default is "no token", and
 # the REST side then records the caller as ``unverified``. Tests inject one.
 PROXY_TOKEN_PROVIDER: Callable[[], Optional[str]] = lambda: None
+
+
+# Write tools take the ids as optional (Amendment 04): the REST port fills an
+# omitted one from its own binding and rejects a workspace that is not its own.
+WorkspaceIdParam = Annotated[
+    Optional[str],
+    Field(
+        description="Workspace to write to. Optional: the server fills it from its own "
+        "binding; a workspace that differs from the binding is rejected."
+    ),
+]
+InstanceIdParam = Annotated[
+    Optional[str],
+    Field(
+        description="Instance to write as. Optional: the server fills it from its own "
+        "binding (its instance, else \"shared\")."
+    ),
+]
 
 
 def _write_headers(ctx: Optional[Context]) -> dict:
@@ -77,14 +97,15 @@ async def get_progress(workspace_id: str, status: Optional[str] = None, limit: i
 @mcp.tool()
 async def update_progress(
     progress_id: str,
-    workspace_id: str,
-    instance_id: str,
     updates: dict,
+    workspace_id: WorkspaceIdParam = None,
+    instance_id: InstanceIdParam = None,
     ctx: Context = None,
 ) -> str:
     """Update an existing progress entry. Pass a dict with fields like status (e.g. COMPLETED), percentage, etc.
 
-    workspace_id must be the entry's workspace; instance_id is the writing instance ("shared" for the shared scope).
+    workspace_id and instance_id are optional: the server fills them from its binding. A workspace_id must be
+    the entry's workspace; instance_id is the writing instance ("shared" for the shared scope).
     """
     url = f"{CONPORT_URL}/api/progress/{progress_id}"
     payload = {**updates, "workspace_id": workspace_id, "instance_id": instance_id}
@@ -105,15 +126,17 @@ async def get_decisions(workspace_id: Optional[str] = None, limit: int = 10) -> 
 
 @mcp.tool()
 async def log_decision(
-    workspace_id: str,
     topic: str,
     decision: str,
     rationale: str,
+    workspace_id: WorkspaceIdParam = None,
     tags: Optional[List[str]] = None,
-    instance_id: Optional[str] = None,
+    instance_id: InstanceIdParam = None,
     ctx: Context = None,
 ) -> str:
-    """Log an architectural or technical decision to the workspace graph."""
+    """Log an architectural or technical decision to the workspace graph.
+
+    workspace_id and instance_id are optional: the server fills them from its binding."""
     payload = {
         "workspace_id": workspace_id,
         "summary": f"[{topic}] {decision}",
@@ -158,12 +181,14 @@ async def workspace_summary(user_id: str) -> str:
 
 @mcp.tool()
 async def fork_instance(
-    workspace_id: str,
     target_instance: str,
+    workspace_id: WorkspaceIdParam = None,
     source_instance: Optional[str] = None,
     ctx: Context = None,
 ) -> str:
-    """Fork PLANNED/IN_PROGRESS progress from shared/source into target instance."""
+    """Fork PLANNED/IN_PROGRESS progress from shared/source into target instance.
+
+    workspace_id is optional (filled from the server's binding); target_instance is required."""
     data = await _post_json(f"{CONPORT_URL}/api/instance/fork", {
         "workspace_id": workspace_id,
         "source_instance": source_instance,
@@ -173,8 +198,15 @@ async def fork_instance(
 
 
 @mcp.tool()
-async def promote(progress_id: str, workspace_id: str, instance_id: str, ctx: Context = None) -> str:
-    """Promote a progress entry to shared (clear instance_id)."""
+async def promote(
+    progress_id: str,
+    workspace_id: WorkspaceIdParam = None,
+    instance_id: InstanceIdParam = None,
+    ctx: Context = None,
+) -> str:
+    """Promote a progress entry to shared (clear instance_id).
+
+    workspace_id and instance_id are optional: the server fills them from its binding."""
     data = await _post_json(
         f"{CONPORT_URL}/api/progress/promote",
         {"progress_id": progress_id, "workspace_id": workspace_id, "instance_id": instance_id},
@@ -184,8 +216,14 @@ async def promote(progress_id: str, workspace_id: str, instance_id: str, ctx: Co
 
 
 @mcp.tool()
-async def promote_all(workspace_id: str, instance_id: str, ctx: Context = None) -> str:
-    """Promote all instance-local PLANNED/IN_PROGRESS entries of the given instance to shared."""
+async def promote_all(
+    workspace_id: WorkspaceIdParam = None,
+    instance_id: InstanceIdParam = None,
+    ctx: Context = None,
+) -> str:
+    """Promote all instance-local PLANNED/IN_PROGRESS entries of the given instance to shared.
+
+    workspace_id and instance_id are optional: the server fills them from its binding."""
     data = await _post_json(
         f"{CONPORT_URL}/api/progress/promote_all",
         {"workspace_id": workspace_id, "instance_id": instance_id},
@@ -205,13 +243,22 @@ async def get_context(workspace_id: str) -> str:
 
 @mcp.tool()
 async def update_context(
-    workspace_id: str,
-    instance_id: str,
     context_data: dict,
+    workspace_id: WorkspaceIdParam = None,
+    instance_id: InstanceIdParam = None,
     ctx: Context = None,
 ) -> str:
-    """Update active context for a workspace (instance_id is the writing instance; "shared" for the shared scope)."""
-    url = f"{CONPORT_URL}/api/context/{quote(workspace_id, safe='')}"
+    """Update active context for a workspace (instance_id is the writing instance; "shared" for the shared scope).
+
+    workspace_id and instance_id are optional: the server fills them from its binding."""
+    # The REST route carries the workspace in its path, so an omitted one is the binding.
+    path_workspace = workspace_id if workspace_id and workspace_id.strip() else get_bound_workspace_id()
+    if not path_workspace:
+        raise ValueError(
+            "workspace_id was omitted and this ConPort server has no workspace binding "
+            "(DOPEMUX_WORKSPACE_ID is unset); writes are rejected"
+        )
+    url = f"{CONPORT_URL}/api/context/{quote(path_workspace, safe='')}"
     payload = {**context_data, "workspace_id": workspace_id, "instance_id": instance_id}
     data = await _post_json(url, payload, _write_headers(ctx))
     return json.dumps(data, ensure_ascii=False, indent=2)
@@ -219,15 +266,17 @@ async def update_context(
 
 @mcp.tool()
 async def log_progress(
-    workspace_id: str,
-    instance_id: str,
     description: str,
+    workspace_id: WorkspaceIdParam = None,
+    instance_id: InstanceIdParam = None,
     status: str = "IN_PROGRESS",
     priority: str = "medium",
     linked_decision_id: Optional[str] = None,
     ctx: Context = None,
 ) -> str:
-    """Log a new progress item or task in the workspace (instance_id is the writing instance; "shared" for the shared scope)."""
+    """Log a new progress item or task in the workspace (instance_id is the writing instance; "shared" for the shared scope).
+
+    workspace_id and instance_id are optional: the server fills them from its binding."""
     payload = {
         "workspace_id": workspace_id,
         "instance_id": instance_id,
@@ -257,8 +306,16 @@ async def get_custom_data(workspace_id: str, category: Optional[str] = None, key
 
 
 @mcp.tool()
-async def save_custom_data(workspace_id: str, category: str, key: str, value: Any, ctx: Context = None) -> str:
-    """Save or update custom data for a workspace."""
+async def save_custom_data(
+    category: str,
+    key: str,
+    value: Any,
+    workspace_id: WorkspaceIdParam = None,
+    ctx: Context = None,
+) -> str:
+    """Save or update custom data for a workspace.
+
+    workspace_id is optional: the server fills it from its binding."""
     payload = {
         "workspace_id": workspace_id,
         "category": category,
@@ -270,9 +327,19 @@ async def save_custom_data(workspace_id: str, category: str, key: str, value: An
 
 
 @mcp.tool()
-async def delete_custom_data(workspace_id: str, category: str, key: str, ctx: Context = None) -> str:
-    """Delete custom data for a workspace."""
-    query = urlencode({"workspace_id": workspace_id, "category": category, "key": key})
+async def delete_custom_data(
+    category: str,
+    key: str,
+    workspace_id: WorkspaceIdParam = None,
+    ctx: Context = None,
+) -> str:
+    """Delete custom data for a workspace.
+
+    workspace_id is optional: the server fills it from its binding."""
+    params = {"category": category, "key": key}
+    if workspace_id:
+        params["workspace_id"] = workspace_id
+    query = urlencode(params)
     data = await _delete_json(f"{CONPORT_URL}/api/custom_data?{query}", _write_headers(ctx))
     return json.dumps(data, ensure_ascii=False, indent=2)
 

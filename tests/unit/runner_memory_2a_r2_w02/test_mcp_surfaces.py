@@ -205,16 +205,18 @@ async def test_should_expose_the_same_17_tools_on_both_surfaces(load_server, tra
 
 
 @pytest.mark.parametrize("transport", ["sse", "streamable"])
-async def test_should_require_the_ids_on_the_write_tools(load_server, transport):
+async def test_should_mark_the_ids_optional_on_the_write_tools(load_server, transport):
+    # Amendment 04 (W12): the ids are optional; the server fills them from its binding.
     module = load_server("log")
     async with serve(module.build_http_app()) as base:
         async with mcp_session(transport, base) as session:
             tools = {tool.name: tool.inputSchema for tool in (await session.list_tools()).tools}
     for name in ("update_progress", "promote", "promote_all", "update_context", "log_progress"):
-        assert {"workspace_id", "instance_id"} <= set(tools[name]["required"]), name
-    assert {"workspace_id", "target_instance"} <= set(tools["fork_instance"]["required"])
+        assert not ({"workspace_id", "instance_id"} & set(tools[name].get("required", []))), name
+    assert "target_instance" in tools["fork_instance"]["required"]
+    assert "workspace_id" not in tools["fork_instance"]["required"]
     for name in ("log_decision", "save_custom_data", "delete_custom_data"):
-        assert "workspace_id" in tools[name]["required"], name
+        assert "workspace_id" not in tools[name].get("required", []), name
         assert "ctx" not in tools[name]["properties"]  # the request context is not a tool argument
     assert "instance_id" not in tools["save_custom_data"]["properties"]  # custom_data has no instance column
 

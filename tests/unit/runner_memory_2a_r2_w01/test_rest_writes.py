@@ -1,4 +1,4 @@
-"""REST write routes: required ids, workspace binding, auth modes, principal, health."""
+"""REST write routes: omitted ids, workspace binding, auth modes, principal, health."""
 
 from __future__ import annotations
 
@@ -68,22 +68,33 @@ IDS = {"workspace_id": BOUND, "instance_id": "inst-1"}
 
 @pytest.mark.parametrize("route", sorted(WRITE_ROUTES))
 @pytest.mark.parametrize("missing", ["workspace_id", "instance_id"])
-async def test_should_reject_write_without_required_id(make_client, route, missing):
+async def test_should_not_reject_write_without_an_id_schema_wise(make_client, route, missing):
+    # Amendment 04 (W12): an omitted id is filled from the binding, so the request
+    # model no longer answers 422 for it. (Fill behaviour: tests/unit/runner_memory_2a_r2_w12.)
     client, _ = make_client()
     ids = {k: v for k, v in IDS.items() if k != missing}
     resp = await client.post(f"/tools/{route}", json=_body(route, **ids))
-    assert resp.status_code == 422
-    assert missing in resp.text
+    assert resp.status_code != 422
+
+
+@pytest.mark.parametrize("omitted", [("workspace_id",), ("instance_id",), ("workspace_id", "instance_id")])
+async def test_should_store_a_write_with_omitted_ids_under_the_binding(make_client, ledger_path, omitted):
+    client, _ = make_client()
+    ids = {k: v for k, v in IDS.items() if k not in omitted}
+    resp = await client.post("/tools/memory_store", json=_body("memory_store", **ids))
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["created"] is True
+    assert _principals(ledger_path) == ["unverified"]
 
 
 @pytest.mark.parametrize("route", sorted(WRITE_ROUTES))
-async def test_should_reject_blank_ids(make_client, route):
+async def test_should_treat_blank_ids_as_omitted(make_client, route):
     client, _ = make_client()
     resp = await client.post(
-        f"/tools/{route}", json=_body(route, workspace_id=" ", instance_id="inst-1")
+        f"/tools/{route}", json=_body(route, workspace_id=" ", instance_id=" ")
     )
-    assert resp.status_code == 400
-    assert "workspace_id" in resp.text and "required" in resp.text
+    assert resp.status_code != 422
+    assert "workspace_id" not in resp.text or "required" not in resp.text
 
 
 @pytest.mark.parametrize("route", sorted(WRITE_ROUTES))

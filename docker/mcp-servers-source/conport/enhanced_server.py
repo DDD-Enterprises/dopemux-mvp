@@ -458,21 +458,35 @@ class EnhancedConPortServer:
         return web.json_response({'error': str(error)}, status=error.status)
 
     def _write_ids(self, data: Dict[str, Any], *, require_instance: bool,
-                   workspace_id: Optional[str] = None, instance_id: Optional[str] = None):
-        """Validate a write's ids against this server's binding.
+                   workspace_id: Optional[str] = None, instance_id: Optional[str] = None,
+                   fill_instance: bool = True):
+        """Resolve a write's ids against this server's binding (Amendment 04).
 
-        Returns ``(workspace_id, stored_instance_id)``; ``shared`` (and empty)
-        is stored as NULL.  Raises ``WriteIdentityError``.
+        An omitted or empty ``workspace_id`` becomes the bound workspace (and is
+        written back into ``data`` so later ``data.get('workspace_id')`` reads see
+        it); an omitted ``instance_id`` becomes this server's ``DOPEMUX_INSTANCE_ID``,
+        else ``shared``.  ``fill_instance=False`` keeps an instance required
+        (``fork_instance`` names its target).  Returns ``(workspace_id,
+        stored_instance_id)``; ``shared`` (and empty) is stored as NULL.  Raises
+        ``WriteIdentityError`` for a workspace that is not the binding, a path
+        and body workspace that disagree, or an unbound server.
         """
         if SimpleInstanceDetector is None:
             raise WriteIdentityError("instance detector unavailable; writes are rejected")
-        ws = workspace_id if workspace_id is not None else data.get('workspace_id')
         body_ws = data.get('workspace_id')
-        if workspace_id is not None and body_ws not in (None, workspace_id):
+        ws = workspace_id if workspace_id is not None else body_ws
+        if (workspace_id is not None and str(workspace_id).strip()
+                and body_ws is not None and str(body_ws).strip() and body_ws != workspace_id):
             raise WriteIdentityError("workspace_id in the body does not match the workspace in the path")
         inst = instance_id if instance_id is not None else data.get('instance_id')
-        validate_write_ids(ws, inst, SimpleInstanceDetector.get_bound_workspace_id(),
-                           require_instance=require_instance)
+        default_instance = None
+        if fill_instance:
+            default_instance = (SimpleInstanceDetector.get_instance_id()
+                                or SimpleInstanceDetector.SHARED_INSTANCE_ID)
+        ws, inst = validate_write_ids(ws, inst, SimpleInstanceDetector.get_bound_workspace_id(),
+                                      require_instance=require_instance,
+                                      default_instance_id=default_instance)
+        data['workspace_id'] = ws
         return ws, SimpleInstanceDetector.normalize_instance_id(inst)
 
     async def _principal_tables(self) -> set:
@@ -1188,10 +1202,12 @@ class EnhancedConPortServer:
     async def _fork_instance(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Internal logic for fork_instance"""
         # Wave 2A R2: the target instance is request data (``target_instance``, or
-        # ``instance_id``); no fallback to the server's own instance.  The source
+        # ``instance_id``); no fallback to the server's own instance (it names the
+        # target, not the caller; Amendment 04 keeps it required).  The source
         # is the shared scope when None, empty or ``shared``.
         workspace_id, target_instance = self._write_ids(
-            data, require_instance=True, instance_id=data.get('target_instance') or data.get('instance_id'))
+            data, require_instance=True, fill_instance=False,
+            instance_id=data.get('target_instance') or data.get('instance_id'))
         if not target_instance:
             raise WriteIdentityError("target_instance must name a real instance, not 'shared'")
         source_instance = SimpleInstanceDetector.normalize_instance_id(data.get('source_instance'))
@@ -1803,13 +1819,12 @@ class EnhancedConPortServer:
         """Save or update custom data in key-value store"""
         try:
             data = await request.json()
-            workspace_id = data.get('workspace_id')
+            # Wave 2A R2: workspace_id bound; an omitted one is the binding (Amendment 04)
+            # (custom_data has no instance column)
+            workspace_id, _ = self._write_ids(data, require_instance=False)
             category = data.get('category')
             key = data.get('key')
             value = data.get('value')
-
-            # Wave 2A R2: workspace_id required and bound (custom_data has no instance column)
-            self._write_ids(data, require_instance=False)
 
             if not all([workspace_id, category, key, value is not None]):
                 return web.json_response({
@@ -1942,12 +1957,12 @@ class EnhancedConPortServer:
     async def delete_custom_data(self, request):
         """Delete custom data from key-value store"""
         try:
-            workspace_id = request.query.get('workspace_id')
             category = request.query.get('category')
             key = request.query.get('key')
 
-            # Wave 2A R2: workspace_id required and bound
-            self._write_ids({'workspace_id': workspace_id}, require_instance=False)
+            # Wave 2A R2: workspace_id bound; an omitted one is the binding (Amendment 04)
+            workspace_id, _ = self._write_ids(
+                {'workspace_id': request.query.get('workspace_id')}, require_instance=False)
 
             if not all([workspace_id, category, key]):
                 return web.json_response({
@@ -1991,13 +2006,12 @@ class EnhancedConPortServer:
         """
         try:
             data = await request.json()
-            workspace_id = data.get('workspace_id')
+            # Wave 2A R2: workspace_id bound; an omitted one is the binding (Amendment 04)
+            # (custom_data has no instance column)
+            workspace_id, _ = self._write_ids(data, require_instance=False)
             category = data.get('category')
             key = data.get('key')
             value = data.get('value')
-
-            # Wave 2A R2: workspace_id required and bound (custom_data has no instance column)
-            self._write_ids(data, require_instance=False)
 
             if not all([workspace_id, category, key, value is not None]):
                 return web.json_response({
@@ -2262,6 +2276,18 @@ class EnhancedConPortServer:
 
     def _get_tool_schemas(self) -> List[Dict[str, Any]]:
         """Returns the list of supported tools with their JSON schemas"""
+        # Write tools take the ids as optional (Amendment 04): the server fills an
+        # omitted one from its own binding and rejects a workspace that is not its own.
+        write_workspace_id = {
+            "type": "string",
+            "description": ("Optional: the server fills it from its own binding; "
+                            "a workspace that differs from the binding is rejected."),
+        }
+        write_instance_id = {
+            "type": "string",
+            "description": ("Optional: the server fills it from its own binding "
+                            "(its DOPEMUX_INSTANCE_ID, else shared)."),
+        }
         tools = [
             {
                 "name": "conport_get_context",
@@ -2280,14 +2306,15 @@ class EnhancedConPortServer:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "workspace_id": {"type": "string"},
+                        "workspace_id": write_workspace_id,
+                        "instance_id": write_instance_id,
                         "active_context": {"type": "string"},
                         "last_activity": {"type": "string"},
                         "session_time": {"type": "string"},
                         "focus_state": {"type": "string"},
                         "session_milestone": {"type": "string"}
                     },
-                    "required": ["workspace_id"]
+                    "required": []
                 }
             },
             {
@@ -2296,7 +2323,8 @@ class EnhancedConPortServer:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "workspace_id": {"type": "string"},
+                        "workspace_id": write_workspace_id,
+                        "instance_id": write_instance_id,
                         "summary": {"type": "string"},
                         "rationale": {"type": "string"},
                         "alternatives": {"type": "array", "items": {"type": "string"}},
@@ -2304,7 +2332,7 @@ class EnhancedConPortServer:
                         "confidence_level": {"type": "string", "enum": ["low", "medium", "high"]},
                         "decision_type": {"type": "string"}
                     },
-                    "required": ["workspace_id", "summary", "rationale"]
+                    "required": ["summary", "rationale"]
                 }
             },
             {
@@ -2325,7 +2353,8 @@ class EnhancedConPortServer:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "workspace_id": {"type": "string"},
+                        "workspace_id": write_workspace_id,
+                        "instance_id": write_instance_id,
                         "description": {"type": "string"},
                         "status": {"type": "string", "default": "IN_PROGRESS"},
                         "percentage": {"type": "integer", "default": 0},
@@ -2334,7 +2363,7 @@ class EnhancedConPortServer:
                         "actual_hours": {"type": "number"},
                         "linked_decision_id": {"type": "string"}
                     },
-                    "required": ["workspace_id", "description"]
+                    "required": ["description"]
                 }
             },
             {
@@ -2357,6 +2386,8 @@ class EnhancedConPortServer:
                     "type": "object",
                     "properties": {
                         "progress_id": {"type": "string"},
+                        "workspace_id": write_workspace_id,
+                        "instance_id": write_instance_id,
                         "status": {"type": "string"},
                         "percentage": {"type": "integer"},
                         "description": {"type": "string"},
@@ -2408,12 +2439,12 @@ class EnhancedConPortServer:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "workspace_id": {"type": "string"},
+                        "workspace_id": write_workspace_id,
                         "category": {"type": "string"},
                         "key": {"type": "string"},
                         "value": {}
                     },
-                    "required": ["workspace_id", "category", "key", "value"]
+                    "required": ["category", "key", "value"]
                 }
             },
             {
@@ -2422,11 +2453,11 @@ class EnhancedConPortServer:
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "workspace_id": {"type": "string"},
+                        "workspace_id": write_workspace_id,
                         "category": {"type": "string"},
                         "key": {"type": "string"}
                     },
-                    "required": ["workspace_id", "category", "key"]
+                    "required": ["category", "key"]
                 }
             },
             {

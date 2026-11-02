@@ -393,8 +393,9 @@ Operator steps with rollbacks: `docs/02-how-to/runner-memory-identity.md`. Desig
 amendment: `docs/90-adr/adr-mcpint-002-amendment-runner-identity.md` (**proposed**, not accepted).
 
 **Built (committed on `feat/runner-memory-2a`; none of it observed live):**
-- dope-memory and ConPort reject an HTTP write without `workspace_id` (and `instance_id` where
-  the row carries one) in every auth mode, and take an auth mode `off|log|enforce`
+- dope-memory and ConPort fill an omitted `workspace_id` (and `instance_id` where the row
+  carries one) from their own binding and reject a supplied workspace that is not theirs, in
+  every auth mode (`AMENDMENT_04.md`), and take an auth mode `off|log|enforce`
   (`DOPE_MEMORY_AUTH_MODE`, `CONPORT_AUTH_MODE`; sidecar default `log`,
   `src/dopemux/mcp/docker_runtime.py`). A valid token stores the verified principal; any other
   write is stored `unverified` and counted.

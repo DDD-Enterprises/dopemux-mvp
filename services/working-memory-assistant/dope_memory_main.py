@@ -64,8 +64,9 @@ SERVICE_NAME = os.getenv("SERVICE_NAME", "dope-memory")
 HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
 DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memory")))
 # Defaults for READS only (read request models, the backend's store keying).
-# Writes take no default: workspace_id and instance_id are required on every
-# write and checked against BOUND_WORKSPACE_ID (Wave 2A R2 W01).
+# A write that omits workspace_id gets BOUND_WORKSPACE_ID (never DEFAULT_WORKSPACE_ID)
+# and one that omits instance_id gets DEFAULT_INSTANCE_ID; a supplied workspace_id
+# must equal BOUND_WORKSPACE_ID (Wave 2A R2 W01, Amendment 04).
 DEFAULT_WORKSPACE_ID = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "default")
 DEFAULT_INSTANCE_ID = os.getenv("DOPE_MEMORY_INSTANCE_ID", "A")
 # The workspace this container is bound to; unset means every write is rejected.
@@ -816,6 +817,20 @@ else:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
+# Write requests take both ids as optional (Amendment 04): the server fills an
+# omitted one from its own binding and rejects a workspace that is not its own.
+WRITE_WORKSPACE_ID_FIELD = Field(
+    default=None,
+    description="Workspace to write to. Optional: the server fills it from its own "
+    "binding; a value that differs from the binding is rejected.",
+)
+WRITE_INSTANCE_ID_FIELD = Field(
+    default=None,
+    description="Instance to write as. Optional: the server fills it from its own "
+    "binding (its configured instance).",
+)
+
+
 class MemorySearchRequest(BaseModel):
     """Request for memory_search tool."""
 
@@ -836,8 +851,8 @@ class MemorySearchRequest(BaseModel):
 class MemoryStoreRequest(BaseModel):
     """Request for memory_store tool."""
 
-    workspace_id: str
-    instance_id: str
+    workspace_id: Optional[str] = WRITE_WORKSPACE_ID_FIELD
+    instance_id: Optional[str] = WRITE_INSTANCE_ID_FIELD
     category: str
     entry_type: str
     summary: str
@@ -863,8 +878,8 @@ class MemoryRecapRequest(BaseModel):
 class MemoryMarkIssueRequest(BaseModel):
     """Request for memory_mark_issue tool."""
 
-    workspace_id: str
-    instance_id: str
+    workspace_id: Optional[str] = WRITE_WORKSPACE_ID_FIELD
+    instance_id: Optional[str] = WRITE_INSTANCE_ID_FIELD
     issue_entry_id: str
     description: str
     confidence: float = Field(default=0.7, ge=0.0, le=1.0)
@@ -875,8 +890,8 @@ class MemoryMarkIssueRequest(BaseModel):
 class MemoryLinkResolutionRequest(BaseModel):
     """Request for memory_link_resolution tool."""
 
-    workspace_id: str
-    instance_id: str
+    workspace_id: Optional[str] = WRITE_WORKSPACE_ID_FIELD
+    instance_id: Optional[str] = WRITE_INSTANCE_ID_FIELD
     issue_entry_id: str
     resolution_entry_id: str
     confidence: float = Field(default=0.8, ge=0.0, le=1.0)
@@ -897,8 +912,8 @@ class MemoryReplaySessionRequest(BaseModel):
 class MemoryCorrectRequest(BaseModel):
     """Request for memory_correct tool (Packet F §6.5)."""
 
-    workspace_id: str
-    instance_id: str
+    workspace_id: Optional[str] = WRITE_WORKSPACE_ID_FIELD
+    instance_id: Optional[str] = WRITE_INSTANCE_ID_FIELD
     entry_id: str
     correction_type: str = Field(pattern=r"^(summary|tags|category|outcome|retraction)$")
     corrected_summary: Optional[str] = None
@@ -912,8 +927,8 @@ class MemoryCorrectRequest(BaseModel):
 class MemoryGenerateReflectionRequest(BaseModel):
     """Request for memory_generate_reflection tool."""
 
-    workspace_id: str
-    instance_id: str
+    workspace_id: Optional[str] = WRITE_WORKSPACE_ID_FIELD
+    instance_id: Optional[str] = WRITE_INSTANCE_ID_FIELD
     session_id: Optional[str] = None
     window_hours: int = Field(default=2, ge=1, le=24)
 
@@ -1147,10 +1162,18 @@ def write_identity(request: Request) -> Identity:
         ) from None
 
 
-def require_write_ids(workspace_id: Optional[str], instance_id: Optional[str]) -> None:
-    """Reject a write with missing ids or a workspace that is not this server's."""
+def require_write_ids(
+    workspace_id: Optional[str], instance_id: Optional[str]
+) -> tuple[str, str]:
+    """Resolve a write's ids: omitted ones come from this server's binding.
+
+    Rejects a workspace that is not this server's, and every write when the
+    server has no binding.
+    """
     try:
-        validate_write_ids(workspace_id, instance_id, BOUND_WORKSPACE_ID)
+        return validate_write_ids(
+            workspace_id, instance_id, BOUND_WORKSPACE_ID, DEFAULT_INSTANCE_ID
+        )
     except WriteIdentityError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
 
@@ -1232,13 +1255,13 @@ async def memory_store(
     request: MemoryStoreRequest, identity: Identity = Depends(write_identity)
 ):
     """Store a manual work log entry."""
-    require_write_ids(request.workspace_id, request.instance_id)
+    workspace_id, instance_id = require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
     result = mcp_server.memory_store(
-        workspace_id=request.workspace_id,
-        instance_id=request.instance_id,
+        workspace_id=workspace_id,
+        instance_id=instance_id,
         category=request.category,
         entry_type=request.entry_type,
         summary=request.summary,
@@ -1281,13 +1304,13 @@ async def memory_mark_issue(
     request: MemoryMarkIssueRequest, identity: Identity = Depends(write_identity)
 ):
     """Mark an entry as an issue source."""
-    require_write_ids(request.workspace_id, request.instance_id)
+    workspace_id, instance_id = require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
     result = mcp_server.memory_mark_issue(
-        workspace_id=request.workspace_id,
-        instance_id=request.instance_id,
+        workspace_id=workspace_id,
+        instance_id=instance_id,
         issue_entry_id=request.issue_entry_id,
         description=request.description,
         confidence=request.confidence,
@@ -1305,13 +1328,13 @@ async def memory_link_resolution(
     request: MemoryLinkResolutionRequest, identity: Identity = Depends(write_identity)
 ):
     """Link an issue entry to its resolution."""
-    require_write_ids(request.workspace_id, request.instance_id)
+    workspace_id, instance_id = require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
     result = mcp_server.memory_link_resolution(
-        workspace_id=request.workspace_id,
-        instance_id=request.instance_id,
+        workspace_id=workspace_id,
+        instance_id=instance_id,
         issue_entry_id=request.issue_entry_id,
         resolution_entry_id=request.resolution_entry_id,
         confidence=request.confidence,
@@ -1349,13 +1372,13 @@ async def memory_correct(
     request: MemoryCorrectRequest, identity: Identity = Depends(write_identity)
 ):
     """Supersede a work log entry with a corrected version (Packet F)."""
-    require_write_ids(request.workspace_id, request.instance_id)
+    workspace_id, instance_id = require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
     result = mcp_server.memory_correct(
-        workspace_id=request.workspace_id,
-        instance_id=request.instance_id,
+        workspace_id=workspace_id,
+        instance_id=instance_id,
         entry_id=request.entry_id,
         correction_type=request.correction_type,
         corrected_summary=request.corrected_summary,
@@ -1377,13 +1400,13 @@ async def memory_generate_reflection(
     request: MemoryGenerateReflectionRequest, identity: Identity = Depends(write_identity)
 ):
     """Generate a reflection card from recent work."""
-    require_write_ids(request.workspace_id, request.instance_id)
+    workspace_id, instance_id = require_write_ids(request.workspace_id, request.instance_id)
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
     result = mcp_server.memory_generate_reflection(
-        workspace_id=request.workspace_id,
-        instance_id=request.instance_id,
+        workspace_id=workspace_id,
+        instance_id=instance_id,
         session_id=request.session_id,
         window_hours=request.window_hours,
         write_principal=identity.principal,

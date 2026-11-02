@@ -1,4 +1,4 @@
-"""MCP surface: required ids, binding, auth (in-process and over HTTP)."""
+"""MCP surface: omitted ids, binding, auth (in-process and over HTTP)."""
 
 from __future__ import annotations
 
@@ -65,22 +65,21 @@ def _principals(ledger_path):
 # --- in-process (no HTTP request) -------------------------------------------
 
 
-@pytest.mark.parametrize("tool", sorted(WRITE_ARGS))
 @pytest.mark.parametrize("missing", ["workspace_id", "instance_id"])
-async def test_should_reject_tool_call_missing_required_id(backend, tool, missing):
+async def test_should_fill_a_tool_call_missing_an_id_from_the_binding(backend, ledger_path, missing):
+    # Amendment 04 (W12): an omitted id is filled from the server's binding.
     server, _ = _server(backend)
-    args = {**WRITE_ARGS[tool], **{k: v for k, v in IDS.items() if k != missing}}
+    args = {**WRITE_ARGS["memory_store"], **{k: v for k, v in IDS.items() if k != missing}}
     async with Client(server) as client:
-        with pytest.raises(ToolError, match=missing):
-            await client.call_tool(tool, args)
+        stored = await client.call_tool("memory_store", args)
+    assert stored.data["created"] is True
+    assert _principals(ledger_path) == ["unverified"]
 
 
 @pytest.mark.parametrize("tool", sorted(WRITE_ARGS))
-async def test_should_reject_blank_ids_and_binding_mismatch(backend, tool):
+async def test_should_reject_a_binding_mismatch(backend, tool):
     server, _ = _server(backend)
     async with Client(server) as client:
-        with pytest.raises(ToolError, match="required"):
-            await client.call_tool(tool, {**WRITE_ARGS[tool], "workspace_id": "", "instance_id": "i"})
         with pytest.raises(ToolError, match="bound"):
             await client.call_tool(
                 tool, {**WRITE_ARGS[tool], "workspace_id": "other", "instance_id": "i"}
@@ -94,13 +93,13 @@ async def test_should_reject_writes_when_server_unbound(backend):
             await client.call_tool("memory_store", {**WRITE_ARGS["memory_store"], **IDS})
 
 
-async def test_should_advertise_ids_as_required_on_write_tools_only(backend):
+async def test_should_advertise_ids_as_optional_on_every_tool(backend):
     server, _ = _server(backend)
     async with Client(server) as client:
         tools = {t.name: t for t in await client.list_tools()}
     for name in WRITE_ARGS:
         required = set(tools[name].inputSchema.get("required", []))
-        assert {"workspace_id", "instance_id"} <= required, name
+        assert not ({"workspace_id", "instance_id"} & required), name
     for name in ("memory_search", "memory_recap", "memory_trajectory", "memory_reflections"):
         required = set(tools[name].inputSchema.get("required", []))
         assert not ({"workspace_id", "instance_id"} & required), name

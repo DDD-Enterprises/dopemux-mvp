@@ -5,8 +5,9 @@ Verifies:
 - Tools delegate to DopeMemoryMCPServer (store -> search round trip).
 - Tool failures surface as MCP tool errors, not silent successes.
 - dope_memory_main mounts the MCP app so /mcp resolves on the FastAPI app.
-- Writes require workspace_id and instance_id and must match the server's
-  bound workspace (Wave 2A R2 W01); reads keep working without ids.
+- Writes fill an omitted workspace_id / instance_id from the server's binding
+  and reject a workspace other than the bound one (Wave 2A R2 W01, Amendment 04);
+  reads keep working without ids.
 
 Requires fastmcp (installed in the service image via dopemux[services]);
 skipped automatically where fastmcp is unavailable.
@@ -166,18 +167,20 @@ async def test_should_unwrap_dict_shaped_backend_results():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("missing", ["workspace_id", "instance_id"])
-async def test_should_reject_store_when_an_id_is_missing(mcp_server, missing):
+async def test_should_fill_an_omitted_id_from_the_servers_binding(mcp_server, missing):
+    # Amendment 04 (W12): an omitted id is filled from the binding, so the entry is
+    # stored under the server's own workspace and instance and the read finds it.
     args = {
         "category": "implementation",
         "entry_type": "decision",
-        "summary": "must not be written",
+        "summary": "filled from the binding",
         **{k: v for k, v in WRITE_IDS.items() if k != missing},
     }
     async with Client(mcp_server) as client:
-        with pytest.raises(ToolError, match=missing):
-            await client.call_tool("memory_store", args)
-        found = await client.call_tool("memory_search", {"query": "must not"})
-    assert found.data["items"] == []
+        stored = await client.call_tool("memory_store", args)
+        found = await client.call_tool("memory_search", {"query": "filled from"})
+    assert stored.data["created"] is True
+    assert [i["summary"] for i in found.data["items"]] == ["filled from the binding"]
 
 
 @pytest.mark.asyncio

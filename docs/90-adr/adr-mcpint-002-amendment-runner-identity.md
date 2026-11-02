@@ -58,9 +58,11 @@ config distribution.
 Wave 2A (`docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md`, revision 2) built a
 different runtime guard for the two memory servers:
 
-* Both servers reject an HTTP write without `workspace_id`, without `instance_id` where the
-  row carries one, and with a `workspace_id` that does not match the server's binding, in
-  every auth mode (W01, W02; `services/working-memory-assistant/auth_identity.py:110-125`).
+* Both servers fill an omitted `workspace_id`, and an omitted `instance_id` where the row
+  carries one, from their own binding, and reject an HTTP write whose `workspace_id` does not
+  match the server's binding (or any write to a server with no binding), in every auth mode
+  (W01, W02, W12; `services/working-memory-assistant/auth_identity.py:112-140`;
+  `AMENDMENT_04.md`). A write can therefore never be stored under another workspace.
 * Each server has an auth mode `off`, `log` or `enforce`. A write with a valid per-principal
   bearer token is stored with its verified principal (for example `runner:codex`); any other
   write is stored `unverified` and counted by caller. `enforce` rejects it with 401.

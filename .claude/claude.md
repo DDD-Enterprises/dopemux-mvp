@@ -279,8 +279,11 @@ mode `off|log|enforce` (`DOPE_MEMORY_AUTH_MODE`, `CONPORT_AUTH_MODE`; sidecar de
 store the principal of a valid keychain-held token (`dopemux auth issue <principal> --apply`)
 or `unverified`. `dopemux mcp generate --agent-matrix --apply --output-dir <dir>` writes Codex's
 `conport`/`dope-memory` entries only when both servers report `log` or `enforce` with
-identity-required writes and a `runner:codex` token exists. Claude Code stays on direct HTTP
-(`.mcp.json`, `mcp init|ensure` unchanged); its move to the bridge is Wave 2B. **Not built:**
+identity-required writes (bound to the server's workspace: an omitted `workspace_id` or
+`instance_id` is filled from the server's binding, a mismatched workspace is rejected) and a
+`runner:codex` token exists. Claude Code stays on direct HTTP
+(`.mcp.json`, `mcp init|ensure` unchanged; its writes need no ids and are stored `unverified`);
+its move to the bridge is Wave 2B. **Not built:**
 `enforce` in 2A (container callers have no keychain, container ids unknown, bridge progress
 route drops `instance_id`, Claude on direct HTTP, other writers), `dopemux mcp doctor`
 reporting of unverified writers (read each server's `/health`: `auth_mode`,

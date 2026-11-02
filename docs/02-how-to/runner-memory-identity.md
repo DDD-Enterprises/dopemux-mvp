@@ -24,10 +24,11 @@ and read the result.
 
 Does:
 
-- dope-memory and ConPort reject an HTTP write without `workspace_id` (and `instance_id`
-  where the row carries one), in every auth mode (`W02_RETURN.md` open item 2).
+- dope-memory and ConPort fill an omitted `workspace_id` (and `instance_id` where the row
+  carries one) from the server's own binding, in every auth mode, and reject a supplied
+  `workspace_id` that is not the server's own (`AMENDMENT_04.md`; the rule is in step 4).
 - Each server has an auth mode: `off`, `log` or `enforce`. The sidecar default is `log`
-  (`src/dopemux/mcp/docker_runtime.py:154-179`, `services/working-memory-assistant/auth_identity.py:46`).
+  (`src/dopemux/mcp/docker_runtime.py:154-179`, `services/working-memory-assistant/auth_identity.py:48`).
   In `log` mode a request with a valid token is stored with its verified principal; every
   other write is accepted, stored as `unverified` and counted by caller.
 - `dopemux auth` issues one keychain-held token per principal; the servers hold only
@@ -155,18 +156,26 @@ Two facts to check, because the repo does not settle them:
 - **Check the result from `/health`.** A rebuilt server reports `auth_mode`
   (step 9). A server that still runs the old image has no such field.
 
-Deploy order: id validation applies in every auth mode, so any writer that omits
-`workspace_id` or `instance_id` gets a 400 once the new images run (`W02_RETURN.md` open
-item 2). The 11 HTTP writers in the repo were changed in W05 to send ids when they have
-them. Host callers need `.envrc.dopemux-mcp` loaded (for example through direnv), or
-`instance_id` is omitted and the server returns 400 (`W05_RETURN.md` open item 6).
+Id rule (`AMENDMENT_04.md`), applied in every auth mode:
 
-**Claude Code consequence in 2A.** Claude Code's direct HTTP entry does not fill the ids.
-After the rebuild, its dope-memory and ConPort writes need the exact bound `workspace_id`
-and an `instance_id` in the tool call, or they fail with a 400 or a tool error
-(`W01_RETURN.md` residual 1; `W02_RETURN.md` open item 4; `W04_RETURN.md` ruling 2: "Direct
-HTTP clients are unaffected"). The bridge fixes this only for runners on the bridge
-(Codex in 2A). Whether Claude Code's model supplies the ids unprompted is UNKNOWN.
+| Server | Omitted or empty `workspace_id` | Omitted or empty `instance_id` |
+|---|---|---|
+| dope-memory | its binding (`DOPE_MEMORY_WORKSPACE_ID`) | `DOPE_MEMORY_INSTANCE_ID`, else `A` |
+| ConPort | its binding (`DOPEMUX_WORKSPACE_ID`) | `DOPEMUX_INSTANCE_ID` where the table has an instance column, else `shared` (stored as NULL) |
+
+A value the caller supplies is never replaced. Still rejected with a 400 (or a tool
+error): a supplied `workspace_id` that differs from the server's binding, a ConPort path
+workspace and body workspace that disagree, and every write to a server with no binding.
+`fork_instance` still needs a `target_instance`, because it names the target and not the
+caller. So a writer that omits the ids, such as Claude Code on direct HTTP, still writes,
+and nothing can be filed under another workspace. The 11 HTTP writers in the repo were
+changed in W05 to send ids when they have them; host callers can load `.envrc.dopemux-mcp`
+(for example through direnv), but a server fills what they omit.
+
+**Claude Code in 2A.** Claude Code's direct HTTP entry does not send the ids, and does not
+need to: the server fills them from its binding. The bridge adds the verified principal
+for runners on the bridge (Codex in 2A); Claude Code's writes stay `unverified` until
+Wave 2B (`W04_RETURN.md` ruling 2: "Direct HTTP clients are unaffected").
 
 Rollback: restart on the previous images. Record the current image ids before the rebuild.
 Nothing else changes in this step.
@@ -286,15 +295,15 @@ caller, whether to fix it or accept it. `dopemux mcp doctor` does not report thi
 | dope-memory | `DOPE_MEMORY_PORT` | `GET http://127.0.0.1:<port>/health` |
 | ConPort | `CONPORT_HTTP_PORT` (the REST port; not `CONPORT_MCP_PORT`) | `GET http://127.0.0.1:<port>/health` |
 
-Fields (`services/working-memory-assistant/auth_identity.py:248-258`,
-`docker/mcp-servers-source/conport/auth_identity.py:284-294`,
-`docker/mcp-servers-source/conport/enhanced_server.py:544-545`;
+Fields (`services/working-memory-assistant/auth_identity.py:259-272`,
+`docker/mcp-servers-source/conport/auth_identity.py:300-313`,
+`docker/mcp-servers-source/conport/enhanced_server.py:558-559`;
 `mcp_commands.py` `_MEMORY_HEALTH_TARGETS` for the ports):
 
 | Field | Meaning |
 |---|---|
 | `auth_mode` | `off`, `log` or `enforce` |
-| `identity_required_writes` | always `true` in the new images |
+| `identity_required_writes` | always `true` in the new images; it means writes are bound to this server's workspace (a mismatched workspace is rejected), not that the caller must send the ids |
 | `auth_hash_file` | `ok`, `missing`, `invalid` or `unconfigured` |
 | `auth_unverified_calls` | map of caller label to count of writes accepted without a verified token |
 | `auth_principal_column` | ConPort only: `ok`, `partial` or `missing` |
@@ -305,7 +314,7 @@ Reading `auth_unverified_calls`:
   token counts as unverified too.
 - The caller label is the request's User-Agent (up to 64 characters), else the client
   host. At most 100 labels are tracked; the rest go under `other`
-  (`auth_identity.py:64-66, 106-107, 220-229`). `/health` is unauthenticated and lists these
+  (`auth_identity.py:66-68, 108-109, 233-242`). `/health` is unauthenticated and lists these
   labels (`W01_RETURN.md` residual 3).
 - ConPort trusts the forwarded-caller header for counting only when the request
   authenticated as `internal:bridge-proxy` (`W02_RETURN.md` open item 5). Counts for

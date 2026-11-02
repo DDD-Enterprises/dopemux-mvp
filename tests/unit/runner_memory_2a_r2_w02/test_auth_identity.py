@@ -216,19 +216,22 @@ def test_should_make_a_log_safe_caller_label(auth_identity):
 # -- ids ---------------------------------------------------------------------
 
 
-def test_should_require_workspace_id_on_every_write(auth_identity):
+def test_should_fill_an_omitted_workspace_id_from_the_binding(auth_identity):
+    # Amendment 04 (W12): an omitted or blank workspace_id is the server's binding.
     for ws in (None, "", "   "):
-        with pytest.raises(auth_identity.WriteIdentityError, match="workspace_id is required"):
-            auth_identity.validate_write_ids(ws, "i", BOUND_WORKSPACE)
-        with pytest.raises(auth_identity.WriteIdentityError, match="workspace_id is required"):
-            auth_identity.validate_write_ids(ws, "i", BOUND_WORKSPACE, require_instance=False)
+        assert auth_identity.validate_write_ids(ws, "i", BOUND_WORKSPACE) == (BOUND_WORKSPACE, "i")
+        assert auth_identity.validate_write_ids(
+            ws, "i", BOUND_WORKSPACE, require_instance=False) == (BOUND_WORKSPACE, "i")
 
 
-def test_should_require_instance_id_only_where_the_row_carries_one(auth_identity):
+def test_should_fill_an_omitted_instance_id_only_from_a_default_the_caller_offers(auth_identity):
     for inst in (None, "", "  "):
+        # no default offered (fork_instance): still required where the row carries one
         with pytest.raises(auth_identity.WriteIdentityError, match="instance_id is required"):
             auth_identity.validate_write_ids(BOUND_WORKSPACE, inst, BOUND_WORKSPACE)
         auth_identity.validate_write_ids(BOUND_WORKSPACE, inst, BOUND_WORKSPACE, require_instance=False)
+        assert auth_identity.validate_write_ids(
+            BOUND_WORKSPACE, inst, BOUND_WORKSPACE, default_instance_id="srv") == (BOUND_WORKSPACE, "srv")
     auth_identity.validate_write_ids(BOUND_WORKSPACE, "shared", BOUND_WORKSPACE)
 
 

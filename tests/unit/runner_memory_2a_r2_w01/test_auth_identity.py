@@ -264,11 +264,12 @@ def test_should_accept_matching_ids():
     auth_identity.validate_write_ids("ws-a", "inst-1", "ws-a")
 
 
-@pytest.mark.parametrize("ws,inst,missing", [(None, "i", "workspace_id"), ("w", None, "instance_id"),
-                                              ("", "i", "workspace_id"), ("w", "  ", "instance_id")])
-def test_should_reject_missing_or_blank_ids(ws, inst, missing):
-    with pytest.raises(auth_identity.WriteIdentityError, match=missing):
-        auth_identity.validate_write_ids(ws, inst, "w")
+@pytest.mark.parametrize("ws,inst,expected", [(None, "i", ("w", "i")), ("w", None, ("w", "A")),
+                                               ("", "i", ("w", "i")), ("w", "  ", ("w", "A")),
+                                               (None, None, ("w", "A"))])
+def test_should_fill_missing_or_blank_ids_from_the_binding(ws, inst, expected):
+    # Amendment 04 (W12): omitted ids default to the binding / the server's instance.
+    assert auth_identity.validate_write_ids(ws, inst, "w") == expected
 
 
 def test_should_reject_workspace_that_differs_from_binding():

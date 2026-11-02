@@ -10,10 +10,11 @@ What this module does
                ``unverified`` and count unverified calls per caller;
   ``enforce``  as ``log`` but reject an unverified write with 401.
   ConPort and dope-memory are switched separately (``DOPE_MEMORY_AUTH_MODE``).
-- ``validate_write_ids`` requires ``workspace_id`` on every write (and
-  ``instance_id`` where the stored row carries one) and rejects a
-  ``workspace_id`` that differs from the container's binding
-  (``DOPEMUX_WORKSPACE_ID``, see ``instance_detector``).
+- ``validate_write_ids`` fills an omitted ``workspace_id`` from the container's
+  binding (``DOPEMUX_WORKSPACE_ID``, see ``instance_detector``) and an omitted
+  ``instance_id`` from the server's own instance (else ``shared``), rejects a
+  supplied ``workspace_id`` that differs from the binding, and rejects every
+  write when there is no binding (Amendment 04).
 - ``WriteAuthMiddleware`` answers a real HTTP 401 for an unverified mutating
   MCP ``tools/call`` in ``enforce`` mode on the SSE and streamable surfaces.
 - ``build_rest_write_headers`` is what the two in-image proxies send to the REST
@@ -99,7 +100,7 @@ class WriteRejected(Exception):
 
 
 class WriteIdentityError(WriteRejected, ValueError):
-    """A write is missing ``workspace_id``/``instance_id`` or is mis-bound."""
+    """A write names a workspace that is not this server's, or the server has none."""
 
     status = 400
 
@@ -142,27 +143,42 @@ def validate_write_ids(
     bound_workspace_id: Optional[str],
     *,
     require_instance: bool = True,
-) -> None:
-    """Raise ``WriteIdentityError`` unless a write carries usable, bound ids.
+    default_instance_id: Optional[str] = None,
+) -> tuple[str, Optional[str]]:
+    """Resolve a write's ids against this server's binding (Amendment 04).
 
-    ``instance_id`` is required only where the stored row carries one
-    (``workspace_contexts`` and ``progress_entries``).  The value ``shared``
-    is a valid instance id (it lands where NULL lands).
+    Returns ``(workspace_id, instance_id)``.  An omitted, empty or blank
+    ``workspace_id`` becomes ``bound_workspace_id``; a supplied one must equal it.
+    An omitted, empty or blank ``instance_id`` becomes ``default_instance_id``
+    (the server's own instance, else ``shared``) when one is offered.  Without a
+    default, ``instance_id`` is still required where the stored row carries one
+    (``require_instance``; ``fork_instance`` names its target and passes none);
+    otherwise it stays ``None``.  A supplied value is never replaced.  The value
+    ``shared`` is a valid instance id (it lands where NULL lands).
+
+    Raises ``WriteIdentityError`` for a server with no binding (every write) and
+    for a supplied ``workspace_id`` that differs from the binding.
     """
-    if workspace_id is None or not str(workspace_id).strip():
-        raise WriteIdentityError("workspace_id is required for writes")
-    if require_instance and (instance_id is None or not str(instance_id).strip()):
-        raise WriteIdentityError("instance_id is required for writes")
     if not bound_workspace_id:
         raise WriteIdentityError(
             "this ConPort server has no workspace binding "
             "(DOPEMUX_WORKSPACE_ID is unset); writes are rejected"
         )
-    if workspace_id != bound_workspace_id:
+    if workspace_id is None or not str(workspace_id).strip():
+        workspace_id = bound_workspace_id
+    elif workspace_id != bound_workspace_id:
         raise WriteIdentityError(
             f"workspace_id {str(workspace_id)[:128]!r} does not match this "
             f"server's bound workspace {bound_workspace_id!r}; write rejected"
         )
+    if instance_id is None or not str(instance_id).strip():
+        if default_instance_id is not None:
+            instance_id = default_instance_id
+        elif require_instance:
+            raise WriteIdentityError("instance_id is required for writes")
+        else:
+            instance_id = None
+    return workspace_id, instance_id
 
 
 def extract_bearer(authorization: Optional[str]) -> Optional[str]:
@@ -286,6 +302,9 @@ class AuthGate:
         _, status = self._refresh()
         with self._lock:
             counts = dict(self._unverified)
+        # identity_required_writes stays True: it means writes are bound to this
+        # server's workspace (a mismatched workspace is rejected), not that the
+        # caller must send the ids (omitted ids are filled from the binding).
         return {
             "auth_mode": self.mode,
             "identity_required_writes": True,

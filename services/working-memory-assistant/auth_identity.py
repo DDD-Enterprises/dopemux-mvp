@@ -9,9 +9,11 @@ What this module does
   ``log``      verify; accept everything; record the verified principal or
                ``unverified`` and count unverified calls per caller;
   ``enforce``  as ``log`` but reject an unverified write with 401.
-- ``validate_write_ids`` requires ``workspace_id`` and ``instance_id`` on every
-  write and rejects a ``workspace_id`` that differs from the container's
-  binding (``DOPE_MEMORY_WORKSPACE_ID``).
+- ``validate_write_ids`` fills an omitted ``workspace_id`` from the container's
+  binding (``DOPE_MEMORY_WORKSPACE_ID``) and an omitted ``instance_id`` from the
+  server's default instance, rejects a supplied ``workspace_id`` that differs
+  from the binding, and rejects every write when there is no binding
+  (Amendment 04).
 - ``WriteAuthMiddleware`` answers a real HTTP 401 for an unverified MCP
   ``tools/call`` of a mutating tool in ``enforce`` mode.
 
@@ -76,7 +78,7 @@ class Unauthorized(Exception):
 
 
 class WriteIdentityError(ValueError):
-    """A write is missing ``workspace_id``/``instance_id`` or is mis-bound."""
+    """A write names a workspace that is not this server's, or the server has none."""
 
 
 @dataclass(frozen=True)
@@ -111,22 +113,31 @@ def validate_write_ids(
     workspace_id: Optional[str],
     instance_id: Optional[str],
     bound_workspace_id: Optional[str],
-) -> None:
-    """Raise ``WriteIdentityError`` unless a write carries usable, bound ids."""
-    if workspace_id is None or not str(workspace_id).strip():
-        raise WriteIdentityError("workspace_id is required for writes")
-    if instance_id is None or not str(instance_id).strip():
-        raise WriteIdentityError("instance_id is required for writes")
+    default_instance_id: str = "A",
+) -> tuple[str, str]:
+    """Resolve a write's ids against this server's binding (Amendment 04).
+
+    Returns ``(workspace_id, instance_id)``. An omitted, empty or blank
+    ``workspace_id`` becomes ``bound_workspace_id``; an omitted, empty or blank
+    ``instance_id`` becomes ``default_instance_id``. A supplied value is never
+    replaced. Raises ``WriteIdentityError`` when the server has no binding
+    (every write is rejected) or when a supplied ``workspace_id`` differs from it.
+    """
     if not bound_workspace_id:
         raise WriteIdentityError(
             "this dope-memory server has no workspace binding "
             "(DOPE_MEMORY_WORKSPACE_ID is unset); writes are rejected"
         )
-    if workspace_id != bound_workspace_id:
+    if workspace_id is None or not str(workspace_id).strip():
+        workspace_id = bound_workspace_id
+    elif workspace_id != bound_workspace_id:
         raise WriteIdentityError(
             f"workspace_id {str(workspace_id)[:128]!r} does not match this "
             f"server's bound workspace {bound_workspace_id!r}; write rejected"
         )
+    if instance_id is None or not str(instance_id).strip():
+        instance_id = default_instance_id
+    return workspace_id, instance_id
 
 
 def _extract_bearer(authorization: Optional[str]) -> Optional[str]:
@@ -250,6 +261,9 @@ class AuthGate:
         _, status = self._refresh()
         with self._lock:
             counts = dict(self._unverified)
+        # identity_required_writes stays True: it means writes are bound to this
+        # server's workspace (a mismatched workspace is rejected), not that the
+        # caller must send the ids (omitted ids are filled from the binding).
         return {
             "auth_mode": self.mode,
             "identity_required_writes": True,

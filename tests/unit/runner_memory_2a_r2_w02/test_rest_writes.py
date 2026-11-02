@@ -74,23 +74,26 @@ async def test_should_accept_a_write_with_bound_ids(make_rest_server, name):
 
 
 @pytest.mark.parametrize("name", [n for n in IDS if n not in ("context", "delete")])
-async def test_should_require_workspace_id_on_body_writes(make_rest_server, name):
+async def test_should_fill_an_omitted_workspace_id_on_body_writes(make_rest_server, name):
+    # Amendment 04 (W12): an omitted workspace_id is the server's binding.
     server = make_rest_server("off")
     body = _drop(CASES[name][2], "workspace_id")
     async with rest_client(server) as client:
         response = await _call(client, name, body=body)
-        assert response.status == 400
-        assert "workspace_id" in (await response.text())
-    assert server.db_pool.writes() == []
+        assert response.status == 200, await response.text()
+    assert server.db_pool.writes() != []
 
 
-async def test_should_require_workspace_id_on_delete_and_reject_the_wrong_one(make_rest_server):
+async def test_should_fill_an_omitted_workspace_id_on_delete_and_reject_the_wrong_one(make_rest_server):
     server = make_rest_server("off")
     async with rest_client(server) as client:
-        missing = await client.delete("/api/custom_data?category=c&key=k")
+        omitted = await client.delete("/api/custom_data?category=c&key=k")
+        assert omitted.status == 200, await omitted.text()
+        assert any(args[:1] == (WS,) for _, args in server.db_pool.writes())
+        before = len(server.db_pool.writes())
         wrong = await client.delete(f"/api/custom_data?workspace_id={OTHER_WORKSPACE}&category=c&key=k")
-        assert missing.status == 400 and wrong.status == 400
-    assert server.db_pool.writes() == []
+        assert wrong.status == 400
+    assert len(server.db_pool.writes()) == before
 
 
 @pytest.mark.parametrize("name", IDS)
@@ -110,14 +113,25 @@ async def test_should_reject_a_workspace_that_is_not_the_servers_binding(make_re
     assert server.db_pool.writes() == []
 
 
-@pytest.mark.parametrize("name", [n for n in IDS if CASES[n][4] and n != "fork"])
-async def test_should_require_instance_id_where_the_row_carries_one(make_rest_server, name):
+@pytest.mark.parametrize("name", [n for n in IDS if CASES[n][4] and n not in ("fork", "promote_all")])
+async def test_should_fall_back_to_shared_for_an_omitted_instance_id(make_rest_server, name, monkeypatch):
+    # Amendment 04 (W12): an omitted instance_id is the server's DOPEMUX_INSTANCE_ID, else shared (NULL).
+    monkeypatch.delenv("DOPEMUX_INSTANCE_ID", raising=False)
     server = make_rest_server("off")
     body = _drop(CASES[name][2], "instance_id")
     async with rest_client(server) as client:
         response = await _call(client, name, body=body)
+        assert response.status == 200, await response.text()
+    assert server.db_pool.writes() != []
+
+
+async def test_should_refuse_promote_all_when_the_instance_falls_back_to_shared(make_rest_server, monkeypatch):
+    monkeypatch.delenv("DOPEMUX_INSTANCE_ID", raising=False)
+    server = make_rest_server("off")
+    async with rest_client(server) as client:
+        response = await _call(client, "promote_all", body=_drop(CASES["promote_all"][2], "instance_id"))
         assert response.status == 400
-        assert "instance_id" in (await response.text())
+        assert "real instance" in await response.text()
     assert server.db_pool.writes() == []
 
 
@@ -350,15 +364,20 @@ async def test_should_gate_every_mcp_write_tool_in_enforce_mode(make_rest_server
 
 
 @pytest.mark.parametrize("tool", list(MCP_WRITES))
-async def test_should_enforce_ids_on_every_mcp_write_tool(make_rest_server, tool):
+async def test_should_bind_every_mcp_write_tool_to_the_servers_workspace(make_rest_server, tool, monkeypatch):
+    # Amendment 04 (W12): an omitted workspace_id is filled; a different one is rejected.
+    monkeypatch.setenv("DOPEMUX_INSTANCE_ID", INSTANCE)
     server = make_rest_server("off")
-    arguments = {k: v for k, v in MCP_WRITES[tool].items() if k != "workspace_id"}
+    omitted = {k: v for k, v in MCP_WRITES[tool].items() if k != "workspace_id"}
+    wrong = {**omitted, "workspace_id": OTHER_WORKSPACE}
     async with rest_client(server) as client:
         server.port = client.port
-        response = await client.post("/mcp", json=_rpc(tool, arguments))
-        body = await response.json()
-    assert "workspace_id" in body["error"]["message"], tool
-    assert server.db_pool.writes() == []
+        filled = await (await client.post("/mcp", json=_rpc(tool, omitted))).json()
+        assert "error" not in filled, (tool, filled)
+        written = len(server.db_pool.writes())
+        rejected = await (await client.post("/mcp", json=_rpc(tool, wrong))).json()
+    assert "does not match" in rejected["error"]["message"], tool
+    assert len(server.db_pool.writes()) == written
 
 
 async def test_should_store_the_principal_for_mcp_custom_data_through_the_loopback(make_rest_server):
