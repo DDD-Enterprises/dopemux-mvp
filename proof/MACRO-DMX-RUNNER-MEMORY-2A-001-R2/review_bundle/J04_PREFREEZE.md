@@ -29,9 +29,23 @@ Whole 2A set, services venv:
 
 The deselected test is the pre-existing `tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified`. It diffs `.github/workflows/` from an old packet base, and it fails on main too.
 
+## Push (operator ruling, 2026-11-02)
+
+| Answer | In answer to |
+|---|---|
+| "Yes, push draft PR" | "Push feat/runner-memory-2a and open a draft PR so CI runs?" |
+
+| Item | Value |
+|---|---|
+| Covers | pushing `feat/runner-memory-2a` and opening it as a **draft** PR so CI runs |
+| Does not cover | marking it ready, merging, signing, the audit dispatch, a second merge from main |
+| Secret scan of the diff | only test fixtures with fake passwords |
+| `scripts/check_root_hygiene.py --all-files` | exit 1, pre-existing: all 11 flagged files are on `origin/main` (`FINAL_*`, `.antigravitycli/*.json`, three `caveman` rule files); 2A's only root-level changes, `AGENTS.md` and `mcp_catalog.yaml`, are not flagged |
+| main since the merge | `origin/main` moved to `75dacb43f` (#1483, Memory Bridge); a trial merge with HEAD is clean; not merged (the earlier ruling named `6fb9d8179`) |
+
 ## Still before freeze (doctrine: CI and reviews settle before the substantive freeze)
 
-1. **CI has not run.** The branch has never been pushed, and pushing it (a draft PR) is not yet authorized.
+1. **CI.** It runs on the draft PR. Review threads and CI must settle before the freeze.
 2. **Freeze.** The head after CI settles becomes the audit subject.
 3. **Audit packet.** Grok (grok-4.5, tool-less) and AGY (gemini-4-argon-high, sandboxed), following #1482's R6 recipe, with operator gate lines.
    - The 2A diff is much larger than R6's, so the audit input needs a scoping plan: a delta summary, the key files in full, and the return records.
