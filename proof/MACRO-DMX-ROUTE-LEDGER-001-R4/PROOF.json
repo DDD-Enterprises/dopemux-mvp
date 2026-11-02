@@ -1,0 +1,371 @@
+{
+  "tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+  "packet_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+  "tp_path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/MACRO_PACKET.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032",
+  "branch": "claude/route-ledger-001-8d8032",
+  "repo_identity": "https://github.com/DDD-Enterprises/dopemux-mvp.git (origin matches repo_binding.origin_hint DDD-Enterprises/dopemux-mvp)",
+  "base_sha": "97b6d5040496e2271c41d24c339d039303bbe6b1",
+  "audited_head_sha": "989fe4651c050ec23619e5208da17d6152b477b0",
+  "head_sha": "989fe4651c050ec23619e5208da17d6152b477b0",
+  "commit_sha": "Audited head 989fe4651c050ec23619e5208da17d6152b477b0 (a merge commit: parents ad8a141c6 and 97b6d5040496e2271c41d24c339d039303bbe6b1). Proof-only commits follow it: 0e0e9b40e (frozen audit inputs), 0e1755a5a (Grok custody, before the verdict was read), 118e1ecfc (AGY custody, before the verdict was read), then the commits holding this file (see git log for the final head).",
+  "pr_url_or_blocker": "PR 1482 (draft) exists on the remote at head b0b802617; this local branch is ahead of it (the repair 4fcdc9761, three R3 custody commits, the merge of main 989fe4651, the R4 proof commits). Push, signing, readiness and merge are operator gates and were not performed. The macro packages under task-packets/ (R1-R4) stay untracked; R4 is flattened in review_bundle/.",
+  "slices": [
+    {
+      "id": "W01",
+      "commit": "01aa4a1233700ca7d6a55edb603e327820aa5f9a",
+      "repair_commit": "93969e7a3ca2775c7b435e1ce1b6528ad2173c4a",
+      "files": 5,
+      "model_requested": "claude-sonnet-5-5 / effort high",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS",
+      "note": "observed = assistant message.model in the child transcript (118 messages), response-claimed, not provider attestation; effort observed UNKNOWN; 0 advisor blocks, 0 Agent calls; build 14.3 min active, 65 tool uses, 215889 tokens; repair resume 19.5 s, 4 tool uses, reported 217502 tokens (cumulative or additive); one narrow repair dispatch (test import extension, TS5097)",
+      "round": "R2"
+    },
+    {
+      "id": "W02",
+      "commit": "ff61c185f",
+      "files": 3,
+      "model_requested": "claude-sonnet-5-5 / effort medium",
+      "model_observed": "claude-sonnet-5-5",
+      "status": "PASS",
+      "note": "transcript message.model, 26 messages; 0 advisor blocks, 0 Agent calls; 3.3 min active, 16 tool uses, 113393 tokens; two small edits in W01-owned code disclosed to the auditor",
+      "round": "R2"
+    },
+    {
+      "id": "W03",
+      "commit": "5dd7e998a",
+      "files": 1,
+      "model_requested": "claude-haiku-5-5 / effort low",
+      "model_observed": "claude-haiku-5-5",
+      "status": "PASS",
+      "note": "transcript message.model, 28 messages; 0 advisor blocks, 0 Agent calls; 1.0 min active, 18 tool uses, 60756 tokens; one in-run markdownlint MD038 fix; no Sonnet fallback used",
+      "round": "R2"
+    },
+    {
+      "id": "AUDIT-CUSTODY",
+      "commit": "03844022e1eedb4495b9e24104428c02851758a2",
+      "files": 31,
+      "model_requested": "NONE (local-shell)",
+      "model_observed": "NONE",
+      "status": "PASS",
+      "note": "raw audit artifacts, probes, flattened R2 package and allowance ledger committed before the verdict was read",
+      "round": "R2"
+    },
+    {
+      "id": "REPAIR",
+      "round": "operator-directed",
+      "commit": "4fcdc97615d7a736cd1199bb854bf63fcdbf39f0",
+      "files": 4,
+      "model_requested": "coordinator session claude-sonnet-5-5 / effort high",
+      "model_observed": "UNKNOWN",
+      "status": "PASS",
+      "note": "N6, N7 and the doubled toast prefix, made on the operator's direct instruction \"all 3\" WITHOUT a MacroPacket; 55 of 55 tests, tsc 0, change contract L2"
+    },
+    {
+      "id": "R3-W01",
+      "round": "R3 (superseded)",
+      "commit": "c02748b05",
+      "model_requested": "claude-sonnet-5-5 / effort medium",
+      "model_observed": "claude-sonnet-5-5 (child transcript message.model)",
+      "status": "PASS",
+      "note": "inputs for the old subject; 0 advisor blocks; the R3 Grok audit (verdict unread, custody 4b8838cf3) and the stopped AGY attempt (custody ad8a141c6) were superseded by the retarget and are not used"
+    },
+    {
+      "id": "MERGE",
+      "round": "R4",
+      "commit": "989fe4651c050ec23619e5208da17d6152b477b0",
+      "note": "origin/main 97b6d5040 merged into the branch by the app sync tool on the operator's relayed decision (\"Run it in order\"); seven content paths unchanged"
+    },
+    {
+      "id": "R4-W01",
+      "round": "R4",
+      "commit": "0e0e9b40e",
+      "model_requested": "coordinator, no model dispatch",
+      "status": "PASS",
+      "note": "pin, gates, byte-exact diffs identical to R3, prompt by six exact substitutions"
+    },
+    {
+      "id": "R4-W02",
+      "round": "R4",
+      "commit": "0e1755a5a",
+      "model_requested": "grok-cli grok-4.5 / high",
+      "model_observed": "UNKNOWN (init event: grok-4.5; answer self-reported grok-4.7)",
+      "status": "PASS_WITH_RISKS",
+      "note": "one attempt, init.tools [], 0 tool_use, 107 s, USD 0.0538 (probes USD 0.0266)"
+    },
+    {
+      "id": "R4-W03",
+      "round": "R4",
+      "commit": "118e1ecfc",
+      "model_requested": "agy gemini-4-argon-high",
+      "model_observed": "UNKNOWN (init event: gemini-4-argon-high; answer self-reported Gemini 4 Argon (High))",
+      "status": "PASS_WITH_RISKS",
+      "note": "one attempt, request-review, only user_input and agent_response steps, 300 s, 85,070 tokens"
+    },
+    {
+      "id": "R4-W04",
+      "round": "R4",
+      "commit": "see git log (the commit holding this file)",
+      "status": "PASS_WITH_RISKS",
+      "note": "adjudication of both audits and this unsigned proof"
+    }
+  ],
+  "files_changed": [
+    "docs/02-how-to/route-ledger.md",
+    "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+    "plugins/dopemux-route-ledger/README.md",
+    "plugins/dopemux-route-ledger/hooks/hooks.json",
+    "plugins/dopemux-route-ledger/hooks/register.test.ts",
+    "plugins/dopemux-route-ledger/hooks/register.tsx",
+    "plugins/dopemux-route-ledger/receipt.schema.json"
+  ],
+  "validations": [
+    {
+      "command": "claude plugin validate plugins/dopemux-route-ledger",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "warnings only (author, icon, README marketplace advice); review_bundle/GATES_PRE_AUDIT.txt"
+    },
+    {
+      "command": "claude plugin test plugins/dopemux-route-ledger",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "55 pass / 0 fail at the audited head"
+    },
+    {
+      "command": "tsc -p plugins/dopemux-route-ledger --noEmit",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "in tree; the untracked engine-laid tsconfig.json was present"
+    },
+    {
+      "command": "jsonschema: 15 receipts printed by the tests vs receipt.schema.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "extra-key negative control rejected"
+    },
+    {
+      "command": "scripts/governance/validate_change_contract.py --base origin/main --head 989fe4651c050ec23619e5208da17d6152b477b0",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "status PASS, max lane L2, proof_only False (77 paths)"
+    },
+    {
+      "command": "git diff --check 93969e7a3..989fe4651 (content)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "clean"
+    },
+    {
+      "command": "SKIP=markdownlint pre-commit run --files <seven content paths>",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "markdownlint hook NOT_RUN"
+    },
+    {
+      "command": "markdownlint hook",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "note": "Node environment cannot install on this host; CI covers it"
+    },
+    {
+      "command": "live Claude Code session loading the repaired head",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "note": "operator step (N1)"
+    }
+  ],
+  "codereview_status": "Two independent final audits, both PASS_WITH_RISKS: PRIMARY grok-cli grok-4.5 (tool-less, Q1-Q13 PASS, 8 findings) and CORROBORATING agy gemini-4-argon-high (sealed, request-review hardening, Q1-Q13 PASS, 11 findings). Union 11 findings (1 HIGH, 5 MEDIUM, 4 LOW, 1 INFO), none BLOCKING, all OPEN and all adjudicated against source by the coordinator. Both confirmed the N6/N7/prefix repair (Q12). No PAL codereview run.",
+  "precommit_status": "PASS (SKIP=markdownlint pre-commit run --files over the seven content paths; markdownlint NOT_RUN: its Node environment cannot install on this host)",
+  "residual_risks": [
+    "N1 HIGH: The repaired code has not run in a real Claude Code session.",
+    "N2 MEDIUM: receiptDir is not checked for symlinks; an explicit absolute directory is allowed; a trailing slash on the default value skips the state check.",
+    "N3 MEDIUM: Closed receipt segments stay in memory for the process lifetime.",
+    "N4 MEDIUM: A failed final flush at session.end loses the dirty tail.",
+    "N5 MEDIUM: After /clear, receipts keep going to the pre-clear session file.",
+    "N11 MEDIUM: The `main` row of /route-ledger stays UNKNOWN when receipts are disabled (AGY only).",
+    "N8 LOW: The debounce test advances 1000 ms for a 500 ms debounce.",
+    "N9 LOW: The Agent call description (up to 80 characters) is recorded unredacted.",
+    "N12 LOW: An empty-string effort or advisor id would violate the schema's minLength 1 (AGY only).",
+    "N13 LOW: After a hot reload the toast-once state is not restored (AGY only); a second claim about unjoined step receipts is not a defect.",
+    "N10 INFO: The plugin API is early access; coexistence with another PLUGIN status line is unverified.",
+    "OBSERVATIONS (INFO): docs omit the 3.5 MB byte rollover and the 120-character stem cut; a code comment says five binding keys where there are six; how-to last_review not bumped; untested: byte rollover, unreadable segments, the command catch, main row with receipts disabled (COMBINED_ADJUDICATION.md O1-O5).",
+    "IDENTITY: Grok answered `grok-4.7` while configured `grok-4.5` (unresolved); provider-attested identity UNKNOWN for both auditors.",
+    "AGY CONTAINMENT: agy cannot be made tool-less (60 built-in tools, 11 global MCP servers; saved settings always-proceed); the run used session-only request-review settings and the stream shows only user_input and agent_response steps; absence of a tool step is not proof of absence of capability.",
+    "AGY EXACT MODEL: gemini-3.1-pro-high is no longer listed; the AGY run is recorded as auditor_tool agy with the generic auditor_model gemini; PR Steward may not treat it as READY.",
+    "NOT RUN: a live Claude Code session on the repaired head; the markdownlint hook (Node environment cannot install on this host; CI covers it); DCP route and Task Orchestrator state."
+  ],
+  "unknowns": [
+    "Live behaviour of the repaired head in a real Claude Code session (NOT_RUN); the pre-repair code was loaded live on 2026-10-30.",
+    "Coexistence with another plugin status line (dopemux-pulse).",
+    "Whether /route is accepted by the installed build.",
+    "Whether the engine ever sends an empty-string effort or advisor id (N12).",
+    "Provider-attested identity of both auditors (UNKNOWN); Grok answered grok-4.7 while configured grok-4.5.",
+    "Whether the AGY model had any capability beyond what its stream shows (60 built-in tools and 11 global MCP servers were present; none was used).",
+    "The markdownlint result (NOT_RUN on this host).",
+    "Real hook time budgets and ordering beyond the mock kit and the 2026-10-30 live sessions on the pre-repair code."
+  ],
+  "cleanup_status": "Worktree and branch retained; no running processes; nothing pushed; the macro packages under task-packets/ (R1-R4) are untracked and R4 is flattened into review_bundle/; the unrelated local edit to .codex/config.toml (a block of workspace ports and IDs) was backed up, set aside for the merge, restored byte for byte and is not committed; untracked .agents/ and the engine-laid plugins/dopemux-route-ledger/tsconfig.json are not committed.",
+  "audit_evidence": {
+    "grok": {
+      "prompt_sha256": "169e3e91f9527ff5ed4c5d25180c75208398ad6aceae91e849b8dea17916452d",
+      "response_sha256": "708c552cd4e571c416b47cd05159f3be8d38c09a0c39031543202e0f51bd2c07",
+      "frozen_diff_sha256": "4cc90ba80e8ba2f5b964e0cfa3718691f1686940078833a996d0e707b590dbcb",
+      "delta_diff_sha256": "fd5ad264254193e2525c59036f747ed9de922497a4eeb3791e21fae116e5e512",
+      "stream_sha256": "df1dca8b5899feca6e432465edb703497203e03ca98ed3141b9176cd45314f3d",
+      "probe1_stream_sha256": "c05414aff8389317e1e6b502654a1f76c864ad968388801ff951df7192c0f740",
+      "probe2_stream_sha256": "e82447a9be6eb1327712097feaa929c3098451aa19c20ce4d5ee7e21f69963b0",
+      "gates_sha256": "dbfe450a2990c2f23b5acb57930dc93b86bc5aeb8398f0112f855ef541e8d193",
+      "path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ (files GROK_*)"
+    },
+    "agy": {
+      "prompt_sha256": "169e3e91f9527ff5ed4c5d25180c75208398ad6aceae91e849b8dea17916452d",
+      "response_sha256": "870c75568292e91c86d4c592e9cf0d7dfa12482b42d4e755bc69b1d8ac1163ac",
+      "stream_sha256": "14db77ddb76977b26d21d364458e9164aa0a698e3ef465544fd05dd60cd46c87",
+      "probe1_stream_sha256": "46fd596b857b23468fae31d77d37db00a6ba911f4902a0b0895025d7c497f1a8",
+      "probe2_stream_sha256": "7dd5fd26179e7373abef55f39a39ff7529861ec042aafee7acfc3e6dbb74d044",
+      "models_list_sha256": "b5b30c9504b8ad22aa15ca127a002fbb92049b85be0dd4b42f0a6b9d5b5c898a",
+      "version": "1.4.11",
+      "model": "gemini-4-argon-high",
+      "path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ (files AGY_*)"
+    }
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "corroborating_auditor": {
+      "effort": "high (encoded in the model id)",
+      "model": "gemini-4-argon-high",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "google-antigravity-cli"
+    },
+    "implementer": {
+      "model": "claude-sonnet-5-5 (supervisor session, W01, W02); claude-haiku-5-5 (W03)",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "sealed directory holding only AUDIT_PROMPT.txt; grok CLI 1.0.70 with the tool-less recipe (38 disallowed tool ids, every id of probe 1's init.tools among them, plus a no-skills system prompt; byte-identical to the R2 recipe files); env -i HOME PATH; probe 2 confirmed init.tools == [], real run init.tools == [] with 0 tool_use blocks; launched 2026-10-30T10:42:07Z, finished 10:43:54Z; exact script in review_bundle/GROK_INVOCATION.txt; one attempt, no retries. CORROBORATING run recorded in audit_evidence.agy: agy 1.4.11 --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m with session-only --settings toolPermission=request-review, allowNonWorkspaceAccess=false, permissions.allow=[]; launched 2026-10-30T10:45:46Z, finished 10:50:50Z; exact script, driver and gate in review_bundle/AGY_INVOCATION.txt; exact-model evidence for gemini-3.1-pro-high unavailable (auditor_model would be the generic gemini); one attempt, no retries.",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "N1",
+        "severity": "HIGH",
+        "title": "The repaired code has not run in a real Claude Code session.",
+        "status": "OPEN",
+        "body": "Raised by: both auditors. Severity: Grok HIGH, AGY HIGH. Adjudication: CONFIRMED. The N6/N7/prefix repair is covered only by the offline mock kit (register.test.ts, 55 tests). The pre-repair code (content head 93969e7a3) WAS loaded live by the operator on 2026-10-30 (status line, over-budget advisor toast, /route-ledger table, background Agent joins, advisor_call receipts attributed to the right agent, 36 schema-valid rows), but nothing ran the repaired head: GATES_PRE_AUDIT.txt lists the live session as NOT_RUN. Operator step: `claude --plugin-dir plugins/dopemux-route-ledger --setting-sources user` with `.control-tower/state` present; one pinned advisor-calling child, then one clean pinned child (expect `advisor 1 · child 1/0 ⚠` for both), one unpinned Agent call (an 8 s toast with no doubled prefix), then `/route` and `/route-ledger receipts`."
+      },
+      {
+        "id": "N2",
+        "severity": "MEDIUM",
+        "title": "receiptDir is not checked for symlinks; an explicit absolute directory is allowed; a trailing slash on the default value skips the state check.",
+        "status": "OPEN",
+        "body": "Raised by: both auditors. Severity: Grok MEDIUM, AGY MEDIUM. Adjudication: CONFIRMED. register.tsx:729-737 (initSession): hasDotDot, empty/root and, for the default, exists(STATE_DIR) are checked; $.fs.stat is never called, so a symlink at or under an explicit receiptDir is followed. AGY adds: line 733 compares the RAW config with DEFAULT_RECEIPT_DIR while line 729 trims trailing separators, so `.control-tower/state/route-ledger/` is treated as an explicit directory and is created on first write even where `.control-tower/state` is absent. Absolute explicit directories are allowed by design (disclosed limitation vii). Accept as a risk or repair (stat or realpath check; compare the trimmed value) and re-audit."
+      },
+      {
+        "id": "N3",
+        "severity": "MEDIUM",
+        "title": "Closed receipt segments stay in memory for the process lifetime.",
+        "status": "OPEN",
+        "body": "Raised by: both auditors. Severity: Grok MEDIUM, AGY MEDIUM. Adjudication: CONFIRMED. register.tsx:634-649 (currentSegment) pushes each new segment onto s.segments and nothing evicts a closed one; rehydrate (:758-795) loads every matching file; lastMainStep (:512-521) scans all segments. Memory grows linearly with receipts. Accept as a risk or evict closed segments after a successful flush."
+      },
+      {
+        "id": "N4",
+        "severity": "MEDIUM",
+        "title": "A failed final flush at session.end loses the dirty tail.",
+        "status": "OPEN",
+        "body": "Raised by: both auditors. Severity: Grok MEDIUM, AGY MEDIUM. Adjudication: CONFIRMED. register.tsx:653-664 (flushSegments) counts a failed write and leaves the segment dirty; the session.end handler schedules one flush and awaits the chain once, with no retry, so receipts still dirty after a failed final write are lost when the process ends. The ` · receipts ✗` status shows the failure only while the session runs. Accept as a risk or retry once at session.end."
+      },
+      {
+        "id": "N5",
+        "severity": "MEDIUM",
+        "title": "After /clear, receipts keep going to the pre-clear session file.",
+        "status": "OPEN",
+        "body": "Raised by: both auditors. Severity: Grok LOW, AGY MEDIUM. Adjudication: CONFIRMED (by design, disclosed). The session.end handler returns next(e) untouched for reason `clear`, and no session.start follows a /clear, so s.sessionId and s.fileStem are never refreshed (disclosed limitation v). Severity DISAGREEMENT: Grok LOW, AGY MEDIUM; R2 rated it MEDIUM; the union keeps MEDIUM. Accept as a documented behaviour, or rotate the stem if the host exposes a new session id."
+      },
+      {
+        "id": "N11",
+        "severity": "MEDIUM",
+        "title": "The `main` row of /route-ledger stays UNKNOWN when receipts are disabled (AGY only).",
+        "status": "OPEN",
+        "body": "Raised by: AGY only. Severity: Grok -, AGY MEDIUM. Adjudication: CONFIRMED. register.tsx:685-695 (commit) pushes a receipt onto s.segments only when s.receiptsEnabled; lastMainStep (:512-521) reads only s.segments; tally (:375-389) does not keep main-loop steps (agent_id null) in s.agents; routeTable (:533-546) takes the main row from lastMainStep. With receipts off (for example no `.control-tower/state`) the main row therefore shows UNKNOWN for requested, observed, effort and match even after main steps ran. No test combines main-loop steps with disabled receipts: the only disabled-receipts command test checks the `receipts` argument (register.test.ts:1138-1144) and the all-UNKNOWN main row at :1068 is for an empty ledger. Auditor severity MEDIUM kept; the coordinator's view is LOW in practice: ` · ledger off` is shown in the status, the agent rows and advisor counts are unaffected, no data is lost. Accept, or keep the last main step outside the receipt segments."
+      },
+      {
+        "id": "N8",
+        "severity": "LOW",
+        "title": "The debounce test advances 1000 ms for a 500 ms debounce.",
+        "status": "OPEN",
+        "body": "Raised by: both auditors. Severity: Grok LOW, AGY LOW. Adjudication: CONFIRMED. register.test.ts:290 `const DEBOUNCE_MS = 1_000` and :242 advances it; register.tsx:41 `STATUS_DEBOUNCE_MS = 500`: a regression up to 1000 ms would still pass. Accept, or advance by the production constant."
+      },
+      {
+        "id": "N9",
+        "severity": "LOW",
+        "title": "The Agent call description (up to 80 characters) is recorded unredacted.",
+        "status": "OPEN",
+        "body": "Raised by: both auditors. Severity: Grok LOW, AGY LOW. Adjudication: CONFIRMED. register.tsx:915 slices `e.description` to DESCRIPTION_MAX (80, :37); it is written into agent_request receipts and the unpinned toast; the prompt itself is never recorded (disclosed limitation viii). Accept as documented."
+      },
+      {
+        "id": "N12",
+        "severity": "LOW",
+        "title": "An empty-string effort or advisor id would violate the schema's minLength 1 (AGY only).",
+        "status": "OPEN",
+        "body": "Raised by: AGY only. Severity: Grok -, AGY LOW. Adjudication: CONFIRMED (code path); whether the engine ever sends an empty string is UNKNOWN. register.tsx:913 and :957 accept any string effort (including \"\"); toBindingFields (:274-276) turns it into selection.effort and effort_requested \"\" while receipt.schema.json requires minLength 1 at both; noteStep (:944) accepts any string advisor id while advisor_use_id requires minLength 1 (verified in the schema). Accept, or reject empty strings with text() as for the model."
+      },
+      {
+        "id": "N13",
+        "severity": "LOW",
+        "title": "After a hot reload the toast-once state is not restored (AGY only); a second claim about unjoined step receipts is not a defect.",
+        "status": "OPEN",
+        "body": "Raised by: AGY only. Severity: Grok -, AGY LOW. Adjudication: CONFIRMED for the toast state; the second claim is NOT A DEFECT. (a) toastOnce (:463-464) keeps its keys in s.toasted; rehydrate (:758-795) and initSession do not repopulate it and the module state restarts on a hot reload, so an advisor call after the reload can toast an already-exceeded budget again: a repeat toast, nothing lost. (b) tally (:377-384) creates a record with requestedModel null for a step of an agent whose request was never joined. That behaviour is accurately described, but it is not a defect in the coordinator's reading: a step receipt's requested_model is the engine's per-step model, not the Agent call's alias, so adopting it would make `match` trivially yes; UNKNOWN is the honest cell for an unjoined agent. Accept the repeat toast, or persist toast keys in the receipts."
+      },
+      {
+        "id": "N10",
+        "severity": "INFO",
+        "title": "The plugin API is early access; coexistence with another PLUGIN status line is unverified.",
+        "status": "OPEN",
+        "body": "Raised by: both auditors. Severity: Grok INFO, AGY INFO. Adjudication: CONFIRMED. README Limits and the how-to say so. Coexistence with the operator's own `statusLine` command was seen live on the pre-repair code; coexistence with another plugin (dopemux-pulse) was not run. The mod loaded on CLI 2.1.312 and 2.1.314 without error. Run with dopemux-pulse enabled during the live check."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "N1 HIGH: The repaired code has not run in a real Claude Code session.",
+      "N2 MEDIUM: receiptDir is not checked for symlinks; an explicit absolute directory is allowed; a trailing slash on the default value skips the state check.",
+      "N3 MEDIUM: Closed receipt segments stay in memory for the process lifetime.",
+      "N4 MEDIUM: A failed final flush at session.end loses the dirty tail.",
+      "N5 MEDIUM: After /clear, receipts keep going to the pre-clear session file.",
+      "N11 MEDIUM: The `main` row of /route-ledger stays UNKNOWN when receipts are disabled (AGY only).",
+      "N8 LOW: The debounce test advances 1000 ms for a 500 ms debounce.",
+      "N9 LOW: The Agent call description (up to 80 characters) is recorded unredacted.",
+      "N12 LOW: An empty-string effort or advisor id would violate the schema's minLength 1 (AGY only).",
+      "N13 LOW: After a hot reload the toast-once state is not restored (AGY only); a second claim about unjoined step receipts is not a defect.",
+      "N10 INFO: The plugin API is early access; coexistence with another PLUGIN status line is unverified.",
+      "OBSERVATIONS (INFO): docs omit the 3.5 MB byte rollover and the 120-character stem cut; a code comment says five binding keys where there are six; how-to last_review not bumped; untested: byte rollover, unreadable segments, the command catch, main row with receipts disabled (COMBINED_ADJUDICATION.md O1-O5).",
+      "IDENTITY: Grok answered `grok-4.7` while configured `grok-4.5` (unresolved); provider-attested identity UNKNOWN for both auditors.",
+      "AGY CONTAINMENT: agy cannot be made tool-less (60 built-in tools, 11 global MCP servers; saved settings always-proceed); the run used session-only request-review settings and the stream shows only user_input and agent_response steps; absence of a tool step is not proof of absence of capability.",
+      "AGY EXACT MODEL: gemini-3.1-pro-high is no longer listed; the AGY run is recorded as auditor_tool agy with the generic auditor_model gemini; PR Steward may not treat it as READY.",
+      "NOT RUN: a live Claude Code session on the repaired head; the markdownlint hook (Node environment cannot install on this host; CI covers it); DCP route and Task Orchestrator state."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

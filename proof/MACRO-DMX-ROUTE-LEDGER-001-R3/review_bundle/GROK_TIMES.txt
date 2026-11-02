@@ -1,0 +1,5 @@
+script error before launch   2026-10-30T09:27:01Z  run.sh probe1 died in bash 3.2 (EXTRA[@] unbound under set -u) before grok started; nothing was sent; no probe consumed; script fixed (set -u removed)
+probe1  start 2026-10-30T09:27:09Z  end 2026-10-30T09:27:25Z  exit 0  duration_ms 14463  total_cost_usd 0.016574592
+probe2  start 2026-10-30T09:27:33Z  end 2026-10-30T09:27:38Z  exit 0  duration_ms 4273   total_cost_usd 0.011783176
+real    start 2026-10-30T09:27:47Z  end 2026-10-30T09:29:53Z  exit 0  duration_ms 124476 total_cost_usd 0.05553968
+total cost 0.083897448 USD; wall clock first probe to end of the real run 2 min 44 s

@@ -1,0 +1,195 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W01-REPAIR-001-R5",
+  "project": "dopemux-mvp",
+  "target": "Repair ten of the R4 audit findings in the dopemux-route-ledger mod, test first: N11 (main row with receipts off), N12 (empty effort or advisor id), N13a (toast-once state on reload), N4 (retry the final flush once), N8 (debounce test uses the real constant), N2 (symlink and receipt-directory safety via $.fs.stat), N3 (evict closed segments from memory), N5 (move to the new session after /clear), N9 (Agent description not recorded by default) and the doc and test observations O1-O5. N1 and N10 are not code repairs. You do not commit.",
+  "invariants": [
+    "I01 Scope: write only the six files in this packet's write_surface. Everything else is not yours: task-packets/, proof/, .agents/, .codex/config.toml and the untracked engine-laid plugins/dopemux-route-ledger/tsconfig.json. You share the workspace with the coordinator: preserve other edits, never revert unrelated work. A needed change outside the allowlist is a STOP with NEEDS_SUPERVISOR (name the path and why).",
+    "I02 Forbidden actions: commit, push, open a PR, merge, sign, mark ready, force-push, history rewrite, `claude plugin install`, enabling hot reload, any write under ~/.claude, and sending any repository content to any model, auditor CLI or network endpoint. Do NOT run `grok`, `agy`, `claude -p` or any other model client. The coordinator alone commits (one commit per workstream, explicit pathspec).",
+    "I03 advisor: FORBIDDEN, budget 0. Do not call the `advisor` tool. Any advisor call (tool_use or server_tool_use named advisor) means STOP with status NEEDS_SUPERVISOR. Report `advisor_calls` as a structural count from your own transcript.",
+    "I04 No recursive delegation: no Agent/subagent calls, no Workflow, no second model. Use deterministic local tools for shell, hashes, diffs and schema checks.",
+    "I05 Route is pinned in this packet's execution_requirements: use exactly that runner/model/effort, no substitution. Attempts: one build attempt plus at most one narrowly scoped repair pass for a failing gate. If it still fails, return FAIL with the evidence; do not loop. A timeout does not authorize another attempt.",
+    "I06 Report every gate as PASS, FAIL, NOT_RUN or UNKNOWN literally; never collapse NOT_RUN into PASS. `model_observed` stays UNKNOWN unless a runtime receipt shows it.",
+    "I07 No secrets, no credentials, no network. Do not print or copy environment values, tokens or key material into any file; a pattern scan of every file you write is required (patterns in the steps).",
+    "I08 Return contract (all fields): status (READY_FOR_VERIFY, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject (files and `git diff --stat`), validation (gate table), proof (commands run), audit (NOT_RUN), blockers, advisor_calls (structural count from your own transcript), files_written, observed_model (UNKNOWN unless a receipt shows it), plus: for EACH repair item D1-D10, the tests you added (names) and the code location (file:line); and every existing test expectation you had to change, with the reason. Done, accepted and merged are never your status.",
+    "I09 Allowances (PROPOSED until the operator authorizes this revision; they bind from authorization on): active time <= 75 min (your run time as the Agent result reports it); elapsed <= 120 min from dispatch to return (coordinator wall clock); dispatches <= 2 (1 build + at most 1 narrow repair); automatic retries 0; tool calls <= 250; total tokens <= 5,000,000 as the Agent result reports `totalTokens` (basis UNKNOWN); coordinator re-reads of your diff <= 2; advisor calls 0. Watch your own tool-call count; if you near a cap, stop and return INCOMPLETE with what you have. A figure the runner does not report is UNKNOWN and never counts as within budget. When ANY limit is reached or about to be exceeded: stop at the next safe point, dispatch nothing further, retry nothing, substitute nothing, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Start state: `git rev-parse HEAD` must equal 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1 and `git status --porcelain --untracked-files=no` must show only ` M .codex/config.toml`; else STOP. Read, in this order: proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/COMBINED_ADJUDICATION.md (the findings and their evidence at the old head), plugins/dopemux-route-ledger/hooks/register.tsx and register.test.ts in full, the README, the how-to, plugin.json, receipt.schema.json, and the API declaration plugins/dopemux-route-ledger/.claude-plugin/types/claude-code/index.d.ts for exactly the members this packet names (`$.fs.stat` and `FsStat`, `$.session.root`, `$.session.id`). Use /Users/hue/code/dopemux-mvp/.venv/bin/python for Python, quote zsh globs, never start a command with `sleep`.",
+    "Method (test first): for every repair item write the failing test(s) first and watch them fail for the right reason, then implement, then run `claude plugin test plugins/dopemux-route-ledger`. All 55 existing tests must keep passing except where a repaired behaviour legitimately changes an expectation (list each in your return). Finish with `claude plugin validate plugins/dopemux-route-ledger`, `tsc -p plugins/dopemux-route-ledger --noEmit` (the untracked engine-laid tsconfig.json is present) and a JSON-schema check of the RECEIPT-SAMPLE lines the tests print against receipt.schema.json (use jsonschema Draft7Validator; include an extra-key negative control). Report each as PASS, FAIL, NOT_RUN or UNKNOWN literally.",
+    "Hard design constraints for ALL items: the mod stays read-only (writes only its own receipt files); the only API members you may newly call are `$.fs.stat` and `$.session.root()` / `$.session.id()` as specified below; no `$.process`, `$.http`, `$.model`, `$.state`, `$.store`; every hook still calls `next(e)` exactly once with `e` unchanged on every path (including a rejected stat, a rejected clock, a failed write); `turn.step` still passes every chunk through untouched and returns the result unchanged; no hook may throw into the host; NEW awaits (stat, session.root, session.id) run only inside initSession or the existing serialized receipt chain, never in the `tool.call` or `turn.step` hook bodies. Do not change `schema_version`, the receipt kinds, or any key or enum of a receipt. `receipt.schema.json` may change only `$comment` or `description` text; if a structural schema change looks unavoidable, STOP.",
+    "D1 (N11) The `main` row of `/route-ledger` must survive disabled receipts. Keep the last main-loop `step_observed` receipt in a ledger field updated in `tally` (and on rehydrate), independent of `s.segments` and of `receiptsEnabled`, and have `lastMainStep` read that field. Test: receipts disabled (no `.control-tower/state`), one main step, then the table shows the model requested, model observed, effort and match, not UNKNOWN.",
+    "D2 (N12) Reject empty strings: in `readAgentCall` and `noteStep` an effort that is the empty string becomes null (treat strings as present only when non-empty; numbers as today), an advisor `serverToolUses` entry with an empty id is ignored, and `toBindingFields` treats an empty effort as UNKNOWN. Tests for each, and a schema-validity assertion that no receipt can carry an empty `selection.effort`, `effort_requested` or `advisor_use_id`.",
+    "D3 (N13a) Restore the toast-once state on rehydrate, without persisting anything new: after the segments are read, add to `s.toasted` the `tool_use_id` of every agent_request receipt with pinned false and inherits false, add `advisor-child:<agent id>` for every agent whose advisor count exceeds `childAdvisorBudget` (budget >= 0) and `advisor-session` when the total exceeds `sessionAdvisorBudget` (>= 0). Test: build a ledger over existing segment files that already exceed the budgets, then record another advisor call and another unpinned call: no second toast.",
+    "D4 (N4) At `session.end` (reason other than `clear`), after the existing awaited flush, if any segment is still dirty make ONE more awaited flush attempt before returning; a second failure is counted, never thrown, never retried further. Tests: the first write rejects and the second succeeds (the receipts reach the file); both reject (counted, no throw, `next(e)` still returned once).",
+    "D5 (N8) Export `STATUS_DEBOUNCE_MS` from register.tsx and make the debounce test advance `STATUS_DEBOUNCE_MS - 1` (the status is NOT yet redrawn) and then 1 more ms (it is); remove the 1_000 constant. Keep every other `settleStatus` use meaningful.",
+    "D6 (N2) Receipt-directory and file safety, using `$.fs.stat(path, { resolve: true })` (it resolves `{ kind, size, mtimeMs, isLink, realPath? }` and rejects when the path does not exist; a rejection means 'not there'). (a) Compare the TRIMMED receiptDir with DEFAULT_RECEIPT_DIR, so `.control-tower/state/route-ledger/` is still 'the default' and still requires `.control-tower/state` to exist. (b) In `initSession`: stat the receipt directory if it exists, else its nearest existing parent; disable receipts (with a reason shown by `/route-ledger receipts`) when `isLink` is true, when `kind` is not `dir`, or, for a RELATIVE receiptDir, when the resolved `realPath` does not lie under the resolved project root (`$.session.root()` resolved the same way with `{ resolve: true }`; compare with a trailing separator). Absolute explicit directories stay allowed by design, subject to the `isLink` and `kind` checks. (c) Before the FIRST write of each segment file in a session, stat that file path: if it exists and `isLink` is true, disable receipts with a reason and do not write; not-found is fine. Never throw. Tests with a mocked `fs.stat` for: trailing slash on the default, a symlinked directory, a symlinked parent resolving outside the root, a symlinked segment file, a relative directory that stays inside, an absolute directory that is allowed, and a stat that rejects.",
+    "D7 (N3) Bound memory: after a successful flush, evict closed segments (every segment except the current open one) that are clean AND hold no agent_request receipt still awaiting its spawn join; an evicted segment keeps its path, n, byte count and receipt count and an `evicted` flag and drops its receipts array. The ledger keeps what is needed without the arrays: per-kind receipt counts for `/route-ledger receipts` (updated in `tally`), the D1 last-main field, and the existing `s.agents` records (they hold their own receipt reference). On rehydrate evict each closed segment right after tallying it (keep the last one). A segment is never rewritten after eviction, so the spawn-join rule above is what keeps join mutation safe. Tests: with a small `maxReceiptsPerFile` and many receipts the closed segments have empty arrays while `/route-ledger receipts` counts stay correct; a segment holding an unjoined agent_request is not evicted until it is joined; rehydrate evicts closed segments; nothing evicts a dirty segment.",
+    "D8 (N5) After `/clear` move to the new session. At `session.end` with reason `clear`: await the pending chain (the existing behaviour for flushing), then reset the ledger for re-initialisation (the same state `initSession` starts from, including `isReady = false`, tallies, toast keys and the last-main field) so the NEXT hook re-resolves `$.session.id()`: a new id means a new file stem and a fresh ledger, an unchanged id rehydrates and continues the same file. Keep the status line (do not clear it on `clear`). Tests with a mocked session id: id changes after clear (receipts go to the new file, counts restart), id unchanged (continues the same file, counts continue). Document that whether the host changes the id on /clear is UNKNOWN and that both cases are handled.",
+    "D9 (N9) New option `recordDescription` (userConfig, boolean, default FALSE) in plugin.json and `parseConfig`. When false the Agent call's `description` is NOT recorded (the receipt keeps the required `description` key with the empty string) and the unpinned-agent toast names the subagent type and the shortened tool_use id instead of the description; when true the current behaviour (80 characters) applies. The README, how-to, plugin.json description and the schema `$comment` state the default and the opt-in. Tests: default omits (receipt and toast), opt-in records (receipt and toast), `parseConfig` accepts a boolean and falls back to false for anything else.",
+    "D10 (docs and tests, O1-O5) README and the how-to must state, accurately to the new code: the byte-based rollover at about 3.5 MB (SEGMENT_BYTES_MAX) in addition to maxReceiptsPerFile; the file stem is cut to 120 characters; the receipt-directory and symlink behaviour of D6; the /clear behaviour of D8 and its UNKNOWN host detail; the `recordDescription` option; that closed segments are not kept in memory (D7); that the `main` row works with receipts disabled (D1). Correct the register.tsx comment that says the mod knows 'five' binding keys (it is six). Set the how-to frontmatter `last_review` to today's date (run `date +%Y-%m-%d`). Add the missing tests: byte-based rollover (give SEGMENT_BYTES_MAX a minimal documented test seam, for example an exported mutable `limits` object that the code reads, with no behaviour change by default), an unreadable segment and a corrupt JSON line on rehydrate (counted or skipped, never thrown), and the command handler's catch (`could not read the ledger.`).",
+    "Do NOT repair N1 (the live session) or N10 (API drift and plugin coexistence): they are not code defects. Do NOT make any change not named above. Every behaviour change must be visible in a test."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R5",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R5",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(route-ledger): repair the ten R4 audit findings",
+    "allowlist": [
+      "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "plugins/dopemux-route-ledger/hooks/register.test.ts",
+      "plugins/dopemux-route-ledger/README.md",
+      "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+      "plugins/dopemux-route-ledger/receipt.schema.json",
+      "docs/02-how-to/route-ledger.md"
+    ],
+    "verify": [
+      "git diff --name-only | sort   # equals the allowlist plus unrelated untracked/unstaged files already present at start",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): dopemux-route-ledger mod (R5 repair of the R4 findings)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R5 (W01). The PR is #1482 and is owned by the operator: no push, sign or merge here.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Verify the start state and read the findings, the code and the API members",
+      "requirements": [
+        "Stop on any mismatch."
+      ],
+      "commands": [
+        "git rev-parse HEAD",
+        "git status --porcelain --untracked-files=no"
+      ],
+      "expected_files": [],
+      "validation": [
+        "HEAD == 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/COMBINED_ADJUDICATION.md",
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/.claude-plugin/types/claude-code/index.d.ts"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "Write the failing tests for D1-D10 and watch them fail",
+      "requirements": [
+        "Test first."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-route-ledger"
+      ],
+      "expected_files": [
+        "plugins/dopemux-route-ledger/hooks/register.test.ts"
+      ],
+      "validation": [
+        "each new test fails for the intended reason"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W01-S3",
+      "task": "Implement D1-D9 in register.tsx and plugin.json",
+      "requirements": [
+        "Only the designed behaviour."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-route-ledger",
+        "tsc -p plugins/dopemux-route-ledger --noEmit"
+      ],
+      "expected_files": [
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/.claude-plugin/plugin.json"
+      ],
+      "validation": [
+        "all tests pass"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W01-S4",
+      "task": "Update README, how-to and the schema comment (D10, D9)",
+      "requirements": [
+        "Accurate to the code."
+      ],
+      "commands": [],
+      "expected_files": [
+        "plugins/dopemux-route-ledger/README.md",
+        "docs/02-how-to/route-ledger.md",
+        "plugins/dopemux-route-ledger/receipt.schema.json"
+      ],
+      "validation": [
+        "docs match the code"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W01-S5",
+      "task": "Run all gates and return",
+      "requirements": [
+        "Literal results."
+      ],
+      "commands": [
+        "claude plugin validate plugins/dopemux-route-ledger",
+        "claude plugin test plugins/dopemux-route-ledger",
+        "tsc -p plugins/dopemux-route-ledger --noEmit",
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "gate table, per-item test list"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R5",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R5",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-route-ledger/hooks/register.tsx",
+    "plugins/dopemux-route-ledger/hooks/register.test.ts",
+    "plugins/dopemux-route-ledger/README.md",
+    "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+    "plugins/dopemux-route-ledger/receipt.schema.json",
+    "docs/02-how-to/route-ledger.md"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "route-ledger-repair"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

@@ -1,0 +1,192 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W01-FREEZE-001-R4",
+  "project": "dopemux-mvp",
+  "target": "Freeze the retargeted audit subject (the merge head 989fe4651 of origin/main into the branch) and build the audit inputs by exact substitution from the R3 prompt: verify the pin, run the deterministic gates, write and compare the byte-exact diffs, derive and scan the prompt, record the superseded R3 facts. No model dispatch, no auditor run.",
+  "invariants": [
+    "I01 Scope: the coordinator writes only this packet's write_surface (plus scratch files under the session scratchpad). Preserve every other edit; never revert unrelated work. A needed change outside the allowlist is a STOP with status NEEDS_SUPERVISOR.",
+    "I02 Forbidden actions: push, open or update a PR, merge, sign, mark ready, force-push, history rewrite, a second `sync_with_base_branch` merge, and sending any repository content to any model, auditor CLI or network endpoint in this workstream. The coordinator alone commits (one commit, explicit pathspec).",
+    "I03 advisor: none in this workstream (the coordinator may call `advisor` at most ONCE in the whole macro, at the adjudication freeze in W04).",
+    "I04 No model dispatch in this revision: the R3 W01 child already authored the prompt and the claims; R4 W01 is exact single-occurrence substitution plus deterministic gates, so a script is the cheapest adequate route under the cost-first policy, not a child. Dispatches 0.",
+    "I05 Route: the coordinator (claude-code-desktop, claude-sonnet-5-5, effort high as the session reports; observed identity UNKNOWN without a runtime receipt).",
+    "I06 Report every gate as PASS, FAIL, NOT_RUN or UNKNOWN literally; never collapse NOT_RUN into PASS. `model_observed` stays UNKNOWN unless a runtime receipt shows it.",
+    "I07 No secrets, no credentials, no network. Do not print or copy environment values, tokens or key material into any file; a pattern scan of every file you write is required (patterns in the steps).",
+    "I08 Return (all fields): status (READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (gate table), proof (commands run), audit (NOT_RUN), blockers, advisor_calls (0), files_written, observed_model (UNKNOWN).",
+    "I09 Allowances (PROPOSED): elapsed <= 40 min (coordinator wall clock); dispatches 0; automatic retries 0; coordinator advisor calls 0 here. A figure the runner does not report is UNKNOWN and never counts as within budget. When ANY limit is reached or about to be exceeded: stop at the next safe point, dispatch nothing further, retry nothing, substitute nothing, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Subject pin: the audited subject is the MERGE commit 989fe4651c050ec23619e5208da17d6152b477b0 on branch claude/route-ledger-001-8d8032: a two-parent merge of origin/main (97b6d5040496e2271c41d24c339d039303bbe6b1, which contains PR 1472) into the branch whose first parent is ad8a141c6a88ce05f865fb7d26d84ce0beeb4137 (the R3 custody head, which contains the repair commit 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0). Verify, in this order: `git rev-parse HEAD` equals it; `git rev-list --parents -n1 HEAD` shows exactly the two parents ad8a141c6a88ce05f865fb7d26d84ce0beeb4137 and 97b6d5040496e2271c41d24c339d039303bbe6b1; after a fresh `git fetch origin main`, `git rev-parse origin/main` equals 97b6d5040496e2271c41d24c339d039303bbe6b1 (else STOP: main moved); `git diff 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0 989fe4651c050ec23619e5208da17d6152b477b0 -- <the seven content paths>` is EMPTY; `git status --porcelain --untracked-files=no` shows nothing except ` M .codex/config.toml` (an unrelated local edit that is never committed or audited).",
+    "Content paths (the only files the auditors are asked to judge): plugins/dopemux-route-ledger/.claude-plugin/plugin.json, plugins/dopemux-route-ledger/hooks/hooks.json, plugins/dopemux-route-ledger/hooks/register.tsx, plugins/dopemux-route-ledger/hooks/register.test.ts, plugins/dopemux-route-ledger/receipt.schema.json, plugins/dopemux-route-ledger/README.md, docs/02-how-to/route-ledger.md. The diff base is 97b6d5040496e2271c41d24c339d039303bbe6b1 (current origin/main; main did not touch these paths, so the cumulative diff is byte-identical to R3's). The earlier audit (R2) covered content head 93969e7a3ca2775c7b435e1ce1b6528ad2173c4a; the delta since is `git diff 93969e7a3ca2775c7b435e1ce1b6528ad2173c4a 989fe4651c050ec23619e5208da17d6152b477b0 -- <the seven paths>`.",
+    "Deterministic gates on 989fe4651c050ec23619e5208da17d6152b477b0, recorded literally in GATES_PRE_AUDIT.txt (command, exit code, last lines; no editing of output): `claude plugin validate plugins/dopemux-route-ledger`; `claude plugin test plugins/dopemux-route-ledger` (pass/fail counts); `tsc -p plugins/dopemux-route-ledger --noEmit` (the untracked engine-laid tsconfig.json may be present: record whether it was); a JSON-schema check of the RECEIPT-SAMPLE lines the tests print against plugins/dopemux-route-ledger/receipt.schema.json with /Users/hue/code/dopemux-mvp/.venv/bin/python; `python3 scripts/governance/validate_change_contract.py --base origin/main --head 989fe4651c050ec23619e5208da17d6152b477b0 --format text`; `git diff --check 93969e7a3ca2775c7b435e1ce1b6528ad2173c4a 989fe4651c050ec23619e5208da17d6152b477b0`; `SKIP=markdownlint /Users/hue/code/dopemux-mvp/.venv/bin/pre-commit run --files <the seven content paths>` (markdownlint is NOT_RUN: its Node environment cannot install on this host). A live Claude Code session loading the repaired code is NOT_RUN unless the operator reports a result.",
+    "FROZEN_CUMULATIVE.diff = `git diff 97b6d5040496e2271c41d24c339d039303bbe6b1 989fe4651c050ec23619e5208da17d6152b477b0 -- <the seven paths>` and FROZEN_DELTA_SINCE_R2_AUDIT.diff = `git diff 93969e7a3ca2775c7b435e1ce1b6528ad2173c4a 989fe4651c050ec23619e5208da17d6152b477b0 -- <the seven paths>`, both byte-exact. Each MUST be byte-identical (cmp) to the R3 files proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/FROZEN_CUMULATIVE.diff and FROZEN_DELTA_SINCE_R2_AUDIT.diff; if either differs, STOP (the content changed and the R3 prompt body no longer applies).",
+    "AUDIT_PROMPT.txt is derived from R3's coordinator-corrected prompt proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/AUDIT_PROMPT.txt by a script of exact substitutions, each old string required to occur EXACTLY ONCE (STOP otherwise): the SUBJECT block (macro id R4; base 97b6d5040496e2271c41d24c339d039303bbe6b1 -> frozen head 989fe4651c050ec23619e5208da17d6152b477b0; commit counts recomputed with git; the statement that the frozen head is a merge commit of origin/main 97b6d5040496e2271c41d24c339d039303bbe6b1 into the branch and that the 96 files main brought are outside the change set and not in the diff, and that the seven content files are byte-identical to the repair commit 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0); the IMPLEMENTER CLAIMS validation bullet (gates re-run on the merge head; the pre-commit claim is over the seven files); and a new disclosed limitation (xiii) for the merge. The hard rules, INTENT, Q1-Q13, the output contract and the embedded DELTA, PRIOR_FINDINGS and DIFF sections stay as in R3: re-compare each embedded section with its file after the edits. Do not add the R3 audit runs or any verdict text to the prompt.",
+    "Size and safety checks: AUDIT_PROMPT.txt must be <= 160,000 bytes; a deterministic pattern scan over every file written for `AKIA[0-9A-Z]{16}`, `-----BEGIN [A-Z ]*PRIVATE KEY`, `xox[baprs]-`, `ghp_[A-Za-z0-9]{20,}`, `sk-[A-Za-z0-9]{20,}`, `(?i)(password|passwd|secret|api[_-]?key|bearer)\\s*[:=]\\s*\\S{8,}` returns 0 (a hit is a STOP; show file and line, never the value); the prompt contains no `/Users/` path. Write SHA256SUMS_INPUTS.txt (the seven other files) and PROMPT_BUILD_NOTES.md (every substitution made, the cmp results, the scan counts).",
+    "SUPERSEDED_R3_NOTE.md records, as facts, what R3 did and why R4 supersedes it: the R3 gate line and subject 4fcdc9761; W01 commit c02748b05; W02 Grok ran once on 4fcdc9761 (grok-cli 1.0.70, init.tools [], 0 tool_use, 124 s, USD 0.0555, probes USD 0.0283) with custody 4b8838cf3 and the verdict UNREAD; W03 the one AGY attempt stopped by the coordinator at 09:34:56Z on the retarget, no verdict, custody ad8a141c6; the operator relay that retargeted the subject; the local merge 989fe4651c. State that neither R3 audit is used by R4, that the R3 Grok verdict stays unread unless the operator asks for it as information after the R4 adjudication, and that the R3 allowances are sunk cost, not R4 budget."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "proof(route-ledger-001-r4): frozen audit inputs for merge head 989fe4651",
+    "allowlist": [
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_CUMULATIVE.diff",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PRIOR_FINDINGS_AS_CLAIMS.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GATES_PRE_AUDIT.txt",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PROMPT_BUILD_NOTES.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SUPERSEDED_R3_NOTE.md",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_INPUTS.txt"
+    ],
+    "verify": [
+      "git diff --name-only | sort   # equals the allowlist plus unrelated untracked/unstaged files already present at start",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): dopemux-route-ledger mod (R4 final audit round)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R4 (W01). The PR is #1482 and is owned by the operator: no push, sign or merge here.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Verify the subject pin",
+      "requirements": [
+        "Stop on any mismatch."
+      ],
+      "commands": [
+        "git rev-parse HEAD",
+        "git rev-list --parents -n1 HEAD",
+        "git fetch origin main && git rev-parse origin/main",
+        "git diff --stat 4fcdc97615d7a736cd1199bb854bf63fcdbf39f0 989fe4651c050ec23619e5208da17d6152b477b0 -- plugins/dopemux-route-ledger/.claude-plugin/plugin.json plugins/dopemux-route-ledger/hooks/hooks.json plugins/dopemux-route-ledger/hooks/register.tsx plugins/dopemux-route-ledger/hooks/register.test.ts plugins/dopemux-route-ledger/receipt.schema.json plugins/dopemux-route-ledger/README.md docs/02-how-to/route-ledger.md",
+        "git status --porcelain --untracked-files=no"
+      ],
+      "expected_files": [],
+      "validation": [
+        "HEAD == 989fe4651c050ec23619e5208da17d6152b477b0",
+        "two expected parents",
+        "origin/main == 97b6d5040496e2271c41d24c339d039303bbe6b1",
+        "content identical to the repair commit"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W01-S2",
+      "task": "Run the deterministic gates into GATES_PRE_AUDIT.txt",
+      "requirements": [
+        "Literal output, no editing."
+      ],
+      "commands": [
+        "claude plugin validate plugins/dopemux-route-ledger",
+        "claude plugin test plugins/dopemux-route-ledger",
+        "tsc -p plugins/dopemux-route-ledger --noEmit"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GATES_PRE_AUDIT.txt"
+      ],
+      "validation": [
+        "every gate PASS/FAIL/NOT_RUN/UNKNOWN literally"
+      ],
+      "context_files": [
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Write the two diffs and compare them with R3",
+      "requirements": [
+        "Byte-exact; cmp to the R3 files."
+      ],
+      "commands": [
+        "git diff 97b6d5040496e2271c41d24c339d039303bbe6b1 989fe4651c050ec23619e5208da17d6152b477b0 -- plugins/dopemux-route-ledger/.claude-plugin/plugin.json plugins/dopemux-route-ledger/hooks/hooks.json plugins/dopemux-route-ledger/hooks/register.tsx plugins/dopemux-route-ledger/hooks/register.test.ts plugins/dopemux-route-ledger/receipt.schema.json plugins/dopemux-route-ledger/README.md docs/02-how-to/route-ledger.md",
+        "git diff 93969e7a3ca2775c7b435e1ce1b6528ad2173c4a 989fe4651c050ec23619e5208da17d6152b477b0 -- plugins/dopemux-route-ledger/.claude-plugin/plugin.json plugins/dopemux-route-ledger/hooks/hooks.json plugins/dopemux-route-ledger/hooks/register.tsx plugins/dopemux-route-ledger/hooks/register.test.ts plugins/dopemux-route-ledger/receipt.schema.json plugins/dopemux-route-ledger/README.md docs/02-how-to/route-ledger.md"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_CUMULATIVE.diff",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PRIOR_FINDINGS_AS_CLAIMS.md"
+      ],
+      "validation": [
+        "identical to R3"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/FROZEN_CUMULATIVE.diff",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/PRIOR_FINDINGS_AS_CLAIMS.md"
+      ]
+    },
+    {
+      "id": "W01-S4",
+      "task": "Derive AUDIT_PROMPT.txt, write the notes, scan, hash, commit",
+      "requirements": [
+        "Exact single-occurrence substitutions."
+      ],
+      "commands": [
+        "wc -c proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt",
+        "shasum -a 256 proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/*"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PROMPT_BUILD_NOTES.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SUPERSEDED_R3_NOTE.md",
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_INPUTS.txt"
+      ],
+      "validation": [
+        "<= 160,000 bytes",
+        "pattern scan 0 hits",
+        "embedded sections re-compared"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-ROUTE-LEDGER-001-R3/review_bundle/AUDIT_PROMPT.txt"
+      ]
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R4",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-desktop",
+      "model": "claude-sonnet-5-5",
+      "effort": "high"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_CUMULATIVE.diff",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PRIOR_FINDINGS_AS_CLAIMS.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/GATES_PRE_AUDIT.txt",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/PROMPT_BUILD_NOTES.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SUPERSEDED_R3_NOTE.md",
+    "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/SHA256SUMS_INPUTS.txt"
+  ],
+  "canonical_writers": [
+    "W01-coordinator"
+  ],
+  "semantic_scope": [
+    "route-ledger-audit-inputs"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); proof-only commits above the audited head 989fe4651c050ec23619e5208da17d6152b477b0",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

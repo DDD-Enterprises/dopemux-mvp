@@ -1,0 +1,5 @@
+agy --version / agy models   2026-10-30T10:44Z   agy 1.4.11 (same as R3); gemini-4-argon-high listed; every flag used is in agy --help
+probe1  start 2026-10-30T10:45:07Z  end 2026-10-30T10:45:20Z  exit 0  duration_seconds 9.87   total_tokens 12970   gate OK
+probe2  start 2026-10-30T10:45:20Z  end 2026-10-30T10:45:45Z  exit 0  duration_seconds 22.76  total_tokens 15359   gate OK
+real    start 2026-10-30T10:45:46Z  end 2026-10-30T10:50:50Z  exit 0  duration_seconds 300.11 total_tokens 85070 (input 56807, output 28263 incl. thinking 22053)
+total tokens 113,399; wall clock first probe to end of the real run 5 min 43 s; cost UNKNOWN (the stream reports tokens, not USD)
