@@ -1,0 +1,146 @@
+{
+  "id": "TP-DMX-ROUTELEDGER-W03-DOCS-001-R2",
+  "project": "dopemux-mvp",
+  "target": "Write the how-to for the Route Ledger mod at docs/02-how-to/route-ledger.md, accurate to what W01 and W02 actually built.",
+  "invariants": [
+    "I01 Scope: write only inside this packet's write_surface. You share the workspace with the coordinator: preserve other edits, never revert unrelated work. A needed change outside the allowlist is a STOP with status NEEDS_SUPERVISOR (name the path and why); do not make it.",
+    "I02 Forbidden actions: commit, push, open a PR, merge, sign, mark ready, force-push, history rewrite, `claude plugin install`, enabling hot reload, any write under ~/.claude. The coordinator alone commits (one commit per workstream, explicit pathspec).",
+    "I03 advisor: FORBIDDEN, budget 0. Do not call the `advisor` tool. Any advisor call (tool_use or server_tool_use named advisor) means STOP with status NEEDS_SUPERVISOR. Report `advisor_calls` as a structural count from your own transcript.",
+    "I04 No recursive delegation: no Agent/subagent calls, no Workflow, no second model. Use deterministic local tools for shell, hashes and schema checks.",
+    "I05 Route is pinned in this packet's execution_requirements: use exactly that runner/model/effort, no substitution. Attempts: one build attempt plus at most one narrowly scoped repair pass for a failing validation. If it still fails, return FAIL with the evidence; do not loop. A timeout does not authorize another attempt.",
+    "I06 Report every gate as PASS, FAIL, NOT_RUN or UNKNOWN literally; never collapse NOT_RUN into PASS. Live runtime behaviour (a real Claude Code session loading the mod) is NOT_RUN in this macro; say what the operator must do to see it. `model_observed` stays UNKNOWN unless a runtime receipt shows it.",
+    "I07 No secrets, no credentials, no network. The mod under construction makes no network call and no `$.http`, `$.process`, `$.model` or prompt-rewriting call. Do not put prompts, file contents or tool output into any receipt or log.",
+    "I08 Return contract (all fields): status (one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject (files and `git diff --stat`), validation (gate table), proof (commands run), audit (NOT_RUN: the final L2 audit is the coordinator's), blockers, advisor_calls, files_written, observed_model (UNKNOWN unless a receipt shows it). Done, accepted and merged are never your status.",
+    "I09 Allowances (PROPOSED until the operator authorizes this revision; they bind from authorization on): active time <= 10 min (the child's own run time as the Agent result reports it); elapsed <= 25 min from dispatch to return (coordinator wall clock); dispatches <= 2 (1 build + at most 1 narrow repair; the Sonnet fallback counts as the second and only after an evidence-backed STOP); automatic retries 0 (a timeout, 429 or route error is a STOP, not a retry); tool calls <= 40; total tokens <= 400,000 as the Agent result reports `totalTokens` (counting basis UNKNOWN: it may include cache reads); coordinator re-reads of your diff <= 2; advisor calls 0. A figure the runner does not report is UNKNOWN and never counts as within budget. Watch your own tool-call count; if you near a cap, stop and return INCOMPLETE with what you have rather than rush. When ANY limit is reached or about to be exceeded: stop the running child at the next safe point (TaskStop; never mid-commit), dispatch nothing further, retry nothing, substitute nothing, leave the child's edits uncommitted, and report status NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+    "Runs after W02 is COMMITTED and must be derived from the committed plugin files (plugin.json, hooks/register.tsx, hooks/register.test.ts, receipt.schema.json, README.md), not from this packet's intent. If the built mod differs from the W01/W02 invariants, document what was built. The effort pin `low` is a request: if the runner rejects an effort for this model, run without it and record effort UNKNOWN; that is not a fallback.",
+    "Follow the docs conventions: kebab-case filename, the YAML frontmatter required by docs-frontmatter-guard (copy the key set from `git show feat/pulse-001:docs/02-how-to/pulse-status-line.md`, `author` = `claude-code-agent (claude-haiku-5-5)`, today's date, `type: how-to`; run `python scripts/docs_frontmatter_guard.py` and the docs placement and filename hooks), a Diataxis how-to shape, under 150 lines.",
+    "Cover: what the mod records and shows (status segment, advisor budget toast, `/route-ledger` and the `/route` alias, with the fallback if `/route` is refused); how to load it; every config option and default; where receipts go, the JSONL record kinds, and the `binding_fields` mapping with the statement that a supervisor merges them and runs `ct bind-record` (the mod never does); that it counts advisor calls and cannot block them; that observed model is API-claimed and effort observed is UNKNOWN; troubleshooting (receipts off because `.control-tower/state` is absent, `receipts ✗`, unpinned-agent warnings, `/route` refused); that nothing is written to the repository except its own receipt files.",
+    "Do not claim runtime behaviour that was not observed: mark live behaviour as not verified. Do not invent flags, commands or fields: every one must appear in the committed files."
+  ],
+  "depends_on": [
+    "TP-DMX-ROUTELEDGER-W02-SURFACE-001-R2"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/route-ledger-001-8d8032",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(route-ledger): how-to for the dopemux-route-ledger mod",
+    "allowlist": [
+      "docs/02-how-to/route-ledger.md"
+    ],
+    "verify": [
+      ".venv/bin/python scripts/docs_frontmatter_guard.py --help >/dev/null  # then run it per its usage on the new file",
+      ".venv/bin/pre-commit run --files docs/02-how-to/route-ledger.md",
+      "git diff --name-only | sort   # equals the allowlist"
+    ]
+  },
+  "pr": {
+    "title": "feat(route-ledger): delegation and advisor receipt mod (dopemux-route-ledger)",
+    "body": "Implements MACRO-DMX-ROUTE-LEDGER-001-R2 (W01-W03). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W03-S1",
+      "task": "Read the committed mod, schema and README",
+      "requirements": [
+        "Derive every statement from code."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "facts match the committed W01/W02 files"
+      ],
+      "context_files": [
+        "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+        "plugins/dopemux-route-ledger/hooks/hooks.json",
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/receipt.schema.json",
+        "plugins/dopemux-route-ledger/README.md"
+      ]
+    },
+    {
+      "id": "W03-S2",
+      "task": "Write the how-to and pass the docs hooks",
+      "requirements": [
+        "Only the allowlisted file."
+      ],
+      "commands": [
+        ".venv/bin/pre-commit run --files docs/02-how-to/route-ledger.md"
+      ],
+      "expected_files": [
+        "docs/02-how-to/route-ledger.md"
+      ],
+      "validation": [
+        "docs hooks pass"
+      ],
+      "context_files": [
+        "docs/02-how-to/route-ledger.md"
+      ]
+    },
+    {
+      "id": "W03-S3",
+      "task": "Return",
+      "requirements": [
+        "Summary, hook results, advisor_calls, files_written."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+  "workstream_id": "W03",
+  "risk_lane": "L2",
+  "audit_group": "AGY-ROUTELEDGER-001-R2",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-haiku-5-5",
+      "effort": "low"
+    },
+    "allowed_fallbacks": [
+      {
+        "runner": "claude-code-agent",
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      }
+    ],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "docs/02-how-to/route-ledger.md"
+  ],
+  "canonical_writers": [
+    "W03-implementer"
+  ],
+  "semantic_scope": [
+    "route-ledger-docs"
+  ],
+  "rollback_boundary": "git revert <W03 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

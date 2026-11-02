@@ -1,0 +1,131 @@
+{
+ "macro": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+ "status": "MEASURED (draft ledger for the closing bundle; coordinator figures not recordable)",
+ "frozen_head": "93969e7a3ca2775c7b435e1ce1b6528ad2173c4a",
+ "base": "93050d135ffc2592000c1d0edef82b2912935525",
+ "macro_elapsed_min": {
+  "start": "2026-10-23T20:35:40Z",
+  "freeze": "2026-10-23T20:59:30Z",
+  "measured": 24,
+  "cap": 240
+ },
+ "per_workstream": {
+  "W01": {
+   "dispatches": {
+    "measured": 2,
+    "cap": 2,
+    "note": "build + 1 narrow repair (tsc TS5097 test import)"
+   },
+   "active_min": {
+    "measured": 14.6,
+    "cap": 45
+   },
+   "elapsed_min": {
+    "measured": "~14 build + ~0.5 repair",
+    "cap": 75
+   },
+   "tool_calls_reported": {
+    "measured": 69,
+    "cap": 150,
+    "transcript_blocks": 129
+   },
+   "total_tokens_reported": {
+    "measured": "217502 if cumulative, 433391 if additive",
+    "cap": 3000000
+   },
+   "advisor_blocks": 0,
+   "agent_calls": 0,
+   "observed_model_transcript": "claude-sonnet-5-5",
+   "requested": "claude-sonnet-5-5 / effort high"
+  },
+  "W02": {
+   "dispatches": {
+    "measured": 1,
+    "cap": 2
+   },
+   "active_min": {
+    "measured": 3.3,
+    "cap": 30
+   },
+   "elapsed_min": {
+    "measured": "~3",
+    "cap": 50
+   },
+   "tool_calls_reported": {
+    "measured": 16,
+    "cap": 100,
+    "transcript_blocks": 31
+   },
+   "total_tokens_reported": {
+    "measured": 113393,
+    "cap": 1500000
+   },
+   "advisor_blocks": 0,
+   "agent_calls": 0,
+   "observed_model_transcript": "claude-sonnet-5-5",
+   "requested": "claude-sonnet-5-5 / effort medium"
+  },
+  "W03": {
+   "dispatches": {
+    "measured": 1,
+    "cap": 2,
+    "note": "no Sonnet fallback used; child did one in-run markdownlint MD038 fix"
+   },
+   "active_min": {
+    "measured": 1.0,
+    "cap": 10
+   },
+   "elapsed_min": {
+    "measured": "~1.5",
+    "cap": 25
+   },
+   "tool_calls_reported": {
+    "measured": 18,
+    "cap": 40,
+    "transcript_blocks": 35
+   },
+   "total_tokens_reported": {
+    "measured": 60756,
+    "cap": 400000
+   },
+   "advisor_blocks": 0,
+   "agent_calls": 0,
+   "observed_model_transcript": "claude-haiku-5-5",
+   "requested": "claude-haiku-5-5 / effort low"
+  }
+ },
+ "macro_totals": {
+  "child_dispatches": {
+   "measured": 4,
+   "cap": 6
+  },
+  "active_min": {
+   "measured": 18.9,
+   "cap": 85
+  },
+  "tool_calls_reported": {
+   "measured": 103,
+   "cap": 290
+  },
+  "total_tokens_reported": {
+   "measured_range": "391651-607540",
+   "cap": 4900000
+  },
+  "coordinator_advisor_calls_during_execution": {
+   "measured": 0,
+   "cap": 1
+  },
+  "child_advisor_calls": {
+   "measured": 0,
+   "cap": 0
+  },
+  "intermediate_model_audits": 0,
+  "final_independent_audits": 0,
+  "post_freeze_repair_rounds": 0,
+  "automatic_retries": 0
+ },
+ "not_recordable": [
+  "coordinator tokens and active time"
+ ],
+ "observed_effort": "UNKNOWN for all children (API does not report effort)"
+}

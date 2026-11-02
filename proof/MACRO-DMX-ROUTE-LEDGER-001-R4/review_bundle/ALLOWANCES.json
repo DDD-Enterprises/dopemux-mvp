@@ -1,0 +1,79 @@
+{
+  "status": "PROPOSED",
+  "applies_to": "MACRO-DMX-ROUTE-LEDGER-001-R4",
+  "basis": "R3 SUNK COST (not R4 budget): Grok audit USD 0.0839 (probes 0.0283 + run 0.0555) and about 26k AGY probe tokens, the AGY real run stopped without a usage figure. MEASURED where possible. R2 measured: W01 14.6 min active / 69 tool calls / 217,502 or 433,391 tokens; W02 3.3 min / 16 / 113,393; W03 1.0 min / 18 / 60,756; the Grok audit took 3 min 16 s and USD 0.0841 (prompt 116,483 bytes). R3 caps are roughly 1.5 to 3 times those measurements. The AGY run is UNMEASURED at issuance (a 2026-10-18 run took about 4 min and about 55k tokens), so its caps are estimates. Revise by an amended revision after the run.",
+  "units": {
+    "time": "minutes",
+    "tokens": "Agent-result totalTokens or the auditor stream figure, counting basis UNKNOWN",
+    "tool_calls": "Agent-result totalToolUseCount"
+  },
+  "per_workstream": {
+    "W01": {
+      "max_elapsed_min": 40,
+      "child_dispatches": 0,
+      "automatic_retries": 0,
+      "executor": "coordinator, deterministic script (no model dispatch)"
+    },
+    "W02": {
+      "max_audit_attempts": 1,
+      "max_automatic_retries": 0,
+      "max_probes": 3,
+      "max_wall_min_probes_and_run": 20,
+      "max_run_wall_min": 10,
+      "max_cost_usd_as_streams_report": 0.3,
+      "child_dispatches": 0,
+      "executor": "coordinator shell"
+    },
+    "W03": {
+      "max_audit_attempts": 1,
+      "max_automatic_retries": 0,
+      "max_probes": 2,
+      "max_wall_min_probes_and_run": 30,
+      "max_run_wall_min": 10,
+      "max_total_tokens_if_reported": 400000,
+      "cost": "UNKNOWN unless the stream reports it",
+      "child_dispatches": 0,
+      "executor": "coordinator shell"
+    },
+    "W04": {
+      "max_elapsed_min": 45,
+      "child_dispatches": 0,
+      "max_coordinator_advisor_calls": 1,
+      "executor": "coordinator"
+    }
+  },
+  "macro": {
+    "max_active_min": 30,
+    "max_elapsed_min": 150,
+    "max_child_dispatches": 0,
+    "max_automatic_retries": 0,
+    "max_child_tool_calls": 0,
+    "max_child_total_tokens": 0,
+    "max_intermediate_model_audits": 0,
+    "max_final_independent_audits": 2,
+    "final_audits_note": "OPERATOR-RATIFIED EXCEPTION to the one-final-audit default (AGENTS.md step 14 and docs/03-reference/governance/evidence-economy.md): two independent routes on ONE frozen head, one attempt each, no retry, no cross-fallback, no intermediate audit. Not a licence for a third.",
+    "max_post_freeze_repair_rounds": 0,
+    "max_child_advisor_calls": 0,
+    "max_coordinator_advisor_calls": 1
+  },
+  "review_rounds": {
+    "coordinator_diff_rereads_per_workstream": 2,
+    "intermediate_model_audits": 0,
+    "final_independent_audits": 2,
+    "post_freeze_repair_rounds_without_operator": 0
+  },
+  "recordable_measures": {
+    "elapsed": "coordinator wall clock at start and end of each workstream",
+    "active": "W01: Agent result totalDurationMs; W02/W03: the stream duration_ms or the recorded launch and finish times",
+    "tool_calls": "W01: Agent result totalToolUseCount",
+    "tokens": "W01: Agent result totalTokens (basis UNKNOWN); audits: the stream figure where reported",
+    "cost": "W02: total_cost_usd from the three streams; W03: only if the stream reports it",
+    "advisor_calls": "structural count of advisor tool_use/server_tool_use blocks in the W01 child transcript; coordinator calls counted by hand",
+    "not_recordable": [
+      "coordinator's own tokens and active time (UNKNOWN, not budgeted)"
+    ]
+  },
+  "on_limit": "When ANY limit is reached or about to be exceeded: stop the running child at the next safe point (TaskStop; never mid-commit), dispatch nothing further, retry nothing, substitute nothing, leave the child's edits uncommitted, and report status NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+  "enforcement": "Coordinator discipline only. Neither macro_packet.v2 nor execution_binding.v2 has a field for allowances and `ct validate-macro` does not check them. The numbers are pinned through each child text, the macro stop-condition and base_policy text, and ALLOWANCES.json by sha256 in base_policy.",
+  "closure": "At close the coordinator writes ALLOWANCE_LEDGER.json (measured vs cap, per workstream and macro) into the flat review_bundle; no value is invented."
+}

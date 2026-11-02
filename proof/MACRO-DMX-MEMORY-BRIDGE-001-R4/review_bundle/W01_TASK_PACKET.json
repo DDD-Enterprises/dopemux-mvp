@@ -1,0 +1,152 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-R4-W01-STATUS-DECISIONS-FOLD-001",
+  "project": "dopemux-mvp",
+  "target": "Repair re-audit findings N4 (bound the answer text before the decision regex) and N3 by its cause: the next session relays quiet earlier sessions' undelivered rows by copy (same id, idempotent in the ledger), so the status line counts only rows this process will deliver; this also removes the N6 dead branch.",
+  "invariants": [
+    "C01 Shared workspace: other sessions may change unrelated files in this checkout (.codex/config.toml, .agents/): do not touch them. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head afa4390bcb7b999098cff94567421158009695ba; base 93050d135ffc2592000c1d0edef82b2912935525.",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history; you do not stage. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env* or credential files; never write a secret into a file or return. No network. No `dopemux capture emit` run; no real subprocess in tests (they mock `$.process`).",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Live behaviour is NOT_RUN (no session ever loaded the mod).",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers, advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when: a needed change is outside your write_surface; a finding cannot be repaired as stated; validation still fails after one fix attempt for the same cause. Do NOT widen the repair: N7 (never run live) and N8 (fire-and-forget observation in the tool.call hook) stay accepted notes; the replay, the ring file format, the band and /bridge-note behave exactly as before.",
+    "C08 Evidence input: the re-audit's adjudicated findings are in proof/MACRO-DMX-MEMORY-BRIDGE-001-R3/AUDITOR_REPORT.md and proof/MACRO-DMX-MEMORY-BRIDGE-001-R3/review_bundle/GROK_ADJUDICATION.md (audited content head c71e7c1f436349f477037d28ce479218c63a53a4). Read N3, N4 and N6 there before you change anything.",
+    "A01 PROPOSED allowances (caps, not forecasts; accepted by authorizing R4): elapsed 45 min from dispatch; subagent tokens 500,000; tool uses 120; attempts: 1 Sonnet attempt + 1 retry after a failed validation with a named cause; team-lead review: 1 diff re-read + at most 1 correction round across the macro.",
+    "A02 The team lead records duration_ms, subagent_tokens and tool_uses from your completion notice. Any exceeded cap or any advisor call ends the workstream: the diff is preserved untouched and the return is NEEDS_SUPERVISOR with the counters.",
+    "S01 N6 (INFO) dead branch, subsumed by S03: `s.foldedPending` is removed entirely (S03a), so the unreachable `if (isReplayable(entry.row)) s.foldedPending += 1` in the `/clear` fold goes with it. Keep the `dead` counting (see S03f) and the `foldedDropped` fold. No other change to the `/clear` path.",
+    "S02 N4 (LOW) unbounded answer text: `decisionsOf(answer)` runs `matchAll` on the whole assistant answer. Add a constant `MAX_ANSWER_SCAN_CHARS = 200_000` and run the matcher on `answer.slice(0, MAX_ANSWER_SCAN_CHARS)` only. A `Decision:` line beyond that bound is not captured (the how-to will say so). Tests: a marker inside the bound is captured; a marker placed after the bound is not; a multi-megabyte answer with a marker near the start still returns it and the hook completes.",
+    "S03 N3 (LOW) REDESIGN, relay of quiet earlier sessions' rows (designed by the coordinator on claude-opus-5-5; replaces the issued v1 'left by earlier sessions' suffix). The defect behind N3 is that a task or note row whose session ended before delivering it is stranded forever: no process replays another session's file, yet the status line counted it. Fix the cause, not the label:",
+    "S03a Remove `foldedPending` (field, initialisation, comment, every use). `📮 N pending` counts only the replayable pending rows in this process's rings, which after S03c include adopted rows. The status texts and their forms stay exactly as they are (`📮 clear`, `📮 N pending`, `📮 N pending (ledger unavailable)`, `⚠ N undeliverable ...`, `📮 memory-only`, `⚠ outbox write failed`, `+N dropped`); no suffix is added.",
+    "S03b `readPrior` additionally returns, per earlier-session file key it read, `{ key, mtimeMs, rows }` (mtimeMs = the newest `$.fs.list` mtime of that key's two generation files; rows = the newest valid generation). The band keeps using the flat rows exactly as now.",
+    "S03c Adoption at session start (in `initSession`, after the own ring is loaded and `readPrior` ran; once per session start, not on `/clear`): compute the settled ids = every row id whose state is 'sent' or 'dead' in any file read or in this process's rings. Adopt each earlier-session row that is `isReplayable`, whose id is not settled and not already in this session's `ring.ids`, whose source file's mtimeMs is at least `ADOPT_QUIET_MS = 10 * MINUTE` older than `await $.clock.now()` (a live concurrent session replays its own rows every 60 s and keeps its file fresh), and whose `ts` is at most `ADOPT_MAX_AGE_MS = 7 * 24 * 60 * MINUTE` old (the ledger's default ttl_days is 7). At most `ADOPT_MAX_ROWS = 50` per session start, oldest `ts` first. If the same id appears in several files, adopt it once.",
+    "S03d The adopted copy keeps the original id (never recompute it), ts, kind, session_id (the original writer's), cwd_rel, goal, files_touched, decisions, todos_completed, note, intended_event and attempts; state is 'pending'; it gains `adopted_from: <source file key>`. Add the optional `adopted_from?: string` to `OutboxRow` and keep it in `toRow` on reload. Push it through the normal ring path (ring.ids, entryOf, bytes, enforceCap, dirty, flush, renderStatus, armReplay) in a helper separate from `append`. The source file is NEVER written: single writer per file stays true.",
+    "S03e Delivery needs no new code: the replay already sends rows from this process's rings with `event_id = row.id`, and the ledger insert is `INSERT OR IGNORE` on that id (src/dopemux/memory/capture_client.py, around line 540), so a row that its writer or another adopter already delivered is a no-op, and two sessions adopting the same row at once leave one ledger row. Do not change the replay, the event shape, the attempts or the dead rule.",
+    "S03f `foldedDead` (prior dead rows shown as `⚠ N undeliverable`) counts an earlier-session dead row only if its id is not 'sent' in any file read or in this process's rings.",
+    "S04 TDD, failing run first: update the tests that assert counts from earlier-session rows (e.g. 'status line counts replayable pending rows already on disk at session start') to the new semantics and add: a quiet (mtime older than 10 min) earlier-session task row is adopted, counted as `📮 1 pending`, emitted with the original id as event_id, marked sent in THIS session's file, and the source file is never written (assert every `fs.write` path belongs to this session's key); a fresh (younger than 10 min) file's rows are neither adopted nor counted; a row older than 7 days is not adopted; an id that is 'sent' in another file is not adopted; the same id in two quiet files is adopted once; the 50-row cap; `adopted_from` survives a reload; turn/compact/end rows are never adopted; memory-only mode adopts nothing; `foldedDead` ignores a dead id that is sent elsewhere.",
+    "S05 Scope guard: only plugins/dopemux-memory-bridge/hooks/register.tsx and plugins/dopemux-memory-bridge/hooks/register.test.ts. The ring file format gains only the optional `adopted_from` field. No change to the replay loop, the event shape, the band, `/bridge-note`, the redactor or the hook set. Report `git diff --numstat`.",
+    "S06 Gates (report each PASS/FAIL/NOT_RUN): `claude plugin test plugins/dopemux-memory-bridge`, `claude plugin validate plugins/dopemux-memory-bridge` (exit 0, advisory warnings only), and a `tsc -p` run with an out-of-repo tsconfig built on the Claude Code declaration that the coordinator supplies (path and sha256 in your prompt; the packets' older 2.1.304 file no longer exists). Live behaviour NOT_RUN."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001-R4",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R4",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/memory-bridge-001-b349d8",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(memory-bridge): relay undelivered rows of quiet earlier sessions, bound the decision scan, drop the dead /clear branch",
+    "allowlist": [
+      "plugins/dopemux-memory-bridge/hooks/register.tsx",
+      "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+    ],
+    "verify": [
+      "claude plugin test plugins/dopemux-memory-bridge",
+      "claude plugin validate plugins/dopemux-memory-bridge",
+      "git diff --numstat",
+      "git status --porcelain   # only the two allowlisted files modified"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod (repaired after two audits)",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001-R4. Draft until the final independent L2 audit of the repaired head and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Read N3, N4, N6 and the code",
+      "requirements": [
+        "Quote the lines you will change."
+      ],
+      "commands": [
+        "grep -n 'foldedPending\\|decisionsOf\\|function renderStatus' plugins/dopemux-memory-bridge/hooks/register.tsx"
+      ],
+      "expected_files": [],
+      "validation": [
+        "lines located"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R3/AUDITOR_REPORT.md",
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R3/review_bundle/GROK_ADJUDICATION.md",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "TDD: tests first for the status suffix and the answer bound, then the code and the dead-branch removal",
+      "requirements": [
+        "Only the two allowlisted files; failing run first."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-memory-bridge"
+      ],
+      "expected_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ],
+      "validation": [
+        "tests fail before and pass after"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Return",
+      "requirements": [
+        "Status, gate table, numstat, the final status texts, advisor_calls, files_written, observed_model, counters you can see."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R4",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001-R4",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-memory-bridge/hooks/register.tsx",
+    "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-status-decisions-fold"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head afa4390bcb7b999098cff94567421158009695ba; base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

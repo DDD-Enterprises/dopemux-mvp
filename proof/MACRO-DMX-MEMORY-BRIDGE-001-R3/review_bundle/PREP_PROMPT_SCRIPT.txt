@@ -1,0 +1,66 @@
+import hashlib
+import pathlib
+import shutil
+import subprocess
+
+N = pathlib.Path("/private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-memory-bridge-001-b349d8/491dc243-44df-4aca-99aa-4aa904cb7e60/scratchpad/audit")
+REPO = pathlib.Path("/Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8")
+R2B = REPO / "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle"
+BASE = "93050d135ffc2592000c1d0edef82b2912935525"
+HEAD = "c71e7c1f4"
+HEAD = subprocess.run(["git", "-C", str(REPO), "rev-parse", HEAD], capture_output=True, text=True, check=True).stdout.strip()
+PATHS = ["plugins/dopemux-memory-bridge", "docs/02-how-to/memory-bridge.md"]
+
+N.mkdir(parents=True, exist_ok=True)
+# recipe files come from the committed R2 custody copies
+for src, dst in (("GROK_DISALLOWED.txt", "DISALLOWED.txt"), ("GROK_SYSTEM_PROMPT.txt", "SYSTEM_PROMPT.txt")):
+    shutil.copy(R2B / src, N / dst)
+assert hashlib.sha256((N / "DISALLOWED.txt").read_bytes()).hexdigest().startswith("0c3f1773")
+assert hashlib.sha256((N / "SYSTEM_PROMPT.txt").read_bytes()).hexdigest().startswith("416516c4")
+
+t = (R2B / "AUDIT_PROMPT_TEMPLATE.txt").read_text()
+
+
+def rep(old, new):
+    global t
+    assert t.count(old) == 1, old[:60]
+    t = t.replace(old, new)
+
+
+rep("Macro MACRO-DMX-MEMORY-BRIDGE-001-R2. Delivery risk lane L2.",
+    "Macro MACRO-DMX-MEMORY-BRIDGE-001-R3, the repair successor of macro MACRO-DMX-MEMORY-BRIDGE-001-R2 (which was audited once, verdict PASS_WITH_RISKS, at content head 52855fb35ea40f420bdacdcab9e092f8d15292c6). Delivery risk lane L2.")
+rep("the mod's only slash command `/bridge-note <text>` are replayed",
+    "the mod's only slash command `/bridge-note <text>` (menu description: 'Queue a note for the capture ledger') are replayed")
+rep("- A coordinator edited two lines of the how-to after its author returned (the Verification section).",
+    "- FIRST AUDIT (a different run on the predecessor head, same method): PASS_WITH_RISKS, Q9 (docs accuracy) FAIL, seven findings. This change claims to repair three of them, and you must re-test each claim against the diff: N1 (MEDIUM) the how-to cited a pinned commit hash and a test count as if they were the delivered head - claimed repaired: no commit hash or PR number remains in the how-to or README; N2 (MEDIUM) the /bridge-note menu description said 'Store a note in the capture ledger' while the reply says queued - claimed repaired: the description is now 'Queue a note for the capture ledger' in the code and in its test; N5 (LOW) the README called the attempts counter a counter of failed attempts although a successful emit also increments it - claimed repaired: the README row now says it counts delivery attempts that ran, failed ones plus the final successful one. Four findings were deliberately NOT repaired and were accepted by the operator as follow-ups: N3 (LOW) the status line counts other sessions' replayable rows that this mod never replays, N4 (LOW) the decision regex runs on the whole assistant answer with no size pre-bound, N6 (INFO) a dead branch in the /clear fold, N7 (INFO) live behaviour never run.")
+rep("(ix) The how-to cites the code commit hash it was written against.",
+    "(ix) N3, N4, N6 and N7 of the first audit are unrepaired by decision (see above).")
+rep("Q12 Overall verdict for the cumulative change set at the frozen head.",
+    "Q12 Closure of the first audit: for each of N1, N2, N5 answer REPAIRED, PARTIAL or NOT_REPAIRED with evidence from the diff; for N3, N4, N6, N7 say whether they are indeed still present as described (STILL_PRESENT, CHANGED or NOT_PRESENT); name any regression or new defect introduced by the repair.\nQ13 Overall verdict for the cumulative change set at the frozen head.")
+rep('... through Q12 ],', '... through Q13 ],\n "predecessor_findings": [ {"id":"N1","disposition":"REPAIRED|PARTIAL|NOT_REPAIRED|STILL_PRESENT|CHANGED|NOT_PRESENT","evidence":"..."} , ... for N1 through N7 ],')
+(N / "AUDIT_PROMPT_TEMPLATE.txt").write_text(t)
+
+diff = subprocess.run(["git", "-C", str(REPO), "diff", BASE, HEAD, "--"] + PATHS, capture_output=True, text=True, check=True).stdout
+(N / "FROZEN_CUMULATIVE.diff").write_text(diff)
+commits = subprocess.run(["git", "-C", str(REPO), "rev-list", "--count", f"{BASE}..{HEAD}", "--"] + PATHS, capture_output=True, text=True, check=True).stdout.strip()
+files = subprocess.run(["git", "-C", str(REPO), "diff", "--name-only", BASE, HEAD, "--"] + PATHS, capture_output=True, text=True, check=True).stdout.split()
+
+validation = (
+    "`claude plugin validate plugins/dopemux-memory-bridge` exit 0 (advisory warnings only: no icon, no marketplace install line); "
+    "`claude plugin test plugins/dopemux-memory-bridge` 105 pass / 0 fail; `tsc -p` strict + noUncheckedIndexedAccess against the Claude Code 2.1.309 declaration exit 0 (the first audit used 2.1.304); "
+    "`git diff --check` clean; the repository change-contract preflight PASS (max lane L2); the docs frontmatter, prohibited-patterns and graph validators PASS on the how-to; "
+    "a grep found no commit hash and no PR number left in the how-to or README; the repair diff against the first audited head is exactly 4 files, 5 insertions, 7 deletions. "
+    "NOT_RUN: the pre-commit hooks (not installed in the worktree), any live session, any real `dopemux capture emit`, any service."
+)
+for key, value in (("{{BASE_SHA}}", BASE), ("{{HEAD_SHA}}", HEAD), ("{{COMMIT_COUNT}}", commits), ("{{FILE_COUNT}}", str(len(files))), ("{{VALIDATION_SUMMARY}}", validation)):
+    assert key in t, key
+    t = t.replace(key, value)
+assert t.count("{{DIFF}}") == 1
+t = t.replace("{{DIFF}}", diff)
+(N / "real_seal").mkdir(exist_ok=True)
+(N / "probe_seal").mkdir(exist_ok=True)
+(N / "real_seal" / "AUDIT_PROMPT.txt").write_text(t)
+(N / "probe_seal" / "PROBE_PROMPT.txt").write_text("Probe only: reply with the single word OK. Do not use any tool.\n")
+print("head", HEAD, "commits", commits, "files", len(files))
+print("prompt bytes", len(t.encode()), hashlib.sha256(t.encode()).hexdigest())
+print("diff bytes", len(diff.encode()), hashlib.sha256(diff.encode()).hexdigest())

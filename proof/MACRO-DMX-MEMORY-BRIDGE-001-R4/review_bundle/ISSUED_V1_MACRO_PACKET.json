@@ -1,0 +1,241 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R4",
+  "objective": "Memory Bridge R4: repair the three unrepaired findings of the R3 re-audit and re-audit the repaired head. W01 (code): N6 remove the dead /clear fold branch, N4 bound the answer text before the decision regex (first 200,000 characters), N3 stop counting earlier sessions' unsent rows as pending in the status line (a separate suffix ` · N left by earlier sessions`). W02 (docs): update the README and the how-to to the committed wording. N7 (never run live) and N8 (fire-and-forget observation) stay accepted notes. The R3 audit (Grok PASS_WITH_RISKS at content head c71e7c1f436349f477037d28ce479218c63a53a4) is preserved unchanged; R4 changes the audited subject, so it needs a new audit on an operator-approved route.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants C01-C08 and A01-A02 in each child. PROPOSED macro allowances (no schema field exists; enforced by the team lead; caps, not forecasts): elapsed 3 h from authorization to a frozen head, excluding the operator-gated audit; subagent tokens 1,000,000 in total; child dispatches 4 (W01, W02 plus at most 2 retries or fallbacks); team-lead correction rounds 1; intermediate model audits 0; advisor calls 0 for every child and the coordinator; one final independent audit of the repaired head (1 attempt, 0 retries, no fallback) outside this budget on an operator-approved route. Hitting any cap: stop dispatching, preserve uncommitted diffs, return NEEDS_SUPERVISOR with the counters (duration_ms, subagent_tokens, tool_uses from each completion notice).",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator chat 2026-10-30: 'Repair N3, N4, N6'. R4 needs AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R4_EXECUTION=YES; the audit route needs AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R4_AUDIT_ROUTE=grok-cli:grok-4.5:ONE_ATTEMPT (or another route the operator names)"
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "sign",
+      "push",
+      "open_pr"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R4_EXECUTION=YES absent",
+      "branch head is not afa4390bcb7b999098cff94567421158009695ba or a descendant that differs from it only under proof/ at start, or origin/main moved and a cited file changed",
+      "any write outside a child allowlist",
+      "any child calls the advisor tool or delegates (advisor budget 0)",
+      "a workstream or the macro exceeds its elapsed, token, tool-use or attempt cap",
+      "the final audit route line is absent when the repaired head is frozen",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "5311efc04375a5f5dc927b490a6f9858c3e1cef742a32e866f1551318c8c2889"
+    },
+    "authority_ceiling": "Child-specific intersection only; the team lead alone commits (one commit per workstream, explicit pathspec). Push, PR update, signing, attestation and the audit route are operator gates.",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record and ct validate-binding per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "5b2ad0c47f52385379cb7bae2a072cdd3717c0c23ce7375626fbe4c181fac7ae"
+      },
+      "objective": "Repair N6, N4 and N3 in register.tsx and its tests (dead branch, answer-scan bound, status suffix for earlier sessions' rows).",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-status-decisions-fold"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W01 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head afa4390bcb7b999098cff94567421158009695ba; base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001-R4",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "c97aafe57cd2bec48472923f5d0f3429659b25b5ff75fbee04bf11ff366f15ce"
+      },
+      "objective": "Document the repaired status wording and the scan bound in the README and the how-to, derived from the committed W01 code.",
+      "dependencies": [
+        "W01"
+      ],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-memory-bridge/README.md",
+        "docs/02-how-to/memory-bridge.md"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-docs-status"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head afa4390bcb7b999098cff94567421158009695ba; base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-haiku-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": [
+          {
+            "runner": "claude-code-agent",
+            "model": "claude-sonnet-5-5",
+            "effort": "UNKNOWN"
+          }
+        ]
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001-R4",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-FREEZE",
+      "requires": [
+        "W01",
+        "W02"
+      ],
+      "condition": "plugin validate and test pass, tsc passes, docs gates pass, diffs inside allowlists and as specified, change-contract preflight passes; freeze the subject for the single final L2 audit (operator-gated route)",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit per frozen L2 subject (the repaired head), different family from the claude-code-agent implementers, route operator-gated; the proposed route is the tool-less Grok CLI recipe (grok-4.5, one attempt, zero retries). Copy every audit artifact into the flat proof review bundle and commit it before reading the verdict. PROPOSED macro allowances (no schema field exists; enforced by the team lead; caps, not forecasts): elapsed 3 h from authorization to a frozen head, excluding the operator-gated audit; subagent tokens 1,000,000 in total; child dispatches 4 (W01, W02 plus at most 2 retries or fallbacks); team-lead correction rounds 1; intermediate model audits 0; advisor calls 0 for every child and the coordinator; one final independent audit of the repaired head (1 attempt, 0 retries, no fallback) outside this budget on an operator-approved route. Hitting any cap: stop dispatching, preserve uncommitted diffs, return NEEDS_SUPERVISOR with the counters (duration_ms, subagent_tokens, tool_uses from each completion notice).",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "allowance_exceeded",
+      "child_advisor_call",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}

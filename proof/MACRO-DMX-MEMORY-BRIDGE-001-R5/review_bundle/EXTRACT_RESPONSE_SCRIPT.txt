@@ -1,0 +1,39 @@
+import json
+import pathlib
+import sys
+
+A = pathlib.Path("/private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-memory-bridge-001-b349d8/491dc243-44df-4aca-99aa-4aa904cb7e60/scratchpad/audit5")
+name = sys.argv[1] if len(sys.argv) > 1 else "GROK_AUDIT_STREAM.txt"
+types = []
+tools = "ABSENT"
+tool_use = 0
+text = ""
+meta = {}
+for line in (A / name).read_text().splitlines():
+    line = line.strip()
+    if not line:
+        continue
+    o = json.loads(line)
+    types.append(o.get("type"))
+    if o.get("type") == "system":
+        tools = o.get("tools", "ABSENT")
+        meta["model"] = o.get("model")
+        meta["permissionMode"] = o.get("permissionMode")
+    if o.get("type") == "assistant":
+        for b in (o.get("message", {}).get("content") or []):
+            if isinstance(b, dict) and b.get("type") == "tool_use":
+                tool_use += 1
+            if isinstance(b, dict) and b.get("type") == "text":
+                text += b.get("text", "")
+    if o.get("type") == "result":
+        for k in ("num_turns", "duration_ms", "total_cost_usd", "is_error", "subtype"):
+            if k in o:
+                meta[k] = o[k]
+        if not text and isinstance(o.get("result"), str):
+            text = o["result"]
+if name == "GROK_AUDIT_STREAM.txt":
+    (A / "GROK_AUDIT_RESPONSE_RAW.txt").write_text(text)
+print("event types", types)
+print("init.tools", tools, "| tool_use blocks", tool_use)
+print("meta", meta)
+print("response bytes", len(text.encode()), "| first chars hidden by design" if name == "GROK_AUDIT_STREAM.txt" else "| " + text[:40])
