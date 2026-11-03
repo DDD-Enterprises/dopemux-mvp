@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
-import { Check, AlertTriangle } from 'lucide-react';
+import { Check, AlertTriangle, Copy } from 'lucide-react';
 
 import type { PlannerLane } from './extensionTypes';
 
@@ -95,7 +95,19 @@ export function CandidateShaChip({ sha, onError }: CandidateShaChipProps) {
         size="small"
         variant="outlined"
         onClick={handleCopy}
-        icon={isCopied ? <Check size={14} aria-hidden="true" /> : copyFailed ? <AlertTriangle size={14} aria-hidden="true" /> : undefined}
+        onKeyDown={(e) => {
+          if ((isCopied || copyFailed) && e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsCopied(false);
+            setCopyFailed(false);
+            if (copyTimeoutRef.current) {
+              clearTimeout(copyTimeoutRef.current);
+              copyTimeoutRef.current = null;
+            }
+          }
+        }}
+        icon={isCopied ? <Check size={14} aria-hidden="true" /> : copyFailed ? <AlertTriangle size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
         label={chipLabel}
         aria-label={ariaLabel}
         color={isCopied ? 'success' : copyFailed ? 'error' : 'default'}
