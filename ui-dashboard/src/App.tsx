@@ -595,6 +595,16 @@ function DashboardApp() {
                 aria-label={isCopied ? `AI Recommendation: ${cognitiveState.recommendation} (Copied)` : `Copy AI Recommendation: ${cognitiveState.recommendation}`}
                 onClick={handleCopyRecommendation}
                 onKeyDown={(e) => {
+                  if (isCopied && e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsCopied(false);
+                    if (copyTimeoutRef.current) {
+                      clearTimeout(copyTimeoutRef.current);
+                      copyTimeoutRef.current = null;
+                    }
+                    return;
+                  }
                   if (e.key === ' ' || e.key === 'Enter') {
                     e.preventDefault();
                     void handleCopyRecommendation();
