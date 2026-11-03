@@ -783,7 +783,7 @@ function DashboardApp() {
               />
             )}
             {notifications.length > 0 && (
-              <Tooltip title={isConfirmingClear ? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'} arrow>
+              <Tooltip title={isConfirmingClear ? 'Confirm to clear all notifications (Press Escape to cancel)' : 'Clear all notifications to reduce visual noise'} arrow>
                 <Chip
                   size="small"
                   variant="outlined"
@@ -818,7 +818,7 @@ function DashboardApp() {
                       }
                     }
                   }}
-                  aria-label={isConfirmingClear ? 'Confirm clear all notifications' : 'Clear all notifications'}
+                  aria-label={isConfirmingClear ? 'Confirm clear all notifications (Press Escape to cancel)' : 'Clear all notifications'}
                   sx={{
                     ml: isLoading ? 1 : 'auto',
                     cursor: 'pointer',

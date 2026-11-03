@@ -6,6 +6,7 @@ import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import fs from 'fs';
 import path from 'path';
+import App from '../../App';
 import PredictionPanel from '../PredictionPanel';
 import TaskSequencer from '../TaskSequencer';
 import TeamDashboard from '../TeamDashboard';
@@ -345,8 +346,8 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toMatch(/<Tooltip title={isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>[\s\S]*tabIndex=\{0\}/);
   expect(appContent).toMatch(/aria-label=\{\s*isCopied\s*\?\s*`AI Recommendation: \$\{cognitiveState\.recommendation\} \(Copied\)`\s*:\s*`Copy AI Recommendation: \$\{cognitiveState\.recommendation\}`\s*\}/);
-  expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
-  expect(appContent).toMatch(/<Tooltip title={isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
+  expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications (Press Escape to cancel)\' : \'Clear all notifications\'}');
+  expect(appContent).toMatch(/<Tooltip title={isConfirmingClear \? 'Confirm to clear all notifications \(Press Escape to cancel\)' : 'Clear all notifications to reduce visual noise'\} arrow>/);
   expect(appContent).toContain('System is actively listening for ConPort and ADHD event traffic');
   expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
   expect(appContent).toContain('Waiting for signals...');
@@ -357,6 +358,7 @@ test('App.tsx has accessible header chips and skip link', () => {
   expect(themeContent).toContain('&:focus-visible');
   expect(appContent).toContain('ref={feedHeadingRef}');
   expect(appContent).toContain('tabIndex={-1}');
+  expect(appContent).toContain("if (isConfirmingClear && e.key === 'Escape')");
 
   // Verify adaptive reconnection bridge
   expect(appContent).toContain('const [retryTrigger, setRetryTrigger] = useState(0);');
@@ -652,4 +654,73 @@ test('TaskSequencer step index badges accessibility and tooltip attributes', () 
   expect(badge3).toBeInTheDocument();
   expect(badge3).toHaveAttribute('tabIndex', '0');
   expect(badge3).toHaveTextContent('#3');
+});
+
+test('App notification feed soft confirmation and Escape key cancellation in DOM', async () => {
+  let wsOnMessage: ((event: MessageEvent) => void) | null = null;
+
+  class MockWebSocket {
+    onopen: (() => void) | null = null;
+    onmessage: ((event: MessageEvent) => void) | null = null;
+    onerror: (() => void) | null = null;
+    onclose: (() => void) | null = null;
+
+    constructor() {
+      setTimeout(() => {
+        if (this.onopen) this.onopen();
+        wsOnMessage = (event: MessageEvent) => {
+          if (this.onmessage) this.onmessage(event);
+        };
+      }, 0);
+    }
+
+    close() {}
+  }
+
+  const originalWS = global.WebSocket;
+  const originalFetch = global.fetch;
+
+  global.WebSocket = MockWebSocket as unknown as typeof WebSocket;
+  global.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: () => Promise.resolve({ cognitive_load: { cognitive_load: 0.5 } }),
+  });
+
+  try {
+    render(<App />);
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    act(() => {
+      if (wsOnMessage) {
+        wsOnMessage({
+          data: JSON.stringify({
+            type: 'dashboard_notification',
+            id: 'n1',
+            message: 'Test notification signal',
+            notification_type: 'info',
+            timestamp: new Date().toISOString(),
+          }),
+        } as MessageEvent);
+      }
+    });
+
+    const clearBtn = await screen.findByRole('button', { name: 'Clear all notifications' });
+    expect(clearBtn).toBeInTheDocument();
+
+    fireEvent.click(clearBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm clear all notifications/i });
+    expect(confirmBtn).toBeInTheDocument();
+
+    fireEvent.keyDown(confirmBtn, { key: 'Escape' });
+
+    expect(screen.getByRole('button', { name: 'Clear all notifications' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Confirm clear all notifications/i })).not.toBeInTheDocument();
+  } finally {
+    global.WebSocket = originalWS;
+    global.fetch = originalFetch;
+  }
 });
