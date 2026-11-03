@@ -185,6 +185,8 @@ packages = [
     "dopemux.execution",
     "dopemux.extraction",
     "dopemux.extractor",
+    "dopemux.governed_execution",
+    "dopemux.governed_execution.offline_execution",
     "dopemux.hooks",
     "dopemux.logging",
     "dopemux.mcp",
