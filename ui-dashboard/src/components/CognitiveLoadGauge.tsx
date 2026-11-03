@@ -58,7 +58,7 @@ export default function CognitiveLoadGauge({
   }, []);
 
   return (
-    <Tooltip title={copied ? 'Copied!' : `AI Recommendation: ${recommendation}. Click to copy.`} arrow>
+    <Tooltip title={copied ? 'Copied!' : `AI Recommendation: ${recommendation}. Click or press Enter/Space to copy.`} arrow>
       <Paper
         role="button"
         tabIndex={0}
@@ -67,9 +67,16 @@ export default function CognitiveLoadGauge({
           if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             onCopy();
+          } else if (e.key === 'Escape' && copied) {
+            e.preventDefault();
+            setCopied(false);
+            if (copyTimeoutRef.current) {
+              clearTimeout(copyTimeoutRef.current);
+              copyTimeoutRef.current = null;
+            }
           }
         }}
-        aria-label={copied ? 'Copied' : `Load ${val}%, ${statusMeta.label}. AI Recommendation: ${recommendation}. Click to copy.`}
+        aria-label={copied ? 'Copied' : `Load ${val}%, ${statusMeta.label}. AI Recommendation: ${recommendation}. Click or press Enter/Space to copy.`}
         sx={{
           p: 3,
           minHeight: 300,
