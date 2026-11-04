@@ -71,6 +71,17 @@ Unresolved review threads: 0.
 
 A cancelled build exports no cache, and `COPY src` comes before pip in that Dockerfile, so the merge push repeats the 28-minute step. If it times out again, the fix sits in `.github/workflows/containers.yml` or the Dockerfile, both outside 2A's write surface, and needs an operator ruling.
 
+At `4550f3ff5` Build adhd-engine passed on the re-run, and Unit Tests and every other required check passed except the audit and PR Steward.
+
+## Freeze of `4550f3ff5` held (operator ruling, 2026-11-04)
+
+| Answer | In answer to |
+|---|---|
+| "Yes, freeze it" | "Freeze `4550f3ff5` and write the audit packet now?" |
+| "Yes, approve it" | "Approve Amendment 05?" |
+
+J04-FREEZE's `make test` failed at `4550f3ff5`, and 2A caused it, so that head was not frozen. See `AMENDMENT_05.md`: W13 repairs the test code, the gate now means no new failures against main, and the head that carries W13 becomes the freeze subject.
+
 ## Still before freeze (doctrine: CI and reviews settle before the substantive freeze)
 
 1. **CI.** It re-runs on the merge head. Review threads and CI must settle before the freeze.
