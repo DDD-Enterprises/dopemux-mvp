@@ -122,11 +122,12 @@ builds expose), then the plain build. Space Grotesk, Inter and JetBrains Mono ar
 `predicted_load_15min`. Only `GET /api/adhd-state` carries a forecast. The cockpit treats
 each `state_update` as a full snapshot, except that a snapshot without
 `predicted_load_15min` keeps the forecast received from `GET` while it is under 15 minutes
-old (it is a 15-minute forecast), then shows `unknown`; a snapshot that includes the key
-always wins. A valid snapshot also clears a `GET` failure, except that an "upstream errors
-for ..." warning stays for any section the snapshot does not supply (energy, attention,
-load, recommendation). **TODO:** add the forecast to the engine's `state_update` payload if
-a live forecast is wanted.
+old (it is a 15-minute forecast); a snapshot that includes the key always wins. The forecast
+turns `unknown` 15 minutes after it arrived, even if no snapshot follows. A `GET` that lands
+after a snapshot changes nothing except that it fills an unknown forecast. A valid snapshot
+also clears a `GET` failure, except that an "upstream errors for ..." warning stays for any
+section the snapshot does not supply (energy, attention, load, recommendation). **TODO:**
+add the forecast to the engine's `state_update` payload if a live forecast is wanted.
 
 ## Scope of this change vs follow-up
 

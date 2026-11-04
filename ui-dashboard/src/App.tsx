@@ -20,6 +20,7 @@ import {
   carryForecast,
   CognitiveReading,
   EMPTY_READING,
+  FORECAST_TTL_MS,
   isMessageObject,
   mapAggregateState,
   mapRealtimeState,
@@ -97,6 +98,7 @@ function DashboardApp() {
   // Latest reading, and when its forecast arrived (null = none), for the state_update merge.
   const readingRef = useRef<CognitiveReading>(EMPTY_READING);
   const forecastReceivedAtRef = useRef<number | null>(null);
+  const forecastExpiryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleRetry = useCallback(() => {
     liveReadingSeenRef.current = false;
@@ -126,12 +128,31 @@ function DashboardApp() {
 
   const handleClearNotifications = useCallback(() => setNotifications([]), []);
 
+  const stopForecastExpiry = useCallback(() => {
+    if (forecastExpiryRef.current) {
+      clearTimeout(forecastExpiryRef.current);
+      forecastExpiryRef.current = null;
+    }
+  }, []);
+
+  // A quiet socket must not keep a dead forecast on screen. Only the forecast expires:
+  // nothing new was received, so the rest of the reading and `lastUpdated` stay.
+  const expireForecast = useCallback(() => {
+    forecastExpiryRef.current = null;
+    forecastReceivedAtRef.current = null;
+    readingRef.current = { ...readingRef.current, prediction: null };
+    setReading(readingRef.current);
+  }, []);
+
   // "Show all" lasts one critical episode: any non-critical reading re-arms the collapse.
   const applyReading = useCallback((next: CognitiveReading, forecastCarried = false) => {
     if (next.prediction === null) {
       forecastReceivedAtRef.current = null;
+      stopForecastExpiry();
     } else if (!forecastCarried) {
       forecastReceivedAtRef.current = Date.now();
+      stopForecastExpiry();
+      forecastExpiryRef.current = setTimeout(expireForecast, FORECAST_TTL_MS);
     }
     readingRef.current = next;
     setReading(next);
@@ -139,7 +160,7 @@ function DashboardApp() {
     if (next.load === null || deriveStatus(next.load) !== 'critical') {
       setShowAllPanels(false);
     }
-  }, []);
+  }, [expireForecast, stopForecastExpiry]);
 
   useEffect(() => {
     return () => {
@@ -147,14 +168,16 @@ function DashboardApp() {
         clearTimeout(sipTimeoutRef.current);
         sipTimeoutRef.current = null;
       }
+      stopForecastExpiry();
     };
-  }, []);
+  }, [stopForecastExpiry]);
 
   useEffect(() => {
     let isMounted = true;
 
     // Once a live state_update has landed, this GET is obsolete: neither its reading
-    // nor its failure may replace what the socket already delivered.
+    // nor its failure may replace what the socket already delivered. Its forecast is the
+    // exception (see the late-GET branch below): the engine never sends one live.
     const isCurrent = () => isMounted && !liveReadingSeenRef.current;
     const fail = (message: string, upstreamSections: string[] | null = null) => {
       if (isCurrent()) {
@@ -193,6 +216,11 @@ function DashboardApp() {
         const failed = upstreamErrorSections(payload);
         if (failed.length > 0) {
           fail(upstreamErrorMessage(failed), failed);
+        }
+      } else if (isMounted) {
+        const forecast = mapAggregateState(payload).prediction;
+        if (forecast !== null && readingRef.current.prediction === null) {
+          applyReading({ ...readingRef.current, prediction: forecast });
         }
       }
     }

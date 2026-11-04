@@ -407,6 +407,97 @@ test('a state_update after 15 minutes drops the old forecast to unknown', async 
   expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
 });
 
+test('a GET that lands after a live update supplies its forecast and nothing else', async () => {
+  let resolveFetch: (value: unknown) => void = () => {};
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockReturnValue(new Promise((resolve) => (resolveFetch = resolve)))
+  );
+  await renderApp();
+  await sendStateUpdate({ cognitive_load: 0.45 });
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+
+  await act(async () => {
+    resolveFetch(forecastGet(0.5));
+  });
+
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('50%');
+  expect(screen.getByText('45%')).toBeInTheDocument();
+  expect(screen.getByTestId('energy-value')).toHaveTextContent('unknown');
+  expect(screen.getByTestId('attention-value')).toHaveTextContent('unknown');
+});
+
+test('a late GET does not replace a forecast the socket already sent', async () => {
+  let resolveFetch: (value: unknown) => void = () => {};
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockReturnValue(new Promise((resolve) => (resolveFetch = resolve)))
+  );
+  await renderApp();
+  await sendStateUpdate({ cognitive_load: 0.45, predicted_load_15min: 0.7 });
+
+  await act(async () => {
+    resolveFetch(forecastGet(0.5));
+  });
+
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('70%');
+});
+
+const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
+
+const advance = async (ms: number) =>
+  act(async () => {
+    vi.advanceTimersByTime(ms);
+  });
+
+test('a quiet socket does not keep the forecast past 15 minutes', async () => {
+  vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+  vi.setSystemTime(new Date('2026-10-31T10:00:00Z'));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
+  await renderApp();
+  const updated = screen.getByText(/^updated /).textContent;
+
+  await advance(FIFTEEN_MINUTES_MS - 1);
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('50%');
+
+  await advance(1);
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+  // Expiry is the clock, not new data: the last-received time and the load stay as they were.
+  expect(screen.getByText(/^updated /).textContent).toBe(updated);
+  expect(screen.getByText('40%')).toBeInTheDocument();
+});
+
+test('a snapshot that only carries the forecast does not postpone its expiry', async () => {
+  vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+  vi.setSystemTime(new Date('2026-10-31T10:00:00Z'));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
+  await renderApp();
+
+  await advance(10 * 60 * 1000);
+  await sendStateUpdate({ cognitive_load: 0.45 });
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('50%');
+
+  await advance(5 * 60 * 1000);
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+  expect(screen.getByText('45%')).toBeInTheDocument();
+});
+
+test('a new forecast restarts the 15-minute expiry', async () => {
+  vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+  vi.setSystemTime(new Date('2026-10-31T10:00:00Z'));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
+  await renderApp();
+
+  await advance(10 * 60 * 1000);
+  await sendStateUpdate({ cognitive_load: 0.45, predicted_load_15min: 0.7 });
+
+  await advance(5 * 60 * 1000);
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('70%');
+
+  await advance(10 * 60 * 1000);
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+});
+
 test('a state_update that carries a forecast replaces the previous one', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
   await renderApp();
