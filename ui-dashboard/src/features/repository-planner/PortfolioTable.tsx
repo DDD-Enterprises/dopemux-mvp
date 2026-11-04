@@ -3,6 +3,7 @@ import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, Table
 import { Check, AlertTriangle } from 'lucide-react';
 
 import type { PlannerLane } from './extensionTypes';
+import { brandTokens } from '../../theme';
 
 const statusColor = { ready: 'success', blocked: 'error', stale: 'warning', unknown: 'default', conflicting: 'warning' } as const;
 const statusLabel = { ready: 'Ready evidence', blocked: 'Blocked evidence', stale: 'Stale evidence', unknown: 'Unknown: audit', conflicting: 'Conflicting evidence' } as const;
@@ -100,7 +101,7 @@ export function CandidateShaChip({ sha, onError }: CandidateShaChipProps) {
         aria-label={ariaLabel}
         color={isCopied ? 'success' : copyFailed ? 'error' : 'default'}
         sx={{
-          fontFamily: 'monospace',
+          fontFamily: brandTokens.fonts.mono,
           cursor: 'pointer',
           '@media (prefers-reduced-motion: reduce)': {
             transition: 'none',

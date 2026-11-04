@@ -1,0 +1,82 @@
+{
+  "status": "PASS_WITH_RISKS",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "severity": "medium",
+      "path": "ui-dashboard/src/App.tsx",
+      "summary": "After any live state_update, a still-in-flight GET is ignored for load, energy, attention, recommendation, and upstream errors, then still applied when its mapped prediction is non-null and the current prediction is null. That branch calls applyReading without forecastCarried, so the late body becomes a new forecast arrival: forecastReceivedAtRef is set to Date.now(), the 15-minute expiry timer restarts, and lastUpdated advances. A socket snapshot that included predicted_load_15min and mapped it to null is treated the same as a snapshot that never had a forecast, so the older GET can put a number back on screen.",
+      "evidence": "loadInitialState else-if (isMounted) forecast fill; applyReading forecastCarried default false; liveReadingSeenRef set in the state_update handler before carryForecast."
+    },
+    {
+      "severity": "medium",
+      "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+      "summary": "The task queue and team board are still local sample data with the sequencer controls left in place. The chip text is now [SAMPLE] not connected, and TeamDashboard has the same label. A known load band still runs the sample sequence and the footer says the sequencer is calibrated for that band.",
+      "evidence": "TaskSequencer chip label change and status footer; TeamDashboard [SAMPLE] not connected span; cognitiveState narrowed to status only."
+    },
+    {
+      "severity": "low",
+      "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+      "summary": "The overtime clock still uses brandTokens.colors.gremlinPink. theme.ts labels that token as a brand accent that is never a status color, and this refresh edited the same timer style block while leaving the color in place.",
+      "evidence": "TaskSequencer isOvertime color; brandTokens.gremlinPink comment in ui-dashboard/src/theme.ts."
+    },
+    {
+      "severity": "low",
+      "path": "ui-dashboard/src/App.tsx",
+      "summary": "Retry always clears liveReadingSeenRef, sets the socket to connecting, and bumps retryTrigger, which closes the current WebSocket and opens another. A retry for an HTTP failure while the socket is open drops a live socket.",
+      "evidence": "handleRetry; connectionStatus treats any open socket as live; WebSocket effect depends on retryTrigger and nulls handlers before close."
+    }
+  ],
+  "risks": [
+    "A state_update is applied as a full snapshot: omitted energy_level, attention_state, cognitive_load, and recommendation become null, while predicted_load_15min is the only carried field. That matches mapRealtimeState, carryForecast, and the App.tsx comment. It stays safe only if every engine state_update includes those fields. services/adhd_engine is outside this diff, so that payload shape is unverified.",
+    "ui-dashboard/eslint.config.js adds a flat config for src/**/*.{ts,tsx}. This diff does not add a workflow that runs it. Whether the four imported ESLint packages already resolve, and whether lint is clean, was not executed.",
+    "index.css and theme.ts point body and mono at local Dopemux Editor and Dopemux Term families and set font-synthesis: none. Those font files are not added here; a machine without them renders the generic fallbacks.",
+    "ui-dashboard/dist/ is gitignored. A gitignore line leaves any already-tracked dist files tracked. Whether dist is in history is unverified.",
+    "theme.ts removes getDynamicRoast and MetricLabel. This diff updates the deleted gauge and prediction panel and App.tsx. Other importers were not searchable with tools disabled.",
+    "asUtcIso truncates fractional seconds only for zone-less strings. A zoned timestamp with more than three fractional digits is returned unchanged, and formatClockTime can show --:--:-- where Date parsing rejects it.",
+    "time.test.ts assigns process.env.TZ at import. Node often keeps the timezone it read at process start, so the 14:01:55Z to 07:01:55 assertion can pass or fail independent of formatClockTime.",
+    "Consent is a static [CONSENT: UNKNOWN] label. TaskSequencer tab-stop density and the notification color map are unchanged follow-ups. The load needle sets transition left 0.6s ease in LoadInstrument; a prefers-reduced-motion override for that transition is not in the new component.",
+    "Live binding of this diff to PR 1486 head 682a4711d0464cc9dd166a267e9743b6ee2e55ba, base 75dacb43f651f0326a3c0146aae0c5301d6c08da, and CI was not re-checked. Tools and checkout are disabled for this audit. The trusted prompt and the candidate metadata name the same SHAs."
+  ],
+  "rationale": "The patch removes the seeded 0.7/0.6/0.5 cognitive reading, routes both GET /api/adhd-state and state_update through nullable mappers, and rejects non-finite or out-of-range ratios instead of clamping them. Recommender error objects suppress recommendation text. Forecast carry is limited to snapshots that omit predicted_load_15min and to a 15-minute age check, with a quiet-socket timer that clears only prediction. Socket handlers are cleared before close. Degraded connection chrome uses gilt rather than error red. Consent copy is an unknown label, sample boards are labeled as sample, the scanline overlay and global transition:all and the Google Fonts import are removed, and dist is gitignored. Behavioral tests in the diff cover unknown-on-failure, upstream section names, forecast expiry, and late-GET forecast fill. Those are residual risks: the late GET can restore a forecast the socket cleared, sample tasks remain operable, provenance and test execution were not run, and the engine full-snapshot assumption is outside the diff. That is short of a clean pass and short of a defect that makes the unknown-state path fail.",
+  "inspected_paths": [
+    ".gitignore",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "src/dopemux/ui/theme.py",
+    "ui-dashboard/eslint.config.js",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx",
+    "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+    "ui-dashboard/src/components/LoadInstrument.tsx",
+    "ui-dashboard/src/components/PredictionPanel.tsx",
+    "ui-dashboard/src/components/SignalFeed.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/TeamDashboard.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx",
+    "ui-dashboard/src/components/__tests__/SignalFeed.test.tsx",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+    "ui-dashboard/src/index.css",
+    "ui-dashboard/src/realtimeStateMapping.test.ts",
+    "ui-dashboard/src/theme.ts",
+    "ui-dashboard/src/time.test.ts",
+    "ui-dashboard/src/time.ts"
+  ],
+  "evidence_refs": [
+    "ui-dashboard/src/cognitiveReading.ts:asRatio,mapAggregateState,mapRealtimeState,carryForecast,remainingUpstreamSections,FORECAST_TTL_MS",
+    "ui-dashboard/src/App.tsx:EMPTY_READING,handleRetry,applyReading,expireForecast,loadInitialState late-GET branch,state_update carryForecast and upstream-section updater,socket handler nulling,CONNECTION_META",
+    "ui-dashboard/src/App.test.tsx:backend unreachable unknown assertions,late GET forecast-only test,forecast TTL tests,upstream section tests",
+    "ui-dashboard/src/components/LoadInstrument.tsx:toPercent,deriveStatus zone edges,meter aria values",
+    "ui-dashboard/src/components/TaskSequencer.tsx:[SAMPLE] chip,gremlinPink overtime color,unknown load footer",
+    "ui-dashboard/src/components/TeamDashboard.tsx:[SAMPLE] not connected",
+    "ui-dashboard/src/index.css:scanline and transition:all removal,local font stacks",
+    "ui-dashboard/src/theme.ts:Direction B tokens,gremlinPink comment,getDynamicRoast removal",
+    "ui-dashboard/src/time.ts:ZONELESS_DATE_TIME,asUtcIso",
+    "ui-dashboard/eslint.config.js",
+    " .gitignore ui-dashboard/dist/",
+    "trusted head 682a4711d0464cc9dd166a267e9743b6ee2e55ba, trusted base 75dacb43f651f0326a3c0146aae0c5301d6c08da"
+  ],
+  "validation_status": "NOT_RUN"
+}
