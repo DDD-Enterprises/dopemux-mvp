@@ -161,7 +161,7 @@ For Repo Truth Extractor work, agents must preserve the merged authority-order m
 - `config/instructions/agents.instructions.md` is observed as GitHub Copilot custom-agent file authoring guidance with `applyTo: '**/*.agent.md'`; this file is not proven to govern Codex runtime behavior.
 - `.github/copilot-instructions.md` is Copilot-specific guidance and should not be treated as Codex runtime authority without separate evidence.
 - `.claude/personas/*.agent.md` files are persona or agent definitions, not proof of a single repo-wide agent runtime authority.
-- `plugins/dopemux-*` are Claude Code mods (status line, bands, slash commands). They are Claude-Code-runtime only and Codex does not load them; none has been run live. Reference: `docs/04-explanation/claude-code-mods.md`. Agent handling rules: `.claude/modules/shared/plugin-integration.md`, section "Repo-local mods".
+- `plugins/dopemux-*` are Claude Code mods (status line, bands, slash commands). They are Claude-Code-runtime only and Codex does not load them; none has an interactive live run recorded. Reference: `docs/04-explanation/claude-code-mods.md`. Agent handling rules: `.claude/modules/shared/plugin-integration.md`, section "Repo-local mods".
 
 ## 9. Proof and Finality
 

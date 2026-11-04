@@ -5,7 +5,7 @@ type: reference
 owner: '@hu3mann'
 author: 'claude-code'
 date: '2026-10-29'
-last_review: '2026-10-29'
+last_review: '2026-11-04'
 next_review: '2027-01-27'
 prelude: Source-traced reference for the dopemux-pulse Claude Code mod (status line, focus clock, band, toasts), the ADHD engine /api/v1/state contract it reads, its audit findings, and how to verify it live.
 ---
@@ -22,9 +22,9 @@ The shorter how-to is `docs/02-how-to/pulse-status-line.md`.
 | Item | Fact |
 |------|------|
 | What it is | A read-only Claude Code function-hook mod (plugin name `dopemux-pulse`, version `0.1.0`, `plugin.json:2-3`). It paints a status line, runs a focus clock with three slash commands, and draws a band above the prompt. |
-| Carried by | PR #1472, branch `feat/pulse-001`. In the audited worktree the remote-tracking ref `origin/feat/pulse-001` equals `HEAD` `ee00d3655` (local ref, may be stale). |
-| Content audited | Content head `b5dc04dd7`. Later commits in the worktree are proof-only: `git diff b5dc04dd7 HEAD -- plugins services docs` is empty. |
-| Audit verdict | `PASS_WITH_RISKS`, grok-cli / grok-4.5, tool-less (`init.tools == []`, 0 tool calls), one attempt (`proof/MACRO-DMX-PULSE-002-R2/PROOF.json`, `embedded_audit`). The CLI self-reported `grok-4`; provider-attested identity is UNKNOWN. |
+| Carried by | PR #1472, branch `feat/pulse-001`. **Merged 2026-10-30** (merge commit `97b6d5040`). The merged plugin and engine sources are byte-identical to content head `b5dc04dd7` (`git diff b5dc04dd7 origin/main -- plugins/dopemux-pulse services/adhd_engine/api/routes.py services/adhd_engine/tests/test_state_contract.py services/registry.yaml` is empty at main `75dacb43f`), so every anchor below was re-verified by that identity. |
+| Content audited | Content head `b5dc04dd7` (audit MACRO-DMX-PULSE-002-R2). The final audit, MACRO-DMX-PULSE-003, covered merge commit `4b0c43067` (main `93050d135` merged into signed head `ee00d3655`) with no change to the plugin sources. |
+| Audit verdict | `PASS_WITH_RISKS`, grok-cli / grok-4.5, tool-less (`init.tools == []`, 0 tool calls), one attempt, for each of the three audits. The final one is `proof/MACRO-DMX-PULSE-003/PROOF.json` (`embedded_audit`, signed copy `proof/pr_merge/embedded-audit/pr-1472/PROOF.json` with `.sig`, `head_sha` `4b0c43067`): Q1-Q12 PASS, F1/F3/F4/F6 REPAIRED, N1-N5 STILL_OPEN. The CLI self-reported `grok-4`; provider-attested identity is UNKNOWN. |
 | Mocked tests | 29 pass / 0 fail recorded in PROOF.json (`validations`). Not re-run for this page. |
 | Live verification | **NOT_RUN.** The mod has never been run in a real Claude Code session, and never against a live ADHD engine (PROOF.json `validations`: "live run ... NOT_RUN"; `README.md:91-93`). |
 
@@ -276,6 +276,12 @@ Statuses are copied from the `embedded_audit.findings` of each PROOF.json. The
 successor audit (MACRO-DMX-PULSE-002-R2, content head `b5dc04dd7`) is first; the
 first audit (MACRO-DMX-PULSE-001, head `1d2219e8c`, also grok-4.5 `PASS_WITH_RISKS`)
 is second.
+The final audit before merge (MACRO-DMX-PULSE-003, merge commit `4b0c43067`,
+`proof/MACRO-DMX-PULSE-003/PROOF.json`) reports Q1-Q12 PASS and F1, F3, F4 and F6
+repaired. Its findings M1-M6 (all `OPEN`) restate N1-N5 and the carried F2/F7
+residuals (M1 = N1/F2, M2 = N2, M3 = N3, M4 = N4, M5 = N5/F7) plus M6, the
+registration-failure toast whose production refusal shape is UNKNOWN. The plugin
+sources were unchanged, so the tables below still describe the merged code.
 
 **Successor audit, findings N1-N5** (`proof/MACRO-DMX-PULSE-002-R2/PROOF.json`)
 
@@ -450,10 +456,10 @@ Where text disagrees with the code or with other records.
    If it later comes up, the code toasts `ADHD engine is back`
    (`register.tsx:188-195`). This is audit N4; the docs do not mention it.
 3. **PULSE-002-R2 PROOF.json lists "PROOF.json.sig absent" under `unknowns`
-   (line 164) and `pr_url_or_blocker` says "NO PR ... nothing pushed".** In the
-   worktree a 318-byte `PROOF.json.sig` exists, commit `ee00d3655` is a signed
-   attestation for PR 1472, and the local `origin/feat/pulse-001` equals `HEAD`.
-   The PROOF.json text predates those commits.
+   (line 164) and `pr_url_or_blocker` says "NO PR ... nothing pushed".** Commit
+   `ee00d3655` is a signed attestation for PR 1472, the per-PR signed copy
+   (`proof/pr_merge/embedded-audit/pr-1472/`) now binds head `4b0c43067`, and
+   PR 1472 is merged (`97b6d5040`). The PROOF.json text predates those commits.
 4. **PULSE-001 PROOF.json keeps F3, F4 and F6 as `OPEN`**, while PULSE-002-R2 reports
    them `REPAIRED`. The first file is a frozen record of the earlier head; not a
    code contradiction.

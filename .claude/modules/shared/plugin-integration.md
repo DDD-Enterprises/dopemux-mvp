@@ -45,13 +45,13 @@ Subagents with a narrow `tools:` list (no `Skill`) cannot invoke skills dynamica
 
 Mods are Claude Code plugins this repo builds itself: they draw on the status line, above the prompt, in toasts and in slash commands, and may record local files. They are not marketplace plugins and are **not** in `enabledPlugins`. A person loads one with `claude --plugin-dir plugins/<name>`. Codex, Gemini and OpenCode never load them. Concept page: `docs/04-explanation/claude-code-mods.md`.
 
-State on 2026-10-29: none is on `main`. Each is carried by an open PR and has been audited once (Grok `grok-cli` / `grok-4.5`, tool-less, `PASS_WITH_RISKS`). **None has been run in a real Claude Code session (live verification NOT_RUN).** Offline tests only.
+State on 2026-11-04: all three are on `main` (#1472 merged 2026-10-30, #1482 merged 2026-11-01, #1483 merged 2026-11-02). Each was independently audited at its final content head (Grok `grok-cli` / `grok-4.5`, tool-less, `PASS_WITH_RISKS`) and carries a signed local proof under `proof/pr_merge/embedded-audit/pr-<n>/`. **None has been run in an interactive Claude Code session (live verification NOT_RUN).** Offline tests only, plus one headless Route Ledger run.
 
 | Mod | PR | Person-facing surface | Reference |
 |---|---|---|---|
-| `dopemux-pulse` | #1472 | status line (focus clock, energy, attention), focus band, `/pulse-focus [minutes]`, `/break`, `/done`; needs the ADHD engine at `127.0.0.1:3025` | `docs/03-reference/mods/pulse.md` |
-| `dopemux-route-ledger` | #1482 (draft) | status segment (`agents N`, advisor count), `/route-ledger [receipts]`, toasts for unpinned Agent calls and advisor budgets; receipts in `.control-tower/state/route-ledger/` | `docs/03-reference/mods/route-ledger.md` |
-| `dopemux-memory-bridge` | #1483 (draft) | status line (`📮 N pending`), welcome-back band, `/bridge-note <text>`; outbox in `.dopemux/memory-bridge/`, replay via `dopemux capture emit` | `docs/03-reference/mods/memory-bridge.md` |
+| `dopemux-pulse` | #1472 (merged) | status line (focus clock, energy, attention), focus band, `/pulse-focus [minutes]`, `/break`, `/done`; needs the ADHD engine at `127.0.0.1:3025` | `docs/03-reference/mods/pulse.md` |
+| `dopemux-route-ledger` | #1482 (merged) | status segment (`agents N`, advisor count), `/route-ledger [receipts]`, toasts for unpinned Agent calls and advisor budgets; receipts in `.control-tower/state/route-ledger/` | `docs/03-reference/mods/route-ledger.md` |
+| `dopemux-memory-bridge` | #1483 (merged) | status line (`📮 N pending`), welcome-back band, `/bridge-note <text>`; outbox in `.dopemux/memory-bridge/`, replay via `dopemux capture emit` | `docs/03-reference/mods/memory-bridge.md` |
 
 How an agent should treat them:
 

@@ -5,24 +5,24 @@ type: runbook
 owner: '@hu3mann'
 author: claude-code
 date: '2026-10-29'
-last_review: '2026-10-29'
+last_review: '2026-11-04'
 next_review: '2027-01-27'
 prelude: How to run the Pulse, Route Ledger and Memory Bridge mods in a real Claude Code session for the first time, what to record, and what a result changes.
 ---
 # Claude Code Mods Live Verification
 
-None of the three mods has ever run in a real Claude Code session. Their audits and offline tests describe the code against a mocked host. This runbook is how that gap is closed. The exact per-step commands and pass/fail observations live in each mod's reference; this page orders the work and says what to do with the results.
+None of the three mods has run in an interactive Claude Code session (Route Ledger has one recorded headless run). Their audits and offline tests describe the code against a mocked host. This runbook is how that gap is closed. The exact per-step commands and pass/fail observations live in each mod's reference; this page orders the work and says what to do with the results.
 
 | Mod | Checklist |
 |---|---|
 | Pulse | [Pulse reference, section 9](../03-reference/mods/pulse.md) (14 steps) |
-| Route Ledger | [Route Ledger reference, section 10](../03-reference/mods/route-ledger.md) (17 steps) |
-| Memory Bridge | [Memory Bridge reference, section 10](../03-reference/mods/memory-bridge.md) (10 steps) |
+| Route Ledger | [Route Ledger reference, section 10](../03-reference/mods/route-ledger.md) (18 steps) |
+| Memory Bridge | [Memory Bridge reference, section 10](../03-reference/mods/memory-bridge.md) (11 steps) |
 
 ## Before you start
 
 - The operator runs this. It needs a real session and, for Pulse and Memory Bridge, real local services. An agent can prepare commands and read results but should not claim a step passed that it did not observe.
-- Use a checkout that contains the mod. Until the PRs merge that means the PR branch: `feat/pulse-001` (#1472), `claude/route-ledger-001-8d8032` (#1482), `claude/memory-bridge-001-b349d8` (#1483).
+- Use a checkout that contains the mod. All three mods are on `main` (PRs #1472, #1482 and #1483 are merged), so a checkout of `main` at or after `75dacb43f` contains them.
 - Run each mod **alone first**. Only run the coexistence steps after each passes alone.
 - **Memory Bridge writes to the real capture ledger** (`dopemux capture emit`) and to `.dopemux/` in the repo. Run its steps 3-5 in a repository where an extra test event is acceptable, and say so before you start.
 - Pulse needs the ADHD engine reachable at `127.0.0.1:3025` (its step 3 checks this).
@@ -30,7 +30,7 @@ None of the three mods has ever run in a real Claude Code session. Their audits 
 
 ## Order
 
-1. **Offline gates for all three**, as step 1 of each checklist (`claude plugin validate`, `claude plugin test`). These confirm the checkout is the audited one: Pulse 29 pass, Route Ledger 53 pass, Memory Bridge 105 pass.
+1. **Offline gates for all three**, as step 1 of each checklist (`claude plugin validate`, `claude plugin test`). These confirm the checkout is the audited one: Pulse 29 pass, Route Ledger 104 pass, Memory Bridge 134 pass.
 2. **Route Ledger alone.** It has no service dependency, so it is the cheapest way to learn whether the host calls hooks the way the mods assume. Its steps 5-7 answer the open question about `tool_use_id` and hook ordering (finding N1).
 3. **Pulse alone**, with the engine up. Include its engine-down and hung-engine steps (9 and 13); step 13 is the one that answers finding N2.
 4. **Memory Bridge alone**, in the repository you chose for its writes.

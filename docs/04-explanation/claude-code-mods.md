@@ -5,7 +5,7 @@ type: explanation
 owner: '@hu3mann'
 author: claude-code
 date: '2026-10-29'
-last_review: '2026-10-29'
+last_review: '2026-11-04'
 next_review: '2027-01-27'
 prelude: What a Dopemux Claude Code mod is, why the first three (Pulse, Route Ledger, Memory Bridge) exist, how they differ and overlap, how far each is proven, and where the detail lives.
 ---
@@ -38,7 +38,7 @@ Pulse is a reader of an existing service. Route Ledger is a recorder with no ser
 
 All three degrade visibly instead of silently: Pulse shows `ADHD engine unreachable`, Route Ledger shows `ledger off`, Memory Bridge shows `outbox write failed` or `memory-only`.
 
-Three surfaces are shared, and the behavior when two mods use one is **UNKNOWN**, because no mod has ever run in a real session:
+Three surfaces are shared, and the behavior when two mods use one is **UNKNOWN**, because no interactive live run of any mod is recorded:
 
 - **Status line.** Each mod sets the whole status text itself (`$.ui.status(...)`). None reads or merges another's text. Whether the host composes, replaces or alternates them is not known.
 - **`AbovePrompt` band.** Pulse and Memory Bridge both draw above the prompt and pass through `next(e)`. Which one draws first is not known.
@@ -50,17 +50,17 @@ The live-verification runbook includes a step for each of these.
 
 | | Pulse | Route Ledger | Memory Bridge |
 |---|---|---|---|
-| Carried by | PR #1472 | PR #1482 (draft) | PR #1483 (draft) |
-| Independent audit | Grok `grok-cli` / `grok-4.5`, tool-less, one attempt: `PASS_WITH_RISKS` | same route: `PASS_WITH_RISKS` | same route: `PASS_WITH_RISKS`, auditor Q9 = FAIL |
-| Findings | Open, not accepted by the operator | 10, all `ACCEPTED_RISK` | 7, all `ACCEPTED_RISK` |
-| Offline tests (mocked host) | 29 pass | 53 pass | 105 pass |
-| Run in a real session | **NOT_RUN** | **NOT_RUN** | **NOT_RUN** |
+| Carried by | PR #1472, merged 2026-10-30 | PR #1482, merged 2026-11-01 | PR #1483, merged 2026-11-02 |
+| Independent audit (final) | Grok `grok-cli` / `grok-4.5`, tool-less, one attempt: `PASS_WITH_RISKS` (third audit; Q1-Q12 PASS) | same Grok route plus a partly truncated AGY corroboration: `PASS_WITH_RISKS` (Q1-Q13 PASS on the Grok run) | same Grok route: `PASS_WITH_RISKS` (R6; Q1-Q14 PASS) |
+| Findings in the final audit | 6 (M1-M6), all `OPEN`, none recorded as accepted | 9 (N1 HIGH, the rest LOW or INFO), all `OPEN`; operator decision UNKNOWN in the files read | 5 (N7-N11), all INFO, `ACCEPTED_RISK` by the operator on 2026-11-01 |
+| Offline tests (mocked host) | 29 pass | 104 pass | 134 pass |
+| Run in a real session | **NOT_RUN** | **NOT_RUN** interactively; one headless run recorded (9 schema-valid receipts) | **NOT_RUN** |
 
 "Offline tests pass" means the module behaves as written against a mock. It does not show that the host calls the hooks in the order the mod assumes. Every finding marked HIGH or labelled N1 or N7 in the references is that gap.
 
 ## How they ship
 
-Each mod ships as its own PR with a signed local embedded-audit proof bound to the audited head. That binding, plus the repository's up-to-date rule on `main`, decides the merge order: see [Merging Signed-Proof PRs Under the Up-to-Date Rule](../92-runbooks/signed-proof-merge-order.md).
+Each mod shipped as its own PR with a signed local embedded-audit proof bound to the audited head (all three are now merged). That binding, plus the repository's up-to-date rule on `main`, decided the merge order and still applies to any later signed-proof PR: see [Merging Signed-Proof PRs Under the Up-to-Date Rule](../92-runbooks/signed-proof-merge-order.md).
 
 Repairing any audit finding changes the audited subject and needs a new audit on an operator-approved route. Findings the operator has accepted are tracked as follow-ups in each mod's `review_bundle/FOLLOWUPS.md`.
 
