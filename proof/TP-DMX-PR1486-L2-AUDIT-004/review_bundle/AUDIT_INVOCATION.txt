@@ -1,0 +1,18 @@
+PR #1486 round 8 audits (packet TP-DMX-PR1486-L2-AUDIT-004), head 682a4711d0464cc9dd166a267e9743b6ee2e55ba, base 75dacb43f651f0326a3c0146aae0c5301d6c08da (main = merge-base)
+
+Prompt: scripts.audit.pal_clink_runner --build-prompt over `git diff 75dacb43f 682a4711d` with the earlier proof
+directories excluded (`:(exclude)proof/TP-DMX-PR1486-L2-AUDIT-001`, `:(exclude)proof/TP-DMX-PR1486-L2-AUDIT-002`,
+`:(exclude)proof/TP-DMX-PR1486-L2-AUDIT-003`, `:(exclude)proof/pr_merge/embedded-audit/pr-1486`); the 89 excluded proof-only paths are listed in EXCLUDED_PROOF_FILES.txt.
+Prompt sha256 275f72a8959baa328262a163c7247ae38250e0b20ff75af8633eb077ec5c3e91. Both runs used a sealed dir holding only AUDIT_PROMPT.txt, under
+~/.local/share/dopemux/evidence/pr1486/r8/. Each wrapper recorded `<runner> exit=$?` and the UTC end time.
+The bundle stores the AGY stream written as AGY_OUTPUT_RAW.jsonl under the name AGY_OUTPUT_RAW.txt (same bytes).
+
+GOVERNING (one attempt): agy 1.4.12 --model gemini-4-argon-high ; head=682a4711d0464cc9dd166a267e9743b6ee2e55ba ; started=2026-11-04T09:07:53Z
+  cd <sealed agy dir, same prompt>
+  agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print="$(cat AUDIT_PROMPT.txt)" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt
+  wrapper: agy exit=0 2026-11-04T09:09:04Z   conversation_id=1d34e0f6-f3ba-43a3-970b-38896b0b5116
+
+CORROBORATING: grok grok 1.0.70 (f50904eaee6c) [stable] -m grok-4.7 --effort high contained ; head=682a4711d0464cc9dd166a267e9743b6ee2e55ba ; started=2026-11-04T09:07:53Z
+  grok -m grok-4.7 --effort high --sandbox workspace --cwd <sealed grok dir> --system-prompt-override "You are an independent code auditor. You have no tools and no skills; do not request or load any. Read the audit request in the user message and reply only with the JSON object it specifies, nothing else." --disallowed-tools "$(cat GROK_DISALLOWED_TOOLS.txt)" --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources" --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt > GROK_OUTPUT_RAW.jsonl 2> GROK_STDERR.txt
+  wrapper: grok exit=0 2026-11-04T09:16:37Z   session_id=01a1a5d0-98c4-7143-89ae-6c79f709d324
+  Tool probe before the run (content-free prompt, same denylist): init.tools == [] (GROK_INIT_TOOLS.json; raw probe in custody).

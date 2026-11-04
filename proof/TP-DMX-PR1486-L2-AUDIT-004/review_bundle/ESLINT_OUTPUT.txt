@@ -1,0 +1,146 @@
+(node:36667) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/eslint.config.js?mtime=1793783115731 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/components/TaskSequencer.tsx
+   91:54  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/components/TaskSequencer.tsx:91:54
+  89 |   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  90 |   // Heartbeat to keep "Ends at" times fresh even when taskTimer is paused
+> 91 |   const [heartbeat, setHeartbeat] = useState<number>(Date.now());
+     |                                                      ^^^^^^^^^^ Cannot call impure function
+  92 |   const [isResetConfirming, setIsResetConfirming] = useState(false);
+  93 |   const resetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  94 |   const [isSkipConfirming, setIsSkipConfirming] = useState(false);                                                                                                                                                                                                              react-hooks/purity
+  117:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/components/TaskSequencer.tsx:117:5
+  115 |   // cannot skip a different task after arming confirm on another task.
+  116 |   useEffect(() => {
+> 117 |     setIsSkipConfirming(false);
+      |     ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  118 |     if (skipConfirmTimeoutRef.current) {
+  119 |       clearTimeout(skipConfirmTimeoutRef.current);
+  120 |       skipConfirmTimeoutRef.current = null;  react-hooks/set-state-in-effect
+  146:3   error    Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/components/TaskSequencer.tsx:146:3
+  144 |
+  145 |   const currentTaskIdRef = useRef(currentTaskId);
+> 146 |   currentTaskIdRef.current = currentTaskId;
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  147 |
+  148 |   useEffect(() => {
+  149 |     setTaskTimer(0);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-hooks/refs
+  149:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/components/TaskSequencer.tsx:149:5
+  147 |
+  148 |   useEffect(() => {
+> 149 |     setTaskTimer(0);
+      |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  150 |     setIsTimerRunning(false);
+  151 |     setIsSkipConfirming(false);
+  152 |     if (skipConfirmTimeoutRef.current) {                                                                                                                             react-hooks/set-state-in-effect
+  374:27  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/components/TaskSequencer.tsx:374:27
+  372 |   const finishTime = useMemo(() => {
+  373 |     if (!currentTask || isComplete) return null;
+> 374 |     const date = new Date(Date.now() + (currentTask.estimatedMinutes - taskTimer / 60) * 60000);
+      |                           ^^^^^^^^^^ Cannot call impure function
+  375 |     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  376 |   }, [currentTask, taskTimer, isComplete]);
+  377 |                                                                                                                                                                                                                                                                                                                                                react-hooks/purity
+  381:33  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/components/TaskSequencer.tsx:381:33
+  379 |     if (totalRemainingMinutes === 0) return '';
+  380 |     // Use fractional minutes to ensure a stable finish time that only moves with taskTimer
+> 381 |     const finishDate = new Date(Date.now() + totalRemainingMinutes * 60000);
+      |                                 ^^^^^^^^^^ Cannot call impure function
+  382 |     const hh = finishDate.getHours().toString().padStart(2, '0');
+  383 |     const mm = finishDate.getMinutes().toString().padStart(2, '0');
+  384 |     return `Finish at ${hh}:${mm}`;                                                                                                                                                                                                                                                          react-hooks/purity
+  388:19  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/components/TaskSequencer.tsx:388:19
+  386 |
+  387 |   const taskFinishTimes = useMemo(() => {
+> 388 |     const nowMs = Date.now();
+      |                   ^^^^^^^^^^ Cannot call impure function
+  389 |     const now = new Date(nowMs);
+  390 |     const todayKey = `${now.getFullYear()}${now.getMonth()}${now.getDate()}`;
+  391 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/purity
+  439:6   warning  React Hook useMemo has an unnecessary dependency: 'heartbeat'. Either exclude it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+  2:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/features/repository-planner/PortfolioTable.tsx
+  22:3  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/features/repository-planner/PortfolioTable.tsx:22:3
+  20 |   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  21 |   const activeShaRef = useRef(sha);
+> 22 |   activeShaRef.current = sha;
+     |   ^^^^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  23 |
+  24 |   useEffect(() => {
+  25 |     setIsCopied(false);                                                                                                                                                                                                                                                                                                                                     react-hooks/refs
+  25:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/features/repository-planner/PortfolioTable.tsx:25:5
+  23 |
+  24 |   useEffect(() => {
+> 25 |     setIsCopied(false);
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |     setCopyFailed(false);
+  27 |     if (copyTimeoutRef.current) {
+  28 |       clearTimeout(copyTimeoutRef.current);  react-hooks/set-state-in-effect
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/features/repository-planner/RepositoryPlannerPage.tsx
+  80:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard/src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx
+  84:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  87:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  88:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  89:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 18 problems (16 errors, 2 warnings)
+

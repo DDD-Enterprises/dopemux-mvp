@@ -1,0 +1,207 @@
+{
+  "packet_id": "TP-DMX-PR1486-L2-AUDIT-004",
+  "tp_id": "TP-DMX-PR1486-L2-AUDIT-004",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1486,
+  "branch": "feat/ui-dashboard-cockpit-refresh",
+  "base": "main",
+  "base_sha": "75dacb43f651f0326a3c0146aae0c5301d6c08da",
+  "head_sha": "682a4711d0464cc9dd166a267e9743b6ee2e55ba",
+  "audited_head_sha": "682a4711d0464cc9dd166a267e9743b6ee2e55ba",
+  "kind": "fix",
+  "risk_lane": "L2",
+  "supersedes": {
+    "packet_id": "TP-DMX-PR1486-L2-AUDIT-003",
+    "audited_head_sha": "aaa2d1ae05048443da7e0e68104f54bbc53075c2",
+    "reason": "main moved (#1483 merged as 75dacb43f) and branch protection requires an up-to-date branch, so main was merged in (87ebb3fbd); 682a4711d then fixed Grok G-1 and G-2 from round 7. The TP-DMX-PR1486-L2-AUDIT-003 directory is kept unchanged as the round-7 record"
+  },
+  "implementer": "Claude Code (claude-opus-5-5, desktop session d3cf0485) authored all code commits and the main merge 87ebb3fbd; 0c031b265 and aaa2d1ae0 were written by claude-sonnet-5-5 subagent lanes under that session and verified by it; 682a4711d was written by the session itself.",
+  "audited_files": [
+    ".gitignore",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "src/dopemux/ui/theme.py",
+    "ui-dashboard/eslint.config.js",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx",
+    "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+    "ui-dashboard/src/components/LoadInstrument.tsx",
+    "ui-dashboard/src/components/PredictionPanel.tsx",
+    "ui-dashboard/src/components/SignalFeed.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/TeamDashboard.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx",
+    "ui-dashboard/src/components/__tests__/SignalFeed.test.tsx",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+    "ui-dashboard/src/index.css",
+    "ui-dashboard/src/realtimeStateMapping.test.ts",
+    "ui-dashboard/src/theme.ts",
+    "ui-dashboard/src/time.test.ts",
+    "ui-dashboard/src/time.ts"
+  ],
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "claude-opus-5-5 supervisor (Co-Authored-By trailer on every code commit; 682a4711d written directly by it) with claude-sonnet-5-5 subagent lanes requested for 0c031b265 and aaa2d1ae0 (observed child model UNKNOWN); self-reported, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "fallback_auditor_approval": {
+    "approved_by": "operator",
+    "approval_text": "let's audit with agy argon 4, codex astra, and grok too",
+    "approved_at": "2026-10-30T10:37:01Z",
+    "merge_request_text": "Yes, squash-merge",
+    "merge_request_at": "2026-11-02T19:26:31Z",
+    "reaudit_approval_text": "Update, fix, re-audit",
+    "reaudit_approved_at": "2026-11-04T09:04:47Z",
+    "approval_source": "user messages in Claude Code session d3cf0485 (~/.claude/projects/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645.jsonl)",
+    "exact_model": "gemini-4-argon-high",
+    "recorded_auditor_model": "gemini",
+    "bounded_input": "trusted prompt only (task, output contract, delimited untrusted metadata and the unified diff base..head minus the earlier proof dirs); no checkout, no repository access",
+    "no_secret_constraints": "prompt built from git diff only; review_bundle scanned with scripts/audit/build_evidence_bundle.py secret patterns plus an email pattern (clean after redaction)"
+  },
+  "auditor_run": {
+    "agy_cli_version": "1.4.12",
+    "conversation_id": "1d34e0f6-f3ba-43a3-970b-38896b0b5116",
+    "launched": "2026-11-04T09:07:53Z",
+    "wrapper_end": "2026-11-04T09:09:04Z",
+    "attempts": 1,
+    "verdict": "PASS_WITH_RISKS",
+    "validation_status": "NOT_RUN",
+    "prompt_sha256": "275f72a8959baa328262a163c7247ae38250e0b20ff75af8633eb077ec5c3e91",
+    "raw_stream_sha256": "b693cea69778f695b24a32190bbde261eef4940e24141202b69c1eceffc7c6f3",
+    "conversation_store_sha256": "a2c12e04c61be127cd9abcb8bcf65a67bffbf9e265d77facd528de3a967dba9f"
+  },
+  "corroborating_audits": {
+    "grok": {
+      "verdict": "PASS_WITH_RISKS",
+      "model_receipt": "grok-4.7-build",
+      "governing": false,
+      "session_id": "01a1a5d0-98c4-7143-89ae-6c79f709d324",
+      "launched": "2026-11-04T09:07:53Z",
+      "record": "review_bundle/GROK_CORROBORATION.md"
+    },
+    "codex": {
+      "role": "advisory only",
+      "result": "NOT_RUN this round"
+    }
+  },
+  "evidence": {
+    "label": "AUDITOR_WRITTEN_RAW_RETAINED",
+    "custody": "~/.local/share/dopemux/evidence/pr1486/r8"
+  },
+  "validations": [
+    {
+      "name": "📊 CI Pipeline Summary",
+      "result": "NOT_RUN"
+    },
+    {
+      "name": "🧪 Unit Tests",
+      "result": "NOT_RUN",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41804831827/job/126489158740",
+      "detail": "check state IN_PROGRESS when the bundle was built"
+    },
+    {
+      "name": "independent embedded audit",
+      "result": "FAIL",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41804831608/job/126489159056"
+    },
+    {
+      "name": "PR Steward / final readiness",
+      "result": "FAIL",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41804886545"
+    },
+    {
+      "name": "local: npx tsc --noEmit (ui-dashboard)",
+      "result": "PASS",
+      "detail": "exit 0 at 682a4711d (LOCAL_VALIDATION.txt)"
+    },
+    {
+      "name": "local: npx vitest run (ui-dashboard)",
+      "result": "PASS",
+      "detail": "11 files, 107 tests passed, exit 0"
+    },
+    {
+      "name": "local: npx vite build (ui-dashboard)",
+      "result": "PASS",
+      "detail": "exit 0, output outside the repo"
+    },
+    {
+      "name": "local: npx eslint src (ui-dashboard)",
+      "result": "FAIL",
+      "detail": "exit 1, 18 problems (16 errors, 2 warnings), the same count as r5-r7; none in a file changed by 682a4711d (TaskSequencer, Accessibility.test, PortfolioTable, RepositoryPlannerPage and its test); no CI job runs ui-dashboard lint or tests"
+    },
+    {
+      "name": "audit: validation inside the sealed AGY session",
+      "result": "NOT_RUN",
+      "detail": "auditor reported NOT_RUN"
+    }
+  ],
+  "operator_decisions": [
+    "2026-11-02T19:26:31Z: operator said 'Yes, squash-merge', but the pre-merge check found the PR BEHIND main (#1483 landed), so no merge was attempted.",
+    "2026-11-04T09:04:47Z: operator chose 'Update, fix, re-audit' (merge main, fix round-7 Grok G-1 and G-2).",
+    "Round-8 findings are OPEN; none is ACCEPTED_RISK. Independence attestation and signatures: operator."
+  ],
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1486; signing, push and merge are operator gates",
+  "generated_at": "2026-11-04T09:17:55Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print=\"$(cat AUDIT_PROMPT.txt)\" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt (cwd = sealed dir holding only AUDIT_PROMPT.txt from scripts.audit.pal_clink_runner --build-prompt; AGY CLI 1.4.12; conversation_id=1d34e0f6-f3ba-43a3-970b-38896b0b5116; launched 2026-11-04T09:07:53Z, wrapper end 2026-11-04T09:09:04Z; one attempt; raw stream retained in review_bundle/AGY_OUTPUT_RAW.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1486-L2-AUDIT-004/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "AGY-F-01",
+        "severity": "LOW",
+        "title": "Late GET forecast backfill does not distinguish omitted vs explicitly cleared WS forecast",
+        "status": "OPEN",
+        "body": "[ui-dashboard/src/App.tsx:250-254] When the initial GET /api/adhd-state resolves after a live WebSocket state_update, App.tsx backfills readingRef.current.prediction whenever it is null. If a prior state_update explicitly carried an invalid or null predicted_load_15min, the older GET forecast still overwrites it and updates lastUpdated. Because the backend engine currently omits predicted_load_15min from state_update events, this is benign today but could surface if the WS payload contract is extended. OPERATOR: decision pending (round 8)."
+      },
+      {
+        "id": "AGY-F-02",
+        "severity": "LOW",
+        "title": "Timezone test mutates process.env.TZ in-process without restoring or isolating TZ",
+        "status": "OPEN",
+        "body": "[ui-dashboard/src/time.test.ts:5-6] time.test.ts sets process.env.TZ = 'America/Los_Angeles' at module scope after imports. If Vitest reuses a worker process where Date local timezone caching was already initialized by a prior test suite, local-time assertions at lines 30-33 can become execution-order dependent. OPERATOR: decision pending (round 8)."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validation was not run inside the sealed audit sessions (validation_status=NOT_RUN); local tsc, vitest (107/107) and vite build pass at the audited head.",
+      "AGY AGY-F-01 (LOW, OPEN): Late GET forecast backfill does not distinguish omitted vs explicitly cleared WS forecast",
+      "AGY AGY-F-02 (LOW, OPEN): Timezone test mutates process.env.TZ in-process without restoring or isolating TZ",
+      "Corroborating Grok G-1 (MEDIUM, OPEN): After any live state_update, a still-in-flight GET is ignored for load, energy, attention, recommendation, and upstream errors, then still applied when its mapped prediction is non-null and the current prediction is null. That branch calls applyReading without forecastCarried, so the late body becomes a new forecast arrival: forecastReceivedAtRef is set to Date.now(), the 15-minute expiry timer restarts, and lastUpdated advances. A socket snapshot that included predicted_load_15min and mapped it to null is treated the same as a snapshot that never had a forecast, so the older GET can put a number back on screen.",
+      "Corroborating Grok G-2 (MEDIUM, OPEN): The task queue and team board are still local sample data with the sequencer controls left in place. The chip text is now [SAMPLE] not connected, and TeamDashboard has the same label. A known load band still runs the sample sequence and the footer says the sequencer is calibrated for that band.",
+      "Corroborating Grok G-3 (LOW, OPEN): The overtime clock still uses brandTokens.colors.gremlinPink. theme.ts labels that token as a brand accent that is never a status color, and this refresh edited the same timer style block while leaving the color in place.",
+      "Corroborating Grok G-4 (LOW, OPEN): Retry always clears liveReadingSeenRef, sets the socket to connecting, and bumps retryTrigger, which closes the current WebSocket and opens another. A retry for an HTTP failure while the socket is open drops a live socket.",
+      "Supervisor check of AGY F-01 and Grok G-1 against the code: both accurate. The late-GET branch fills any null prediction, so it cannot tell a snapshot that omitted predicted_load_15min from one that sent it as null or invalid. Not reachable with today's engine, whose state_update never includes the key.",
+      "Grok G-2 is the same sample-data state as round-6 AGY F-03: TaskSequencer and TeamDashboard still render data labelled '[SAMPLE] not connected'.",
+      "Grok G-3 (gremlinPink overtime clock) and G-4 (Retry always reopens the socket) are in code this round did not change.",
+      "Audit scope: the diff is main (75dacb43f, the merge-base) to 682a4711d minus the 89 proof-only files of rounds 5-7 (EXCLUDED_PROOF_FILES.txt); the #1483 files brought in by merge 87ebb3fbd are main's and not in that diff.",
+      "Auditor model identity: requested gemini-4-argon-high; provider-attested identity UNKNOWN; recorded as the schema family value 'gemini'.",
+      "AGY tool permissions were always-proceed; containment rests on the observed absence of tool steps.",
+      "Codex (advisory route from the original request) was not run this round."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "status": "ok",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "id": "F-01",
+      "severity": "low",
+      "title": "Late GET forecast backfill does not distinguish omitted vs explicitly cleared WS forecast",
+      "file": "ui-dashboard/src/App.tsx",
+      "lines": "250-254",
+      "description": "When the initial GET /api/adhd-state resolves after a live WebSocket state_update, App.tsx backfills readingRef.current.prediction whenever it is null. If a prior state_update explicitly carried an invalid or null predicted_load_15min, the older GET forecast still overwrites it and updates lastUpdated. Because the backend engine currently omits predicted_load_15min from state_update events, this is benign today but could surface if the WS payload contract is extended."
+    },
+    {
+      "id": "F-02",
+      "severity": "low",
+      "title": "Timezone test mutates process.env.TZ in-process without restoring or isolating TZ",
+      "file": "ui-dashboard/src/time.test.ts",
+      "lines": "5-6",
+      "description": "time.test.ts sets process.env.TZ = 'America/Los_Angeles' at module scope after imports. If Vitest reuses a worker process where Date local timezone caching was already initialized by a prior test suite, local-time assertions at lines 30-33 can become execution-order dependent."
+    }
+  ],
+  "risks": [
+    "Pre-existing ESLint violations remain in untouched parts of ui-dashboard (documented in claudedocs/design/ui-dashboard-audit-2026-10-30.md as 16 errors and 2 warnings), and no CI workflow currently enforces ui-dashboard lint or unit tests.",
+    "TaskSequencer and TeamDashboard remain backed by static sample data; although now honestly labelled '[SAMPLE] not connected' instead of '[LIVE]', live endpoint wiring is deferred to follow-up work.",
+    "Validation was not executed in this embedded audit because candidate code execution and tools are disabled by policy (validation_status=NOT_RUN)."
+  ],
+  "rationale": "The diff for PR #1486 (head 682a4711d0464cc9dd166a267e9743b6ee2e55ba over base 75dacb43f651f0326a3c0146aae0c5301d6c08da) replaces fabricated fallback telemetry in ui-dashboard with explicit nullable readings (EMPTY_READING in cognitiveReading.ts) that render as 'unknown' when backend data is missing or out of range. Misleading status claims are corrected ('[LIVE]' -> '[SAMPLE] not connected' in TaskSequencer.tsx and TeamDashboard.tsx; verified consent claim -> '[CONSENT: UNKNOWN]' in App.tsx). Race conditions between initial HTTP state fetches and WebSocket state_update messages, partial upstream error reporting, and 15-minute forecast TTL carry-over/expiry are cleanly handled and covered by unit/component tests. Accessibility and visual clarity are improved by replacing CognitiveLoadGauge and PredictionPanel with LoadInstrument (with edge-safe rounding and ARIA meter semantics), AttentionStatePanel, and SignalFeed (persistent ARIA live log), while removing the scanline overlay and global CSS transition:all. Minor residual risks remain around pre-existing lint debt, lack of CI gating for ui-dashboard, and a minor late-GET forecast backfill edge case.",
+  "inspected_paths": [
+    ".gitignore",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "src/dopemux/ui/theme.py",
+    "ui-dashboard/eslint.config.js",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx",
+    "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+    "ui-dashboard/src/components/LoadInstrument.tsx",
+    "ui-dashboard/src/components/PredictionPanel.tsx",
+    "ui-dashboard/src/components/SignalFeed.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/TeamDashboard.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx",
+    "ui-dashboard/src/components/__tests__/SignalFeed.test.tsx",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+    "ui-dashboard/src/index.css",
+    "ui-dashboard/src/realtimeStateMapping.test.ts",
+    "ui-dashboard/src/theme.ts",
+    "ui-dashboard/src/time.test.ts",
+    "ui-dashboard/src/time.ts"
+  ],
+  "evidence_refs": [
+    ".gitignore:441-442",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md:118-153",
+    "src/dopemux/ui/theme.py:302-303",
+    "ui-dashboard/eslint.config.js:6-31",
+    "ui-dashboard/src/cognitiveReading.ts:33-141",
+    "ui-dashboard/src/App.tsx:86-326",
+    "ui-dashboard/src/App.tsx:388-545",
+    "ui-dashboard/src/App.test.tsx:44-554",
+    "ui-dashboard/src/components/LoadInstrument.tsx:56-256",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx:37-118",
+    "ui-dashboard/src/components/SignalFeed.tsx:33-198",
+    "ui-dashboard/src/components/TaskSequencer.tsx:47-49",
+    "ui-dashboard/src/components/TaskSequencer.tsx:552-563",
+    "ui-dashboard/src/components/TaskSequencer.tsx:1158-1161",
+    "ui-dashboard/src/components/TeamDashboard.tsx:99-113",
+    "ui-dashboard/src/index.css:5-63",
+    "ui-dashboard/src/theme.ts:5-116",
+    "ui-dashboard/src/time.ts:3-23",
+    "ui-dashboard/src/time.test.ts:5-33",
+    "ui-dashboard/src/realtimeStateMapping.test.ts:13-176",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx:10-136",
+    "ui-dashboard/src/components/__tests__/SignalFeed.test.tsx:22-44"
+  ],
+  "validation_status": "NOT_RUN"
+}
