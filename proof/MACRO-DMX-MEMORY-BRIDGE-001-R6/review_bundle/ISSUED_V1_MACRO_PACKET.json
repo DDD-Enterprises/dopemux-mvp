@@ -1,0 +1,234 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+  "objective": "Memory Bridge R6: fix the flaky R5 key-table test (W01, test file only, now), then after PR #1482 merges bring the then-current main into the branch and re-run every gate (W02, local-shell), so one final audit of the merged head can be signed for PR #1483. The Memory Bridge content diff against main stays byte-identical to the R5 audited subject except for the test fix. The R5 record (audited bce150b5858528bfb26b3b15e3248cb1294a65e5, operator-accepted) stays unchanged.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + child TASK_PACKETs; invariants C01-C07 in each child. PROPOSED macro allowances (enforced by the team lead): subagent tokens 400,000 in total; child dispatches 2 (W01 plus one retry); W02 is local-shell with no model call; intermediate model audits 0; advisor calls 0; one final independent audit of the merged head after #1482 (1 attempt, 0 retries, no fallback) on an operator-approved route. Hitting a cap: stop and return NEEDS_SUPERVISOR with the counters.",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator chat 2026-10-30: 'Update main first' and 'Fix it first'; merge order 'Run it in order' (#1482, #1483, #1485, #1484) relayed by the commissioning session. R6 needs AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R6_EXECUTION=YES; the final audit needs AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R6_AUDIT_ROUTE=grok-cli:grok-4.5:ONE_ATTEMPT (or another route)"
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit",
+      "sync_base_branch"
+    ],
+    "global_forbidden_actions": [
+      "merge_pr",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "sign",
+      "push",
+      "open_pr"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R6_EXECUTION=YES absent",
+      "W02 before PR #1482 is MERGED",
+      "any write outside a child allowlist; any change to register.tsx (W01 must return NEEDS_SUPERVISOR instead)",
+      "any child calls the advisor tool or delegates",
+      "a cap exceeded",
+      "the final audit route line absent at freeze",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "891e05e8fd9fd2266f3666668b50afa30e44ba897a2debc42cfcb4687f196d06"
+    },
+    "authority_ceiling": "Child-specific intersection; the team lead alone commits and runs the base sync. Push, PR update, signing, attestation, PR merge and the audit route are operator gates.",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; ct bind-record and ct validate-binding per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "6b0aec4d28a09a74fc591aeb1c6597f62c0347898dbd0651a5f26e59f29e141b"
+      },
+      "objective": "Fix the flaky key-table test (test file only) and prove it with repeated concurrent runs.",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-test-stability"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge_pr",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W01 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head c1256c0600",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001-R6",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "ba0dce253a5e554c0184fef3d270f8dc28d31cdd8238db5467d35b77cb6ed747"
+      },
+      "objective": "After #1482 merges: sync main, re-run every gate, freeze the merged head, prepare the R6 audit bundle.",
+      "dependencies": [
+        "W01"
+      ],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-base-update"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge_pr",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head c1256c0600",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "local-shell",
+          "model": "NONE",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001-R6",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-FREEZE",
+      "requires": [
+        "W01",
+        "W02"
+      ],
+      "condition": "the flaky test fixed (12 concurrent runs, 0 failures); main merged after #1482; all gates PASS; freeze for the single final L2 audit",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit of the merged head, different family, route operator-gated (proposed: the tool-less Grok CLI recipe, one attempt; the prompt carries one line per earlier finding). Commit every audit artifact before reading the verdict. PROPOSED macro allowances (enforced by the team lead): subagent tokens 400,000 in total; child dispatches 2 (W01 plus one retry); W02 is local-shell with no model call; intermediate model audits 0; advisor calls 0; one final independent audit of the merged head after #1482 (1 attempt, 0 retries, no fallback) on an operator-approved route. Hitting a cap: stop and return NEEDS_SUPERVISOR with the counters.",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "allowance_exceeded",
+      "child_advisor_call",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}

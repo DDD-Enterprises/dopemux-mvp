@@ -1,0 +1,152 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-R5-W01-OUTBOX-KEY-001",
+  "project": "dopemux-mvp",
+  "target": "Repair the R4 audit finding N12: make the outbox file key injective (ordinary ids unchanged; other ids get a sanitized prefix plus `~` and a 64-bit synchronous hash of the whole id) in register.tsx and its tests.",
+  "invariants": [
+    "C01 Shared workspace: other sessions may change unrelated files (.codex/config.toml, .agents/): do not touch them. Edit only your write_surface; never revert unrelated work. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head e0b90f5f2ce85833124b3a0912ed765115cba5e4; base 93050d135ffc2592000c1d0edef82b2912935525.",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history; you do not stage. The team lead alone commits (explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env* or credential files. No network. No real `dopemux capture emit`; tests mock `$.process`.",
+    "C05 Truth buckets: PASS / FAIL / NOT_RUN / UNKNOWN literally. Live behaviour is NOT_RUN.",
+    "C06 Return fields: status (READY_FOR_AUDIT | BLOCKED | NEEDS_SUPERVISOR | INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN), blockers, advisor_calls, files_written, observed_model.",
+    "C07 Stop and return evidence instead of improvising when a change is outside your write_surface, the finding cannot be repaired as stated, or validation still fails after one fix attempt. Do NOT widen the repair: N7-N11 stay accepted notes; the relay, replay, ring format, band and /bridge-note behave exactly as before.",
+    "C08 Evidence input: the R4 audit's adjudicated N12 is in proof/MACRO-DMX-MEMORY-BRIDGE-001-R4/AUDITOR_REPORT.md and proof/MACRO-DMX-MEMORY-BRIDGE-001-R4/review_bundle/GROK_ADJUDICATION.md (audited content head 88e7b7de3a43b50b4c4cdac7fc340f21bda03e40).",
+    "A01 PROPOSED allowances (caps, not forecasts; accepted by authorizing R5): elapsed 20 min; subagent tokens 250,000; tool uses 80; attempts: 1 Haiku attempt + 1 Sonnet fallback only on an evidence-backed STOP (the fallback is the retry).",
+    "A02 The team lead records duration_ms, subagent_tokens and tool_uses from your completion notice. Any exceeded cap or advisor call ends the workstream with NEEDS_SUPERVISOR; the diff is preserved.",
+    "K01 N12 (LOW): `safeId` (register.tsx ~266) maps a session id to a file key by replacing characters outside `[A-Za-z0-9_-]` with `_` and truncating to 80, so two distinct ids can share one outbox file and one `$.store` key. Make the mapping injective while keeping every ordinary key unchanged (no migration):",
+    "K02 Rule (designed by the coordinator on claude-opus-5-5): if the id matches `/^[A-Za-z0-9_-]{1,80}$/` the key is the id itself (UUID-shaped Claude Code session ids keep their existing file names). Otherwise the key is `<prefix>~<h>`, where `<prefix>` is the id with every character outside `[A-Za-z0-9_-]` replaced by `_`, cut to 56 characters (it may be empty), and `<h>` is a 16-hex-character hash of the WHOLE original id. Keys of the first form never contain `~`, so the two forms cannot collide with each other; two different ids of the second form collide only if their 64-bit hashes collide. The key is at most 73 characters. The empty id takes the second form (`~<h>`), which also removes the old `'unknown'` collision between an empty id and an id literally named `unknown`.",
+    "K03 The hash must be synchronous (safeId is called in synchronous paths): two 32-bit FNV-1a passes over the UTF-16 code units of the id, using `Math.imul(h ^ code, 16777619) >>> 0`, the first with offset basis 2166136261 (0x811c9dc5), the second with the same algorithm over the id prefixed by one NUL character, each rendered as 8 lower-case hex digits and concatenated (16 hex). Put it in a small pure helper next to `safeId`. No `crypto.subtle`, no BigInt.",
+    "K04 Keep every caller as it is (`generationPath`, the `$.store` key `outbox:<key>`, the `own` key set in `readPrior`, `adopted_from`). The file-name pattern in `readPrior` (`/^outbox-(.+?)(?:\\.alt)?\\.jsonl$/`) already accepts `~`; confirm it with a test.",
+    "K05 Tests (failing run first): a UUID-shaped id keeps its key unchanged; two ids that differ only in a disallowed character (for example `a/b` and `a:b`) get different keys and different files; two ids longer than 80 characters that share their first 80 characters get different keys; the empty id and an id named `unknown` get different keys; every key matches `/^[A-Za-z0-9_~-]{1,73}$/` and keys of the second form contain exactly one `~`; a session whose id has a disallowed character writes and reloads its own outbox file, and its file is found by `readPrior` from another session (the relay still works). All existing tests keep passing.",
+    "K06 Scope guard: only plugins/dopemux-memory-bridge/hooks/register.tsx and plugins/dopemux-memory-bridge/hooks/register.test.ts; only `safeId` and the new hash helper change in register.tsx. Report `git diff --numstat`.",
+    "K07 Gates: `claude plugin test plugins/dopemux-memory-bridge`, `claude plugin validate plugins/dopemux-memory-bridge`, `tsc -p` with an out-of-repo tsconfig on the Claude Code declaration the coordinator supplies (path and sha256 in your prompt)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001-R5",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R5",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/memory-bridge-001-b349d8",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(memory-bridge): make the outbox file key injective for unusual session ids",
+    "allowlist": [
+      "plugins/dopemux-memory-bridge/hooks/register.tsx",
+      "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+    ],
+    "verify": [
+      "claude plugin test plugins/dopemux-memory-bridge",
+      "claude plugin validate plugins/dopemux-memory-bridge",
+      "git diff --numstat",
+      "git status --porcelain"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod (repaired after three audits)",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001-R5. Draft until the final independent L2 audit of the repaired head and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Read N12 and safeId",
+      "requirements": [
+        "Quote the function."
+      ],
+      "commands": [
+        "grep -n 'function safeId' -A 4 plugins/dopemux-memory-bridge/hooks/register.tsx"
+      ],
+      "expected_files": [],
+      "validation": [
+        "located"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R4/AUDITOR_REPORT.md",
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R4/review_bundle/GROK_ADJUDICATION.md",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "TDD: tests first, then the helper and the new safeId",
+      "requirements": [
+        "Only the two files; failing run first."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-memory-bridge"
+      ],
+      "expected_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ],
+      "validation": [
+        "tests fail before and pass after"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Return",
+      "requirements": [
+        "Status, gates, numstat, example keys, advisor_calls, files_written, observed_model, counters."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R5",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001-R5",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-haiku-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [
+      {
+        "runner": "claude-code-agent",
+        "model": "claude-sonnet-5-5",
+        "effort": "UNKNOWN"
+      }
+    ],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-memory-bridge/hooks/register.tsx",
+    "plugins/dopemux-memory-bridge/hooks/register.test.ts"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-outbox-key"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head e0b90f5f2ce85833124b3a0912ed765115cba5e4; base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

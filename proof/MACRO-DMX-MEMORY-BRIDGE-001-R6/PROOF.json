@@ -1,0 +1,254 @@
+{
+  "tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+  "packet_id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+  "tp_path": "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/review_bundle/MACRO_PACKET.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8",
+  "branch": "claude/memory-bridge-001-b349d8",
+  "repo_identity": "DDD-Enterprises/dopemux-mvp (local worktree; origin matches PR #1483's repository)",
+  "base_sha": "6fb9d81798cbcca7f99c96f1b9fd07b6d3c7db68",
+  "audited_head_sha": "1cddbfb339650c4f8f02e87cb62e7aa8f08f90e1",
+  "head_sha": "1cddbfb339650c4f8f02e87cb62e7aa8f08f90e1",
+  "commit_sha": "Audited content head 1cddbfb339650c4f8f02e87cb62e7aa8f08f90e1 (merge of main 6fb9d8179 into W03 638074c42; content commits W01 4f66e7ea6, W03 638074c42); proof-only commits follow it: a789a130e (W02 gate record and audit bundle), ecb32e633 (audit custody), then the commit holding this file (see git log). The R2 to R5 records are unchanged.",
+  "pr_url_or_blocker": "NO PUSH: PR #1483 (ready for review) still carries bff3fd46e; pushing, attestation and signing are operator gates.",
+  "slices": [
+    {
+      "id": "issuance",
+      "commit": "354355474",
+      "status": "PASS",
+      "note": "R6 package and authorization record"
+    },
+    {
+      "id": "W01",
+      "commit": "4f66e7ea6",
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "claude-sonnet-5-5 (response-claimed, no receipt)",
+      "status": "PASS",
+      "note": "flaky key-table test fix, test file only; 138,214 tokens, 28 tool uses, 251.3 s (harness-measured); advisor 0"
+    },
+    {
+      "id": "amendment-v2",
+      "commit": "7e6aae4dc",
+      "status": "PASS",
+      "note": "operator 'Yes, amend R6': W03 added, v1 kept as ISSUED_V1_*"
+    },
+    {
+      "id": "W03",
+      "commit": "638074c42",
+      "model_requested": "claude-opus-5-5",
+      "model_observed": "claude-opus-5-5 (response-claimed, no receipt)",
+      "status": "PASS",
+      "note": "C1-C3 doc corrections, C4 erratum; coordinator, no child"
+    },
+    {
+      "id": "W02",
+      "commit": "1cddbfb33 (sync), a789a130e (record)",
+      "model_requested": "NONE (local-shell)",
+      "model_observed": "NONE",
+      "status": "PASS",
+      "note": "main merged after #1482 with the app sync tool; all gates PASS"
+    },
+    {
+      "id": "audit-custody",
+      "commit": "ecb32e633",
+      "status": "PASS",
+      "note": "committed before the verdict was read"
+    }
+  ],
+  "files_changed": [
+    "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+    "plugins/dopemux-memory-bridge/README.md",
+    "docs/02-how-to/memory-bridge.md",
+    "(change against the previous audited head bce150b58: 3 files, 62 insertions, 14 deletions; register.tsx unchanged; cumulative content set unchanged at 6 files)"
+  ],
+  "validations": [
+    {
+      "command": "claude plugin validate plugins/dopemux-memory-bridge",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "advisory warnings only; at the frozen head (CLI 2.1.316)"
+    },
+    {
+      "command": "claude plugin test plugins/dopemux-memory-bridge (sequential, then 2 batches of 6 concurrent runs)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "134 pass / 0 fail in all 13 runs"
+    },
+    {
+      "command": "tsc -p <out-of-repo tsconfig, strict + noUncheckedIndexedAccess, Claude Code 2.1.309 declaration>",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": ""
+    },
+    {
+      "command": "claude plugin validate / test plugins/dopemux-pulse and plugins/dopemux-route-ledger",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "29 and 104 tests"
+    },
+    {
+      "command": "git diff --check origin/main..HEAD",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "at the frozen head and at the W02 record head"
+    },
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "status=PASS, max_lane=L2"
+    },
+    {
+      "command": "grep for 7+ hex characters and PR numbers in the how-to and README",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "0 matches"
+    },
+    {
+      "command": "grok-cli grok-4.5 tool-less final audit (one attempt)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "PASS_WITH_RISKS; init.tools == []; 0 tool_use; Q1-Q14 PASS; C1-C4 REPAIRED; no new findings"
+    },
+    {
+      "command": "pre-commit run",
+      "exit_code": 127,
+      "bucket": "NOT_RUN",
+      "note": "no pre-commit on PATH and no .venv in this worktree"
+    },
+    {
+      "command": "live session; real dopemux capture emit; any service",
+      "exit_code": 0,
+      "bucket": "NOT_RUN",
+      "note": "not in reach of this macro"
+    },
+    {
+      "command": "python3 scripts/audit/validate_audit_proof.py proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/PROOF.json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "note": "embedded_audit schema 1/1 PASS"
+    },
+    {
+      "command": "python3 scripts/governance/validate_change_contract.py --proof-only --content-head 1cddbfb33 --audited-head 1cddbfb33 --proof-head <proof head> --base 1cddbfb33 --head <proof head>",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "note": "expected only finding: proof_only_missing_signature (PROOF.json.sig absent, operator step); result in RETURN-01.md"
+    },
+    {
+      "command": "signature and local acceptance",
+      "exit_code": 0,
+      "bucket": "NOT_RUN",
+      "note": "operator steps; PROOF.json is unsigned"
+    }
+  ],
+  "codereview_status": "Independent final audit PASS_WITH_RISKS (grok-cli grok-4.5, tool-less, operator-approved route, one attempt). All 14 questions PASS. Coordinator (claude-opus-5-5) re-checked every disposition and the auditor's needs_more_evidence items in source. No PAL codereview run.",
+  "precommit_status": "NOT_RUN (no pre-commit on PATH and no .venv in this worktree)",
+  "residual_risks": [
+    "No live proof; desktop $.process, Pulse band order and $.fs.write atomicity UNKNOWN (N7, N9, N10).",
+    "Relay residuals (N11): ledger no-ops or bounded by 7 days; only the eight newest earlier files are scanned.",
+    "N8: fire-and-forget observation in the tool.call hook (design note).",
+    "The status label `📮 memory-only` is unchanged; the docs explain it means no outbox file.",
+    "R2 wall-time cap breach (C4) is corrected by an erratum; ratification or a NEEDS_SUPERVISOR record for R2 is the operator's decision.",
+    "Recap, decision.logged, dope-memory REST replay and ConPort access are NOT_BUILT by design.",
+    "Auditor self-reported grok; the CLI init event shows grok-4.5; provider-attested identity UNKNOWN.",
+    "Operator decision 2026-11-01: N7-N11 accepted for the R6 head (ACCEPTED_RISK); see review_bundle/FOLLOWUPS.md."
+  ],
+  "unknowns": [
+    "$.fs.write atomicity",
+    "outer/inner order of two user-tier plugins hooking AbovePrompt",
+    "provider-attested model identity and effort of every child and of the auditor",
+    "PROOF.json.sig absent: signing needs the operator's key",
+    "audit_identity.independence unattested"
+  ],
+  "cleanup_status": "Worktree retained; nothing pushed; task-packets/MACRO-DMX-MEMORY-BRIDGE-001*/ stay untracked by design; audit artifacts committed in the flat review_bundle. Unrelated changes by other sessions (.codex/config.toml, .agents/) are not part of any commit here.",
+  "audit_evidence": {
+    "grok": {
+      "prompt_sha256": "d176f841a244e558b8211e723065071b042140534ded0b2d55d92b019c18da6a",
+      "response_sha256": "7609cc70a867ed02d109bc0d3e7454bd086db6b1bf3884a5159657127eea7beb",
+      "frozen_diff_sha256": "172cc0db4deecd99f9b530aec21f735b08fe1ed404a178151642bfa2205a5ea1",
+      "stream_sha256": "0726b2f923242cd528e97b0abb2c9c27bf8b99f8943db1053be983d39ee02cba",
+      "probe_stream_sha256": "67c35f4fb969e8c332193a55e70e81e53bbc894189caf4c1e2ba20ffcfbfb284",
+      "path": "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/review_bundle/ (files GROK_*)"
+    }
+  },
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-opus-5-5 (coordinator, W03); claude-sonnet-5-5 (R6 W01); claude-haiku-5-5 and claude-sonnet-5-5 (earlier builds)",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop (coordinator); claude-code-agent (children)",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "sealed directory holding only AUDIT_PROMPT.txt; grok CLI 1.0.70 with the tool-less recipe (disallowed tool ids plus a no-skills system prompt); the probe confirmed init.tools == [], the real run init.tools == [] with 0 tool_use blocks; probe 2026-11-01T06:10:22Z, run 06:10:39Z to 06:12:43Z; exact command in review_bundle/GROK_INVOCATION.txt; one attempt, no retries, no fallback.",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "N7",
+        "severity": "INFO",
+        "title": "Mod has never run in a real Claude Code session; proof is test-kit only.",
+        "status": "ACCEPTED_RISK",
+        "body": "Docs and disclosures: live behaviour NOT_RUN; tests only. [docs/02-how-to/memory-bridge.md] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. The operator's live smoke test is the clearing action. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
+      },
+      {
+        "id": "N8",
+        "severity": "INFO",
+        "title": "tool.call observes with void after next(e) returns; observation is async fire-and-forget.",
+        "status": "ACCEPTED_RISK",
+        "body": "tool.call returns next result then void observeTool(...).catch. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, design note; INFO. The host result is never altered or delayed. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
+      },
+      {
+        "id": "N9",
+        "severity": "INFO",
+        "title": "$.process on the desktop surface remains UNKNOWN; git segment and ledger replay depend on it.",
+        "status": "ACCEPTED_RISK",
+        "body": "Docs: $.process on desktop UNKNOWN. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosure; INFO. The code degrades without spending attempts. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
+      },
+      {
+        "id": "N10",
+        "severity": "INFO",
+        "title": "An outer AbovePrompt hook that omits next(e) (e.g. Pulse focus) hides the welcome-back band; plugin order UNKNOWN.",
+        "status": "ACCEPTED_RISK",
+        "body": "Accepted Pulse prepend-without-next test; plugin order UNKNOWN. [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, accepted caveat; INFO. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
+      },
+      {
+        "id": "N11",
+        "severity": "INFO",
+        "title": "Relay residuals: possible dual delivery (ledger no-op) and bounded re-relay after cap-drop of a sent copy; only eight newest earlier files scanned.",
+        "status": "ACCEPTED_RISK",
+        "body": "Disclosed relay residuals (idle>10min double-delivery no-op; re-relay after cap drop; eight newest files). [plugins/dopemux-memory-bridge/hooks/register.tsx] ADJUDICATION: Coordinator: STILL_PRESENT, disclosed relay residuals; INFO. OPERATOR: accepted for the R6 head 1cddbfb33 on 2026-11-01 ('Yes, accept them'; also accepted for the R5 head on 2026-10-30); see review_bundle/FOLLOWUPS.md."
+      }
+    ],
+    "fixes_applied": [
+      "C1 REPAIRED: docs say $.store is a file on disk; memory-only means no outbox file (638074c42).",
+      "C2 REPAIRED: never-creates-.dopemux applies to the outbox writer; replay can create it in a dopemux-mvp checkout (638074c42).",
+      "C3 REPAIRED: README verification query selects id, not event_id (638074c42).",
+      "C4 REPAIRED as a record: ERRATUM_R2_WALL_CAP.md (638074c42).",
+      "Flaky key-table test fixed, test-only (4f66e7ea6)."
+    ],
+    "remaining_risks": [
+      "N7/N9/N10: never run live; desktop $.process and Pulse band order UNKNOWN.",
+      "N11: relay residuals (ledger no-ops; bounded re-relay; eight-file window).",
+      "N8: fire-and-forget observation in the tool.call hook (design note)."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

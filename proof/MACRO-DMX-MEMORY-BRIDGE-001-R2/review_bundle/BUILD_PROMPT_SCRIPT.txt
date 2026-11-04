@@ -1,0 +1,44 @@
+import hashlib
+import pathlib
+import subprocess
+
+A = pathlib.Path("/private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-memory-bridge-001-b349d8/0e3904e3-b5c3-497c-9b8c-3ae61536f9ed/scratchpad/audit")
+REPO = "/Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8"
+BASE = "93050d135ffc2592000c1d0edef82b2912935525"
+HEAD = "52855fb35ea40f420bdacdcab9e092f8d15292c6"
+PATHS = ["plugins/dopemux-memory-bridge", "docs/02-how-to/memory-bridge.md"]
+
+diff = subprocess.run(["git", "-C", REPO, "diff", BASE, HEAD, "--"] + PATHS, capture_output=True, text=True, check=True).stdout
+(A / "FROZEN_CUMULATIVE.diff").write_text(diff)
+
+validation = (
+    "`claude plugin validate plugins/dopemux-memory-bridge` exit 0 (advisory warnings only: no icon, no marketplace install line); "
+    "`claude plugin test plugins/dopemux-memory-bridge` 105 pass / 0 fail; `tsc -p` strict + noUncheckedIndexedAccess against the 2.1.304 declaration exit 0; "
+    "`git diff --check` clean; the repository change-contract preflight PASS (max lane L2); the docs frontmatter, prohibited-patterns and graph validators PASS on the how-to; "
+    "a secret-shape grep over the non-test files found nothing; the implementers ran mutation checks (removing the deny/pass-through checks, the in-flight guards, the band wrap, the clear handling and the redaction made at least one test fail). "
+    "NOT_RUN: the pre-commit hooks (not installed in the worktree), any live session, any real `dopemux capture emit`, any service."
+)
+
+t = (A / "AUDIT_PROMPT_TEMPLATE.txt").read_text()
+for key, value in (
+    ("{{BASE_SHA}}", BASE),
+    ("{{HEAD_SHA}}", HEAD),
+    ("{{COMMIT_COUNT}}", "3"),
+    ("{{FILE_COUNT}}", "6"),
+    ("{{VALIDATION_SUMMARY}}", validation),
+):
+    assert key in t, key
+    t = t.replace(key, value)
+assert t.count("{{DIFF}}") == 1
+t = t.replace("{{DIFF}}", diff)
+for leftover in ("{{BASE_SHA}}", "{{HEAD_SHA}}", "{{COMMIT_COUNT}}", "{{FILE_COUNT}}", "{{VALIDATION_SUMMARY}}"):
+    assert leftover not in t.replace(diff, ""), leftover
+
+(A / "real_seal").mkdir(exist_ok=True)
+(A / "probe_seal").mkdir(exist_ok=True)
+(A / "real_seal" / "AUDIT_PROMPT.txt").write_text(t)
+(A / "probe_seal" / "PROBE_PROMPT.txt").write_text(
+    "Probe only: reply with the single word OK. Do not use any tool.\n"
+)
+print("prompt bytes", len(t.encode()), hashlib.sha256(t.encode()).hexdigest())
+print("diff bytes", len(diff.encode()), hashlib.sha256(diff.encode()).hexdigest())
