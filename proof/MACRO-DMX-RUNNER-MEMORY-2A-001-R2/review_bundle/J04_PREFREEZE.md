@@ -43,9 +43,37 @@ The deselected test is the pre-existing `tests/dcp/test_dcp_0002_contract_deriva
 | `scripts/check_root_hygiene.py --all-files` | exit 1, pre-existing: all 11 flagged files are on `origin/main` (`FINAL_*`, `.antigravitycli/*.json`, three `caveman` rule files); 2A's only root-level changes, `AGENTS.md` and `mcp_catalog.yaml`, are not flagged |
 | main since the merge | `origin/main` moved to `75dacb43f` (#1483, Memory Bridge); a trial merge with HEAD is clean; not merged (the earlier ruling named `6fb9d8179`) |
 
+## Second merge from main (operator ruling, 2026-11-04)
+
+| Answer | In answer to |
+|---|---|
+| "Yes, merge main now" | "Merge the new main (#1483) into 2A now, before the freeze?" |
+
+| Item | Value |
+|---|---|
+| Merged | `origin/main` at `75dacb43f` (#1483, Memory Bridge), re-checked as still current immediately before merging |
+| Merge commit | `2fc49a1c2`; parents `eb601b33a` (2A) and `75dacb43f` (main) |
+| Result | no conflicts |
+| Whole 2A set on that merge, services venv | **2,127 passed**, 1 deselected (the same `test_16`), exit 0 |
+
+## CI on the draft PR (#1498) at `eb601b33a`
+
+Passed: Unit Tests, all static and governance jobs except the two below, and every image build except adhd-engine, including conport and dope-memory (W10's COPY lines).
+
+| Check | State | Cause | Caused by 2A? |
+|---|---|---|---|
+| Scout × 9 | fail | Docker Hub login rejects `DOCKER_SCOUT_HUB_USER/PASSWORD`; same error on `fix/mcp-fleet-r1-repair`, 2026-10-19. Clearing it is a credential change, owner-gated | No. Scout runs only on Dockerfile changes; W10 changed two |
+| Build adhd-engine | fail (cancelled) | `timeout-minutes: 30` hit about 2 minutes short. `pip install .[services]` took 1,693 s (326 s on 2026-10-19) and finished; the 183 s export got about 75 s. Most of it was `Preparing metadata` and source wheels on Alpine. The exact upstream change is UNKNOWN | No dependency input changed: `pyproject.toml` is unchanged on main since 2026-10-19 and 2A does not touch it. The only 2A change in adhd-engine is `conport_client.py` |
+| independent embedded audit | fail | `audit_not_executed`, `audit_provenance_missing` | No, expected until the audit |
+| PR Steward / final readiness | fail | chained to the audit run | No, expected until the audit |
+
+Unresolved review threads: 0.
+
+A cancelled build exports no cache, and `COPY src` comes before pip in that Dockerfile, so the merge push repeats the 28-minute step. If it times out again, the fix sits in `.github/workflows/containers.yml` or the Dockerfile, both outside 2A's write surface, and needs an operator ruling.
+
 ## Still before freeze (doctrine: CI and reviews settle before the substantive freeze)
 
-1. **CI.** It runs on the draft PR. Review threads and CI must settle before the freeze.
+1. **CI.** It re-runs on the merge head. Review threads and CI must settle before the freeze.
 2. **Freeze.** The head after CI settles becomes the audit subject.
 3. **Audit packet.** Grok (grok-4.5, tool-less) and AGY (gemini-4-argon-high, sandboxed), following #1482's R6 recipe, with operator gate lines.
    - The 2A diff is much larger than R6's, so the audit input needs a scoping plan: a delta summary, the key files in full, and the return records.
