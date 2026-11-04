@@ -8,9 +8,9 @@ import sqlite3
 import httpx
 import pytest
 
-from .helpers import fake_token, write_hash_file
+from .helpers import fake_token, load_dope_memory_auth_identity, write_hash_file
 
-import auth_identity  # noqa: E402
+auth_identity = load_dope_memory_auth_identity()
 
 BOUND = "ws-bound"
 

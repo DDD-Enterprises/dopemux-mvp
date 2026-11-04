@@ -8,9 +8,12 @@ On a Mac with issued tokens that would read the real keychain. Run those suites 
 and every `get_token` fails with KeychainError, which is the Linux-container case.
 """
 
+import importlib
+
 import pytest
 
 
 @pytest.fixture(autouse=True)
 def _no_real_keychain(monkeypatch):
-    monkeypatch.setattr("dopemux.auth.keychain.SECURITY_BIN", "/nonexistent/security")
+    keychain = importlib.import_module("dopemux.auth.keychain")
+    monkeypatch.setattr(keychain, "SECURITY_BIN", "/nonexistent/security")

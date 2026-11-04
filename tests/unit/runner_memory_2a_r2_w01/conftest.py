@@ -13,11 +13,18 @@ from pathlib import Path
 
 import pytest
 
+from .helpers import pin_dope_memory_modules
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SERVICE_DIR = REPO_ROOT / "services" / "working-memory-assistant"
 
 if str(SERVICE_DIR) not in sys.path:
     sys.path.append(str(SERVICE_DIR))
+
+
+@pytest.fixture(autouse=True)
+def _dope_memory_modules(monkeypatch):
+    pin_dope_memory_modules(monkeypatch)
 
 
 @pytest.fixture()

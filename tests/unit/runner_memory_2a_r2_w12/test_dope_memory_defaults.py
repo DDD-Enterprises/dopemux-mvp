@@ -10,6 +10,8 @@ from __future__ import annotations
 import httpx
 import pytest
 
+from ..runner_memory_2a_r2_w01.helpers import pin_dope_memory_modules
+
 BOUND = "ws-bound"
 SERVER_INSTANCE = "inst-server"
 
@@ -22,6 +24,11 @@ WRITE_ROUTES = {
     "memory_mark_issue": {"issue_entry_id": "a", "description": "d"},
 }
 ROUTES = sorted(WRITE_ROUTES)
+
+
+@pytest.fixture(autouse=True)
+def _dope_memory_modules(monkeypatch):
+    pin_dope_memory_modules(monkeypatch)
 
 
 class Recorder:

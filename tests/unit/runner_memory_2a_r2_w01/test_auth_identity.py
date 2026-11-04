@@ -9,9 +9,14 @@ import logging
 
 import pytest
 
-from .helpers import HASH_FILE_NAME, fake_token, write_hash_file
+from .helpers import (
+    HASH_FILE_NAME,
+    fake_token,
+    load_dope_memory_auth_identity,
+    write_hash_file,
+)
 
-import auth_identity  # noqa: E402
+auth_identity = load_dope_memory_auth_identity()
 
 
 def _gate(mode, tmp_path, tokens=None):

@@ -9,6 +9,7 @@ the keychain even when a fixture forgets to patch ``get_token``.
 
 from __future__ import annotations
 
+import importlib
 import json
 import secrets
 import sys
@@ -81,7 +82,8 @@ def _isolate(monkeypatch):
     """No ambient ids, and no path to the real keychain."""
     for name in _ID_ENV:
         monkeypatch.delenv(name, raising=False)
-    monkeypatch.setattr("dopemux.auth.keychain.SECURITY_BIN", "/nonexistent/security")
+    keychain = importlib.import_module("dopemux.auth.keychain")
+    monkeypatch.setattr(keychain, "SECURITY_BIN", "/nonexistent/security")
 
 
 @pytest.fixture
@@ -145,7 +147,8 @@ def token_ok(monkeypatch):
         asked.append(principal)
         return FAKE_TOKEN
 
-    monkeypatch.setattr("dopemux.auth.get_token", fake_get_token)
+    auth = importlib.import_module("dopemux.auth")
+    monkeypatch.setattr(auth, "get_token", fake_get_token)
     return asked
 
 
@@ -158,7 +161,8 @@ def token_missing(monkeypatch):
         asked.append(principal)
         raise TokenNotFoundError(f"no dopemux-mcp keychain item for {principal}")
 
-    monkeypatch.setattr("dopemux.auth.get_token", fake_get_token)
+    auth = importlib.import_module("dopemux.auth")
+    monkeypatch.setattr(auth, "get_token", fake_get_token)
     return asked
 
 
@@ -169,7 +173,8 @@ def token_keychain_down(monkeypatch):
     def fake_get_token(principal: str) -> str:
         raise KeychainError("cannot run /usr/bin/security (FileNotFoundError); needs macOS")
 
-    monkeypatch.setattr("dopemux.auth.get_token", fake_get_token)
+    auth = importlib.import_module("dopemux.auth")
+    monkeypatch.setattr(auth, "get_token", fake_get_token)
 
 
 @pytest.fixture

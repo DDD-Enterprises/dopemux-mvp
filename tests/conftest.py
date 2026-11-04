@@ -1,3 +1,4 @@
+import importlib
 import os
 import sys
 from pathlib import Path
@@ -193,10 +194,10 @@ def _no_real_keychain(monkeypatch):
     dopemux.auth tests do. Does nothing if `dopemux.auth` cannot be imported.
     """
     try:
-        import dopemux.auth.keychain  # noqa: F401
+        keychain = importlib.import_module("dopemux.auth.keychain")
     except Exception:  # pragma: no cover - import shape varies across envs
         return
-    monkeypatch.setattr("dopemux.auth.keychain.SECURITY_BIN", "/nonexistent/security")
+    monkeypatch.setattr(keychain, "SECURITY_BIN", "/nonexistent/security")
 
 
 def pytest_collection_modifyitems(config, items):
