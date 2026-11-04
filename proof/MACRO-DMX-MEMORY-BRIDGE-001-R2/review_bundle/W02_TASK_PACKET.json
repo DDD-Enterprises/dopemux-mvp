@@ -1,0 +1,190 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-R2-W02-OUTBOX-BAND-001",
+  "project": "dopemux-mvp",
+  "target": "Build the no-store core of the `dopemux-memory-bridge` Claude Code function-hook mod under plugins/dopemux-memory-bridge/: the per-session JSONL outbox ring, capture on turn.complete / session.compact / session.end plus TodoWrite completions, the pending-count status line, and the welcome-back band. No service, HTTP or `dopemux` dependency.",
+  "invariants": [
+    "C01 Shared workspace: other workers may edit this checkout. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in the execution worktree /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8 (operator-directed; the R1 packets named .worktrees/memory-bridge-001 / feat/memory-bridge-001, see proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/AUTHORIZATION_RECORD.md); base 93050d135ffc2592000c1d0edef82b2912935525. Verify `git rev-parse --show-toplevel` and the branch before the first write.",
+    "C02 You never commit, push, merge, open a PR, sign, tag, change git config or rewrite history. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env*, credential files, tokens or keys; never write a secret into a file, test fixture or return. Network use is limited to what this packet names (this revision allows none).",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. The conport, dope-memory and ADHD-engine services were unreachable (connection refused) when W01 probed them: live behaviour is NOT_RUN. Do not invent endpoints, tool names, request fields or ports; use only what this packet names or what W01_FINDINGS.md records with file:line; otherwise UNKNOWN.",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers (each with the action that clears it), advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when: a needed file is outside your write_surface; a contract-sensitive surface would change; a required fact is UNKNOWN; or validation still fails after one fix attempt for the same cause.",
+    "C08 Authority order: this packet, then runtime code, then schemas, then tests, then docs. The opportunity map is not evidence of runtime behaviour.",
+    "C09 Evidence input: proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md (sha256 ccc05d92571130d0aed95adc1216214585ebaf4eee6f65c2c42f2e18cd9c70bd) is the W01 result this revision is sized from, committed before dispatch. If the hash differs, STOP. Its GATE_TABLE reductions are binding; where this packet and the findings disagree, STOP and report.",
+    "M01 Authoring contract: the coordinator loads the `plugin-authoring` skill at dispatch and passes you (a) the path of this build's claude-code.d.ts and (b) the reference notes. The declaration checked is Claude Code 2.1.304, sha256 652e8b9b5ad4d2d7b8936a46c760bf93ab20dc7b72f4334cf3f39dd0b6109385. If the file you receive differs, re-check every event, noun and method you use and list each difference in your return. If it was not supplied, STOP.",
+    "M02 Pattern reference (read-only, `git show feat/pulse-001:plugins/dopemux-pulse/<file>`, else `origin/feat/pulse-001`; if neither resolves, STOP): helpers declared at the top of the file that take `$` and the state object as arguments, every hook body wrapped so no exception surfaces, `session.end` with reason 'clear' keeps running, `Promise.race` against `$.clock.after` for timeouts, command registration and `command.run`.",
+    "M03 Pulse audit lesson F1: a raced async call is not cancelled. Keep an in-flight flag per resource (the outbox write chain, the ledger subprocess) so a hung call cannot pile up overlapping calls; test with a 'slow' mock.",
+    "M04 Hook safety: observing hooks (tool.call, turn.start, turn.complete, session.compact) call `next(e)` and return its result unchanged: never deny, rewrite, delay or veto. No `prompt.submit` rewriting, no `$.model.*`, no `$.agent.*`, no `$.tool.register`, no `$.session.send`, no `$.session.append`, no `$.http.fetch` (this revision makes no HTTP call at all; tests assert it). The only slash command is the one W03 names.",
+    "M05 Home: plugins/dopemux-memory-bridge/ with the layout of plugins/dopemux-pulse/ on feat/pulse-001: .claude-plugin/plugin.json, hooks/hooks.json (one module path), hooks/register.tsx, hooks/register.test.ts, README.md; types/index.d.ts only if `$.state` is used. Whether hooks.json may name more than one module is UNKNOWN (W01): use one module. Do not write under ~/.claude, do not enable hot reload, do not run `claude plugin install`.",
+    "M06 Surfaces: `$.process` is documented CLI-only; its behaviour on the operator's desktop surface is UNKNOWN. Everything that needs it (git status in the band, the ledger replay) must degrade without throwing, and the outbox plus status line must work without it. AbovePrompt exists on the terminal and desktop surfaces only. Tests cover with and without `$.process`.",
+    "M07 Verification: TDD (show the failing test before the code). Run `claude plugin validate plugins/dopemux-memory-bridge` and `claude plugin test plugins/dopemux-memory-bridge`; type-check with `tsc -p` if the types were laid. Report each as PASS/FAIL/NOT_RUN with the reason. Live proof (a real session with the mod) is NOT_RUN by design: say what the operator must do to see it.",
+    "M08 Privacy: the outbox and any ledger event hold only derived fields (goal, relative file paths, marker-detected decisions, todo titles, the user's own note text), never raw prompts, tool output or the assistant's full answer. A deterministic in-mod redactor masks sk-/sk-ant-/ghp_/AKIA tokens, Bearer values, URL userinfo, email addresses, DATABASE_URL=/password=/token=/secret= pairs and PEM blocks (W01 Q11 found the repo's redactor misses sk-ant keys, URL userinfo, emails and DATABASE_URL=), and caps every string before it is written.",
+    "O01 Outbox location and write model are fixed by W01 (GATE_TABLE.decisions): one file per session id at `<repo-root>/.dopemux/memory-bridge/outbox-<sessionId>.jsonl`, written only when `<repo-root>/.dopemux` already exists (gitignored by .gitignore:140 and :299 in this repo; other repos UNKNOWN, so never create `.dopemux`); `<repo-root>` is found by the upward `.git`/`.dopemux` walk used in src/dopemux/memory/capture_client.py:76-87, not by `$.session.repo()`. When the directory is absent the outbox is in memory plus `$.store`, and the status line says so.",
+    "O02 Write model: a single writer per file, serialised through one in-module promise chain because `$.fs.write` replaces the whole file (no append, delete or rename); a rewrite-in-place ring capped at 1 MiB per file and 8 KB per row (read and write limit is 4 MiB); two alternating generation files for torn-write safety as W01 specifies. Over the cap drop the oldest 'sent' rows first, then the oldest 'pending', and count the drops. A write failure never surfaces; the status line shows it.",
+    "O03 Record schema v:1, one JSON object per line: { v, id (deterministic: sha256 of session_id + turn_id + kind, truncated), ts, kind ('turn'|'compact'|'end'|'task'|'note'), session_id, cwd_rel, goal, files_touched (unique relative paths, at most 30), decisions (marker-detected, at most 3), todos_completed (titles, at most 10), note (kind 'note' only), intended_event ('task.completed'|'manual.memory_store'|null), state ('pending'|'sent'|'dead'), attempts }. No raw prompt, tool output or answer text.",
+    "O04 Decision capture is marker-only and stays LOCAL: a line of `answer` starting `Decision:` or `DECISION:` (optionally bold) yields one decision, at most 3 per turn, 200 characters each, kept in the outbox for the band. `decision.logged` is NOT_BUILT and must never be emitted anywhere: repo doctrine says decisions are logged in ConPort only and ConPort already emits it (W01).",
+    "O05 Task completion capture: observe `tool.call` for TodoWrite and compare `todos[].status` with the previous list in the same loop; each item that newly becomes 'completed' adds a title to the turn's todos_completed and, once per item, a 'task' record with intended_event 'task.completed'. Subagent loops (agentId set) are ignored.",
+    "A01 PROPOSED allowances for this workstream (caps, not forecasts; the operator accepts them by authorizing R2): elapsed wall time 90 min from dispatch; subagent tokens 1,200,000; tool uses 250; child attempts: 1 attempt + 1 retry; team-lead review rounds: 1 diff re-read + at most 1 correction round. Active (model-working) time is not separately recordable by the harness: UNKNOWN; elapsed is the enforceable bound.",
+    "A02 The team lead reads the recordable counters from the child's completion notice (duration_ms, subagent_tokens, tool_uses) and records them with the return. A retry is allowed only after a failed validation with a named cause and only once; a second failure, any exceeded cap or any advisor call ends the workstream.",
+    "A03 When a cap is hit: stop the workstream, start no further attempt, preserve the uncommitted diff untouched, and return NEEDS_SUPERVISOR with the counters and the evidence. No model upgrade, provider change or extra attempt without a new operator ruling.",
+    "B01 Hook set: `session.start` (initialise; count pending rows; set the status line), `turn.start` (capture the goal: first 160 characters of the user's text, redacted), `tool.call` observing Edit, Write, NotebookEdit (relative paths for the turn) and TodoWrite (O05), then always `return next(e)` untouched; `turn.complete` on the main loop only (agentId undefined; append one 'turn' record); `session.compact` (append a 'compact' record; pass the result through unchanged); `session.end` (final append; reason 'clear' appends but keeps running, as Pulse does); `ui.render` on { component: 'AbovePrompt' }.",
+    "B02 Status line (`$.ui.status`, one line per plugin, coexists with Pulse): `📮 N pending`, `📮 clear`, `📮 memory-only` when the outbox directory is absent, `⚠ outbox write failed`, and a `+N dropped` suffix after a cap drop.",
+    "B03 Welcome-back band (GATE_TABLE.band GO_REDUCED): while the time since the last prompt.submit or turn.complete is at least `idleMinutes` (userConfig, default 30, allowed 5-1440), show one line `Welcome back - you were on <last goal> - last decision <last decision> - <n> uncommitted files` from the newest records of this repo's outbox files and `git status --porcelain` via `$.process.run` (segment omitted when `$.process` is unavailable or fails). Dismiss on the next prompt.submit; arm `$.clock.after` to invalidate the render when the threshold passes; cancel timers on a real session end. The hook MUST wrap `next(e)` (render the band above or beside what the rest draws, never instead of it) and shows nothing when `e.props.hasSurvey` is true. Known and accepted: Pulse draws its own Box without `next(e)`, so it can hide this band while its focus band shows; outer/inner plugin order is UNKNOWN. Test both orders with the harness. Plain `Text` in `Box`, one line, no buttons.",
+    "B04 No network and no subprocess other than `git status --porcelain`: no http.fetch, no `dopemux` call, no store, ConPort or dope-memory call. Tests assert it.",
+    "B05 Tests (register.test.ts, Pulse harness style): goal/files/decision/todo capture, the redactor (including the four shapes W01 found unmasked), deterministic ids, ring cap, drop counting and generation-file recovery from a torn file, status strings, per-turn file reset, subagent turns ignored, compact pass-through, 'clear' versus real end, band shown/dismissed/idle threshold/without $.process/with hasSurvey/wrapping next(e), write failure that does not surface, and the directory-absent in-memory mode."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001-R2",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R2",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/memory-bridge-001-b349d8",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(memory-bridge): dopemux-memory-bridge mod with local outbox, pending-count status line and welcome-back band",
+    "allowlist": [
+      "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+      "plugins/dopemux-memory-bridge/hooks/hooks.json",
+      "plugins/dopemux-memory-bridge/hooks/register.tsx",
+      "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+      "plugins/dopemux-memory-bridge/README.md",
+      "plugins/dopemux-memory-bridge/types/index.d.ts"
+    ],
+    "verify": [
+      "claude plugin validate plugins/dopemux-memory-bridge",
+      "claude plugin test plugins/dopemux-memory-bridge",
+      "git diff --name-only | sort   # subset of the allowlist; also `git status --porcelain` because a new file is untracked and git diff does not list it"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod (local outbox, status count, welcome-back band, ledger replay)",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001-R2. Draft until the single final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Read W01_FINDINGS.md, the supplied declaration and the Pulse reference; confirm every API used exists",
+      "requirements": [
+        "STOP if the declaration was not supplied or the findings hash differs."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "every API used exists in the declaration"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md",
+        "plugins/dopemux-pulse/hooks/register.tsx (via git show feat/pulse-001)"
+      ]
+    },
+    {
+      "id": "W02-S2",
+      "task": "TDD: tests first for the outbox ring, redactor, capture, status line and band, then the module",
+      "requirements": [
+        "Only the allowlisted files; show the failing run first."
+      ],
+      "commands": [
+        "claude plugin test plugins/dopemux-memory-bridge"
+      ],
+      "expected_files": [
+        "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+        "plugins/dopemux-memory-bridge/hooks/hooks.json",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md"
+      ],
+      "validation": [
+        "tests fail before and pass after; validate PASS"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+        "plugins/dopemux-memory-bridge/hooks/hooks.json",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md"
+      ]
+    },
+    {
+      "id": "W02-S3",
+      "task": "Write the README",
+      "requirements": [
+        "What it records and where, the marker rule, the ring cap, idleMinutes, the no-network guarantee, the Pulse band caveat, the surfaces caveat, NOT_RUN live proof."
+      ],
+      "commands": [],
+      "expected_files": [
+        "plugins/dopemux-memory-bridge/README.md"
+      ],
+      "validation": [
+        "README matches the code"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+        "plugins/dopemux-memory-bridge/hooks/hooks.json",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md"
+      ]
+    },
+    {
+      "id": "W02-S4",
+      "task": "Return",
+      "requirements": [
+        "Per-file summary, validate/test/tsc as PASS/FAIL/NOT_RUN, runtime NOT_RUN statement, advisor_calls, files_written, observed_model, the elapsed/token/tool counters you can see."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R2",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001-R2",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+    "plugins/dopemux-memory-bridge/hooks/hooks.json",
+    "plugins/dopemux-memory-bridge/hooks/register.tsx",
+    "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+    "plugins/dopemux-memory-bridge/README.md",
+    "plugins/dopemux-memory-bridge/types/index.d.ts"
+  ],
+  "canonical_writers": [
+    "W02-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-mod"
+  ],
+  "rollback_boundary": "git revert <W02 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

@@ -1,0 +1,37 @@
+Validating plugin manifest: /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8/plugins/dopemux-memory-bridge/.claude-plugin/plugin.json
+
+⚠ Found 1 warning:
+
+  ❯ author: No author information provided. Consider adding author details for plugin attribution
+
+Validating hooks: /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8/plugins/dopemux-memory-bridge/hooks/hooks.json
+
+  ❯ ./register.tsx hooks: session.start, command.run{command=bridge-note}, prompt.submit, turn.start, tool.call, turn.complete, session.compact, ui.render{component=AbovePrompt}, session.end
+  ❯ ./register.tsx answers its own command: command.run{command=bridge-note}
+  ❯ ./register.tsx gating hook without .catch: prompt.submit
+  ❯ ./register.tsx gating hook without .catch: tool.call
+  ❯ ./register.tsx gating hook without .catch: session.compact
+  ❯ ./register.tsx calls: $.clock.after (via armIdle, armReplay, bounded, boundedFlush, dirtyFileCount, emitOnce, persist), $.clock.now, $.command.register, $.fs.exists (via ensureLoaded, findRoot, persistOnce), $.fs.list (via readPrior), $.fs.read (via readGeneration), $.fs.write (via persistOnce), $.process.run (via dirtyFileCount, emitOnce), $.session.cwd (via resolveRoot), $.session.id (via append, initSession), $.store.delete (via pruneStore), $.store.get (via ensureLoaded), $.store.keys (via pruneStore), $.store.set (via persistOnce), $.ui.invalidate (via redraw), $.ui.resolve, $.ui.status
+
+Plugin directory checks for /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8/plugins/dopemux-memory-bridge. The plugin directory is the catalog that plugins are submitted to; this is a subset of what it runs.
+
+⚠ Found 1 plugin directory warning:
+
+  ❯ .claude-plugin/plugin.json icon: No icon (ICON_MISSING). No icon found in the plugin. The validator looked for `icon` in plugin.json and for a file at .claude-plugin/icon.png or .svg, assets/icon.png or .svg, or a similar path.
+    Fix: Add a square PNG to the plugin folder at .claude-plugin/icon.png, or set `icon` in plugin.json to the path of a square PNG or JPEG in the plugin: 512 to 2048 px on each side, under 2 MB. SVG and WebP are not accepted. That file may become the listing icon only once: the first time the plugin is saved or submitted in the developer portal. Adding or changing it later does not change the icon.
+
+About these checks:
+
+  ❯ The repository root was taken to be /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8, the nearest parent folder with a .git folder or file. LICENSE was taken from it, because this plugin folder has none of its own. For a plugin submitted from a git repository, the repository root is the top folder of that repository, with only what is committed there, so check that the folder named above is that top folder.
+  ❯ hooks/hooks.json names a hooks module (a code file listed under `modules`). The plugin directory has rules of its own for such code, and these checks apply none of them, so passing here does not mean the directory accepts the plugin. The developer portal's own validation applies those rules.
+
+These plugin directory checks do not change the result below.
+
+The directory also runs a safety scan and a policy review that this command does not.
+
+ℹ Advice (does not change the verdict):
+
+  ❯ /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8/plugins/dopemux-memory-bridge/README.md: This README has no line that installs "dopemux-memory-bridge" from a marketplace. Add the install line, which works in one step on Claude Code 2.1.275 or later. Validate the folder that holds its marketplace.json to have <owner>/<repo> filled in, and the name its marketplace lists it under.
+      /plugin install dopemux-memory-bridge --marketplace <owner>/<repo>
+
+✔ Validation passed with warnings
