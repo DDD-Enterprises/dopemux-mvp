@@ -1,5 +1,7 @@
 import { createTheme, alpha } from '@mui/material/styles';
 
+// Direction B tokens: claudedocs/design/tokens.json and the DØPEMÜX design system
+// (colors_and_type.css). Keep index.css custom properties in sync with these values.
 export const brandTokens = {
   colors: {
     inkBlack: '#020617',
@@ -7,30 +9,32 @@ export const brandTokens = {
     ritualCyan: '#2FFFF0',
     serumMint: '#00FF85',
     giltEdge: '#FFE600',
-    velvetPlum: '#1A0520',
+    velvetPlum: '#081832',
     gremlinPink: '#FF00CC',  // brand accent only — never a status indicator
     errorRed: '#FF2255',
-    saintGold: '#FFCF78',
+    saintGold: '#FFC85C',
     aftercareViolet: '#C07BFF',
   },
   text: {
     primary: '#F6F7FB',
-    secondary: alpha('#F6F7FB', 0.65),
+    secondary: '#94A3B8',
+    muted: '#808DA0',
   },
   gradients: {
-    halo: 'radial-gradient(circle at 20% 20%, rgba(125, 251, 246, 0.25), rgba(2, 6, 23, 0.95))',
-    velvet: 'linear-gradient(135deg, rgba(4, 22, 40, 0.9), rgba(26, 5, 32, 0.9))',
-    focusCard: 'linear-gradient(155deg, rgba(4, 22, 40, 0.92), rgba(26, 5, 32, 0.82))',
+    halo: 'radial-gradient(circle at 12% 0%, rgba(47, 255, 240, 0.10), rgba(2, 6, 23, 0) 42%)',
+    velvet: 'linear-gradient(135deg, rgba(4, 22, 40, 0.92), rgba(8, 24, 50, 0.92))',
+    focusCard: 'linear-gradient(155deg, rgba(4, 22, 40, 0.94), rgba(8, 24, 50, 0.84))',
   },
   borders: {
     cyan: alpha('#2FFFF0', 0.6),
     mint: alpha('#00FF85', 0.55),
-    gold: alpha('#FFCF78', 0.7),
-    subtle: alpha('#F6F7FB', 0.12),
+    gold: alpha('#FFC85C', 0.72),
+    subtle: '#1E2A3A',
+    strong: '#2E3F54',
   },
   shadows: {
-    panel: '0 30px 80px rgba(4, 3, 31, 0.45)',
-    goldBloom: '0 0 24px rgba(255, 207, 120, 0.2)',
+    panel: '0 30px 80px rgba(2, 2, 24, 0.55)',
+    goldBloom: '0 0 26px rgba(255, 200, 92, 0.28)',
   },
   surfaces: {
     chip: alpha('#041628', 0.72),
@@ -45,15 +49,22 @@ export const brandTokens = {
     aftercare: '[AFTERCARE]',
     consent: '[CONSENT CHECK? y/N]',
   },
+  // Dopemux's own Iosevka builds (docs/03-reference/Dopemux Cockpit TUI Design System/fonts).
+  // Canonical Nerd Font names first, then the names older local builds expose, then the
+  // plain builds. Display is mono, as in the cockpit TUI system. Weights: Regular + Medium.
+  fonts: {
+    mono: '"Dopemux Term Nerd Font", "DopemuxTerm Nerd Font Mono", "Dopemux Term", ui-monospace, "SF Mono", monospace',
+    display: '"Dopemux Term Nerd Font", "DopemuxTerm Nerd Font Mono", "Dopemux Term", ui-monospace, "SF Mono", monospace',
+    body: '"Dopemux Editor Nerd Font", "DopemuxEditor Nerd Font", "Dopemux Editor", system-ui, sans-serif',
+  },
   status: {
     low: '#00FF85',
     optimal: '#2FFFF0',
     high: '#FFE600',
     critical: '#FF2255',
+    unknown: '#808DA0',
   },
 };
-
-export type MetricLabel = 'Energy Level' | 'Attention Focus' | 'Cognitive Load' | '15-min Prediction';
 
 export function deriveStatus(load: number): 'low' | 'optimal' | 'high' | 'critical' {
   if (load > 0.8) {
@@ -67,23 +78,6 @@ export function deriveStatus(load: number): 'low' | 'optimal' | 'high' | 'critic
   }
   return 'optimal';
 }
-
-export const getDynamicRoast = (label: MetricLabel, value: number | null) => {
-  if (value === null) return 'Data ghosting. Refreshing...';
-  if (value > 0.8) {
-    if (label === 'Energy Level') return 'Hyperfocus or just vibrating? Slow down.';
-    if (label === 'Attention Focus') return 'Laser vision acquired. Don’t blink.';
-    if (label === 'Cognitive Load') return 'Brain cooking. Steam is visible.';
-    if (label === '15-min Prediction') return 'Future you screaming from the abyss.';
-  }
-  if (value > 0.5) {
-    if (label === 'Energy Level') return "You're sipping ambition like it's lukewarm coffee.";
-    if (label === 'Attention Focus') return 'Focus flirting with you; stop ghosting it.';
-    if (label === 'Cognitive Load') return 'Load creeping up like a brat testing limits.';
-    if (label === '15-min Prediction') return 'Future you pacing. Hydrate before they mutiny.';
-  }
-  return 'The ritual observes you silently. Logged. Hydrate.';
-};
 
 export const statusStyles = {
   low: {
@@ -110,7 +104,16 @@ export const statusStyles = {
     border: alpha(brandTokens.status.critical, 0.55),
     shadow: `0 0 24px ${alpha(brandTokens.status.critical, 0.18)}`,
   },
+  // No reading yet: grey, no glow. Never derived from a number.
+  unknown: {
+    color: brandTokens.status.unknown,
+    label: 'Unknown',
+    border: alpha(brandTokens.status.unknown, 0.5),
+    shadow: 'none',
+  },
 } as const;
+
+export type LoadStatus = ReturnType<typeof deriveStatus>;
 
 
 const theme = createTheme({
@@ -138,14 +141,14 @@ const theme = createTheme({
     },
   },
   typography: {
-    // hue.body — Inter; hue.display — Space Grotesk; hue.mono — JetBrains Mono
-    fontFamily: '"Inter","SF Pro Display",sans-serif',
-    h1: { fontFamily: '"Space Grotesk",sans-serif', fontSize: '2.75rem', fontWeight: 600, letterSpacing: '0.04em' },
-    h2: { fontFamily: '"Space Grotesk",sans-serif', fontSize: '2rem', fontWeight: 600 },
-    h3: { fontFamily: '"Space Grotesk",sans-serif', fontSize: '1.6rem', fontWeight: 500 },
-    h4: { fontFamily: '"Space Grotesk",sans-serif' },
-    h5: { fontFamily: '"Space Grotesk",sans-serif' },
-    h6: { fontFamily: '"Space Grotesk",sans-serif', letterSpacing: '0.12em', textTransform: 'uppercase' },
+    // body: Dopemux Editor; display and mono: Dopemux Term (brandTokens.fonts)
+    fontFamily: brandTokens.fonts.body,
+    h1: { fontFamily: brandTokens.fonts.display, fontSize: '2.75rem', fontWeight: 600, letterSpacing: '0.04em' },
+    h2: { fontFamily: brandTokens.fonts.display, fontSize: '2rem', fontWeight: 600 },
+    h3: { fontFamily: brandTokens.fonts.display, fontSize: '1.6rem', fontWeight: 500 },
+    h4: { fontFamily: brandTokens.fonts.display },
+    h5: { fontFamily: brandTokens.fonts.display },
+    h6: { fontFamily: brandTokens.fonts.display, letterSpacing: '0.12em', textTransform: 'uppercase' },
     subtitle1: { fontWeight: 500 },
     button: { fontWeight: 600, letterSpacing: '0.08em' },
     fontSize: 15,
@@ -157,8 +160,10 @@ const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
+          backgroundColor: brandTokens.colors.inkBlack,
           backgroundImage: brandTokens.gradients.halo,
-          color: '#F6F7FB',
+          backgroundAttachment: 'fixed',
+          color: brandTokens.text.primary,
         },
       },
     },
@@ -166,7 +171,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           background: brandTokens.gradients.velvet,
-          border: `1px solid ${alpha(brandTokens.colors.ritualCyan, 0.25)}`,
+          border: `1px solid ${brandTokens.borders.subtle}`,
           boxShadow: brandTokens.shadows.panel,
         },
       },
@@ -207,7 +212,7 @@ const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          fontFamily: '"JetBrains Mono","IBM Plex Mono",monospace',
+          fontFamily: brandTokens.fonts.mono,
           borderRadius: 999,
           letterSpacing: '0.08em',
           '&:focus-visible': {

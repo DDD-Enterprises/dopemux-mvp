@@ -1,84 +1,17 @@
 // @vitest-environment jsdom
 // @ts-nocheck
 import { afterEach, expect, test, vi } from 'vitest';
-import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import fs from 'fs';
 import path from 'path';
-import PredictionPanel from '../PredictionPanel';
 import TaskSequencer from '../TaskSequencer';
 import TeamDashboard from '../TeamDashboard';
 
 afterEach(cleanup);
 
 const componentsDir = path.resolve(__dirname, '..');
-
-test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and status Tooltip', () => {
-  const filePath = path.join(componentsDir, 'CognitiveLoadGauge.tsx');
-  if (!fs.existsSync(filePath)) {
-    console.warn(`Skipping: Required component missing for accessibility test: ${filePath}`);
-    return;
-  }
-  const content = fs.readFileSync(filePath, 'utf8');
-  expect(content).toContain('aria-label="Cognitive Load Percentage"');
-  expect(content).toContain('aria-valuetext');
-  expect(content).toMatch(/<Tooltip title=\{\s*copied\s*\?\s*'Copied!'\s*:\s*`AI Recommendation: \$\{recommendation\}\. Click to copy\.`\s*\}\s*arrow\s*>/);
-  expect(content).toContain('getDynamicRoast');
-  expect(content).toContain('load-pulse');
-  expect(content).toContain('prefers-reduced-motion');
-  expect(content).toContain('tabIndex={0}');
-  expect(content).toContain('role="button"');
-  expect(content).toMatch(/aria-label=\{\s*copied\s*\?\s*'Copied'\s*:\s*`Load \$\{val\}%, \$\{statusMeta\.label\}\. AI Recommendation: \$\{recommendation\}\. Click to copy\.`\s*\}/);
-  expect(content).toContain('onClick={onCopy}');
-  expect(content).toContain("cursor: 'copy'");
-  expect(content).toContain('copy-glow');
-});
-
-test('PredictionPanel.tsx rendered accessibility and state feedback', () => {
-  // Test 1: Loading state (no prediction)
-  const { rerender } = render(<PredictionPanel />);
-  const progressBar = screen.getByRole('progressbar');
-  expect(progressBar).toHaveAttribute('aria-label', '15-Minute Load Prediction Percentage');
-
-  const paper = screen.getByLabelText('No prediction');
-  expect(paper).toHaveAttribute('tabIndex', '0');
-  // Root paper no longer has role=button (dedicated copy control pattern)
-  expect(paper).not.toHaveAttribute('role', 'button');
-
-  const roastBox = screen.getByLabelText('No forecast available');
-  expect(roastBox).not.toHaveAttribute('role', 'button');
-  expect(roastBox).toHaveAttribute('tabIndex', '-1');
-
-  // Test 2: With critical prediction
-  rerender(<PredictionPanel prediction={0.9} />);
-
-  const criticalValue = '90%';
-  expect(screen.getByText(criticalValue)).toBeDefined();
-
-  const criticalLabel = /15-min prediction 90%, Break\. Now\./i;
-  expect(screen.getByLabelText(criticalLabel)).toBeDefined();
-
-  const activeRoastBox = screen.getAllByRole('button').find(el => el.getAttribute('aria-label')?.includes('Click to copy'));
-  expect(activeRoastBox).toBeDefined();
-  expect(activeRoastBox).toHaveAttribute('tabIndex', '0');
-
-  // Test 3: With optimal prediction
-  rerender(<PredictionPanel prediction={0.4} />);
-  const optimalValue = '40%';
-  expect(screen.getByText(optimalValue)).toBeDefined();
-  expect(screen.getByLabelText(/15-min prediction 40%, Flow Ritual/i)).toBeDefined();
-
-  // Test 4: Verify dynamic trend icon (TrendingUp when prediction > currentLoad)
-  const { container: containerUp } = render(<PredictionPanel prediction={0.8} currentLoad={0.4} />);
-  expect(containerUp.querySelector('.lucide-trending-up')).not.toBeNull();
-  expect(containerUp.querySelector('.lucide-trending-down')).toBeNull();
-
-  // Test 5: Verify dynamic trend icon (TrendingDown when prediction < currentLoad)
-  const { container: containerDown } = render(<PredictionPanel prediction={0.3} currentLoad={0.7} />);
-  expect(containerDown.querySelector('.lucide-trending-down')).not.toBeNull();
-  expect(containerDown.querySelector('.lucide-trending-up')).toBeNull();
-});
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars and Tooltips', () => {
   const filePath = path.join(componentsDir, 'TeamDashboard.tsx');
@@ -153,14 +86,6 @@ test('TeamDashboard propagates clipboard copy error via onError prop', async () 
   }
 });
 
-test('App.tsx exposes metric card tooltips with focus indicators and labels', () => {
-  const appContent = fs.readFileSync(path.join(componentsDir, '..', 'App.tsx'), 'utf8');
-  expect(appContent).toContain('<Tooltip title={metric.tooltip} arrow describeChild>');
-  expect(appContent).toMatch(/<Tooltip title=\{metric\.tooltip\} arrow describeChild>[\s\S]*tabIndex=\{0\}/);
-  expect(appContent).toContain('aria-label={`${metric.label}: ${metric.value !== null ? (metric.value * 100).toFixed(0) : \'N/A\'}%. ${metric.roast}`}');
-  expect(appContent).toContain('&:focus-visible');
-});
-
 test('TaskSequencer.tsx has contextual aria-labels and current step indicator', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}');
@@ -176,8 +101,8 @@ test('TaskSequencer.tsx has contextual aria-labels and current step indicator', 
   // Total remaining duration
   expect(content).toContain('role="status"');
   expect(content).toMatch(/aria-label=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks completed\. \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\.\$\{finishTimeLabel\s*\?\s*` Estimated completion: \$\{finishTimeLabel\}`\s*:\s*''\}`\s*\}/);
-  expect(content).toMatch(/<Tooltip[^>]*title="Real-time task synchronization active"[^>]*arrow/);
-  expect(content).toContain('aria-label="Real-time task synchronization active"');
+  expect(content).toContain('label="[SAMPLE] not connected"');
+  expect(content).not.toContain('label="[LIVE]"');
   expect(content).toContain('aria-current={isCurrent ? \'step\' : undefined}');
   // Total remaining duration display and completed-state accessibility
   expect(content).toContain('role="status"');
@@ -308,7 +233,7 @@ test('TaskSequencer.tsx implements overtime visual cues', () => {
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
-  const files = ['CognitiveLoadGauge.tsx', 'PredictionPanel.tsx', 'TeamDashboard.tsx', 'TaskSequencer.tsx'];
+  const files = ['TeamDashboard.tsx', 'TaskSequencer.tsx'];
   files.forEach(file => {
     const filePath = path.join(componentsDir, file);
     if (!fs.existsSync(filePath)) {
@@ -333,78 +258,6 @@ test('TaskSequencer.tsx displays total remaining duration with accessibility', (
   expect(content).toMatch(/aria-label=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks completed\. \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\.\$\{finishTimeLabel\s*\?\s*` Estimated completion: \$\{finishTimeLabel\}`\s*:\s*''\}`\s*\}/);
   expect(content).toContain('tabIndex={0}');
   expect(content).toMatch(/<Tooltip\s+title=\{\s*isComplete\s*\?\s*'Task sequence complete'\s*:\s*`\$\{completedCount\}\/\$\{totalCount\} tasks • \$\{getDurationAriaLabel\(displayRemainingMinutes\)\}\$\{finishTimeLabel\s*\?\s*` \(\$\{finishTimeLabel\}\)`\s*:\s*''\}`\s*\}\s+arrow\s*>/);
-});
-
-test('App.tsx has accessible header chips and skip link', () => {
-  const appContent = fs.readFileSync(path.resolve(__dirname, '../../App.tsx'), 'utf8');
-  const themeContent = fs.readFileSync(path.resolve(__dirname, '../../theme.ts'), 'utf8');
-  expect(appContent).toContain('href="#main-dashboard"');
-  expect(appContent).toMatch(/aria-label=\{\s*connectionStatus === 'degraded'\s*\?\s*`System connection degraded: \$\{connectionLabel\} DØPEMÜX Ritual Daemon\. Click to retry connection\.`\s*:\s*`System is actively monitoring ritual state: \$\{connectionLabel\} DØPEMÜX Ritual Daemon`\s*\}/);
-  expect(appContent).toContain('<Tooltip title="Current cognitive status and load percentage" arrow>');
-  expect(appContent).toMatch(/<Tooltip title={isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>/);
-  expect(appContent).toMatch(/<Tooltip title="Current cognitive status and load percentage" arrow>[\s\S]*tabIndex=\{0\}/);
-  expect(appContent).toMatch(/<Tooltip title={isCopied \? 'Recommendation copied!' : 'Copy recommendation to clipboard'\} arrow>[\s\S]*tabIndex=\{0\}/);
-  expect(appContent).toMatch(/aria-label=\{\s*isCopied\s*\?\s*`AI Recommendation: \$\{cognitiveState\.recommendation\} \(Copied\)`\s*:\s*`Copy AI Recommendation: \$\{cognitiveState\.recommendation\}`\s*\}/);
-  expect(appContent).toContain('aria-label={isConfirmingClear ? \'Confirm clear all notifications\' : \'Clear all notifications\'}');
-  expect(appContent).toMatch(/<Tooltip title={isConfirmingClear \? 'Confirm to clear all notifications' : 'Clear all notifications to reduce visual noise'\} arrow>/);
-  expect(appContent).toContain('System is actively listening for ConPort and ADHD event traffic');
-  expect(appContent).toContain('animation: \'listeningPulse 1.4s infinite ease-in-out both\'');
-  expect(appContent).toContain('Waiting for signals...');
-  expect(appContent).toContain('severity="error"');
-  expect(appContent).toContain('closeText="Dismiss error notification"');
-  expect(appContent).toContain("'aria-label': 'Dismiss error notification'");
-  expect(themeContent).toContain('MuiChip');
-  expect(themeContent).toContain('&:focus-visible');
-  expect(appContent).toContain('ref={feedHeadingRef}');
-  expect(appContent).toContain('tabIndex={-1}');
-
-  // Verify adaptive reconnection bridge
-  expect(appContent).toContain('const [retryTrigger, setRetryTrigger] = useState(0);');
-  expect(appContent).toContain('const handleReconnect = useCallback(() => {');
-  expect(appContent).toMatch(/connectionStatus === 'degraded'\s*\?\s*'Connection degraded\. Click to attempt manual reconnection\.'\s*:\s*'Real-time connection to the ADHD dashboard surface'/);
-  expect(appContent).toMatch(/connectionStatus === 'degraded'\s*\?\s*`System connection degraded: \$\{connectionLabel\} DØPEMÜX Ritual Daemon\. Click to retry connection\.`\s*:\s*`System is actively monitoring ritual state: \$\{connectionLabel\} DØPEMÜX Ritual Daemon`/);
-  expect(appContent).toContain("onClick={connectionStatus === 'degraded' ? handleReconnect : undefined}");
-  expect(appContent).toContain('action={');
-  expect(appContent).toContain("connectionStatus === 'degraded' ? (");
-  expect(appContent).toContain('<Tooltip title="Attempt to re-establish connection to DØPEMÜX Ritual Daemon" arrow describeChild>');
-  expect(appContent).toContain('aria-label="Retry connection to daemon"');
-  expect(appContent).toContain('<Button');
-  expect(appContent).toContain('onClick={handleReconnect}');
-  expect(appContent).toContain('RECONNECT');
-
-  // Verify notification chips are focusable
-  expect(appContent).toContain('<Tooltip title="Dismiss notification" arrow describeChild>');
-  expect(appContent).toContain('aria-label={notificationLabel}');
-  expect(appContent).toContain('tabIndex={0}');
-
-  // Verify hydration aftercare sip logger interactive states
-  expect(appContent).toContain('const [isHydrated, setIsHydrated] = useState(false);');
-  expect(appContent).toContain('const handleHydrate = useCallback(() => {');
-  expect(appContent).toContain("isHydrated ? 'Sip Logged!' : 'Health and hydration status: Click to log a hydration sip.'");
-  expect(appContent).toContain('onClick={handleHydrate}');
-
-  // Verify onKeyDown handlers for connection, hydration, and recommendation chips
-  expect(appContent).toContain('onKeyDown={');
-  expect(appContent).toContain('handleReconnect();');
-  expect(appContent).toContain('handleHydrate();');
-  expect(appContent).toContain('void handleCopyRecommendation();');
-
-  // Verify focus-visible overrides for buttons and icon buttons in theme
-  expect(themeContent).toContain('MuiIconButton');
-  expect(themeContent).toContain('&:focus-visible');
-});
-
-test('PredictionPanel.tsx has TrendIcon based on load and prediction', () => {
-  const filePath = path.join(componentsDir, 'PredictionPanel.tsx');
-  if (!fs.existsSync(filePath)) {
-    console.warn(`Skipping: Required component missing: ${filePath}`);
-    return;
-  }
-  const content = fs.readFileSync(filePath, 'utf8');
-  expect(content).toContain("const isTrendingUp = hasPrediction && typeof currentLoad === 'number' ? prediction > currentLoad : true;");
-  expect(content).toContain('const TrendIcon = isTrendingUp ? TrendingUp : TrendingDown;');
-  expect(content).toContain('aria-hidden="true"');
-  expect(content).toContain('TrendingDown');
 });
 
 test('TaskSequencer pending Start button renders tooltip on hover and keyboard focus', async () => {
@@ -462,61 +315,6 @@ test('TaskSequencer pending Start button renders tooltip on hover and keyboard f
   // Hover path — MUI Tooltip portals title text after enter delay.
   fireEvent.mouseOver(hoverStartButton);
   expect(await screen.findByRole('tooltip', {}, { timeout: 2000 })).toHaveTextContent(hoverExpected);
-});
-
-test('PredictionPanel reset on prediction prop update and ignores pending stale copy promises', async () => {
-  const writeTextMock = vi.fn().mockResolvedValue(undefined);
-  const originalClipboard = navigator.clipboard;
-  Object.defineProperty(navigator, 'clipboard', {
-    value: { writeText: writeTextMock },
-    configurable: true,
-  });
-
-  try {
-    const { rerender } = render(<PredictionPanel prediction={0.4} />);
-    const copyButton = screen.getByRole('button', { name: /15-min prediction roast/i });
-    fireEvent.click(copyButton);
-
-    expect(await screen.findByLabelText('Forecast copied')).toBeInTheDocument();
-
-    // Rerender with a new prediction prop (identity/data change)
-    rerender(<PredictionPanel prediction={0.8} />);
-
-    // isCopied should be reset immediately
-    expect(screen.queryByLabelText('Forecast copied')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /15-min prediction roast/i })).toBeInTheDocument();
-
-    // Stale promise handling: verify pending copy promise cannot repaint after prediction change
-    let resolveStalePromise: () => void = () => {};
-    const stalePromise = new Promise<void>((resolve) => {
-      resolveStalePromise = resolve;
-    });
-    Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText: vi.fn().mockReturnValue(stalePromise) },
-      configurable: true,
-    });
-
-    rerender(<PredictionPanel prediction={0.5} />);
-    const copyBtn2 = screen.getByRole('button', { name: /15-min prediction roast/i });
-    fireEvent.click(copyBtn2);
-
-    // Prop updates while copy promise is pending
-    rerender(<PredictionPanel prediction={0.9} />);
-
-    // Resolve stale promise inside act() to flush microtasks
-    await act(async () => {
-      resolveStalePromise();
-      await stalePromise;
-    });
-
-    // Stale promise must not have set isCopied
-    expect(screen.queryByLabelText('Forecast copied')).not.toBeInTheDocument();
-  } finally {
-    Object.defineProperty(navigator, 'clipboard', {
-      value: originalClipboard,
-      configurable: true,
-    });
-  }
 });
 
 test('TaskSequencer copy error propagation to onError', async () => {

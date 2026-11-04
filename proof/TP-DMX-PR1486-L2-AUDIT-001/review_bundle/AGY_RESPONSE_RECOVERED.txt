@@ -1,0 +1,2096 @@
+
+ 
+*
+
+
+Ȳ
+2
+в
+:
+B
+Jx
+20
+:(bot-aeabda52-e2ad-4884-b6a7-0138f29ef5b2B!
+	sessionID
+-3750763034362895579H#P
+Z
+zX7kaqjnONjU-sAPuLDQ2Q8X
+b$15ae7729-eca3-454e-888a-7734936d130f
+N
+$5ba059b1-3888-4fa4-86da-0f27269212a4
+"$0605eb07-a5e9-40ce-a078-59ac6912f0e5
+$
+
+У
+
+
+꿂
+ e107756c3eef4a85bcded402a7271663
+
+1{
+  "status": "completed",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "low",
+      "path": "ui-dashboard/src/App.tsx",
+      "lines": "195-203",
+      "summary": "WebSocket state_update messages overwrite reading state as a full snapshot, clearing the initial HTTP 15-minute forecast to null ('unknown') when the backend WebSocket payload omits predicted_load_15min.",
+      "details": "In ui-dashboard/src/App.tsx:195-203 and ui-dashboard/src/cognitiveReading.ts:61-74, mapRealtimeState treats every state_update message as a complete snapshot rather than merging partial fields. As documented in claudedocs/design/ui-dashboard-audit-2026-10-30.md:118-125, services/adhd_engine/core/engine.py does not currently publish predicted_load_15min in state_update payloads, so the 15-minute forecast displays after the initial GET /api/adhd-state and then transitions to 'unknown' on the first WebSocket update."
+    },
+    {
+      "id": "F-2",
+      "severity": "low",
+      "path": "ui-dashboard/eslint.config.js",
+      "lines": "1-31",
+      "summary": "ESLint flat configuration is restored, but pre-existing lint errors in untouched files and missing CI enforcement remain.",
+      "details": "ui-dashboard/eslint.config.js restores a working ESLint 10 flat config, but claudedocs/design/ui-dashboard-audit-2026-10-30.md:27-37 and :131-132 note that 16 errors and 2 warnings remain in untouched files and no GitHub Actions workflow runs ui-dashboard lint or unit tests."
+    }
+  ],
+  "risks": [
+    "Validation commands (tsc, eslint, vitest, vite build) were not executed during this embedded audit because tools and candidate code execution are disabled by policy (validation_status=NOT_RUN).",
+    "Pre-existing ESLint errors (16 errors, 2 warnings) in untouched ui-dashboard files and the absence of a CI workflow gating ui-dashboard mean lint/test regressions are not automatically blocked in CI.",
+    "TaskSequencer (ui-dashboard/src/components/TaskSequencer.tsx:553-563) and TeamDashboard (ui-dashboard/src/components/TeamDashboard.tsx:99-113) still render static seeded data, though they are now explicitly labeled '[SAMPLE] not connected' instead of '[LIVE]'.",
+    "Candidate file claudedocs/design/ui-dashboard-audit-2026-10-30.md contains audit terminology (role names, PASS/FAIL tables) which was treated strictly as untrusted candidate data."
+  ],
+  "rationale": "The diff for PR #1486 (head 962434ad61bde3efdd6bd938f81ffdfbe358e71c against base 97b6d5040496e2271c41d24c339d039303bbe6b1 in DDD-Enterprises/dopemux-mvp) remediates fabricated telemetry and UI/accessibility defects in ui-dashboard. Specifically: (1) ui-dashboard/src/cognitiveReading.ts and ui-dashboard/src/App.tsx replace hardcoded fallback metrics (0.7 energy, 0.6 attention, 0.5 load) with nullable CognitiveReading fields so unmeasured or out-of-range values render as 'unknown'; (2) App.tsx tracks HTTP and WebSocket failures separately, prevents slow initial GET responses from overwriting newer live WebSocket updates via liveReadingSeenRef, detaches socket handlers on cleanup, and surfaces actionable failure alerts; (3) LoadInstrument, AttentionStatePanel, and SignalFeed replace CognitiveLoadGauge and PredictionPanel with accessible semantics (role='meter', role='log', two-step clear confirmation) and honest '[CONSENT: UNKNOWN]' and '[SAMPLE] not connected' labels; (4) index.css and theme.ts remove the contrast-reducing body::after scanline overlay, global '* { transition: all 0.25s ease }', and external Google Fonts import in favor of Direction B tokens and local Dopemux font stacks; and (5) unit/integration tests in App.test.tsx, LoadInstrument.test.tsx, and realtimeStateMapping.test.ts cover failure, race-condition, and boundary cases. Residual risks around unexecuted validation in this embedded environment, remaining lint issues in untouched files, and backend WebSocket forecast parity justify PASS_WITH_RISKS.",
+  "inspected_paths": [
+    ".gitignore",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "src/dopemux/ui/theme.py",
+    "ui-dashboard/eslint.config.js",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx",
+    "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+    "ui-dashboard/src/components/LoadInstrument.tsx",
+    "ui-dashboard/src/components/PredictionPanel.tsx",
+    "ui-dashboard/src/components/SignalFeed.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/TeamDashboard.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+    "ui-dashboard/src/index.css",
+    "ui-dashboard/src/realtimeStateMapping.test.ts",
+    "ui-dashboard/src/theme.ts",
+    "ui-dashboard/src/time.ts"
+  ],
+  "evidence_refs": [
+    ".gitignore:441-442",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md:118-148",
+    "src/dopemux/ui/theme.py:302-303",
+    "ui-dashboard/eslint.config.js:1-31",
+    "ui-dashboard/src/cognitiveReading.ts:26-74",
+    "ui-dashboard/src/App.tsx:73-253",
+    "ui-dashboard/src/App.tsx:316-393",
+    "ui-dashboard/src/App.tsx:416-470",
+    "ui-dashboard/src/App.test.tsx:43-286",
+    "ui-dashboard/src/components/LoadInstrument.tsx:41-231",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx:10-63",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx:39-120",
+    "ui-dashboard/src/components/SignalFeed.tsx:33-196",
+    "ui-dashboard/src/components/TaskSequencer.tsx:46-49",
+    "ui-dashboard/src/components/TaskSequencer.tsx:552-563",
+    "ui-dashboard/src/components/TaskSequencer.tsx:1158-1161",
+    "ui-dashboard/src/components/TeamDashboard.tsx:99-113",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx:104-105",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx:104",
+    "ui-dashboard/src/index.css:5-38",
+    "ui-dashboard/src/realtimeStateMapping.test.ts:5-87",
+    "ui-dashboard/src/theme.ts:5-79",
+    "ui-dashboard/src/time.ts:2-8"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true
+}
+0Initial focus is on understanding the prompt's hierarchy of authority: trusted instructions are primary, followed by repository elements, and then available data. Recognizing the auditor role within the specified context is essential for effective evaluation.
+
+
+The prompt explicitly forbids code execution, tool usage, and MCP interaction. The task requires assessing the provided data solely through textual analysis within the prompt's context. Strict adherence to the output JSON schema and the "fail closed on uncertainty" directive is paramount. The absence of validation implies `validation_status` should be `NOT_RUN`.
+
+
+Metadata verification confirms provenance, but the "instruction-like" scan result requires further investigation despite the initial negative indication. The presence of audit-related terminology within a specific file necessitates closer examination for potential instruction-like content, even if the general scan found none. The auditor role's context suggests the content requires careful scrutiny.
+
+
+Acknowledging the audit terminology in the specified file, even though the initial scan was negative, is crucial given the auditor context.  The rules require acknowledging any instruction-like content detection, and while `detected: false`, the context suggests a potential risk of misinterpretation.  Therefore, including `"instruction_like_acknowledged": true` and a risk note related to treating audit terminology strictly as data satisfies requirements and ensures a comprehensive response.
+
+
+`.gitignore` modification reflects a standard build output exclusion, expected and non-problematic. The audit document details ESLint configuration and ongoing linting issues.
+
+The Python file's docstring updates a font reference; this is a straightforward change. The ESLint configuration file restoration suggests efforts to establish or refine linting rules for the `ui-dashboard` project.
+
+
+ESLint configuration files reveal an attempt to establish or potentially refine linting rules for the project, specifically addressing React Hooks. The restoration suggests a potential prior configuration gap. Carefully examining the defined type guards and state mapping functions within the Typescript file's logic is critical for understanding data handling.
+
+
+The `mapRealtimeState` function's behavior needs scrutiny, particularly the handling of `state_update` messages. Since the Python engine doesn't provide the prediction in `state_update` messages, the corresponding field in the Typescript object will be `null` after such updates. This is a documented design decision.
+
+
+Examining the `DashboardApp`'s state, `handleRetry` resets error flags and re-triggers initial state loading. `applyReading` updates the reading and timestamp, potentially hiding panels. The `useEffect` hook with `loadInitialState` retrieves state via an API. The `isCurrent` check and the usage of `liveReadingSeenRef` suggest an attempt to prevent stale data updates.
+
+
+HTTP errors are handled by setting `httpError`, specifically flagging non-OK statuses, invalid JSON or payloads that are not objects, while valid payloads trigger `applyReading` after aggregation. Real-time data updates via WebSocket involve opening a connection, setting state based on events, parsing messages, and handling various message types. Malformed `state_update` messages with null readings result in an error; `dashboard_notification` messages are prepended to the signal list.
+
+
+The `connectionStatus` calculation appears potentially flawed because an open socket with a prior HTTP error results in a 'live' status, while the error alert remains. A specific test case confirms this behavior. Examining `TaskSequencer`'s usage in `App.tsx` and its prop compatibility, focusing on the `cognitiveState` and any additional properties accessed besides `status`, is necessary.
+
+
+The `CognitiveState` interface simplification reduces `TaskSequencer`'s dependency to only read the `status`. Considering the `status === 'unknown'` case within `TaskSequencer`, the sequence order is not altered, as the filter remains inactive. Analyzing `LoadInstrument.tsx` reveals that it replaces existing components; now examining the `toPercent` function is needed.
+
+
+The `toPercent` function's rounding logic prevents incorrect status assignments near thresholds; a minor edge case exists, but is inconsequential. The meter's visibility is tied to status availability, and uses appropriate ARIA attributes for accessibility. The `AttentionStatePanel` component presents energy level and attention state, or displays "unknown" when data is absent. Notifications are rendered in a log, implementing a two-step clear confirmation with timeout and escape key handling.
+
+
+Replacing the "LIVE" status on the `TaskSequencer` and `TeamDashboard` with a "SAMPLE not connected" indication suggests a change in the data source representation. Removal of performance-impacting CSS elements, like external fonts and global transitions, aims to optimize the user interface.
+
+CSS updates include aligning design tokens and font stacks with the Direction B palette and local font preferences, suggesting a shift towards a more consistent visual style. Updated tests now comprehensively cover core application behavior and data mapping, while removing tests for obsolete components.
+
+
+ESLint failures in untouched files and the absence of a CI lint/test workflow for `ui-dashboard` represent a configuration risk. The `state_update` message's omission of the `predicted_load_15min` field introduces a data inconsistency between HTTP and WebSocket updates. A transition from "LIVE" to "SAMPLE not connected" within the UI is noted.
+
+
+The UI now truthfully indicates sample data with "[SAMPLE]" labels, addressing the fabricated-state defect.  Accessibility improvements and test coverage expansion are positive changes, alongside removal of visual anti-patterns. The data inconsistency between HTTP and WebSocket updates, and existing linting errors, need explicit documentation as risks. Considering the data integrity improvements balanced with residual risks, a `PASS_WITH_RISKS` verdict is appropriate. The risk profile accounts for the documented inconsistencies and potential configuration gaps.
+
+
+2(bot-aeabda52-e2ad-4884-b6a7-0138f29ef5b2B1{
+  "status": "completed",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "low",
+      "path": "ui-dashboard/src/App.tsx",
+      "lines": "195-203",
+      "summary": "WebSocket state_update messages overwrite reading state as a full snapshot, clearing the initial HTTP 15-minute forecast to null ('unknown') when the backend WebSocket payload omits predicted_load_15min.",
+      "details": "In ui-dashboard/src/App.tsx:195-203 and ui-dashboard/src/cognitiveReading.ts:61-74, mapRealtimeState treats every state_update message as a complete snapshot rather than merging partial fields. As documented in claudedocs/design/ui-dashboard-audit-2026-10-30.md:118-125, services/adhd_engine/core/engine.py does not currently publish predicted_load_15min in state_update payloads, so the 15-minute forecast displays after the initial GET /api/adhd-state and then transitions to 'unknown' on the first WebSocket update."
+    },
+    {
+      "id": "F-2",
+      "severity": "low",
+      "path": "ui-dashboard/eslint.config.js",
+      "lines": "1-31",
+      "summary": "ESLint flat configuration is restored, but pre-existing lint errors in untouched files and missing CI enforcement remain.",
+      "details": "ui-dashboard/eslint.config.js restores a working ESLint 10 flat config, but claudedocs/design/ui-dashboard-audit-2026-10-30.md:27-37 and :131-132 note that 16 errors and 2 warnings remain in untouched files and no GitHub Actions workflow runs ui-dashboard lint or unit tests."
+    }
+  ],
+  "risks": [
+    "Validation commands (tsc, eslint, vitest, vite build) were not executed during this embedded audit because tools and candidate code execution are disabled by policy (validation_status=NOT_RUN).",
+    "Pre-existing ESLint errors (16 errors, 2 warnings) in untouched ui-dashboard files and the absence of a CI workflow gating ui-dashboard mean lint/test regressions are not automatically blocked in CI.",
+    "TaskSequencer (ui-dashboard/src/components/TaskSequencer.tsx:553-563) and TeamDashboard (ui-dashboard/src/components/TeamDashboard.tsx:99-113) still render static seeded data, though they are now explicitly labeled '[SAMPLE] not connected' instead of '[LIVE]'.",
+    "Candidate file claudedocs/design/ui-dashboard-audit-2026-10-30.md contains audit terminology (role names, PASS/FAIL tables) which was treated strictly as untrusted candidate data."
+  ],
+  "rationale": "The diff for PR #1486 (head 962434ad61bde3efdd6bd938f81ffdfbe358e71c against base 97b6d5040496e2271c41d24c339d039303bbe6b1 in DDD-Enterprises/dopemux-mvp) remediates fabricated telemetry and UI/accessibility defects in ui-dashboard. Specifically: (1) ui-dashboard/src/cognitiveReading.ts and ui-dashboard/src/App.tsx replace hardcoded fallback metrics (0.7 energy, 0.6 attention, 0.5 load) with nullable CognitiveReading fields so unmeasured or out-of-range values render as 'unknown'; (2) App.tsx tracks HTTP and WebSocket failures separately, prevents slow initial GET responses from overwriting newer live WebSocket updates via liveReadingSeenRef, detaches socket handlers on cleanup, and surfaces actionable failure alerts; (3) LoadInstrument, AttentionStatePanel, and SignalFeed replace CognitiveLoadGauge and PredictionPanel with accessible semantics (role='meter', role='log', two-step clear confirmation) and honest '[CONSENT: UNKNOWN]' and '[SAMPLE] not connected' labels; (4) index.css and theme.ts remove the contrast-reducing body::after scanline overlay, global '* { transition: all 0.25s ease }', and external Google Fonts import in favor of Direction B tokens and local Dopemux font stacks; and (5) unit/integration tests in App.test.tsx, LoadInstrument.test.tsx, and realtimeStateMapping.test.ts cover failure, race-condition, and boundary cases. Residual risks around unexecuted validation in this embedded environment, remaining lint issues in untouched files, and backend WebSocket forecast parity justify PASS_WITH_RISKS.",
+  "inspected_paths": [
+    ".gitignore",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "src/dopemux/ui/theme.py",
+    "ui-dashboard/eslint.config.js",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx",
+    "ui-dashboard/src/components/CognitiveLoadGauge.tsx",
+    "ui-dashboard/src/components/LoadInstrument.tsx",
+    "ui-dashboard/src/components/PredictionPanel.tsx",
+    "ui-dashboard/src/components/SignalFeed.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/TeamDashboard.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx",
+    "ui-dashboard/src/index.css",
+    "ui-dashboard/src/realtimeStateMapping.test.ts",
+    "ui-dashboard/src/theme.ts",
+    "ui-dashboard/src/time.ts"
+  ],
+  "evidence_refs": [
+    ".gitignore:441-442",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md:118-148",
+    "src/dopemux/ui/theme.py:302-303",
+    "ui-dashboard/eslint.config.js:1-31",
+    "ui-dashboard/src/cognitiveReading.ts:26-74",
+    "ui-dashboard/src/App.tsx:73-253",
+    "ui-dashboard/src/App.tsx:316-393",
+    "ui-dashboard/src/App.tsx:416-470",
+    "ui-dashboard/src/App.test.tsx:43-286",
+    "ui-dashboard/src/components/LoadInstrument.tsx:41-231",
+    "ui-dashboard/src/components/__tests__/LoadInstrument.test.tsx:10-63",
+    "ui-dashboard/src/components/AttentionStatePanel.tsx:39-120",
+    "ui-dashboard/src/components/SignalFeed.tsx:33-196",
+    "ui-dashboard/src/components/TaskSequencer.tsx:46-49",
+    "ui-dashboard/src/components/TaskSequencer.tsx:552-563",
+    "ui-dashboard/src/components/TaskSequencer.tsx:1158-1161",
+    "ui-dashboard/src/components/TeamDashboard.tsx:99-113",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx:104-105",
+    "ui-dashboard/src/features/repository-planner/PortfolioTable.tsx:104",
+    "ui-dashboard/src/index.css:5-38",
+    "ui-dashboard/src/realtimeStateMapping.test.ts:5-87",
+    "ui-dashboard/src/theme.ts:5-79",
+    "ui-dashboard/src/time.ts:2-8"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true
+}Z
+4
+`
+r
+
+
+i
+}
+R_%%gm
+_!7FL
+Whάe
+,l
+2AL_
+EHd.
+A¡R1\CENpc
+t
+9U46W
+e
+?xf8碁j:j/-
+K"s]BK9F.
+&gU8q
+!
+W\OG
+n
+gnAݵ
+F^ߧ+
+@
+>r>=Yܽ
+H
+epT$嗥
+uw
+_`
+7=
+X6ZM]	B
+=姬NZ6
+rDd3
+eLୂz
+	= xeSk
+'
+9AB
+Tb
+b6
+c㽻!D
+!̽XȅpjՃT+;GA9Y [
+G(7۵_
+RNP
+
+BӅ
+	"6놠0j~H
+h
+~d9-"
+ٌ9x^9ϛ̿
+JU=
+LhOm
+f ˧?V{pF'
+a\
+U,-؅+n^8C4ۥ̠
+
+x*_^
+{=
+WDy
+i
+$Q!ܛ2ym
+S_8
+R'~ND;W}5<J>׮5	
+yF3*T	1Pc
+n
+:ܔ
+j%ùLM1
+7)pxy^)~5H
+Z
+S~O
+39
+Mۛ%;
+%
+Vר,<
+?Ƀn
+|pB'VY5
+]
+CP΁	2zK~`
+l
+@"𬵸ޫU<,
+ֿ65pO
+E
+3M
+"H9րx<
+UU+
+'C{|f
+@R]Iuu6h(ҍ
+D
+VD
+N
+S6
+;
+d
+l
+|f
+_bOS
+4)x.
+ob
+	E
+LK[
+^
+25#t
+*?H{k!e
+Q
+܀%yi
+uSuz*
+*n}?@>	YWdL]lMR3ň&D˕ިC
+AYl
+/E}Pg++g/~$Ks[u
+狏 f
+ X@$	CϥQ<
+1Ci/w)
+O
+M
+֋
+6q
+ST77q
+Dbc'mvzK
+dT
+f9-
+lbk
+p_p
+	z5/
+Z
+"jqHhdw?Ns3
+oM:
+Vx+:.
+n
+}
+&
+5Tv.2yǳ
+'"
+^
+Qcd
+]=
+SNIh68-
+D
+L͉*
+z
+9sI
+aJCn@UU=t/yA
+l2'[>?ïe?
+ξ	i)&` 
+}J6E)
+R6k"*
+_i
+x ^q{ºxxl}
+ڗ
+tW<t,uЎE4YJnC
+dMHG
+U%BHH2
+#
+@TLTz;
+AL
+L
+[7^+av#կɽM_
+d<
+.M)c
+NY
+C~R
+<3*R_
+[{
+%
+O
+'n/
+ӱ,
+:	
+eIG
+$
+ߡ
+O
+:3?ڋSM8&S9+nl
+Ӓ`
+2
+2w
+^
+O
+U>{رSQ-gruYT	]ctl'h&"a:P7
+#
+*m!˓
+cq(%9=q"
+6yu*r
+;
+[Î$U
+{N*a
+aN)
+[
+he۰6
+QR
+
+-uu
+J38|G
+Fw
+e>⻄
+(:KX
+߉[߿6}+4',e(
+3qܹsqI(1F <Z6
+ 
+O
+v2?)S
+{
+L
+>Zg&̚6H,J
+VW.g 
+y+
+V}	#
+~^_qKؕӳ[2'Ec
+J?r
+<
+vD#iF\F.J
+Ծ)i4L\e
+}&%MfwHY-ƈVkd
+NA[u}m
+Jwy*
+u"^ds{fr
+}uUZFg2T:XGX
+batzuqNf.>V.
+wq5w
+d[v
+ck
+ZIY
+H
+NyqyQdxXAi:[\U蒸
+;jE6PR+92f@~ɇ5raO	,
+H
+v
+C~L
+
+y&+y^,[7
+$EV<Y@z
+⮏R
+ƺ[r)
+Jms
+4
+{+2nY!&u:"cf$C
+ʷO\n
+_N
+&
+=R>&/m
+b
+wK&E%I*Rŋ(
+6Yi
+vJ^+
+*j]ʆx{O1s1
+
+WgEf$(KE	Cg5x#lLi!Q
+oOY`
+OS
+_9n
+(n
+]O6H!/
+:vnf$W(at
+c!
+O
+W0{p0=p
+$H
+Z
+C:
+nmդ
+(
+;pR~
+j,Ȉ+:_9Ѹ%
+cl]_	>O<DkE苜0Q߫
+T7Esخ
+y
+9(S[pJ%
++߆k
+?v6/Ф
+)7w$|Q
+d#a-
+4V#nq[&>@Gm
+1
+NxPrJ̀>
+}n
+$w
+5Yr
+Xf
+E
+b:@
+hA7
+f
+6sLqHЗ$.8ǂ;ANj(aG
+^oW\|`Z
+Ֆ
+'
+U
+3;N
+-U|
+,ߜ
+1Pbez]b9ZPڍߞk0
+ͯA
+|n
+8\Qˮ.`
+2ܝr[ʚ 
+Axg
+-
+:
+sѻ4a҇
+OD'4zo
+SЄ
+#Y(d$
+' k@(Ji
+8l&oCf
+cv|
+Z
+ƙڪa6`n_t
+N9XZJ#5ƺǅ9
+S
+`^*U2
+mO
+ɂ*;GqЬD$ߏK
+;yۥz
+in
+#
+Ctn
+nLU
+=۸
+l
+Z
+x$/s_p
+JsO:
+JCjD76 jz;,8fLqhg\
++
+d
+C
+8g
+-YHu#V
+\-Yl
+\ֽ4\ͅQ
+2
+@Mǫ
+wǜŚ{QTDx
+xxUKc'
+&X79:
+t%
+bYAXKwt`s
+]v
+p
+NT4s
+8
+585	⎰Dj3{
+(t~dc%S
+}r
+
+y_6
+=:ŀ
+-L
+h~^fϑ/:W|<uB
+^>x
+B
+OJH7b궐
+%5
+:
+Ϊu>#}ᰢ
+{BE{nH͘
+oǨ/
+V7_^(
+j
+s
+<t6x&>M:\gp#QVP
+s=b&
+?B
+{T=NCZ+
+G
+E$P3Xvy劻
+3`|
+Ɲ@-Ә'
+o\@=
+DOPIf0
+M
+ss
+Ý9}
+]Z?%!
+"EjG
+r\^T
++
+J/mbTx3
+E׾"dy0
+Xn
+b0
+Xi
+qFrо`ݰq
+][!y>AGkSG
+fzM7b?
+
+z
+b1v
+o\
+ѱ)q$
+P|Cqq
+]r3
+!+D!
+W`}
+I؇'q
+	
+r
+rgs
+7eVv*
+Ei
+z_
+hc
+Y
+3?4Q2fb7
+	?
+gG
+rUUr
+FĦ
+U+1
+7:n)-$g	
+;Ʉhj
+U
+y.i*Kb
+3
+N۸ B
+ڞzz
+=@dhW
+HDw:RNx:)1(
+4 ݩ)
+;+o
++Zs
+[?<V
+YH
+{Z1#e
+3M!
+ojIA!+R
+k
+Nxg4e
+--G}&p5c
+3$
+%
+T
+}
+#IAH2Z
+T
+a
+5aAj?
+i
+ex
+ /Y_8
+ѪD
+	~
+,h`
+N)#RVɽMu>V
+ݴ^
+ߏ\<0ca1
+͌0
+" (
+V
+̭
+3vG
+FWf]X,Hz9
+(JvF'y_<
+yf<@
+gGv6~(ƪa
+߂
+g(
+"
+ch` /3׏qm-n?WE
+Haps>>V2jwTL
++S
+;6R׿q]
+c
+thd8E
+*/
+N{z-TKcS
+
+a
+JR\
+@Ov
+zJVb
+L7|>;X_@
+Q$
+M4)%N
+TJe
+P
+69z
+?
+<
+eU
+VB`
+B<
+%
+8P
+|
+}`6k
+ЭO
+#\x]Ļ
+P>$3
+SSN
+K]M
+Bno0\ddw
+\>I
+D
+Q&LbyBH:;
+oT78
+-"3t[N
+qJeN[7
+t\q
+dhE
+9B)&
+?F)oP
+,S:
+u>:Bm؏.r
+qJ
+	
+վ
+4H)
+s4_G
+?
+r
+;:oyb
+TC1iv@"hNFLθ`
+z!;*SL?ƁP*MbIѹP3b
+Gu(3ĪQh
+3H"
+6X
+
+
+(Q
+)$
+B
++
+7,
+DO
+`-
+&)iD1
+$
+8X<UxêpNj
+}|$'1
+Y
+|
+6ۺ~u$+V
+C8TY
+G)p
+mRU'
+{ڀ"h
+%SI@V
+ö
+53:wYEkacƢ	
+<~
+NWiö
+Qk\z
+[
+e
+Dwcqʢ$
+灲k^K䛑	G
+{
+zqU
+1
+pOU
+ə
+%,9o,Y
+Zm
+p1^sRP
+I
+>B!cQ
+SM@C~n}
+7@-
+9={j(CJЁ㣅Pzō<$\]
+8]
+ye}CtC9
+&
+SN]<^
+*
+i3
+2jGJt!TU
+(HGUtH
+d(":on
+>
+Tg#l
+YۂesѤdo-/^Z{\NoV
+Lą͢,5*
+͞)һdZ&
+c
+iwK0:
+urN
+dbc)|>
+qj%\
+Vm0_,k3~)=D
+Suzg[}ݷkqf2
+/9)5sfV
+Ί%ɸmDǒ
+2
+ZlTGm?'
+-
+\[
+:տ
+e*N
+\@dA/
+J`/\f
+D}
+@Y=[\w
+1▨PG
+3Tѕ>
+9
+Ja
+^	T]`-
+kobO;SHcW
+<r1]
+X
+Sj`
+&
+!e.`	
+%0o:3
+#
+wҖQF
+U
+1M<B
+Jr
+tn-pT
+g?&
+-cT#xb	:
+9ĸ
+>]j
+Q4
+I60(
+-
+Îi.xH05
+(	
+t
+n
+~
+n0
+4w͗X
+Iბ*Ezz-ke\
+Ղ
+5u"1)|.
+nÏ
+2"_
+,
+>U5"JX׏y
+0
+M
+0iP
+#
+:0&͔φ
+
+
+;c
+7Eo
+'+
+)fv
+aI| EЭ2NxzoPQn
+h
+<Y}WsNgT'j
+TK9
+HJ4CA?"RɶQ=ۛ
+&
+5܅B
+rBTL
+s
+.X"p
+Wmֳ9xɐ
+kݨۢK!ÄX|
+*P
+gS( /I'ң
+߰ڱ	f+
+,v
+ȱ8SR
+c0
+n_flfU*0|ͣ
+vLKRHecODJJ
+:hX9yƉj2Ch
+)
+nG4Mg²PXQ^?nȃ
+JvobT&I
+U-)LEz	R
+Men
+~XXAQ
+wkB@ht6
+CV
+c޲wYzڍ
+c
+~˼Pک9ǌ#ԧ*h
+}
+>
+,OqPs)3{N8C=
+`(tHV4a_2W
+p
+9|D۞@c7V)C	K
+(@aI
+A>1
+{6do<
+=/
+ԕ
+-
+'~M\
+7sN53iJ
+FS
+P(
+z:
+Jej0@ h:=Prxc:
+O֏w)
+
+
+HKW[œo
+zC
+re
+8
++*9z5qn8>g-W1Hɟ
+:[|RG=6
+[d63Jg
+j
+--Y
+
+MȮeH:`pe#/
+	 11U	-5O:s
+m
+i㹬8q&
+{4>S-
+
+6]
+٭
+[ټV
+D?
+cH+,#
+Y)
+ڲS
+\-
+4@ڭRnB277,Γ":dQXB@~c
+1@e
+Vv
+}/
+cW~mo!`m	D
+QUW1
+'ɍqc
+N7[
+[,c
+ޞC
+"
+O.y
+^<
+RKQ
+c"rzM
+,_j
+[yj
+%
+(jhIUﲧKg2Z`QŞQ
+oaBTT6Nd(,B
+)p
+dçn
+뤿
+r
+)ɒg_(9
+暑:
+ڕ
+?&89
+,ԓ9bՏ*!X4
+zHv^H
+F'q
+!
+@
+_-
+ɳ
+k$
+6
+k
+D+0!;
+RF?|>OBWWdX;yUVFq 
+6W
+.
+1y 7Q(wƟ
+t=(/|
+d==Ԅ3ID==Hcv7
+?zR6
+f^.
+-QUb"{3$'ؠrZ
+9435A2!$CUپT3
+㪇oB?:Tߘ
+A
+3t
+AP*a@
+oN,
+t5\=)>$Q
+Nss
+PPdFeQ-
+0:=7*-
+4
+{q
+:
+Mc^oеbnUx
+F-t<ȴ[p
+p
+ax
+bZOˢ01ˤ
+5
+V'
+*
+O
+O{'o]&3y[
+z3Ѧ:FB+ă$>M
+?*M-v
+n!FUL4QX&-xU
+м(
+cz=-
+ k]a{ ƪ!,Eރg92y
+\s
+ |
+( b.
+殖#vJ{UĪ%0x^-
+-5ok}1Tfy
+z
+؄r
+y
+4U:
+|
+N
+k
+uQ?,Z
+v8^|
+&B
+a
+SYL@?[tY$(LA!S(4
+xaxY
+:
+Һȋ|)V
+nhEPVhQ>
+!13NJ q
+y!%^"`
+jڸ
+'=	H=0ALE[[zp8#$
+Ug;Nm
+~
+9:
+L
+~+N`<>OsZy
+yY֬
+oA
+*<oW#
+bfqRB%
+"_KfԲ%dЕ\Qs
+aS
+jRl
+ \=EcF-Fy响zs,dG
+&6R
+$I%N
+\guŎuChHX	^C
+jlUra
+g
+ū
+{
+PC.-JY|W'eazAO
+zq<[
+@wCf
+)2<=@
+Jnŋ_ͮʞ\U#*	o%C
+ 
+("FG
+~.n?
+;MTBDa&!4^X
+ʾPb
+aM]f
+C~el2A
+jߙ
+ہ
+q7C
+ՠ
+Z8w{
+D
+R
+n]	N
+.@D
+3b
+{ cWd.05
+baiL8&s|d/
+ߺR9#c)
+FC
+pN`
+Ƅ`'e!J:
+>,84."J
+U
+v&\d
+x/
+	}+.
+n?k2U>
+YB,w<I4
+9Ji
+\ʝ
+W0JN7(
+3n
+֭dtmp,Sצ
+C]_
+~z
+޷XIra<5ٟ-[;
+=2;
+-Ę&A7
+*x|ZVf^$"N
+!
+Z
+F
+3k嵰'
+RJő
+ӏE>`
+e~z
+4CU
+ez۰
+Q
+)68#{5P6+
+v
+g{"avs*
+ !
+˲
+n
+z|.-
+kJyɩ!2UOh
+p&;<7z7e
+卾
+<
+|kޕ\T
+;V
+Hn2LW
+5d~V0`F id<.
+[;{΂'ϙg
+zi
+Cn##]]ʴ5ķr
+lE
+i1cGqtc`
+ 
+a
+G0Dq
+8_%N
+;Lzi"
+ջ!
+p/zJZhpۇ
+Y ˝u8
+Dg
+0ȱt
+Ko҈
+yǯmǗk
+I1,
+jhⅧ
+Z,>떗ѫ>
+}C
+lT
+LTY
+(
+Ŧ'3?=
+o
+R\
+kܺ
+މcd>	q9rRt[
+EP#H
+2
+mRJ6j
+_
+A	{L
+N
+W<
+^5ݙ,
+.?"L
+ƢKS
+z^f4
+(o}5
+wg
+s
+ϾXM^rls\^b
+0[ *
+8l۲AVN[
+0W
+vt!90
+P7Ʀa{#!J
+te
+nƐHX
+ 7
+T
+Uɪ.@
+Mѐ
+n4D*!
+ī0|
+Άޔy
+n[0M0۫
+dQF_
+͘
+	! dO(X<
+y
+=ʸl
+Y$H
+	b2iZҽE
+$fU
+2]EcwST
+O
+\g/Ҭx\SA-I+
+;
+o
+X:P(̅Ƕ
+f
+r]
+b2K4
+rJhvEG
+wE
+I`
+7d|GT
+,
+9!M
+.?+
+y@Ʋ
+\
+\wp
+^֫
+	
+=-%SK
+3ciY
+$VwRdPKǐDfj
+4^;dׁ\
+{x@/媌~
+/
+X
+;
+=
+\'1͸ڻ.m禓.JQ
+e
+}W`%QrWh''
+@8YCi
+ym>dFes]y
+kAL
+o{j
+4BfS
+phS~XK
+y+
+{#'n9_RS-T|
+7
+Z
+ij>-H
+1
+0q
+5
+M{SӟSNɘV97
+9A=
+7
+ZP^T
+Rnh%P
+>s
+pbyd
+sёс^rR
+V̀9
+
+
+W!PT/ qm
+	f0G
+#_?n
+Tb^}~kj
+csM3NY{2Sm
+$)Qtk'܈htw	
+֘응
+)
+޸1s^p=
+\
+*
+QKY
+j
+}6=
+;
+"H
+!
+D
+q
+G}I
+Ik=
+ҽH@'}K 
+1+
+\]43
+@LE	9Tǥ5Rj{?n9W}bs%OulӍm
+cj[T
+r>:
+<P
+/-)+'=Q!
+2Ńc
+/Z
+f:ԏT(3^0
+7v/68
+?"UZԏGc
+Es{z
+yH1NR
+\
+_s|E׎
+UV}bym2mr*
+H7
+l
+0S߭a)
+y
++}
+E%>]
+Z
+_
+@;}\"(<|c26i
+Q"H
+j
+̨Jeλs<-l
+Nl
+M"
+z+"r_\B
+o
+klb%ʖ]
+$ѓ/2n7
+0BA	eV@dLY
+PKqsa
+l!J.w
+A
+0
+U6
+KL\Jwn
+A
+bz.}Ϙ	P],gsq<
+;iLS
+!KM}
+ Ep
+ޣjU#L%M^
+я
+4H^-IV
+E1B#YTOG
+Cfl
+4zt*\X闽^
+kgM
+rt.O
+g,
+I~Mcm(+<al
+4Ĉ
+Dtn#
+lNꀃ`%<|
+Tw
+mrH
+E
+Y
+tA3-t)Ks
+qx
+KS.m
+	=
+@
+rٲo7
+=W
+cDRsz
+CR[.h\A{VtGQ
+շEH
+]
+cxSK^`
+Q
+LqF
+g
+Z
+}Y
+{{Ț
+8DhUzdK<
+J4fu
+~
+[
+E
+\-7w
+L:3o.
+8|o
+AZ&q:
+@
+偪C
+xO቉CrnƤzf
+,
+1Rl[Mt樓
+ݎl"v?@
+es
+k-T?Cۘ3
+k&}%|r{U
+^o9dvw>|N
+>#t𼘿|>
+Zt
+k(*L~
+E|dW
+lBt;
+b[
+ռQBh`D܂r
+篵[lЫ
+S{
+9
+&qsx
+#
+1҃
+T]
+=N]
+
+U
+_'
+Q
+w	*4Kp烇FT+
+Oa̿ewM<OT{
+tb!ξ^L2e4EDo
+=.n
+U
+ ׯV@Rp
+Ap
+爟G=,N
+_MQ5ͱ E8
+q)sxIzRs
+p
+k
+VVt R:*_n
+ڟxGm
+HqG3T~&qG.+׺V͂Or
+Q
+41
+^^>
+VGP
+j>P5\Oh[
+kj
+-z
+2+j(썗yIǝh8*UݦXR\Ҳp!'W
+jsfʂB7#p
+4x
+*&j
+0̡}Q~Z
+BBgv00nJ
++"-yN᫔
+>0궿[ ǩ|;[zjOT
+9¶
+ސT;|9bwjܚFhb
+Y3|ۄ|26M\
+a$l@EceKDo7
+J
+[n?
+s8r
+"PS^K
+"gx
+Hq7/)
+^caP5
+Ț@ԩ5D/w>
+:"PJ:xZ^).%qdT
+`
+"
+˵
+˫Pq_t!
+4rɽ
+ҧ{.{,k\
+bn`
+4J
+F
+REi,
+Ȉwob3![
+/&'>
+4ee!>FO3P
+i
++֪%'kjI`>@
++(
+Dh
+o;{
+D>YL$EhQ
+s
+;d
+)	u@@մ-
+xC7i!AB
+vJ
+?f 
+LܮR_&+1N䦄
+ϵ)4l9@5
+ׄ
+\9d
+z
+T`]"3@]>~gHKV'cbLW
+$.{5=$]?f-
+<+ܰZAh\y2a_<K+en
+" m,4<VB;՟Q!"(Ϡ:9$ROV
+@pq9n_R@ч
+߂
+ƕʥOJBc/}
+peƓc>z}^c~%A7Q
++b~-]
+NNiBN
+qW
+g#IT
+W6eSj}2vŻ`>
+J'@J+[E
+kjGfVsT]+sVܦor
+XOs[
+RrB
+n2t"Xc\+w+
+E^d
+Eogr5/U%
+ 4-
+ƿB
+U@
+l
+aJTilSG
+x-Oz
+@Tn#
+DJg
+ao
+Т
+;E1;FONdr,Wr[
+X6%pZֵ
+܆SK$sWlä
+v
+ya!*%H
+5hT,oBd?,R
+vp]<:Wǉs.$'69&
+qUS;
+)U]!I
++Є<3Dx
+h
+F"Aw8s@Ek
+J4\@<0iM2DMiaS&=APS+
+P;訾FT
+8ВN|Bk{
+QcEA{Vsu6
+̭5T
+ܥ
+/n
+	Pnk=Py󯋀FX
+yɚ
+X.
+^5
+vPb
+tKB.1:8B(4
+-O}
+'
+Z|c#ǃb
+?<
+id
+_6
+I]^@M
+1e
+*5Zb
+`y
+8'֪\
+jd8f
+bB
+T)0}9z`Av=Q<Lmx!l&\u}*}5 doU
+-/f⢷<
+f_4Zo0fmIK
+^۱TZw
+Wls
+'#
+IvcJ;%N	~VRAH+o
+XňB_@]w
+9E;
+CV-
+̸ܪ/Rz
+!
+lgZE:@2JM
+utd
+Ϛ8\
+TP
+PZ!f
+fXH!¤7/*Wp*
+Y	
+mH
+J
+)&Ħgw
+Ǎ颼\.	^t
+]%{刷
+IX^혗G
+xyB
+,
+E]E"6=0
+^O
+f
+m
+_(!w
+{
+ooE
+P=
+r>
+`̃V̼Eƅ
+J~
+
+<Nb/bP
+j
+aG@Rc
+-
+RVՂ<7
+Gsx
+gX6Tk
+^N*ņKC
+f`
+lZYH
+?
+)b
+\դ
+^>=|=#M9)
+9X~4\g1V6=
+)
+M
+Ί**
+?
+Q
+x(
+_Jw
+?>
+	nc,V:Bӡ燂=Q
+M*Uѹ˜
+M#^
+i
+^<
+2;
+Qj
+iR͞n
+tG:J(r<sk'Y
+-ds`
+l
+fq;G$Y
+
+#
+T
+yi3p^
+`
++n
+F'
+vCXVz3,#
+)ktGH):|a
+CK
+PMkY
+. z
+%Ҁ
+TSrO'
+&R,;2
+jp
+䋷
+u"
+kEť
+^Nᘼ_
+k
+GG|፬
+"VJ6IRL
+Wuj
+"^)c}\<y-S(O
+O
+ "jda[̄
+M⵰|
+->Vo~+1!%
+=d{6?
+>2lr:Dc
+H|
+|ˣ}
+>U߱
+kJz
+ιg]r
+Bi
+w^E5lƾ
+D# LP["
+(e
+-;+\)4
+Ei
+tT
+v
+<(b
+Nd}0
+5NtW9a
+`z
+YkJ
+i->pT1oU
++'
+Cq=,I
+
+`
+N	;(
+˹,
+Bb63j}>U^񱝏gl
+x
+LA!64=[
+"1tl&t[LQ	fS&Eu{Yڈpӊ7XQ@Kw
+\ \ەE^nWg
+Q
+Uo)
+I(}k/
+`ȭxFy>}
+0
+~ǅo)0
+>:L"N?+{%
+;Fgab$l
+ec
+%Gnm
+:
+aQӟaV
+'RK)
+V)y:Jd
+$
+R2%"8}
+&u
+;,^W4
+=$7O
+s7:
+C_'
+?<g
+J8
+(R,jki
+7wG:0ı
+9
+ֶ1R
+a
+\_/rPR
+h7/
+me
+/!Ad
+P\g
+|	u<ĸ'Y	
+uD!v
+6Ơ:ZN"jldiYi=O
+C"L>]
+)}ՁϖeeG?ix(A0W
+P>hh\NF
+uh
+x1[QPc}:
+Gj<
+dߦk.
+)7O<(P̬,T#
+l{
+a߷.@	d
+Qiiϻ
+K3y!?%tFIK
+͓^偪
+2c.Z!
+^`C
+Y}Pj8
+^l
+tm}{
+o
+T
+fi@
+}nWʟT
+&69o[
+.`
+'
+3ͿxI8&%
+đ8@
+=ｨHcc
+O
+-
+A{m
+.
+Jbu
+Z
+vп2
+iVUb0S^sv?@ř
+c2:K
+1Y8BT
+ǫ
+1k
+7
+땓
+j
+E
+IA!v|L=l=L7)ˈMj:2uY!7EWT
+q\rPöeC
+N
+	H
+	AɎ
+8t
+a
+^o(;x2Ġ;ha.'yg랆aL
+֠ᎊ
+;FvȂQ=qC
+~Wz
+:O]
+B^7Gk+
+^wvؐ
+d}~
+5XԪ.0
+>xg;OQv"|ir9}
+Uպ!
+
+1, 4
+0:jFpZS4
+hx
+"
+o
+%o`KW
+c
+#/o:
+a
+4
+4l
+sQX
+Ϝ
+}
+=8
+ۙ˛C
+P	
+%w@NI%
+Ne
+Q
+9C	_R<tI
+z)S
+3
+kzءq'6
+3bZ
+[
+,
+F
+5/o~|Kr
+g9
+Gr%'˫6~G<
+-GI
+ζw$n$
+-DS!eu
+3
+>M(wXabz
+f
+}Ո.
+'k
+Gr_
+ͼ
+upu
+*.D~-3
+{GC!<PPiX
+~򵠜
+P_
+d3{T
+#r۴-
+D0z59
+b
+ڠ^Ɣ
+]zw
+$
+_&	Չ4utVN
+JvFW
+J[D1
+S
+cG]
+N
+w
+2;zaH
+)幻SFfJ
+Yq
+VI
+t_
+=d(ƱKv
+k1y%X
+hzf
+z
+I1l
+)?}&
+hr!jk
+dj
+?{
+ϻǬ
+is5
+h
+US+R
+&[
+Xߓ87Q+Z
+uI
+ų1B
+1
+35
+#/ғN--^3BfU?
+(X7
+r^p1I[D/Gs
+@6_Q!
+$I
+Ĉ@
+rWԆ	
+=Y
+"yZ+ DR݇
+kWs} !1e
+6rY
+ƶ
+K0
+揞7
+EZ
+Y7ld<h_޺
+iؑ
+E6
+u\溾66:
+NYh;<Au*{
+5\6ٱo(.
+<Tx
+w1h
+ӊl>0FB0i
+1 [mlޚTApt@KK
+[]2
+L
+8
+J	
+W$Do
+LVINqDfAҎ4
+E
+Rv3
+n
+P
+8.G%JeB
+kLGy+Q
+2-4m
+'
+{EhJI
+RIHR
+Mj|2
+ƌ
+S`a!K֮w܂
+C|s}t6d
+6
+3
+5I
+}T(X߂R(mu)&!J&I>J]"ĉn[j/+X!ÃP}7Hc
+-ð</y
+l\<,^NG	f
+<YU
+	RuVR
+gxef]q5}m9N&G:g%
+G@iH
+tn%
+\	>MJj'
+g{
+W
+q
+e䗊[0
+c-HdN
+pa-
+L-[
+u3#
+qMO8
+c*wc	۫z
+\':ԍɨ
+?
+⴦
+	du}`J!
+ޔT|)c:
+"&
+I
+0Zre"ޖK
+Ҽ_To/z0
+!
+H|T݁	
+?Sl'RnJ
+w|
+uy
+랋M
+T
+gB
+^e+;
+WQuNq%}=
+՜.Σ>qZ
+ӱ$=
+bWT
+9GrJs
+D6VE
++`ǂ
+"VM8H6uK
+Hd0Ϛu3
+$)
+vC]p
+#
+ЮNQ
+%
+
+
+wSg{akB
+i3_F6
+$๲p1
+XgFiͲK[xSgr*3
+JM&:
+Nkr	wT0az߰
+xT{k
+F:S"J-
+Z5Hj
+CEynNU
+3^
+T
+-5}h
+:5
+<?]$"lU|e
+7-
+5h
+s
+j
+P0sA)
+R sJ!BӈVl8
+H
+պ<Fl
+U
+m@C
+c
+i
+`R
+tUA}?z
+k];4Α-~<c/yd
+g
+w
+M,
+>e5U
+*y4\XU
+
+UA
+H
+0]
+VڔpIs&
+YA/ig
+'A
+^q
+D
+w7
+	_!
+(z=>&H#K[1
+V78=[n
+JXDW
+j
+#07A
+EpO&X5&
+@C
+`t
+>`(<ؠwVkg5
+sg7]
+ߟ~
+8rNP3jsCo;͝_к㎟d.ft
+s
+zHi|
+2Hނ
+4`=};
+l~v
+BD
+$c
+tjT?
+q"
+y
+%3&@!
+x~-$
+쩚3?Ѩm9
+4ί
+U
+8:4c
+CW0\
+=F
+M
+je
+y<^
+wl
+ߐ[,<
+Tj
+d
+/[4'
+ii5g`
+z]:]JI8}5$w]+qc|}
+r|Z{
+p^d2ϲ
+eJ
+b\
+TeYSd]A4
+wXN1U
+)7,i
+Xm]	Ͱg
+´Ԟ*gmomReƞ
+{Ӻ0
+D
+.횃
+уM8!j`
+;>
+F6cb$3D*
+	V
+5$S
+w/r!
+*'AQ
+)
+J
+\.qE
+/
+QlO
+e8n
+j
+Í<P5maSv;5
+?t_
+PD<cCTN(
+諟D_V(,p
+P
+/
+[
+,B(;|KG\q

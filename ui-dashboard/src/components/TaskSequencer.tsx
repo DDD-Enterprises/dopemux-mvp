@@ -43,12 +43,9 @@ interface Task {
   energyRequired: string;
 }
 
+// The sequencer only reads the load band. 'unknown' leaves the sequence unfiltered.
 interface CognitiveState {
-  energy: number;
-  attention: number;
-  load: number;
-  status: 'low' | 'optimal' | 'high' | 'critical';
-  recommendation: string;
+  status: 'low' | 'optimal' | 'high' | 'critical' | 'unknown';
 }
 
 interface TaskSequencerProps {
@@ -552,25 +549,19 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
             </Typography>
           </Box>
         </Tooltip>
-        <Tooltip title="Real-time task synchronization active" arrow>
-          <Chip
-            size="small"
-            label="[LIVE]"
-            className="dopemux-chip"
-            tabIndex={0}
-            sx={{
-              ml: 'auto',
-              borderColor: brandTokens.borders.cyan,
-              color: brandTokens.colors.ritualCyan,
-              bgcolor: alpha(brandTokens.colors.ritualCyan, 0.08),
-            }}
-            aria-label="Real-time task synchronization active"
-          />
-        </Tooltip>
+        {/* Plain text, not a tab stop: it explains state and has nothing to activate. */}
+        <Chip
+          size="small"
+          label="[SAMPLE] not connected"
+          className="dopemux-chip"
+          sx={{
+            ml: 'auto',
+            borderColor: brandTokens.borders.strong,
+            color: brandTokens.text.secondary,
+            bgcolor: 'transparent',
+          }}
+        />
       </Box>
-      <Typography className="dopemux-roast" sx={{ mb: 2 }}>
-        Your backlog is feral. I muzzle it with ritual order and velvet threats.
-      </Typography>
 
       {currentTask ? (
         <Box
@@ -624,7 +615,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
               role="timer"
               aria-label={getTimerAriaLabel(taskTimer)}
               sx={{
-                fontFamily: '"Space Grotesk", sans-serif',
+                fontFamily: brandTokens.fonts.display,
                 mb: 1,
                 color: isOvertime ? brandTokens.colors.gremlinPink : 'inherit',
                 ...(isTimerRunning && {
@@ -1165,7 +1156,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
         }}
       >
         <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-          Sequencer calibrated for {cognitiveState.status.toUpperCase()} load.
+          {cognitiveState.status === 'unknown'
+            ? 'Load unknown. Sequence order is not adjusted.'
+            : `Sequencer calibrated for ${cognitiveState.status.toUpperCase()} load.`}
         </Typography>
         <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
           <Swords size={12} style={{ marginRight: 6 }} aria-hidden="true" />

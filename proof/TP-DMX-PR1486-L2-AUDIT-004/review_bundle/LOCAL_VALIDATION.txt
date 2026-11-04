@@ -1,0 +1,9 @@
+ui-dashboard local validation at 682a4711d0464cc9dd166a267e9743b6ee2e55ba (2026-11-04T09:08:12Z), node v25.9.0
+npx tsc --noEmit exit=0
+ Test Files  11 passed (11)
+      Tests  107 passed (107)
+npx vitest run exit=0
+✓ built in 181ms
+npx vite build exit=0
+npx eslint src exit=1
+

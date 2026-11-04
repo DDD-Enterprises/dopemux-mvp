@@ -1,0 +1,136 @@
+{
+  "head_sha": "aaa2d1ae05048443da7e0e68104f54bbc53075c2",
+  "captured_at": "2026-11-01T06:59:52Z",
+  "checks": [
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124776320644",
+      "name": "\ud83d\udcca CI Pipeline Summary",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/runs/124774105037",
+      "name": "CodeQL",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773994128",
+      "name": "\ud83e\uddea Extractor Smoke",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773994169",
+      "name": "\ud83d\udd0d Extractor Lint",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773994218",
+      "name": "\ud83e\uddea Auditor Router",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437794/job/124773994156",
+      "name": "checks",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437847/job/124773994402",
+      "name": "preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773994343",
+      "name": "\ud83d\udc85 Code Quality & Linting",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281436612/job/124773993995",
+      "name": "Analyze (javascript-typescript)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281436612/job/124773994058",
+      "name": "Analyze (python)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281436612/job/124773994075",
+      "name": "Analyze (ruby)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281436612/job/124773994119",
+      "name": "Analyze (actions)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437870/job/124773994386",
+      "name": "identity-check",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773994202",
+      "name": "\ud83e\uddea Unit Tests",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437864/job/124773994494",
+      "name": "\ud83d\udee1\ufe0f Clobber Guard",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773993976",
+      "name": "\ud83d\udd0d Audit Proof Validator (--all)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773994233",
+      "name": "\ud83d\uddfa\ufe0f Model Routing Consistency",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773994229",
+      "name": "\ud83e\uddea Extractor Full",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437712/job/124773995471",
+      "name": "independent embedded audit",
+      "state": "FAILURE"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773994082",
+      "name": "\ud83d\udcda Documentation Check",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773994099",
+      "name": "\ud83d\udd12 Security Review",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281435879/job/124773988932",
+      "name": "identity-check",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773995327",
+      "name": "\ud83e\uddea Installer Smoke",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773995174",
+      "name": "\ud83d\udcca Scoped Coverage",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281437695/job/124773995262",
+      "name": "\ud83d\udd17 Integration Tests",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/41281467327",
+      "name": "PR Steward / final readiness",
+      "state": "FAILURE"
+    }
+  ]
+}
