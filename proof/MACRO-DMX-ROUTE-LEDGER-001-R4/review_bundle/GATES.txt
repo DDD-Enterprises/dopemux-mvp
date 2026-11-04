@@ -1,0 +1,74 @@
+W04 gates for MACRO-DMX-ROUTE-LEDGER-001-R4, run 2026-10-30T10:56:35Z on audited head 989fe4651c050ec23619e5208da17d6152b477b0
+
+### validate_audit_proof.py proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json
+PASS  proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json
+
+Result: 1/1 PASS
+exit=0
+
+### embedded_audit vs schemas/proof/embedded_audit.schema.json (jsonschema)
+embedded_audit errors: none
+status PASS_WITH_RISKS | tool grok-cli | model grok-4.5 | findings 11
+
+### proof identity fields
+packet_id: MACRO-DMX-ROUTE-LEDGER-001-R4
+audited_head_sha: 989fe4651c050ec23619e5208da17d6152b477b0
+independence: UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING
+
+### flattened package vs originals (cmp)
+MACRO_PACKET.json identical
+EXECUTION_BINDING.json identical
+ALLOWANCES.json identical
+ISSUANCE.md identical
+W01 task packet and binding identical
+W02 task packet and binding identical
+W03 task packet and binding identical
+W04 task packet and binding identical
+
+### secret scan over the new W04 files
+AKIA[0-9A-Z]{16}: 0
+xox[baprs]-: 0
+ghp_[A-Za-z0-9]{20,}: 0
+sk-[A-Za-z0-9]{20,}: 0
+private key header: 0
+
+### validate_change_contract.py --proof-only --base 989fe4651c050ec23619e5208da17d6152b477b0 --head 17b5546a8787896636d17a3a86ed5952cfb8b653 --content-head 989fe4651c050ec23619e5208da17d6152b477b0 --audited-head 989fe4651c050ec23619e5208da17d6152b477b0 --proof-head 17b5546a8787896636d17a3a86ed5952cfb8b653 --format json (run 2026-10-30T10:57:36Z)
+status FAIL | proof_only True | max_lane L0 | paths 57
+finding: proof_only_missing_signature | proof/MACRO-DMX-ROUTE-LEDGER-001-R4/PROOF.json
+delta 989fe4651c050ec23619e5208da17d6152b477b0..17b5546a8787896636d17a3a86ed5952cfb8b653:       57 paths,        0 outside proof/
+RESULT: only proof_only_missing_signature remains (PROOF.json.sig is the operator's signing step).
+
+### git diff --check 989fe4651c050ec23619e5208da17d6152b477b0..17b5546a8787896636d17a3a86ed5952cfb8b653
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt:80: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt:82: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt:100: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt:106: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt:139: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt:147: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt:156: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/AUDIT_PROMPT.txt:227: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff:23: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff:25: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff:43: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff:49: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff:82: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff:90: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff:99: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff:170: trailing whitespace.
++
+proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/FROZEN_DELTA_SINCE_R2_AUDIT.diff:170: new blank line at EOF.

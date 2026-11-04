@@ -1,0 +1,2 @@
+Reply with exactly the text AGY-PROBE-OK and nothing else. Do not call any tool.
+State your exact model identifier as you know it. Then list every tool or MCP server you could call in this session, one per line, or write none. Do not call any tool.

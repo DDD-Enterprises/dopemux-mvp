@@ -1,0 +1,15 @@
+{
+  "name": "dopemux-memory-bridge",
+  "version": "0.1.0",
+  "description": "Local-only memory outbox for Claude Code: records a derived per-turn digest, shows a pending-count status line and a welcome-back band after a break. No network, no service.",
+  "userConfig": {
+    "idleMinutes": {
+      "type": "number",
+      "title": "Welcome-back idle minutes",
+      "description": "Minutes since your last prompt or finished turn before the welcome-back band shows (5-1440).",
+      "default": 30,
+      "min": 5,
+      "max": 1440
+    }
+  }
+}

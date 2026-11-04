@@ -1,0 +1,176 @@
+{
+  "id": "TP-DMX-PULSE3-W03-AUDIT-001",
+  "project": "dopemux-mvp",
+  "target": "HELD until the operator's audit-route line: run the one tool-less independent audit of the merged head M on the proposed route, preserve every artifact, adjudicate against source, and draft PROOF.json and AUDITOR_REPORT.md unsigned with independence left unattested.",
+  "invariants": [
+    "MACRO-DMX-PULSE-003 invariants I01-I08 apply. PURPOSE: clear PR #1472's strict up-to-date gate without rewriting history and without editing any Pulse file. PR #1472 (feat/pulse-001, OPEN, signed head ee00d36552c6f7a8ef2b83dc0165b8de97481e5a) is BEHIND main (93050d135ffc2592000c1d0edef82b2912935525) by one commit (#1447, 63 paths, none of them Pulse paths; a scratch merge is conflict-free and leaves the eight content files byte-identical, and the cumulative diff sha256 ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8 is unchanged). The signed proof is bound to the old head and a merge of main fails proof-only closure (proof_only_escaped_path), so the merged head needs its own proof and exactly ONE new independent audit of the cumulative subject. Preserved unchanged and never relabelled: audit 1 (head 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147, PASS_WITH_RISKS, Q3 FAIL on F1, F1 accepted by the operator), audit 2 (content head b5dc04dd7d9560ed31a2dc0fd2192218c727ea01, PASS_WITH_RISKS, N1-N5 OPEN), and all their proof, attestation and signature files.",
+    "HELD STAGE. This workstream does NOT start under the execution line. It starts only when the operator sends, verbatim, AUTHORIZE_MACRO_DMX_PULSE_003_AUDIT_ROUTE=grok-cli:grok-4.5:ONE_ATTEMPT. Without it: stop after W02 and report.",
+    "Exact custody: a fresh worktree /Users/hue/code/dopemux-mvp/.worktrees/pulse-003 on a new local branch feat/pulse-003-update, created from origin/feat/pulse-001 = ee00d36552c6f7a8ef2b83dc0165b8de97481e5a (the signed head of PR #1472); the issuing worktree /Users/hue/code/dopemux-mvp/.claude/worktrees/pulse-f1-001-5a321f is NOT used for execution. Writers: the team lead (local-shell, no model) is the only writer. W01 writes only the merge commit M (the 63 paths that main brings, pinned in the W01 packet) and nothing else; W02 writes only proof/MACRO-DMX-PULSE-003/review_bundle/ (16 flat files); W03 (held) writes only the files named in its write_surface. Commits: team lead only, explicit pathspec: M (merge commit, two parents), P3 (proof-only pack), then two held audit commits (custody, verdict). Rollback: `git revert -m 1 <M>` and `git revert` of the proof commits in reverse order (REVERT_COMMITS); no reset, no rebase, no force-push; removing the worktree or branch is an operator gate.",
+    "Fresh preflight first (any miss: STOP, no audit spent): HEAD = P3 in /Users/hue/code/dopemux-mvp/.worktrees/pulse-003; sha256 of every pack file verifies; `git rev-parse origin/main` = 93050d135ffc2592000c1d0edef82b2912935525; PR #1472 OPEN at ee00d36552c6f7a8ef2b83dc0165b8de97481e5a; AUDIT_PROMPT.txt sha256 equals the pack and is at most 150000 bytes; `grok --version` runs.",
+    "Containment, exactly the proven recipe (reference_grok_cli_contained_audit_recipe): a sealed empty directory in the scratchpad holding only AUDIT_PROMPT.txt; `--sandbox workspace --cwd <sealed> --permission-mode default --max-turns 2 --no-subagents --disable-web-search --no-plan --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt`, the no-skills system prompt, the base `--deny` rules, and `--disallowed-tools` built from the probe's own init.tools plus x_search. Probe 1 (content-free prompt, base deny rules) records init.tools; probe 2 (with the built deny list) MUST show `init.tools == []` and zero tool_use blocks. If it does not: STOP and report, run no audit.",
+    "The audit: exactly ONE attempt on the route in AUDITOR_BINDING_PROPOSED.json (grok-cli, grok-4.5, effort high), zero retries, no fallback route. A launch, sandbox or quota failure stops and is reported exactly; the stream of a failed launch is still preserved. The two content-free probes are containment checks, not audit attempts.",
+    "Custody (mandatory, before reading the verdict): copy the raw stream, stderr, both probe streams, the invocation script, system prompt, deny list, timestamps and the extracted response into proof/MACRO-DMX-PULSE-003/review_bundle/ as flat .txt files (rename .jsonl to .txt) and commit them in one proof-only commit; compare the committed bytes with the originals (`cmp`). If the raw stream is missing or init.tools != [] in the real run, the audit is VOID and no verdict is used.",
+    "Then adjudicate every question and finding against the source at M (never the auditor's say-so), write GROK_RUN_RECORD.md, GROK_ADJUDICATION.md, SHA256SUMS_AUDIT.txt, AUDITOR_REPORT.md (verdict verbatim, the response embedded) and PROOF.json (packet_id MACRO-DMX-PULSE-003; base_sha = merge-base; audited_head_sha = head_sha = M; keys as in proof/MACRO-DMX-PULSE-002-R2/PROOF.json; embedded_audit per schemas/proof/embedded_audit.schema.json; audit_identity.independence left as UNATTESTED-OPERATOR-MUST-SET-PROVEN-BEFORE-SIGNING; no .sig). Preserve the audit's verdict string verbatim and never relabel any earlier verdict. Validate with scripts/audit/validate_audit_proof.py, then `validate_change_contract.py --proof-only` with explicit `--base M --content-head M --audited-head M --proof-head <new head>` (closure needs the AUDITED head as the base): the only acceptable finding is the missing signature.",
+    "Not in this workstream: a second audit, a repair of any finding (that would change the audited subject), signing, pushing, opening or updating a PR, attesting independence, merging.",
+    "Finite limits for W03 (PROPOSED in ALLOWANCES_PROPOSED.json; binding once the operator sends the matching AUTHORIZE line): ONE attempt, 0 repair attempts, at most 1 deterministic rerun of a tool that failed for an environmental reason, at most 1 coordinator review round(s), at most 30 minutes active and 90 minutes elapsed (operator-gate waits excluded). Exceeding any limit or hitting any FAIL: STOP and return NEEDS_SUPERVISOR with evidence; no self-extension, no workaround. Audit allowance: 1 route, 1 attempt, 0 retries, prompt at most 150000 bytes, cost at most USD 1.00 where the streams report it."
+  ],
+  "depends_on": [
+    "TP-DMX-PULSE3-W02-QUALIFY-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-PULSE-003",
+    "base_branch": "feat/pulse-001",
+    "parent_tp_id": "MACRO-DMX-PULSE-003",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "feat/pulse-003-update",
+    "base_branch": "feat/pulse-001",
+    "stacked_because": "the subject is the existing PR #1472 branch; the result is delivered by a non-force fast-forward push of this branch to feat/pulse-001, an operator gate"
+  },
+  "commit": {
+    "message": "proof(pulse-003): independent audit verdict, adjudication, run record and PROOF.json (unsigned)",
+    "allowlist": [
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_AUDIT_STREAM.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_AUDIT_STDERR.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_AUDIT_RESPONSE_RAW.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_PROBE1_STREAM.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_PROBE2_STREAM.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_PROBE_STDERR.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_INVOCATION.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_SYSTEM_PROMPT.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_DISALLOWED.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_TIMES.txt",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_RUN_RECORD.md",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_ADJUDICATION.md",
+      "proof/MACRO-DMX-PULSE-003/review_bundle/SHA256SUMS_AUDIT.txt",
+      "proof/MACRO-DMX-PULSE-003/PROOF.json",
+      "proof/MACRO-DMX-PULSE-003/AUDITOR_REPORT.md"
+    ],
+    "verify": [
+      "git diff --name-only HEAD~1..HEAD | sort   # subset of the allowlist",
+      "git diff --check HEAD~1..HEAD",
+      "/Users/hue/code/dopemux-mvp/.venv/bin/python scripts/audit/validate_audit_proof.py proof/MACRO-DMX-PULSE-003/PROOF.json"
+    ]
+  },
+  "pr": {
+    "title": "chore(pulse): bring PR #1472 up to date with main (merge commit, content unchanged) and re-audit",
+    "body": "MACRO-DMX-PULSE-003. No new PR: PR #1472 already exists. Delivery is a non-force fast-forward push of feat/pulse-003-update to feat/pulse-001 after the new audit and the operator's confirmation.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W03-S1",
+      "task": "Fresh preflight and the two containment probes",
+      "requirements": [
+        "STOP unless init.tools == [] in probe 2."
+      ],
+      "commands": [
+        "grok --version"
+      ],
+      "expected_files": [],
+      "validation": [
+        "probe 2 init.tools == []"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-PULSE-003/review_bundle/AUDITOR_BINDING_PROPOSED.json"
+      ]
+    },
+    {
+      "id": "W03-S2",
+      "task": "The one audit attempt, then custody commit before reading",
+      "requirements": [
+        "One attempt, no retry."
+      ],
+      "commands": [
+        "bash INVOCATION.sh"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_AUDIT_STREAM.txt",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_AUDIT_STDERR.txt",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_AUDIT_RESPONSE_RAW.txt",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_PROBE1_STREAM.txt",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_PROBE2_STREAM.txt",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_PROBE_STDERR.txt",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_INVOCATION.txt",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_SYSTEM_PROMPT.txt",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_DISALLOWED.txt",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_TIMES.txt"
+      ],
+      "validation": [
+        "raw stream committed byte-identical"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W03-S3",
+      "task": "Adjudicate and draft the proof",
+      "requirements": [
+        "Verdict verbatim; independence unattested; no signature."
+      ],
+      "commands": [
+        "/Users/hue/code/dopemux-mvp/.venv/bin/python scripts/audit/validate_audit_proof.py proof/MACRO-DMX-PULSE-003/PROOF.json"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_RUN_RECORD.md",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_ADJUDICATION.md",
+        "proof/MACRO-DMX-PULSE-003/review_bundle/SHA256SUMS_AUDIT.txt",
+        "proof/MACRO-DMX-PULSE-003/PROOF.json",
+        "proof/MACRO-DMX-PULSE-003/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "schema PASS; proof-only closure shows only the missing signature"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-PULSE-003",
+  "risk_lane": "L2",
+  "audit_group": "PULSE-003-FINAL-AUDIT",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE",
+  "workstream_id": "W03",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "local-shell",
+      "model": "NONE",
+      "effort": "NONE"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_AUDIT_STREAM.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_AUDIT_STDERR.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_AUDIT_RESPONSE_RAW.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_PROBE1_STREAM.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_PROBE2_STREAM.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_PROBE_STDERR.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_INVOCATION.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_SYSTEM_PROMPT.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_DISALLOWED.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_TIMES.txt",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_RUN_RECORD.md",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/GROK_ADJUDICATION.md",
+    "proof/MACRO-DMX-PULSE-003/review_bundle/SHA256SUMS_AUDIT.txt",
+    "proof/MACRO-DMX-PULSE-003/PROOF.json",
+    "proof/MACRO-DMX-PULSE-003/AUDITOR_REPORT.md"
+  ],
+  "canonical_writers": [
+    "W03-team-lead"
+  ],
+  "semantic_scope": [
+    "pulse-audit-proof"
+  ],
+  "rollback_boundary": "git revert <audit commits> on feat/pulse-003-update (REVERT_COMMITS); base P3"
+}

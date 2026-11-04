@@ -1,0 +1,36 @@
+import json
+import pathlib
+
+A = pathlib.Path("/private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-memory-bridge-001-b349d8/0e3904e3-b5c3-497c-9b8c-3ae61536f9ed/scratchpad/audit")
+types = []
+tools = "ABSENT"
+tool_use = 0
+text = ""
+meta = {}
+for line in (A / "GROK_AUDIT_STREAM.txt").read_text().splitlines():
+    line = line.strip()
+    if not line:
+        continue
+    o = json.loads(line)
+    types.append(o.get("type"))
+    if o.get("type") == "system":
+        tools = o.get("tools", "ABSENT")
+        meta["model"] = o.get("model")
+        meta["permissionMode"] = o.get("permissionMode")
+    if o.get("type") == "assistant":
+        for b in (o.get("message", {}).get("content") or []):
+            if isinstance(b, dict) and b.get("type") == "tool_use":
+                tool_use += 1
+            if isinstance(b, dict) and b.get("type") == "text":
+                text += b.get("text", "")
+    if o.get("type") == "result":
+        for k in ("num_turns", "duration_ms", "total_cost_usd", "is_error", "subtype"):
+            if k in o:
+                meta[k] = o[k]
+        if not text and isinstance(o.get("result"), str):
+            text = o["result"]
+(A / "GROK_AUDIT_RESPONSE_RAW.txt").write_text(text)
+print("event types", types)
+print("init.tools", tools, "| tool_use blocks", tool_use)
+print("meta", meta)
+print("response bytes", len(text.encode()))

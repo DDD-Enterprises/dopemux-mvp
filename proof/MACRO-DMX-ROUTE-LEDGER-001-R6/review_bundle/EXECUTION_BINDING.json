@@ -1,0 +1,127 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R6",
+  "stage": "issuance",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "task-packets/MACRO-DMX-ROUTE-LEDGER-001-R6/MACRO_PACKET.json",
+    "operator_gate_refs": [
+      "EXECUTION IS NOT AUTHORIZED. Execution of any R6 workstream starts only after the operator types, verbatim in chat, ALL THREE tokens: AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R6_EXECUTION=YES AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R6_AUDIT_ROUTE_GROK_CLI_GROK_4_5=YES AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R6_AUDIT_ROUTE_AGY_GEMINI_4_ARGON_HIGH=YES. Each route token accepts that route's residual exposure. Grok: the tool-less recipe exposes no tool (init.tools == []), but the CLI still injects home-level instruction, skill and MCP-server NAMES from ~/.grok/config.toml (no secret values), the audit prompt is sent to xAI, and the saved grok configuration is not changed. AGY: agy cannot be made tool-less (60 built-in tools load), so containment rests on session-only request-review settings, a sealed cwd and the stream gate; the prompt is kept in agy's history under ~/.gemini/antigravity-cli; the operator's saved agy settings (always-proceed) are not changed. The R1 to R5 lines do not authorize R6. Nothing in R6 has run.",
+      "operator route choice, 2026-10-31, as a sequence. (a) The operator's earlier typo 'grij akibe, go' had been read by the implementer session as 'Grok alone'; asked 'Should #1482's R6 audit run on Grok alone (one attempt, no retries, no fallback)?' the operator answered, verbatim, 'AGY (Gemini)'. (b) The implementer session then reported that the operator had written '11,,  bbootthh' in Route Ledger's session, which it read as '1, both'. (c) Asked, verbatim, 'For #1482's R6 audit you chose AGY here, but wrote what reads as '1, both' in Route Ledger's session. Which route should the packet seal?' the operator answered, verbatim, 'Both: Grok + AGY'. Answer (c) GOVERNS: R6 seals BOTH routes, grok-cli grok-4.5 as PRIMARY and agy gemini-4-argon-high as CORROBORATING, one attempt each, no retry, no fallback, the R4 shape. Answers (a) and (b) are recorded for history and are superseded.",
+      "operator replies 2026-10-30 in the Route Ledger session, verbatim: 'all 3' (repair of N6, N7 and the doubled toast prefix, committed as 4fcdc9761 on a direct instruction without a MacroPacket); '1: both grok and agy (argon 4), 2successor, 3 yes' (two audit routes, a successor macro, and the auditors receive the earlier findings as untrusted claims; all three still apply to R6); Argon tier 'gemini-4-argon-high (Recommended)' and primary auditor 'Grok primary (Recommended)' (Grok's verdict becomes embedded_audit, AGY Argon corroborates).",
+      "R4 lineage: MACRO-DMX-ROUTE-LEDGER-001-R4 audited merge head 989fe4651c050ec23619e5208da17d6152b477b0 on the same two routes under its own verbatim gate line (R4 covers R4 only); both returned PASS_WITH_RISKS with 11 findings in union, none BLOCKING; the unsigned R4 proof is under proof/MACRO-DMX-ROUTE-LEDGER-001-R4/ (proof head 0ca60b59b) and does not cover the repaired code. R4 is not re-run and its verdicts are not given to the R6 auditors.",
+      "R5 lineage: after the R4 report the operator chose 'Repair findings first', all four groups, and 'Both routes again' for re-verification. MACRO-DMX-ROUTE-LEDGER-001-R5 repaired the ten findings (repair commit 26414fef53df4970e39269a3ba9ed93afd6b8f32). Three later changes followed review feedback and each has a successor note in proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/: 13ceb5020 (test-only, CodeQL), 61c371f28 (Codex P2, /clear keeps unwritten receipts until on disk), 3d2af4b20 (Codex P2 x2, a failed fs.list fails closed; segment size in UTF-8 bytes). The branch head is b275543fe1011bf3a9351a10448c24d94f205370 (origin/claude/route-ledger-001-8d8032 pointed at it when this package was drafted).",
+      "R2 audit lineage: MACRO-DMX-ROUTE-LEDGER-001-R2, Grok PASS_WITH_RISKS on content head 93969e7a3, accepted by the operator 2026-10-24 at proof head b0b802617; that proof is untouched. Merge-train relay 2026-10-30 ('Run it in order'): the subject includes origin/main 97b6d5040 (PR 1472) through the merge commit 989fe4651, which is an ancestor of the R6 subject.",
+      "Prompt-size decision (supervisor, 2026-10-31, before the gate): the full DELTA diff is NOT embedded in the audit prompt (the cumulative diff already contains every delta hunk); a deterministic DELTA SUMMARY replaces it; the prompt limit is 200,000 bytes. FROZEN_DELTA_SINCE_R4_AUDIT.diff stays a committed bundle artifact.",
+      "Open and NOT this packet's to fix: three Codex review threads on PR 1482 (4425125083, 4425202528, 4425202538) are answered in code and replied to but unresolved; resolving them is the operator's."
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "selection": {
+    "runner": "claude-code-desktop",
+    "runner_availability": "PROPOSED",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh",
+    "connector": "desktop-app",
+    "configured_identity": "claude-opus-5-5",
+    "response_claimed_identity": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": []
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read",
+      "edit",
+      "validate"
+    ],
+    "forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready"
+    ],
+    "stop_conditions": [
+      "operator gate absent (all three R6 tokens)",
+      "authority conflict",
+      "parallel write overlap",
+      "advisor call",
+      "allowance exhausted (ALLOWANCES.json)",
+      "auditor containment failure",
+      "verdict read before custody",
+      "no fallback route and no promotion of the other route"
+    ],
+    "custody_constraints": [
+      "mutation only inside the issuing worktree /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032 on branch claude/route-ledger-001-8d8032"
+    ],
+    "context_constraints": [
+      "children receive only their TASK_PACKET plus cited context_files"
+    ]
+  },
+  "justification": {
+    "why_runner": "the Control Tower supervisor session that issues this package (Claude Code desktop)",
+    "why_model": "issuance is a judgment-tier act (route, authority and gate wording for a final audit); configured identity only, observed identity needs a runtime receipt; the R6 children and the team lead run at claude-sonnet-5-5 per their TP_ROUTE",
+    "why_effort": "xhigh requested for issuance; effort_observed is UNKNOWN (no runtime receipt)",
+    "alternatives_considered": [
+      {
+        "route": "AGY only (the operator's first answer, superseded)",
+        "disposition": "rejected",
+        "reason": "operator route choice 2026-10-31: 'Both: Grok + AGY' governs"
+      },
+      {
+        "route": "any fallback route if either audit is blocked",
+        "disposition": "rejected",
+        "reason": "one attempt each, zero retries, no fallback and no promotion of the other route"
+      }
+    ],
+    "cost_latency_tradeoff": "UNKNOWN (no current price evidence recorded)",
+    "evidence": [
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R4/review_bundle/ (R4 recipe)",
+      "proof/MACRO-DMX-ROUTE-LEDGER-001-R5/review_bundle/ (repair and successor notes)",
+      "operator route choice 2026-10-31 (chat): 'Both: Grok + AGY'"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "NOT_RUN"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "recorded_at": "2026-10-31T20:55:00Z",
+  "runner_version": "UNKNOWN",
+  "effort_requested": "xhigh",
+  "effort_observed": "UNKNOWN",
+  "auth_profile_ref": "UNKNOWN",
+  "network_posture": "no-network-mutation",
+  "containment_posture": "worktree-scoped",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "not triggered"
+  },
+  "response_claimed_model": "UNKNOWN",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "UNKNOWN",
+  "qualification_receipt_ref": "NOT_RUN"
+}

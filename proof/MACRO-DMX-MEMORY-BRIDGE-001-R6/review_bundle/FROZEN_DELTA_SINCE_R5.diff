@@ -1,0 +1,103 @@
+diff --git a/docs/02-how-to/memory-bridge.md b/docs/02-how-to/memory-bridge.md
+index d4fe70d6e..d7a076b19 100644
+--- a/docs/02-how-to/memory-bridge.md
++++ b/docs/02-how-to/memory-bridge.md
+@@ -42,3 +42,7 @@ a sanitized prefix, `~` and a 16-hex hash of the whole id, so sessions never sha
+-The mod writes only when `<repo-root>/.dopemux` **already exists** and never creates it. This
+-repo ignores `.dopemux/` (`.gitignore` lines 140 and 299); other repos are unchecked.
+-Without the directory, rows stay in memory and the status line shows `📮 memory-only`.
++The outbox writer writes only when `<repo-root>/.dopemux` **already exists** and never creates
++it. This repo ignores `.dopemux/` (`.gitignore` lines 140 and 299); other repos are unchecked.
++Without the directory, rows stay in memory and in the plugin's `$.store`, a JSON file that
++Claude Code keeps in your Claude Code config directory across sessions (the newest 3 sessions,
++at most 256 KiB each); the status line shows `📮 memory-only`, which means "no outbox file",
++not "nothing on disk". The replay (section 5) can still create `.dopemux/`; from the next
++write on, rows go to the outbox file.
+@@ -58 +62 @@ first, then `dead`, then `pending`, and each drop shows as `+N dropped`.
+-| `📮 memory-only` | `.dopemux` is absent; rows live in memory only |
++| `📮 memory-only` | `.dopemux` is absent; rows live in memory and the plugin's `$.store` file (section 2), not in an outbox file |
+@@ -89 +93,5 @@ Only `task.completed` and `manual.memory_store` events are sent; the row id is t
+-`event_id`, so a resend does not duplicate. Rows land in `<repo-root>/.dopemux/chronicle.sqlite`, table `raw_activity_events`.
++`event_id`, which the ledger stores in the `id` primary key, so a resend does not duplicate.
++Rows land in `<repo-root>/.dopemux/chronicle.sqlite`, table `raw_activity_events`. The replay
++runs whether or not `.dopemux` exists: in a dopemux-mvp checkout or worktree with the default
++ledger path, `dopemux capture emit` creates `<repo-root>/.dopemux/` for the ledger file. In any
++other repo it fails before that, so nothing is created there.
+@@ -119,0 +128,4 @@ not stored. With no text it prints usage and writes nothing.
++- Where rows rest on disk: the outbox file under `.dopemux/memory-bridge/`, or, without
++  `.dopemux`, the plugin's `$.store` JSON file in your Claude Code config directory (newest
++  3 sessions); after a replay, also `.dopemux/chronicle.sqlite`. Leaving out `.dopemux` does
++  not keep notes and goals off disk.
+@@ -132 +144,2 @@ unavailable. The outbox and status line do not need `$.process`.
+-- `📮 memory-only`: create `.dopemux/` yourself in the repo root.
++- `📮 memory-only`: create `.dopemux/` yourself in the repo root (in a dopemux-mvp checkout
++  the first successful replay also creates it).
+diff --git a/plugins/dopemux-memory-bridge/README.md b/plugins/dopemux-memory-bridge/README.md
+index b00227980..059e3f32c 100644
+--- a/plugins/dopemux-memory-bridge/README.md
++++ b/plugins/dopemux-memory-bridge/README.md
+@@ -28,4 +28,10 @@ a sanitized prefix, `~` and a 16-hex hash of the whole id, so two sessions never
+-a file. The mod writes only when `<repo-root>/.dopemux` **already exists** (this repo
+-ignores it: `.gitignore:140` and `:299`; other repos are unchecked) and never creates
+-`.dopemux`. Without it, rows stay in memory plus the plugin's `$.store`, and the status
+-line says `📮 memory-only`.
++a file. The outbox writer writes only when `<repo-root>/.dopemux` **already exists**
++(this repo ignores it: `.gitignore:140` and `:299`; other repos are unchecked) and
++never creates `.dopemux` itself. Without it, rows stay in memory plus the plugin's
++`$.store`, which Claude Code keeps as a JSON file in your Claude Code config
++directory across sessions (the newest 3 sessions, at most 256 KiB each), and the
++status line says `📮 memory-only`: no outbox file, not "nothing on disk". The
++ledger replay below still runs, and in a dopemux-mvp checkout or worktree it
++creates `<repo-root>/.dopemux/` for the ledger when the default ledger path is
++used (`capture_client.py` makes the ledger's parent directory). The writer checks
++for `.dopemux` on every write, so from then on rows go to the outbox file.
+@@ -89,2 +95,3 @@ manual.memory_store { event_type, payload: { category: "implementation",
+-`event_id` is the row id, so a resend is a no-op in the ledger (`INSERT OR
+-IGNORE`). Those two types are the only ones ever emitted. The rules:
++`event_id` is the row id, and the ledger stores it as the `id` primary key of
++`raw_activity_events`, so a resend is a no-op (`INSERT OR IGNORE`). Those two
++types are the only ones ever emitted. The rules:
+@@ -232 +239 @@ minute: the row's `state` in the outbox file turns `sent`, and
+-`sqlite3 .dopemux/chronicle.sqlite "select event_type, event_id from
++`sqlite3 .dopemux/chronicle.sqlite "select event_type, id from
+@@ -234 +241 @@ raw_activity_events order by created_at_utc desc limit 3"` shows the event with
+-the row's `id`. That writes the real ledger. If the row stays `pending` and the
++the row's `id` (the table has no `event_id` column). That writes the real ledger. If the row stays `pending` and the
+diff --git a/plugins/dopemux-memory-bridge/hooks/register.test.ts b/plugins/dopemux-memory-bridge/hooks/register.test.ts
+index 6dcd77055..1e725dd68 100644
+--- a/plugins/dopemux-memory-bridge/hooks/register.test.ts
++++ b/plugins/dopemux-memory-bridge/hooks/register.test.ts
+@@ -16,0 +17,6 @@ const LEDGER_TIMEOUT_MS = 15_000
++// The test runtime has setTimeout, but the 'claude-code' types do not declare it.
++declare function setTimeout(callback: () => void, ms: number): unknown
++
++// Upper bound on the rounds `untilWritten` waits (one settle plus one real macrotask each).
++const WRITE_WAIT_ROUNDS = 200
++
+@@ -329,0 +336,18 @@ function harness($: Engine, on: On, opts: Options = {}) {
++// `clock.settle()` drains the mock clock's own waits and the event loop, but not a
++// real asynchronous operation still in flight: `append` awaits `crypto.subtle.digest`
++// for the record id, and for an input of 64 bytes or more (an id longer than about
++// 55 characters) that call leaves the main thread and can finish after `settle()`
++// returned, so the outbox write has not happened yet. Alternate `settle()` with a
++// real macrotask yield until `minWrites` writes have landed, or WRITE_WAIT_ROUNDS
++// rounds pass; the caller's own assertion then decides, so a write that never comes
++// still fails the test.
++async function untilWritten(h: ReturnType<typeof harness>, minWrites = 1): Promise<void> {
++  for (let round = 0; round < WRITE_WAIT_ROUNDS; round += 1) {
++    await h.world.clock.settle()
++    if (h.world.writes.length >= minWrites) return
++    await new Promise<void>(resolve => {
++      setTimeout(resolve, 0)
++    })
++  }
++}
++
+@@ -857,0 +882 @@ test('a torn newer generation is skipped and the older valid one is used', async
++  await untilWritten(h)
+@@ -1201,0 +1227 @@ test('the root is the nearest .git/.dopemux ancestor, not the session repo root'
++  await untilWritten(h)
+@@ -2008,0 +2035 @@ for (const [sid, key] of KEY_CASES) {
++    await untilWritten(h)
+@@ -2027,0 +2055 @@ test('a session whose id has a disallowed character reloads its own outbox file'
++  await untilWritten(h)

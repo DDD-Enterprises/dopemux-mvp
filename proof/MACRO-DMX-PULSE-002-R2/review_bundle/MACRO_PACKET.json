@@ -1,0 +1,350 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-PULSE-002-R2",
+  "objective": "Qualify the successor of PR #1472 (dopemux-pulse). Build, on the signed proof head f4115046484ed0dc580cc4337bb8c7cf55d39af7 of feat/pulse-001, the audited SUCCESSOR HEAD of the whole Pulse feature: W01 fixes the guard-lifetime/race finding F1 (audit Q3 FAIL: an orphaned in-flight $.http.fetch per 60 s poll when the engine hangs; keep the in-flight guard until the fetch settles) and the bounded F6 (toast a refused command.register); W02 fixes the docs findings F3 (/done also resets the continuous-focus count) and F4 (commit SHA cited by hash) and documents W01 as built; W03 (deterministic, no model) freezes the content head, runs the closure checks and gates, preserves the predecessor verdict as data, and builds the audit input so exactly ONE independent audit of the cumulative subject can run. The predecessor verdict PASS_WITH_RISKS (Q3 FAIL on F1, audited head 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147) and the operator's 2026-10-22 acceptance of F1 as a disclosed residual risk stay on record unchanged and are not relabelled. The existing signed proofs for #1472 do not cover this work; it needs its own audit and proof. services/adhd_engine is out of scope. Supersedes the issued revision 1 (MACRO-DMX-PULSE-002), which is preserved unchanged and is not authorized to run.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants I01-I08 in each child",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator decision 2026-10-22 (proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md, \"Operator decisions left\" item 1): F1 accepted as a disclosed residual risk for PR #1472; that record is kept unchanged",
+      "operator instruction 2026-10-23 (relayed by session local_901ed6d9, verbatim): \"Amend the existing Pulse repair packet to qualify #1472's successor, not just create an unrelated stacked repair. Include the guard-lifetime/race fix, exact custody, finite implementation/review limits and one independent audit route. Preserve the old PASS_WITH_RISKS verdict; don't relabel it.\"",
+      "supervisor session local_901ed6d9 task 2026-10-23: amend the issued repair packet into R2 and STOP; the R1 authorization covers the original revision only"
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit",
+      "push_branch",
+      "open_draft_pr"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "sign_proof",
+      "run_final_audit_without_route_line"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_PULSE_002_R2_EXECUTION=YES absent (the R1 line AUTHORIZE_MACRO_DMX_PULSE_002_EXECUTION=YES does NOT satisfy it)",
+      "worktree HEAD != f4115046484ed0dc580cc4337bb8c7cf55d39af7 at W01 start, or origin/feat/pulse-001 moved, or PR #1472 merged or closed: return NEEDS_SUPERVISOR for a re-base decision",
+      "any write outside a child allowlist, or any edit under proof/MACRO-DMX-PULSE-001/, proof/pr_merge/embedded-audit/pr-1472/ or the R1 package",
+      "plugin-authoring declaration file not supplied to W01",
+      "any finite limit exceeded (ALLOWANCES_PROPOSED.json as ratified): NEEDS_SUPERVISOR",
+      "final audit route line AUTHORIZE_MACRO_DMX_PULSE_002_R2_AUDIT_ROUTE=grok-cli:grok-4.5:ONE_ATTEMPT absent: the audit is not run",
+      "final audit FAIL or NEEDS_SUPERVISOR, or raw audit stream not preserved in the bundle"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "2949b99edcfe760fa05727ff2913d304bfd5cfd24d2997831a3b6cddc59e0784"
+    },
+    "authority_ceiling": "Child-specific intersection only; team lead alone commits (C1, C2, P; explicit pathspec) on claude/pulse-f1-001-5a321f in /Users/hue/code/dopemux-mvp/.claude/worktrees/pulse-f1-001-5a321f. It may push and open or update a PR only after the audit returns and the operator confirms; the delivery vehicle (fast-forward of feat/pulse-001 so PR #1472 carries the successor head, or a stacked draft PR based on feat/pulse-001) is an operator choice. Signing (a separate signer step outside this macro), merge, mark-ready and retargeting are operator gates not granted.",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "9cc3bc5a6b1bc9280585d4c818c3d46fe7281a41ca5876e438935b826552feb1"
+      },
+      "objective": "F1 + F6 in plugins/dopemux-pulse/hooks/register.tsx: hold the in-flight poll guard until the underlying $.http.fetch settles (still `unreachable` after 2 s, no unhandled rejection, no timer leak, late answer discarded) and toast a refused command.register; non-vacuous tests with the existing slow-fetch mock (no second fetch while pending, recovery after settle, late rejection, session.end while pending, refused registration).",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "pulse-mod-runtime"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <C1> on claude/pulse-f1-001-5a321f (REVERT_COMMITS); base f4115046484ed0dc580cc4337bb8c7cf55d39af7",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "PULSE-002-R2-FINAL-AUDIT",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "fae519f6da53926134fe70a6aea405298322ed3f464abc269a1035eb2ca1b6d8"
+      },
+      "objective": "F3 + F4 + as-built notes in plugins/dopemux-pulse/README.md and docs/02-how-to/pulse-status-line.md: /done also resets the continuous-focus count (the count starts at the first /pulse-focus), replace the commit SHA with durable wording, document the settle-held guard and the registration toast exactly as W01 built them.",
+      "dependencies": [
+        "W01"
+      ],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-pulse/README.md",
+        "docs/02-how-to/pulse-status-line.md"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "pulse-docs"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <C2> on claude/pulse-f1-001-5a321f (REVERT_COMMITS); base f4115046484ed0dc580cc4337bb8c7cf55d39af7",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-haiku-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": [
+          {
+            "runner": "claude-code-agent",
+            "model": "claude-sonnet-5-5",
+            "effort": "UNKNOWN"
+          }
+        ]
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "PULSE-002-R2-FINAL-AUDIT",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "92070ac216069a43e153ef126a92f3f4f95feb3a16f82b0591c91dbfc798b869"
+      },
+      "objective": "Successor qualification (deterministic, no model): closure checks (ancestry, exact file sets, predecessor verdict files untouched), gates at the frozen content head C, the lineage record that preserves PASS_WITH_RISKS verbatim, the cumulative and delta frozen diffs, the audit prompt built from the pinned template, and SHA256SUMS, committed as one proof-only commit P. Produces no verdict and runs no audit.",
+      "dependencies": [
+        "W02"
+      ],
+      "parallel_group": "P3",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/MACRO_PACKET.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDITOR_BINDING_PROPOSED.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/ALLOWANCES_PROPOSED.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/ISSUANCE.md",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_TASK_PACKET.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_TASK_PACKET.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W03_TASK_PACKET.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDIT_PROMPT_TEMPLATE.txt",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_RETURN.md",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_RETURN.md",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/SUCCESSOR_LINEAGE.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/CLOSURE_CHECKS.txt",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/FROZEN_CUMULATIVE.diff",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/FROZEN_DELTA.diff",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDIT_PROMPT.txt",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/SHA256SUMS.txt"
+      ],
+      "canonical_writers": [
+        "W03-team-lead"
+      ],
+      "semantic_scope": [
+        "pulse-successor-proof"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <P> on claude/pulse-f1-001-5a321f (REVERT_COMMITS); base f4115046484ed0dc580cc4337bb8c7cf55d39af7",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "local-shell",
+          "model": "NONE",
+          "effort": "NONE"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "PULSE-002-R2-FINAL-AUDIT",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-W01-GATES",
+      "requires": [
+        "W01"
+      ],
+      "condition": "claude plugin validate exit 0, claude plugin test 0 fail with the new tests failing-before and passing-after, mutation checks reported, diff inside the allowlist; W01 committed as C1 before W02 dispatch",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J02-FREEZE",
+      "requires": [
+        "W01",
+        "W02"
+      ],
+      "condition": "docs hooks pass, no commit hash or PR number in the two docs; W02 committed as C2 = the content head C that the single audit freezes",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J03-SUCCESSOR-PACK",
+      "requires": [
+        "W01",
+        "W02",
+        "W03"
+      ],
+      "condition": "all closure checks PASS, gates recorded, pack committed as the proof-only commit P; STOP here: the audit is held for the operator route line",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "Exactly one independent final audit of the frozen CUMULATIVE subject, one route, one attempt, zero retries, no fallback route; PROPOSED route grok-cli grok-4.5 (AUDITOR_BINDING_PROPOSED.json), operator-gated",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "final_audit_fail_or_needs_supervisor",
+      "finite_limit_exceeded"
+    ]
+  }
+}

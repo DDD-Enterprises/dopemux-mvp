@@ -1,0 +1,493 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001",
+  "objective": "Memory Bridge (opportunity map builds M3 and M4): a Claude Code function-hook mod that keeps context across sessions. W01 first re-verifies, read-only, the SessionStart-recap blocker, the identity prerequisite P3, the 2.1.304 mod API and the live tool surface, and returns a go / no-go per sub-feature (recap, outbox, replay, band). W02 to W05 are gated on that result and sized to what is unblocked: a local JSONL outbox, a pending-count status line and a welcome-back band (no store dependency); replay to dope-memory and the capture ledger; a session-start recap (likely blocked). Source: claudedocs/dopemux-mods-plugins-opportunity-map-2026-10-16.md sections 3, 4.1 (M3, M4), 5 rows 1-6, 6 (P3). Target home: plugins/dopemux-memory-bridge/.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants C01-C08 in each child. Order of authority: runtime code, then schemas, then tests, then docs. Dispatch table (applied mechanically by the team lead from the GATE_TABLE block of W01_FINDINGS.md; UNKNOWN counts as NO_GO): W02 runs iff outbox is GO or GO_REDUCED (band built iff band is GO or GO_REDUCED); W03 runs iff W02 is committed and replay.ledger_emit or replay.dope_memory_store is GO or GO_REDUCED (only those sinks); W04 runs iff W02 is committed and recap.injection and recap.identity are GO or GO_REDUCED and recap.dope_memory_recall or recap.conport_context is GO or GO_REDUCED; W05 runs iff W02 ran. A dependency on a workstream the gate did not dispatch is satisfied by its recorded SKIPPED_BY_GATE state (dependencies serialize writes to one file). Escalate with NEEDS_SUPERVISOR instead of dispatching when outbox is NO_GO/UNKNOWN, authority_conflicts is non-empty, or W01 proposes an interface that is not named in the packets and not confirmed in source.",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator chat 2026-10-23 via the session that started this issuance: issue (do NOT execute) a Control Tower MacroPacket for the Memory Bridge mod (builds M3 and M4); execution NOT authorized until AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_EXECUTION=YES"
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "sign",
+      "push",
+      "open_pr"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_EXECUTION=YES absent",
+      "worktree HEAD != fresh origin/main at start, or origin/main moved and a cited file changed",
+      "any write outside a child allowlist",
+      "plugin-authoring declaration file not supplied to a mod workstream",
+      "any child calls the advisor tool or delegates (advisor budget 0)",
+      "W01 gate escalation (see the dispatch table)",
+      "any non-GET request to a live service during W01, or any live write from a test",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "7ced3ef9fe99a99f1624beac7541dce5938519834f091ae6a8686f5bcf337621"
+    },
+    "authority_ceiling": "Child-specific intersection only; the team lead alone commits (one commit per dispatched workstream, explicit pathspec). Push, PR, signing and the final-audit route are separate operator gates and are not granted by this packet.",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record and ct validate-binding per child before dispatch (the issuing session recorded the coordinator binding only)"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "d49c5e6b9818d20468721e9dbaec9115bc957f4903b4ad7008d71f48e167f447"
+      },
+      "objective": "Read-only investigation and go / no-go: re-verify against current runtime code and the live tool surface the recap blocker (TP-MCF-004 / MEMSPINE-IDENTITY-005), identity keys (P3), the 2.1.304 mod API, the outbox write model, the event-type sources, the ledger and dope-memory and ConPort interfaces. Its only write is proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md ending in a machine-readable GATE_TABLE.",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/W01_FINDINGS.md"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-investigation"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W01 commit> on feat/memory-bridge-001 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "51f4ce8f617fba4dd46a08bbbdd14e7753010cc6860ddaa562c784d1960aa2a2"
+      },
+      "objective": "Build the no-store core of plugins/dopemux-memory-bridge/: the local JSONL outbox fed by turn.complete, session.compact and session.end, the pending-count status line, and (if the band gate allows) the welcome-back band. Gated on W01 outbox GO / GO_REDUCED.",
+      "dependencies": [
+        "W01"
+      ],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+        "plugins/dopemux-memory-bridge/hooks/hooks.json",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md",
+        "plugins/dopemux-memory-bridge/types/index.d.ts"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-mod"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on feat/memory-bridge-001 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "7cf31d5aae87d736319a0ab9b420647b8dd6dc209203f51ba54c47fe3260bb55"
+      },
+      "objective": "Replay pending outbox records to dope-memory (POST /tools/memory_store) and/or the local capture ledger (dopemux capture emit) when services return, with explicit fail-closed identity. Conditional on the W01 replay verdicts; only the allowed sinks are built.",
+      "dependencies": [
+        "W02"
+      ],
+      "parallel_group": "P3",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+        "plugins/dopemux-memory-bridge/hooks/hooks.json",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md",
+        "plugins/dopemux-memory-bridge/types/index.d.ts"
+      ],
+      "canonical_writers": [
+        "W03-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-mod"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W03 commit> on feat/memory-bridge-001 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W04",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W04/TASK_PACKET.json",
+        "sha256": "102caeabcf1ac6f5cf1ffaeddd9aa0332593d4e184ac0afd98e56daf6d1c7698"
+      },
+      "objective": "Session-start recap: fetch dope-memory and ConPort with 1-2 s timeouts, inject at most 5 lines, say so when a store is down. Conditional on the W01 recap verdicts; expected blocked, in which case it is not dispatched and the recap is reported NOT_BUILT.",
+      "dependencies": [
+        "W02",
+        "W03"
+      ],
+      "parallel_group": "P4",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-memory-bridge/.claude-plugin/plugin.json",
+        "plugins/dopemux-memory-bridge/hooks/hooks.json",
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "plugins/dopemux-memory-bridge/hooks/register.test.ts",
+        "plugins/dopemux-memory-bridge/README.md",
+        "plugins/dopemux-memory-bridge/types/index.d.ts"
+      ],
+      "canonical_writers": [
+        "W04-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-mod"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W04 commit> on feat/memory-bridge-001 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W05",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W05/TASK_PACKET.json",
+        "sha256": "bcb8f32495a359affe9783c418c4a4e99c46ae388431638247ba357b6e53b3bc"
+      },
+      "objective": "How-to documentation at docs/02-how-to/memory-bridge.md, derived from the committed files and explicit about NOT_BUILT sub-features. Runs after the dispatched build workstreams.",
+      "dependencies": [
+        "W02",
+        "W03",
+        "W04"
+      ],
+      "parallel_group": "P5",
+      "mutating": true,
+      "write_surface": [
+        "docs/02-how-to/memory-bridge.md"
+      ],
+      "canonical_writers": [
+        "W05-implementer"
+      ],
+      "semantic_scope": [
+        "memory-bridge-docs"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W05 commit> on feat/memory-bridge-001 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-haiku-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": [
+          {
+            "runner": "claude-code-agent",
+            "model": "claude-sonnet-5-5",
+            "effort": "UNKNOWN"
+          }
+        ]
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-MEMBRIDGE-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-GATE",
+      "requires": [
+        "W01"
+      ],
+      "condition": "W01 returned READY_FOR_AUDIT with a GATE_TABLE that parses; the team lead recorded the dispatch decision for W02-W05 from the dispatch table (no reinterpretation) and wrote the decision next to W01_FINDINGS.md; no escalation condition holds",
+      "join_type": "CONDITIONAL"
+    },
+    {
+      "join_id": "J02-FREEZE",
+      "requires": [
+        "W02",
+        "W03",
+        "W04",
+        "W05"
+      ],
+      "condition": "W02 is required; W03, W04 and W05 are required only if J01 dispatched them (a skipped workstream is recorded NOT_BUILT with its W01 blocker, not PASS); plugin validate and test pass, docs hooks pass, diffs are inside allowlists; freeze the subject for the single final L2 audit",
+      "join_type": "CONDITIONAL"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit per frozen L2 subject, different family from the claude-code-agent implementers, route operator-gated (agy gemini-3.1-pro-high absent; gemini-4-argon-high hit a 429 until about 2026-10-24T03:30Z; Grok CLI tool-less recipe is the known fallback and needs explicit operator approval). Copy every audit artifact, including raw streams, into proof/MACRO-DMX-MEMORY-BRIDGE-001/review_bundle/ immediately.",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "gate_escalation",
+      "child_advisor_call",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}

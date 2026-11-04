@@ -1,0 +1,327 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-ROUTE-LEDGER-001-R2",
+  "objective": "Route Ledger (opportunity map build M5): record delegation and advisor receipts. Ship the read-only dopemux-route-ledger Claude Code mod under plugins/: record the requested model of every Agent call (warning when unpinned), the observed model per step and the advisor calls it can count (it cannot block them), write JSONL receipts whose binding fields a supervisor merges into a `ct bind-record` ExecutionBinding, show `agents S×4 H×2 · advisor 1` in the status line, toast when an advisor budget is exceeded, and print a TP_ROUTE table with /route-ledger (alias /route). Source: claudedocs/dopemux-mods-plugins-opportunity-map-2026-10-16.md sections 3 and 4.1 (M5).",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants I01-I09 are written out in each child; numeric allowances (PROPOSED) are in ALLOWANCES.json sha256 8731e0290fcfd6273ede0b1977bbb2a2d8b1fc13a223f867869a21e128c23cc7 and summarised in each child's I09: macro active <= 85 min, elapsed <= 240 min, child dispatches <= 6, retries 0, child tool calls <= 290, child tokens <= 4,900,000, intermediate model audits 0, final audits 1, child advisor calls 0, coordinator advisor calls <= 1",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator task relayed 2026-10-23 by issuing session local_901ed6d9-e250-47e7-bd52-6f2fdc18ca3c: 'Issue (do NOT execute) a Control Tower MacroPacket for the Route Ledger Claude Code function-hook mod (build M5, claudedocs/dopemux-mods-plugins-opportunity-map-2026-10-16.md section 4.1 and 3)'; source ranks Route Ledger third of three builds in section 3",
+      "R2 amendment 2026-10-23 relayed by session local_901ed6d9-e250-47e7-bd52-6f2fdc18ca3c: the merge owner found revision R1 (task-packets/MACRO-DMX-ROUTE-LEDGER-001, preserved unchanged) records no numeric active or elapsed allowances; add them as PROPOSED in a new revision. The operator authorized R1 verbatim (AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_EXECUTION=YES); that authorization covers R1 only. R2 needs its own verbatim line."
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit",
+      "push_branch",
+      "open_draft_pr"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_ROUTE_LEDGER_001_R2_EXECUTION=YES absent (the R1 line does not authorize R2)",
+      "any ALLOWANCES.json limit reached or about to be exceeded: When ANY limit is reached or about to be exceeded: stop the running child at the next safe point (TaskStop; never mid-commit), dispatch nothing further, retry nothing, substitute nothing, leave the child's edits uncommitted, and report status NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+      "worktree HEAD != fresh origin/main at start",
+      "any write outside a child allowlist",
+      "plugin-authoring declaration file not supplied to a child",
+      "any child advisor call",
+      "mod needs $.state or a types contract (supervisor ruling required)",
+      "agent.spawn / tool.call result cannot join tool_use_id to agentId in this build",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "a38b37d70c92b0dc61d8d1c627bc5b7e91361bcfd4132792eaf6d9a7e5b219d3"
+    },
+    "authority_ceiling": "Child-specific intersection only; team lead alone commits (one commit per workstream, explicit pathspec) and may push the branch / open a PR only after the final audit returns and the operator confirms",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "99bd1e68be39f8f8f35d4fb1f7f0e4c7b70b1b5addeaf7fdb92ca3cc5aa1355f"
+      },
+      "objective": "Build the core of the `dopemux-route-ledger` Claude Code function-hook mod under plugins/dopemux-route-ledger/: record the requested model on every Agent tool call (warning when none is pinned), record the observed model and advisor server-tool-uses per model step, and write the receipts as JSONL in a documented, schema-checked format whose binding fields a supervisor can merge into a `ct bind-record` ExecutionBinding. The status segment, /route command and budget toast belong to W02; leave the `afterRecord` hook point for it.",
+      "dependencies": [],
+      "parallel_group": "S1",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-route-ledger/.claude-plugin/plugin.json",
+        "plugins/dopemux-route-ledger/hooks/hooks.json",
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/receipt.schema.json"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "route-ledger-core"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W01 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-ROUTELEDGER-001-R2",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "1e75decd96c0299d397b6785b246bdc968a385f6e2088fbeb8bf9b18d686c4a0"
+      },
+      "objective": "Extend the committed W01 core of `dopemux-route-ledger` with its surface: the status segment (`agents S×4 H×2 · advisor 1`), the toasts when an advisor budget is exceeded, and the `/route-ledger` command (with `/route` as an alias) that prints a TP_ROUTE table, plus tests and the plugin README.",
+      "dependencies": [
+        "W01"
+      ],
+      "parallel_group": "S2",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-route-ledger/hooks/register.tsx",
+        "plugins/dopemux-route-ledger/hooks/register.test.ts",
+        "plugins/dopemux-route-ledger/README.md"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "route-ledger-surface"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "medium"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-ROUTELEDGER-001-R2",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "148099dad9ceb15f87bba17304e7669131d4e5a27aada25b45bbc142a38e83cc"
+      },
+      "objective": "Write the how-to for the Route Ledger mod at docs/02-how-to/route-ledger.md, accurate to what W01 and W02 actually built.",
+      "dependencies": [
+        "W02"
+      ],
+      "parallel_group": "S3",
+      "mutating": true,
+      "write_surface": [
+        "docs/02-how-to/route-ledger.md"
+      ],
+      "canonical_writers": [
+        "W03-implementer"
+      ],
+      "semantic_scope": [
+        "route-ledger-docs"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W03 commit> on claude/route-ledger-001-8d8032 (REVERT_COMMITS); base 93050d135ffc2592000c1d0edef82b2912935525",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-haiku-5-5",
+          "effort": "low"
+        },
+        "allowed_fallbacks": [
+          {
+            "runner": "claude-code-agent",
+            "model": "claude-sonnet-5-5",
+            "effort": "medium"
+          }
+        ]
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-ROUTELEDGER-001-R2",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-BUILD",
+      "requires": [
+        "W01",
+        "W02"
+      ],
+      "condition": "mod validate/test pass with diffs inside allowlists after W02; W01 committed before W02 starts",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J02-FREEZE",
+      "requires": [
+        "W01",
+        "W02",
+        "W03"
+      ],
+      "condition": "docs hooks pass; freeze subject for the single final L2 audit",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit per frozen L2/L3 subject",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}

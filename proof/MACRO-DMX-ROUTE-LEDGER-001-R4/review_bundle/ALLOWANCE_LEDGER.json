@@ -1,0 +1,79 @@
+{
+  "macro": {
+    "elapsed_min_to_ledger_write": 17.13,
+    "cap_elapsed_min": 150,
+    "child_dispatches": 0,
+    "cap_child_dispatches": 0,
+    "automatic_retries": 0,
+    "final_independent_audits": 2,
+    "cap_final_independent_audits": 2,
+    "intermediate_model_audits": 0,
+    "post_freeze_repair_rounds": 0,
+    "child_advisor_calls": 0,
+    "coordinator_advisor_calls": 0,
+    "cap_coordinator_advisor_calls": 1,
+    "within_caps": true
+  },
+  "status": "MEASURED vs the PROPOSED caps in ALLOWANCES.json (sha256 8935893413be3a0a11b5c49eb5f0957d26150acd8dec0abb291623e5efb4d8d5); nothing invented, UNKNOWN where the runner reports nothing",
+  "written_at": "2026-10-30T10:56:18Z",
+  "per_workstream": {
+    "W01": {
+      "elapsed_min": 2.23,
+      "cap_elapsed_min": 40,
+      "dispatches": 0,
+      "cap_dispatches": 0,
+      "retries": 0,
+      "advisor_calls": 0,
+      "within_caps": true
+    },
+    "W02": {
+      "audit_attempts": 1,
+      "cap_attempts": 1,
+      "retries": 0,
+      "probes": 2,
+      "cap_probes": 3,
+      "wall_min_probes_and_run": 2.27,
+      "cap_wall_min": 20,
+      "run_wall_min": 1.78,
+      "cap_run_min": 10,
+      "cost_usd": 0.080404968,
+      "cap_cost_usd": 0.3,
+      "advisor_calls": 0,
+      "within_caps": true
+    },
+    "W03": {
+      "audit_attempts": 1,
+      "cap_attempts": 1,
+      "retries": 0,
+      "probes": 2,
+      "cap_probes": 2,
+      "wall_min_probes_and_run": 5.72,
+      "cap_wall_min": 30,
+      "run_wall_min": 5.0,
+      "cap_run_min": 10,
+      "total_tokens": 113399,
+      "cap_tokens": 400000,
+      "cost_usd": "UNKNOWN",
+      "advisor_calls": 0,
+      "within_caps": true
+    },
+    "W04": {
+      "elapsed_min_to_ledger_write": 4.57,
+      "cap_elapsed_min": 45,
+      "dispatches": 0,
+      "coordinator_advisor_calls": 0,
+      "cap_coordinator_advisor_calls": 1,
+      "within_caps": true
+    }
+  },
+  "r3_sunk_cost_not_counted": {
+    "grok_cost_usd": 0.083897448,
+    "agy_probe_tokens": 26443,
+    "agy_real_run": "stopped, no usage figure",
+    "w01_child_tokens": 131633,
+    "w01_child_tool_uses": 35
+  },
+  "not_recordable": [
+    "coordinator tokens and active time (UNKNOWN, not budgeted)"
+  ]
+}

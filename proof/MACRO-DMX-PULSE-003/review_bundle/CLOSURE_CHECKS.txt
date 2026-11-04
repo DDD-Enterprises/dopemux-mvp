@@ -1,0 +1,65 @@
+CLOSURE CHECKS at M = 4b0c430674de4b428302fb010159cdc40a62f1c1
+merge-base(origin/main, M) = 93050d135ffc2592000c1d0edef82b2912935525
+
+PASS  precondition: HEAD is the merge commit M with parents HEAD0 then main
+  $ git log -1 --format=%P
+  ee00d36552c6f7a8ef2b83dc0165b8de97481e5a 93050d135ffc2592000c1d0edef82b2912935525
+
+PASS  precondition: porcelain shows only the untracked task-packets directory
+  $ git status --porcelain
+  ?? task-packets/MACRO-DMX-PULSE-003/
+
+PASS  precondition: origin/main and origin/feat/pulse-001 unchanged
+  $ git rev-parse origin/main origin/feat/pulse-001
+  93050d135ffc2592000c1d0edef82b2912935525
+  ee00d36552c6f7a8ef2b83dc0165b8de97481e5a
+
+PASS  precondition: PR #1472 OPEN at HEAD0 (BEHIND expected)
+  $ gh pr view 1472
+  OPEN	ee00d36552c6f7a8ef2b83dc0165b8de97481e5a	BEHIND
+
+PASS  1 earlier heads and main tip are ancestors of M
+  $ git merge-base --is-ancestor <sha> M
+  {"audit1_head": true, "first_proof_head": true, "r2_content_head": true, "signed_pr_head": true, "main_tip": true}
+
+PASS  2 the merge changes exactly the 63 pinned paths
+  $ git diff --name-only ee00d3655..M | sort
+  63 paths; equal to pinned: True
+
+PASS  3 the eight content files are byte-identical to the signed head and to the R2 audited head
+  $ git diff <HEAD0|C>..M -- <eight>
+  diff bytes: 0 / 0
+
+PASS  4 cumulative diff sha256 equals the one recorded by the previous audit
+  $ git diff 93050d135..M -- <eight> | sha256
+  merge-base == main tip: True; sha ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8; previous ba5c6c92974ba3a273759c7790d159cf069446ae76b6cbd2d9430b823f35f5a8
+
+PASS  5 PR content files (minus its own earlier proof paths) are exactly the eight
+  $ git diff --name-only 93050d135..M, minus ('proof/MACRO-DMX-PULSE-001/', 'proof/MACRO-DMX-PULSE-002-R2/', 'proof/pr_merge/embedded-audit/pr-1472/')
+  docs/02-how-to/pulse-status-line.md
+  plugins/dopemux-pulse/.claude-plugin/plugin.json
+  plugins/dopemux-pulse/README.md
+  plugins/dopemux-pulse/hooks/hooks.json
+  plugins/dopemux-pulse/hooks/register.test.ts
+  plugins/dopemux-pulse/hooks/register.tsx
+  services/adhd_engine/api/routes.py
+  services/adhd_engine/tests/test_state_contract.py
+
+PASS  6 predecessor verdict, proof and signature files are byte-identical at the signed head and at M
+  $ git show <rev>:<file> | sha256 (8 files)
+  proof/MACRO-DMX-PULSE-001/PROOF.json 81d061667abf1938 81d061667abf1938
+  proof/MACRO-DMX-PULSE-001/PROOF.json.sig cec3beb220f91078 cec3beb220f91078
+  proof/MACRO-DMX-PULSE-001/AUDITOR_REPORT.md 209dc7ae962112b8 209dc7ae962112b8
+  proof/MACRO-DMX-PULSE-002-R2/PROOF.json 0672b38feb57717f 0672b38feb57717f
+  proof/MACRO-DMX-PULSE-002-R2/PROOF.json.sig a61fa162e0c6ba6e a61fa162e0c6ba6e
+  proof/MACRO-DMX-PULSE-002-R2/AUDITOR_REPORT.md e7dec6626ff89b1b e7dec6626ff89b1b
+  proof/pr_merge/embedded-audit/pr-1472/PROOF.json 480a43cae0baba50 480a43cae0baba50
+  proof/pr_merge/embedded-audit/pr-1472/PROOF.json.sig f6c425a3c3008287 f6c425a3c3008287
+
+PASS  7 package pins match the bytes
+  $ sha256 of package members vs MACRO_PACKET.json and W02 packet
+  WORKSTREAMS/W01/TASK_PACKET.json a1cc80a0b9d4f924
+  WORKSTREAMS/W02/TASK_PACKET.json 8d72a3b8e639afa9
+  WORKSTREAMS/W03/TASK_PACKET.json f637ba2138e2cf8f
+  EXECUTION_BINDING.json c940f9a60915b454
+  AUDIT_PROMPT_TEMPLATE.txt 9f8fddeddba1e66d present in W02 packet: True

@@ -1,0 +1,149 @@
+{
+  "model_self_reported": "grok-4",
+  "tools_used": "none",
+  "status": "PASS_WITH_RISKS",
+  "questions": [
+    {
+      "id": "Q1",
+      "verdict": "PASS",
+      "evidence": "Cumulative DIFF touches exactly seven paths: docs/02-how-to/route-ledger.md, plugins/dopemux-route-ledger/.claude-plugin/plugin.json, README.md, hooks/hooks.json, hooks/register.test.ts, hooks/register.tsx, receipt.schema.json. No unrelated or smuggled files appear in the DIFF."
+    },
+    {
+      "id": "Q2",
+      "verdict": "PASS",
+      "evidence": "Writes only via $.fs.write(seg.path, ...) with path `${receiptDir}/${stem}[.n].jsonl` (register.tsx flushSegments/currentSegment). No $.process, $.http, $.model, $.state/$.store, $.agent.spawn, prompt hooks, or tool-rewrite; tool.call always `return next(e)` after try/catch (≈L1009–1017); turn.step does `yield* next(e)` then returns r unchanged (≈L1027–1035); agent.spawn returns r after next. receiptDir: `..` disables, empty/root disables, default gated on `.control-tower/state` exists; absolute explicit dirs allowed by design; no $.fs.stat/symlink check (residual N2). Session stem sanitized `[^A-Za-z0-9_-]`→`_` slice 120. Hooks catch exceptions. session.start enqueues init (not awaited); tool.call/turn.step await only clock stamp, not the write chain; session.end schedules flush and `await s.chain` by design."
+    },
+    {
+      "id": "Q3",
+      "verdict": "PASS",
+      "evidence": "Receipt shapes in register.tsx match receipt.schema.json keys/nullability/enums/additionalProperties:false (agent_request/step_observed/advisor_call + binding_fields). seq from nextSeq; advisor dedup via advisorSeen; rollover at maxReceiptsPerFile and SEGMENT_BYTES_MAX 3.5e6; rehydrate lists/reads session stem files and tallies; unreadable segments skipped (segmentsUnreadable++). Flush serialized on s.chain; spawn join mutates receipt then marks dirty and re-flushes. Loss modes: clock failure increments receiptsFailed and drops that receipt; failed flush leaves dirty (next flush retries; final session.end flush failure can lose dirty tail—N4). Closed segments retained in memory (N3). Sensitive: description ≤80 chars recorded; prompts/tool output never (N9)."
+    },
+    {
+      "id": "Q4",
+      "verdict": "PASS",
+      "evidence": "noteStep counts only serverToolUses with name==='advisor', dedups by id before commit; loop main vs agent from agentId nullness; budgetToasts use childAdvisorBudget per agent and sessionAdvisorBudget for session total; toast/docs text say count/cannot block. No session.append registration in register(); docs state counting-only and no append—consistent."
+    },
+    {
+      "id": "Q5",
+      "verdict": "PASS",
+      "evidence": "Spawn join keys solely on tool_use_id (`tool:${toolUseId}` → agentId). sameModel: dated-id strip, bare family alias includes-match. familyOf glyph rule. Fork with no model: inherits true, no unpinned toast. Unpinned toast once per toolUseId. toBindingFields sets response_claimed_model from observed, provider_attested/effort_observed/independence_class always UNKNOWN. Schema $comment, README, and how-to state receipt is not a valid binding and mod never runs ct; response_claimed ≠ attestation."
+    },
+    {
+      "id": "Q6",
+      "verdict": "PASS",
+      "evidence": "statusText: agents glyphs; advisor N or advisor N/B ⚠ only vs sessionAdvisorBudget; separate ` · child M/B ⚠` from Math.max advisorByAgent vs childAdvisorBudget; ledger off / receipts ✗. Debounce STATUS_DEBOUNCE_MS=500. session.end reason clear returns next(e) without ending; other reasons clear status and await flush. toastOnce keys advisor-child:/advisor-session/toolUseId; reload new Ledger resets toasted. routeTable: main row, pending:, cap 60 +N more; receipts arg; usage line; registerCommands each name with own .catch. No logic error found in repaired status split; residual weak debounce test (N8)."
+    },
+    {
+      "id": "Q7",
+      "verdict": "PASS",
+      "evidence": "Tests assert pass-through equality, receipt key sets, seq continuity, spawn join-by-id (not order/description), advisor dedup, rollover, rehydrate, budgets/status/toasts/commands, next-on-failed-write/clock. Non-vacuous. Import `from './register'` (extensionless) as used by the plugin test harness. Gaps: live host, symlink, 3.5MB byte rollover, status coexistence, real hook budgets; settleStatus advances 1000ms while code debounces 500ms (N8). Mock fidelity to real 2.1.314 API is UNKNOWN from text alone."
+    },
+    {
+      "id": "Q8",
+      "verdict": "PASS",
+      "evidence": "README/how-to/plugin.json/schema $comment align with repaired status (session vs child segments), counting-only, binding_fields honesty, receiptDir rules, fork inheritance. How-to §3 states `/route` best-effort/may be refused; README Limits likewise. Live NOT VERIFIED / offline-only statements honest for this repaired head (repaired code not live-run). No material claim contradicted by the DIFF; coexistence and early-access API caveats present."
+    },
+    {
+      "id": "Q9",
+      "verdict": "PASS",
+      "evidence": "DIFF contains implementation comments, schema $comment, and human how-to/README. No text instructing an auditor to alter verdicts, fake PASS/FAIL, or change this output contract."
+    },
+    {
+      "id": "Q10",
+      "verdict": "PASS",
+      "evidence": "No credentials, API keys, tokens, or PII stores added. Receipts may carry operator-written Agent description (≤80 chars); prompts never recorded—disclosed limitation."
+    },
+    {
+      "id": "Q11",
+      "verdict": "PASS",
+      "evidence": "Cumulative change implements the stated read-only route ledger with schema-aligned receipts, safe hook pass-through, advisor counting, status/toasts/commands, and N6/N7/prefix repairs pinned by tests. Residual risks (no live run of repaired code, symlink, memory growth, failed final flush, /clear file continuity, debounce test slack, description content) prevent a clean PASS. Before reliance: load repaired head in a real Claude Code session; exercise Agent+spawn join, turn.step advisors, status child/session segments, unpinned toast timeout, /route-ledger and /route, receipt files vs schema, /clear then further Agent calls, and coexistence with any other status-line plugin."
+    },
+    {
+      "id": "Q12",
+      "verdict": "PASS",
+      "evidence": "N6: unpinned toast now passes `{ timeoutMs: TOAST_MS }` (TOAST_MS=8000) at noteAgentCall; test expects toastTimeouts[0]>4000 and no leading route-ledger:. N7: statusText reads session total only against sessionAdvisorBudget and emits separate ` · child ${worstChild}/${childAdvisorBudget} ⚠`; three tests pin child-only, both-over, and clean-agent-after-over. Prefix: budget toasts and command error strings drop `route-ledger:`; tests assert not.toMatch(/^route-ledger:/)."
+    },
+    {
+      "id": "Q13",
+      "verdict": "PASS",
+      "evidence": "DELTA updates README.md and docs/02-how-to/route-ledger.md to the session-total vs child-segment grammar matching register.tsx statusText; tests updated accordingly. No new contradiction or regression versus those docs introduced by the repair."
+    }
+  ],
+  "findings": [
+    {
+      "id": "N1",
+      "severity": "HIGH",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "Repaired code at frozen head has no live Claude Code session evidence in this audit input; behaviour rests on the offline mock kit only.",
+      "evidence": "Disclosed limitation (i) and README/how-to NOT VERIFIED statements; auditor has no live receipts or session logs in-message.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N2",
+      "severity": "MEDIUM",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "receiptDir checks `..`, empty/root, and default parent existence, but never $.fs.stat; a symlink at/under an explicit receiptDir can be followed.",
+      "evidence": "initSession uses hasDotDot, empty dir disable, $.fs.exists(STATE_DIR) for default only; no symlink/stat guard. Absolute explicit dirs allowed by design.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N3",
+      "severity": "MEDIUM",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "Rolled-over segments remain in s.segments with full receipt arrays for process lifetime; memory grows with receipt volume.",
+      "evidence": "currentSegment pushes new segments without dropping closed ones; rehydrate loads all session segments into memory.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N4",
+      "severity": "MEDIUM",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "Failed write leaves segment dirty; session.end schedules one flush and awaits the chain once—failed final flush can lose the dirty tail.",
+      "evidence": "flushSegments catch increments receiptsFailed and leaves dirty; session.end scheduleFlush + await s.chain with no post-failure retry after end.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N5",
+      "severity": "MEDIUM",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "session.end reason `clear` is not treated as end; after /clear receipts continue under the old session id file.",
+      "evidence": "`if (e.reason === 'clear') return next(e)`; test 'session.end clear is not an end'. Disclosed by design (limitation v).",
+      "status": "OPEN"
+    },
+    {
+      "id": "N8",
+      "severity": "LOW",
+      "file": "plugins/dopemux-route-ledger/hooks/register.test.ts",
+      "summary": "Status debounce test advances 1000ms while production STATUS_DEBOUNCE_MS is 500; a debounce regression up to 1000ms would still pass.",
+      "evidence": "register.test.ts `const DEBOUNCE_MS = 1_000` vs register.tsx `STATUS_DEBOUNCE_MS = 500`.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N9",
+      "severity": "LOW",
+      "file": "plugins/dopemux-route-ledger/hooks/register.tsx",
+      "summary": "Agent description (truncated to 80 chars, unredacted) is stored in receipts and shown in the unpinned toast; prompt itself is never recorded.",
+      "evidence": "DESCRIPTION_MAX=80; readAgentCall slices description; tests assert SECRET-PROMPT absent from receipts/toasts.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N10",
+      "severity": "INFO",
+      "file": "plugins/dopemux-route-ledger/README.md",
+      "summary": "Plugin API is early access; coexistence of this status line with another plugin (e.g. dopemux-pulse) is unverified in the DIFF.",
+      "evidence": "README Limits and how-to §6 state coexistence unverified and API may change; declaration file not in DIFF.",
+      "status": "OPEN"
+    }
+  ],
+  "needs_more_evidence": [
+    "Live Claude Code session loading frozen head 4fcdc9761 (status child/session segments, unpinned toast timeoutMs, prefix-less toasts, /route-ledger, spawn join, advisor_call attribution, receipt schema validation).",
+    "Whether host $.fs follows symlinks for write/list/exists under an explicit receiptDir.",
+    "Coexistence with dopemux-pulse (or any other plugin) status line on the same build.",
+    "Installed CLI/mod API declaration shapes for 2.1.314 versus the mocked turn.step/agent.spawn/tool.call surfaces.",
+    "markdownlint result (NOT_RUN per implementer claims; not verifiable here)."
+  ],
+  "instruction_like_content": {
+    "detected": false,
+    "notes": "DIFF holds normal implementation comments, schema $comment, README and how-to for operators. No auditor-steering, fake verdict, or output-contract override found inside the DIFF data."
+  }
+}
