@@ -82,6 +82,18 @@ At `4550f3ff5` Build adhd-engine passed on the re-run, and Unit Tests and every 
 
 J04-FREEZE's `make test` failed at `4550f3ff5`, and 2A caused it, so that head was not frozen. See `AMENDMENT_05.md`: W13 repairs the test code, the gate now means no new failures against main, and the head that carries W13 becomes the freeze subject.
 
+## Third merge from main (operator ruling, 2026-11-04)
+
+| Answer | In answer to |
+|---|---|
+| "Yes, merge main" | "Merge the new main (#1486) into 2A before `make test` and the push?" |
+
+| Item | Value |
+|---|---|
+| Merged | `origin/main` at `4cd889877` (#1486, ui-dashboard), re-checked as still current immediately before merging |
+| Merge commit | `1a81686f9`; parents `4ff9ce5c5` (2A with W13) and `4cd889877` (main) |
+| Result | no conflicts; no file overlap with 2A |
+
 ## Still before freeze (doctrine: CI and reviews settle before the substantive freeze)
 
 1. **CI.** It re-runs on the merge head. Review threads and CI must settle before the freeze.
