@@ -61,7 +61,7 @@ PROMOTABLE_CAPTURE_EVENT_TYPES = frozenset(
 # Callers that are not the CLI (native_hooks) pass their own principal.
 PRINCIPAL_CLI = "internal:cli"
 PRINCIPAL_HOOKS = "internal:hooks"
-_INTERNAL_PRINCIPAL_RE = re.compile(r"^internal:[a-z0-9][a-z0-9_.-]{0,63}$")
+_INTERNAL_PRINCIPAL_RE = re.compile(r"^internal:[a-z0-9][a-z0-9_.-]{0,63}\Z")
 
 
 class CaptureError(RuntimeError):

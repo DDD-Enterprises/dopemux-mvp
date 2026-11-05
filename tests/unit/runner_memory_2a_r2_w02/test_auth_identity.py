@@ -381,3 +381,18 @@ async def test_should_reject_oversized_bodies(auth_identity, tmp_path):
     )
     response = await _post(app, "/mcp", {"pad": "x" * 200})
     assert response.status_code == 413
+
+
+def test_should_not_verify_a_principal_with_a_trailing_newline(auth_identity, tmp_path):
+    token = fake_token()
+    payload = {sha256_hex(token): "runner:codex\n"}
+    (tmp_path / HASH_FILE_NAME).write_text(json.dumps(payload), encoding="utf-8")
+    gate = _gate(auth_identity, "log", tmp_path)
+    assert gate.authenticate(f"Bearer {token}").principal == "unverified"
+
+
+def test_should_skip_a_digest_with_a_trailing_newline(auth_identity, tmp_path):
+    payload = {sha256_hex("x") + "\n": "runner:codex"}
+    (tmp_path / HASH_FILE_NAME).write_text(json.dumps(payload), encoding="utf-8")
+    gate = _gate(auth_identity, "log", tmp_path)
+    assert gate._read_hash_file() == ({}, "ok")
