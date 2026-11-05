@@ -1,0 +1,273 @@
+{
+  "id": "TP-LTAIP-H0-002",
+  "project": "dopemux-mvp",
+  "target": "h0-prototype/equivalent-edition-workflow-trial",
+  "invariants": [
+    "Packet 001 segment and workflow lock is merged and content-addressed.",
+    "Leantime Community and OpenProject Community are compared at equivalent edition scope.",
+    "No paid, hosted, enterprise, or commercial capability is credited.",
+    "Instances, data, networks, and credentials are disposable and non-production.",
+    "The same product-neutral fixtures, roles, and workflows are used for both candidates.",
+    "No weighted score can rescue a P0 security, workflow, accessibility, mobile, backup, or admin failure.",
+    "This packet cannot select a base product."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-H0-VALIDATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "prototype/TP-LTAIP-H0-002-equivalent-edition-trial"
+  },
+  "commit": {
+    "message": "prototype: add equivalent leantime openproject workflow trial",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-002.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "compose/leantime-ai-parity/h0/compose.workflow-trial.yml",
+      "config/leantime-ai-parity/h0/candidate-images.lock.json",
+      "config/leantime-ai-parity/h0/trial.env.example",
+      "scripts/leantime-ai-parity/h0/resolve_candidate_images.py",
+      "scripts/leantime-ai-parity/h0/bootstrap_candidates.sh",
+      "scripts/leantime-ai-parity/h0/load_fixtures.py",
+      "scripts/leantime-ai-parity/h0/run_trial.py",
+      "scripts/leantime-ai-parity/h0/destroy_candidates.sh",
+      "tests/fixtures/leantime-ai-parity/h0/workflow-fixture.json",
+      "tests/fixtures/leantime-ai-parity/h0/role-matrix.json",
+      "tests/fixtures/leantime-ai-parity/h0/workflow-scenarios.json",
+      "tests/prototypes/leantime-ai-parity/h0/test_candidate_lock.py",
+      "tests/prototypes/leantime-ai-parity/h0/test_fixture_equivalence.py",
+      "tests/prototypes/leantime-ai-parity/h0/test_trial_manifest.py",
+      "docs/06-research/leantime-ai-parity/h0/workflow-trial/trial-protocol.md",
+      "docs/06-research/leantime-ai-parity/h0/workflow-trial/accessibility-mobile-checklist.md",
+      "docs/06-research/leantime-ai-parity/h0/workflow-trial/admin-backup-restore-checklist.md",
+      "reports/leantime-ai-parity/h0/workflow-trial/version-lock.json",
+      "reports/leantime-ai-parity/h0/workflow-trial/trial-run-manifest.json",
+      "reports/leantime-ai-parity/h0/workflow-trial/observations.jsonl",
+      "reports/leantime-ai-parity/h0/workflow-trial/issues.json",
+      "reports/leantime-ai-parity/h0/workflow-trial/candidate-results.json",
+      "reports/leantime-ai-parity/h0/workflow-trial/dissent.md",
+      "reports/leantime-ai-parity/h0/workflow-trial/screenshots/",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-002/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-002/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-002/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-002/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-002/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-002/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-002/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-002/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-002/MERGE_READINESS.json"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))'",
+      "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/test_candidate_lock.py tests/prototypes/leantime-ai-parity/h0/test_fixture_equivalence.py tests/prototypes/leantime-ai-parity/h0/test_trial_manifest.py",
+      "docker compose -f compose/leantime-ai-parity/h0/compose.workflow-trial.yml config --quiet",
+      "python -m json.tool config/leantime-ai-parity/h0/candidate-images.lock.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/workflow-trial/version-lock.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/workflow-trial/trial-run-manifest.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/workflow-trial/candidate-results.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/workflow-trial/trial-protocol.md docs/06-research/leantime-ai-parity/h0/workflow-trial/accessibility-mobile-checklist.md docs/06-research/leantime-ai-parity/h0/workflow-trial/admin-backup-restore-checklist.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-002/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "prototype: add equivalent-edition Leantime and OpenProject trial",
+    "body": "Add a digest-pinned disposable Community-edition trial harness and evidence protocol for the three locked workflows. This produces comparative evidence only and does not select a base or authorize production.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "apilookup",
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "testgen",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-lock-and-harness",
+      "task": "Verify Packet 001 lock and create a candidate-neutral, digest-pinned disposable trial harness for Leantime Community 3.9.8 and OpenProject Community.",
+      "requirements": [
+        "Packet 001 must be merged and its lock hash recorded.",
+        "Leantime must be pinned to v3.9.8 and an immutable image digest.",
+        "OpenProject Community must be resolved from current official sources and pinned to an immutable version and image digest.",
+        "No paid or enterprise feature may be enabled or credited."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/resolve_candidate_images.py --leantime-version 3.9.8 --openproject-channel community --output config/leantime-ai-parity/h0/candidate-images.lock.json",
+        "docker compose -f compose/leantime-ai-parity/h0/compose.workflow-trial.yml config --quiet"
+      ],
+      "expected_files": [
+        "compose/leantime-ai-parity/h0/compose.workflow-trial.yml",
+        "config/leantime-ai-parity/h0/candidate-images.lock.json",
+        "config/leantime-ai-parity/h0/trial.env.example",
+        "scripts/leantime-ai-parity/h0/resolve_candidate_images.py",
+        "scripts/leantime-ai-parity/h0/bootstrap_candidates.sh",
+        "scripts/leantime-ai-parity/h0/destroy_candidates.sh"
+      ],
+      "validation": [
+        "Both candidate images are digest-pinned.",
+        "The compose network is isolated and uses disposable named volumes.",
+        "No secret value is committed.",
+        "Edition labels are explicit."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml",
+        "authority/stage08/EXECUTIVE-DECISION.md",
+        "authority/stage08/EPIC-08-002-equivalent-edition-leantime-and-openproject-workflow-trial.md",
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.md",
+        "reports/leantime-ai-parity/h0/segment-lock/segment-workflow-lock.json"
+      ]
+    },
+    {
+      "id": "step-2-fixtures-and-automation",
+      "task": "Create equivalent synthetic fixtures, role semantics, workflow scenarios, fixture loaders, and deterministic trial-manifest validation.",
+      "requirements": [
+        "The same semantic dataset must be loaded into both candidates.",
+        "Role differences must be mapped explicitly rather than normalized away.",
+        "No production data or credential is permitted.",
+        "Automation may prepare and measure the trial but cannot manufacture manual UX observations."
+      ],
+      "commands": [
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/test_candidate_lock.py tests/prototypes/leantime-ai-parity/h0/test_fixture_equivalence.py tests/prototypes/leantime-ai-parity/h0/test_trial_manifest.py",
+        "bash scripts/leantime-ai-parity/h0/bootstrap_candidates.sh",
+        "python scripts/leantime-ai-parity/h0/load_fixtures.py --lock config/leantime-ai-parity/h0/candidate-images.lock.json --fixture tests/fixtures/leantime-ai-parity/h0/workflow-fixture.json --roles tests/fixtures/leantime-ai-parity/h0/role-matrix.json"
+      ],
+      "expected_files": [
+        "scripts/leantime-ai-parity/h0/load_fixtures.py",
+        "scripts/leantime-ai-parity/h0/run_trial.py",
+        "tests/fixtures/leantime-ai-parity/h0/workflow-fixture.json",
+        "tests/fixtures/leantime-ai-parity/h0/role-matrix.json",
+        "tests/fixtures/leantime-ai-parity/h0/workflow-scenarios.json",
+        "tests/prototypes/leantime-ai-parity/h0/test_candidate_lock.py",
+        "tests/prototypes/leantime-ai-parity/h0/test_fixture_equivalence.py",
+        "tests/prototypes/leantime-ai-parity/h0/test_trial_manifest.py"
+      ],
+      "validation": [
+        "Fixture record counts and semantic keys match across candidates.",
+        "Role mappings preserve differences.",
+        "Repeated loading into clean instances is deterministic."
+      ],
+      "context_files": [
+        "docs/06-research/leantime-ai-parity/h0/segment-lock/workflow-fixture-spec.md",
+        "reports/leantime-ai-parity/h0/segment-lock/manifest.json"
+      ]
+    },
+    {
+      "id": "step-3-equivalent-trial",
+      "task": "Run the identical workflow, accessibility, mobile, external-collaborator, administration, backup, and restore protocol against both candidates.",
+      "requirements": [
+        "Two independent observers must reproduce the critical workflow result.",
+        "Keyboard and VoiceOver checks must cover every critical step.",
+        "Mobile essential access must be tested at a pre-registered phone viewport and on a physical device when available.",
+        "Backup and restore must recover the synthetic fixture and role semantics.",
+        "No weighted score may rescue a P0 failure."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/run_trial.py --lock config/leantime-ai-parity/h0/candidate-images.lock.json --scenarios tests/fixtures/leantime-ai-parity/h0/workflow-scenarios.json --output reports/leantime-ai-parity/h0/workflow-trial",
+        "python -m json.tool reports/leantime-ai-parity/h0/workflow-trial/candidate-results.json >/dev/null",
+        "bash scripts/leantime-ai-parity/h0/destroy_candidates.sh --volumes"
+      ],
+      "expected_files": [
+        "docs/06-research/leantime-ai-parity/h0/workflow-trial/trial-protocol.md",
+        "docs/06-research/leantime-ai-parity/h0/workflow-trial/accessibility-mobile-checklist.md",
+        "docs/06-research/leantime-ai-parity/h0/workflow-trial/admin-backup-restore-checklist.md",
+        "reports/leantime-ai-parity/h0/workflow-trial/version-lock.json",
+        "reports/leantime-ai-parity/h0/workflow-trial/trial-run-manifest.json",
+        "reports/leantime-ai-parity/h0/workflow-trial/observations.jsonl",
+        "reports/leantime-ai-parity/h0/workflow-trial/issues.json",
+        "reports/leantime-ai-parity/h0/workflow-trial/candidate-results.json",
+        "reports/leantime-ai-parity/h0/workflow-trial/dissent.md"
+      ],
+      "validation": [
+        "All three must-win workflows have explicit completion and failure records for both candidates.",
+        "P0 and P1 findings are separated.",
+        "No enterprise or paid capability contaminates results.",
+        "Destruction of disposable instances and volumes is recorded."
+      ],
+      "context_files": [
+        "docs/06-research/leantime-ai-parity/h0/workflow-trial/trial-protocol.md",
+        "tests/fixtures/leantime-ai-parity/h0/workflow-scenarios.json"
+      ]
+    },
+    {
+      "id": "step-4-audit-proof-and-pr",
+      "task": "Run independent audit, finalize proof, open PR, and obtain PR Steward readiness without selecting a base product.",
+      "requirements": [
+        "The auditor must challenge edition equivalence, fixture bias, observer bias, accessibility evidence, and hidden admin burden.",
+        "The result may show both candidates failing.",
+        "Packet 003 remains blocked until this packet merges."
+      ],
+      "commands": [
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))'",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/test_candidate_lock.py tests/prototypes/leantime-ai-parity/h0/test_fixture_equivalence.py tests/prototypes/leantime-ai-parity/h0/test_trial_manifest.py",
+        "docker compose -f compose/leantime-ai-parity/h0/compose.workflow-trial.yml config --quiet",
+        "python -m json.tool config/leantime-ai-parity/h0/candidate-images.lock.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/workflow-trial/version-lock.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/workflow-trial/trial-run-manifest.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/workflow-trial/candidate-results.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/workflow-trial/trial-protocol.md docs/06-research/leantime-ai-parity/h0/workflow-trial/accessibility-mobile-checklist.md docs/06-research/leantime-ai-parity/h0/workflow-trial/admin-backup-restore-checklist.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-002/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "proof/leantime-ai-parity/TP-LTAIP-H0-002/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-002/AUDITOR_REPORT.md",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-002/MERGE_READINESS.json"
+      ],
+      "validation": [
+        "Embedded audit is non-blocking.",
+        "PR Steward is READY and current.",
+        "No base selection or implementation authorization is present."
+      ],
+      "context_files": [
+        "docs/ops/embedded-audit-proof.md",
+        "reports/leantime-ai-parity/h0/workflow-trial/candidate-results.json"
+      ]
+    }
+  ]
+}
