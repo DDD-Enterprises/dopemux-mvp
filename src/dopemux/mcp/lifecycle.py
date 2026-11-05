@@ -17,7 +17,9 @@ from . import docker_inspect as di
 from . import docker_runtime as dr
 from .doctor import DoctorReport, run_mcp_doctor
 from .envrc import load_envrc, merge_envrc_into_environ, safe_port_int
+from .locks import locked_reload_and_save, registry_lock
 from .port_diagnostics import instance_id_for_path
+from .port_leases import PortLeaseRegistry, default_lease_registry_path
 from .runtime_registry import (
     RegistryError,
     RuntimeRegistry,
@@ -27,6 +29,7 @@ from .runtime_registry import (
 from .runtime_state import (
     ENVRC_FILENAME,
     PROJECT_MCP_FILENAME,
+    ProjectIdentityView,
     load_mcp_json,
     resolve_identity_view,
 )
@@ -43,7 +46,6 @@ BLOCKING_FINDING_CODES = frozenset(
         "PROJECT_ROOT_UNKNOWN",
         "MCP_JSON_PARSE_ERROR",
         "ENVRC_PARSE_ERROR",
-        "ENVRC_MISSING",
         "MCP_JSON_MISSING",
         "TRANSPORT_MISMATCH",
         "PORT_RESERVED_COLLISION",
@@ -238,6 +240,137 @@ def _extract_ports(env: Mapping[str, str], services: Sequence[str], catalog: Map
             if p is not None:
                 ports[str(key)] = p
     return ports
+
+
+class PortAllocationBlocked(RuntimeError):
+    """Lease allocation refused; ``findings`` carries the allocator's reasons."""
+
+    def __init__(self, message: str, findings: Optional[List[Dict[str, Any]]] = None) -> None:
+        super().__init__(message)
+        self.findings: List[Dict[str, Any]] = list(findings or [])
+
+
+def _port_vars_for(name: str, catalog: Mapping[str, Any]) -> List[str]:
+    spec = (catalog.get("servers") or {}).get(name) or {}
+    if not isinstance(spec, dict):
+        return []
+    out = [spec.get("port_var")] + [
+        e.get("var") for e in (spec.get("extra_port_vars") or []) if isinstance(e, dict)
+    ]
+    return [str(v) for v in out if v]
+
+
+def _leased_ports(
+    lease_reg: PortLeaseRegistry,
+    identity: ProjectIdentityView,
+    wanted: Sequence[str],
+) -> Dict[str, int]:
+    """Active leases that belong to this project/worktree, keyed by port env var."""
+    found: Dict[str, int] = {}
+    for lease in lease_reg.active_leases():
+        var = lease.get("port_var")
+        if var not in wanted or not lease.get("port"):
+            continue
+        if lease_reg.identity_matches(
+            lease,
+            worktree_root=identity.worktree_root,
+            project_root=identity.project_root,
+            worktree_hash=identity.worktree_hash,
+            project_id=identity.project_id,
+        ):
+            found[str(var)] = int(lease["port"])
+    return found
+
+
+def _resolve_ports(
+    identity: ProjectIdentityView,
+    selected: Sequence[str],
+    catalog: Mapping[str, Any],
+    *,
+    lease_path: Path,
+    source: str = "dopemux mcp start",
+    env: Optional[Mapping[str, str]] = None,
+    allocate: bool = True,
+    is_free_fn: Optional[Callable[[int], bool]] = None,
+) -> Dict[str, int]:
+    """Port map ``{port_env_var: port}`` for ``selected`` services.
+
+    Order: ports an envrc/process env already names win; otherwise the active
+    leases bound to this project/worktree; otherwise (when ``allocate``)
+    allocate and persist new leases under ``registry_lock``. The lock is held
+    only for the allocate-and-save step. Task Orchestrator is a reserved
+    singleton port, never leased, and is left to the caller's default.
+    """
+    ports = _extract_ports(env or {}, selected, catalog)
+    lease_services = [
+        n
+        for n in selected
+        if n != "task-orchestrator" and any(v not in ports for v in _port_vars_for(n, catalog))
+    ]
+    if not lease_services or not identity.worktree_root or not identity.project_root:
+        return ports
+
+    wanted = [v for n in lease_services for v in _port_vars_for(n, catalog)]
+    for var, port in _leased_ports(PortLeaseRegistry.load(lease_path), identity, wanted).items():
+        ports.setdefault(var, port)
+    lease_services = [
+        n for n in lease_services if any(v not in ports for v in _port_vars_for(n, catalog))
+    ]
+    if not lease_services or not allocate:
+        return ports
+
+    from .port_allocator import AllocatorIdentity, allocate_ports
+
+    worktree_hash = identity.worktree_hash or instance_id_for_path(identity.worktree_root)
+    allocator_identity = AllocatorIdentity(
+        project_id=identity.project_id,
+        workspace_id=identity.workspace_id,
+        project_root=identity.project_root,
+        worktree_root=identity.worktree_root,
+        project_hash=identity.project_hash,
+        worktree_hash=worktree_hash,
+        instance_id=identity.instance_id or worktree_hash,
+    )
+    # Same call shape as mcp_commands._allocate_ports (allocate_ports_map).
+    with registry_lock():
+        result = allocate_ports(
+            lease_services,
+            catalog,
+            worktree=identity.worktree_root,
+            project_root=identity.project_root,
+            identity=allocator_identity,
+            existing_envrc=env,
+            registry_path=lease_path,
+            persist=True,
+            dry_run=False,
+            source=source,
+            is_free_fn=is_free_fn,
+        )
+    if result.status == "BLOCKED":
+        msgs = "; ".join(f["message"] for f in result.blocking_findings if f.get("message"))
+        raise PortAllocationBlocked(
+            msgs or "Port allocation blocked", result.blocking_findings
+        )
+    for var, port in result.ports.items():
+        ports.setdefault(str(var), int(port))
+    return ports
+
+
+def runtime_dir_for(
+    identity: ProjectIdentityView, *, registry_path: Optional[Path] = None
+) -> Path:
+    """Per-worktree runtime dir: ``<registry dir>/<slug>-<worktree_hash>``.
+
+    Shared by the start path, the launcher and reap so they agree on one path.
+    """
+    worktree_root = identity.worktree_root
+    project_root = identity.project_root or worktree_root
+    if not worktree_root or not project_root:
+        raise ValueError("identity has no worktree_root/project_root")
+    slug = dr.project_slug(Path(project_root).name)
+    worktree_hash = identity.worktree_hash or instance_id_for_path(worktree_root)
+    base = registry_path or default_registry_path()
+    return base.parent / f"{slug}-{worktree_hash}"
 
 
 def _port_to_expected_service(
@@ -526,11 +659,12 @@ def run_lifecycle(
             }
         )
     if not envrc.present or envrc.parse_status == "MISSING":
-        blocking.append(
+        # Ports come from the lease registry now; the envrc is optional.
+        warnings.append(
             {
                 "code": "ENVRC_MISSING",
-                "severity": "FAIL",
-                "message": f"Missing {ENVRC_FILENAME}",
+                "severity": "INFO",
+                "message": f"No {ENVRC_FILENAME}; ports resolved from the lease registry",
                 "service": None,
             }
         )
@@ -607,7 +741,27 @@ def run_lifecycle(
     slug = dr.project_slug(Path(project_root).name)
     compose_proj = dr.compose_project_name(slug, worktree_hash)
 
-    ports = _extract_ports(doctor_env, selected, catalog)
+    try:
+        ports = _resolve_ports(
+            identity,
+            selected,
+            catalog,
+            lease_path=default_lease_registry_path(),
+            env=doctor_env,
+            allocate=op in {"start", "restart"},
+            is_free_fn=is_free,
+        )
+    except PortAllocationBlocked as exc:
+        blocking.append(
+            {
+                "code": "PORT_ALLOCATION_BLOCKED",
+                "severity": "FAIL",
+                "message": str(exc),
+                "service": None,
+            }
+        )
+        blocking.extend(exc.findings)
+        ports = _extract_ports(doctor_env, selected, catalog)
 
     # Task Orchestrator fixed-port identity gate (Packet 005)
     if op in {"start", "restart"} and "task-orchestrator" in selected:
@@ -1226,7 +1380,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
     compose_services = [s for s in selected if s in {"conport", "dope-memory"}]
     to_selected = "task-orchestrator" in selected
 
-    runtime_base = reg_path.parent / f"{slug}-{worktree_hash}"
+    runtime_base = runtime_dir_for(identity, registry_path=reg_path)
     memory_data = Path(worktree_root) / ".dopemux"
     # Project identity used for TO container naming (must match wrapper).
     to_state_id = ""
@@ -1287,6 +1441,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
     )
 
     service_results: List[Dict[str, Any]] = []
+    # Instance records this run produced; replayed onto a fresh, locked reload
+    # of the registry so a concurrent start's records are not clobbered.
+    pending: List[Dict[str, Any]] = []
     overall_fail = False
     overall_unknown = False
 
@@ -1322,6 +1479,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
             if not dry_run:
                 _registry_upsert(
                     registry,
+                    pending=pending,
                     svc=svc,
                     project_id=project_id,
                     identity=identity,
@@ -1503,6 +1661,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
             if not dry_run and result.exit_code == 0:
                 _registry_upsert(
                     registry,
+                    pending=pending,
                     svc=svc,
                     project_id=project_id,
                     identity=identity,
@@ -1573,6 +1732,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
             if result.exit_code == 0:
                 _registry_upsert(
                     registry,
+                    pending=pending,
                     svc=svc,
                     project_id=project_id,
                     identity=identity,
@@ -1619,17 +1779,15 @@ def _start_services(**kw: Any) -> LifecycleResult:
             )
 
     if not dry_run and registry.parse_status != "ERROR":
-        try:
-            registry.path = reg_path
-            if not registry.present and registry.parse_status == "MISSING":
-                registry.data = registry.data or {}
-                from .runtime_registry import empty_registry
+        # Final write of the start path: reload under the registry lock, apply
+        # only this run's records, save. No docker call happens under the lock.
+        def _apply_pending(fresh: RuntimeRegistry) -> None:
+            for rec in pending:
+                fresh.upsert_instance(rec)
 
-                if not registry.data.get("instances"):
-                    registry.data = empty_registry()
-                registry.parse_status = "OK"
-            registry.save()
-        except RegistryError:
+        try:
+            locked_reload_and_save(RuntimeRegistry, reg_path, _apply_pending)
+        except (RegistryError, OSError):
             overall_fail = True
 
     if dry_run:
@@ -1728,6 +1886,9 @@ def _registry_upsert(registry: RuntimeRegistry, **kw: Any) -> None:
         registry.data = empty_registry()
         registry.parse_status = "OK"
     registry.upsert_instance(rec)
+    sink = kw.get("pending")
+    if sink is not None:
+        sink.append(rec)
 
 
 def _probe_service(service: str, ports: Mapping[str, int], is_free: Callable[[int], bool]) -> str:
