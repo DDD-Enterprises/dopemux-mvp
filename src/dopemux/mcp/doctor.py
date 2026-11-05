@@ -286,7 +286,9 @@ def _check_conport_tenant(
             "FAIL",
             exc.detail or exc.code,
             service="conport",
-            recommendation="Fix or delete the ConPort tenant secrets file named above.",
+            recommendation=(
+                "Restore the ConPort tenant file named above from backup, or ask the operator."
+            ),
         )
         return
     except (OSError, ValueError):
@@ -301,6 +303,12 @@ def _check_conport_tenant(
             f"conport tenant not determined: {creds.evidence}",
             service="conport",
             evidence=[f"{TENANT_SOURCE_PREFIX}unverified"],
+            recommendation=(
+                f"Postgres did not answer, so the tenant is unknown. A start in this state "
+                f"falls back to the shared {ct.SHARED_DB} store and records "
+                "CONPORT_LEGACY_SHARED_STORE; check that dopemux-postgres-age is running "
+                "and re-run the doctor."
+            ),
         )
         return
     if creds.source == "legacy_shared":
@@ -855,7 +863,21 @@ def run_mcp_doctor(
     if (check_conport_tenant or psql is not None) and (
         "conport" in (mcp_servers or {}) or any(d.name == "conport" for d in desired)
     ):
-        _check_conport_tenant(findings, identity, envrc.values, psql)
+        if skip_docker:  # the check is a `docker exec ... psql`
+            _add(
+                findings,
+                "CONPORT_TENANT_UNVERIFIED",
+                "INFO",
+                "conport tenant not checked: docker was skipped",
+                service="conport",
+                evidence=[f"{TENANT_SOURCE_PREFIX}unverified (docker skipped)"],
+                recommendation=(
+                    "Run `dopemux mcp doctor` without --skip-docker to see which ConPort "
+                    "tenant a start would use."
+                ),
+            )
+        else:
+            _check_conport_tenant(findings, identity, envrc.values, psql)
 
     # --- Compose lifecycle ---
     # Prefer explicit compose_path only when it belongs to the target repo.

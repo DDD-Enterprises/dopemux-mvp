@@ -18,7 +18,7 @@ from . import docker_inspect as di
 from . import docker_runtime as dr
 from .doctor import DoctorReport, run_mcp_doctor
 from .envrc import load_envrc, merge_envrc_into_environ, safe_port_int
-from .locks import locked_reload_and_save, registry_lock, reserved_port_lock
+from .locks import locked_reload_and_save, provision_lock, registry_lock, reserved_port_lock
 from .port_diagnostics import instance_id_for_path
 from .port_leases import PortLeaseRegistry, default_lease_registry_path
 from .runtime_registry import (
@@ -1479,7 +1479,7 @@ def _resolve_conport_tenant(
             {
                 "code": "CONPORT_TENANT_PROVISION_FAILED",
                 "severity": "FAIL",
-                "message": f"tenant resolution failed ({exc.__class__.__name__})",
+                "message": f"tenant resolution failed ({ct.os_error_detail(exc)})",
             }
         ]
     if creds is None:  # only with provision=False, which a start never passes
@@ -1505,47 +1505,66 @@ def _resolve_conport_tenant(
 def _run_tenant_gate(
     identity: ProjectIdentityView,
     container_name: str,
-    creds: ct.TenantCredentials,
     cmd_runner: Optional[Callable[..., Any]],
-) -> Dict[str, Any]:
-    """D5 gate phase in this instance's conport container; FAIL keeps the gate owed."""
-    path = ct.secrets_path(str(identity.project_id))
-    try:
-        ct.adopt_with_gate(container_name, creds, runner=cmd_runner)
-    except ct.TenantError as exc:
-        return {
-            "code": "CONPORT_TENANT_GATE_FAILED",
-            "severity": "FAIL",
-            "message": (
-                f"{exc.detail}; the tenant database stays and the next start retries "
-                f"the gate (never re-provisions); secrets file {path}"
-            ),
-        }
-    ct.mark_gate_done(str(identity.project_id))
-    return {
-        "code": "CONPORT_TENANT_GATE_ADOPTED",
-        "severity": "INFO",
-        "message": f"migration gate adopted and verified the tenant schema in {container_name}",
-    }
-
-
-def _retry_pending_gate(
-    identity: ProjectIdentityView,
-    container_name: str,
-    cmd_runner: Optional[Callable[..., Any]],
+    *,
+    expected: bool,
 ) -> List[Dict[str, Any]]:
-    """A gate still owed from an earlier start runs against the already-running container."""
-    if not identity.project_id:
+    """D5 gate phase in this instance's conport container, under ``provision_lock``.
+
+    The owed gate is re-read under the lock, so two starts never adopt at
+    once and a start whose gate another start finished skips it. FAIL keeps
+    the gate owed for the next start (never re-provisions). ``expected`` is
+    False for the already-running retry, which stays silent when nothing is
+    owed. Lock order: instance/reserved locks outside, ``provision_lock``
+    inside; no registry lock is taken while it is held.
+    """
+    project_id = str(identity.project_id or "")
+    if not project_id:
         return []
     try:
-        pending = ct.pending_gate_credentials(str(identity.project_id))
+        path = ct.secrets_path(project_id)
+    except ValueError:
+        return []
+    detail = ""
+    try:
+        if not expected and ct.pending_gate_credentials(project_id) is None:
+            return []
+        with provision_lock(project_id):
+            pending = ct.pending_gate_credentials(project_id)
+            if pending is None:
+                return [
+                    {
+                        "code": "CONPORT_TENANT_GATE_ADOPTED",
+                        "severity": "INFO",
+                        "message": "migration gate already completed by another start",
+                    }
+                ]
+            ct.adopt_with_gate(container_name, pending, runner=cmd_runner)
+            ct.mark_gate_done(project_id)
     except ct.TenantError as exc:
-        return [{"code": exc.code, "severity": "FAIL", "message": exc.detail or exc.code}]
-    except (OSError, ValueError):
-        return []
-    if pending is None:
-        return []
-    return [_run_tenant_gate(identity, container_name, pending, cmd_runner)]
+        if exc.code != "CONPORT_TENANT_GATE_FAILED":
+            return [{"code": exc.code, "severity": "FAIL", "message": exc.detail or exc.code}]
+        detail = exc.detail
+    except (OSError, ValueError) as exc:
+        detail = f"migration gate could not run ({ct.os_error_detail(exc)})"
+    if detail:
+        return [
+            {
+                "code": "CONPORT_TENANT_GATE_FAILED",
+                "severity": "FAIL",
+                "message": (
+                    f"{detail}; the tenant database stays and the next start retries "
+                    f"the gate (never re-provisions); secrets file {path}"
+                ),
+            }
+        ]
+    return [
+        {
+            "code": "CONPORT_TENANT_GATE_ADOPTED",
+            "severity": "INFO",
+            "message": f"migration gate adopted and verified the tenant schema in {container_name}",
+        }
+    ]
 
 
 def _start_services(**kw: Any) -> LifecycleResult:
@@ -1661,7 +1680,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
         if existing:
             existing_findings: List[Dict[str, Any]] = []
             if svc == "conport" and not dry_run:
-                existing_findings = _retry_pending_gate(identity, existing.name, cmd_runner)
+                existing_findings = _run_tenant_gate(
+                    identity, existing.name, cmd_runner, expected=False
+                )
             gate_failed = any(f.get("severity") == "FAIL" for f in existing_findings)
             if gate_failed:
                 overall_fail = True
@@ -1898,9 +1919,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
             if tenant is not None and tenant.gate_pending and result.exit_code == 0:
                 # D5 gate phase: only once this instance's container answers.
                 if probe == "OK":
-                    gate = _run_tenant_gate(identity, cname, tenant, cmd_runner)
-                    findings.append(gate)
-                    gate_failed = gate["severity"] == "FAIL"
+                    gate = _run_tenant_gate(identity, cname, cmd_runner, expected=True)
+                    findings.extend(gate)
+                    gate_failed = any(f.get("severity") == "FAIL" for f in gate)
                 else:
                     findings.append(
                         {

@@ -11,6 +11,7 @@ import json
 import re
 import stat
 import subprocess
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -61,8 +62,10 @@ class FakePsql:
         schema_present: bool = False,
         rc: int = 0,
         raises: Optional[BaseException] = None,
+        fail_on: Optional[str] = None,
     ) -> None:
         self.calls: List[Tuple[str, str]] = []
+        self.fail_on = fail_on
         self.legacy_count = legacy_count
         self.tables = tables
         self.role_exists = role_exists
@@ -77,6 +80,8 @@ class FakePsql:
             raise self.raises
         if self.rc:
             return _out("", self.rc, "psql: error: connection refused")
+        if self.fail_on and self.fail_on in sql:
+            return _out("", 3, "ERROR:  simulated failure (killed mid-provisioning)")
         if "DPMX_TABLES=" in sql:
             return _out(_aligned("DPMX_TABLES=" + ",".join(self.tables)))
         if "DPMX_COUNT=" in sql:
@@ -408,6 +413,8 @@ def test_incomplete_secrets_file_fails_closed(tmp_path: Path):
         ct.resolve_tenant(identity, envrc_values={}, psql=psql, secrets_root=root)
     assert excinfo.value.code == "CONPORT_TENANT_SECRETS_INVALID"
     assert str(path) in str(excinfo.value)
+    assert "restore" in str(excinfo.value) and "operator" in str(excinfo.value)
+    assert "delete" not in str(excinfo.value)
     assert psql.calls == []
 
 
@@ -657,16 +664,33 @@ def _lc_product(tmp_path: Path) -> Path:
 class LifecycleRunner(FakeCmdRunner):
     """Adds compose `up` (flips the port probe) and the gate's `docker exec`."""
 
-    def __init__(self, psql: FakePsql, *, gate_rc: int = 0, gate_stderr: str = ""):
+    def __init__(
+        self,
+        psql: FakePsql,
+        *,
+        gate_rc: int = 0,
+        gate_stderr: str = "",
+        gate_raises: Optional[BaseException] = None,
+        on_up=None,
+        lock_state: Optional[Dict[str, int]] = None,
+    ):
         super().__init__(psql, image_present=True)
         self.up = False
         self.gate_rc = gate_rc
         self.gate_stderr = gate_stderr
+        self.gate_raises = gate_raises
+        self.on_up = on_up
+        self.lock_state = lock_state
         self.gate_files: List[Dict[str, Any]] = []
+        self.gate_lock_held: List[int] = []
 
     def __call__(self, cmd, **kwargs):
         cmd = list(cmd)
         if cmd[:3] == ["docker", "exec", "--env-file"]:
+            if self.lock_state is not None:
+                self.gate_lock_held.append(self.lock_state["held"])
+            if self.gate_raises is not None:
+                raise self.gate_raises
             env_file = Path(cmd[3])
             self.gate_files.append(
                 {"path": env_file, "text": env_file.read_text(), "mode": _mode(env_file)}
@@ -676,6 +700,8 @@ class LifecycleRunner(FakeCmdRunner):
         result = super().__call__(cmd, **kwargs)
         if "up" in cmd and "compose" in cmd:
             self.up = True
+            if self.on_up is not None:
+                self.on_up()
         return result
 
     def kinds(self) -> List[str]:
@@ -727,7 +753,8 @@ def test_start_passes_tenant_env_to_compose_only(tmp_path: Path, monkeypatch):
     )
     # Another checkout's sourced envrc in the process environment.
     monkeypatch.setenv("CONPORT_DB_NAME", "conport_foreign")
-    monkeypatch.setenv("CONPORT_DB_PASSWORD", "ambient-foreign-pw")
+    monkeypatch.setenv("CONPORT_DB_USER", "conport_foreign")
+    monkeypatch.setenv("CONPORT_DB_PASSWORD", "ambient-fake")
     monkeypatch.setenv("CONPORT_HTTP_PORT", "39999")
     monkeypatch.setenv("DOPE_MEMORY_PORT", "39998")
     runner = LifecycleRunner(FakePsql())
@@ -739,6 +766,7 @@ def test_start_passes_tenant_env_to_compose_only(tmp_path: Path, monkeypatch):
     assert up["env"]["CONPORT_DB_NAME"] == "conport_lc_tenant"
     assert up["env"]["CONPORT_DB_USER"] == "conport_lc_tenant"
     assert up["env"]["CONPORT_DB_PASSWORD"] == "fake-lc-pw"
+    assert "ambient-fake" not in json.dumps(up["env"])
     assert up["env"].get("CONPORT_HTTP_PORT") != "39999"
     assert "DOPE_MEMORY_PORT" not in up["env"]
     # Only the compose `up` gets the credentials (not the image probe/build env).
@@ -871,3 +899,238 @@ def test_adopt_with_gate_refuses_real_docker_under_pytest():
         ct.adopt_with_gate("dopemux-x-conport", creds)
     assert excinfo.value.code == "CONPORT_TENANT_GATE_FAILED"
     assert "fake-gate-pw" not in str(excinfo.value)
+
+
+# --- fix round 1 -------------------------------------------------------------------
+
+
+def _state(identity, root: Optional[Path] = None) -> str:
+    path = ct.secrets_path(identity.project_id, secrets_root=root).parent / ct.STATE_FILENAME
+    return path.read_text().strip() if path.exists() else ""
+
+
+def _passwords(monkeypatch, *values: str) -> None:
+    """Each token_hex call returns the next fake; a resume must not draw a new one."""
+    queue = list(values)
+    monkeypatch.setattr(ct.secrets, "token_hex", lambda n: queue.pop(0))
+
+
+SECOND_FAKE_PASSWORD = "beef" * 12
+
+
+def test_resume_after_create_database_failure_keeps_password_and_role(tmp_path, monkeypatch):
+    identity = _identity(_repo(tmp_path))
+    root = tmp_path / "secrets"
+    _passwords(monkeypatch, FAKE_PROVISIONED_PASSWORD, SECOND_FAKE_PASSWORD)
+    first = FakePsql(legacy_count=0, fail_on="CREATE DATABASE")
+
+    with pytest.raises(ct.TenantError) as excinfo:
+        ct.resolve_tenant(identity, envrc_values={}, psql=first, secrets_root=root)
+
+    assert excinfo.value.code == "CONPORT_TENANT_PROVISION_FAILED"
+    assert FAKE_PROVISIONED_PASSWORD not in str(excinfo.value)
+    assert _labels(first.calls) == ["create_role", "create_database"]  # the second one failed
+    assert _state(identity, root) == "database"
+
+    second = FakePsql(role_exists=True, db_exists=False)
+    creds = ct.resolve_tenant(identity, envrc_values={}, psql=second, secrets_root=root)
+
+    assert creds.source == "provisioned" and creds.gate_pending
+    assert creds.db_password == FAKE_PROVISIONED_PASSWORD
+    labels = _labels(second.calls)
+    assert "create_role" not in labels and "alter_role" not in labels
+    assert labels[:2] == ["create_database", "revoke"]
+    assert labels[-1] == "workspace_rows"
+    assert not any("DPMX_TABLES=" in sql for _db, sql in second.calls)  # no re-count
+    stored = ct.load_secrets(ct.secrets_path(identity.project_id, secrets_root=root))
+    assert stored.db_password == FAKE_PROVISIONED_PASSWORD
+    assert _state(identity, root) == "gate"
+
+
+def test_resume_after_migration_003_failure_applies_exactly_the_rest(tmp_path, monkeypatch):
+    identity = _identity(_repo(tmp_path))
+    root = tmp_path / "secrets"
+    _passwords(monkeypatch, FAKE_PROVISIONED_PASSWORD, SECOND_FAKE_PASSWORD)
+    first = FakePsql(legacy_count=0, fail_on="-- Migration 003")
+
+    with pytest.raises(ct.TenantError):
+        ct.resolve_tenant(identity, envrc_values={}, psql=first, secrets_root=root)
+
+    applied = [lbl for lbl in _labels(first.calls) if lbl.startswith("migration:")]
+    assert applied == [
+        "migration:001_enhanced_decision_model",
+        "migration:002_decision_patterns_table",
+        "migration:003_multi_tenancy_foundation",  # attempted, failed
+    ]
+    assert _state(identity, root) == "database:002_decision_patterns_table"
+
+    second = FakePsql(role_exists=True, db_exists=True, schema_present=True)
+    creds = ct.resolve_tenant(identity, envrc_values={}, psql=second, secrets_root=root)
+
+    assert creds.db_password == FAKE_PROVISIONED_PASSWORD
+    assert _labels(second.calls) == [
+        "revoke",
+        "extension",
+        "migration:003_multi_tenancy_foundation",
+        "migration:004_unified_query_indexes",
+        "migration:007_worktree_support_simple",
+        "migration:008_write_principal",
+        "workspace_rows",
+    ]
+    assert _state(identity, root) == "gate"
+
+
+def test_unreadable_state_file_fails_closed(tmp_path):
+    repo = _lc_repo(tmp_path)
+    identity = _identity(repo)
+    path = ct.secrets_path(identity.project_id)
+    ct.write_secrets(path, ct.TenantCredentials("conport_s", "conport_s", "fake-state-pw", "secrets"))
+    state_path = path.parent / ct.STATE_FILENAME
+    state_path.mkdir()  # reading it raises IsADirectoryError
+
+    with pytest.raises(ct.TenantError) as excinfo:
+        ct.resolve_tenant(identity, envrc_values={}, psql=FakePsql())
+    assert excinfo.value.code == "TENANT_STATE_UNREADABLE"
+    assert str(state_path) in str(excinfo.value)
+
+    runner = LifecycleRunner(FakePsql())
+    result = _lc_start(tmp_path, repo, runner)
+    assert result.exit_code == 1
+    finding = next(f for f in _conport(result)["findings"] if f["code"] == "TENANT_STATE_UNREADABLE")
+    assert finding["severity"] == "FAIL" and str(state_path) in finding["message"]
+    assert "up" not in runner.kinds()
+
+
+def _lock_spy(monkeypatch):
+    from contextlib import contextmanager
+
+    from dopemux.mcp import lifecycle as lc
+
+    real = lc.provision_lock
+    state = {"held": 0, "taken": 0}
+
+    @contextmanager
+    def spy(project_id):
+        with real(project_id):
+            state["held"] += 1
+            state["taken"] += 1
+            try:
+                yield
+            finally:
+                state["held"] -= 1
+
+    monkeypatch.setattr(lc, "provision_lock", spy)
+    return state
+
+
+def test_gate_runs_under_provision_lock(tmp_path, monkeypatch):
+    repo = _lc_repo(tmp_path)
+    lock = _lock_spy(monkeypatch)
+    runner = LifecycleRunner(FakePsql(legacy_count=0), lock_state=lock)
+
+    result = _lc_start(tmp_path, repo, runner)
+
+    assert result.exit_code == 0, result.to_dict()
+    assert runner.gate_lock_held == [1, 1]  # apply and verify both under the lock
+    assert lock["held"] == 0
+
+
+def test_gate_skipped_when_another_start_already_adopted(tmp_path, monkeypatch):
+    repo = _lc_repo(tmp_path)
+    identity = _identity(repo)
+    lock = _lock_spy(monkeypatch)
+    # Another launcher finishes the gate while this start runs compose up.
+    runner = LifecycleRunner(
+        FakePsql(legacy_count=0),
+        lock_state=lock,
+        on_up=lambda: ct.mark_gate_done(identity.project_id),
+    )
+
+    result = _lc_start(tmp_path, repo, runner)
+
+    assert result.exit_code == 0, result.to_dict()
+    assert not [k for k in runner.kinds() if k.startswith("gate:")]
+    assert lock["taken"] == 1  # the state was re-read under the lock
+    notes = [f for f in _conport(result)["findings"] if f["code"] == "CONPORT_TENANT_GATE_ADOPTED"]
+    assert notes and "already" in notes[0]["message"]
+
+
+def test_gate_runner_oserror_is_a_gate_failed_finding(tmp_path, monkeypatch):
+    repo = _lc_repo(tmp_path)
+    identity = _identity(repo)
+    monkeypatch.setattr(ct.secrets, "token_hex", lambda n: FAKE_PROVISIONED_PASSWORD)
+    before = set(Path(tempfile.gettempdir()).glob("dopemux-conport-gate-*.env"))
+    runner = LifecycleRunner(
+        FakePsql(legacy_count=0),
+        gate_raises=PermissionError(13, "Permission denied", "/fake/bin/docker"),
+    )
+
+    result = _lc_start(tmp_path, repo, runner)
+
+    assert result.exit_code == 1
+    finding = next(
+        f for f in _conport(result)["findings"] if f["code"] == "CONPORT_TENANT_GATE_FAILED"
+    )
+    assert finding["severity"] == "FAIL"
+    assert "Permission denied" in finding["message"]
+    assert str(ct.secrets_path(identity.project_id)) in finding["message"]
+    assert FAKE_PROVISIONED_PASSWORD not in json.dumps(result.to_dict())
+    assert ct.pending_gate_credentials(identity.project_id) is not None
+    # The gate env file was still removed.
+    assert set(Path(tempfile.gettempdir()).glob("dopemux-conport-gate-*.env")) == before
+
+
+def test_start_reports_oserror_filename_and_strerror(tmp_path):
+    repo = _lc_repo(tmp_path)
+    identity = _identity(repo)
+    projects = ct.secrets_path(identity.project_id).parent.parent
+    projects.parent.mkdir(parents=True, exist_ok=True)
+    projects.write_text("not a directory\n")  # the per-project dir cannot be created
+    runner = LifecycleRunner(FakePsql(legacy_count=0))
+
+    result = _lc_start(tmp_path, repo, runner)
+
+    assert result.exit_code == 1
+    finding = next(f for f in _conport(result)["findings"] if f["severity"] == "FAIL")
+    assert finding["code"] == "CONPORT_TENANT_PROVISION_FAILED"
+    assert "Not a directory" in finding["message"]
+    assert str(projects) in finding["message"]
+
+
+def test_init_reports_oserror_filename_and_strerror(tmp_path, monkeypatch, capsys):
+    from dopemux.commands import mcp_commands
+
+    repo = _repo(tmp_path)
+    identity = _identity(repo)
+    projects = ct.secrets_path(identity.project_id).parent.parent
+    projects.parent.mkdir(parents=True, exist_ok=True)
+    projects.write_text("not a directory\n")
+    monkeypatch.setattr(mcp_commands, "_INIT_RUNNER", FakeCmdRunner(FakePsql(legacy_count=0)))
+
+    ok = mcp_commands._init_sidecars(repo, ["conport"], {})
+
+    out = capsys.readouterr().out
+    assert ok is False
+    assert "FAIL CONPORT_TENANT_PROVISION_FAILED" in out
+    assert "Not a directory" in out and str(projects) in out
+
+
+def test_start_legacy_shared_never_passes_ambient_tenant_vars(tmp_path, monkeypatch):
+    repo = _lc_repo(tmp_path)
+    monkeypatch.setenv("CONPORT_DB_NAME", "conport_ambient_fake")
+    monkeypatch.setenv("CONPORT_DB_USER", "conport_ambient_fake")
+    monkeypatch.setenv("CONPORT_DB_PASSWORD", "ambient-fake-pw")
+    runner = LifecycleRunner(FakePsql(legacy_count=5))
+
+    result = _lc_start(tmp_path, repo, runner)
+
+    assert result.exit_code == 0, result.to_dict()
+    assert ("CONPORT_LEGACY_SHARED_STORE", "WARN") in {
+        (f["code"], f["severity"]) for f in _conport(result)["findings"]
+    }
+    up = next(c for c in runner.calls if "up" in c["cmd"] and "compose" in c["cmd"])
+    assert not [k for k in up["env"] if k.startswith("CONPORT_DB_")]
+    assert "ambient-fake" not in json.dumps(up["env"])
+    env_file = Path(up["cmd"][up["cmd"].index("--env-file") + 1])
+    text = env_file.read_text()
+    assert "CONPORT_DB_" not in text and "ambient-fake" not in text

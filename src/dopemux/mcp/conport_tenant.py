@@ -18,7 +18,9 @@ before any sidecar starts. The gate phase (``adopt_with_gate``: the sealed
 ``conport_migration_gate.py`` adopts the already-applied SQL, then verifies)
 needs this instance's conport container, so the lifecycle runs it after the
 container is up. A small state file beside the secrets records which phase
-is still owed, so an interrupted run resumes instead of re-provisioning.
+is still owed (``database``, ``database:<last applied migration>``, ``gate``),
+so an interrupted run resumes exactly where it stopped instead of
+re-provisioning or re-running non-idempotent SQL.
 
 Administration uses ``docker exec`` into ``dopemux-postgres-age`` as the
 bootstrap superuser, exactly like the script. SQL travels on psql's stdin,
@@ -37,7 +39,7 @@ import subprocess
 import tempfile
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Mapping, Optional, Sequence
+from typing import Any, Callable, Dict, List, Literal, Mapping, Optional, Sequence, Tuple
 from urllib.parse import quote
 
 from . import docker_runtime as dr
@@ -56,6 +58,7 @@ __all__ = [
     "legacy_workspace_aliases",
     "load_secrets",
     "mark_gate_done",
+    "os_error_detail",
     "migrations_dir",
     "pending_gate_credentials",
     "provision_database",
@@ -75,6 +78,8 @@ UNREACHABLE_EVIDENCE = "postgres unreachable"
 ENVRC_FILENAME = ".envrc.dopemux-mcp"
 SECRETS_FILENAME = "secrets.env"
 STATE_FILENAME = "conport-tenant.state"
+STATE_DATABASE = "database"
+STATE_GATE = "gate"
 CRED_KEYS = ("CONPORT_DB_NAME", "CONPORT_DB_USER", "CONPORT_DB_PASSWORD")
 GATE_SCRIPT = "migrations/conport_migration_gate.py"
 GATE_APPLY_ENV = "DPMX_CONPORT_MIGRATION_APPLY"
@@ -208,7 +213,10 @@ def load_secrets(path: Path) -> Optional[TenantCredentials]:
     path = Path(path)
     if not path.exists():
         return None
-    remedy = f"{path} is unusable; fix it or delete it so the tenant is resolved again"
+    remedy = (
+        f"{path} is unusable; restore the file from backup or ask the operator "
+        "(without it the existing tenant role cannot be reused)"
+    )
     try:
         text = path.read_text(encoding="utf-8")
     except OSError as exc:
@@ -237,13 +245,48 @@ def load_secrets(path: Path) -> Optional[TenantCredentials]:
     )
 
 
+def os_error_detail(exc: BaseException) -> str:
+    """Class, strerror and filename(s) of an OSError (a ValueError's message); never file contents."""
+    if isinstance(exc, OSError):
+        parts = [exc.__class__.__name__]
+        parts += [str(v) for v in (exc.strerror, exc.filename, exc.filename2) if v]
+        return ": ".join(parts)
+    return f"{exc.__class__.__name__}: {exc}"
+
+
 def _read_state(secrets_file: Path) -> str:
+    """The owed phase; "" when there is no state file. Unreadable is never "nothing owed"."""
+    path = _state_path(secrets_file)
     try:
-        return _state_path(secrets_file).read_text(encoding="utf-8").strip()
-    except (FileNotFoundError, NotADirectoryError):
+        return path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
         return ""
-    except OSError:
+    except OSError as exc:
+        raise TenantError(
+            "TENANT_STATE_UNREADABLE",
+            f"{path} cannot be read ({os_error_detail(exc)}); fix its permissions or restore "
+            "it, or ask the operator",
+        ) from None
+
+
+def _database_progress(state: str) -> Optional[str]:
+    """None unless the database phase is owed; "" before any migration, else the last applied."""
+    if state == STATE_DATABASE:
         return ""
+    if state.startswith(STATE_DATABASE + ":"):
+        return state[len(STATE_DATABASE) + 1 :]
+    return None
+
+
+def _remaining_migrations(applied_through: str) -> Tuple[str, ...]:
+    if not applied_through:
+        return PROVISION_MIGRATIONS
+    if applied_through not in PROVISION_MIGRATIONS:
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED",
+            f"recorded migration {applied_through!r} is not one this provisioner applies",
+        )
+    return PROVISION_MIGRATIONS[PROVISION_MIGRATIONS.index(applied_through) + 1 :]
 
 
 def _write_state(secrets_file: Path, state: str) -> None:
@@ -260,7 +303,7 @@ def pending_gate_credentials(
 ) -> Optional[TenantCredentials]:
     """Credentials whose migration gate is still owed (no psql call)."""
     path = secrets_path(project_id, secrets_root=secrets_root)
-    if _read_state(path) != "gate":
+    if _read_state(path) != STATE_GATE:
         return None
     creds = load_secrets(path)
     return replace(creds, gate_pending=True) if creds is not None else None
@@ -475,6 +518,8 @@ def provision_database(
     migrations_dir: Path,
     resume: bool = False,
     persist: Optional[Callable[[], None]] = None,
+    applied_through: str = "",
+    on_migration: Optional[Callable[[str], None]] = None,
 ) -> None:
     """The script's database phase: role, database, wall, extensions, schema, migrations, rows, checks.
 
@@ -482,6 +527,9 @@ def provision_database(
     ``ALTER ROLE ... PASSWORD``) unless ``resume`` says this run's own secrets
     file already holds its password. ``persist`` runs after that check and
     before ``CREATE ROLE``, so the password is on disk before Postgres has it.
+    When the schema already exists, only the migrations after
+    ``applied_through`` run (001/002 are not re-runnable); ``on_migration`` is
+    told each one as soon as it has applied, so progress survives a kill.
     """
     if not _SLUG_RE.match(slug):
         raise TenantError("CONPORT_TENANT_PROVISION_FAILED", f"unsafe tenant slug {slug!r}")
@@ -542,9 +590,14 @@ def provision_database(
     present = scalar(db, probe, "DPMX_PRESENT", "schema probe") == "true"
     if not present:
         run(db, as_role + "BEGIN;\n" + filtered_schema(schema_path) + "\nCOMMIT;\n", "schema")
-        for name in PROVISION_MIGRATIONS:
-            sql = (Path(migrations_dir) / f"{name}.sql").read_text(encoding="utf-8")
-            run(db, as_role + sql, f"migration {name}")
+        todo = PROVISION_MIGRATIONS
+    else:
+        todo = _remaining_migrations(applied_through)
+    for name in todo:
+        sql = (Path(migrations_dir) / f"{name}.sql").read_text(encoding="utf-8")
+        run(db, as_role + sql, f"migration {name}")
+        if on_migration is not None:
+            on_migration(name)
     # 5. canonical workspace rows (real FKs to users)
     run(db, as_role + _workspace_rows_sql(workspace_id, db), "workspace registration")
     # 6. verification
@@ -642,7 +695,13 @@ def _current(path: Path) -> Optional[TenantCredentials]:
     creds = load_secrets(path)
     if creds is None:
         return None
-    return replace(creds, gate_pending=_read_state(path) in {"gate", "database"})
+    state = _read_state(path)
+    owed = state == STATE_GATE or _database_progress(state) is not None
+    return replace(creds, gate_pending=owed)
+
+
+def _record_migration(path: Path) -> Callable[[str], None]:
+    return lambda name: _write_state(path, f"{STATE_DATABASE}:{name}")
 
 
 def _resume_locked(identity: Any, path: Path, psql: PsqlRunner) -> TenantCredentials:
@@ -652,6 +711,7 @@ def _resume_locked(identity: Any, path: Path, psql: PsqlRunner) -> TenantCredent
         raise TenantError("CONPORT_TENANT_SECRETS_INVALID", f"{path} vanished during provisioning")
     if not creds.db_name.startswith("conport_"):
         raise TenantError("CONPORT_TENANT_PROVISION_FAILED", f"{path} names no provisioned tenant")
+    progress = _database_progress(_read_state(path)) or ""
     try:
         provision_database(
             slug=creds.db_name[len("conport_") :],
@@ -661,10 +721,12 @@ def _resume_locked(identity: Any, path: Path, psql: PsqlRunner) -> TenantCredent
             schema_path=schema_path(),
             migrations_dir=migrations_dir(),
             resume=True,
+            applied_through=progress,
+            on_migration=_record_migration(path),
         )
     except TenantError as exc:
         raise _with_path(exc, path) from None
-    _write_state(path, "gate")
+    _write_state(path, STATE_GATE)
     return replace(creds, source="provisioned", gate_pending=True)
 
 
@@ -676,7 +738,7 @@ def _provision_locked(identity: Any, path: Path, psql: PsqlRunner) -> TenantCred
     )
 
     def persist() -> None:
-        _write_state(path, "database")  # before the secrets: a crash in between re-provisions
+        _write_state(path, STATE_DATABASE)  # before the secrets: a crash in between re-provisions
         write_secrets(path, creds)
 
     try:
@@ -688,10 +750,11 @@ def _provision_locked(identity: Any, path: Path, psql: PsqlRunner) -> TenantCred
             schema_path=schema_path(),
             migrations_dir=migrations_dir(),
             persist=persist,
+            on_migration=_record_migration(path),
         )
     except TenantError as exc:
         raise _with_path(exc, path) from None
-    _write_state(path, "gate")
+    _write_state(path, STATE_GATE)
     return creds
 
 
@@ -716,12 +779,12 @@ def resolve_tenant(
 
     current = _current(path)
     if current is not None:
-        if _read_state(path) != "database":
+        if _database_progress(_read_state(path)) is None:
             return current
         if not provision:
             return replace(current, evidence="tenant provisioning incomplete")
         with provision_lock(project_id):
-            if _read_state(path) != "database":
+            if _database_progress(_read_state(path)) is None:
                 return _current(path) or current
             return _resume_locked(identity, path, psql)
 
@@ -747,7 +810,7 @@ def resolve_tenant(
     with provision_lock(project_id):
         existing = _current(path)  # another launcher may have provisioned meanwhile
         if existing is not None:
-            if _read_state(path) == "database":
+            if _database_progress(_read_state(path)) is not None:
                 return _resume_locked(identity, path, psql)
             return existing
         return _provision_locked(identity, path, psql)

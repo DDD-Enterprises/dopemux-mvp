@@ -1944,7 +1944,8 @@ def _init_sidecars(
             say(f"[error]FAIL {exc.code}: {escape(exc.detail or exc.code)}[/error]")
             return False
         except (OSError, ValueError) as exc:
-            say(f"[error]FAIL CONPORT_TENANT_PROVISION_FAILED: {exc.__class__.__name__}[/error]")
+            detail = escape(ct.os_error_detail(exc))
+            say(f"[error]FAIL CONPORT_TENANT_PROVISION_FAILED: {detail}[/error]")
             return False
         detail = f" ({escape(creds.evidence)})" if creds.evidence else ""
         say(f"[info]ConPort tenant: {creds.source}{detail}[/info]")

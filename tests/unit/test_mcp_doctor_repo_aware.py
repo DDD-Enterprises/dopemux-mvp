@@ -973,35 +973,46 @@ def _tenant_psql(count: int, calls: list):
     return psql
 
 
-def test_doctor_warns_legacy_shared_store(tmp_path: Path):
-    # Sidecars only, an empty (fake) docker: no UNKNOWN that would mask the status.
+def _sidecar_doctor(tmp_path: Path, *, psql=None, skip_docker: bool = False, envrc_extra: str = ""):
+    """Sidecars only and an empty (fake) docker: no UNKNOWN that would mask the status."""
     catalog = _catalog()
     catalog["defaults"]["per_worktree"] = ["conport", "dope-memory"]
     del catalog["servers"]["task-orchestrator"]
-    repo = _write_fixture_repo(
-        tmp_path,
-        mcp_servers={
-            "conport": {"type": "sse", "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"},
-            "dope-memory": {
-                "type": "http",
-                "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
+    repo = tmp_path / "proj"
+    if not repo.exists():
+        repo = _write_fixture_repo(
+            tmp_path,
+            mcp_servers={
+                "conport": {"type": "sse", "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"},
+                "dope-memory": {
+                    "type": "http",
+                    "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
+                },
             },
-        },
-    )
-    calls: list = []
+        )
+    if envrc_extra:
+        envrc = repo / ".envrc.dopemux-mcp"
+        envrc.write_text(envrc.read_text() + envrc_extra)
     report = run_mcp_doctor(
         repo,
         catalog=catalog,
-        skip_docker=False,
+        skip_docker=skip_docker,
         skip_port_probe=True,
         process_env={},
         docker_runner=lambda *a, **k: SimpleNamespace(returncode=0, stdout="", stderr=""),
-        psql=_tenant_psql(3, calls),
+        psql=psql,
     )
-    codes = {(f["code"], f["service"]) for f in report.findings}
-    assert ("CONPORT_LEGACY_SHARED_STORE", "conport") in codes
+    return repo, report
+
+
+def test_doctor_warns_legacy_shared_store(tmp_path: Path):
+    calls: list = []
+    _repo, report = _sidecar_doctor(tmp_path, psql=_tenant_psql(3, calls))
+    # The finding itself is a WARN on conport (not inferred from the overall status).
+    assert ("CONPORT_LEGACY_SHARED_STORE", "conport", "WARN") in {
+        (f["code"], f["service"], f["severity"]) for f in report.findings
+    }
     finding = next(f for f in report.findings if f["code"] == "CONPORT_LEGACY_SHARED_STORE")
-    assert finding["severity"] == "WARN"
     assert "dopemux_knowledge_graph" in finding["message"] + finding["recommendation"]
     assert "M2" in finding["recommendation"]
     assert report.status == "PASS_WITH_WARNINGS"
@@ -1011,37 +1022,22 @@ def test_doctor_warns_legacy_shared_store(tmp_path: Path):
 def test_doctor_tenant_check_is_opt_in_and_read_only(tmp_path: Path):
     from dopemux.mcp import conport_tenant as ct
 
-    repo = _write_fixture_repo(tmp_path)
-    off = run_mcp_doctor(
-        repo, catalog=_catalog(), skip_docker=True, skip_port_probe=True, process_env={}
-    )
+    repo, off = _sidecar_doctor(tmp_path)
     assert not [f for f in off.findings if f["code"].startswith("CONPORT_")]
 
     calls: list = []
-    fresh = run_mcp_doctor(
-        repo,
-        catalog=_catalog(),
-        skip_docker=True,
-        skip_port_probe=True,
-        process_env={},
-        psql=_tenant_psql(0, calls),
-    )
+    _repo, fresh = _sidecar_doctor(tmp_path, psql=_tenant_psql(0, calls))
     # A start would provision; the doctor never does, and says nothing.
     assert not [f for f in fresh.findings if f["code"].startswith("CONPORT_")]
-    assert not any("CREATE " in sql for _db, sql in calls)
+    assert calls and not any("CREATE " in sql for _db, sql in calls)
 
-    (repo / ".envrc.dopemux-mcp").write_text(
-        (repo / ".envrc.dopemux-mcp").read_text()
-        + "export CONPORT_DB_NAME=conport_fake\nexport CONPORT_DB_USER=conport_fake\n"
-        + "export CONPORT_DB_PASSWORD=fake-doctor-pw\n"
-    )
-    adopted = run_mcp_doctor(
-        repo,
-        catalog=_catalog(),
-        skip_docker=True,
-        skip_port_probe=True,
-        process_env={},
+    _repo, adopted = _sidecar_doctor(
+        tmp_path,
         psql=_tenant_psql(0, []),
+        envrc_extra=(
+            "export CONPORT_DB_NAME=conport_fake\nexport CONPORT_DB_USER=conport_fake\n"
+            "export CONPORT_DB_PASSWORD=fake-doctor-pw\n"
+        ),
     )
     source = next(f for f in adopted.findings if f["code"] == "CONPORT_TENANT_SOURCE")
     assert source["severity"] == "INFO" and "legacy_envrc" in source["message"]
@@ -1049,6 +1045,27 @@ def test_doctor_tenant_check_is_opt_in_and_read_only(tmp_path: Path):
     identity = resolve_identity_view(repo)
     assert not ct.secrets_path(identity.project_id).exists()  # read-only: never copied
     assert "ConPort tenant: legacy_envrc" in format_human_summary(adopted)
+
+
+def test_doctor_skip_docker_skips_the_tenant_check(tmp_path: Path):
+    calls: list = []
+    _repo, report = _sidecar_doctor(tmp_path, psql=_tenant_psql(3, calls), skip_docker=True)
+    assert calls == []  # no `docker exec ... psql` when docker is skipped
+    finding = next(f for f in report.findings if f["code"] == "CONPORT_TENANT_UNVERIFIED")
+    assert finding["severity"] == "INFO" and finding["service"] == "conport"
+    assert "--skip-docker" in finding["recommendation"]
+    assert not [f for f in report.findings if f["code"] == "CONPORT_LEGACY_SHARED_STORE"]
+
+
+def test_doctor_unreachable_postgres_is_info_naming_the_shared_store_fallback(tmp_path: Path):
+    def down(database, sql):
+        return subprocess.CompletedProcess(["psql"], 2, "", "psql: error: connection refused")
+
+    _repo, report = _sidecar_doctor(tmp_path, psql=down)
+    finding = next(f for f in report.findings if f["code"] == "CONPORT_TENANT_UNVERIFIED")
+    assert finding["severity"] == "INFO"
+    assert "CONPORT_LEGACY_SHARED_STORE" in finding["recommendation"]
+    assert "shared" in finding["recommendation"]
 
 
 def test_doctor_cli_asks_for_the_conport_tenant_check(tmp_path: Path, monkeypatch):
