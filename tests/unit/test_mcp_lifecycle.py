@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
@@ -944,11 +945,121 @@ def test_stop_partial_releases_only_that_service_and_keeps_runtime_dir(tmp_path:
     assert runtime_dir.is_dir()
 
 
-def test_stop_dry_run_and_restart_keep_leases_and_runtime_dir(tmp_path: Path):
+def test_stop_dry_run_keeps_leases_and_runtime_dir(tmp_path: Path):
     repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
     _stop(tmp_path, repo, reg, docker_ps, services=None, dry_run=True)
     assert _lease_status(lease_path) == {"conport": "active", "dope-memory": "active"}
     assert runtime_dir.is_dir()
+
+
+def test_restart_never_releases_state(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import lifecycle as lc
+
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    released: list = []
+    monkeypatch.setattr(lc, "_release_stopped_state", lambda **kw: released.append(kw) or [])
+    stops: list = []
+
+    def cmd_runner(cmd, **kwargs):
+        stops.append(list(cmd))
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    result = run_lifecycle(
+        "restart",
+        repo=repo,
+        services=["conport"],
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker_ps,
+        cmd_runner=cmd_runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert result.operation == "restart"
+    assert any(c[:2] == ["docker", "stop"] for c in stops), stops  # the stop half really ran
+    assert released == []
+    assert _lease_status(lease_path)["dope-memory"] == "active"
+
+
+def test_stop_runs_under_the_instance_lock_and_releases_state_inside_it(tmp_path: Path, monkeypatch):
+    import contextlib
+
+    from dopemux.mcp import lifecycle as lc
+
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    events: list = []
+    held = {"now": False}
+    lock_dirs: list = []
+
+    @contextlib.contextmanager
+    def spy_lock(rt):
+        lock_dirs.append(Path(rt))
+        held["now"] = True
+        events.append("lock")
+        try:
+            yield
+        finally:
+            held["now"] = False
+            events.append("unlock")
+
+    real_release = lc._release_stopped_state
+
+    def spy_release(**kw):
+        events.append(f"release(held={held['now']})")
+        return real_release(**kw)
+
+    monkeypatch.setattr(lc, "instance_lock", spy_lock)
+    monkeypatch.setattr(lc, "_release_stopped_state", spy_release)
+    stop_calls: list = []
+
+    def cmd_runner(cmd, **kwargs):
+        stop_calls.append(f"docker(held={held['now']})")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    result = run_lifecycle(
+        "stop",
+        repo=repo,
+        services=None,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker_ps,
+        cmd_runner=cmd_runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert result.status == "PASS", result.to_dict()
+    assert lock_dirs == [runtime_dir]
+    assert events == ["lock", "release(held=True)", "unlock"]
+    assert stop_calls and all(c == "docker(held=True)" for c in stop_calls)
+
+
+def test_stop_dry_run_takes_no_lock(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import lifecycle as lc
+
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+
+    def no_lock(rt):
+        raise AssertionError("dry-run must not lock")
+
+    monkeypatch.setattr(lc, "instance_lock", no_lock)
+    _stop(tmp_path, repo, reg, docker_ps, services=None, dry_run=True)
+
+
+def test_full_stop_with_a_live_launcher_keeps_the_runtime_dir_and_warns(tmp_path: Path):
+    from dopemux.mcp import reap
+
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    reap.attach(runtime_dir)  # this process is a live launcher
+    result, _ = _stop(tmp_path, repo, reg, docker_ps, services=None)
+    assert result.status == "PASS", result.to_dict()
+    assert runtime_dir.is_dir() and (runtime_dir / "attached" / str(os.getpid())).is_file()
+    assert _lease_status(lease_path) == {"conport": "released", "dope-memory": "released"}
+    warn = [w for w in result.warnings if w["code"] == "RUNTIME_DIR_KEPT_LIVE_LAUNCHERS"]
+    assert len(warn) == 1 and warn[0]["severity"] == "WARN" and "1 launcher" in warn[0]["message"]
 
 
 def test_stop_failure_keeps_leases_and_runtime_dir(tmp_path: Path):

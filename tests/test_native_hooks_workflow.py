@@ -334,7 +334,16 @@ def test_session_end_calls_reap_unthrottled(tmp_path, monkeypatch):
 
     handle_event("SessionEnd", {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}})
 
-    assert calls == [{"throttle_s": 0}]
+    # SessionEnd's hook budget is short: one candidate, docker bounds, a 45 s deadline
+    assert calls == [
+        {
+            "throttle_s": 0,
+            "max_candidates": 1,
+            "deadline_s": 45,
+            "stop_time_s": 3,
+            "cmd_timeout_s": 10.0,
+        }
+    ]
 
 
 def test_reap_failure_does_not_change_hook_decision(tmp_path, monkeypatch):
@@ -363,3 +372,14 @@ def test_reap_failure_does_not_change_hook_decision(tmp_path, monkeypatch):
     state.record_checkpoint("brief", True, message="brief approved")
     kernel.save(state)
     assert handle_event("Stop", payload).get("decision") != "block"
+
+
+def test_settings_gives_session_end_a_60_second_timeout():
+    from pathlib import Path
+
+    settings = json.loads(
+        (Path(__file__).resolve().parents[1] / ".claude" / "settings.json").read_text(encoding="utf-8")
+    )
+    handlers = [h for group in settings["hooks"]["SessionEnd"] for h in group["hooks"]]
+    assert [h.get("timeout") for h in handlers] == [60]
+    assert all(h["type"] == "command" for h in handlers)

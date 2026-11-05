@@ -20,6 +20,12 @@ Safety rules (all fail closed):
 * Containers are stopped and removed by id, never through ``docker compose`` and
   never with ``rm -f``. A container that fails to stop keeps its leases, registry
   entries and runtime dir.
+* Registry entries and leases are changed only for the services whose containers
+  this reap stopped and removed (the ``dopemux.service`` label). The task-orchestrator
+  is a ``project``-scope container, never a candidate, so it is never marked stopped.
+  A pair whose worktree is gone and whose containers are already gone (a reap killed
+  after ``docker rm``) is cleaned by a state-only candidate (no container ids).
+* Automatic runs are bounded (candidate cap, ``docker stop --time``, command timeout).
 * Automatic reaping (:func:`maybe_reap`: hooks and launcher) honours a kill switch:
   the file ``<runtime root>/reap.disabled`` or ``DOPEMUX_MCP_REAP`` set to
   ``0``/``off``/``false``. The explicit CLI ``dopemux mcp reap --apply`` ignores it.
@@ -43,7 +49,8 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Tuple
 from . import docker_runtime as dr
 from .docker_inspect import DockerContainerInfo, inspect_all_managed_containers
 from .docker_runtime import run_cmd
-from .locks import _runtime_dir, instance_lock, locked_reload_and_save
+from .lifecycle import runtime_dir_for_paths
+from .locks import _mkdir_private, _runtime_dir, instance_lock, save_state_locked
 from .port_leases import PortLeaseRegistry, default_lease_registry_path
 from .runtime_registry import REGISTRY_ENV, RuntimeRegistry, default_registry_path
 
@@ -59,7 +66,6 @@ __all__ = [
     "maybe_reap",
     "plan_reap",
     "reaping_disabled_reason",
-    "save_state_locked",
     "runtime_registry_path",
 ]
 
@@ -86,7 +92,7 @@ def _utc_stamp() -> str:
 def attach(runtime_dir: Path) -> Path:
     """Write ``<runtime_dir>/attached/<pid>`` (ISO-8601 UTC timestamp) for this launcher."""
     record = Path(runtime_dir) / ATTACHED_DIR / str(os.getpid())
-    record.parent.mkdir(parents=True, exist_ok=True)
+    _mkdir_private(record.parent)
     record.write_text(f"{_utc_stamp()}\n", encoding="utf-8")
     return record
 
@@ -187,6 +193,12 @@ class ReapCandidate:
     runtime_dir: Path
     container_ids: List[str] = field(default_factory=list)
     reason: Reason = "worktree_missing"
+    services: List[str] = field(default_factory=list)  # dopemux.service of those containers
+
+    @property
+    def state_only(self) -> bool:
+        """No container left: only leases, registry entries and the runtime dir."""
+        return not self.container_ids
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -196,6 +208,7 @@ class ReapCandidate:
             "runtime_dir": str(self.runtime_dir),
             "container_ids": list(self.container_ids),
             "reason": self.reason,
+            "services": list(self.services),
         }
 
 
@@ -204,11 +217,19 @@ class ReapReport:
     reaped: List[ReapCandidate] = field(default_factory=list)
     errors: List[str] = field(default_factory=list)
     skipped: List[ReapCandidate] = field(default_factory=list)
+    skip_reasons: List[str] = field(default_factory=list)  # parallel to ``skipped``
+
+    def skip(self, cand: ReapCandidate, reason: str) -> None:
+        """``reason``: ``attached`` (a launcher attached first), ``cap`` or ``deadline``."""
+        self.skipped.append(cand)
+        self.skip_reasons.append(reason)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "reaped": [c.to_dict() for c in self.reaped],
-            "skipped": [c.to_dict() for c in self.skipped],
+            "skipped": [
+                {**c.to_dict(), "skip_reason": r} for c, r in zip(self.skipped, self.skip_reasons)
+            ],
             "errors": list(self.errors),
         }
 
@@ -220,12 +241,16 @@ def _worktree_gone(root: str, exists: Callable[[Path], bool]) -> bool:
         return False
 
 
+_ORCHESTRATOR = "task-orchestrator"
+
+
 def _entry_for(
     registry: RuntimeRegistry, project_id: str, worktree_hash: str
-) -> Optional[Tuple[str, str]]:
-    """``(worktree_root, project_root)`` of the pair's registry entry, or None."""
+) -> Optional[Tuple[str, str, List[Dict[str, Any]]]]:
+    """``(worktree_root, project_root, entries)`` of the pair's worktree-scope entries."""
     roots = set()
     project_root = ""
+    entries: List[Dict[str, Any]] = []
     for inst in registry.instances():
         if (
             inst.get("project_id") == project_id
@@ -235,9 +260,10 @@ def _entry_for(
         ):
             roots.add(str(inst["worktree_root"]))
             project_root = str(inst.get("project_root") or inst["worktree_root"])
+            entries.append(inst)
     if len(roots) != 1:
         return None
-    return next(iter(roots)), project_root
+    return next(iter(roots)), project_root, entries
 
 
 def _last_detach_age(runtime_dir: Path, now: float) -> Optional[float]:
@@ -247,6 +273,21 @@ def _last_detach_age(runtime_dir: Path, now: float) -> Optional[float]:
         return None
 
 
+def _has_active_leases(
+    leases: Optional[PortLeaseRegistry], worktree_root: str, project_id: str
+) -> bool:
+    if leases is None or leases.parse_status != "OK":
+        return False
+    root = worktree_root.rstrip("/")
+    return any(
+        str(lease.get("worktree_root") or "").rstrip("/") == root
+        and (lease.get("scope") or _REAPABLE_SCOPE) == _REAPABLE_SCOPE
+        and lease.get("service") != _ORCHESTRATOR
+        and (not lease.get("project_id") or lease["project_id"] == project_id)
+        for lease in leases.active_leases()
+    )
+
+
 def plan_reap(
     *,
     registry: RuntimeRegistry,
@@ -254,16 +295,26 @@ def plan_reap(
     now: float,
     idle_s: float = 1200,
     exists: Callable[[Path], bool] = Path.exists,
+    lease_registry: Optional[PortLeaseRegistry] = None,
 ) -> List[ReapCandidate]:
-    """Instances to reap. Read-only; an unreadable registry yields ``[]``."""
+    """Instances to reap. Read-only; an unreadable registry yields ``[]``.
+
+    Besides container candidates, a registry pair whose worktree is gone and which
+    has no container at all but still has unfinished state (a running entry, active
+    leases or a runtime dir) yields a state-only candidate, so a reap that died
+    after ``docker rm`` is finished by the next run.
+    """
     if registry.parse_status != "OK":
         return []
 
-    groups: Dict[Tuple[str, str], List[str]] = {}
+    groups: Dict[Tuple[str, str], List[DockerContainerInfo]] = {}
+    seen_pairs = set()
     for c in containers:
         labels = c.labels or {}
         project_id = labels.get("dopemux.project_id") or ""
         worktree_hash = labels.get("dopemux.worktree_hash") or ""
+        if labels.get(dr.LABEL_MANAGED) == "true" and project_id and worktree_hash:
+            seen_pairs.add((project_id, worktree_hash))
         if (
             labels.get(dr.LABEL_MANAGED) != "true"
             or labels.get("dopemux.scope") != _REAPABLE_SCOPE
@@ -272,16 +323,17 @@ def plan_reap(
             or not c.id
         ):
             continue
-        groups.setdefault((project_id, worktree_hash), []).append(c.id)
+        groups.setdefault((project_id, worktree_hash), []).append(c)
 
     candidates: List[ReapCandidate] = []
-    for (project_id, worktree_hash), ids in groups.items():
+    for (project_id, worktree_hash), members in groups.items():
         entry = _entry_for(registry, project_id, worktree_hash)
         if entry is None:
             continue
-        worktree_root, project_root = entry
-        slug = dr.project_slug(Path(project_root).name)
-        runtime_dir = registry.path.parent / f"{slug}-{worktree_hash}"
+        worktree_root, project_root, _ = entry
+        runtime_dir = runtime_dir_for_paths(
+            project_root=project_root, worktree_hash=worktree_hash, registry_path=registry.path
+        )
         if live_attachments(runtime_dir, prune=False) > 0:
             continue
         reason: Optional[Reason] = None
@@ -299,14 +351,70 @@ def plan_reap(
                 worktree_hash=worktree_hash,
                 worktree_root=worktree_root,
                 runtime_dir=runtime_dir,
-                container_ids=sorted(ids),
+                container_ids=sorted(c.id for c in members),
                 reason=reason,
+                services=sorted(
+                    {(c.labels or {}).get("dopemux.service") or "" for c in members} - {""}
+                ),
             )
         )
+
+    pairs = {
+        (str(i.get("project_id") or ""), str(i.get("worktree_hash") or ""))
+        for i in registry.instances()
+        if i.get("scope") == _REAPABLE_SCOPE
+    }
+    for project_id, worktree_hash in sorted(pairs):
+        if (
+            not project_id
+            or not _SAFE_HASH.fullmatch(worktree_hash)
+            or (project_id, worktree_hash) in seen_pairs
+        ):
+            continue
+        entry = _entry_for(registry, project_id, worktree_hash)
+        if entry is None:
+            continue
+        worktree_root, project_root, entries = entry
+        if not _worktree_gone(worktree_root, exists):
+            continue
+        runtime_dir = runtime_dir_for_paths(
+            project_root=project_root, worktree_hash=worktree_hash, registry_path=registry.path
+        )
+        if live_attachments(runtime_dir, prune=False) > 0:
+            continue
+        unfinished = (
+            any(
+                e.get("status") != "stopped" and e.get("service") != _ORCHESTRATOR
+                for e in entries
+            )
+            or _has_active_leases(lease_registry, worktree_root, project_id)
+            or runtime_dir.exists()
+        )
+        if unfinished:
+            candidates.append(
+                ReapCandidate(
+                    project_id=project_id,
+                    worktree_hash=worktree_hash,
+                    worktree_root=worktree_root,
+                    runtime_dir=runtime_dir,
+                    container_ids=[],
+                    reason="worktree_missing",
+                    services=[],
+                )
+            )
     return candidates
 
 
 # --- apply ------------------------------------------------------------------------
+
+
+def _owned_by(service: Optional[str], cand: ReapCandidate) -> bool:
+    """Whether this reap is responsible for ``service`` of the candidate's pair."""
+    if not service:
+        return False
+    if cand.state_only:
+        return service != _ORCHESTRATOR  # never the reserved orchestrator
+    return service in cand.services
 
 
 def _release_leases(reg: PortLeaseRegistry, cand: ReapCandidate) -> None:
@@ -320,9 +428,11 @@ def _release_leases(reg: PortLeaseRegistry, cand: ReapCandidate) -> None:
             continue
         if lease.get("project_id") and lease["project_id"] != cand.project_id:
             continue
+        if not _owned_by(lease.get("service"), cand):
+            continue
         if lease.get("lease_id"):
             reg.mark_released(lease_id=lease["lease_id"])
-        elif lease.get("service"):
+        else:
             reg.mark_released(service=lease["service"], worktree_root=cand.worktree_root)
 
 
@@ -334,30 +444,13 @@ def _mark_instances_stopped(reg: RuntimeRegistry, cand: ReapCandidate) -> None:
             if inst.get("project_id") == cand.project_id
             and inst.get("worktree_hash") == cand.worktree_hash
             and inst.get("scope") == _REAPABLE_SCOPE
-            and inst.get("service")
+            and _owned_by(inst.get("service"), cand)
         }
     )
     for service in services:
         reg.mark_stopped(
             project_id=cand.project_id, service=service, worktree_root=cand.worktree_root
         )
-
-
-def save_state_locked(
-    registry_cls: Any, path: Path, mutate: Callable[[Any], Any]
-) -> Optional[str]:
-    """Locked reload-mutate-save; never replaces a corrupt file. Returns an error or None."""
-    if not path.exists():
-        return None
-    if registry_cls.load(path).parse_status == "ERROR":
-        return f"{path} is unreadable; left as is"
-    try:
-        fresh = locked_reload_and_save(registry_cls, path, mutate)
-    except Exception as exc:  # noqa: BLE001
-        return f"{path}: {exc}"
-    if getattr(fresh, "recovered_from_corrupt", False):
-        return f"{path} became unreadable during the update"
-    return None
 
 
 def _runtime_dir_is_ours(cand: ReapCandidate, registry_path: Path) -> bool:
@@ -369,15 +462,34 @@ def _runtime_dir_is_ours(cand: ReapCandidate, registry_path: Path) -> bool:
     )
 
 
-def _stop_and_remove(cand: ReapCandidate, runner: Callable[..., Any]) -> List[str]:
+def _already_gone(result: Any) -> bool:
+    return "no such container" in (result.stderr or "").lower()
+
+
+def _stop_and_remove(
+    cand: ReapCandidate,
+    runner: Callable[..., Any],
+    *,
+    stop_time_s: Optional[int],
+    cmd_timeout_s: Optional[float],
+    out_of_time: Callable[[], bool] = lambda: False,
+) -> List[str]:
+    kwargs: Dict[str, Any] = {} if cmd_timeout_s is None else {"timeout": cmd_timeout_s}
+    stop_cmd = ["docker", "stop"] + ([] if stop_time_s is None else ["--time", str(stop_time_s)])
     errors: List[str] = []
     for cid in cand.container_ids:
-        stop = runner(["docker", "stop", cid])
-        if stop.exit_code != 0:
+        if out_of_time():
+            errors.append(f"{cid}: deadline reached before docker call; resumes next run")
+            break
+        stop = runner([*stop_cmd, cid], **kwargs)
+        if stop.exit_code != 0 and not _already_gone(stop):
             errors.append(f"{cid}: docker stop failed ({stop.exit_code}): {stop.stderr.strip()[:200]}")
             continue  # never remove (let alone force-remove) what did not stop
-        rm = runner(["docker", "rm", cid])
-        if rm.exit_code != 0:
+        if out_of_time():
+            errors.append(f"{cid}: deadline reached before docker rm; resumes next run")
+            break
+        rm = runner(["docker", "rm", cid], **kwargs)
+        if rm.exit_code != 0 and not _already_gone(rm):
             errors.append(f"{cid}: docker rm failed ({rm.exit_code}): {rm.stderr.strip()[:200]}")
     return errors
 
@@ -388,6 +500,10 @@ def _reap_one(
     lease_path: Path,
     registry_path: Path,
     report: ReapReport,
+    *,
+    stop_time_s: Optional[int],
+    cmd_timeout_s: Optional[float],
+    out_of_time: Callable[[], bool] = lambda: False,
 ) -> None:
     label = f"{cand.project_id}/{cand.worktree_hash}"
     if not _runtime_dir_is_ours(cand, registry_path):
@@ -395,9 +511,15 @@ def _reap_one(
         return
     with instance_lock(cand.runtime_dir):
         if live_attachments(cand.runtime_dir) > 0:
-            report.skipped.append(cand)
+            report.skip(cand, "attached")
             return
-        docker_errors = _stop_and_remove(cand, runner)
+        docker_errors = _stop_and_remove(
+            cand,
+            runner,
+            stop_time_s=stop_time_s,
+            cmd_timeout_s=cmd_timeout_s,
+            out_of_time=out_of_time,
+        )
         if docker_errors:
             report.errors.extend(f"{label}: {e}" for e in docker_errors)
             return  # containers may still run: keep leases, registry entries and dir
@@ -424,14 +546,48 @@ def apply_reap(
     runner: Callable[..., Any] = run_cmd,
     lease_path: Optional[Path] = None,
     registry_path: Optional[Path] = None,
+    max_candidates: Optional[int] = None,
+    stop_time_s: Optional[int] = None,
+    cmd_timeout_s: Optional[float] = None,
+    deadline: Optional[float] = None,
+    clock: Callable[[], float] = time.monotonic,
 ) -> ReapReport:
-    """Reap each candidate under its instance lock; failures are recorded, never raised."""
+    """Reap each candidate under its instance lock; failures are recorded, never raised.
+
+    ``max_candidates`` caps the work of one call, ``stop_time_s`` becomes
+    ``docker stop --time N``, ``cmd_timeout_s`` is the per-command timeout and
+    ``deadline`` an absolute ``clock()`` (monotonic) value: once the next docker call
+    could not finish before it, the remaining candidates are reported under
+    ``skipped`` (reasons ``cap`` / ``deadline``) and wait for the next run. All
+    default to unbounded (the explicit CLI).
+    """
     leases = Path(lease_path) if lease_path is not None else default_lease_registry_path()
     registry = Path(registry_path) if registry_path is not None else runtime_registry_path()
     report = ReapReport()
-    for cand in candidates:
+    limit = len(candidates) if max_candidates is None else max(0, max_candidates)
+    reserve = cmd_timeout_s or 0.0
+
+    def out_of_time() -> bool:
+        return deadline is not None and clock() + reserve > deadline
+
+    for index, cand in enumerate(candidates):
+        if index >= limit:
+            report.skip(cand, "cap")
+            continue
+        if out_of_time():
+            report.skip(cand, "deadline")
+            continue
         try:
-            _reap_one(cand, runner, leases, registry, report)
+            _reap_one(
+                cand,
+                runner,
+                leases,
+                registry,
+                report,
+                stop_time_s=stop_time_s,
+                cmd_timeout_s=cmd_timeout_s,
+                out_of_time=out_of_time,
+            )
         except Exception as exc:  # noqa: BLE001 - one bad candidate must not stop the rest
             report.errors.append(f"{cand.project_id}/{cand.worktree_hash}: {exc}")
     return report
@@ -448,16 +604,24 @@ def maybe_reap(
     idle_s: float = 1200,
     inspector: Optional[Callable[..., Any]] = None,
     runner: Optional[Callable[..., Any]] = None,
+    max_candidates: Optional[int] = 3,
+    stop_time_s: Optional[int] = 5,
+    cmd_timeout_s: Optional[float] = 20.0,
+    deadline_s: Optional[float] = None,
+    monotonic: Callable[[], float] = time.monotonic,
 ) -> Optional[ReapReport]:
-    """Throttled plan-and-apply for hooks and launchers; ``None`` when it did not run.
+    """Throttled, bounded plan-and-apply for hooks and launchers; ``None`` if it did not run.
 
     Does nothing when automatic reaping is disabled (see module docstring) or when
     ``state_file`` (default ``<runtime root>/reap.last``) was touched within
     ``throttle_s`` seconds. Docker is only asked when the runtime registry holds
-    instances; an unreachable docker reaps nothing.
+    instances; an unreachable docker reaps nothing. Defaults suit hooks: at most 3
+    candidates, ``docker stop --time 5``, 20 s per command (a launcher passes 1 / 3 /
+    10 because it runs inside Claude's connect budget; SessionEnd adds a 45 s deadline).
     """
     if reaping_disabled_reason() is not None:
         return None
+    deadline = None if deadline_s is None else monotonic() + deadline_s
     state = Path(state_file) if state_file is not None else _runtime_dir() / STATE_FILENAME
     current = now()
     if throttle_s > 0:
@@ -483,8 +647,20 @@ def maybe_reap(
         report.errors.append(f"docker unavailable: {docker.error}")
         return report
     candidates = plan_reap(
-        registry=registry, containers=docker.containers, now=current, idle_s=idle_s
+        registry=registry,
+        containers=docker.containers,
+        now=current,
+        idle_s=idle_s,
+        lease_registry=PortLeaseRegistry.load(default_lease_registry_path()),
     )
     if not candidates:
         return report
-    return apply_reap(candidates, runner=runner or run_cmd)
+    return apply_reap(
+        candidates,
+        runner=runner or run_cmd,
+        max_candidates=max_candidates,
+        stop_time_s=stop_time_s,
+        cmd_timeout_s=cmd_timeout_s,
+        deadline=deadline,
+        clock=monotonic,
+    )

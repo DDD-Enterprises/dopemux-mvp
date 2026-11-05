@@ -461,9 +461,20 @@ def _load_catalog() -> Dict[str, Any]:
         raise LaunchError("LAUNCH_CATALOG_INVALID", exc.format_message()) from None
 
 
+# A launcher runs inside Claude's connect budget: one candidate, short docker timeouts.
+LAUNCH_REAP_LIMITS: Dict[str, Any] = {
+    "max_candidates": 1,
+    "stop_time_s": 3,
+    "cmd_timeout_s": 10.0,
+}
+
+
 def _run_reaper(reaper: Optional[Callable[[], Any]]) -> None:
     try:
-        (reaper or maybe_reap)()
+        if reaper is not None:
+            reaper()
+        else:
+            maybe_reap(**LAUNCH_REAP_LIMITS)
     except Exception as exc:  # noqa: BLE001 - cleanup must never block a launch
         print(f"reap skipped: {exc}", file=sys.stderr, flush=True)
 
@@ -496,7 +507,7 @@ def launch(
     """Run the launcher for ``service``; returns the process exit code.
 
     ``env`` defaults to ``os.environ`` as it is when called. ``reaper`` defaults to
-    ``reap.maybe_reap`` (throttled, kill-switchable); it runs after this launcher's
+    ``reap.maybe_reap`` (throttled, kill-switchable, capped at one candidate); it runs after this launcher's
     attach record exists, so its own instance is never reaped, and outside the
     instance lock. A reap failure never refuses a launch.
     """
@@ -510,7 +521,12 @@ def launch(
             target = build_target(
                 launch_root, service, catalog=_load_catalog(), registry_path=registry_path
             )
-            record = attach(target.runtime_dir)
+            # D8: the attach record is written under the instance lock, so a reap
+            # that holds the lock sees either the record or none of this launch.
+            # Released before the reaper (the reap takes the lock itself) and
+            # before ensure_backend (which takes it again; it is not re-entrant).
+            with instance_lock(target.runtime_dir):
+                record = attach(target.runtime_dir)
             _run_reaper(reaper)
             wait_s = _wait_seconds(env)
             if service == TO_SERVICE:

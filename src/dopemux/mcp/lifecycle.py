@@ -19,10 +19,16 @@ from . import docker_inspect as di
 from . import docker_runtime as dr
 from .doctor import DoctorReport, run_mcp_doctor
 from .envrc import load_envrc, merge_envrc_into_environ, safe_port_int
-from .locks import locked_reload_and_save, provision_lock, registry_lock, reserved_port_lock
+from .locks import (
+    instance_lock,
+    locked_reload_and_save,
+    provision_lock,
+    registry_lock,
+    reserved_port_lock,
+    save_state_locked,
+)
 from .port_diagnostics import instance_id_for_path
 from .port_leases import PortLeaseRegistry, default_lease_registry_path
-from .reap import save_state_locked
 from .runtime_registry import (
     RegistryError,
     RuntimeRegistry,
@@ -426,6 +432,15 @@ def _resolve_ports(
     return ports
 
 
+def runtime_dir_for_paths(
+    *, project_root: str | Path, worktree_hash: str, registry_path: Optional[Path] = None
+) -> Path:
+    """The one rule for a worktree's runtime dir: ``<registry dir>/<slug>-<worktree_hash>``."""
+    slug = dr.project_slug(Path(project_root).name)
+    base = registry_path or default_registry_path()
+    return base.parent / f"{slug}-{worktree_hash}"
+
+
 def runtime_dir_for(
     identity: ProjectIdentityView, *, registry_path: Optional[Path] = None
 ) -> Path:
@@ -437,10 +452,10 @@ def runtime_dir_for(
     project_root = identity.project_root or worktree_root
     if not worktree_root or not project_root:
         raise ValueError("identity has no worktree_root/project_root")
-    slug = dr.project_slug(Path(project_root).name)
     worktree_hash = identity.worktree_hash or instance_id_for_path(worktree_root)
-    base = registry_path or default_registry_path()
-    return base.parent / f"{slug}-{worktree_hash}"
+    return runtime_dir_for_paths(
+        project_root=project_root, worktree_hash=worktree_hash, registry_path=registry_path
+    )
 
 
 def _port_to_expected_service(
@@ -1286,7 +1301,7 @@ def run_lifecycle(
         )
 
     if op == "stop":
-        return _stop_services(
+        stop_kw: Dict[str, Any] = dict(
             release_state=True,
             full_stop=not services,
             selected=selected,
@@ -1306,7 +1321,17 @@ def run_lifecycle(
             catalog=catalog,
             slug=slug,
             worktree_hash=worktree_hash,
+            runtime_dir=runtime_dir_for_paths(
+                project_root=project_root, worktree_hash=worktree_hash, registry_path=reg_path
+            ),
         )
+        if dry_run:
+            return _stop_services(**stop_kw)
+        # D8/D7: stop, lease release and runtime-dir removal are one step under the
+        # instance lock (instance outside, registry inside), so a launcher mid-start
+        # (it attaches under the same lock) is never cut off.
+        with instance_lock(stop_kw["runtime_dir"]):
+            return _stop_services(**stop_kw)
 
     if op == "restart":
         stop_res = _stop_services(
@@ -2344,12 +2369,9 @@ def _stop_services(**kw: Any) -> LifecycleResult:
     if not dry_run and not fail and kw.get("release_state", False):
         warnings = _release_stopped_state(
             selected=selected,
-            project_id=project_id,
             worktree_root=worktree_root,
             full_stop=bool(kw.get("full_stop")),
-            reg_path=reg_path,
-            slug=kw["slug"],
-            worktree_hash=kw["worktree_hash"],
+            runtime_dir=Path(kw["runtime_dir"]),
         )
 
     return LifecycleResult(
@@ -2368,25 +2390,23 @@ def _stop_services(**kw: Any) -> LifecycleResult:
 def _release_stopped_state(
     *,
     selected: Sequence[str],
-    project_id: str,
     worktree_root: str,
     full_stop: bool,
-    reg_path: Path,
-    slug: str,
-    worktree_hash: str,
+    runtime_dir: Path,
 ) -> List[Dict[str, Any]]:
-    """After a successful ``stop``: release the stopped services' port leases.
+    """After a successful ``stop`` (called under the instance lock): release leases.
 
-    A full stop (no ``--services``) also removes the worktree's runtime dir; a
-    partial one keeps it. Problems become warnings: the containers are already
-    stopped, so this bookkeeping never fails the stop.
+    A full stop (no ``--services``) also removes the worktree's runtime dir unless
+    launchers are still attached to it; a partial one keeps it. Problems become
+    warnings: the containers are already stopped, so this bookkeeping never fails
+    the stop.
     """
+    from .reap import live_attachments  # reap imports this module
+
     warnings: List[Dict[str, Any]] = []
 
-    def warn(message: str) -> None:
-        warnings.append(
-            {"code": "STOP_STATE_RELEASE_INCOMPLETE", "severity": "WARN", "message": message, "service": None}
-        )
+    def warn(code: str, message: str) -> None:
+        warnings.append({"code": code, "severity": "WARN", "message": message, "service": None})
 
     def release(leases: PortLeaseRegistry) -> None:
         for svc in selected:
@@ -2394,15 +2414,24 @@ def _release_stopped_state(
 
     error = save_state_locked(PortLeaseRegistry, default_lease_registry_path(), release)
     if error:
-        warn(f"port leases not released: {error}")
+        warn("STOP_STATE_RELEASE_INCOMPLETE", f"port leases not released: {error}")
     if full_stop:
-        runtime_dir = Path(reg_path).parent / f"{slug}-{worktree_hash}"
+        live = live_attachments(runtime_dir)
+        if live > 0:
+            warn(
+                "RUNTIME_DIR_KEPT_LIVE_LAUNCHERS",
+                f"{live} launcher(s) still attached; kept runtime dir {runtime_dir}",
+            )
+            return warnings
         try:
             shutil.rmtree(runtime_dir)
         except FileNotFoundError:
             pass
         except OSError as exc:
-            warn(f"runtime dir {runtime_dir} not removed: {exc}")
+            warn(
+                "STOP_STATE_RELEASE_INCOMPLETE",
+                f"runtime dir {runtime_dir} not removed: {exc}",
+            )
     return warnings
 
 

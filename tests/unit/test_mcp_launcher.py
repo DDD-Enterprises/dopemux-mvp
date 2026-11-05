@@ -486,9 +486,11 @@ def test_launch_reaps_after_attach_and_before_ensure_backend(tmp_path: Path, mon
     monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
     attached_dir = launcher.build_target(repo, "conport", catalog=CATALOG).runtime_dir / "attached"
     order: List[str] = []
+    limits: List[dict] = []
 
-    def fake_reap() -> None:
+    def fake_reap(**kwargs) -> None:
         order.append(f"reap attached={(attached_dir / str(os.getpid())).is_file()}")
+        limits.append(kwargs)
 
     def fake_ensure(target, **kw):
         order.append("ensure_backend")
@@ -499,6 +501,46 @@ def test_launch_reaps_after_attach_and_before_ensure_backend(tmp_path: Path, mon
     monkeypatch.setattr(launcher, "run_proxy", lambda backend: 0)
     assert launcher.launch("conport", env={}) == 0
     assert order == ["reap attached=True", "ensure_backend"]
+    # launcher-style bounds: it runs inside Claude's connect budget
+    assert limits == [{"max_candidates": 1, "stop_time_s": 3, "cmd_timeout_s": 10.0}]
+
+
+def test_launch_attaches_under_the_instance_lock_and_releases_it_before_reaping(
+    tmp_path: Path, monkeypatch, registry
+):
+    import contextlib
+
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
+    events: List[str] = []
+    held = {"now": False}
+
+    @contextlib.contextmanager
+    def spy_lock(runtime_dir):
+        events.append("lock")
+        held["now"] = True
+        try:
+            yield
+        finally:
+            held["now"] = False
+            events.append("unlock")
+
+    real_attach = launcher.attach
+
+    def spy_attach(runtime_dir):
+        events.append(f"attach(held={held['now']})")
+        return real_attach(runtime_dir)
+
+    monkeypatch.setattr(launcher, "instance_lock", spy_lock)
+    monkeypatch.setattr(launcher, "attach", spy_attach)
+    monkeypatch.setattr(launcher, "maybe_reap", lambda **kw: events.append(f"reap(held={held['now']})"))
+    monkeypatch.setattr(
+        launcher, "ensure_backend", lambda target, **kw: events.append("ensure") or BackendSpec("u", "sse", "conport")
+    )
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend: 0)
+    assert launcher.launch("conport", env={}) == 0
+    assert events == ["lock", "attach(held=True)", "unlock", "reap(held=False)", "ensure"]
 
 
 def test_reap_failure_never_refuses_a_launch(tmp_path: Path, monkeypatch, registry, capsys):
@@ -506,7 +548,7 @@ def test_reap_failure_never_refuses_a_launch(tmp_path: Path, monkeypatch, regist
     monkeypatch.chdir(repo)
     monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
 
-    def boom() -> None:
+    def boom(**kwargs) -> None:
         raise RuntimeError("docker exploded")
 
     monkeypatch.setattr(launcher, "maybe_reap", boom)

@@ -265,3 +265,118 @@ def test_reserved_port_lock_reentrant_in_thread_exclusive_across_threads(
         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # fully released
     finally:
         os.close(fd)
+
+
+# --- fix round 1: lock file deleted while held (reap removes a runtime dir) -----------
+
+
+def test_instance_lock_waiter_never_holds_an_orphaned_inode(tmp_path: Path, monkeypatch):
+    """Port of the reviewer's reapcheck_lock.py: at most one holder at any time."""
+    import shutil
+    import threading
+
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "reg" / "instances.json"))
+    rt = tmp_path / "rt" / "proj-h1"
+    guard = threading.Lock()
+    inside: List[str] = []
+    peak = {"n": 0}
+    gate = threading.Event()
+
+    def waiter(name: str) -> None:
+        with locks.instance_lock(rt):
+            with guard:
+                inside.append(name)
+                peak["n"] = max(peak["n"], len(inside))
+            gate.wait(2)
+            with guard:
+                inside.remove(name)
+
+    with locks.instance_lock(rt):  # the reaper
+        old = threading.Thread(target=waiter, args=("old-inode",))
+        old.start()
+        time.sleep(0.3)  # the waiter now blocks on the old launch.lock
+        shutil.rmtree(rt)  # apply_reap deletes the dir while holding the lock
+    time.sleep(0.3)
+    new = threading.Thread(target=waiter, args=("new-inode",))
+    new.start()
+    time.sleep(0.3)
+    gate.set()
+    old.join(5)
+    new.join(5)
+    assert not old.is_alive() and not new.is_alive()
+    assert peak["n"] == 1, "two holders at once: a waiter kept the deleted lock file's inode"
+
+
+def test_flock_retries_when_the_parent_vanishes_before_open(tmp_path: Path, monkeypatch):
+    real_mkdir = locks._mkdir_private
+    calls = {"n": 0}
+
+    def flaky(directory: Path) -> None:
+        real_mkdir(directory)
+        calls["n"] += 1
+        if calls["n"] == 1:
+            import shutil
+
+            shutil.rmtree(directory)  # vanishes between mkdir and open
+
+    monkeypatch.setattr(locks, "_mkdir_private", flaky)
+    with locks._flock(tmp_path / "gone" / "x.lock"):
+        assert (tmp_path / "gone" / "x.lock").is_file()
+    assert calls["n"] == 2
+
+
+def test_flock_gives_up_after_bounded_attempts(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(locks, "_LOCK_ATTEMPTS", 3)
+    monkeypatch.setattr(locks, "_LOCK_RETRY_SLEEP_S", 0)
+
+    def always_missing(directory: Path) -> None:
+        raise FileNotFoundError(directory)
+
+    monkeypatch.setattr(locks, "_mkdir_private", always_missing)
+    with pytest.raises(OSError):
+        with locks._flock(tmp_path / "x.lock"):
+            pass
+
+
+# --- save_state_locked ---------------------------------------------------------------
+
+
+def test_save_state_locked_updates_and_reports_success(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json"))
+    path = tmp_path / "r" / "port-leases.json"
+    reg = PortLeaseRegistry.load(path, create_missing=True)
+    reg.upsert_lease({"lease_id": "l1", "service": "s", "port": 1, "status": "active"})
+    reg.save()
+    assert locks.save_state_locked(PortLeaseRegistry, path, lambda r: r.mark_released(lease_id="l1")) is None
+    assert PortLeaseRegistry.load(path).leases()[0]["status"] == "released"
+
+
+def test_save_state_locked_missing_file_is_a_noop(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json"))
+    path = tmp_path / "r" / "port-leases.json"
+    assert locks.save_state_locked(PortLeaseRegistry, path, lambda r: 1 / 0) is None
+    assert not path.exists()
+
+
+def test_save_state_locked_refuses_to_touch_a_corrupt_registry(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json"))
+    path = tmp_path / "r" / "instances.json"
+    path.parent.mkdir()
+    path.write_text("{corrupt", encoding="utf-8")
+    ran: List[bool] = []
+    error = locks.save_state_locked(RuntimeRegistry, path, lambda r: ran.append(True))
+    assert error and "unreadable" in error
+    assert ran == []  # mutate never ran
+    assert path.read_text(encoding="utf-8") == "{corrupt"  # not replaced by an empty document
+
+
+def test_save_state_locked_returns_mutate_errors(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json"))
+    path = tmp_path / "r" / "instances.json"
+    RuntimeRegistry.load(path, create_missing=True)
+
+    def boom(reg: RuntimeRegistry) -> None:
+        raise RuntimeError("nope")
+
+    error = locks.save_state_locked(RuntimeRegistry, path, boom)
+    assert error and "nope" in error

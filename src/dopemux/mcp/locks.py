@@ -32,6 +32,7 @@ import importlib
 import os
 import tempfile
 import threading
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Iterator, Optional, Type, TypeVar
@@ -61,18 +62,47 @@ def _mkdir_private(directory: Path) -> None:
         os.chmod(d, _DIR_MODE)  # defeat a restrictive/odd umask
 
 
+_LOCK_ATTEMPTS = 50
+_LOCK_RETRY_SLEEP_S = 0.005
+
+
 @contextmanager
 def _flock(path: Path) -> Iterator[None]:
-    _mkdir_private(path.parent)
-    fd = os.open(str(path), os.O_RDWR | os.O_CREAT, _FILE_MODE)
-    try:
-        fcntl.flock(fd, fcntl.LOCK_EX)
+    """Exclusive ``flock`` on ``path`` that never holds an orphaned inode.
+
+    A holder may delete the lock file (reap removes a whole runtime dir while
+    holding its ``launch.lock``). A waiter that acquired the old inode would then
+    run alongside a newer holder of a freshly created file, so after acquiring the
+    lock the path is re-checked against the open descriptor and the attempt is
+    retried when the file is gone or replaced.
+    """
+    for _ in range(_LOCK_ATTEMPTS):
         try:
-            yield
-        finally:
+            _mkdir_private(path.parent)
+            fd = os.open(str(path), os.O_RDWR | os.O_CREAT, _FILE_MODE)
+        except FileNotFoundError:  # parent removed between mkdir and open
+            time.sleep(_LOCK_RETRY_SLEEP_S)
+            continue
+        acquired = False
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX)
+            try:
+                held = os.fstat(fd)
+                current = os.stat(path)
+                acquired = (held.st_dev, held.st_ino) == (current.st_dev, current.st_ino)
+            except FileNotFoundError:
+                acquired = False
+            if acquired:
+                try:
+                    yield
+                finally:
+                    fcntl.flock(fd, fcntl.LOCK_UN)
+                return
             fcntl.flock(fd, fcntl.LOCK_UN)
-    finally:
-        os.close(fd)
+        finally:
+            os.close(fd)
+        time.sleep(_LOCK_RETRY_SLEEP_S)
+    raise OSError(f"could not acquire a stable lock on {path}")
 
 
 def _runtime_dir() -> Path:
@@ -205,3 +235,35 @@ def locked_reload_and_save(
         mutate(fresh)
         fresh.save()  # type: ignore[attr-defined]
         return fresh
+
+
+class _CorruptState(Exception):
+    pass
+
+
+def save_state_locked(
+    registry_cls: Type[R], path: Path, mutate: Callable[[R], Any]
+) -> Optional[str]:
+    """``locked_reload_and_save`` that never replaces a corrupt file.
+
+    Returns ``None`` on success (or when ``path`` does not exist: nothing to
+    update) and an error string otherwise. When the fresh load is corrupt,
+    ``mutate`` is not run and nothing is saved, so the unreadable file stays for a
+    person to inspect.
+    """
+    reg_path = Path(path)
+    if not reg_path.exists():
+        return None
+
+    def guarded(reg: R) -> None:
+        if getattr(reg, "recovered_from_corrupt", False):
+            raise _CorruptState()
+        mutate(reg)
+
+    try:
+        locked_reload_and_save(registry_cls, reg_path, guarded)
+    except _CorruptState:
+        return f"{reg_path} is unreadable; left as is"
+    except Exception as exc:  # noqa: BLE001
+        return f"{reg_path}: {exc}"
+    return None

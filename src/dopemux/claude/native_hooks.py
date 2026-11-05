@@ -670,7 +670,15 @@ class NativeHookAdapter:
         )
 
     def _on_session_end(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-        _best_effort_reap(throttle_s=0)
+        # SessionEnd hooks share a short budget (settings.json raises ours to 60 s):
+        # one candidate, launcher-style docker bounds, 45 s deadline.
+        _best_effort_reap(
+            throttle_s=0,
+            max_candidates=1,
+            deadline_s=45,
+            stop_time_s=3,
+            cmd_timeout_s=10.0,
+        )
         state = self._active_state()
         if not state:
             return self._allow()

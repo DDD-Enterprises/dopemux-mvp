@@ -305,6 +305,7 @@ def mcp_reap_cmd(dry_run: bool, json_output: bool):
     import time
 
     from dopemux.mcp import reap
+    from dopemux.mcp.port_leases import PortLeaseRegistry, default_lease_registry_path
     from dopemux.mcp.runtime_registry import RuntimeRegistry
 
     disabled = reap.reaping_disabled_reason()
@@ -313,17 +314,25 @@ def mcp_reap_cmd(dry_run: bool, json_output: bool):
             f"Note: automatic reaping is disabled ({disabled}); --apply runs anyway.", err=True
         )
 
-    registry = RuntimeRegistry.load(reap.runtime_registry_path())
-    if registry.parse_status == "ERROR":
-        click.echo(f"Runtime registry unreadable ({registry.error}); nothing reaped.", err=True)
-        sys.exit(1)
-    docker = reap.inspect_all_managed_containers()
-    if not docker.available:
-        click.echo(f"Docker unavailable ({docker.error}); nothing reaped.", err=True)
+    def fail(message: str) -> NoReturn:
+        if json_output:
+            click.echo(json.dumps({"dry_run": dry_run, "error": message, "candidates": []}))
+        else:
+            click.echo(f"{message}; nothing reaped.", err=True)
         sys.exit(1)
 
+    registry = RuntimeRegistry.load(reap.runtime_registry_path())
+    if registry.parse_status == "ERROR":
+        fail(f"Runtime registry unreadable ({registry.error})")
+    docker = reap.inspect_all_managed_containers()
+    if not docker.available:
+        fail(f"Docker unavailable ({docker.error})")
+
     candidates = reap.plan_reap(
-        registry=registry, containers=docker.containers, now=time.time()
+        registry=registry,
+        containers=docker.containers,
+        now=time.time(),
+        lease_registry=PortLeaseRegistry.load(default_lease_registry_path()),
     )
     report = None if dry_run else reap.apply_reap(candidates, runner=reap.run_cmd)
 
