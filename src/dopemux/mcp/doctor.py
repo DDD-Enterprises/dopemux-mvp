@@ -8,7 +8,9 @@ where labels exist. Never starts/stops containers or mutates config.
 from __future__ import annotations
 
 import json
+import shutil
 import socket
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
@@ -124,6 +126,77 @@ def _add(
             evidence=list(evidence or []),
             recommendation=recommendation,
         )
+    )
+
+
+_SPEC_ORIGIN_CODE = (
+    "import importlib.util as u; s = u.find_spec('dopemux'); "
+    "print(s.origin if s and s.origin else '')"
+)
+
+
+def _probe_dopemux_file(bin_path: str) -> Optional[str]:
+    """``dopemux.__file__`` as the interpreter behind the ``bin_path`` script sees it.
+
+    Reads the script's shebang and asks that interpreter (isolated mode, no
+    package import) where ``dopemux`` resolves. None when unknown.
+    """
+    try:
+        with open(bin_path, "rb") as fh:
+            first = fh.readline(1024)
+    except OSError:
+        return None
+    if not first.startswith(b"#!"):
+        return None
+    parts = first[2:].decode("utf-8", "replace").split()
+    if not parts:
+        return None
+    interpreter = parts[0]
+    if Path(interpreter).name == "env" and len(parts) > 1:
+        interpreter = shutil.which(parts[-1]) or parts[-1]
+    try:
+        proc = subprocess.run(
+            [interpreter, "-I", "-c", _SPEC_ORIGIN_CODE],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    origin = proc.stdout.strip()
+    return origin if proc.returncode == 0 and origin else None
+
+
+def _check_dopemux_bin(findings: List[Finding]) -> None:
+    """D1: launcher entries run ``${DOPEMUX_BIN:-dopemux}``; PATH's copy must be this product."""
+    bin_path = shutil.which("dopemux")
+    if not bin_path:
+        return
+    origin = _probe_dopemux_file(bin_path)
+    if not origin:
+        return
+    from .docker_runtime import product_root
+
+    try:
+        product = product_root().resolve()
+    except FileNotFoundError:
+        return
+    try:
+        Path(origin).resolve().relative_to(product)
+        return
+    except ValueError:
+        pass
+    _add(
+        findings,
+        "DOPEMUX_BIN_NOT_EDITABLE",
+        "WARN",
+        (
+            f"`dopemux` on PATH ({bin_path}) loads dopemux from {origin}, not from this "
+            f"checkout {product}; .mcp.json launcher entries would run that copy"
+        ),
+        evidence=[bin_path, origin],
+        recommendation=f"uv tool install --editable {product}",
     )
 
 
@@ -1298,6 +1371,9 @@ def run_mcp_doctor(
                     f"TO identity evaluation failed: {exc}",
                     service="task-orchestrator",
                 )
+
+    # --- dopemux on PATH (D1) ---
+    _check_dopemux_bin(findings)
 
     # --- Status summary findings ---
     status, exit_code = _summarize_status(findings)

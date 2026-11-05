@@ -17,7 +17,7 @@ from . import docker_inspect as di
 from . import docker_runtime as dr
 from .doctor import DoctorReport, run_mcp_doctor
 from .envrc import load_envrc, merge_envrc_into_environ, safe_port_int
-from .locks import locked_reload_and_save, registry_lock
+from .locks import locked_reload_and_save, registry_lock, reserved_port_lock
 from .port_diagnostics import instance_id_for_path
 from .port_leases import PortLeaseRegistry, default_lease_registry_path
 from .runtime_registry import (
@@ -756,123 +756,126 @@ def run_lifecycle(
     # Task Orchestrator fixed-port identity gate (Packet 005)
     if op in {"start", "restart"} and "task-orchestrator" in selected:
         try:
-            from .task_orchestrator_identity import (
-                evaluate_fixed_port_state,
-                identity_from_docker_labels,
-            )
-
-            to_spec = (catalog.get("servers") or {}).get("task-orchestrator") or {}
-            to_port = ports.get(
-                str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT")
-            ) or int(to_spec.get("default_port_base") or 7890)
-            docker_identity = None
-            if docker.available:
-                from .task_orchestrator_identity import identity_from_container_heuristics
-
-                matches = di.find_containers_for_service(
-                    docker,
-                    service_name="task-orchestrator",
-                    expected_ports=[int(to_port)],
-                    name_hints=["task-orchestrator", "orchestrator"],
+            # Host-wide: serialize this check with launchers and switch-project (D7).
+            # Re-entrant, so a launcher already holding it does not deadlock here.
+            with reserved_port_lock(7890):
+                from .task_orchestrator_identity import (
+                    evaluate_fixed_port_state,
+                    identity_from_docker_labels,
                 )
-                for c in matches:
-                    st = di.classify_container_ownership(
-                        c,
-                        project_root=identity.project_root,
-                        workspace_id=identity.workspace_id,
-                        project_id=identity.project_id,
+
+                to_spec = (catalog.get("servers") or {}).get("task-orchestrator") or {}
+                to_port = ports.get(
+                    str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT")
+                ) or int(to_spec.get("default_port_base") or 7890)
+                docker_identity = None
+                if docker.available:
+                    from .task_orchestrator_identity import identity_from_container_heuristics
+
+                    matches = di.find_containers_for_service(
+                        docker,
+                        service_name="task-orchestrator",
                         expected_ports=[int(to_port)],
-                        expected_name_substrings=["task-orchestrator"],
-                        project_slug_hints=[
-                            identity.project_id or "",
-                            Path(identity.project_root or "").name,
-                        ],
+                        name_hints=["task-orchestrator", "orchestrator"],
                     )
-                    if st in {"MATCH", "WRONG_PROJECT"}:
-                        docker_identity = identity_from_docker_labels(
-                            c.labels or {},
-                            port=int(to_port),
-                            container_name=c.name,
+                    for c in matches:
+                        st = di.classify_container_ownership(
+                            c,
+                            project_root=identity.project_root,
+                            workspace_id=identity.workspace_id,
+                            project_id=identity.project_id,
+                            expected_ports=[int(to_port)],
+                            expected_name_substrings=["task-orchestrator"],
+                            project_slug_hints=[
+                                identity.project_id or "",
+                                Path(identity.project_root or "").name,
+                            ],
                         )
-                        break
-                    if st in {"COMPOSE_MATCH", "UNLABELED"} and docker_identity is None:
-                        docker_identity = identity_from_container_heuristics(
-                            container_name=c.name,
-                            labels=c.labels or {},
-                            port=int(to_port),
-                            target_project_root=identity.project_root,
-                            target_project_id=identity.project_id,
-                        )
-                        if st == "COMPOSE_MATCH" or docker_identity.has_project_proof():
+                        if st in {"MATCH", "WRONG_PROJECT"}:
+                            docker_identity = identity_from_docker_labels(
+                                c.labels or {},
+                                port=int(to_port),
+                                container_name=c.name,
+                            )
                             break
-            to_eval = evaluate_fixed_port_state(
-                port=int(to_port),
-                target_project_id=identity.project_id,
-                target_project_root=identity.project_root,
-                target_workspace_id=identity.workspace_id,
-                target_instance_id=identity.instance_id,
-                target_worktree_hash=identity.worktree_hash,
-                is_free_fn=is_free,
-                docker_identity=docker_identity,
-                skip_http=True,  # upstream jar has no /info|/health (006R)
-                for_start=True,
-            )
-            for f in to_eval.findings:
-                if f.get("severity") == "FAIL" or f.get("code", "").startswith(
-                    "TASK_ORCHESTRATOR_START_BLOCKED"
-                ):
-                    blocking.append(
-                        {
-                            "code": f.get("code")
-                            or to_eval.start_block_code
-                            or "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
-                            "severity": "FAIL",
-                            "message": f.get("message") or "TO start blocked",
-                            "service": "task-orchestrator",
-                        }
-                    )
-                elif f.get("severity") in {"WARN", "UNKNOWN"}:
+                        if st in {"COMPOSE_MATCH", "UNLABELED"} and docker_identity is None:
+                            docker_identity = identity_from_container_heuristics(
+                                container_name=c.name,
+                                labels=c.labels or {},
+                                port=int(to_port),
+                                target_project_root=identity.project_root,
+                                target_project_id=identity.project_id,
+                            )
+                            if st == "COMPOSE_MATCH" or docker_identity.has_project_proof():
+                                break
+                to_eval = evaluate_fixed_port_state(
+                    port=int(to_port),
+                    target_project_id=identity.project_id,
+                    target_project_root=identity.project_root,
+                    target_workspace_id=identity.workspace_id,
+                    target_instance_id=identity.instance_id,
+                    target_worktree_hash=identity.worktree_hash,
+                    is_free_fn=is_free,
+                    docker_identity=docker_identity,
+                    skip_http=True,  # upstream jar has no /info|/health (006R)
+                    for_start=True,
+                )
+                for f in to_eval.findings:
+                    if f.get("severity") == "FAIL" or f.get("code", "").startswith(
+                        "TASK_ORCHESTRATOR_START_BLOCKED"
+                    ):
+                        blocking.append(
+                            {
+                                "code": f.get("code")
+                                or to_eval.start_block_code
+                                or "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
+                                "severity": "FAIL",
+                                "message": f.get("message") or "TO start blocked",
+                                "service": "task-orchestrator",
+                            }
+                        )
+                    elif f.get("severity") in {"WARN", "UNKNOWN"}:
+                        warnings.append(
+                            {
+                                "code": f.get("code"),
+                                "severity": f.get("severity"),
+                                "message": f.get("message"),
+                                "service": "task-orchestrator",
+                            }
+                        )
+                if not to_eval.start_allowed and to_eval.start_block_code:
+                    if not any(
+                        b.get("code") == to_eval.start_block_code for b in blocking
+                    ):
+                        blocking.append(
+                            {
+                                "code": to_eval.start_block_code,
+                                "severity": "FAIL",
+                                "message": (
+                                    f"task-orchestrator start blocked "
+                                    f"(match={to_eval.match} port={to_port})"
+                                ),
+                                "service": "task-orchestrator",
+                            }
+                        )
+                elif to_eval.start_allowed and to_eval.match == "OK":
                     warnings.append(
                         {
-                            "code": f.get("code"),
-                            "severity": f.get("severity"),
-                            "message": f.get("message"),
+                            "code": "TASK_ORCHESTRATOR_START_ALLOWED",
+                            "severity": "INFO",
+                            "message": "task-orchestrator already running for target project",
                             "service": "task-orchestrator",
                         }
                     )
-            if not to_eval.start_allowed and to_eval.start_block_code:
-                if not any(
-                    b.get("code") == to_eval.start_block_code for b in blocking
-                ):
-                    blocking.append(
+                elif to_eval.start_allowed and to_eval.match == "FREE":
+                    warnings.append(
                         {
-                            "code": to_eval.start_block_code,
-                            "severity": "FAIL",
-                            "message": (
-                                f"task-orchestrator start blocked "
-                                f"(match={to_eval.match} port={to_port})"
-                            ),
+                            "code": "TASK_ORCHESTRATOR_START_ALLOWED",
+                            "severity": "INFO",
+                            "message": f"task-orchestrator fixed port :{to_port} free; start allowed",
                             "service": "task-orchestrator",
                         }
                     )
-            elif to_eval.start_allowed and to_eval.match == "OK":
-                warnings.append(
-                    {
-                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
-                        "severity": "INFO",
-                        "message": "task-orchestrator already running for target project",
-                        "service": "task-orchestrator",
-                    }
-                )
-            elif to_eval.start_allowed and to_eval.match == "FREE":
-                warnings.append(
-                    {
-                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
-                        "severity": "INFO",
-                        "message": f"task-orchestrator fixed port :{to_port} free; start allowed",
-                        "service": "task-orchestrator",
-                    }
-                )
         except Exception as exc:  # noqa: BLE001
             blocking.append(
                 {

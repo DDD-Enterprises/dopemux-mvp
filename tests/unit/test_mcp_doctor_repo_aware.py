@@ -875,3 +875,30 @@ def test_build_desired_services_includes_catalog_defaults_when_mcp_json_present(
     assert "conport" in names
     assert "dope-memory" in names
     assert "task-orchestrator" in names
+
+
+def test_doctor_warns_when_path_dopemux_is_not_editable_install(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import doctor as doctor_mod
+    from dopemux.mcp.docker_runtime import product_root
+
+    repo = _write_fixture_repo(tmp_path)
+    monkeypatch.setattr(doctor_mod.shutil, "which", lambda name: "/opt/tools/bin/dopemux")
+    monkeypatch.setattr(
+        doctor_mod,
+        "_probe_dopemux_file",
+        lambda bin_path: "/opt/tools/lib/python3.12/site-packages/dopemux/__init__.py",
+    )
+    report = run_mcp_doctor(
+        repo, catalog=_catalog(), skip_docker=True, skip_port_probe=True, process_env={}
+    )
+    found = [f for f in report.findings if f["code"] == "DOPEMUX_BIN_NOT_EDITABLE"]
+    assert len(found) == 1
+    assert found[0]["severity"] == "WARN"
+    assert found[0]["recommendation"] == f"uv tool install --editable {product_root()}"
+
+    editable = str(product_root() / "src" / "dopemux" / "__init__.py")
+    monkeypatch.setattr(doctor_mod, "_probe_dopemux_file", lambda bin_path: editable)
+    report = run_mcp_doctor(
+        repo, catalog=_catalog(), skip_docker=True, skip_port_probe=True, process_env={}
+    )
+    assert not [f for f in report.findings if f["code"] == "DOPEMUX_BIN_NOT_EDITABLE"]

@@ -13,6 +13,11 @@ Lock order when nested (never the reverse):
 ``flock`` is per open file description, so taking ``registry_lock`` again in
 the same process while already holding it deadlocks. Never nest it with
 ``locked_reload_and_save``, which takes it itself.
+
+``reserved_port_lock`` is the one exception: it is re-entrant within a thread,
+because the launcher and ``switch-project`` hold it around a lifecycle start
+whose own orchestrator preflight takes it again. Other threads and processes
+still wait for it.
 """
 
 from __future__ import annotations
@@ -23,6 +28,7 @@ import hashlib
 import importlib
 import os
 import tempfile
+import threading
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Iterator, Optional, Type, TypeVar
@@ -108,9 +114,34 @@ def registry_lock(registry_path: Optional[Path] = None) -> ContextManager[None]:
     return _flock(base / "registry.lock")
 
 
+_held = threading.local()
+
+
+@contextmanager
+def _reentrant_flock(path: Path) -> Iterator[None]:
+    """``_flock`` that a thread already holding ``path`` re-enters without blocking."""
+    depth = getattr(_held, "depth", None)
+    if depth is None:
+        depth = _held.depth = {}
+    key = str(path)
+    if depth.get(key):
+        depth[key] += 1
+        try:
+            yield
+        finally:
+            depth[key] -= 1
+        return
+    with _flock(path):
+        depth[key] = 1
+        try:
+            yield
+        finally:
+            del depth[key]
+
+
 def reserved_port_lock(port: int) -> ContextManager[None]:
-    """Serialize starts that contend for one reserved singleton port."""
-    return _flock(_runtime_dir() / f"reserved-{int(port)}.lock")
+    """Serialize starts that contend for one reserved singleton port (re-entrant per thread)."""
+    return _reentrant_flock(_runtime_dir() / f"reserved-{int(port)}.lock")
 
 
 def instance_lock(runtime_dir: Path) -> ContextManager[None]:

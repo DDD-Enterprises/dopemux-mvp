@@ -258,6 +258,133 @@ def mcp_restart_cmd(
     )
 
 
+@mcp.command("launch")
+@click.argument("service")
+@click.option(
+    "--root",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Checkout to serve (default: git top-level of the working directory).",
+)
+@click.option(
+    "--wait",
+    type=float,
+    default=None,
+    help="Seconds to wait for a starting sidecar (default: $DOPEMUX_LAUNCH_WAIT, else 25).",
+)
+def mcp_launch_cmd(service: str, root: Optional[Path], wait: Optional[float]):
+    """Stdio MCP entry for SERVICE: find or start this checkout's sidecar, then proxy.
+
+    This is the command `.mcp.json` launcher entries run; MCP clients start it,
+    people rarely do. Refusals print one `CODE: remedy` line on stderr and exit 3.
+    """
+    from dopemux.mcp.launcher import WAIT_ENV, launch
+
+    env = dict(os.environ)
+    if wait is not None:
+        env[WAIT_ENV] = str(wait)
+    sys.exit(launch(service, root=root, env=env))
+
+
+@mcp.command("switch-project")
+@_lifecycle_repo_option()
+@click.option("--yes", is_flag=True, help="Stop the current owner without asking.")
+def mcp_switch_project_cmd(repo_arg: Optional[Path], yes: bool):
+    """Move the reserved task-orchestrator (:7890) to this project.
+
+    Stops and removes the managed task-orchestrator container serving another
+    project, then starts this project's through the lifecycle. Refuses when
+    :7890 is held by anything that is not a managed task-orchestrator container.
+    """
+    from dopemux.mcp import docker_inspect as di
+    from dopemux.mcp import docker_runtime as dr
+    from dopemux.mcp import lifecycle as lc
+    from dopemux.mcp.locks import reserved_port_lock
+    from dopemux.mcp.runtime_state import resolve_identity_view
+    from dopemux.mcp.task_orchestrator_identity import identity_from_docker_labels, match_target
+
+    port = 7890
+    target = lc.resolve_target_repo(repo_arg)
+    identity = resolve_identity_view(target)
+    if not identity.project_id or not identity.project_root:
+        click.echo(
+            f"Cannot resolve the project identity of {target}; run dopemux mcp doctor",
+            err=True,
+        )
+        sys.exit(1)
+    catalog = _load_catalog()
+    with reserved_port_lock(port):
+        state = di.inspect_running_containers()
+        if not state.available:
+            click.echo(
+                f"Docker unavailable ({state.error}); cannot identify the :{port} owner",
+                err=True,
+            )
+            sys.exit(1)
+        owners = [c for c in state.containers if port in (c.published_ports or [])]
+        if not owners and not lc._port_is_free(port):
+            click.echo(
+                f":{port} is held by a process that is not a managed task-orchestrator "
+                "container; refusing",
+                err=True,
+            )
+            sys.exit(1)
+        if owners:
+            owner = owners[0]
+            labels = owner.labels or {}
+            if (
+                len(owners) != 1
+                or labels.get("dopemux.managed") != "true"
+                or labels.get("dopemux.service") != "task-orchestrator"
+            ):
+                click.echo(
+                    f":{port} is held by {owner.name}, which is not a managed "
+                    "task-orchestrator container; refusing",
+                    err=True,
+                )
+                sys.exit(1)
+            observed = identity_from_docker_labels(labels, port=port, container_name=owner.name)
+            verdict = match_target(
+                observed, project_id=identity.project_id, project_root=identity.project_root
+            )
+            if verdict == "OK":
+                click.echo(
+                    f"task-orchestrator on :{port} already serves {identity.project_root} "
+                    f"({owner.name})"
+                )
+                return
+            owner_root = observed.project_root or observed.project_id or "an unknown project"
+            click.echo(f"task-orchestrator on :{port} serves {owner_root} ({owner.name})")
+            if not yes:
+                click.confirm(
+                    f"Stop it and start {identity.project_root}'s task-orchestrator?",
+                    default=False,
+                    abort=True,
+                )
+            for verb in ("stop", "rm"):
+                res = dr.run_cmd(["docker", verb, owner.id], timeout=60)
+                if res.exit_code != 0:
+                    detail = (res.stderr or res.stdout or "").strip()
+                    click.echo(f"docker {verb} {owner.id} failed: {detail}", err=True)
+                    sys.exit(1)
+        else:
+            click.echo(f":{port} is free")
+        click.echo(f"Starting task-orchestrator for {identity.project_root}")
+        result = lc.run_lifecycle(
+            "start",
+            repo=target,
+            services=["task-orchestrator"],
+            catalog=catalog,
+            process_env=dict(os.environ),
+        )
+    if result.exit_code:
+        for finding in result.blocking_findings or []:
+            click.echo(f"{finding.get('code')}: {finding.get('message')}", err=True)
+        click.echo(f"task-orchestrator start failed (status {result.status})", err=True)
+        sys.exit(result.exit_code)
+    click.echo(f"task-orchestrator on :{port} now serves {identity.project_root}")
+
+
 @mcp.command("up")
 @click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
 @click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")

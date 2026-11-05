@@ -235,3 +235,33 @@ def test_pytest_guard_never_resolves_home_lock_dir(tmp_path: Path, monkeypatch):
 
     assert not (tmp_path / "home" / ".dopemux").exists()
     assert not str(locks._runtime_dir()).startswith(str(tmp_path / "home"))
+
+
+def test_reserved_port_lock_reentrant_in_thread_exclusive_across_threads(
+    tmp_path: Path, monkeypatch
+):
+    import fcntl
+    import threading
+
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
+    lock_file = tmp_path / "rt" / "reserved-7890.lock"
+    other_thread_got_it = threading.Event()
+
+    def contend() -> None:
+        with locks.reserved_port_lock(7890):
+            other_thread_got_it.set()
+
+    with locks.reserved_port_lock(7890):
+        with locks.reserved_port_lock(7890):  # the lifecycle preflight under the launcher
+            pass
+        contender = threading.Thread(target=contend)
+        contender.start()
+        assert not other_thread_got_it.wait(HOLD_SECS)  # still held after the inner exit
+    contender.join(timeout=10)
+    assert other_thread_got_it.is_set()
+
+    fd = os.open(str(lock_file), os.O_RDWR)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)  # fully released
+    finally:
+        os.close(fd)
