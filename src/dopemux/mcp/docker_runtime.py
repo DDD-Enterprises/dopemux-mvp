@@ -41,13 +41,53 @@ DEFAULT_BUILD_TIMEOUT_SECS = 1800.0
 DEFAULT_UP_TIMEOUT_SECS = 180.0
 
 
+# Identity, port and tenant-credential variables the lifecycle computes itself
+# (mcp.env, the compose override, or ``extra``). A shell that sourced another
+# checkout's envrc carries them; compose ranks process env above --env-file, so
+# without this scrub a worktree could start conport on another project's ports
+# or tenant. Exact names, not a prefix sweep: AGE_PASSWORD, HOST_*, the
+# DOPEMUX_MCP_* budgets and the conport/dope-memory tunables stay.
+AMBIENT_SCRUB_VARS: tuple[str, ...] = (
+    # the launcher's identity set (D3)
+    "DOPEMUX_WORKSPACE_ROOT",
+    "DOPEMUX_PROJECT_ROOT",
+    "DOPEMUX_INSTANCE_ID",
+    "DOPEMUX_WORKSPACE_ID",
+    "TASK_ORCHESTRATOR_PROJECT_ROOT",
+    # tenant credentials (D5): only ``extra`` may supply them
+    "CONPORT_DB_NAME",
+    "CONPORT_DB_USER",
+    "CONPORT_DB_PASSWORD",
+    # ports, names and ids the lifecycle writes to mcp.env / the override
+    "CONPORT_HTTP_PORT",
+    "CONPORT_MCP_PORT",
+    "CONPORT_INFO_PORT",
+    "CONPORT_CONTAINER_NAME",
+    "DOPE_MEMORY_PORT",
+    "DOPE_MEMORY_WORKSPACE_ID",
+    "DOPE_MEMORY_INSTANCE_ID",
+    "WORKSPACE_ID",
+    "DOPEMUX_PROJECT_ID",
+    "DOPEMUX_WORKTREE_ROOT",
+    "TASK_ORCHESTRATOR_HTTP_PORT",
+)
+
+
 def env_with_compose_interpolation(
     base: Optional[Mapping[str, str]] = None,
     *,
     host_path_defaults: bool = True,
     product: Optional[Path] = None,
+    extra: Optional[Mapping[str, str]] = None,
+    scrub_ambient: bool = False,
 ) -> Dict[str, str]:
     """Copy *base* (or os.environ) and fill compose interpolation defaults.
+
+    ``scrub_ambient`` drops :data:`AMBIENT_SCRUB_VARS` from the copied base
+    before anything else; the lifecycle and launcher pass it, the legacy
+    cwd-compose commands (``mcp up/down/logs`` without ``--repo``) do not,
+    because they deliberately run on the operator's sourced envrc. ``extra``
+    is overlaid last (tenant credentials for one ``compose up``).
 
     Sets a parse-only bridge token when unset. When *host_path_defaults* is
     true, also derives HOST_CODE_PARENT_DIR / HOST_PROJECT_RELATIVE_PATH from
@@ -62,6 +102,9 @@ def env_with_compose_interpolation(
     dope-context singleton.
     """
     env = dict(os.environ if base is None else base)
+    if scrub_ambient:
+        for name in AMBIENT_SCRUB_VARS:
+            env.pop(name, None)
     if not str(env.get("DOPECON_BRIDGE_TOKEN") or "").strip():
         env["DOPECON_BRIDGE_TOKEN"] = COMPOSE_INTERPOLATION_PLACEHOLDER
     if host_path_defaults and any(
@@ -70,14 +113,17 @@ def env_with_compose_interpolation(
         try:
             root = product if product is not None else product_root()
         except FileNotFoundError:
-            return env
-        derived = {
-            "HOST_CODE_PARENT_DIR": str(root.parent),
-            "HOST_PROJECT_RELATIVE_PATH": root.name,
-        }
-        for name, value in derived.items():
-            if not str(env.get(name) or "").strip():
-                env[name] = value
+            root = None
+        if root is not None:
+            derived = {
+                "HOST_CODE_PARENT_DIR": str(root.parent),
+                "HOST_PROJECT_RELATIVE_PATH": root.name,
+            }
+            for name, value in derived.items():
+                if not str(env.get(name) or "").strip():
+                    env[name] = value
+    if extra:
+        env.update({str(k): str(v) for k, v in extra.items()})
     return env
 
 
@@ -382,10 +428,13 @@ def run_cmd(
     cwd: Optional[Path] = None,
     dry_run: bool = False,
     timeout: float = 180.0,
+    input_text: Optional[str] = None,
 ) -> RuntimeCommandResult:
+    """Run *cmd*; ``input_text`` (when given) goes to the child's stdin, never argv."""
     if dry_run:
         return RuntimeCommandResult(command=list(cmd), exit_code=0, dry_run=True)
     run = runner or subprocess.run
+    extra_kw: Dict[str, Any] = {} if input_text is None else {"input": input_text}
     try:
         result = run(
             list(cmd),
@@ -395,6 +444,7 @@ def run_cmd(
             check=False,
             env=dict(env) if env else None,
             cwd=str(cwd) if cwd else None,
+            **extra_kw,
         )
         return RuntimeCommandResult(
             command=list(cmd),
@@ -414,6 +464,23 @@ def run_cmd(
             exit_code=124,
             stderr=f"command timed out after {timeout:.0f}s",
         )
+
+
+def compose_build_inputs(runtime_dir: Path) -> tuple[Path, Path]:
+    """The lifecycle's override/env files; placeholders when the worktree never started.
+
+    ``compose build`` needs both ``-f`` and ``--env-file`` to exist; neither
+    affects the image. The lifecycle overwrites them on its first start.
+    Shared by the launcher's detached build and ``mcp init``'s pre-build.
+    """
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    override = runtime_dir / "compose.override.yml"
+    env_file = runtime_dir / "mcp.env"
+    if not override.exists():
+        override.write_text("# no compose services\n", encoding="utf-8")
+    if not env_file.exists():
+        env_file.write_text("", encoding="utf-8")
+    return override, env_file
 
 
 def compose_image_name(project_name: str, service: str) -> str:

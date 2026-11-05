@@ -9,6 +9,9 @@ Lock order when nested (never the reverse):
 
 * ``instance_lock``      outside ``registry_lock``
 * ``reserved_port_lock`` outside ``registry_lock``
+* ``instance_lock``      outside ``provision_lock`` (a launcher start provisions
+  the ConPort tenant inside its instance lock; ``provision_lock`` never wraps
+  another lock)
 
 ``flock`` is per open file description, so taking ``registry_lock`` again in
 the same process while already holding it deadlocks. Never nest it with
@@ -149,12 +152,21 @@ def instance_lock(runtime_dir: Path) -> ContextManager[None]:
     return _flock(Path(runtime_dir) / "launch.lock")
 
 
-def provision_lock(project_id: str) -> ContextManager[None]:
-    """Serialize per-project provisioning (tenants, credentials)."""
+def project_dir(project_id: str) -> Path:
+    """Per-project state dir ``<runtime parent>/projects/<project_id>``.
+
+    Shared by ``provision_lock`` and the ConPort tenant secrets file, with the
+    same pytest guard as every other lock path (never ``~/.dopemux`` in tests).
+    """
     pid = str(project_id or "")
     if pid in {"", ".", ".."} or "/" in pid or "\\" in pid or "\x00" in pid:
         raise ValueError(f"unsafe project_id for lock path: {project_id!r}")
-    return _flock(_runtime_dir().parent / "projects" / pid / "provision.lock")
+    return _runtime_dir().parent / "projects" / pid
+
+
+def provision_lock(project_id: str) -> ContextManager[None]:
+    """Serialize per-project provisioning (tenants, credentials)."""
+    return _flock(project_dir(project_id) / "provision.lock")
 
 
 def _empty_registry_for(registry_cls: Type[R], path: Path) -> R:

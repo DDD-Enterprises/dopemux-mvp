@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
+from . import conport_tenant as ct
 from . import docker_inspect as di
 from . import docker_runtime as dr
 from .doctor import DoctorReport, run_mcp_doctor
@@ -1347,6 +1348,7 @@ def run_lifecycle(
             is_free=is_free,
             target=target,
             docker_runner=docker_runner,
+            envrc_values=dict(envrc.values),
         )
         start_res.operation = "restart"
         if dry_run:
@@ -1391,6 +1393,7 @@ def run_lifecycle(
         is_free=is_free,
         target=target,
         docker_runner=docker_runner,
+        envrc_values=dict(envrc.values),
     )
 
 
@@ -1457,6 +1460,94 @@ def _already_running_managed(
     return None
 
 
+def _resolve_conport_tenant(
+    identity: ProjectIdentityView,
+    envrc_values: Mapping[str, str],
+    cmd_runner: Optional[Callable[..., Any]],
+) -> Tuple[Optional[ct.TenantCredentials], List[Dict[str, Any]]]:
+    """D5 database phase for this start; ``(None, [FAIL])`` when conport must not start."""
+    try:
+        creds = ct.resolve_tenant(
+            identity,
+            envrc_values=envrc_values,
+            psql=ct.default_psql_runner(runner=cmd_runner),
+        )
+    except ct.TenantError as exc:
+        return None, [{"code": exc.code, "severity": "FAIL", "message": exc.detail or exc.code}]
+    except (OSError, ValueError) as exc:
+        return None, [
+            {
+                "code": "CONPORT_TENANT_PROVISION_FAILED",
+                "severity": "FAIL",
+                "message": f"tenant resolution failed ({exc.__class__.__name__})",
+            }
+        ]
+    if creds is None:  # only with provision=False, which a start never passes
+        return None, []
+    if creds.source == "legacy_shared":
+        finding = {
+            "code": "CONPORT_LEGACY_SHARED_STORE",
+            "severity": "WARN",
+            "message": (
+                f"conport uses the shared {ct.SHARED_DB} store ({creds.evidence}); "
+                "migration to a project tenant is M2"
+            ),
+        }
+    else:
+        finding = {
+            "code": "CONPORT_TENANT_SOURCE",
+            "severity": "INFO",
+            "message": f"conport tenant source: {creds.source}",
+        }
+    return creds, [finding]
+
+
+def _run_tenant_gate(
+    identity: ProjectIdentityView,
+    container_name: str,
+    creds: ct.TenantCredentials,
+    cmd_runner: Optional[Callable[..., Any]],
+) -> Dict[str, Any]:
+    """D5 gate phase in this instance's conport container; FAIL keeps the gate owed."""
+    path = ct.secrets_path(str(identity.project_id))
+    try:
+        ct.adopt_with_gate(container_name, creds, runner=cmd_runner)
+    except ct.TenantError as exc:
+        return {
+            "code": "CONPORT_TENANT_GATE_FAILED",
+            "severity": "FAIL",
+            "message": (
+                f"{exc.detail}; the tenant database stays and the next start retries "
+                f"the gate (never re-provisions); secrets file {path}"
+            ),
+        }
+    ct.mark_gate_done(str(identity.project_id))
+    return {
+        "code": "CONPORT_TENANT_GATE_ADOPTED",
+        "severity": "INFO",
+        "message": f"migration gate adopted and verified the tenant schema in {container_name}",
+    }
+
+
+def _retry_pending_gate(
+    identity: ProjectIdentityView,
+    container_name: str,
+    cmd_runner: Optional[Callable[..., Any]],
+) -> List[Dict[str, Any]]:
+    """A gate still owed from an earlier start runs against the already-running container."""
+    if not identity.project_id:
+        return []
+    try:
+        pending = ct.pending_gate_credentials(str(identity.project_id))
+    except ct.TenantError as exc:
+        return [{"code": exc.code, "severity": "FAIL", "message": exc.detail or exc.code}]
+    except (OSError, ValueError):
+        return []
+    if pending is None:
+        return []
+    return [_run_tenant_gate(identity, container_name, pending, cmd_runner)]
+
+
 def _start_services(**kw: Any) -> LifecycleResult:
     selected: List[str] = kw["selected"]
     identity = kw["identity"]
@@ -1482,6 +1573,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
     is_free = kw["is_free"]
     target: Path = kw["target"]
     docker_runner = kw.get("docker_runner")
+    envrc_values: Mapping[str, str] = kw.get("envrc_values") or {}
 
     compose_services = [s for s in selected if s in {"conport", "dope-memory"}]
     to_selected = "task-orchestrator" in selected
@@ -1567,6 +1659,12 @@ def _start_services(**kw: Any) -> LifecycleResult:
             # unlabeled TO on fixed port is already blocked in collision
 
         if existing:
+            existing_findings: List[Dict[str, Any]] = []
+            if svc == "conport" and not dry_run:
+                existing_findings = _retry_pending_gate(identity, existing.name, cmd_runner)
+            gate_failed = any(f.get("severity") == "FAIL" for f in existing_findings)
+            if gate_failed:
+                overall_fail = True
             service_results.append(
                 {
                     "service": svc,
@@ -1579,7 +1677,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     "commands": [],
                     "probe_status": "UNKNOWN",
                     "registry_updated": False,
-                    "findings": [],
+                    "findings": existing_findings,
                 }
             )
             if not dry_run:
@@ -1598,7 +1696,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     container_names=[existing.name],
                     ports=svc_ports,
                     labels=labels,
-                    status="running",
+                    status="unhealthy" if gate_failed else "running",
                     last_start={"command": ["already_running"], "exit_code": 0},
                 )
             continue
@@ -1608,7 +1706,8 @@ def _start_services(**kw: Any) -> LifecycleResult:
         image_findings: List[Dict[str, Any]] = []
         will_build = False
         if svc in {"conport", "dope-memory"}:
-            interp_env = dr.env_with_compose_interpolation(product=product)
+            # R3: ambient identity/port/tenant exports never reach compose.
+            interp_env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
             override_file = Path(artifact_paths["compose.override.yml"])
             env_file = Path(artifact_paths["mcp.env"])
             # compose.yml has `build:` with no `image:` for these services; a
@@ -1706,6 +1805,37 @@ def _start_services(**kw: Any) -> LifecycleResult:
             build_result = None
             findings = list(image_findings)
             up_cmd = commands[-1]
+            up_env = interp_env
+            tenant: Optional[ct.TenantCredentials] = None
+            if svc == "conport":
+                # D5 database phase before the sidecar starts. The credentials
+                # reach this compose `up` only, never mcp.env or the plan.
+                tenant, tenant_findings = _resolve_conport_tenant(
+                    identity, envrc_values, cmd_runner
+                )
+                findings.extend(tenant_findings)
+                if tenant is None:
+                    overall_fail = True
+                    service_results.append(
+                        {
+                            "service": svc,
+                            "action": "failed",
+                            "reason": "conport tenant unresolved",
+                            "container_names": [cname],
+                            "ports": svc_ports,
+                            "probe_status": "UNKNOWN",
+                            "registry_updated": False,
+                            "findings": findings,
+                            "commands": [dr.redact_command(c) for c in commands],
+                            "image": image_name,
+                        }
+                    )
+                    continue
+                up_env = dr.env_with_compose_interpolation(
+                    product=product,
+                    extra=ct.tenant_compose_env(tenant),
+                    scrub_ambient=True,
+                )
             if will_build:
                 build_result = dr.run_cmd(
                     commands[0],
@@ -1756,7 +1886,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                 up_cmd,
                 runner=cmd_runner,
                 cwd=product,
-                env=interp_env,
+                env=up_env,
                 dry_run=False,
                 timeout=dr.up_timeout_secs(),
             )
@@ -1764,6 +1894,26 @@ def _start_services(**kw: Any) -> LifecycleResult:
             if result.exit_code != 0:
                 overall_fail = True
             probe = _probe_service(svc, ports, is_free)
+            gate_failed = False
+            if tenant is not None and tenant.gate_pending and result.exit_code == 0:
+                # D5 gate phase: only once this instance's container answers.
+                if probe == "OK":
+                    gate = _run_tenant_gate(identity, cname, tenant, cmd_runner)
+                    findings.append(gate)
+                    gate_failed = gate["severity"] == "FAIL"
+                else:
+                    findings.append(
+                        {
+                            "code": "CONPORT_TENANT_GATE_PENDING",
+                            "severity": "INFO",
+                            "message": (
+                                f"conport probe {probe}; the migration gate runs on the next start"
+                            ),
+                        }
+                    )
+            if gate_failed:
+                overall_fail = True
+                action = "failed"
             if not dry_run and result.exit_code == 0:
                 _registry_upsert(
                     registry,
@@ -1780,7 +1930,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     container_names=[cname],
                     ports=svc_ports,
                     labels=labels,
-                    status="running" if probe != "FAIL" else "unhealthy",
+                    status="running" if probe != "FAIL" and not gate_failed else "unhealthy",
                     last_start={
                         "command": [dr.redact_command(up_cmd)],
                         "exit_code": result.exit_code,

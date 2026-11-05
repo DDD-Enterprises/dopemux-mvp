@@ -956,3 +956,117 @@ def test_doctor_cli_asks_for_the_dopemux_bin_check(tmp_path: Path, monkeypatch):
     assert result.exit_code in (0, 1, 2), result.output
     asked = seen.get("check_dopemux_bin")
     assert asked is True
+
+
+# --- ConPort tenant (Task 4, D5; ruling R1: opt-in, read-only) -----------------
+
+
+def _tenant_psql(count: int, calls: list):
+    def psql(database, sql):
+        calls.append((database, sql))
+        if "DPMX_TABLES=" in sql:
+            out = " ?column? \n----------\n DPMX_TABLES=decisions,progress_entries\n(1 row)\n"
+        else:
+            out = f" ?column? \n----------\n DPMX_COUNT={count}\n(1 row)\n"
+        return subprocess.CompletedProcess(["psql"], 0, out, "")
+
+    return psql
+
+
+def test_doctor_warns_legacy_shared_store(tmp_path: Path):
+    # Sidecars only, an empty (fake) docker: no UNKNOWN that would mask the status.
+    catalog = _catalog()
+    catalog["defaults"]["per_worktree"] = ["conport", "dope-memory"]
+    del catalog["servers"]["task-orchestrator"]
+    repo = _write_fixture_repo(
+        tmp_path,
+        mcp_servers={
+            "conport": {"type": "sse", "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"},
+            "dope-memory": {
+                "type": "http",
+                "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
+            },
+        },
+    )
+    calls: list = []
+    report = run_mcp_doctor(
+        repo,
+        catalog=catalog,
+        skip_docker=False,
+        skip_port_probe=True,
+        process_env={},
+        docker_runner=lambda *a, **k: SimpleNamespace(returncode=0, stdout="", stderr=""),
+        psql=_tenant_psql(3, calls),
+    )
+    codes = {(f["code"], f["service"]) for f in report.findings}
+    assert ("CONPORT_LEGACY_SHARED_STORE", "conport") in codes
+    finding = next(f for f in report.findings if f["code"] == "CONPORT_LEGACY_SHARED_STORE")
+    assert finding["severity"] == "WARN"
+    assert "dopemux_knowledge_graph" in finding["message"] + finding["recommendation"]
+    assert "M2" in finding["recommendation"]
+    assert report.status == "PASS_WITH_WARNINGS"
+    assert calls and all(db == "dopemux_knowledge_graph" for db, _ in calls)
+
+
+def test_doctor_tenant_check_is_opt_in_and_read_only(tmp_path: Path):
+    from dopemux.mcp import conport_tenant as ct
+
+    repo = _write_fixture_repo(tmp_path)
+    off = run_mcp_doctor(
+        repo, catalog=_catalog(), skip_docker=True, skip_port_probe=True, process_env={}
+    )
+    assert not [f for f in off.findings if f["code"].startswith("CONPORT_")]
+
+    calls: list = []
+    fresh = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+        psql=_tenant_psql(0, calls),
+    )
+    # A start would provision; the doctor never does, and says nothing.
+    assert not [f for f in fresh.findings if f["code"].startswith("CONPORT_")]
+    assert not any("CREATE " in sql for _db, sql in calls)
+
+    (repo / ".envrc.dopemux-mcp").write_text(
+        (repo / ".envrc.dopemux-mcp").read_text()
+        + "export CONPORT_DB_NAME=conport_fake\nexport CONPORT_DB_USER=conport_fake\n"
+        + "export CONPORT_DB_PASSWORD=fake-doctor-pw\n"
+    )
+    adopted = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+        psql=_tenant_psql(0, []),
+    )
+    source = next(f for f in adopted.findings if f["code"] == "CONPORT_TENANT_SOURCE")
+    assert source["severity"] == "INFO" and "legacy_envrc" in source["message"]
+    assert "fake-doctor-pw" not in adopted.to_json()
+    identity = resolve_identity_view(repo)
+    assert not ct.secrets_path(identity.project_id).exists()  # read-only: never copied
+    assert "ConPort tenant: legacy_envrc" in format_human_summary(adopted)
+
+
+def test_doctor_cli_asks_for_the_conport_tenant_check(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import doctor as doctor_mod
+
+    repo = _write_fixture_repo(tmp_path)
+    seen: dict = {}
+    real = doctor_mod.run_mcp_doctor
+
+    def recording(*args, **kwargs):
+        seen["check_conport_tenant"] = kwargs.get("check_conport_tenant")
+        kwargs["check_dopemux_bin"] = False
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(doctor_mod, "run_mcp_doctor", recording)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", _catalog)
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["doctor", "--repo", str(repo), "--skip-docker", "--json"]
+    )
+    assert result.exit_code in (0, 1, 2), result.output
+    assert seen.get("check_conport_tenant") is True

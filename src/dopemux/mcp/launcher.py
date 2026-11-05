@@ -71,15 +71,6 @@ TO_BACKEND = BackendSpec(f"http://127.0.0.1:{TO_PORT}/mcp", "http", TO_SERVICE)
 TO_WRONG_PROJECT = "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT"
 TO_UNKNOWN_OWNER = "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER"
 
-# D3: ambient identity variables a launcher never lets through to the lifecycle.
-_IDENTITY_ENV = (
-    "DOPEMUX_WORKSPACE_ROOT",
-    "DOPEMUX_PROJECT_ROOT",
-    "DOPEMUX_INSTANCE_ID",
-    "DOPEMUX_WORKSPACE_ID",
-    "TASK_ORCHESTRATOR_PROJECT_ROOT",
-)
-
 Probe = Callable[[BackendSpec], bool]
 
 
@@ -249,9 +240,11 @@ def _lifecycle_env(env: Optional[Mapping[str, str]], catalog: Mapping[str, Any])
     """Process env for the lifecycle minus ambient identity and catalog port vars.
 
     Ports come from the lease registry (and the checkout's own envrc, which
-    the lifecycle reads itself), never from another checkout's exports.
+    the lifecycle reads itself), never from another checkout's exports. The
+    identity/port/tenant set is ``docker_runtime.AMBIENT_SCRUB_VARS`` (D3, D5),
+    defined once and shared with the lifecycle's compose environment.
     """
-    drop = set(_IDENTITY_ENV)
+    drop = set(dr.AMBIENT_SCRUB_VARS)
     for spec in (catalog.get("servers") or {}).values():
         if not isinstance(spec, Mapping):
             continue
@@ -310,31 +303,15 @@ def _wait_for(
 # --- image policy (D4) ----------------------------------------------------------
 
 
-def _build_inputs(runtime_dir: Path) -> tuple[Path, Path]:
-    """The lifecycle's override/env files; placeholders when the worktree never started.
-
-    ``compose build`` needs both ``-f`` and ``--env-file`` to exist; neither
-    affects the image. The lifecycle overwrites them on its first start.
-    """
-    runtime_dir.mkdir(parents=True, exist_ok=True)
-    override = runtime_dir / "compose.override.yml"
-    env_file = runtime_dir / "mcp.env"
-    if not override.exists():
-        override.write_text("# no compose services\n", encoding="utf-8")
-    if not env_file.exists():
-        env_file.write_text("", encoding="utf-8")
-    return override, env_file
-
-
 def _build_image_if_missing(target: LaunchTarget) -> None:
     if target.spec.get("management_model") != "compose-service":
         return
     product = dr.product_root()
-    env = dr.env_with_compose_interpolation(product=product)
+    env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
     image = dr.compose_image_name(target.compose_project, target.service)
     if dr.docker_image_exists(image, env=env) is not False:
         return
-    override, env_file = _build_inputs(target.runtime_dir)
+    override, env_file = dr.compose_build_inputs(target.runtime_dir)
     command = dr.compose_build_command(
         product=product,
         override_path=override,

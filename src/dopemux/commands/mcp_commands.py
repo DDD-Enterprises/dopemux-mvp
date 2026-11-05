@@ -1895,6 +1895,106 @@ def mcp_ensure_cmd(trust_env: bool, fast: bool, full_mode: bool):
     console.logger.info("[success]Full MCP ensure checks green.[/success]")
 
 
+# `mcp init` sidecar steps (D4/D5) run their docker/psql through this
+# subprocess.run-compatible callable; tests inject a fake. None means the real
+# subprocess.run, which is refused under pytest so no test reaches docker.
+_INIT_RUNNER: Optional[Any] = None
+
+
+def _init_sidecars(
+    repo_path: Path,
+    services: List[str],
+    envrc_values: Mapping[str, str],
+    *,
+    trust_env: bool = False,
+) -> bool:
+    """Resolve (provisioning if needed) the ConPort tenant and pre-build sidecar images.
+
+    Never starts a container. Prints the tenant source word, never the password
+    or the user. Returns False after one FAIL line; config already written stays.
+    """
+    from rich.markup import escape
+
+    from dopemux.mcp import conport_tenant as ct
+    from dopemux.mcp import docker_runtime as dr
+    from dopemux.mcp.lifecycle import runtime_dir_for
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    def say(markup: str) -> None:
+        console.logger.info(markup, soft_wrap=True)
+
+    wanted = [s for s in ("conport", "dope-memory") if s in services]
+    if not wanted:
+        return True
+    runner = _INIT_RUNNER
+    if runner is None and os.environ.get("PYTEST_CURRENT_TEST"):
+        say("[info]Sidecar pre-build and ConPort tenant skipped (pytest, no injected runner).[/info]")
+        return True
+    identity = resolve_identity_view(
+        repo_path, envrc_values=(dict(os.environ) if trust_env else None), trust_env=trust_env
+    )
+    if "conport" in wanted:
+        try:
+            creds = ct.resolve_tenant(
+                identity,
+                envrc_values=envrc_values,
+                psql=ct.default_psql_runner(runner=runner),
+            )
+        except ct.TenantError as exc:
+            say(f"[error]FAIL {exc.code}: {escape(exc.detail or exc.code)}[/error]")
+            return False
+        except (OSError, ValueError) as exc:
+            say(f"[error]FAIL CONPORT_TENANT_PROVISION_FAILED: {exc.__class__.__name__}[/error]")
+            return False
+        detail = f" ({escape(creds.evidence)})" if creds.evidence else ""
+        say(f"[info]ConPort tenant: {creds.source}{detail}[/info]")
+    try:
+        product = dr.product_root()
+        runtime_dir = runtime_dir_for(identity)
+    except (FileNotFoundError, ValueError) as exc:
+        say(f"[error]FAIL IMAGE_BUILD_FAILED: {escape(str(exc))}[/error]")
+        return False
+    slug = dr.project_slug(Path(str(identity.project_root)).name)
+    compose_project = dr.compose_project_name(slug, identity.worktree_hash or "")
+    env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
+    log_path = runtime_dir / "build.log"
+    budget = dr.build_timeout_secs()
+    for svc in wanted:
+        image = dr.compose_image_name(compose_project, svc)
+        if dr.docker_image_exists(image, runner=runner, env=env) is True:
+            say(f"[info]Image {image} present; no pre-build for {svc}.[/info]")
+            continue
+        override, env_file = dr.compose_build_inputs(runtime_dir)
+        say(
+            f"[info]Building the {svc} image {image} (up to {budget:.0f}s, "
+            f"{dr.BUILD_TIMEOUT_ENV}); log {escape(str(log_path))}[/info]"
+        )
+        result = dr.run_cmd(
+            dr.compose_build_command(
+                product=product,
+                override_path=override,
+                env_file=env_file,
+                project_name=compose_project,
+                services=[svc],
+            ),
+            runner=runner,
+            cwd=product,
+            env=env,
+            timeout=budget,
+        )
+        with open(log_path, "a", encoding="utf-8") as log:
+            log.write(result.stdout or "")
+            log.write(result.stderr or "")
+        if result.exit_code != 0:
+            say(
+                f"[error]FAIL IMAGE_BUILD_FAILED: compose build {svc} exited "
+                f"{result.exit_code}; log {escape(str(log_path))}[/error]"
+            )
+            return False
+        say(f"[success]Built {image}[/success]")
+    return True
+
+
 @mcp.command("init")
 @click.option("--force", is_flag=True, help="Overwrite existing .mcp.json and env file without prompting.")
 @click.option("--with", "extra", multiple=True, help="Additional server name beyond catalog defaults (repeatable).")
@@ -2046,6 +2146,9 @@ def mcp_init_cmd(
         for var, port in sorted(port_vars.items()):
             free = "[success]free[/success]" if _port_is_free(port) else "[warning]in use[/warning]"
             console.logger.info(f"[info]  {var}={port} ({free})[/info]")
+    # D4/D5: tenant (provisioned if needed) and synchronous image pre-build (#1459).
+    if not _init_sidecars(repo_path, ordered, existing_env, trust_env=trust_env):
+        sys.exit(1)
     console.logger.info("")
     console.logger.info("[info]Next:[/info]")
     console.logger.info("[info]  1. Add `source ./.envrc.dopemux-mcp` to your .envrc, or `direnv allow`.[/info]")
@@ -2326,6 +2429,7 @@ def mcp_doctor_cmd(
         process_env=dict(os.environ),
         trust_env=trust_env,
         check_dopemux_bin=True,
+        check_conport_tenant=True,
     )
 
     if json_output:

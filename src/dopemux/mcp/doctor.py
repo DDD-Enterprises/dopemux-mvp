@@ -258,6 +258,79 @@ def _is_non_colliding_peer_instance(
     return True
 
 
+TENANT_SOURCE_PREFIX = "tenant_source="
+
+
+def _check_conport_tenant(
+    findings: List[Finding],
+    identity: Any,
+    envrc_values: Mapping[str, str],
+    psql: Optional[Callable[[str, str], Any]],
+) -> None:
+    """D5, read-only: which ConPort tenant a start would use (never writes, never provisions)."""
+    from . import conport_tenant as ct
+
+    if not getattr(identity, "project_id", None):
+        return
+    try:
+        creds = ct.resolve_tenant(
+            identity,
+            envrc_values=envrc_values,
+            psql=psql or ct.default_psql_runner(),
+            provision=False,
+        )
+    except ct.TenantError as exc:
+        _add(
+            findings,
+            exc.code,
+            "FAIL",
+            exc.detail or exc.code,
+            service="conport",
+            recommendation="Fix or delete the ConPort tenant secrets file named above.",
+        )
+        return
+    except (OSError, ValueError):
+        return
+    if creds is None:  # a start would provision a fresh tenant (R1: no finding)
+        return
+    if creds.source == "legacy_shared" and creds.evidence.startswith(ct.UNREACHABLE_EVIDENCE):
+        _add(
+            findings,
+            "CONPORT_TENANT_UNVERIFIED",
+            "INFO",
+            f"conport tenant not determined: {creds.evidence}",
+            service="conport",
+            evidence=[f"{TENANT_SOURCE_PREFIX}unverified"],
+        )
+        return
+    if creds.source == "legacy_shared":
+        _add(
+            findings,
+            "CONPORT_LEGACY_SHARED_STORE",
+            "WARN",
+            (
+                f"conport for this project uses the shared {ct.SHARED_DB} store "
+                f"({creds.evidence}); it has no project wall yet"
+            ),
+            service="conport",
+            evidence=[f"{TENANT_SOURCE_PREFIX}legacy_shared", creds.evidence],
+            recommendation=(
+                f"No action needed now: this project keeps the shared {ct.SHARED_DB} "
+                "store; migrating its rows to a project tenant is M2."
+            ),
+        )
+        return
+    pending = " (migration gate pending)" if creds.gate_pending else ""
+    _add(
+        findings,
+        "CONPORT_TENANT_SOURCE",
+        "INFO",
+        f"conport tenant source: {creds.source}{pending}",
+        service="conport",
+        evidence=[f"{TENANT_SOURCE_PREFIX}{creds.source}{pending}"],
+    )
+
+
 def _summarize_status(findings: List[Finding]) -> tuple[str, int]:
     """Return (status, exit_code)."""
     sevs = {f.severity for f in findings}
@@ -308,6 +381,8 @@ def run_mcp_doctor(
     process_env: Optional[Mapping[str, str]] = None,
     trust_env: bool = False,
     check_dopemux_bin: bool = False,
+    psql: Optional[Callable[[str, str], Any]] = None,
+    check_conport_tenant: bool = False,
 ) -> DoctorReport:
     """
     Run the full read-only doctor against ``repo``.
@@ -315,6 +390,9 @@ def run_mcp_doctor(
     Parameters allow injection of catalog/docker/port probes for unit tests.
     ``check_dopemux_bin`` adds ``DOPEMUX_BIN_NOT_EDITABLE`` (probes PATH's
     ``dopemux`` with a subprocess); only the ``mcp doctor`` command asks for it.
+    ``check_conport_tenant`` (or an injected ``psql``) reports the ConPort
+    tenant a start would use, read-only; ``CONPORT_LEGACY_SHARED_STORE`` is a
+    WARN. The lifecycle preflight leaves it off and records the finding itself.
     """
     repo_path = Path(repo).expanduser().resolve()
     repo_arg = str(repo)
@@ -772,6 +850,12 @@ def run_mcp_doctor(
                             )
                 except Exception:  # noqa: BLE001
                     pass
+
+    # --- ConPort tenant (D5; opt-in like the dopemux bin check, read-only) ---
+    if (check_conport_tenant or psql is not None) and (
+        "conport" in (mcp_servers or {}) or any(d.name == "conport" for d in desired)
+    ):
+        _check_conport_tenant(findings, identity, envrc.values, psql)
 
     # --- Compose lifecycle ---
     # Prefer explicit compose_path only when it belongs to the target repo.
@@ -1453,6 +1537,18 @@ def format_human_summary(
     """Compact human-readable doctor summary."""
     repo_name = Path(report.repo_arg).name or report.repo_arg
     lines = [f"MCP Doctor for {repo_name}: {report.status}"]
+    for finding in report.findings:
+        tenant = next(
+            (
+                e[len(TENANT_SOURCE_PREFIX) :]
+                for e in finding.get("evidence") or []
+                if str(e).startswith(TENANT_SOURCE_PREFIX)
+            ),
+            None,
+        )
+        if tenant:
+            lines.append(f"ConPort tenant: {tenant}")
+            break
     # Prioritize FAIL then WARN then UNKNOWN
     priority = {"FAIL": 0, "WARN": 1, "UNKNOWN": 2, "INFO": 3}
     sorted_findings = sorted(
