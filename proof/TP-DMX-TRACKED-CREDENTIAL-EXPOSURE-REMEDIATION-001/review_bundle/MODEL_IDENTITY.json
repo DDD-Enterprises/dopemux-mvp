@@ -1,0 +1,10 @@
+{
+  "auditor_tool": "agy",
+  "requested_model": "gemini-3.1-pro-high",
+  "configured_display_model": "Gemini 3.1 Pro (High)",
+  "conversation_id": "ee5f5d64-2300-4f24-90a8-26ef1492c74a",
+  "audited_head_sha": "a14dd4c7f9635d013d1a26c79ddebf4f92b58fdf",
+  "status": "SUCCESS",
+  "fallback": false,
+  "verdict": "PASS"
+}
