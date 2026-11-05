@@ -353,7 +353,21 @@ def allocate_ports(
     if extra_blocked_ports:
         blocked.update({int(k): str(v) for k, v in extra_blocked_ports.items()})
 
-    # Seed blocked with other projects' active leases
+    plan_ports: Dict[int, str] = {}  # port -> owner key in this allocation
+    reqs = build_role_requests(
+        service_names,
+        catalog,
+        worktree=wt,
+        project_root=proj,
+        existing_envrc=existing_envrc,
+    )
+    requested = {(r.service, r.port_var) for r in reqs}
+
+    # Seed blocked with other projects' active leases, and with this identity's
+    # leases for services/vars not in this request: a caller that allocates one
+    # service at a time (the launcher) must never land on a sibling's port.
+    # Ports this identity holds for a requested (service, port_var) stay reusable.
+    sibling_ports: Dict[int, str] = {}
     for L in registry.active_leases():
         port = int(L.get("port") or 0)
         if not port:
@@ -369,15 +383,9 @@ def allocate_ports(
             blocked[port] = (
                 f"lease:{L.get('service')}:{L.get('worktree_root') or L.get('project_root')}"
             )
-
-    plan_ports: Dict[int, str] = {}  # port -> owner key in this allocation
-    reqs = build_role_requests(
-        service_names,
-        catalog,
-        worktree=wt,
-        project_root=proj,
-        existing_envrc=existing_envrc,
-    )
+        elif (L.get("service"), L.get("port_var")) not in requested:
+            sibling_ports[port] = f"lease:{L.get('service')}.{L.get('port_var')} (this worktree)"
+            blocked.setdefault(port, sibling_ports[port])
     # Track per-role outcomes so overall status can become REUSED when appropriate.
     role_statuses: List[str] = []
 
@@ -490,6 +498,9 @@ def allocate_ports(
             if ep in plan_ports and plan_ports[ep] != f"{req.service}.{req.port_var}":
                 # conflict within plan — fall through to rebind
                 pass
+            elif ep in sibling_ports:
+                # already shares a port with another service of this worktree — rebind
+                rebind_reason = "ALLOCATOR_CROSS_SERVICE_COLLISION_AVOIDED"
             elif ep in blocked and not registry.identity_matches(
                 existing,
                 worktree_root=identity.worktree_root,

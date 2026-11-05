@@ -444,3 +444,73 @@ def test_probe_mcp_server_name_fails_closed_on_bad_response():
     assert probe_mcp_server_name(7890, opener=_garbage) is None
     assert probe_mcp_server_name(7890, opener=_raises) is None
     assert probe_mcp_server_name(7890, opener=_no_serverinfo) is None
+
+
+# --- one worktree, one service at a time (fix round 1, finding F) -----------
+
+
+@pytest.mark.parametrize("steer", [None, "CONPORT_HTTP_PORT", "CONPORT_MCP_PORT"])
+def test_sequential_single_service_allocations_never_share_a_port(
+    steer, tmp_path: Path, monkeypatch
+):
+    """`mcp launch` allocates one service per lifecycle call; siblings must stay disjoint."""
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+    wt = str(tmp_path / "wt")
+    (tmp_path / "wt").mkdir()
+    common = dict(
+        worktree=wt, project_root=wt, registry_path=reg_path, persist=True,
+        is_free_fn=lambda p: True,
+    )
+    first = allocate_ports(["conport"], _catalog(), **common)
+    conport_ports = set(first.ports.values())
+    # The live run walked dope-memory's candidates onto conport's leased port
+    # (its container was not up yet, so the socket probe said free).
+    envrc = {"DOPE_MEMORY_PORT": str(first.ports[steer])} if steer else None
+    second = allocate_ports(["dope-memory"], _catalog(), existing_envrc=envrc, **common)
+    assert second.status != "BLOCKED", second.blocking_findings
+    assert second.ports["DOPE_MEMORY_PORT"] not in conport_ports
+    ports = [int(L["port"]) for L in PortLeaseRegistry.load(reg_path).active_leases()]
+    assert len(ports) == len(set(ports)) == 4
+    # A service's own leases stay reusable.
+    again = allocate_ports(["conport"], _catalog(), **common)
+    assert again.ports == first.ports
+    assert again.status == "REUSED"
+
+
+def test_existing_lease_on_a_sibling_port_is_not_reused(tmp_path: Path, monkeypatch):
+    from dopemux.mcp.port_allocator import build_role_requests
+
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+    wt = str(tmp_path / "wt")
+    (tmp_path / "wt").mkdir()
+    common = dict(
+        worktree=wt, project_root=wt, registry_path=reg_path, persist=True,
+        is_free_fn=lambda p: True,
+    )
+    first = allocate_ports(["conport"], _catalog(), **common)
+    collided = first.ports["CONPORT_HTTP_PORT"]
+    # What the live run left behind: dope-memory leased on conport's HTTP port.
+    reg = PortLeaseRegistry.load(reg_path)
+    sibling = next(L for L in reg.active_leases() if L["port_var"] == "CONPORT_HTTP_PORT")
+    role = build_role_requests(["dope-memory"], _catalog(), worktree=wt, project_root=wt)[0]
+    reg.upsert_lease(
+        {
+            **sibling,
+            "lease_id": "lease_collided_dope_memory",
+            "service": "dope-memory",
+            "port_role": role.port_role,
+            "port_var": "DOPE_MEMORY_PORT",
+        }
+    )
+    reg.save()
+
+    second = allocate_ports(["dope-memory"], _catalog(), **common)
+    assert second.ports["DOPE_MEMORY_PORT"] != collided
+    active = PortLeaseRegistry.load(reg_path).active_leases()
+    dm = [L for L in active if L["service"] == "dope-memory"]
+    assert [int(L["port"]) for L in dm] == [second.ports["DOPE_MEMORY_PORT"]]
+    assert any(
+        L["port_var"] == "CONPORT_HTTP_PORT" and int(L["port"]) == collided for L in active
+    )

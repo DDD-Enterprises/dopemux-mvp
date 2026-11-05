@@ -6,10 +6,12 @@ Docker, run_cmd and the lifecycle are recording fakes; the lock dir is tmp.
 from __future__ import annotations
 
 import subprocess
+from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Dict, List
 
+import click
 import pytest
 from click.testing import CliRunner
 
@@ -122,5 +124,108 @@ def test_switch_project_refuses_unmanaged_listener(repo: Path, rec: Recorder, mo
     for result in (unlabeled, process):
         assert result.exit_code == 1, result.output
         assert "not a managed task-orchestrator container" in result.output
+    assert rec.commands == []
+    assert rec.lifecycle == []
+
+
+# --- confirm outside the host-wide lock (fix round 1, finding B) ------------
+
+
+class LockSpy:
+    """Stands in for `reserved_port_lock`; records whether it is held."""
+
+    def __init__(self) -> None:
+        self.held = False
+        self.entered = 0
+
+    @contextmanager
+    def __call__(self, port: int):
+        assert not self.held, "reserved_port_lock taken twice"
+        self.held = True
+        self.entered += 1
+        try:
+            yield
+        finally:
+            self.held = False
+
+
+@pytest.fixture
+def lock_spy(monkeypatch) -> LockSpy:
+    from dopemux.mcp import locks
+
+    spy = LockSpy()
+    monkeypatch.setattr(locks, "reserved_port_lock", spy)
+    return spy
+
+
+def _foreign(tmp_path: Path, cid: str = "0123456789ab") -> di.DockerContainerInfo:
+    owner = _to(_labels("other-project", str(tmp_path / "other-project")))
+    owner.id = cid
+    return owner
+
+
+def _docker_sequence(monkeypatch, *snapshots) -> List[int]:
+    calls: List[int] = []
+
+    def inspect(**_k):
+        calls.append(1)
+        containers = snapshots[min(len(calls), len(snapshots)) - 1]
+        return di.DockerInspectResult(available=True, containers=list(containers))
+
+    monkeypatch.setattr(di, "inspect_running_containers", inspect)
+    return calls
+
+
+def test_switch_project_confirms_outside_the_reserved_lock(
+    repo: Path, rec: Recorder, lock_spy: LockSpy, tmp_path: Path, monkeypatch
+):
+    _docker_sequence(monkeypatch, [_foreign(tmp_path)])
+    asked: List[bool] = []
+
+    def confirm(*_a, **_k):
+        asked.append(lock_spy.held)
+        return True
+
+    monkeypatch.setattr(click, "confirm", confirm)
+    under_lock: List[bool] = []
+    record_cmd = dr.run_cmd
+
+    def run_cmd(cmd, **kwargs):
+        under_lock.append(lock_spy.held)
+        return record_cmd(cmd, **kwargs)
+
+    monkeypatch.setattr(dr, "run_cmd", run_cmd)
+    result = _invoke(repo)
+    assert result.exit_code == 0, result.output
+    assert asked == [False]  # the prompt never holds the host-wide lock
+    assert rec.commands == [["docker", "stop", "0123456789ab"], ["docker", "rm", "0123456789ab"]]
+    assert under_lock == [True, True]
+    assert len(rec.lifecycle) == 1
+
+
+def test_switch_project_decline_changes_nothing(
+    repo: Path, rec: Recorder, lock_spy: LockSpy, tmp_path: Path, monkeypatch
+):
+    _docker_sequence(monkeypatch, [_foreign(tmp_path)])
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["switch-project", "--repo", str(repo)], input="n\n"
+    )
+    assert result.exit_code == 1
+    assert rec.commands == []
+    assert rec.lifecycle == []
+    assert lock_spy.entered == 0
+
+
+@pytest.mark.parametrize("change", ["other_container", "was_free"])
+def test_switch_project_refuses_when_owner_changed_after_confirm(
+    change: str, repo: Path, rec: Recorder, lock_spy: LockSpy, tmp_path: Path, monkeypatch
+):
+    if change == "other_container":
+        _docker_sequence(monkeypatch, [_foreign(tmp_path)], [_foreign(tmp_path, "fedcba987654")])
+    else:
+        _docker_sequence(monkeypatch, [], [_foreign(tmp_path)])
+    result = _invoke(repo, "--yes")
+    assert result.exit_code == 1, result.output
+    assert "changed" in result.output
     assert rec.commands == []
     assert rec.lifecycle == []

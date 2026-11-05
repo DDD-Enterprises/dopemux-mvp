@@ -889,7 +889,12 @@ def test_doctor_warns_when_path_dopemux_is_not_editable_install(tmp_path: Path, 
         lambda bin_path: "/opt/tools/lib/python3.12/site-packages/dopemux/__init__.py",
     )
     report = run_mcp_doctor(
-        repo, catalog=_catalog(), skip_docker=True, skip_port_probe=True, process_env={}
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+        check_dopemux_bin=True,
     )
     found = [f for f in report.findings if f["code"] == "DOPEMUX_BIN_NOT_EDITABLE"]
     assert len(found) == 1
@@ -899,6 +904,55 @@ def test_doctor_warns_when_path_dopemux_is_not_editable_install(tmp_path: Path, 
     editable = str(product_root() / "src" / "dopemux" / "__init__.py")
     monkeypatch.setattr(doctor_mod, "_probe_dopemux_file", lambda bin_path: editable)
     report = run_mcp_doctor(
-        repo, catalog=_catalog(), skip_docker=True, skip_port_probe=True, process_env={}
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+        check_dopemux_bin=True,
     )
     assert not [f for f in report.findings if f["code"] == "DOPEMUX_BIN_NOT_EDITABLE"]
+
+
+def test_doctor_skips_dopemux_bin_check_unless_asked(tmp_path: Path, monkeypatch):
+    """Off by default: the lifecycle preflight and tests never probe the real PATH."""
+    from dopemux.mcp import doctor as doctor_mod
+
+    repo = _write_fixture_repo(tmp_path)
+    probed: list = []
+    monkeypatch.setattr(doctor_mod.shutil, "which", lambda name: probed.append(name) or None)
+    monkeypatch.setattr(
+        doctor_mod, "_probe_dopemux_file", lambda bin_path: probed.append(bin_path)
+    )
+    report = run_mcp_doctor(
+        repo, catalog=_catalog(), skip_docker=True, skip_port_probe=True, process_env={}
+    )
+    assert probed == []
+    assert not [f for f in report.findings if f["code"] == "DOPEMUX_BIN_NOT_EDITABLE"]
+
+
+def test_doctor_cli_asks_for_the_dopemux_bin_check(tmp_path: Path, monkeypatch):
+    from click.testing import CliRunner
+
+    from dopemux.commands import mcp_commands
+    from dopemux.mcp import doctor as doctor_mod
+
+    repo = _write_fixture_repo(tmp_path)
+    seen: dict = {}
+    real = doctor_mod.run_mcp_doctor
+
+    def recording(*args, **kwargs):
+        seen["check_dopemux_bin"] = kwargs.get("check_dopemux_bin")  # never the env
+        kwargs["skip_docker"] = True
+        kwargs["skip_port_probe"] = True
+        kwargs["check_dopemux_bin"] = False  # keep the test off the real PATH
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(doctor_mod, "run_mcp_doctor", recording)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", _catalog)
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["doctor", "--repo", str(repo), "--skip-docker", "--json"]
+    )
+    assert result.exit_code in (0, 1, 2), result.output
+    asked = seen.get("check_dopemux_bin")
+    assert asked is True

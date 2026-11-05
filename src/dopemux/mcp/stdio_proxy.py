@@ -10,12 +10,25 @@ Rules:
   roots) are answered at once with ``-32601 not supported by dopemux proxy``,
   never left pending.
 * The backend's ``tools/list_changed`` is forwarded to the runner.
-* A request that was never written to a dead backend session is sent once on
-  the reconnected session; a request in flight when the session drops gets an
-  error and is never replayed (its effect is unknown).
+* A backend session is dead once its write side fails or its read side has
+  ended (an SSE backend restart closes only the read side; the SDK answers
+  nothing written after that). The liveness check runs immediately before each
+  send, so a request is never written to a session known to be dead: it is sent
+  once on the reconnected session. A request in flight when its session drops
+  gets an error at once and is never replayed (its effect is unknown).
+* Every forwarded request is bounded by ``REQUEST_TIMEOUT_S`` and every backend
+  ``initialize`` by ``INITIALIZE_TIMEOUT_S``; a timeout is an error for that
+  request only, not a dead session.
 * Exit 0 when stdin closes; exit 1 once the backend session has dropped and the
-  single reconnect has failed or dropped too.
+  single reconnect has failed or dropped too (runner requests still waiting get
+  their error first).
 * Nothing but MCP frames ever reaches stdout.
+
+``serve(backend, read_stream, write_stream, *, session_factory=None)`` is the
+stream-level core; ``session_factory(**client_kwargs)`` must return an async
+context manager yielding an entered, not yet initialized ``ClientSession``
+constructed with exactly those keyword arguments (the proxy's sampling,
+elicitation and roots callbacks and its message handler).
 """
 
 from __future__ import annotations
@@ -27,6 +40,7 @@ import sys
 import threading
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from datetime import timedelta
 from functools import partial
 from typing import Any, AsyncContextManager, AsyncIterator, Callable, Dict, Literal, Optional
 
@@ -44,6 +58,12 @@ NOT_SUPPORTED_MESSAGE = "not supported by dopemux proxy"
 MAX_BACKEND_SESSIONS = 2
 #: How long a runner request waits for a reconnecting backend.
 RECONNECT_WAIT_S = 10.0
+#: Upper bound on one forwarded request (slow tools included).
+REQUEST_TIMEOUT_S = 300.0
+#: Upper bound on a backend ``initialize`` (first connect and the reconnect).
+INITIALIZE_TIMEOUT_S = 10.0
+#: How long a failed proxy waits for runner requests to receive their errors.
+DRAIN_S = 1.0
 
 SessionFactory = Callable[..., AsyncContextManager[ClientSession]]
 
@@ -93,6 +113,25 @@ def _connection_lost(detail: str) -> McpError:
     return McpError(types.ErrorData(code=types.CONNECTION_CLOSED, message=detail))
 
 
+def _can_receive(session: ClientSession) -> bool:
+    """False once nothing can ever arrive on ``session``'s read stream.
+
+    The SDK only answers requests that are pending when its read stream ends;
+    one sent afterwards waits forever. SDK transports and in-memory streams are
+    anyio memory streams, whose sender count drops to 0 when the transport
+    closes its read side. Anything else is assumed alive (the request timeout
+    still bounds it).
+    """
+    stream = getattr(session, "_read_stream", None)
+    statistics = getattr(stream, "statistics", None)
+    if statistics is None:
+        return True
+    try:
+        return statistics().open_send_streams > 0
+    except Exception:  # noqa: BLE001 - unknown stream type: assume alive
+        return True
+
+
 @asynccontextmanager
 async def _sdk_session(
     backend: BackendSpec, **client_kwargs: Any
@@ -126,6 +165,8 @@ class _BackendLink:
         self._connected = anyio.Event()
         self._dropped = anyio.Event()
         self._inflight: Dict[anyio.CancelScope, ClientSession] = {}
+        #: Runner requests currently inside ``forward``.
+        self.active = 0
 
     def client_kwargs(self) -> Dict[str, Any]:
         return {
@@ -153,9 +194,11 @@ class _BackendLink:
         started = False
         for attempt in range(1, MAX_BACKEND_SESSIONS + 1):
             self._dropped = anyio.Event()
+            session: Optional[ClientSession] = None
             try:
                 async with self._factory(**self.client_kwargs()) as session:
-                    init = await session.initialize()
+                    with anyio.fail_after(INITIALIZE_TIMEOUT_S):
+                        init = await session.initialize()
                     self.session = session
                     self._connected.set()
                     if not started:
@@ -165,7 +208,7 @@ class _BackendLink:
             except Exception as exc:  # noqa: BLE001 - any transport failure ends the session
                 _say(f"backend {self.backend.name} at {self.backend.url}: {exc!r}")
             finally:
-                self._end_session()
+                self._end_session(session)
             if attempt < MAX_BACKEND_SESSIONS:
                 _say(f"backend {self.backend.name} session ended; reconnecting once")
         _say(f"backend {self.backend.name} unavailable; run /mcp reconnect after fixing it")
@@ -174,41 +217,63 @@ class _BackendLink:
         if not started:
             task_status.started(None)
 
-    def _end_session(self) -> None:
-        ended = self.session
-        self.session = None
-        if self._connected.is_set():
-            self._connected = anyio.Event()
+    def _detach(self, session: Optional[ClientSession]) -> None:
+        """Stop handing out ``session``; waiters block until the reconnect."""
+        if session is not None and session is self.session:
+            self.session = None
+            if self._connected.is_set():
+                self._connected = anyio.Event()
+
+    def _end_session(self, ended: Optional[ClientSession]) -> None:
+        self._detach(ended)
         for scope, owner in list(self._inflight.items()):
             if owner is ended:
                 scope.cancel()
 
     def _drop(self, session: ClientSession) -> None:
+        """Mark ``session`` dead now, and let ``run`` close it and reconnect."""
         if session is self.session:
+            self._detach(session)
             self._dropped.set()
 
-    async def _current(self) -> ClientSession:
+    def _unavailable(self) -> McpError:
+        return _connection_lost(f"dopemux proxy: backend {self.backend.name} unavailable")
+
+    async def _live_session(self) -> ClientSession:
+        """A session that can still answer, waiting out at most one reconnect.
+
+        Returns without awaiting after the final check, so the caller's
+        ``send_request`` registers its response stream before anything else runs.
+        """
         with anyio.move_on_after(RECONNECT_WAIT_S):
-            while self.session is None and not self.failed.is_set():
-                await self._connected.wait()
-        if self.session is None:
-            raise _connection_lost(f"dopemux proxy: backend {self.backend.name} unavailable")
-        return self.session
+            while not self.failed.is_set():
+                session = self.session
+                if session is None:
+                    await self._connected.wait()
+                elif _can_receive(session):
+                    return session
+                else:
+                    self._drop(session)  # read side ended: nothing sent there is answered
+        raise self._unavailable()
 
     async def forward(self, request: Any, result_type: type) -> Any:
         # The runner's frame validated with its `jsonrpc`/`id` kept as extras;
         # rebuild from method and params so the backend frame gets its own.
         request = type(request)(method=request.method, params=request.params)
-        for _ in range(2):
-            session = await self._current()
+        for _ in range(MAX_BACKEND_SESSIONS):
+            session = await self._live_session()
             with anyio.CancelScope() as scope:
                 self._inflight[scope] = session
                 try:
-                    return await session.send_request(types.ClientRequest(request), result_type)
+                    return await session.send_request(
+                        types.ClientRequest(request),
+                        result_type,
+                        request_read_timeout_seconds=timedelta(seconds=REQUEST_TIMEOUT_S),
+                    )
                 except McpError as exc:
-                    if exc.error.code == types.CONNECTION_CLOSED:
-                        self._drop(session)
-                    raise
+                    if exc.error.code != types.CONNECTION_CLOSED:
+                        raise  # the backend's own error, or this request's timeout
+                    self._drop(session)
                 except (anyio.ClosedResourceError, anyio.BrokenResourceError):
                     self._drop(session)  # never written: safe to send on the next session
                     continue
@@ -218,7 +283,7 @@ class _BackendLink:
                 f"dopemux proxy: backend {self.backend.name} dropped during the request; "
                 "not retried"
             )
-        raise _connection_lost(f"dopemux proxy: backend {self.backend.name} unavailable")
+        raise self._unavailable()
 
 
 def _build_server(link: _BackendLink, init: types.InitializeResult) -> Server:
@@ -231,7 +296,11 @@ def _build_server(link: _BackendLink, init: types.InitializeResult) -> Server:
     def handler_for(result_type: type) -> Callable[[Any], Any]:
         async def handler(request: Any) -> types.ServerResult:
             link.downstream = server.request_context.session
-            return types.ServerResult(await link.forward(request, result_type))
+            link.active += 1
+            try:
+                return types.ServerResult(await link.forward(request, result_type))
+            finally:
+                link.active -= 1
 
         return handler
 
@@ -276,6 +345,12 @@ async def serve(
             nonlocal exit_code
             await link.failed.wait()
             exit_code = 1
+            # Waiting runner requests fail with "unavailable"; let those errors go
+            # out before the server stops.
+            with anyio.move_on_after(DRAIN_S):
+                while link.active:
+                    await anyio.sleep(0.01)
+                await anyio.sleep(0.05)
             tg.cancel_scope.cancel()
 
         tg.start_soon(serve_runner)

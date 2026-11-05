@@ -27,7 +27,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, NoReturn, Optional, Tuple
 from urllib.parse import urlparse
 
 import click
@@ -295,6 +295,8 @@ def mcp_switch_project_cmd(repo_arg: Optional[Path], yes: bool):
     Stops and removes the managed task-orchestrator container serving another
     project, then starts this project's through the lifecycle. Refuses when
     :7890 is held by anything that is not a managed task-orchestrator container.
+    The confirmation is asked without holding the host-wide :7890 lock; the
+    owner is then re-inspected under the lock and must be the same container.
     """
     from dopemux.mcp import docker_inspect as di
     from dopemux.mcp import docker_runtime as dr
@@ -304,71 +306,88 @@ def mcp_switch_project_cmd(repo_arg: Optional[Path], yes: bool):
     from dopemux.mcp.task_orchestrator_identity import identity_from_docker_labels, match_target
 
     port = 7890
+
+    def refuse(message: str) -> NoReturn:
+        click.echo(message, err=True)
+        sys.exit(1)
+
     target = lc.resolve_target_repo(repo_arg)
     identity = resolve_identity_view(target)
     if not identity.project_id or not identity.project_root:
-        click.echo(
-            f"Cannot resolve the project identity of {target}; run dopemux mcp doctor",
-            err=True,
-        )
-        sys.exit(1)
+        refuse(f"Cannot resolve the project identity of {target}; run dopemux mcp doctor")
     catalog = _load_catalog()
-    with reserved_port_lock(port):
+
+    def inspect_owner() -> Tuple[Any, Optional[str]]:
+        """(owner container or None when :7890 is free, its project root when foreign)."""
         state = di.inspect_running_containers()
         if not state.available:
-            click.echo(
-                f"Docker unavailable ({state.error}); cannot identify the :{port} owner",
-                err=True,
-            )
-            sys.exit(1)
+            refuse(f"Docker unavailable ({state.error}); cannot identify the :{port} owner")
         owners = [c for c in state.containers if port in (c.published_ports or [])]
-        if not owners and not lc._port_is_free(port):
-            click.echo(
-                f":{port} is held by a process that is not a managed task-orchestrator "
-                "container; refusing",
-                err=True,
+        if not owners:
+            if not lc._port_is_free(port):
+                refuse(
+                    f":{port} is held by a process that is not a managed task-orchestrator "
+                    "container; refusing"
+                )
+            return None, None
+        owner = owners[0]
+        labels = owner.labels or {}
+        if (
+            len(owners) != 1
+            or labels.get("dopemux.managed") != "true"
+            or labels.get("dopemux.service") != "task-orchestrator"
+        ):
+            refuse(
+                f":{port} is held by {owner.name}, which is not a managed "
+                "task-orchestrator container; refusing"
             )
-            sys.exit(1)
-        if owners:
-            owner = owners[0]
-            labels = owner.labels or {}
-            if (
-                len(owners) != 1
-                or labels.get("dopemux.managed") != "true"
-                or labels.get("dopemux.service") != "task-orchestrator"
-            ):
-                click.echo(
-                    f":{port} is held by {owner.name}, which is not a managed "
-                    "task-orchestrator container; refusing",
-                    err=True,
-                )
-                sys.exit(1)
-            observed = identity_from_docker_labels(labels, port=port, container_name=owner.name)
-            verdict = match_target(
-                observed, project_id=identity.project_id, project_root=identity.project_root
+        observed = identity_from_docker_labels(labels, port=port, container_name=owner.name)
+        verdict = match_target(
+            observed, project_id=identity.project_id, project_root=identity.project_root
+        )
+        if verdict == "OK":
+            return owner, None
+        return owner, observed.project_root or observed.project_id or "an unknown project"
+
+    def already_serves(owner: Any) -> None:
+        click.echo(
+            f"task-orchestrator on :{port} already serves {identity.project_root} ({owner.name})"
+        )
+
+    # Phase 1, no lock: look, and ask. A prompt must never hold the host-wide lock.
+    owner, foreign_root = inspect_owner()
+    if owner is not None and foreign_root is None:
+        already_serves(owner)
+        return
+    if owner is not None:
+        click.echo(f"task-orchestrator on :{port} serves {foreign_root} ({owner.name})")
+        if not yes:
+            click.confirm(
+                f"Stop it and start {identity.project_root}'s task-orchestrator?",
+                default=False,
+                abort=True,
             )
-            if verdict == "OK":
-                click.echo(
-                    f"task-orchestrator on :{port} already serves {identity.project_root} "
-                    f"({owner.name})"
-                )
-                return
-            owner_root = observed.project_root or observed.project_id or "an unknown project"
-            click.echo(f"task-orchestrator on :{port} serves {owner_root} ({owner.name})")
-            if not yes:
-                click.confirm(
-                    f"Stop it and start {identity.project_root}'s task-orchestrator?",
-                    default=False,
-                    abort=True,
-                )
+    else:
+        click.echo(f":{port} is free")
+
+    # Phase 2, under the lock: act only on what was confirmed.
+    with reserved_port_lock(port):
+        current, current_foreign = inspect_owner()
+        if current is not None and current_foreign is None:
+            already_serves(current)
+            return
+        if current is not None and (owner is None or current.id != owner.id):
+            refuse(
+                f":{port} owner changed since it was inspected "
+                f"({owner.name if owner is not None else 'free'} -> {current.name}); "
+                "rerun dopemux mcp switch-project"
+            )
+        if current is not None:
             for verb in ("stop", "rm"):
-                res = dr.run_cmd(["docker", verb, owner.id], timeout=60)
+                res = dr.run_cmd(["docker", verb, current.id], timeout=60)
                 if res.exit_code != 0:
                     detail = (res.stderr or res.stdout or "").strip()
-                    click.echo(f"docker {verb} {owner.id} failed: {detail}", err=True)
-                    sys.exit(1)
-        else:
-            click.echo(f":{port} is free")
+                    refuse(f"docker {verb} {current.id} failed: {detail}")
         click.echo(f"Starting task-orchestrator for {identity.project_root}")
         result = lc.run_lifecycle(
             "start",
@@ -2306,6 +2325,7 @@ def mcp_doctor_cmd(
         skip_docker=skip_docker,
         process_env=dict(os.environ),
         trust_env=trust_env,
+        check_dopemux_bin=True,
     )
 
     if json_output:

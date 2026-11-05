@@ -201,3 +201,162 @@ def test_probe_backend_false_on_refused_port(transport: str, path: str):
     started = time.monotonic()
     assert stdio_proxy.probe_backend(backend, timeout_s=1.0) is False
     assert time.monotonic() - started < 1.5
+
+
+# --- backend drop, resend, no-response (fix round 1, finding A) --------------
+
+
+class _Backend:
+    """A fake backend whose sessions the test can break from the outside."""
+
+    def __init__(self, *plan: str) -> None:
+        self.plan = list(plan)  # per session: "ok" | "refuse" | "dead_read"
+        self.sessions: List[Dict[str, Any]] = []
+        self.calls: List[str] = []
+        self.called = anyio.Event()
+        self.server = self._server()
+
+    def _server(self) -> Server:
+        server: Server = Server("breakable-backend")
+
+        @server.list_tools()
+        async def _list_tools() -> List[types.Tool]:
+            return [
+                types.Tool(name=n, description=n, inputSchema={"type": "object"})
+                for n in ("echo", "block")
+            ]
+
+        @server.call_tool()
+        async def _call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+            self.calls.append(name)
+            self.called.set()
+            if name == "block":
+                await anyio.Event().wait()  # never answers
+            return [types.TextContent(type="text", text=f"ok:{len(self.sessions)}")]
+
+        return server
+
+    def factory(self):
+        @asynccontextmanager
+        async def factory(**client_kwargs: Any):
+            mode = self.plan.pop(0) if self.plan else "ok"
+            if mode == "refuse":
+                self.sessions.append({"mode": mode})
+                raise OSError("connection refused")
+            async with create_client_server_memory_streams() as (client_streams, server_streams):
+                async with anyio.create_task_group() as tg:
+                    options = self.server.create_initialization_options()
+                    tg.start_soon(
+                        lambda: self.server.run(server_streams[0], server_streams[1], options)
+                    )
+                    if mode == "dead_read":
+                        await server_streams[1].aclose()  # nothing can ever be answered
+                    self.sessions.append(
+                        {"mode": mode, "client": client_streams, "server": server_streams}
+                    )
+                    async with ClientSession(
+                        client_streams[0], client_streams[1], **client_kwargs
+                    ) as session:
+                        yield session
+                    tg.cancel_scope.cancel()
+
+        return factory
+
+
+@asynccontextmanager
+async def _runner_via(backend: _Backend):
+    box: Dict[str, int] = {}
+    async with create_client_server_memory_streams() as (client_streams, proxy_streams):
+        async with anyio.create_task_group() as tg:
+
+            async def _serve() -> None:
+                box["code"] = await stdio_proxy.serve(
+                    SPEC, proxy_streams[0], proxy_streams[1], session_factory=backend.factory()
+                )
+
+            tg.start_soon(_serve)
+            async with ClientSession(client_streams[0], client_streams[1]) as runner:
+                with anyio.fail_after(5):
+                    await runner.initialize()
+                yield runner, box
+            await client_streams[1].aclose()
+            tg.cancel_scope.cancel()
+
+
+async def test_proxy_resends_unwritten_request_on_reconnected_session():
+    backend = _Backend()
+    async with _runner_via(backend) as (runner, _box):
+        with anyio.fail_after(5):
+            await runner.list_tools()
+        await backend.sessions[0]["client"][1].aclose()  # the next write fails: never written
+        with anyio.fail_after(5):
+            result = await runner.call_tool("echo", {})
+    assert result.content[0].text == "ok:2"
+    assert backend.calls == ["echo"]
+    assert len(backend.sessions) == 2
+
+
+async def test_proxy_reconnects_when_backend_read_side_ended_while_idle():
+    backend = _Backend()
+    async with _runner_via(backend) as (runner, _box):
+        with anyio.fail_after(5):
+            await runner.list_tools()
+        # An SSE backend restart: the transport closes only the read side.
+        await backend.sessions[0]["server"][1].aclose()
+        with anyio.fail_after(5):  # used to hang: the request was written, never answered
+            result = await runner.call_tool("echo", {})
+    assert result.content[0].text == "ok:2"
+    assert backend.calls == ["echo"]
+    assert len(backend.sessions) == 2
+
+
+async def test_proxy_fails_in_flight_request_without_replay():
+    backend = _Backend()
+    outcome: Dict[str, Any] = {}
+    async with _runner_via(backend) as (runner, _box):
+
+        async def _call() -> None:
+            try:
+                outcome["result"] = await runner.call_tool("block", {})
+            except McpError as exc:
+                outcome["error"] = exc.error
+
+        with anyio.fail_after(5):
+            async with anyio.create_task_group() as tg:
+                tg.start_soon(_call)
+                await backend.called.wait()
+                await backend.sessions[0]["server"][1].aclose()  # drops mid-request
+    assert "result" not in outcome
+    assert outcome["error"].code == types.CONNECTION_CLOSED
+    assert "not retried" in outcome["error"].message
+    assert backend.calls == ["block"]  # never replayed
+
+
+async def test_proxy_fails_fast_and_exits_one_when_reconnect_cannot_answer(monkeypatch):
+    monkeypatch.setattr(stdio_proxy, "INITIALIZE_TIMEOUT_S", 0.3)
+    backend = _Backend("ok", "dead_read")
+    async with _runner_via(backend) as (runner, box):
+        with anyio.fail_after(5):
+            await runner.list_tools()
+        await backend.sessions[0]["server"][1].aclose()
+        with anyio.fail_after(5):
+            with pytest.raises(McpError) as info:
+                await runner.call_tool("echo", {})
+            while "code" not in box:
+                await anyio.sleep(0.01)
+    assert info.value.error.code == types.CONNECTION_CLOSED
+    assert box["code"] == 1
+    assert backend.calls == []
+
+
+async def test_proxy_bounds_a_request_with_a_read_timeout(monkeypatch):
+    monkeypatch.setattr(stdio_proxy, "REQUEST_TIMEOUT_S", 0.3)
+    backend = _Backend()
+    async with _runner_via(backend) as (runner, _box):
+        with anyio.fail_after(5):
+            with pytest.raises(McpError) as info:
+                await runner.call_tool("block", {})
+            again = await runner.call_tool("echo", {})  # a slow tool does not end the session
+    assert "Timed out" in info.value.error.message
+    assert again.content[0].text == "ok:1"
+    assert len(backend.sessions) == 1

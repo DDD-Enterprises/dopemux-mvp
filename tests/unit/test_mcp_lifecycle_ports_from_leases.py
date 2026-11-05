@@ -327,3 +327,111 @@ def test_resolve_ports_lease_identity_matches_init_allocation(tmp_path, monkeypa
         return out
 
     assert docs(start_leases) and docs(start_leases) == docs(init_leases)
+
+
+# --- a lease held by another service's container (fix round 1, finding F) ---
+
+
+def _seed_collision(paths, identity) -> int:
+    """Lease conport, then add the dope-memory lease on CONPORT_HTTP_PORT the live run made."""
+    from dopemux.mcp.port_allocator import build_role_requests
+
+    ports = lc._resolve_ports(
+        identity, ["conport"], _catalog(), lease_path=paths.leases, is_free_fn=lambda p: True
+    )
+    collided = ports["CONPORT_HTTP_PORT"]
+    reg = PortLeaseRegistry.load(paths.leases)
+    sibling = next(L for L in reg.active_leases() if L["port_var"] == "CONPORT_HTTP_PORT")
+    role = build_role_requests(
+        ["dope-memory"],
+        _catalog(),
+        worktree=identity.worktree_root,
+        project_root=identity.project_root,
+    )[0]
+    reg.upsert_lease(
+        {
+            **sibling,
+            "lease_id": "lease_collided_dope_memory",
+            "service": "dope-memory",
+            "port_role": role.port_role,
+            "port_var": "DOPE_MEMORY_PORT",
+        }
+    )
+    reg.save()
+    return collided
+
+
+def _conport_container(identity, port: int):
+    from dopemux.mcp import docker_inspect as di
+
+    return di.DockerContainerInfo(
+        id="c0ffee000001",
+        name="dopemux-dnh_crm-test-conport",
+        ports=[f"127.0.0.1:{port}->3004/tcp"],
+        labels={
+            "dopemux.managed": "true",
+            "dopemux.service": "conport",
+            "dopemux.project_id": identity.project_id,
+            "dopemux.project_root": identity.project_root,
+        },
+        published_ports=[port],
+    )
+
+
+def test_resolve_ports_releases_lease_held_by_another_services_container(tmp_path, paths):
+    from dopemux.mcp import docker_inspect as di
+
+    repo = _repo(tmp_path)
+    identity = resolve_identity_view(repo)
+    collided = _seed_collision(paths, identity)
+    docker = di.DockerInspectResult(
+        available=True, containers=[_conport_container(identity, collided)]
+    )
+    got = lc._resolve_ports(
+        identity,
+        ["dope-memory"],
+        _catalog(),
+        lease_path=paths.leases,
+        is_free_fn=lambda p: p != collided,
+        docker=docker,
+    )
+    assert got["DOPE_MEMORY_PORT"] != collided
+    leases = PortLeaseRegistry.load(paths.leases).leases()
+    old = next(L for L in leases if L["lease_id"] == "lease_collided_dope_memory")
+    assert old["status"] == "released"
+    dm = [L for L in leases if L["service"] == "dope-memory" and L["status"] == "active"]
+    assert [int(L["port"]) for L in dm] == [got["DOPE_MEMORY_PORT"]]
+
+
+@pytest.mark.parametrize("skip_doctor", [True, False])
+def test_start_heals_colliding_lease_instead_of_port_collision(
+    skip_doctor, tmp_path, paths, monkeypatch
+):
+    from dopemux.mcp import docker_inspect as di
+
+    repo = _repo(tmp_path)
+    identity = resolve_identity_view(repo)
+    collided = _seed_collision(paths, identity)
+    container = _conport_container(identity, collided)
+    monkeypatch.setattr(
+        di,
+        "inspect_running_containers",
+        lambda **_k: di.DockerInspectResult(available=True, containers=[container]),
+    )
+    result = run_lifecycle(
+        "start",
+        repo=repo,
+        services=["dope-memory"],
+        catalog=_catalog(),
+        dry_run=True,
+        registry_path=paths.reg,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=skip_doctor,
+        port_is_free_fn=lambda p: p != collided,
+    )
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "DOCKER_CONTAINER_PORT_COLLISION" not in codes, result.blocking_findings
+    assert result.status == "PLANNED", result.blocking_findings
+    dm = next(s for s in result.services if s["service"] == "dope-memory")
+    assert dm["ports"]["DOPE_MEMORY_PORT"] != collided

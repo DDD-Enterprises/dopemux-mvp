@@ -15,6 +15,10 @@ Design D2/D4/D7 of claudedocs/mcp-just-works-design-2026-11-05.md:
 5. Attach record, then the SDK stdio proxy.
 
 Every refusal is one line ``CODE: remedy`` on stderr and exit code 3.
+
+``launch(service, *, root=None, env=None, registry_path=None, reaper=...)``:
+``env=None`` means ``os.environ`` read at call time (a default of the mapping
+itself would render every variable, secrets included, in ``help()``).
 """
 
 from __future__ import annotations
@@ -517,11 +521,16 @@ def launch(
     service: str,
     *,
     root: Optional[Path] = None,
-    env: Mapping[str, str] = os.environ,
+    env: Optional[Mapping[str, str]] = None,
     registry_path: Optional[Path] = None,
     reaper: Callable[[], None] = lambda: None,
 ) -> int:
-    """Run the launcher for ``service``; returns the process exit code."""
+    """Run the launcher for ``service``; returns the process exit code.
+
+    ``env`` defaults to ``os.environ`` as it is when called.
+    """
+    if env is None:
+        env = os.environ
     record: Optional[Path] = None
     try:
         # stdout is the MCP channel: nothing before the proxy may print there.

@@ -472,3 +472,27 @@ def test_attach_record_written_and_removed(tmp_path: Path, monkeypatch, registry
     monkeypatch.setattr(launcher, "ensure_backend", refuse)
     assert launcher.launch("conport", env={}) == 3
     assert list(attached_dir.iterdir()) == []
+
+
+def test_launch_env_default_is_resolved_at_call_time(tmp_path: Path, monkeypatch):
+    import inspect
+
+    # A default of os.environ would render every variable (secrets included) in
+    # help(), pydoc and inspect.signature.
+    assert inspect.signature(launcher.launch).parameters["env"].default is None
+
+    repo = _git_repo(tmp_path)
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
+    monkeypatch.setenv(launcher.WAIT_ENV, "7")
+    seen: Dict[str, Any] = {}
+
+    def fake_ensure(target, **kw):
+        seen.update(kw)
+        return BackendSpec("u", "sse", "conport")
+
+    monkeypatch.setattr(launcher, "ensure_backend", fake_ensure)
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend: 0)
+    assert launcher.launch("conport") == 0
+    assert seen["wait_s"] == 7.0
+    assert seen["env"][launcher.WAIT_ENV] == "7"

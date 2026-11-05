@@ -673,3 +673,101 @@ def test_should_pass_host_dir_interpolation_env_when_running_compose(
     up = next(c for c in runner.calls if c["kind"] == "up")
     assert up["env"]["HOST_CODE_PARENT_DIR"] == str(tmp_path)
     assert up["env"]["HOST_PROJECT_RELATIVE_PATH"] == "product"
+
+
+# --- task-orchestrator start under the reserved lock (fix round 1, finding D)
+
+
+def _to_start(tmp_path: Path, monkeypatch, *, snapshots, free):
+    """Run a real (non-dry) TO start with a lock spy and sequenced docker state."""
+    from contextlib import contextmanager
+
+    from dopemux.mcp import docker_inspect as di
+    from dopemux.mcp import lifecycle as lc
+
+    events = []
+    held = {"n": 0}
+
+    @contextmanager
+    def lock_spy(port):
+        held["n"] += 1
+        events.append(("lock", port))
+        try:
+            yield
+        finally:
+            held["n"] -= 1
+            events.append(("unlock", held["n"]))
+
+    def inspect(**_kwargs):
+        events.append(("inspect", held["n"]))
+        n = sum(1 for e in events if e[0] == "inspect")
+        containers = snapshots[min(n, len(snapshots)) - 1]
+        return di.DockerInspectResult(available=True, containers=list(containers))
+
+    def cmd_runner(cmd, **_kwargs):
+        events.append(("cmd", held["n"], list(cmd)))
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(lc, "reserved_port_lock", lock_spy)
+    monkeypatch.setattr(di, "inspect_running_containers", inspect)
+    result = run_lifecycle(
+        "start",
+        repo=_fixture_repo(tmp_path),
+        services=["task-orchestrator"],
+        catalog=_catalog(),
+        dry_run=False,
+        registry_path=tmp_path / "reg" / "instances.json",
+        cmd_runner=cmd_runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda port: free(events),
+    )
+    return result, events
+
+
+def _wrapper_calls(events):
+    return [e for e in events if e[0] == "cmd" and e[2][:1] == ["bash"]]
+
+
+def test_task_orchestrator_start_runs_wrapper_under_reserved_lock(tmp_path: Path, monkeypatch):
+    result, events = _to_start(tmp_path, monkeypatch, snapshots=[[]], free=lambda e: True)
+    assert result.exit_code == 0, result.blocking_findings
+    wrapper = _wrapper_calls(events)
+    assert len(wrapper) == 1
+    assert wrapper[0][1] >= 1  # the reserved lock is held while the wrapper starts TO
+    before = events[: events.index(wrapper[0])]
+    # ...and :7890 was re-inspected under that same hold, after the preflight released it.
+    released = max(i for i, e in enumerate(before) if e == ("unlock", 0))
+    assert any(e[0] == "inspect" and e[1] >= 1 for e in before[released:])
+
+
+def test_task_orchestrator_start_rechecks_owner_under_lock(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import docker_inspect as di
+
+    foreign = di.DockerContainerInfo(
+        id="0123456789ab",
+        name="task-orchestrator-other",
+        ports=["127.0.0.1:7890->7890/tcp"],
+        labels={
+            "dopemux.managed": "true",
+            "dopemux.service": "task-orchestrator",
+            "dopemux.project_id": "other-project",
+            "dopemux.project_root": str(tmp_path / "other-project"),
+        },
+        published_ports=[7890],
+    )
+    # Free at preflight; another project's TO takes :7890 before the start.
+    result, events = _to_start(
+        tmp_path,
+        monkeypatch,
+        snapshots=[[], [foreign]],
+        free=lambda e: sum(1 for x in e if x[0] == "inspect") < 2,
+    )
+    assert _wrapper_calls(events) == []
+    assert result.exit_code == 1
+    to_svc = next(s for s in result.services if s["service"] == "task-orchestrator")
+    assert to_svc["action"] == "blocked"
+    assert any(
+        f["code"].startswith("TASK_ORCHESTRATOR_START_BLOCKED") for f in to_svc["findings"]
+    )

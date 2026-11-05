@@ -307,11 +307,14 @@ def run_mcp_doctor(
     skip_port_probe: bool = False,
     process_env: Optional[Mapping[str, str]] = None,
     trust_env: bool = False,
+    check_dopemux_bin: bool = False,
 ) -> DoctorReport:
     """
     Run the full read-only doctor against ``repo``.
 
     Parameters allow injection of catalog/docker/port probes for unit tests.
+    ``check_dopemux_bin`` adds ``DOPEMUX_BIN_NOT_EDITABLE`` (probes PATH's
+    ``dopemux`` with a subprocess); only the ``mcp doctor`` command asks for it.
     """
     repo_path = Path(repo).expanduser().resolve()
     repo_arg = str(repo)
@@ -1372,8 +1375,9 @@ def run_mcp_doctor(
                     service="task-orchestrator",
                 )
 
-    # --- dopemux on PATH (D1) ---
-    _check_dopemux_bin(findings)
+    # --- dopemux on PATH (D1; opt-in, host-dependent) ---
+    if check_dopemux_bin:
+        _check_dopemux_bin(findings)
 
     # --- Status summary findings ---
     status, exit_code = _summarize_status(findings)
