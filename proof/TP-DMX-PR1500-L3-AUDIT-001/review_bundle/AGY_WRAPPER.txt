@@ -1,0 +1,52 @@
+#!/bin/bash
+# usage: run_agy.sh <print-timeout> [sealed-subdir] [output-prefix]
+# One contained AGY run from the sealed agy/ dir. Writes AGY_RAW.jsonl, _STDERR.txt, _EXIT.txt.
+# AGY CLI can write its result and never exit (PR 1498: 9h45m, past --print-timeout, through
+# SIGTERM), so a watchdog treats the result event as completion: custody first, then stop agy.
+# Any exit other than 0 from that stop is recorded in WATCHDOG.txt as this wrapper's doing.
+set -u
+E=/Users/hue/.local/share/dopemux/evidence/pr1500/r1
+SUB="${2:-agy}"
+S="$E/$SUB"
+O="$E/${3:-AGY}"
+T="$1"
+GRACE=30
+CAP=2700
+mkdir -p "$E/custody"
+cd "$S" || exit 2
+echo "agy $(agy --version) --model gemini-4-argon-high ; prompt=$SUB/AUDIT_PROMPT.txt ; started=$(date -u +%FT%TZ)" > "${O}_INVOCATION.txt"
+agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json \
+  --print-timeout "$T" --print="$(cat AUDIT_PROMPT.txt)" \
+  > "${O}_RAW.jsonl" 2> "${O}_STDERR.txt" &
+pid=$!
+waited=0
+seen=""
+while kill -0 "$pid" 2>/dev/null; do
+  if [ -z "$seen" ] && grep -q '"event":"result"' "${O}_RAW.jsonl" 2>/dev/null; then
+    seen=$waited
+    echo "result event seen at $(date -u +%FT%TZ)" >> "$E/WATCHDOG.txt"
+  fi
+  if { [ -n "$seen" ] && [ $((waited - seen)) -ge "$GRACE" ]; } || [ "$waited" -ge "$CAP" ]; then
+    conv=$(sed -n 's/.*"conversation_id":"\([^"]*\)".*/\1/p' "${O}_RAW.jsonl" | head -1)
+    if [ -n "$conv" ] && [ -f "$HOME/.gemini/antigravity-cli/conversations/$conv.db" ]; then
+      cp "$HOME/.gemini/antigravity-cli/conversations/$conv.db" "$E/custody/${SUB}-${conv:0:8}.db"
+    fi
+    echo "stopping pid $pid after waited=${waited}s seen=${seen:-never} at $(date -u +%FT%TZ)" >> "$E/WATCHDOG.txt"
+    kill -TERM "$pid" 2>/dev/null
+    sleep 10
+    kill -0 "$pid" 2>/dev/null && kill -KILL "$pid" 2>/dev/null
+    break
+  fi
+  sleep 5
+  waited=$((waited + 5))
+done
+wait "$pid"
+rc=$?
+echo "agy exit=$rc $(date -u +%FT%TZ)" > "${O}_EXIT.txt"
+# A clean exit skips the watchdog branch, and the delivery check needs this database either way.
+conv=$(sed -n 's/.*"conversation_id":"\([^"]*\)".*/\1/p' "${O}_RAW.jsonl" | head -1)
+db="$HOME/.gemini/antigravity-cli/conversations/$conv.db"
+if [ -n "$conv" ] && [ -f "$db" ] && [ ! -f "$E/custody/${SUB}-${conv:0:8}.db" ]; then
+  cp "$db" "$E/custody/${SUB}-${conv:0:8}.db"
+fi
+exit "$rc"
