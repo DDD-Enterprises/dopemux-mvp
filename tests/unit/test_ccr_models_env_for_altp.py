@@ -93,7 +93,13 @@ def test_ccr_models_env_for_altp(
          patch("dopemux.cli.InstanceManager") as mock_instance_mgr, \
          patch("dopemux.worktree_recovery.show_recovery_menu_sync", return_value=None) as mock_recovery, \
          patch("dopemux.cli.RoutingConfig") as mock_routing_config_cls, \
-         patch("dopemux.routing_config.RoutingConfig.load_default") as mock_routing_load_default:
+         patch("dopemux.routing_config.RoutingConfig.load_default") as mock_routing_load_default, \
+         patch(
+             "dopemux.hooks.claude_code_hooks.claude_hooks"
+         ) as mock_claude_hooks:
+        # `dopemux start` calls claude_hooks.start_monitoring(), which
+        # Popens a detached monitor_daemon.py; unmocked, every run of
+        # this test leaked an orphaned daemon.
 
         mock_get_root.return_value = workspace
         mock_ensure_role_profile.return_value = MagicMock()
@@ -114,6 +120,8 @@ def test_ccr_models_env_for_altp(
                 print(f"EXCEPTION: {result.exception}")
 
             assert result.exit_code == 0
+            # Monitoring is requested, only through the mock: no daemon.
+            mock_claude_hooks.start_monitoring.assert_called_once()
 
             print(f"Router CLS calls: {mock_router_cls.mock_calls}")
             print(f"Router Instance calls: {mock_router_instance.mock_calls}")

@@ -1,0 +1,37 @@
+{
+  "status": "PASS_WITH_RISKS",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [],
+  "risks": [
+    "validation_status=NOT_RUN: trusted policy forbids checking out or executing candidate code; the two unit tests were not re-run in this audit.",
+    "Remote GitHub PR #1460 headRefOid was not independently confirmed (gh API HTTP 401). Audit is pinned to local freeze artifacts and local git objects for head 7ea96e052ea78354f18edb523f6c22ba9b080ca1 / base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496.",
+    "test_task_orchestrator_http_singleton.py asserts exactly one identity file under isolated HOME; correct for current launcher write-once paths, but brittle if write_identity_metadata later writes additional workspace_id directories on the reuse/recreate paths."
+  ],
+  "rationale": "Independent static audit of frozen PR #1460 at pinned head 7ea96e052ea78354f18edb523f6c22ba9b080ca1 (base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496). Local origin is DDD-Enterprises/dopemux-mvp; both SHAs exist as commits; base is an ancestor of head; name-status is exactly the two unit test files; UNIFIED_DIFF.patch sha256 matches git diff base..head (416b7181e67963416fb0b6f6f084dd8a504c1d07b639b7b43e62b836f63f0e13); HEAD.txt equals the pinned head. Deterministic instruction-like scan reported detected=false (match_count=0). Diff is test-only hygiene: (1) mock dopemux.hooks.claude_code_hooks.claude_hooks and assert start_monitoring once \u2014 production cli.py late-imports that singleton and start_monitoring Popen's monitor_daemon.py, so the patch target and assertion are coherent; (2) isolate HOME for task-orchestrator-http-singleton.sh write_identity_metadata (${HOME}/.dopemux/mcp/runtime/${workspace_id}/task-orchestrator.identity.json) and assert one identity file on both reuse and recreate paths \u2014 matches launcher behavior at lines that always write metadata. No production code changed. No medium/high/critical defects identified in the inspected diff. Residual risks are unexecuted tests and unverified remote PR OID.",
+  "inspected_paths": [
+    "tests/unit/test_ccr_models_env_for_altp.py",
+    "tests/unit/test_task_orchestrator_http_singleton.py",
+    "src/dopemux/cli.py",
+    "src/dopemux/hooks/claude_code_hooks.py",
+    "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+    "src/dopemux/mcp/task_orchestrator_identity.py",
+    ".github/workflows/embedded-audit.yml",
+    "schemas/proof/embedded_audit.schema.json"
+  ],
+  "evidence_refs": [
+    "trusted://AUDIT_INPUT.md#head=7ea96e052ea78354f18edb523f6c22ba9b080ca1&base=95e95bee88cae5e6c95e6e34f7c28bb423ad9496&pr=1460",
+    "freeze://HEAD.txt=7ea96e052ea78354f18edb523f6c22ba9b080ca1",
+    "freeze://CHANGED_FILES.txt",
+    "freeze://DIFF_NAME_STATUS.txt",
+    "freeze://UNIFIED_DIFF.patch#sha256=416b7181e67963416fb0b6f6f084dd8a504c1d07b639b7b43e62b836f63f0e13",
+    "freeze://INSTRUCTION_LIKE.json#detected=false",
+    "freeze://AUDIT_INVOCATION.txt#TP-DMX-PR1460-L2-AUDIT-001",
+    "git://local#origin=https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "git://diff#95e95bee88cae5e6c95e6e34f7c28bb423ad9496..7ea96e052ea78354f18edb523f6c22ba9b080ca1",
+    "git://show#7ea96e05:src/dopemux/cli.py:2503-2505",
+    "git://show#7ea96e05:src/dopemux/hooks/claude_code_hooks.py:73-110",
+    "git://show#7ea96e05:scripts/mcp-wrappers/task-orchestrator-http-singleton.sh:83-86,260,276",
+    "workflow://.github/workflows/embedded-audit.yml"
+  ],
+  "validation_status": "NOT_RUN"
+}
