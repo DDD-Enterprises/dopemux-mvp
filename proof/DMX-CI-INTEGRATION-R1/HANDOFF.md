@@ -13,7 +13,7 @@ This candidate integrates the prior completion, memory correction, FastMCP trans
 
 ## Independent review and scope
 
-The fresh Claude source review returned NEEDS_SUPERVISOR. C1-C4 passed static review; C5 is UNKNOWN because the original packet lacked a disclosure document for retained failures and draft-only authority. That original verdict remains unchanged in AUDITOR_REPORT.md. This supervisor-authored document supplied the missing disclosure. A separately authorized, memory-captured C5 review returned PASS_WITH_RISKS; see AUDITOR_REPAIR_REPORT.md. The original NEEDS_SUPERVISOR verdict remains unchanged, and C1-C4 retain their original static scope.
+The fresh Claude source review returned NEEDS_SUPERVISOR. C1-C4 passed static review; C5 is UNKNOWN because the original packet lacked a disclosure document for retained failures and draft-only authority. That original verdict remains unchanged in AUDITOR_REPORT.md. This supervisor-authored document supplied the missing disclosure. A separately authorized, memory-captured C5 review returned PASS_WITH_RISKS; see ../DMX-CI-INTEGRATION-R1-C5/AUDITOR_REPORT.md. The original NEEDS_SUPERVISOR verdict remains unchanged, and C1-C4 retain their original static scope.
 
 Three LOW findings remain OPEN: the PR Steward evidence-reuse statement was not verifiable from the supplied packet; the CI summary can say to fix required checks even when its deterministic PR Gate is CLEAR; and the pre-existing scheduled-triage concurrency group allows a PR validation run to cancel a scheduled run. No medium/high/critical defect was reported. This was a scoped static review of new policy and integration changes, not comprehensive re-audit of all inherited source or runtime acceptance.
 
