@@ -1,0 +1,280 @@
+---
+id: mcp-just-works-design-2026-11-05
+title: Dopemux MCP "Just Works" Design — Milestone 1 (any checkout, zero typing)
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-11-05'
+last_review: '2026-11-05'
+next_review: '2026-12-05'
+status: APPROVED by owner 2026-11-05 ("approved"); D5 resolved as Option A on the author's recommendation; nothing built yet
+prelude: Design for making dopemux MCP sidecars, identity, hooks and cleanup work in any checkout of any project (git-made or Claude-made worktrees, any shell) with zero typing, on today's interim fleet architecture. Written from the owner's brief ("I want everything to just work") after the 2026-11-04 multi-project / multi-worktree readiness audit. Milestone 2 (the ruled end state of the 2026-07-28 fleet design) is referenced, not designed here.
+---
+# ━━━◆ Ø ◆━━━
+
+Status: written 2026-11-05 and APPROVED by the owner the same day (reply: "approved", after the §9 list and the D5 recommendation were presented; D5 therefore resolved as Option A). Not a plan: the plan is produced by `superpowers:writing-plans` and executed as a MacroPacket under AGENTS.md. No code, config, container, registry or lease was changed by writing this document. The document is untracked on a dirty `main`; committing it is the owner's call.
+
+Inputs: `docs/05-audit-reports/dopemux-multi-project-multi-worktree-readiness-2026-11-04.md` (the audit), `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (the accepted fleet design, "July design" below), Claude Code docs fetched 2026-11-05 (`mcp.md`, `hooks.md`, `worktrees.md`, `env-vars.md`, `settings-reference.md`), and the brainstorming conversation with the owner on 2026-11-05.
+
+## 1. Intent and why
+
+The owner's brief, verbatim: "i want everything to just work."
+
+Concretely: open Claude Code, Codex or any other runner in any checkout, whether a fresh `git worktree add`, a worktree Claude Code created, or a repo that has been set up once, and `conport`, `dope-memory` and `task-orchestrator` are connected to the right instance, the lifecycle hooks run, and nothing had to be typed, sourced, copied or exported. When a worktree goes away, its containers and leases go with it.
+
+Why now. The 2026-11-04 audit found that today a developer must follow seven manual rules (a specific binary with `--repo` every time, a clean shell, one command at a time, never `mcp init` in a worktree, hand-provisioned ConPort tenants, hand-delivered ports, manual teardown) and that four defects have no fix in flight: identity flips with the shell environment, `mcp init` targets the wrong checkout, no ports reach a session in a git-made worktree, and every lifecycle hook crashes in a linked worktree. The owner runs four projects with live sidecars and has 25 linked worktrees, none of which has working configuration.
+
+Every one of the seven rules traces to one choice: identity and ports are delivered through the shell environment. Milestone 1 replaces that channel with a launcher that reads the checkout.
+
+## 2. Milestones
+
+| Milestone | What it delivers | Architecture | Status |
+|---|---|---|---|
+| **M1 (this document)** | Any checkout of any set-up project works with zero typing; a never-set-up project needs exactly one command; task-orchestrator refuses loudly when another project owns it | Today's interim classes: conport and dope-memory per worktree, one task-orchestrator on reserved port 7890, shared redis-events | Owner confirmed the split 2026-11-05 ("yes") |
+| **M2** | The July design's ruled end state: one ConPort per project shared by its worktrees (P-18, P-19), one dope-memory per host (P-17), one task-orchestrator per project on a leased port (P-24, new ADR first), project-prefixed redis-events (P-21), shared serena (P-20) | End state | Not designed here; M1 must be a strict precursor of it, never a fork |
+
+Two projects running `/dx:*` against their own task-orchestrator at the same time belongs to M2 (P-24). The owner agreed.
+
+## 3. Goals, non-goals, anti-goals
+
+### 3.1 Goals (M1)
+
+- **G1 Zero typing in any checkout of a set-up project.** Git-made and Claude-made worktrees alike, from any shell, regardless of which `DOPEMUX_*` or `TASK_ORCHESTRATOR_*` variables happen to be exported.
+- **G2 Identity from the checkout only.** Project from the git common dir, instance from the worktree path. Ambient environment never changes identity for any command.
+- **G3 Find-or-start.** The launcher finds this checkout's healthy sidecars or starts them on demand with a visible cold-start notice and a bounded wait.
+- **G4 Task-orchestrator is correct or refused.** Forward only when the running jar provably serves this project; otherwise the server fails to connect with a named reason and remedy, visible in the runner's MCP status. Never kill-and-replace.
+- **G5 Hooks run in every worktree.** Including the DCP hard-deny guard and the health probes that fail open today.
+- **G6 One command for a brand-new project.** `dopemux mcp init` run once from anywhere inside the repo, idempotent, safe to re-run, and it does everything (images, tenant, client config). After that, G1 applies.
+- **G7 ConPort tenants provisioned automatically**, credentials kept outside the repo, legacy hand-made tenants adopted rather than replaced.
+- **G8 Cleanup without a daemon.** A removed or idle worktree's sidecars are stopped and its leases released by the next reap pass, whichever session triggers it.
+- **G9 Concurrency safe.** Two runners opening the same checkout at once, or two sessions in two worktrees, never corrupt the registries or double-start.
+
+### 3.2 Non-goals (M1)
+
+- **N1** Sharing one ConPort across worktrees, one dope-memory across the host, or one task-orchestrator per project. These are M2 (P-17, P-18, P-19, P-24).
+- **N2** Project-prefixed redis-events (P-21). redis-events stays the shared stream it is today, with the contamination risk the July design records.
+- **N3** Serena. No container exists today; M1 does not add one (P-20).
+- **N4** `multi_project_singleton` for task-orchestrator. Ruled NOT authorized (July §10.1).
+- **N5** Zero typing for a repo that has never been set up. One `dopemux mcp init` is the floor, because the runner needs a `.mcp.json` in that repo.
+- **N6** Any always-running process. Reaping is hook-triggered (July §6.2).
+- **N7** Changing MCP transports of the servers themselves. The launcher bridges; the containers keep SSE and streamable HTTP as they are.
+- **N8** Automatic hand-off of the task-orchestrator between projects. Moving it is one typed command, `dopemux mcp switch-project`, until P-24 gives each project its own.
+
+### 3.3 Anti-goals (a failure even if it works)
+
+- **A1** Silently answering for the wrong project. The audit found 7890 held by dNh_CRM while dopemux-mvp sessions pointed at it.
+- **A2** Starting containers for a directory that is not a dopemux-managed checkout.
+- **A3** Touching another checkout's files. `mcp init --force` from a worktree rewriting main's config is the audit's defect 2.
+- **A4** Credentials in tracked files, in prompts, or in the repo at all.
+- **A5** Yanking a container out from under a connected session because an idle timer fired.
+- **A6** A second allocation brain. `doctor` already warns `DUAL_ALLOCATION_BRAINS`; the launcher must call the existing lifecycle start path.
+
+## 4. Constraints
+
+- **C1 Governance.** Every slice is a MacroPacket child with a write allowlist, PR route, independent L3 audit and proof bundle (AGENTS.md §5, §9). Contract-sensitive surfaces touched: `.mcp.json` (rendered by the catalog; never hand-edited), `.claude/settings.json` hooks, `mcp_catalog`, hook scripts. Canonical-writer inspection before editing each.
+- **C2 The July design is the authority for the end state.** M1 reuses its identity rules (P-02: project from git common dir), its resource policy (§6.2: on-demand start, hook-triggered reaping, no daemon), and its `init` rule (§7: `init` never mutates docker). Where M1 ships something the July design also specifies, M1 ships the July version, not a parallel one.
+- **C3 All runners.** Logic lives in the dopemux CLI; per-runner adapters stay thin. A stdio launcher is the one MCP shape every runner supports (Codex: stdio and streamable HTTP only).
+- **C4 Host facts.** Docker Desktop; one shared `dopemux-postgres-age`; reserved 7890 owned by whichever project started last; `main` is dirty (147 modified files), so work happens in `<repo>/.worktrees/`, where hooks crash until D6 lands. Interim for the builder: symlink main's `.venv` into the worktree (untested) or land D6 first.
+- **C5 Claude Code facts (docs, 2026-11-05).** `WorktreeCreate` does not fire for `git worktree add` run through Bash, and configuring it replaces default creation and disables `.worktreeinclude`. `WorktreeRemove` fires only for hook-created worktrees. Whether a settings `env` block feeds `${VAR}` expansion in `.mcp.json` is undocumented. After entering a worktree, hook-input `cwd` is the worktree root while `CLAUDE_PROJECT_DIR` stays at the original root. MCP servers bind at session start; `/mcp reconnect all` exists (v2.1.284+). `SessionStart` hooks run before MCP servers are available and block the first response.
+- **C6 Prerequisite PRs.** #1459 (pre-build sidecar images), #1456 (host-path env defaults, registry reconcile; mergeable UNKNOWN, so rebase or fold), #1439 (native-hooks register writes the event-keyed schema). All three are audited; merge is owner-gated.
+
+## 5. Decisions
+
+Each item below is decided for the builder. Items marked **(owner to check)** are the author's calls that the owner has not explicitly agreed to; see §9.
+
+### D1 One stable `dopemux` on PATH **(owner to check)**
+
+Install the CLI once as an editable uv tool from the dopemux-mvp checkout:
+
+```bash
+uv tool install --editable /Users/hue/code/dopemux-mvp
+```
+
+That makes `~/.local/bin/dopemux` always track the checkout, replacing today's symlink into a non-editable install under `~/.dopemux/venv` (35 commits stale at the audit, and without the MCP SDK). The `mcp` SDK moves from the optional `services` extra into the core `dependencies` of `pyproject.toml`, because the launcher is core CLI behaviour; `uv.lock` is regenerated in the same change. Every `.mcp.json` launcher entry and every hook dispatcher calls `dopemux` by name. `dopemux doctor` gains a check that the PATH binary is an editable install of a checkout at or after the current HEAD, with the exact remedy command. No other repo needs a venv.
+
+Why: the launcher must run in repos that have no Python environment of their own, and the hooks defect is at root the same problem.
+
+Blast radius and rollback. A stale or missing PATH binary would fail every launcher in every project at once, so: the renderer emits `"command": "${DOPEMUX_BIN:-dopemux}"` in `.mcp.json` (Claude Code expands `${VAR:-default}` in `command`) and the equivalent override in each other runner's rendered config as that format allows (the existing renderer already targets Codex and the Copilot proxy), giving an override without editing a tracked file; `init` and `doctor` verify the binary before anything else; rollback is reverting the renderer and regenerating, which restores today's URL entries. Worktrees on branches that predate the renderer change keep the URL form and stay in today's state until their branch takes the change; that is accepted, since they are no worse off than now.
+
+### D2 The launcher
+
+Every `.mcp.json` server entry rendered by the catalog becomes a stdio command:
+
+```json
+{ "type": "stdio", "command": "dopemux", "args": ["mcp", "launch", "conport"] }
+```
+
+The renderer (`src/dopemux/mcp/fleet_catalog.py` / `src/dopemux/mcp/mcp_json.py`) owns this change. `.mcp.json` stays tracked and identical in every checkout of a repo, which is what makes worktrees free.
+
+`dopemux mcp launch <server>` does, in order:
+
+1. **Root.** `--root <path>` if given, else the process working directory. Refuse (non-zero exit, one-line reason) if the root is not inside a git work tree or the repo's `.mcp.json` is not dopemux-rendered. (A2)
+2. **Identity** per D3.
+3. **Lock** per D7.
+4. **Find-or-start** through the existing `lifecycle.py` start path, never a new one (A6), with the cold-start policy of D4.
+5. **Attach record** per D8.
+6. **Bridge** stdio to the sidecar with one mechanism for all three servers: a proxy built on the official `mcp` SDK (installed in the repo venv at 1.29; verified 2026-11-05 that `mcp.client.sse`, `mcp.client.streamable_http` and `mcp.server.stdio` import) that serves stdio to the runner and holds a client session to the sidecar. Client transport per server: SSE (`/sse`) for `conport`, streamable HTTP (`/mcp`) for `dope-memory` and `task-orchestrator`. Sessions, notifications and streamed responses are the SDK's job, not ours. `fastmcp` is pinned in `pyproject.toml` but is not installed in the default venv, so its `as_proxy` helper is not assumed; the builder may use it only if the dependency is made unconditional in the same packet.
+   - The hand-rolled `src/dopemux/mcp/http_stdio_bridge.py` is not used by the launcher: it sends a single POST per line and cannot carry notifications, session ids or event-stream responses. It stays in place because `src/dopemux/config/manager.py:721` still renders it into the legacy docker-mode client config and a test asserts that; removing it is a separate cleanup.
+   - The catalog gains a per-server client-shape field (`client: launcher`) on the three per-worktree entries, in both `mcp_catalog.yaml` and the packaged `src/dopemux/mcp/default_catalog.yaml` that other repos render from. `transport` and `url_template` keep describing the sidecar itself, which the launcher uses to build the backend URL from the leased port. The renderer emits the stdio launcher entry when `client: launcher` is set; `doctor`'s transport check and the `.mcp.json` repair planner compare the file against the client shape, not the sidecar transport, so a launcher entry is never a `TRANSPORT_MISMATCH`. The committed `.mcp.json` and `mcp-proxy-config.copilot.yaml` are regenerated in the same change because parity tests compare them byte for byte. Codex rendering is unchanged in M1: the per-worktree servers are not rendered into `.codex/config.toml` today, and adding them is outside this design.
+   - **Ports come from leases, not the env file.** Today the lifecycle reads ports only from `.envrc.dopemux-mcp` and blocks with `ENVRC_MISSING` when it is absent, which is exactly a fresh worktree. The lifecycle resolves ports from the lease registry for `(project_id, worktree)` and, when none exist, allocates them with the same `port_allocator.allocate_ports` that `init` uses, under the registry lock. `ENVRC_MISSING` stops being a blocker. `init` still writes the env file for humans.
+   - **Warm path.** A full `run_lifecycle` call runs a doctor pass and `docker ps` every time, which is seconds. The launcher first reads the registry entry for this worktree and service and probes the backend with an SDK `initialize`; if that succeeds it bridges at once. Only on failure does it take the lock and call the lifecycle start path.
+   - No `docker exec`. The in-repo `docker/mcp-servers-source/conport/server.py` does run as a stdio FastMCP that proxies to the container's REST port, but it offers nothing the SDK proxy does not, needs a docker exec per session, and reads no per-session identity (it has no reference to `DOPEMUX_INSTANCE_ID`). `scripts/mcp-wrappers/conport-wrapper.sh` is not a model either: it launches the upstream `context-portal-mcp` package, a split-storage shadow twin that packets `DMX-MCPINT-HRD-CONPORTWRAP-005` and `DMX-FLEET-P0-005` already mark for repointing.
+   - ConPort instance identity stays per container in M1, exactly as today. Per-request identity is P-18 (M2).
+   - **Task-orchestrator ownership proof.** The MCP `initialize` handshake yields only `serverInfo.name` (`src/dopemux/mcp/task_orchestrator_identity.py:221-270`) and the upstream jar has no `/info` or `/health`, so the jar cannot prove which project it serves. The proof is the Docker labels on the container that publishes 7890, evaluated by the existing `task_orchestrator_identity.match_target` over `identity_from_docker_labels`: realpath equality of `dopemux.project_root` with this project's root plus the normalised `dopemux.project_id`, the same decision the lifecycle preflight already makes. `OK` forwards; `WRONG_PROJECT`, `UNKNOWN` and `CONFLICT` refuse. `dopemux.project_root` is the label the wrapper already writes and already keys its own refusal on (`task-orchestrator-http-singleton.sh:78-80, 207-210`); `dopemux.workspace_id` is the starter's worktree path and must not be used for the comparison. The lifecycle passes the wrapper a `project_root` equal to the git common dir parent, never a worktree path, so a jar started from any worktree is recognised by every checkout of that project; the audit found two worktree-labelled orchestrator identity files on disk, which is the failure this rule prevents. Registry entries and the wrapper's identity file are corroboration only, never proof. Mismatch, missing labels, or a listener that is not a labelled container all **refuse** (fail closed, per repo doctrine).
+   - **Refusal shape.** The launcher exits non-zero with the existing finding codes and a remedy on stderr: `TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT <owner project_root>; run dopemux mcp switch-project here to take it over`, or `TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER; run dopemux mcp doctor`. These are the codes the wrapper and `evaluate_fixed_port_state` already emit; no new names. The runner then shows the server as failed with that text, which is honest and needs no fake server. `conport` and `dope-memory` are unaffected.
+   - **Who starts the jar.** When nothing listens on 7890 the launcher starts it through the existing lifecycle path (`task-orchestrator-http-singleton.sh`), the same as the other sidecars. It never kills, replaces, adopts or restarts another project's running jar (G4, A1, July §10.1). The wrapper's existing behaviour of replacing this same project's own container when its image, port or env has drifted is an upgrade path and stays. Moving the orchestrator between projects is the one typed command M1 keeps: `dopemux mcp switch-project`, implemented as the July §7 transitional command (stop the owner's jar through lifecycle, release, start this project's). This is consistent with the agreed split: two projects served at once is M2.
+
+**Root resolution must be measured first.** `.mcp.json` is tracked and identical in every checkout, so it cannot carry a per-worktree `--root`; the launcher depends on the working directory each runner gives a stdio child. The first task of the launcher slice is a probe entry that records `cwd` and environment from Claude Code and Codex in a main checkout, a git-made worktree and a Claude-made worktree. If a runner uses a fixed directory, the renderer emits a per-runner `--root` argument from that runner's own variable (for Claude Code `${CLAUDE_PROJECT_DIR:-.}`, which the docs say is set in the server's environment), and the probe result is recorded in the packet.
+
+The launcher never reads `.envrc.dopemux-mcp`, `.claude/settings.local.json` or ambient `DOPEMUX_*` variables.
+
+### D3 Identity from git only
+
+- `project_id` = `<slug>-<sha256(git common dir parent)[:16]>`, i.e. the July design's P-02 rule, as `ProjectIdentity.project_id` in `src/dopemux/mcp/project_identity.py:36-47` already computes it. (`src/dopemux/mcp/identity.py` is the registry-backed execution-identity resolver and by design never derives an id from cwd; it is not touched by M1.)
+- `instance_id` = hash of the resolved worktree path. `workspace_id` = the worktree path.
+- `HOST_CODE_PARENT_DIR` and `HOST_PROJECT_RELATIVE_PATH` are derived from the checkout path, never read from the environment.
+- `launch`, `start`, `stop`, `up`, `down`, `doctor`, `status`, `init` and `repair-config` ignore ambient `DOPEMUX_WORKSPACE_ROOT`, `DOPEMUX_PROJECT_ROOT`, `DOPEMUX_INSTANCE_ID`, `DOPEMUX_WORKSPACE_ID` and `TASK_ORCHESTRATOR_PROJECT_ROOT`. One escape hatch, `--trust-env`, exists for tests and is never set by any hook or launcher. This retires the forced override in `src/dopemux/mcp/runtime_state.py:116-137` and the env-beats-git precedence in `src/dopemux/mcp/project_identity.py:122-129` (audit defect 1).
+- `src/dopemux/worktree_commands.py:get_repo_root` becomes git-first (audit defect 2).
+- `mcp init` gains `--repo`; `--force` touches only the target checkout and never removes credentials, because credentials no longer live in the repo (D5).
+
+### D4 Cold-start policy **(owner to check)**
+
+| Situation | Launcher behaviour |
+|---|---|
+| Sidecar healthy | bridge immediately (warm, well under the July §6.3 200 ms target) |
+| Container exists, stopped, image present | start it, wait up to `DOPEMUX_LAUNCH_WAIT` (default 25 s, chosen to sit under the runner's MCP startup timeout; builder confirms Claude Code and Codex defaults), print progress lines to stderr, then bridge |
+| Image absent | kick a detached build logged under the instance runtime dir, exit non-zero with "building <server> image, retry with /mcp reconnect in a few minutes". Never block the session on a multi-minute build |
+| Wait exceeded | exit non-zero with "still starting, run /mcp reconnect all" |
+| Foreign container on the lease port | exit non-zero with the ownership finding and the `doctor` remedy; never evict |
+
+New project: `dopemux mcp init` is the one command (G6, N5). It pre-builds the two sidecar images synchronously with a progress banner (#1459), provisions the tenant (D5), renders `.mcp.json`, and never starts containers (July §7). After it, the first session's launchers do the cold start inside their wait budget.
+
+### D5 ConPort tenants **(owner to check)**
+
+On a project's first start the lifecycle resolves credentials in this order:
+
+1. `~/.dopemux/mcp/projects/<project_id>/secrets.env` (mode 0600).
+2. Else legacy `CONPORT_DB_*` in the checkout's `.envrc.dopemux-mcp`: copy them into (1) once, then proceed. This adopts the hand-made tenants of dNh_CRM, adOps and dopeClaw without touching their data.
+3. Else provision a new database and login role with `CONNECT` revoked from `PUBLIC`, by porting `scripts/migration/provision_conport_project_db.sh` into the lifecycle. Order is psql-then-adopt, because the ConPort migration gate self-deadlocks on a fresh database when run gate-first. Administration happens the way the script does it today: `docker exec` into the `dopemux-postgres-age` container as the bootstrap superuser (`provision_conport_project_db.sh:110-118`). That ties provisioning to the host singleton's container name, which is already how the lifecycle finds it; no new credential is stored anywhere. The script's final "adopt" and "verify" steps run the migration gate inside a ConPort container, which does not exist yet for a new tenant, so provisioning is two phases: the database phase (role, database, extensions, schema and SQL migrations as the role) runs before the sidecar starts, and the gate phase runs by `docker exec` into this instance's own conport container once it is up. Re-running provisioning must never rotate a password that is already in the secrets file, and the password is never printed.
+
+Double provisioning is prevented by the project-level lock (D7). Containers receive credentials through compose environment sourced from the secrets file. `.envrc.dopemux-mcp` is no longer read by any command; `init` may still generate it for humans with a header saying it is informational only, which also makes the direnv walk-up into nested worktrees harmless.
+
+**Legacy history detection.** Today every unprovisioned project silently falls back to the shared `dopemux_knowledge_graph` database (`compose.yml` `CONPORT_DB_NAME` default). Before provisioning, the lifecycle counts rows for this project's workspace path in the shared database's workspace-scoped tables (the builder enumerates them from the sealed `schema.sql`), using the same superuser exec. Zero rows: provision a fresh tenant. Rows present: the project has history in the shared store and **keeps using the shared database in M1** (Option A, approved by the owner 2026-11-05 on the author's recommendation): the lifecycle records `CONPORT_LEGACY_SHARED_STORE` for that project, `doctor` reports it as WARN with the migration remedy, no project wall exists for it, and its rows move to a tenant in M2 (P-18 acceptance c). Nothing breaks on day one. The rejected alternative was to refuse ConPort for such projects until migrated.
+
+Migrating or quarantining shared-store rows is M2.
+
+### D6 Hooks in every worktree
+
+`.claude/hooks/run_native_hooks.sh`:
+
+- Derives the checkout from the hook JSON `cwd` field, not from `CLAUDE_PROJECT_DIR` (which stays at the original root after entering a worktree) and not from the script's own `git rev-parse --show-toplevel`.
+- Resolves what to run in this order: if the checkout itself contains `src/dopemux/claude/native_hooks.py` (a dopemux-mvp checkout), run that file with the first interpreter found at `<checkout>/.venv/bin/python` or `<git common dir parent>/.venv/bin/python`, so in-repo hook changes apply in the checkout being edited; otherwise `dopemux native-hooks run` from `dopemux` on PATH, then `~/.local/bin/dopemux`; otherwise fail open with one stderr line and exit 0. Exit code 2 from the hook passes through unchanged. (`native-hooks run` is a new entry point: today the hook module is stdin-only with no CLI.)
+- `native-hooks register` also registers `SubagentStart` (omitted today) and writes the event-keyed schema (#1439).
+- Hook caches stay per checkout under `<checkout>/.claude/`.
+
+### D7 Locks
+
+- `flock` on `~/.dopemux/mcp/runtime/<slug>-<worktree_hash>/launch.lock` around find-or-start. That directory is the per-worktree runtime dir the lifecycle already uses for `mcp.env`, `compose.override.yml` and `start-plan.json`; "instance" in this document means that `(project_id, worktree_hash)` pair, not the per-service `dopemux.instance_id` label.
+- `flock` on `~/.dopemux/mcp/runtime/registry.lock` around every read-modify-write of `port-leases.json` and `instances.json` (they are atomic-replace but unlocked today). Because a lifecycle start loads the registry before docker starts and saves after them, the lock must not span that window: the early load is read-only, and the registry is reloaded under the lock immediately before the final upserts and save, so concurrent starts merge instead of overwriting.
+- `flock` on `~/.dopemux/mcp/projects/<project_id>/provision.lock` around D5.
+- `flock` on `~/.dopemux/mcp/runtime/reserved-7890.lock`, host-wide, around the task-orchestrator check-then-start. The per-instance lock is the wrong granularity there: two worktrees of one project, or two projects, have different instance ids and would both see 7890 free and both start a jar. Under this lock the launcher uses a **start-only** path that refuses if anything foreign listens. `scripts/mcp-wrappers/task-orchestrator-http-singleton.sh` already behaves that way for foreign owners (`refuse_foreign_port_owner`, "no docker rm foreign") and only removes its own project's stale containers before starting, so the launcher calls it as is. Stopping another project's jar happens only inside `switch-project`, through that project's lifecycle `stop`, never through the wrapper.
+
+`fcntl.flock` on macOS and Linux only; Windows and network filesystems are out of scope for this host. This retires the "one command at a time" rule (G9).
+
+### D8 Liveness and cleanup, reap-only **(owner to check)**
+
+- Each launcher writes `~/.dopemux/mcp/runtime/<slug>-<worktree_hash>/attached/<pid>` on start and removes it on exit. Stale entries (pid gone) count as detached.
+- **Reap rule**: an instance is reaped when it has zero live attachments AND (its worktree path no longer exists OR it has been idle at least 20 minutes since the last detach). Reaping stops the instance's sidecars, releases its leases and removes its runtime dir. Host singletons and the reserved task-orchestrator are never reaped by this rule.
+- **Which containers belong to an instance** is decided by Docker labels, `dopemux.managed=true` with matching `dopemux.project_id` and `dopemux.worktree_hash`, listed with `docker ps -a --filter label=...` so stopped containers are seen too, joined with the registry entry, never by container name: `mcp-conport` and friends are the legacy default names from `compose.yml` and are not instance containers. A container without matching labels is never touched by reap.
+- **Race with a starting launcher**: reap takes the instance's `launch.lock` (D7) and re-reads attachments under it before stopping anything; a launcher writes its attach record under the same lock before it starts containers. So a launcher mid-start is always visible to a concurrent reap.
+- Reap runs at the `SessionEnd` hook, at the start of every launcher, and at the `Stop` hook throttled to once per 10 minutes per host through a timestamp file, because `Stop` fires at the end of every turn. It runs before the handlers' early returns. Bounded and lock-protected. Never a daemon (N6). The `WorktreeRemove` hook, when present, also triggers a reap, but nothing depends on it.
+- Why not take over `WorktreeCreate`: it replaces Claude's creation behaviour and disables `.worktreeinclude`, and git-made worktrees never trigger it. Reap-only treats both kinds identically.
+- Why attachments rather than an idle timer alone: a connected session is never cut off (A5).
+
+### D9 Prerequisite PRs
+
+Land #1459, #1456 (rebase or fold if it no longer merges) and #1439 before the launcher packet. #1440 (docs) follows M1's doc update. #1460 (test hygiene) is optional.
+
+### D10 Documentation
+
+AGENTS.md §12 and the "Setting up MCP in a new repo" block in `.claude/CLAUDE.md` change to the one-command recipe. `docs/02-how-to/mcp-setup-other-repos.md` is rewritten. `.claude/WORKTREE_MCP_SETUP.md` and the `.envrc` steps are retired. The audit report's §5 recipe is superseded by a pointer.
+
+### D11 Known M1 limitation: mid-session worktree entry **(owner to check)**
+
+MCP servers bind at session start. Entering a worktree mid-session with `EnterWorktree` keeps the original checkout's launchers until the user runs `/mcp reconnect all`, and the reconnect still runs in the session's original working directory unless the runner restarts the stdio command from the new one. The builder verifies which, and the docs state the result plainly. A session opened in the worktree is the supported path.
+
+### D12 Interim cost
+
+Two containers per worktree plus the shared task-orchestrator, bounded by D8. This is the July design's interim state and is accepted for M1.
+
+## 6. Acceptance: what "just works" means, testably
+
+All from a shell that has main's `.envrc.dopemux-mcp` sourced AND from a clean `env -i` shell; both must give identical results.
+
+- **T1** Fresh `git worktree add` of dopemux-mvp, open a session: `conport`, `dope-memory` connect; identity is main's `project_id` with a distinct `instance_id`; nothing typed.
+- **T2** Same for a worktree Claude Code created with `EnterWorktree` or `--worktree`.
+- **T3** Same for Codex in the same worktree, concurrently with T1's session: one set of sidecars, no registry corruption, both sessions served.
+- **T4** A never-set-up repo: `dopemux mcp init` once, then a session connects; its tenant database and role exist; its credentials are only under `~/.dopemux` with mode 0600; no `CONPORT_DB_*` in any repo file.
+- **T5** A project with a hand-made tenant (dNh_CRM): first launch adopts the existing credentials and the existing data is visible; no new database was created.
+- **T6** `task-orchestrator` owned by another project: the launcher exits with `TASK_ORCHESTRATOR_OWNED_BY_OTHER_PROJECT` naming the owner path, the runner shows the server as failed with that text, `conport` and `dope-memory` are connected, and the jar's container id is unchanged. Then `dopemux mcp switch-project` in this project followed by `/mcp reconnect all` connects it, and the other project's launcher now refuses in the same way.
+- **T6b** Nothing on 7890: the launcher starts the jar through the lifecycle path and connects; a second launcher started concurrently does not start a second jar.
+- **T7** Every lifecycle hook runs in T1's worktree: the DCP hard-deny guard blocks a red-lane edit; `hook_status.json` shows the events; no `ModuleNotFoundError`.
+- **T8** Remove T1's worktree with `git worktree remove` and end the session: after the next reap, its containers are gone, its leases released, its runtime dir removed; main's sidecars untouched.
+- **T9** `dopemux mcp init --force --repo <worktree>` changes nothing in main's checkout.
+- **T10** Image absent: the launcher exits with the "building" message within 5 s, a build is running detached, and a later `/mcp reconnect all` connects.
+- **T11** Two launchers started within 100 ms for the same stopped instance: exactly one start, both bridge.
+
+## 7. Milestone 2 pointer
+
+M2 is the July design's packet table (§9), run in this order because the owner runs several projects at once: P-24 (project-scoped task-orchestrator; ADR first), then P-17 and P-18 (fail-closed identity in dope-memory and ConPort), P-19 (flip the sharing classes), P-21 (redis-events), P-20 (serena), with the lifecycle packets P-05 through P-16 as the July critical path requires. M1's launcher, locks and reap are what P-08, P-09, P-10 and P-16 assume exist. Nothing in M1 may make M2 harder; the builder flags any such conflict as a stop condition.
+
+## 8. Left to the builder
+
+- The root-resolution probe and its result per runner (D2).
+- Proxy construction details on the `mcp` SDK: client transport options, reconnect behaviour, how `initialize` from the runner maps onto the client session (D2).
+- Exact wait, retry and timeout values, and the runner startup timeouts they must sit under (D4).
+- Exact finding codes and messages, matching the existing taxonomy in `lifecycle.py` and `doctor.py`.
+- Whether `launch` is a new subcommand on the `mcp` group or an extension of `ensure`; keep the `mcp_commands.py` convention.
+- The secrets file format and how compose receives it (env file vs rendered overlay).
+- Packet decomposition and order, test strategy per packet, and the proof bundles. Suggested slices: (1) hooks D6, (2) identity D3 plus `init --repo`, (3) launcher D2 with D4 and D7 plus `switch-project`, (4) tenants D5, (5) reap D8, (6) docs D10. Slices 1 and 2 are independent and start now; 3 depends on 2 and on #1459 and #1456, which are folded into slice 3 if they no longer merge cleanly rather than waited for; 4 and 5 depend on 3.
+- Docs wording.
+
+## 9. Calls the owner should check
+
+These were decided by the author to keep the design complete; none was explicitly agreed in conversation.
+
+**Resolved 2026-11-05:**
+
+- **D5 legacy projects.** Keep a project with rows in the shared `dopemux_knowledge_graph` database working on that database in M1 with a `doctor` WARN (Option A). Owner replied "approved" to the document with this recommendation attached.
+
+**Changed after that approval, later on 2026-11-05, from code facts surfaced by the builder check and three tracing lanes. These were not on screen when the owner approved and need the owner's confirmation before anything is built:**
+
+- a. The `mcp` SDK moves from the optional `services` extra into core `dependencies`, with `uv.lock` regenerated (D1). Today's PATH binary is a non-editable install without the SDK.
+- b. The catalog gains `client: launcher` on the three per-worktree entries, in both catalog files; `.mcp.json` and the Copilot proxy config are regenerated; the doctor transport check and repair planner compare against the client shape (D2). Without this every launcher entry is a blocking `TRANSPORT_MISMATCH`.
+- c. The lifecycle resolves ports from leases and allocates them itself when a worktree has none; `ENVRC_MISSING` stops blocking (D2). Without this a fresh worktree can never start.
+- d. The launcher has a warm path that reads the registry record and probes the backend before touching the lifecycle (D2).
+- e. Orchestrator ownership uses the existing `match_target` over `dopemux.project_root` and `dopemux.project_id`, with the existing finding codes; the wrapper may still replace this same project's drifted container (D2).
+- f. The hand-rolled bridge stays in place for the legacy config renderer; it is simply not used by the launcher (D2).
+- g. Locks: a host-wide `reserved-7890.lock`; the registry is reloaded under lock just before the final save instead of locking across docker starts; lock and attach files live in the existing `<slug>-<worktree_hash>` runtime dir; reap joins on `dopemux.project_id` plus `dopemux.worktree_hash` over `docker ps -a` (D7, D8).
+- h. The hook dispatcher runs a dopemux-mvp checkout's own hook file first, then the installed `dopemux native-hooks run`, a new entry point (D6).
+- i. The `Stop` hook reap is throttled to once per 10 minutes; `SessionEnd` is not (D8).
+- j. Provisioning is two-phase (database before the sidecar starts, migration gate inside the new container after), never rotates an existing password, and legacy detection uses the project root, its basename and all worktree paths as aliases (D5).
+- k. Codex rendering of the per-worktree servers is unchanged in M1; the launcher reaches Claude Code and the Copilot proxy config (C3 narrowed).
+
+**Author's calls, approved with the document on 2026-11-05:**
+
+1. **D1** Install `dopemux` on PATH as an editable uv tool from the dopemux-mvp checkout, retiring the hand wrapper at `~/.local/bin/dopemux`; rendered command is `${DOPEMUX_BIN:-dopemux}`.
+2. **D2** One proxy on the official `mcp` SDK for all three servers (SSE to conport, streamable HTTP to the others), retiring the hand-rolled bridge; no `docker exec`.
+3. **D2** Task-orchestrator ownership is proven by the container's `dopemux.project_root` label and refused when unknown; the launcher may start the jar when 7890 is free but never replaces one; moving it between projects is the one typed command `dopemux mcp switch-project`.
+4. **D4** Brand-new projects still need one `dopemux mcp init`; image builds are never run inside a session's launcher.
+5. **D5** Tenants are created automatically in the shared Postgres on first start, by superuser exec into the postgres container as the existing script does; legacy hand-made tenants are adopted.
+6. **D8** Cleanup is reap-only at session stop, driven by attached launchers plus a 20 minute idle window; no `WorktreeCreate` takeover.
+7. **D11** Mid-session `EnterWorktree` is a documented limitation in M1.
+
+## 10. References
+
+- Audit: `docs/05-audit-reports/dopemux-multi-project-multi-worktree-readiness-2026-11-04.md`
+- Fleet design (accepted, supervisor rulings §10): `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md`
+- Code: `src/dopemux/mcp/{runtime_state,project_identity,identity,lifecycle,docker_runtime,port_allocator,http_stdio_bridge,fleet_catalog,mcp_json}.py`, `src/dopemux/commands/mcp_commands.py`, `src/dopemux/worktree_commands.py`, `.claude/hooks/run_native_hooks.sh`, `scripts/mcp-wrappers/conport-wrapper.sh`, `scripts/migration/provision_conport_project_db.sh`, `compose.yml`
+- PRs: #1459, #1456, #1439, #1440, #1460
+- Claude Code docs (2026-11-05): `code.claude.com/docs/en/{mcp,hooks,worktrees,env-vars,settings-reference,settings}.md`
