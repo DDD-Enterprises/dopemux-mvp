@@ -398,6 +398,11 @@
           },
           "uniqueItems": true
         },
+        "client": {
+          "description": "How clients connect. `launcher`: clients get a stdio `dopemux mcp launch <name>` entry and `transport`/`url_template` describe the sidecar it resolves. Absent or `direct`: clients connect to the URL/command themselves.",
+          "type": "string",
+          "enum": ["launcher", "direct"]
+        },
         "doctor_args": {
           "type": "array",
           "items": {

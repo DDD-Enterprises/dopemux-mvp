@@ -755,11 +755,33 @@ def _render_claude_memory_bridge_entry(name: str, spec: Dict[str, Any]) -> Dict[
     return entry
 
 
+# `client: launcher` catalog entries reach clients as a stdio `dopemux mcp launch`
+# command (identity and ports resolved at connect time), never as a URL.
+LAUNCHER_COMMAND = "${DOPEMUX_BIN:-dopemux}"
+
+
+def _launcher_entry(name: str, description: Optional[str] = None) -> Dict[str, Any]:
+    """The stdio launcher entry shape: no URL and no `env` block."""
+    entry: Dict[str, Any] = {
+        "type": "stdio",
+        "command": LAUNCHER_COMMAND,
+        "args": ["mcp", "launch", name],
+    }
+    if description:
+        entry["description"] = description
+    return entry
+
+
 def _render_local_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
     """
     Render a per-worktree catalog entry as a Claude Code .mcp.json mcpServers value.
     Uses ${VAR} placeholders so Claude Code expands them at session start.
     """
+    from dopemux.mcp.fleet_catalog import catalog_client_shape
+
+    if catalog_client_shape(spec) == "launcher":
+        return _launcher_entry(name, spec.get("description"))
+
     transport = spec.get("transport", "http")
     entry: Dict[str, Any] = {"type": transport}
 

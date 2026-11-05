@@ -97,6 +97,7 @@
           "requires_env": { "type": "array" },
           "optional_env": { "type": "array" },
           "doctor_args": { "type": "array" },
+          "client": { "type": "string", "enum": ["launcher", "direct"] },
           "env_template": { "type": "object" },
           "description": { "type": "string" },
           "tool_aliases": { "type": "array" }

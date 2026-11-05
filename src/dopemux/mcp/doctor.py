@@ -396,6 +396,8 @@ def run_mcp_doctor(
     )
 
     # --- Transport validation ---
+    from .fleet_catalog import expected_client_type  # lazy: pulls in the CLI module
+
     for svc in desired:
         cat_t = (svc.catalog_transport or "unknown").lower()
         mcp_t = (
@@ -424,6 +426,8 @@ def run_mcp_doctor(
             continue
         if mcp_t is None:
             continue
+        # A launcher entry is stdio in .mcp.json whatever the sidecar speaks.
+        cat_t = expected_client_type({**catalog["servers"][svc.name], "transport": cat_t})
         if mcp_t == cat_t:
             _add(
                 findings,

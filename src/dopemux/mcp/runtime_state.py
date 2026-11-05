@@ -280,6 +280,19 @@ def expand_url_template(template: str, env: Mapping[str, str]) -> str:
     return _ENV_PLACEHOLDER.sub(repl, template)
 
 
+def sidecar_url(spec: Mapping[str, Any], ports: Mapping[str, int]) -> str:
+    """The sidecar endpoint a catalog entry resolves to, given its leased ports.
+
+    Expands `url_template`'s `${VAR:-default}` placeholders from `ports`
+    (falling back to the template default when a port is absent). The catalog,
+    not `.mcp.json`, is the source: a launcher entry carries no URL.
+    """
+    template = spec.get("url_template") or spec.get("url")
+    if not template:
+        raise ValueError("catalog entry has no `url_template`/`url` to resolve a sidecar URL from")
+    return expand_url_template(str(template), {k: str(v) for k, v in ports.items()})
+
+
 def extract_ports_from_url(url: str) -> List[int]:
     try:
         parsed = urlparse(url)
@@ -288,6 +301,13 @@ def extract_ports_from_url(url: str) -> List[int]:
     except Exception:  # noqa: BLE001
         pass
     return []
+
+
+def _is_launcher(spec: Mapping[str, Any]) -> bool:
+    # Lazy: fleet_catalog imports the CLI module, which this state module avoids at import time.
+    from .fleet_catalog import catalog_client_shape
+
+    return catalog_client_shape(dict(spec)) == "launcher"
 
 
 def build_desired_services(
@@ -344,12 +364,16 @@ def build_desired_services(
                     expected_ports[str(var)] = port
 
         urls: List[str] = []
-        template = catalog_spec.get("url_template") or catalog_spec.get("url") or local_entry.get("url")
-        if template:
-            expanded = expand_url_template(str(template), env_values)
-            # Only keep localhost-ish URLs in report
-            if "localhost" in expanded or "127.0.0.1" in expanded:
-                urls.append(expanded)
+        template = catalog_spec.get("url_template") or catalog_spec.get("url")
+        if catalog_spec and _is_launcher(catalog_spec):
+            # The launcher entry has no URL; the sidecar URL comes from the catalog and ports.
+            expanded = sidecar_url(catalog_spec, expected_ports) if template else None
+        else:
+            template = template or local_entry.get("url")
+            expanded = expand_url_template(str(template), env_values) if template else None
+        # Only keep localhost-ish URLs in report
+        if expanded and ("localhost" in expanded or "127.0.0.1" in expanded):
+            urls.append(expanded)
 
         env_keys = list(catalog_spec.get("requires_env") or []) + list(
             catalog_spec.get("optional_env") or []
