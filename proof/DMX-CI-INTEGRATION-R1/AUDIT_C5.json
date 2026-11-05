@@ -1,0 +1,37 @@
+{
+  "schema": "independent-audit/v1",
+  "status": "PASS_WITH_RISKS",
+  "subject": {
+    "packet_id": "DMX-CI-INTEGRATION-R1-C5",
+    "pinned_sha": "39617b3891fc15c74278aafeb1a31ff5c324a86c",
+    "base": "583720375df69fbe50f7b8a6b199eaf026f46fb5",
+    "subject_manifest_sha256": "4ba3ce1f7f7169ba856d1d974eccaa31e9394d4bf031a1ac17e3bc61ee4aeb49"
+  },
+  "auditor": {
+    "model_self_description": "Sonnet 5.5, claude-sonnet-5-5",
+    "execution_receipt": "CLI Sonnet5.5, requested medium, observed effort UNKNOWN",
+    "independent_of_implementer": true
+  },
+  "checks": [
+    {
+      "id": "C5",
+      "method": "static read of HANDOFF, PR body, VALIDATION, original report",
+      "bucket": "PASS_WITH_RISKS",
+      "evidence": "retained test/Ruff failures, inherited scope, three LOW findings, no all-green/acceptance, draft-only, and signed/hosted/live NOT_RUN are all disclosed consistently"
+    }
+  ],
+  "findings": [],
+  "remaining_risks": [
+    "PROOF.json referenced by the PR body was not supplied",
+    "PR body does not enumerate the LOW findings (HANDOFF does)",
+    "HANDOFF HOLD/no-PR wording is creation-state and needs mechanical refresh",
+    "author claims not independently reproduced",
+    "original source residual risks and hosted state remain"
+  ],
+  "unknowns": [
+    "actual effort",
+    "hosted CI and branch protection state",
+    "PROOF.json content"
+  ],
+  "acceptance": "NOT_GRANTED"
+}
