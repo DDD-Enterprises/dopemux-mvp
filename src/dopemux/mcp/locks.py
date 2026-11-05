@@ -18,13 +18,16 @@ the same process while already holding it deadlocks. Never nest it with
 from __future__ import annotations
 
 import fcntl
+import getpass
+import hashlib
 import importlib
 import os
+import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Callable, ContextManager, Iterator, Type, TypeVar
+from typing import Any, Callable, ContextManager, Iterator, Optional, Type, TypeVar
 
-from .runtime_registry import default_registry_path
+from .runtime_registry import REGISTRY_ENV, default_registry_path
 
 R = TypeVar("R")
 
@@ -64,12 +67,45 @@ def _flock(path: Path) -> Iterator[None]:
 
 
 def _runtime_dir() -> Path:
+    """Directory holding the shared lock files.
+
+    ``DOPEMUX_MCP_RUNTIME_REGISTRY`` always wins. Under pytest (without the
+    allow-home escape hatch shared with the lease registry) this never resolves
+    ``~/.dopemux``: it falls back to a per-uid/worker/pid/test scratch dir, so a
+    test that forgets the override cannot create lock files in the real home.
+    """
+    if os.environ.get(REGISTRY_ENV):
+        return default_registry_path().parent
+    if os.environ.get("PYTEST_CURRENT_TEST") and not os.environ.get(
+        "DOPEMUX_ALLOW_HOME_LEASE_REGISTRY"
+    ):
+        uid = getpass.getuser() or str(os.getuid() if hasattr(os, "getuid") else "nouser")
+        worker = os.environ.get("PYTEST_XDIST_WORKER") or "gw0"
+        node = os.environ.get("PYTEST_CURRENT_TEST") or "unknown"
+        session = os.environ.get("PYTEST_XDIST_TESTRUNUID") or os.environ.get(
+            "DOPEMUX_PYTEST_SESSION", "session"
+        )
+        digest = hashlib.sha1(f"{node}:{session}".encode("utf-8")).hexdigest()[:10]
+        return (
+            Path(tempfile.gettempdir())
+            / "dopemux-mcp-tests"
+            / uid
+            / worker
+            / str(os.getpid())
+            / digest
+            / "runtime"
+        )
     return default_registry_path().parent
 
 
-def registry_lock() -> ContextManager[None]:
-    """Guard read-modify-write of the runtime and lease registries."""
-    return _flock(_runtime_dir() / "registry.lock")
+def registry_lock(registry_path: Optional[Path] = None) -> ContextManager[None]:
+    """Guard read-modify-write of a runtime or lease registry.
+
+    The lock file sits next to ``registry_path`` (the file actually being
+    written); without it, next to the default runtime registry.
+    """
+    base = Path(registry_path).parent if registry_path is not None else _runtime_dir()
+    return _flock(base / "registry.lock")
 
 
 def reserved_port_lock(port: int) -> ContextManager[None]:
@@ -112,7 +148,7 @@ def locked_reload_and_save(
     ``RuntimeRegistry`` and ``PortLeaseRegistry``.
     """
     reg_path = Path(path)
-    with registry_lock():
+    with registry_lock(reg_path):
         recovered = False
         try:
             fresh = registry_cls.load(reg_path, create_missing=True)  # type: ignore[attr-defined]

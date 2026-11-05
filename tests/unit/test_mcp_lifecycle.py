@@ -13,6 +13,15 @@ from dopemux.mcp import docker_runtime as dr
 from dopemux.mcp.lifecycle import run_lifecycle
 
 
+@pytest.fixture(autouse=True)
+def _isolated_registries(tmp_path: Path, monkeypatch):
+    """Never let a lifecycle test reach ~/.dopemux (registry, leases, lock files)."""
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "env-reg" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "env-reg" / "port-leases.json")
+    )
+
+
 def _catalog():
     return {
         "version": 1,

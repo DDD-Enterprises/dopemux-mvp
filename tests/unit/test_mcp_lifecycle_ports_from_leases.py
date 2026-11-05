@@ -259,3 +259,71 @@ def test_resolve_ports_returns_catalog_port_var_keys(tmp_path, paths):
         "DOPE_MEMORY_PORT",
     }
     assert all(isinstance(v, int) for v in ports.values())
+
+
+def test_non_dry_run_lock_follows_registry_path_not_home(tmp_path, monkeypatch):
+    """No env override: the lock sits beside the registry and HOME stays untouched."""
+    home = tmp_path / "home"
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.delenv("DOPEMUX_MCP_RUNTIME_REGISTRY", raising=False)
+    monkeypatch.delenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", raising=False)
+    reg = tmp_path / "reg" / "instances.json"
+    repo = _repo(tmp_path)
+
+    result = run_lifecycle(
+        "start",
+        repo=repo,
+        services=["conport", "dope-memory"],
+        catalog=_catalog(),
+        dry_run=False,
+        registry_path=reg,
+        docker_runner=_docker_empty(),
+        cmd_runner=lambda cmd, **kw: SimpleNamespace(returncode=0, stdout="", stderr=""),
+        product_root=_product(tmp_path),
+        process_env={},
+        port_is_free_fn=lambda p: True,
+    )
+
+    assert reg.exists(), result.to_dict()
+    assert (reg.parent / "registry.lock").exists()
+    assert not (home / ".dopemux").exists()
+
+
+def test_resolve_ports_lease_identity_matches_init_allocation(tmp_path, monkeypatch):
+    """`_resolve_ports` (start) and `_allocate_ports` (init) write identical lease docs."""
+    from dopemux.commands import mcp_commands
+
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
+    repo = _repo(tmp_path)
+    identity = resolve_identity_view(repo)
+    init_leases = tmp_path / "init" / "port-leases.json"
+    start_leases = tmp_path / "start" / "port-leases.json"
+
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(init_leases))
+    init_ports = mcp_commands._allocate_ports(
+        identity.worktree_root,
+        ["conport", "dope-memory"],
+        _catalog(),
+        project_root=identity.project_root,
+        is_free_fn=lambda p: True,
+    )
+    start_ports = lc._resolve_ports(
+        identity,
+        ["conport", "dope-memory"],
+        _catalog(),
+        lease_path=start_leases,
+        is_free_fn=lambda p: True,
+    )
+
+    assert start_ports == init_ports
+
+    def docs(path):
+        out = {}
+        for lease in PortLeaseRegistry.load(path).active_leases():
+            out[lease["port_var"]] = {
+                k: lease.get(k)
+                for k in ("project_id", "lease_id", "worktree_root", "instance_id", "workspace_id", "port")
+            }
+        return out
+
+    assert docs(start_leases) and docs(start_leases) == docs(init_leases)

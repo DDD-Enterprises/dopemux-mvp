@@ -319,26 +319,16 @@ def _resolve_ports(
     if not lease_services or not allocate:
         return ports
 
-    from .port_allocator import AllocatorIdentity, allocate_ports
+    from .port_allocator import allocate_ports
 
-    worktree_hash = identity.worktree_hash or instance_id_for_path(identity.worktree_root)
-    allocator_identity = AllocatorIdentity(
-        project_id=identity.project_id,
-        workspace_id=identity.workspace_id,
-        project_root=identity.project_root,
-        worktree_root=identity.worktree_root,
-        project_hash=identity.project_hash,
-        worktree_hash=worktree_hash,
-        instance_id=identity.instance_id or worktree_hash,
-    )
-    # Same call shape as mcp_commands._allocate_ports (allocate_ports_map).
-    with registry_lock():
+    # Exactly the call `mcp_commands._allocate_ports` makes (allocate_ports_map):
+    # no `identity=`, so the allocator derives the same lease identity as `init`.
+    with registry_lock(lease_path):
         result = allocate_ports(
             lease_services,
             catalog,
             worktree=identity.worktree_root,
             project_root=identity.project_root,
-            identity=allocator_identity,
             existing_envrc=env,
             registry_path=lease_path,
             persist=True,

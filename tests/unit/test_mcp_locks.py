@@ -196,3 +196,42 @@ def test_provision_lock_rejects_unsafe_project_id(bad: str, tmp_path: Path, monk
     with pytest.raises(ValueError):
         with locks.provision_lock(bad):
             pass
+
+
+def test_registry_lock_follows_explicit_registry_path(tmp_path: Path, monkeypatch):
+    monkeypatch.delenv("DOPEMUX_MCP_RUNTIME_REGISTRY", raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    reg = tmp_path / "elsewhere" / "instances.json"
+
+    with locks.registry_lock(reg):
+        pass
+
+    assert (reg.parent / "registry.lock").exists()
+    assert not (tmp_path / "home" / ".dopemux").exists()
+
+
+def test_locked_reload_lock_follows_path_argument(tmp_path: Path, monkeypatch):
+    monkeypatch.delenv("DOPEMUX_MCP_RUNTIME_REGISTRY", raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    reg = tmp_path / "elsewhere" / "instances.json"
+
+    locks.locked_reload_and_save(RuntimeRegistry, reg, lambda r: None)
+
+    assert (reg.parent / "registry.lock").exists()
+    assert not (tmp_path / "home" / ".dopemux").exists()
+
+
+def test_pytest_guard_never_resolves_home_lock_dir(tmp_path: Path, monkeypatch):
+    monkeypatch.delenv("DOPEMUX_MCP_RUNTIME_REGISTRY", raising=False)
+    monkeypatch.delenv("DOPEMUX_ALLOW_HOME_LEASE_REGISTRY", raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+
+    with locks.registry_lock():
+        pass
+    with locks.reserved_port_lock(7890):
+        pass
+    with locks.provision_lock("proj-guard"):
+        pass
+
+    assert not (tmp_path / "home" / ".dopemux").exists()
+    assert not str(locks._runtime_dir()).startswith(str(tmp_path / "home"))
