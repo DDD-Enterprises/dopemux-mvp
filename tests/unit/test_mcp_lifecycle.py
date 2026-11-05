@@ -832,3 +832,144 @@ def test_conport_start_proceeds_while_another_project_owns_the_orchestrator(
     codes = {f["code"] for f in result.blocking_findings}
     assert "TASK_ORCHESTRATOR_WRONG_PROJECT_RUNTIME" not in codes, result.blocking_findings
     assert result.status == "PLANNED", result.blocking_findings
+
+
+# --- stop releases leases and removes the runtime dir (Task 5, D8/R8) -----------------
+
+
+def _stop_world(tmp_path: Path):
+    """A repo whose conport and dope-memory containers run, with leases and a runtime dir."""
+    from dopemux.mcp.port_leases import PortLeaseRegistry
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    repo = _fixture_repo(tmp_path)
+    identity = resolve_identity_view(repo, trust_env=False)
+    slug = dr.project_slug(Path(identity.project_root).name)
+    reg = tmp_path / "reg" / "instances.json"
+    runtime_dir = reg.parent / f"{slug}-{identity.worktree_hash}"
+    runtime_dir.mkdir(parents=True)
+    (runtime_dir / "mcp.env").write_text("X=1\n", encoding="utf-8")
+
+    rows = []
+    for svc in ("conport", "dope-memory"):
+        labels = dr.build_labels(
+            project_id=identity.project_id,
+            workspace_id=identity.workspace_id or identity.worktree_root,
+            project_root=identity.project_root,
+            worktree_root=identity.worktree_root,
+            project_hash=identity.project_hash or "",
+            worktree_hash=identity.worktree_hash,
+            instance_id=f"{slug}-{identity.worktree_hash}-{svc}",
+            service=svc,
+            scope="worktree",
+        )
+        rows.append(
+            {
+                "ID": f"id-{svc}",
+                "Names": dr.container_name_for(slug, identity.worktree_hash, svc),
+                "Labels": ",".join(f"{k}={v}" for k, v in labels.items()),
+                "Image": "x",
+                "Status": "Up",
+            }
+        )
+
+    def docker_ps(*args, **kwargs):
+        return SimpleNamespace(
+            returncode=0, stdout="".join(json.dumps(r) + "\n" for r in rows), stderr=""
+        )
+
+    leases = PortLeaseRegistry.load(tmp_path / "env-reg" / "port-leases.json", create_missing=True)
+    for svc, port in (("conport", 3100), ("dope-memory", 3101)):
+        leases.upsert_lease(
+            {
+                "lease_id": f"lease-{svc}",
+                "service": svc,
+                "port": port,
+                "port_role": "http",
+                "worktree_root": identity.worktree_root,
+                "project_id": identity.project_id,
+                "scope": "worktree",
+                "status": "active",
+            }
+        )
+    leases.save()
+    return repo, reg, runtime_dir, docker_ps, tmp_path / "env-reg" / "port-leases.json"
+
+
+def _lease_status(path: Path):
+    from dopemux.mcp.port_leases import PortLeaseRegistry
+
+    return {L["service"]: L["status"] for L in PortLeaseRegistry.load(path).leases()}
+
+
+def _stop(tmp_path: Path, repo, reg, docker_ps, *, services, dry_run=False):
+    stops: list = []
+
+    def cmd_runner(cmd, **kwargs):
+        stops.append(list(cmd))
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    result = run_lifecycle(
+        "stop",
+        repo=repo,
+        services=services,
+        catalog=_catalog(),
+        dry_run=dry_run,
+        registry_path=reg,
+        docker_runner=docker_ps,
+        cmd_runner=cmd_runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    return result, stops
+
+
+def test_stop_releases_leases_and_removes_runtime_dir(tmp_path: Path):
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    result, stops = _stop(tmp_path, repo, reg, docker_ps, services=None)
+    assert result.status == "PASS", result.to_dict()
+    assert any(c[:2] == ["docker", "stop"] for c in stops)
+    status = _lease_status(lease_path)
+    assert status == {"conport": "released", "dope-memory": "released"}
+    assert not runtime_dir.exists()
+
+
+def test_stop_partial_releases_only_that_service_and_keeps_runtime_dir(tmp_path: Path):
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    result, _ = _stop(tmp_path, repo, reg, docker_ps, services=["conport"])
+    assert result.status == "PASS", result.to_dict()
+    assert _lease_status(lease_path) == {"conport": "released", "dope-memory": "active"}
+    assert runtime_dir.is_dir()
+
+
+def test_stop_dry_run_and_restart_keep_leases_and_runtime_dir(tmp_path: Path):
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    _stop(tmp_path, repo, reg, docker_ps, services=None, dry_run=True)
+    assert _lease_status(lease_path) == {"conport": "active", "dope-memory": "active"}
+    assert runtime_dir.is_dir()
+
+
+def test_stop_failure_keeps_leases_and_runtime_dir(tmp_path: Path):
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+
+    def failing(cmd, **kwargs):
+        return SimpleNamespace(returncode=1, stdout="", stderr="cannot stop")
+
+    result = run_lifecycle(
+        "stop",
+        repo=repo,
+        services=None,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker_ps,
+        cmd_runner=failing,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert result.status == "FAIL"
+    assert _lease_status(lease_path) == {"conport": "active", "dope-memory": "active"}
+    assert runtime_dir.is_dir()

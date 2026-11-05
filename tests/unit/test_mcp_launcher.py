@@ -81,6 +81,12 @@ def _git_repo(tmp_path: Path, servers: Dict[str, Any] | None = None) -> Path:
     return repo.resolve()
 
 
+@pytest.fixture(autouse=True)
+def _no_real_reap(monkeypatch):
+    """`launch` reaps by default; keep these tests away from docker and real registries."""
+    monkeypatch.setattr(launcher, "maybe_reap", lambda **kw: None)
+
+
 @pytest.fixture
 def registry(tmp_path: Path, monkeypatch) -> Path:
     path = tmp_path / "runtime" / "instances.json"
@@ -472,6 +478,42 @@ def test_attach_record_written_and_removed(tmp_path: Path, monkeypatch, registry
     monkeypatch.setattr(launcher, "ensure_backend", refuse)
     assert launcher.launch("conport", env={}) == 3
     assert list(attached_dir.iterdir()) == []
+
+
+def test_launch_reaps_after_attach_and_before_ensure_backend(tmp_path: Path, monkeypatch, registry):
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
+    attached_dir = launcher.build_target(repo, "conport", catalog=CATALOG).runtime_dir / "attached"
+    order: List[str] = []
+
+    def fake_reap() -> None:
+        order.append(f"reap attached={(attached_dir / str(os.getpid())).is_file()}")
+
+    def fake_ensure(target, **kw):
+        order.append("ensure_backend")
+        return BackendSpec("u", "sse", "conport")
+
+    monkeypatch.setattr(launcher, "maybe_reap", fake_reap)
+    monkeypatch.setattr(launcher, "ensure_backend", fake_ensure)
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend: 0)
+    assert launcher.launch("conport", env={}) == 0
+    assert order == ["reap attached=True", "ensure_backend"]
+
+
+def test_reap_failure_never_refuses_a_launch(tmp_path: Path, monkeypatch, registry, capsys):
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
+
+    def boom() -> None:
+        raise RuntimeError("docker exploded")
+
+    monkeypatch.setattr(launcher, "maybe_reap", boom)
+    monkeypatch.setattr(launcher, "ensure_backend", lambda target, **kw: BackendSpec("u", "sse", "conport"))
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend: 0)
+    assert launcher.launch("conport", env={}) == 0
+    assert "reap skipped: docker exploded" in capsys.readouterr().err
 
 
 def test_launch_env_default_is_resolved_at_call_time(tmp_path: Path, monkeypatch):

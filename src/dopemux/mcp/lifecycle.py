@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import socket
 import subprocess
 from dataclasses import dataclass, field
@@ -21,6 +22,7 @@ from .envrc import load_envrc, merge_envrc_into_environ, safe_port_int
 from .locks import locked_reload_and_save, provision_lock, registry_lock, reserved_port_lock
 from .port_diagnostics import instance_id_for_path
 from .port_leases import PortLeaseRegistry, default_lease_registry_path
+from .reap import save_state_locked
 from .runtime_registry import (
     RegistryError,
     RuntimeRegistry,
@@ -1285,6 +1287,8 @@ def run_lifecycle(
 
     if op == "stop":
         return _stop_services(
+            release_state=True,
+            full_stop=not services,
             selected=selected,
             identity_dict=identity_dict,
             project_id=project_id,
@@ -2336,6 +2340,18 @@ def _stop_services(**kw: Any) -> LifecycleResult:
         except RegistryError:
             fail = True
 
+    warnings: List[Dict[str, Any]] = []
+    if not dry_run and not fail and kw.get("release_state", False):
+        warnings = _release_stopped_state(
+            selected=selected,
+            project_id=project_id,
+            worktree_root=worktree_root,
+            full_stop=bool(kw.get("full_stop")),
+            reg_path=reg_path,
+            slug=kw["slug"],
+            worktree_hash=kw["worktree_hash"],
+        )
+
     return LifecycleResult(
         schema_version=SCHEMA_VERSION,
         operation="stop",
@@ -2343,9 +2359,51 @@ def _stop_services(**kw: Any) -> LifecycleResult:
         status="PLANNED" if dry_run else ("FAIL" if fail else "PASS"),
         project_identity=identity_dict,
         services=results,
+        warnings=warnings,
         registry_path=str(reg_path),
         exit_code=1 if fail and not dry_run else 0,
     )
+
+
+def _release_stopped_state(
+    *,
+    selected: Sequence[str],
+    project_id: str,
+    worktree_root: str,
+    full_stop: bool,
+    reg_path: Path,
+    slug: str,
+    worktree_hash: str,
+) -> List[Dict[str, Any]]:
+    """After a successful ``stop``: release the stopped services' port leases.
+
+    A full stop (no ``--services``) also removes the worktree's runtime dir; a
+    partial one keeps it. Problems become warnings: the containers are already
+    stopped, so this bookkeeping never fails the stop.
+    """
+    warnings: List[Dict[str, Any]] = []
+
+    def warn(message: str) -> None:
+        warnings.append(
+            {"code": "STOP_STATE_RELEASE_INCOMPLETE", "severity": "WARN", "message": message, "service": None}
+        )
+
+    def release(leases: PortLeaseRegistry) -> None:
+        for svc in selected:
+            leases.mark_released(service=svc, worktree_root=worktree_root)
+
+    error = save_state_locked(PortLeaseRegistry, default_lease_registry_path(), release)
+    if error:
+        warn(f"port leases not released: {error}")
+    if full_stop:
+        runtime_dir = Path(reg_path).parent / f"{slug}-{worktree_hash}"
+        try:
+            shutil.rmtree(runtime_dir)
+        except FileNotFoundError:
+            pass
+        except OSError as exc:
+            warn(f"runtime dir {runtime_dir} not removed: {exc}")
+    return warnings
 
 
 def _status_result(**kw: Any) -> LifecycleResult:

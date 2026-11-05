@@ -286,6 +286,73 @@ def mcp_launch_cmd(service: str, root: Optional[Path], wait: Optional[float]):
     sys.exit(launch(service, root=root, env=env))
 
 
+@mcp.command("reap")
+@click.option(
+    "--dry-run/--apply",
+    default=True,
+    help="List what would be reaped (default) or stop it, release its leases and remove its runtime dir.",
+)
+@click.option("--json", "json_output", is_flag=True, help="Emit machine-readable JSON.")
+def mcp_reap_cmd(dry_run: bool, json_output: bool):
+    """Reap sidecars of removed or idle worktrees (design D8).
+
+    An instance is reaped when no launcher is attached AND its worktree no longer
+    exists, or it has been idle (last launcher detached) for 20 minutes.
+    Containers are matched by dopemux labels plus a registry entry; project and
+    singleton scope (the task-orchestrator) are never touched. --apply ignores the
+    automatic-reaping kill switch (file reap.disabled or DOPEMUX_MCP_REAP=0).
+    """
+    import time
+
+    from dopemux.mcp import reap
+    from dopemux.mcp.runtime_registry import RuntimeRegistry
+
+    disabled = reap.reaping_disabled_reason()
+    if disabled and not dry_run:
+        click.echo(
+            f"Note: automatic reaping is disabled ({disabled}); --apply runs anyway.", err=True
+        )
+
+    registry = RuntimeRegistry.load(reap.runtime_registry_path())
+    if registry.parse_status == "ERROR":
+        click.echo(f"Runtime registry unreadable ({registry.error}); nothing reaped.", err=True)
+        sys.exit(1)
+    docker = reap.inspect_all_managed_containers()
+    if not docker.available:
+        click.echo(f"Docker unavailable ({docker.error}); nothing reaped.", err=True)
+        sys.exit(1)
+
+    candidates = reap.plan_reap(
+        registry=registry, containers=docker.containers, now=time.time()
+    )
+    report = None if dry_run else reap.apply_reap(candidates, runner=reap.run_cmd)
+
+    if json_output:
+        payload = {
+            "dry_run": dry_run,
+            "automatic_reaping_disabled": disabled,
+            "candidates": [c.to_dict() for c in candidates],
+            "reaped": [c.to_dict() for c in report.reaped] if report else [],
+            "skipped": [c.to_dict() for c in report.skipped] if report else [],
+            "errors": list(report.errors) if report else [],
+        }
+        click.echo(json.dumps(payload, indent=2))
+    else:
+        if not candidates:
+            click.echo("Nothing to reap.")
+        for c in candidates:
+            click.echo(
+                f"{'would reap' if dry_run else 'reap'} {c.project_id}/{c.worktree_hash} "
+                f"({c.reason}) {c.worktree_root} containers={','.join(c.container_ids)}"
+            )
+        if report:
+            click.echo(f"Reaped {len(report.reaped)} of {len(candidates)}.")
+            for line in report.errors:
+                click.echo(f"error: {line}", err=True)
+    if report and report.errors:
+        sys.exit(1)
+
+
 @mcp.command("switch-project")
 @_lifecycle_repo_option()
 @click.option("--yes", is_flag=True, help="Stop the current owner without asking.")

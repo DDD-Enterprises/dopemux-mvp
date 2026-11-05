@@ -274,6 +274,20 @@ def _workflow_context_lines(state, *, include_gates: bool = False) -> str:
     return "\n".join(lines)
 
 
+def _best_effort_reap(**kwargs: Any) -> None:
+    """Reap sidecars of removed or idle worktrees (design D8); never affects the hook.
+
+    ``reap.maybe_reap`` is throttled and honours the kill switch (``reap.disabled``
+    file, ``DOPEMUX_MCP_REAP=0``). Any failure, including an import error, is swallowed.
+    """
+    try:
+        from dopemux.mcp import reap
+
+        reap.maybe_reap(**kwargs)
+    except Exception:  # noqa: BLE001 - a cleanup failure must never change a hook decision
+        pass
+
+
 class NativeHookAdapter:
     """Handle Claude Code command hooks for Dopemux workflow continuity."""
 
@@ -614,6 +628,7 @@ class NativeHookAdapter:
         return self._allow()
 
     def _on_stop(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        _best_effort_reap()
         state = self._active_state()
         if not state:
             return self._allow()
@@ -655,6 +670,7 @@ class NativeHookAdapter:
         )
 
     def _on_session_end(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        _best_effort_reap(throttle_s=0)
         state = self._active_state()
         if not state:
             return self._allow()

@@ -37,6 +37,7 @@ from . import docker_runtime as dr
 from .docker_inspect import DockerContainerInfo, inspect_running_containers
 from .lifecycle import _port_is_free, run_lifecycle, runtime_dir_for
 from .locks import instance_lock, reserved_port_lock
+from .reap import attach, detach, maybe_reap
 from .runtime_registry import RuntimeRegistry, default_registry_path
 from .runtime_state import (
     PROJECT_MCP_FILENAME,
@@ -446,23 +447,6 @@ def ensure_orchestrator(
     return _wait_for(TO_BACKEND, probe=probe, deadline=deadline, clock=clock, sleep=sleep)
 
 
-# --- attach (D8; Task 5 moves these to reap.py and re-exports them) --------------
-
-
-def attach(runtime_dir: Path) -> Path:
-    """Write ``<runtime_dir>/attached/<pid>`` for this launcher."""
-    record = Path(runtime_dir) / "attached" / str(os.getpid())
-    record.parent.mkdir(parents=True, exist_ok=True)
-    record.write_text(f"{os.getpid()}\n", encoding="utf-8")
-    return record
-
-
-def detach(path: Path) -> None:
-    """Remove an attach record; already gone is fine."""
-    with contextlib.suppress(FileNotFoundError):
-        Path(path).unlink()
-
-
 # --- launch -----------------------------------------------------------------------
 
 
@@ -475,6 +459,13 @@ def _load_catalog() -> Dict[str, Any]:
         return load()
     except click.ClickException as exc:
         raise LaunchError("LAUNCH_CATALOG_INVALID", exc.format_message()) from None
+
+
+def _run_reaper(reaper: Optional[Callable[[], Any]]) -> None:
+    try:
+        (reaper or maybe_reap)()
+    except Exception as exc:  # noqa: BLE001 - cleanup must never block a launch
+        print(f"reap skipped: {exc}", file=sys.stderr, flush=True)
 
 
 def _wait_seconds(env: Mapping[str, str]) -> float:
@@ -500,11 +491,14 @@ def launch(
     root: Optional[Path] = None,
     env: Optional[Mapping[str, str]] = None,
     registry_path: Optional[Path] = None,
-    reaper: Callable[[], None] = lambda: None,
+    reaper: Optional[Callable[[], Any]] = None,
 ) -> int:
     """Run the launcher for ``service``; returns the process exit code.
 
-    ``env`` defaults to ``os.environ`` as it is when called.
+    ``env`` defaults to ``os.environ`` as it is when called. ``reaper`` defaults to
+    ``reap.maybe_reap`` (throttled, kill-switchable); it runs after this launcher's
+    attach record exists, so its own instance is never reaped, and outside the
+    instance lock. A reap failure never refuses a launch.
     """
     if env is None:
         env = os.environ
@@ -517,7 +511,7 @@ def launch(
                 launch_root, service, catalog=_load_catalog(), registry_path=registry_path
             )
             record = attach(target.runtime_dir)
-            reaper()
+            _run_reaper(reaper)
             wait_s = _wait_seconds(env)
             if service == TO_SERVICE:
                 backend = ensure_orchestrator(target, wait_s=wait_s, env=env)

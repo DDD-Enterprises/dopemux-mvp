@@ -1,0 +1,539 @@
+"""Unit tests for reap-only cleanup (Task 5, D8/P-09).
+
+Docker, clocks and registries are fakes under tmp_path; no real docker call is made
+and nothing under ``~/.dopemux`` is read or written.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, Dict, List, Optional
+
+import pytest
+from click.testing import CliRunner
+
+from dopemux.mcp import docker_inspect as di
+from dopemux.mcp import docker_runtime as dr
+from dopemux.mcp import reap
+from dopemux.mcp.docker_inspect import DockerContainerInfo, DockerInspectResult
+from dopemux.mcp.port_leases import PortLeaseRegistry
+from dopemux.mcp.runtime_registry import RuntimeRegistry, build_instance_record
+
+PROJECT_ID = "proj-1234abcd"
+HASH = "abcd1234"
+NOW = 1_000_000.0
+IDLE = 1200.0
+
+
+@pytest.fixture(autouse=True)
+def _isolated(tmp_path: Path, monkeypatch):
+    """Registries, leases, lock files and the kill-switch dir all live in tmp_path."""
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "runtime" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "runtime" / "port-leases.json")
+    )
+    monkeypatch.delenv("DOPEMUX_MCP_REAP", raising=False)
+
+
+@pytest.fixture
+def runtime(tmp_path: Path) -> Path:
+    path = tmp_path / "runtime"
+    path.mkdir()
+    return path
+
+
+def _container(
+    cid: str,
+    *,
+    project_id: str = PROJECT_ID,
+    worktree_hash: str = HASH,
+    scope: Optional[str] = "worktree",
+    managed: str = "true",
+    service: str = "conport",
+) -> DockerContainerInfo:
+    labels: Dict[str, str] = {
+        "dopemux.managed": managed,
+        "dopemux.project_id": project_id,
+        "dopemux.worktree_hash": worktree_hash,
+        "dopemux.service": service,
+    }
+    if scope is not None:
+        labels["dopemux.scope"] = scope
+    return DockerContainerInfo(id=cid, name=f"c-{cid}", labels=labels)
+
+
+def _record(
+    worktree_root: Path,
+    *,
+    project_id: str = PROJECT_ID,
+    worktree_hash: str = HASH,
+    service: str = "conport",
+    scope: str = "worktree",
+) -> Dict[str, Any]:
+    return build_instance_record(
+        instance_id=f"proj-{worktree_hash}-{service}",
+        project_id=project_id,
+        workspace_id=str(worktree_root),
+        project_root=str(worktree_root),
+        worktree_root=str(worktree_root),
+        worktree_hash=worktree_hash,
+        project_hash="p" * 8,
+        service=service,
+        scope=scope,
+        status="running",
+        ports={"http": 3100},
+        urls={},
+        container_names=[f"c-{service}"],
+        compose_project_name="dopemux-proj",
+        labels={},
+    )
+
+
+def _registry(runtime: Path, worktree_root: Path, **kw: Any) -> RuntimeRegistry:
+    reg = RuntimeRegistry.load(runtime / "instances.json", create_missing=True)
+    reg.upsert_instance(_record(worktree_root, **kw))
+    reg.save()
+    return RuntimeRegistry.load(runtime / "instances.json")
+
+
+def _rt_dir(runtime: Path, worktree_hash: str = HASH) -> Path:
+    # project_slug(Path(project_root).name) for a worktree dir named "proj" is "proj"
+    return runtime / f"proj-{worktree_hash}"
+
+
+def _detached(rt: Path, *, ago: float) -> None:
+    rt.mkdir(parents=True, exist_ok=True)
+    marker = rt / "last_detach"
+    marker.write_text("x\n", encoding="utf-8")
+    os.utime(marker, (NOW - ago, NOW - ago))
+
+
+def _plan(reg: RuntimeRegistry, containers: List[DockerContainerInfo], **kw: Any):
+    return reap.plan_reap(registry=reg, containers=containers, now=NOW, idle_s=IDLE, **kw)
+
+
+# --- attach / detach / live_attachments ------------------------------------------
+
+
+def test_attach_writes_iso_timestamp_and_detach_records_last_detach(tmp_path: Path):
+    rt = tmp_path / "rt"
+    record = reap.attach(rt)
+    assert record == rt / "attached" / str(os.getpid())
+    text = record.read_text(encoding="utf-8").strip()
+    assert text.endswith("Z") and "T" in text  # ISO-8601 UTC
+    assert reap.live_attachments(rt) == 1
+    reap.detach(record)
+    assert not record.exists()
+    assert (rt / "last_detach").is_file()
+    reap.detach(record)  # idempotent
+    assert reap.live_attachments(rt) == 0
+
+
+def test_detach_does_not_recreate_a_removed_runtime_dir(tmp_path: Path):
+    rt = tmp_path / "gone"
+    record = reap.attach(rt)
+    import shutil
+
+    shutil.rmtree(rt)
+    reap.detach(record)
+    assert not rt.exists()
+
+
+def test_live_attachments_prunes_dead_and_tolerates_plain_pid_content(tmp_path: Path):
+    rt = tmp_path / "rt"
+    attached = rt / "attached"
+    attached.mkdir(parents=True)
+    dead = subprocess.Popen(["true"])
+    dead.wait()
+    (attached / str(dead.pid)).write_text(f"{dead.pid}\n", encoding="utf-8")  # Task 3c format
+    (attached / str(os.getpid())).write_text(f"{os.getpid()}\n", encoding="utf-8")
+    (attached / "not-a-pid").write_text("junk", encoding="utf-8")
+    assert reap.live_attachments(rt, prune=False) == 1
+    assert (attached / str(dead.pid)).exists()  # read-only count leaves it alone
+    assert reap.live_attachments(rt) == 1
+    assert not (attached / str(dead.pid)).exists()
+    assert (attached / str(os.getpid())).exists()
+
+
+# --- plan_reap -------------------------------------------------------------------
+
+
+def test_plan_reap_skips_project_and_singleton_scope(tmp_path: Path, runtime: Path):
+    missing = tmp_path / "removed" / "proj"
+    reg = _registry(runtime, missing)
+    containers = [
+        _container("p1", scope="project"),
+        _container("s1", scope="singleton"),
+        _container("n1", scope=None),  # absent scope is unknown, never touched
+        _container("u1", managed="false"),
+        _container("x1", scope="worktree", project_id=""),  # missing a join label
+    ]
+    assert _plan(reg, containers) == []
+
+
+def test_plan_reap_ignores_pair_without_registry_entry(tmp_path: Path, runtime: Path):
+    reg = _registry(runtime, tmp_path / "removed" / "proj")
+    assert _plan(reg, [_container("a1", worktree_hash="ffff0000")]) == []
+
+
+def test_plan_reap_candidate_when_worktree_missing(tmp_path: Path, runtime: Path):
+    missing = tmp_path / "removed" / "proj"
+    reg = _registry(runtime, missing)
+    got = _plan(reg, [_container("a1"), _container("a2", service="dope-memory")])
+    assert len(got) == 1
+    cand = got[0]
+    assert (cand.project_id, cand.worktree_hash) == (PROJECT_ID, HASH)
+    assert cand.worktree_root == str(missing)
+    assert cand.runtime_dir == _rt_dir(runtime)
+    assert sorted(cand.container_ids) == ["a1", "a2"]
+    assert cand.reason == "worktree_missing"
+
+
+def test_plan_reap_candidate_when_idle_and_detached(tmp_path: Path, runtime: Path):
+    live = tmp_path / "wt" / "proj"
+    live.mkdir(parents=True)
+    reg = _registry(runtime, live)
+    _detached(_rt_dir(runtime), ago=IDLE + 1)
+    got = _plan(reg, [_container("a1")])
+    assert [c.reason for c in got] == ["idle"]
+
+
+def test_plan_reap_not_candidate_when_recently_detached(tmp_path: Path, runtime: Path):
+    live = tmp_path / "wt" / "proj"
+    live.mkdir(parents=True)
+    reg = _registry(runtime, live)
+    _detached(_rt_dir(runtime), ago=IDLE - 60)
+    assert _plan(reg, [_container("a1")]) == []
+
+
+def test_plan_reap_idle_without_last_detach_is_never_a_candidate(tmp_path: Path, runtime: Path):
+    live = tmp_path / "wt" / "proj"
+    live.mkdir(parents=True)
+    reg = _registry(runtime, live)
+    _rt_dir(runtime).mkdir()  # runtime dir exists, nobody attached, no last_detach
+    assert _plan(reg, [_container("a1")]) == []
+
+
+def test_plan_reap_not_candidate_when_attached(tmp_path: Path, runtime: Path):
+    missing = tmp_path / "removed" / "proj"
+    reg = _registry(runtime, missing)
+    attached = _rt_dir(runtime) / "attached"
+    attached.mkdir(parents=True)
+    (attached / str(os.getpid())).write_text("t\n", encoding="utf-8")
+    assert _plan(reg, [_container("a1")]) == []
+
+
+def test_plan_reap_stale_pid_counts_as_detached(tmp_path: Path, runtime: Path):
+    missing = tmp_path / "removed" / "proj"
+    reg = _registry(runtime, missing)
+    dead = subprocess.Popen(["true"])
+    dead.wait()
+    attached = _rt_dir(runtime) / "attached"
+    attached.mkdir(parents=True)
+    (attached / str(dead.pid)).write_text(f"{dead.pid}\n", encoding="utf-8")
+    got = _plan(reg, [_container("a1")])
+    assert [c.reason for c in got] == ["worktree_missing"]
+    assert (attached / str(dead.pid)).exists()  # planning is read-only
+
+
+def test_plan_reap_with_corrupt_registry_is_empty(tmp_path: Path, runtime: Path):
+    (runtime / "instances.json").write_text("{not json", encoding="utf-8")
+    reg = RuntimeRegistry.load(runtime / "instances.json")
+    assert reg.parse_status == "ERROR"
+    assert _plan(reg, [_container("a1")]) == []
+
+
+def test_plan_reap_treats_unreadable_worktree_as_present(tmp_path: Path, runtime: Path):
+    reg = _registry(runtime, tmp_path / "removed" / "proj")
+
+    def boom(path: Path) -> bool:
+        raise PermissionError("denied")
+
+    assert _plan(reg, [_container("a1")], exists=boom) == []
+
+
+def test_plan_reap_refuses_unsafe_worktree_hash(tmp_path: Path, runtime: Path):
+    reg = _registry(runtime, tmp_path / "removed" / "proj", worktree_hash="../escape")
+    assert _plan(reg, [_container("a1", worktree_hash="../escape")]) == []
+
+
+# --- apply_reap ------------------------------------------------------------------
+
+
+class Recorder:
+    def __init__(self, fail: Optional[set] = None) -> None:
+        self.calls: List[List[str]] = []
+        self.fail = fail or set()
+
+    def __call__(self, cmd, **kwargs):
+        cmd = list(cmd)
+        self.calls.append(cmd)
+        rc = 1 if tuple(cmd) in self.fail else 0
+        return dr.RuntimeCommandResult(command=cmd, exit_code=rc, stderr="boom" if rc else "")
+
+
+def _lease(worktree_root: Path, service: str, port: int, *, scope: str = "worktree") -> Dict[str, Any]:
+    return {
+        "lease_id": f"lease-{service}-{port}",
+        "service": service,
+        "port": port,
+        "port_role": "http",
+        "worktree_root": str(worktree_root),
+        "project_id": PROJECT_ID,
+        "scope": scope,
+        "status": "active",
+    }
+
+
+def _setup_apply(tmp_path: Path, runtime: Path):
+    missing = tmp_path / "removed" / "proj"
+    reg = _registry(runtime, missing)
+    rt = _rt_dir(runtime)
+    rt.mkdir()
+    (rt / "mcp.env").write_text("X=1\n", encoding="utf-8")
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json", create_missing=True)
+    leases.upsert_lease(_lease(missing, "conport", 3100))
+    leases.upsert_lease(_lease(missing, "dope-memory", 3101))
+    leases.upsert_lease(_lease(missing, "task-orchestrator", 7890, scope="project"))
+    leases.save()
+    cands = _plan(reg, [_container("a1"), _container("a2", service="dope-memory")])
+    assert len(cands) == 1
+    return missing, cands
+
+
+def test_apply_reap_stops_removes_releases_and_rmtree(tmp_path: Path, runtime: Path):
+    missing, cands = _setup_apply(tmp_path, runtime)
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner)
+    assert report.errors == []
+    assert report.reaped == cands
+    for cid in cands[0].container_ids:
+        assert ["docker", "stop", cid] in runner.calls
+        assert ["docker", "rm", cid] in runner.calls
+        assert runner.calls.index(["docker", "stop", cid]) < runner.calls.index(["docker", "rm", cid])
+    assert all("-f" not in c for c in runner.calls)
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json")
+    status = {L["service"]: L["status"] for L in leases.leases()}
+    assert status["conport"] == "released"
+    assert status["dope-memory"] == "released"
+    assert status["task-orchestrator"] == "active"  # project-scoped lease is not ours to release
+    registry = RuntimeRegistry.load(runtime / "instances.json")
+    assert [i["status"] for i in registry.instances()] == ["stopped"]
+    assert not _rt_dir(runtime).exists()
+
+
+def test_apply_reap_rechecks_attachment_under_lock(tmp_path: Path, runtime: Path):
+    missing, cands = _setup_apply(tmp_path, runtime)
+    reap.attach(_rt_dir(runtime))  # a launcher attaches between plan and apply
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner)
+    assert report.reaped == []
+    assert report.errors == []
+    assert runner.calls == []
+    assert _rt_dir(runtime).is_dir()
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert {L["status"] for L in leases.leases()} == {"active"}
+
+
+def test_apply_reap_keeps_state_when_a_container_fails_to_stop(tmp_path: Path, runtime: Path):
+    missing, cands = _setup_apply(tmp_path, runtime)
+    runner = Recorder(fail={("docker", "stop", "a1")})
+    report = reap.apply_reap(cands, runner=runner)
+    assert report.reaped == []
+    assert any("a1" in e for e in report.errors)
+    assert ["docker", "rm", "a1"] not in runner.calls  # never remove what failed to stop
+    assert ["docker", "stop", "a2"] in runner.calls and ["docker", "rm", "a2"] in runner.calls
+    assert _rt_dir(runtime).is_dir()
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert {L["status"] for L in leases.leases() if L["service"] == "conport"} == {"active"}
+    registry = RuntimeRegistry.load(runtime / "instances.json")
+    assert [i["status"] for i in registry.instances()] == ["running"]
+
+
+def test_apply_reap_refuses_runtime_dir_outside_registry_dir(tmp_path: Path, runtime: Path):
+    missing, cands = _setup_apply(tmp_path, runtime)
+    outside = tmp_path / "precious"
+    outside.mkdir()
+    bad = reap.ReapCandidate(
+        project_id=PROJECT_ID,
+        worktree_hash=HASH,
+        worktree_root=str(missing),
+        runtime_dir=outside,
+        container_ids=["a1"],
+        reason="worktree_missing",
+    )
+    runner = Recorder()
+    report = reap.apply_reap([bad], runner=runner)
+    assert report.reaped == []
+    assert report.errors
+    assert runner.calls == []
+    assert outside.is_dir()
+
+
+# --- maybe_reap ------------------------------------------------------------------
+
+
+class FakeInspect:
+    def __init__(self, containers: List[DockerContainerInfo]) -> None:
+        self.containers = containers
+        self.calls = 0
+
+    def __call__(self, **kwargs: Any) -> DockerInspectResult:
+        self.calls += 1
+        return DockerInspectResult(available=True, containers=list(self.containers))
+
+
+def test_maybe_reap_throttles(tmp_path: Path, runtime: Path):
+    _setup_apply(tmp_path, runtime)
+    inspect = FakeInspect([_container("a1")])
+    state = tmp_path / "state" / "reap.last"
+    runner = Recorder()
+    clock = {"t": NOW}
+
+    def call(throttle_s: float = 600):
+        return reap.maybe_reap(
+            throttle_s=throttle_s,
+            state_file=state,
+            now=lambda: clock["t"],
+            inspector=inspect,
+            runner=runner,
+        )
+
+    first = call()
+    assert first is not None and len(first.reaped) == 1
+    assert state.exists()
+    os.utime(state, (NOW, NOW))
+    clock["t"] = NOW + 599
+    assert call() is None
+    assert inspect.calls == 1
+    clock["t"] = NOW + 601
+    assert call() is not None
+    assert inspect.calls == 2
+    clock["t"] = NOW + 1
+    assert call(throttle_s=0) is not None  # throttle_s=0 never skips
+
+
+def test_maybe_reap_disabled_by_file(tmp_path: Path, runtime: Path):
+    _setup_apply(tmp_path, runtime)
+    (runtime / "reap.disabled").write_text("", encoding="utf-8")
+    inspect = FakeInspect([_container("a1")])
+    runner = Recorder()
+    got = reap.maybe_reap(
+        throttle_s=0, state_file=tmp_path / "s", now=lambda: NOW, inspector=inspect, runner=runner
+    )
+    assert got is None
+    assert inspect.calls == 0 and runner.calls == []
+    assert not (tmp_path / "s").exists()
+    assert _rt_dir(runtime).is_dir()
+
+
+@pytest.mark.parametrize("value", ["0", "off", "false", "OFF", "False"])
+def test_maybe_reap_disabled_by_env(tmp_path: Path, runtime: Path, monkeypatch, value: str):
+    _setup_apply(tmp_path, runtime)
+    monkeypatch.setenv("DOPEMUX_MCP_REAP", value)
+    inspect = FakeInspect([_container("a1")])
+    runner = Recorder()
+    got = reap.maybe_reap(
+        throttle_s=0, state_file=tmp_path / "s", now=lambda: NOW, inspector=inspect, runner=runner
+    )
+    assert got is None
+    assert inspect.calls == 0 and runner.calls == []
+
+
+def test_maybe_reap_skips_docker_when_registry_has_no_instances(tmp_path: Path, runtime: Path):
+    inspect = FakeInspect([_container("a1")])
+    got = reap.maybe_reap(
+        throttle_s=0, state_file=tmp_path / "s", now=lambda: NOW, inspector=inspect, runner=Recorder()
+    )
+    assert got is not None and got.reaped == []
+    assert inspect.calls == 0
+
+
+def test_maybe_reap_docker_unavailable_reaps_nothing(tmp_path: Path, runtime: Path):
+    _setup_apply(tmp_path, runtime)
+    runner = Recorder()
+    got = reap.maybe_reap(
+        throttle_s=0,
+        state_file=tmp_path / "s",
+        now=lambda: NOW,
+        inspector=lambda **kw: DockerInspectResult(available=False, error="no docker"),
+        runner=runner,
+    )
+    assert got is not None and got.reaped == []
+    assert runner.calls == []
+    assert _rt_dir(runtime).is_dir()
+
+
+# --- docker_inspect --------------------------------------------------------------
+
+
+def test_inspect_all_managed_containers_lists_stopped_managed_containers():
+    seen: List[List[str]] = []
+
+    def runner(cmd, **kwargs):
+        seen.append(list(cmd))
+        row = {
+            "ID": "abcdef0123456789",
+            "Names": "c1",
+            "Labels": "dopemux.managed=true,dopemux.scope=worktree",
+            "Status": "Exited (0) 3 minutes ago",
+        }
+        return SimpleNamespace(returncode=0, stdout=json.dumps(row) + "\n", stderr="")
+
+    result = di.inspect_all_managed_containers(runner=runner)
+    assert seen == [
+        ["docker", "ps", "-a", "--filter", "label=dopemux.managed=true", "--format", "{{json .}}"]
+    ]
+    assert result.available and [c.id for c in result.containers] == ["abcdef012345"]
+
+
+def test_inspect_all_managed_containers_reports_docker_failure():
+    def runner(cmd, **kwargs):
+        return SimpleNamespace(returncode=1, stdout="", stderr="Cannot connect to the Docker daemon")
+
+    result = di.inspect_all_managed_containers(runner=runner)
+    assert not result.available and "Cannot connect" in (result.error or "")
+
+
+# --- CLI -------------------------------------------------------------------------
+
+
+def _cli():
+    from dopemux.commands import mcp_commands
+
+    return mcp_commands.mcp
+
+
+def test_cli_dry_run_json_lists_candidates_and_changes_nothing(tmp_path: Path, runtime: Path, monkeypatch):
+    _setup_apply(tmp_path, runtime)
+    monkeypatch.setattr(reap, "inspect_all_managed_containers", FakeInspect([_container("a1")]))
+    boom = Recorder()
+    monkeypatch.setattr(reap, "run_cmd", boom)
+    result = CliRunner().invoke(_cli(), ["reap", "--json"])
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.stdout)
+    assert payload["dry_run"] is True
+    assert [c["reason"] for c in payload["candidates"]] == ["worktree_missing"]
+    assert payload["candidates"][0]["container_ids"] == ["a1"]
+    assert boom.calls == []
+    assert _rt_dir(runtime).is_dir()
+
+
+def test_cli_apply_ignores_disable_file_but_warns(tmp_path: Path, runtime: Path, monkeypatch):
+    _setup_apply(tmp_path, runtime)
+    (runtime / "reap.disabled").write_text("", encoding="utf-8")
+    monkeypatch.setattr(reap, "inspect_all_managed_containers", FakeInspect([_container("a1")]))
+    runner = Recorder()
+    monkeypatch.setattr(reap, "run_cmd", runner)
+    result = CliRunner().invoke(_cli(), ["reap", "--apply", "--json"])
+    assert result.exit_code == 0, result.output
+    assert "automatic reaping is disabled" in result.stderr
+    payload = json.loads(result.stdout)  # the warning never pollutes the JSON channel
+    assert payload["dry_run"] is False
+    assert len(payload["reaped"]) == 1
+    assert ["docker", "stop", "a1"] in runner.calls
+    assert not _rt_dir(runtime).exists()
