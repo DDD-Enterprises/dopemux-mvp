@@ -84,5 +84,15 @@ def test_apply_response_text_records_checkpoint_and_completion(monkeypatch, tmp_
     assert state.checkpoints[-1].status == WorkflowCheckpointStatus.COMPLETE
 
     state = kernel.apply_response_text(state, "<promise>WORKFLOW_COMPLETE</promise>")
+    assert state.status.value == "active"
+    state.tasks[0].status = "done"
+    for name in state.required_artifacts:
+        path = workspace / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("evidence")
+    task = state.tasks[0]
+    for name in task.required_artifacts:
+        (Path(task.artifact_dir) / f"{name}.md").write_text("Task evidence")
+    state = kernel.apply_response_text(state, "<promise>WORKFLOW_COMPLETE</promise>")
     assert state.phase == WorkflowPhase.COMPLETE
     assert state.status.value == "complete"

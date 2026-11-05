@@ -1,9 +1,7 @@
-import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from typing import Dict, Any
 from src.dopemux.pm.writes import (
     pm_update_work_item,
-    pm_transition_work_item,
     pm_log_progress,
     PMWriteConfig,
     CanonicalReceipt
@@ -20,7 +18,7 @@ def get_pm_config(request: Request) -> PMWriteConfig:
     coordinator = getattr(request.app.state, "coordinator", None)
     
     leantime = getattr(coordinator, "leantime_client", None)
-    orchestrator = getattr(coordinator, "workflow_service", None)
+    orchestrator = None  # Coordinator views are not a canonical ownership writer.
     conport = getattr(coordinator, "conport_client", None)
     memory = getattr(coordinator, "memory_client", None)
     
@@ -59,17 +57,7 @@ async def transition_work_item(
     expected_version: int,
     config: PMWriteConfig = Depends(get_pm_config)
 ):
-    try:
-        return pm_transition_work_item(
-            config=config,
-            task_id=task_id,
-            new_status=new_status,
-            reason=reason,
-            idempotency_key=idempotency_key,
-            expected_version=expected_version
-        )
-    except RuntimeError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=503, detail="Authenticated ownership v2 transition required")
 
 @router.post("/work-items/{task_id}/progress", response_model=CanonicalReceipt)
 async def log_progress(

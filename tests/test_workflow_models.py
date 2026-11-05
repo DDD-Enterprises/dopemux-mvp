@@ -84,8 +84,14 @@ def test_complete_gate_requires_artifacts_and_completed_tasks(tmp_path):
     )
 
     state.tasks[0].status = PMTaskStatus.DONE
+    assert "task 'task-1' evidence" in state.validate_phase_transition(WorkflowPhase.COMPLETE)
+    task = state.tasks[0]
+    task.artifact_dir = str(tmp_path / "task")
+    Path(task.artifact_dir).mkdir()
+    for name in task.required_artifacts:
+        (Path(task.artifact_dir) / f"{name}.md").write_text("Task evidence")
     assert state.validate_phase_transition(WorkflowPhase.COMPLETE) == (
-        "Cannot complete while required artifacts are missing."
+        "Cannot complete while required artifacts are missing or invalid."
     )
 
     artifact_path = tmp_path / "reports" / "proof.json"
@@ -120,4 +126,4 @@ def test_can_stop_requires_phase_checkpoint_or_completion_token(tmp_path):
         completion_token="DONE",
     )
     state.record_event("completion_notice", "Evidence bundle complete: DONE")
-    assert state.can_stop() is True
+    assert state.can_stop() is False

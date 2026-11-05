@@ -412,22 +412,46 @@ class WorkflowKernel:
         return self.save(state)
 
     def apply_response_text(self, state: WorkflowState, response_text: str) -> WorkflowState:
+        from .models import contains_completion_token, task_artifact_presence
+
         checkpoint = parse_workflow_checkpoint(response_text)
         if checkpoint:
-            state.add_checkpoint(checkpoint)
+            if checkpoint.task_id is None:
+                checkpoint.task_id = state.current_task_id
+            if checkpoint.task_id != state.current_task_id:
+                state.record_history(
+                    event="checkpoint.rejected",
+                    message="Checkpoint task does not match current task.",
+                    details={
+                        "checkpoint": checkpoint.to_dict(),
+                        "current_task_id": state.current_task_id,
+                    },
+                )
+                return self.save(state)
             current_task = state.current_task()
-            if current_task and checkpoint.status.value in {"complete", "approved"} and checkpoint.phase in {
-                WorkflowPhase.REFACTOR,
-                WorkflowPhase.COMPLETE,
-            }:
+            if (
+                current_task
+                and checkpoint.status.value in {"complete", "approved"}
+                and checkpoint.phase in {WorkflowPhase.REFACTOR, WorkflowPhase.COMPLETE}
+                and not validate_phase_entry(state, WorkflowPhase.REFACTOR)
+                and current_task.required_artifacts
+                and all(task_artifact_presence(current_task, state.workspace_root).values())
+            ):
                 current_task.status = "done"
+            state.add_checkpoint(checkpoint)
             return self.save(state)
-        if state.completion_token and state.completion_token in response_text:
+        if contains_completion_token(response_text, state.completion_token):
+            failures = validate_phase_entry(state, WorkflowPhase.COMPLETE)
+            if failures:
+                state.record_history(
+                    event="workflow.completion_rejected", message="; ".join(failures)
+                )
+                return self.save(state)
             state.status = WorkflowStatus.COMPLETE
             state.phase = WorkflowPhase.COMPLETE
             state.record_history(
                 event="workflow.complete",
-                message="Completion token observed in model response.",
+                message="Completion directive and required evidence verified.",
             )
             return self.save(state)
         return state
@@ -438,7 +462,7 @@ class WorkflowKernel:
         task_presence = {}
         if task:
             from .models import task_artifact_presence
-            task_presence = task_artifact_presence(task)
+            task_presence = task_artifact_presence(task, state.workspace_root)
         return {
             "workflow_id": state.workflow_id,
             "phase": state.phase.value,

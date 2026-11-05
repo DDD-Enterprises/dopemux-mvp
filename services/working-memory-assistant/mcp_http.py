@@ -45,6 +45,10 @@ def build_mcp_server(
 
     mcp = FastMCP(name="dope-memory")
 
+    # REST handlers use this same backend on the event-loop thread. Async tool
+    # wrappers keep its cached SQLite connections there too; FastMCP otherwise
+    # sends sync tools to worker threads, violating SQLite thread affinity.
+
     def _server() -> Any:
         server = get_server()
         if server is None:
@@ -67,7 +71,7 @@ def build_mcp_server(
         return result.data
 
     @mcp.tool(name="memory_search")
-    def memory_search(
+    async def memory_search(
         query: str = "",
         workspace_id: str = default_workspace_id,
         instance_id: str = default_instance_id,
@@ -108,7 +112,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_store")
-    def memory_store(
+    async def memory_store(
         category: str,
         entry_type: str,
         summary: str,
@@ -141,7 +145,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_recap")
-    def memory_recap(
+    async def memory_recap(
         workspace_id: str = default_workspace_id,
         instance_id: str = default_instance_id,
         scope: str = "session",
@@ -160,7 +164,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_mark_issue")
-    def memory_mark_issue(
+    async def memory_mark_issue(
         issue_entry_id: str,
         description: str,
         workspace_id: str = default_workspace_id,
@@ -183,7 +187,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_link_resolution")
-    def memory_link_resolution(
+    async def memory_link_resolution(
         issue_entry_id: str,
         resolution_entry_id: str,
         workspace_id: str = default_workspace_id,
@@ -204,7 +208,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_replay_session")
-    def memory_replay_session(
+    async def memory_replay_session(
         session_id: str,
         workspace_id: str = default_workspace_id,
         instance_id: str = default_instance_id,
@@ -226,7 +230,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_correct")
-    def memory_correct(
+    async def memory_correct(
         entry_id: str,
         correction_type: str,
         workspace_id: str = default_workspace_id,
@@ -239,8 +243,11 @@ def build_mcp_server(
         idempotency_key: Optional[str] = None,
     ) -> dict[str, Any]:
         """Supersede an entry with a corrected version (correction_type:
-        summary | tags | category | outcome | retraction). The original is
-        preserved immutably."""
+        update | summary | tags | category | outcome | retraction). New
+        field-specific corrections require their corresponding field; update
+        requires at least one corrected field. Omitted values are preserved,
+        and an empty tags list clears tags. Keyed retries return the first
+        stored correction and its type. The original is preserved immutably."""
         return _unwrap(
             _server().memory_correct(
                 workspace_id=workspace_id,
@@ -257,7 +264,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_generate_reflection")
-    def memory_generate_reflection(
+    async def memory_generate_reflection(
         workspace_id: str = default_workspace_id,
         instance_id: str = default_instance_id,
         session_id: Optional[str] = None,
@@ -274,7 +281,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_reflections")
-    def memory_reflections(
+    async def memory_reflections(
         workspace_id: str = default_workspace_id,
         instance_id: str = default_instance_id,
         session_id: Optional[str] = None,
@@ -291,7 +298,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_trajectory")
-    def memory_trajectory(
+    async def memory_trajectory(
         workspace_id: str = default_workspace_id,
         instance_id: str = default_instance_id,
     ) -> dict[str, Any]:

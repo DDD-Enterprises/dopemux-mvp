@@ -12,15 +12,12 @@ Events emitted:
 - task.blocked: Task cannot proceed
 """
 
-import asyncio
 import logging
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from event_bus import Event, EventBus
+from event_bus import EventBus
 
 from dopemux.pm.store import InMemoryPMTaskStore
-from dopemux.pm.models import PMTask, PMTaskStatus, PMTransitionRequest
 
 logger = logging.getLogger(__name__)
 
@@ -74,63 +71,7 @@ class TaskOrchestratorEventEmitter:
         complexity: Optional[float] = None,
         energy_required: Optional[str] = None
     ) -> bool:
-        """
-        Emit event when task progress updates.
-
-        Args:
-            task_id: Task identifier
-            task_title: Task title/description
-            old_status: Previous status
-            new_status: New status (TODO/IN_PROGRESS/DONE/BLOCKED)
-            progress_percentage: Completion percentage (0-100)
-            complexity: Optional task complexity (0.0-1.0)
-            energy_required: Optional energy level (low/medium/high)
-
-        Returns:
-            True if event emitted successfully
-        """
-        if not self.enable_events:
-            return False
-
-        try:
-            event = Event(
-                type="task.progress.updated",
-                data={
-                    "task_id": task_id,
-                    "title": task_title,
-                    "old_status": old_status,
-                    "new_status": new_status,
-                    "progress_percentage": progress_percentage,
-                    "complexity": complexity,
-                    "energy_required": energy_required,
-                    "workspace_id": self.workspace_id,
-                    "status_transition": f"{old_status} → {new_status}"
-                },
-                source="task-orchestrator"
-            )
-
-            msg_id = await self.event_bus.publish("dopemux:events", event)
-
-            if msg_id:
-                self.events_emitted += 1
-                self.progress_events += 1
-
-                # Track specific status changes
-                if new_status == "DONE":
-                    self.completion_events += 1
-                elif new_status == "BLOCKED":
-                    self.blocked_events += 1
-
-                logger.info(
-                    f"📤 Emitted task.progress.updated: {task_title[:50]}... "
-                    f"({old_status} → {new_status})"
-                )
-                return True
-
-        except Exception as e:
-            self.emission_errors += 1
-            logger.error(f"Failed to emit progress event: {e}")
-
+        """Held pending authenticated canonical outbox destination qualification."""
         return False
 
     async def emit_task_completed(
@@ -140,47 +81,7 @@ class TaskOrchestratorEventEmitter:
         duration_minutes: int,
         complexity: Optional[float] = None
     ) -> bool:
-        """
-        Emit event when task completes.
-
-        Args:
-            task_id: Task identifier
-            task_title: Task title
-            duration_minutes: Time taken to complete
-            complexity: Task complexity
-
-        Returns:
-            True if event emitted successfully
-        """
-        if not self.enable_events:
-            return False
-
-        try:
-            event = Event(
-                type="task.completed",
-                data={
-                    "task_id": task_id,
-                    "title": task_title,
-                    "duration_minutes": duration_minutes,
-                    "complexity": complexity,
-                    "workspace_id": self.workspace_id,
-                    "completion_timestamp": datetime.utcnow().isoformat()
-                },
-                source="task-orchestrator"
-            )
-
-            msg_id = await self.event_bus.publish("dopemux:events", event)
-
-            if msg_id:
-                self.events_emitted += 1
-                self.completion_events += 1
-                logger.info(f"📤 Emitted task.completed: {task_title[:50]}...")
-                return True
-
-        except Exception as e:
-            self.emission_errors += 1
-            logger.error(f"Failed to emit completion event: {e}")
-
+        """Held pending authenticated canonical outbox destination qualification."""
         return False
 
     async def emit_task_blocked(
@@ -190,52 +91,7 @@ class TaskOrchestratorEventEmitter:
         blocker_reason: str,
         recommended_actions: Optional[List[str]] = None
     ) -> bool:
-        """
-        Emit event when task becomes blocked.
-
-        Args:
-            task_id: Task identifier
-            task_title: Task title
-            blocker_reason: Reason task is blocked
-            recommended_actions: Optional actions to unblock
-
-        Returns:
-            True if event emitted successfully
-        """
-        if not self.enable_events:
-            return False
-
-        try:
-            event = Event(
-                type="task.blocked",
-                data={
-                    "task_id": task_id,
-                    "title": task_title,
-                    "blocker_reason": blocker_reason,
-                    "recommended_actions": recommended_actions or [
-                        "Identify blocking dependency",
-                        "Re-estimate task complexity",
-                        "Break into smaller sub-tasks",
-                        "Seek help or clarification"
-                    ],
-                    "workspace_id": self.workspace_id,
-                    "severity": "medium"
-                },
-                source="task-orchestrator"
-            )
-
-            msg_id = await self.event_bus.publish("dopemux:events", event)
-
-            if msg_id:
-                self.events_emitted += 1
-                self.blocked_events += 1
-                logger.warning(f"⚠️  Emitted task.blocked: {task_title[:50]}...")
-                return True
-
-        except Exception as e:
-            self.emission_errors += 1
-            logger.error(f"Failed to emit blocked event: {e}")
-
+        """Held pending authenticated canonical outbox destination qualification."""
         return False
 
     def get_metrics(self) -> Dict[str, Any]:
@@ -319,80 +175,8 @@ class TaskOrchestratorIntegrationManager:
         complexity: Optional[float] = None,
         energy_required: Optional[str] = None
     ):
-        """
-        Handle task status change safely using Canonical PM store invariants.
-
-        Args:
-            task_id: Task identifier
-            task_title: Task title
-            old_status: Previous status
-            new_status: New status
-            progress_percentage: Completion percentage
-            complexity: Optional complexity
-            energy_required: Optional energy level
-        """
-        if not self.enable_progress_events:
-            return
-
-        # Enforce Idempotency and State via Canonical Store
-        try:
-            from dopemux.pm.mapping import ORCHESTRATOR_TO_CANONICAL
-            canonical_status = ORCHESTRATOR_TO_CANONICAL.get(new_status.lower(), PMTaskStatus.TODO)
-            pm_task = self.emitter.pm_store.get(task_id)
-            
-            if pm_task is None:
-                # Mock create if we are just tracking states independently for demo events
-                pm_task = PMTask(
-                    task_id=task_id,
-                    title=task_title,
-                    status=PMTaskStatus.TODO,
-                    source="task-orchestrator",
-                    created_at_utc=datetime.now(timezone.utc),
-                    updated_at_utc=datetime.now(timezone.utc),
-                )
-                self.emitter.pm_store.create(pm_task)
-                
-            pm_task = self.emitter.pm_store.transition(
-                task_id=task_id,
-                req=PMTransitionRequest(
-                    idempotency_key=f"status-{task_id}-{canonical_status.value}",
-                    expected_version=pm_task.version,
-                    new_status=canonical_status,
-                    ts_utc=datetime.now(timezone.utc),
-                    source="task-orchestrator",
-                )
-            )
-        except Exception as e:
-            logger.error(f"Canonical store transition failed: {e}")
-            return
-
-        # Emit progress update event
-        await self.emitter.emit_task_progress_updated(
-            task_id=task_id,
-            task_title=task_title,
-            old_status=old_status,
-            new_status=new_status,
-            progress_percentage=progress_percentage,
-            complexity=complexity,
-            energy_required=energy_required
-        )
-
-        # If completed, emit completion event
-        if new_status == "DONE":
-            await self.emitter.emit_task_completed(
-                task_id=task_id,
-                task_title=task_title,
-                duration_minutes=0,  # Would calculate from task start time
-                complexity=complexity
-            )
-
-        # If blocked, emit blocked event
-        elif new_status == "BLOCKED":
-            await self.emitter.emit_task_blocked(
-                task_id=task_id,
-                task_title=task_title,
-                blocker_reason="Status changed to BLOCKED"
-            )
+        """Legacy demo state cannot produce canonical lifecycle events."""
+        raise RuntimeError("Canonical lifecycle delivery requires an authenticated committed outbox")
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get integration metrics"""

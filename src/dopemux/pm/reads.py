@@ -448,42 +448,15 @@ async def pm_get_project_context(project_id: str) -> PMProjectContextResult:
 
 
 async def pm_get_priority_queue(project_id: str) -> PMPriorityQueueResult:
-    """Read normalized priority queue from the workflow authority."""
-    try:
-        payload = await _orchestrator.get_queue(project_id)
-        return _priority_queue_result(project_id, payload=payload)
-    except httpx.HTTPError:
-        logger.warning("Task Orchestrator backend unavailable for pm_get_priority_queue")
-        return _priority_queue_result(project_id)
-    except Exception as exc:
-        logger.error("Unexpected error in pm_get_priority_queue: %s", exc)
-        return _priority_queue_result(project_id, error=str(exc))
+    return _priority_queue_result(project_id, error="Authenticated ownership v2 read required")
 
 
 async def pm_get_blockers(project_id: str) -> PMBlockersResult:
-    """Read normalized blockers from the workflow authority."""
-    try:
-        payload = await _orchestrator.get_blockers(project_id)
-        return _blockers_result(project_id, payload=payload)
-    except httpx.HTTPError:
-        logger.warning("Task Orchestrator backend unavailable for pm_get_blockers")
-        return _blockers_result(project_id)
-    except Exception as exc:
-        logger.error("Unexpected error in pm_get_blockers: %s", exc)
-        return _blockers_result(project_id, error=str(exc))
+    return _blockers_result(project_id, error="Authenticated ownership v2 read required")
 
 
 async def pm_get_workflow_state(project_id: str) -> PMWorkflowStateResult:
-    """Read normalized workflow state from the workflow authority."""
-    try:
-        payload = await _orchestrator.get_state(project_id)
-        return _workflow_state_result(project_id, payload=payload)
-    except httpx.HTTPError:
-        logger.warning("Task Orchestrator backend unavailable for pm_get_workflow_state")
-        return _workflow_state_result(project_id)
-    except Exception as exc:
-        logger.error("Unexpected error in pm_get_workflow_state: %s", exc)
-        return _workflow_state_result(project_id, error=str(exc))
+    return _workflow_state_result(project_id, error="Authenticated ownership v2 read required")
 
 
 async def pm_get_sprint_snapshot(project_id: str) -> PMSprintSnapshotResult:

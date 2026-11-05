@@ -590,69 +590,26 @@ def test_pm_log_decision_emits_decision_logged_after_conport_write(monkeypatch):
     ]
 
 
-def test_pm_transition_emits_workflow_and_task_events_after_orchestrator_write(monkeypatch):
-    emitted: list[tuple[str, dict, dict]] = []
-    transition_calls: list[dict] = []
-
+def test_legacy_pm_transition_emits_no_canonical_events(monkeypatch):
+    emitted = []
     class Orchestrator:
-        def transition(self, **kwargs):
-            transition_calls.append(kwargs)
-
-    monkeypatch.setattr(
-        pm_writes,
-        "try_emit_promotable_capture_event",
-        lambda event_type, payload, **kwargs: emitted.append((event_type, payload, kwargs)),
-    )
-
-    receipt = pm_transition_work_item(
-        PMWriteConfig(
-            leantime_client=None,
-            orchestrator_client=Orchestrator(),
-            conport_client=None,
-            memory_client=None,
-            project_id="proj-1",
-        ),
-        task_id="task-2",
-        new_status=PMTaskStatus.DONE,
-        reason="implementation merged",
-        idempotency_key="idem-2",
-        expected_version=4,
-    )
-
-    assert receipt.success is True
-    assert transition_calls
-    assert [event_type for event_type, _payload, _kwargs in emitted] == [
-        "workflow.phase_changed",
-        "task.completed",
-    ]
-    assert emitted[0][1]["canonical_system"] == "task-orchestrator"
-    assert emitted[0][1]["to_phase"] == "deployment"
-    assert emitted[1][1]["status"] == "DONE"
-    assert emitted[0][2]["mode"] == "auto"
+        def transition(self, **kwargs): pytest.fail("legacy writer called")
+    monkeypatch.setattr(pm_writes, "try_emit_promotable_capture_event", lambda *a, **k: emitted.append(a))
+    with pytest.raises(RuntimeError, match="v2"):
+        pm_transition_work_item(PMWriteConfig(leantime_client=None, orchestrator_client=Orchestrator(), conport_client=None, memory_client=None, project_id="proj-1"), task_id="task-2", new_status=PMTaskStatus.DONE, reason="intent", idempotency_key="idem-2", expected_version=4)
+    assert emitted == []
 
 
 @pytest.mark.asyncio
-async def test_async_pm_transition_maps_done_to_deployment_phase(monkeypatch):
-    emitted: list[tuple[str, dict]] = []
-
+async def test_legacy_async_pm_transition_emits_no_completion_event(monkeypatch):
+    emitted = []
     class Orchestrator:
-        async def transition_task(self, *_args, **_kwargs):
-            return {"success": True}
-
-    monkeypatch.setattr(
-        pm_api,
-        "emit_pm_promotable_source_event",
-        lambda event_type, **kwargs: emitted.append((event_type, kwargs["payload"])),
-    )
-
+        async def transition_task(self, *args, **kwargs): pytest.fail("legacy writer called")
+    monkeypatch.setattr(pm_api, "emit_pm_promotable_source_event", lambda *a, **k: emitted.append(a))
     boundary = PMWriteBoundary(orchestrator_client=Orchestrator(), project_id="proj-1")
-    result = await boundary.pm_transition_work_item("task-3", "done")
-
-    assert result["success"] is True
-    workflow_events = [
-        payload for event_type, payload in emitted if event_type == "workflow.phase_changed"
-    ]
-    assert workflow_events[0]["to_phase"] == "deployment"
+    with pytest.raises(RuntimeError, match="v2"):
+        await boundary.pm_transition_work_item("task-3", "done")
+    assert emitted == []
 
 
 def test_no_implicit_injection_defaults_in_memory_capture_surfaces():
