@@ -78,7 +78,7 @@ try:
 except ImportError:
     def on_facade_edit(_root, _fp, _sid=None): return None  # type: ignore[misc]
 
-from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
+from dopemux.workflow import WorkflowStatus  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 from dopemux.memory.capture_client import PRINCIPAL_HOOKS, try_emit_promotable_capture_event  # noqa: E402
 
@@ -625,19 +625,13 @@ class NativeHookAdapter:
         if response_text:
             state = self.kernel.apply_response_text(state, response_text)
 
-        checkpoint = parse_workflow_checkpoint(response_text)
-        if checkpoint and checkpoint.status.is_stop_safe:
+        if state.can_stop():
             return self._allow(
-                system_message=f"Workflow checkpoint accepted: {checkpoint.phase.value}/{checkpoint.status.value}",
-                additional_context=_workflow_context_lines(state),
-            )
-
-        if state.latest_checkpoint(phase=state.phase) and state.latest_checkpoint(phase=state.phase).status.is_stop_safe:
-            return self._allow(system_message="Safe checkpoint detected.", additional_context=_workflow_context_lines(state))
-
-        if contains_completion_token(response_text, state.completion_token) or state.status == WorkflowStatus.COMPLETE:
-            return self._allow(
-                system_message="Workflow completion token observed.",
+                system_message=(
+                    "Workflow completion verified against configured evidence."
+                    if state.status == WorkflowStatus.COMPLETE
+                    else "Workflow paused at a safe checkpoint; work remains active."
+                ),
                 additional_context=_workflow_context_lines(state),
             )
 

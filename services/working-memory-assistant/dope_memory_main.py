@@ -46,7 +46,7 @@ from auth_identity import (
     validate_write_ids,
 )
 from canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
-from chronicle.store import ChronicleStore
+from chronicle.store import ChronicleStore, VALID_CORRECTION_TYPES
 from mcp_http import FASTMCP_AVAILABLE, build_mcp_http_app, build_mcp_server
 from promotion.redactor import Redactor
 from promotion.promotion import PromotionEngine
@@ -604,18 +604,25 @@ class DopeMemoryMCPServer:
                 instance_id=instance_id,
                 supersedes_entry_id=entry_id,
                 correction_type=correction_type,
-                summary=corrected_summary or "Retraction" if correction_type == "retraction" else corrected_summary or "Correction",
+                summary=corrected_summary,
+                corrected_tags=corrected_tags,
+                corrected_category=corrected_category,
+                corrected_entry_type=corrected_entry_type,
                 outcome=corrected_outcome,
                 idempotency_key=idempotency_key,
                 write_principal=write_principal,
             )
+            stored = store.get_entry_by_id(workspace_id, instance_id, new_id)
+            stored_type = stored["promotion_rule"].removeprefix("correction.") if stored else None
+            if stored_type not in VALID_CORRECTION_TYPES:
+                raise ValueError("Stored correction receipt is unavailable or invalid.")
             return ToolResponse(
                 success=True,
                 data={
                     "corrected": True,
                     "new_entry_id": new_id,
                     "superseded_entry_id": entry_id,
-                    "correction_type": correction_type,
+                    "correction_type": stored_type,
                 },
             )
         except ValueError as e:
@@ -912,10 +919,12 @@ class MemoryReplaySessionRequest(BaseModel):
 class MemoryCorrectRequest(BaseModel):
     """Request for memory_correct tool (Packet F §6.5)."""
 
+    model_config = {"extra": "forbid"}
+
     workspace_id: Optional[str] = WRITE_WORKSPACE_ID_FIELD
     instance_id: Optional[str] = WRITE_INSTANCE_ID_FIELD
     entry_id: str
-    correction_type: str = Field(pattern=r"^(summary|tags|category|outcome|retraction)$")
+    correction_type: str = Field(pattern=r"^(update|summary|tags|category|outcome|retraction)$")
     corrected_summary: Optional[str] = None
     corrected_tags: Optional[list[str]] = None
     corrected_category: Optional[str] = None

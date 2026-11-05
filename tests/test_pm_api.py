@@ -132,34 +132,24 @@ async def test_pm_update_work_item_rejected_mixed():
 
 
 @pytest.mark.asyncio
-async def test_pm_transition_work_item_success():
+async def test_legacy_pm_transition_cannot_claim_success():
     boundary = PMWriteBoundary(orchestrator_client=MockOrchestrator(), project_id="proj-3")
-
-    result = await boundary.pm_transition_work_item("task_3", "start")
-
-    assert result["success"] is True
-    assert result["canonical_backend"] == "task_orchestrator"
-    assert result["operation_type"] == "transition"
-    assert result["reflection_state"] == "not_requested"
-    assert result["reconciliation_state"] == "synchronized"
+    with pytest.raises(RuntimeError, match="explicit v2"):
+        await boundary.pm_transition_work_item("task_3", "start")
 
 
 @pytest.mark.asyncio
 async def test_pm_transition_work_item_orchestrator_fails():
     boundary = PMWriteBoundary(orchestrator_client=FailingOrchestrator())
-    result = await boundary.pm_transition_work_item("task_5", "done")
-
-    assert result["success"] is False
-    assert result["reflection_state"] == "failed"
-    assert "Task Orchestrator offline" in result["error"]
+    with pytest.raises(RuntimeError, match="explicit v2"):
+        await boundary.pm_transition_work_item("task_5", "done")
 
 
 @pytest.mark.asyncio
 async def test_pm_transition_work_item_no_clients_fails_closed():
     boundary = PMWriteBoundary()
-    result = await boundary.pm_transition_work_item("task_6", "done")
-    assert result["success"] is False
-    assert "Task Orchestrator client unavailable" in result["error"]
+    with pytest.raises(RuntimeError, match="explicit v2"):
+        await boundary.pm_transition_work_item("task_6", "done")
 
 
 @pytest.mark.asyncio

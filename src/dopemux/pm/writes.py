@@ -368,103 +368,18 @@ def pm_transition_work_item(
     idempotency_key: str,
     expected_version: int,
 ) -> CanonicalReceipt:
-    """Transition workflow state through the active task-orchestrator route only."""
+    """V1 lacks binding/admission/evidence fields; never invent them."""
+    raise RuntimeError("Canonical ownership requires authenticated v2 transition_command")
 
-    if config.orchestrator_client is None:
-        raise RuntimeError("Task Orchestrator client (workflow authority) is not configured.")
 
-    transition_name = TASK_ORCHESTRATOR_TRANSITIONS.get(new_status)
-    if transition_name is None:
-        raise ValueError(
-            f"Unsupported phase-1 workflow target {new_status.value}. "
-            "The proven project-scoped transition route currently supports only IN_PROGRESS, BLOCKED, and DONE transitions."
-        )
-
-    try:
-        transition_result = config.orchestrator_client.transition(
-            project_id=config.project_id,
-            workflow_id=task_id,
-            transition_name=transition_name,
-            actor="dopemux",
-            idempotency_key=idempotency_key,
-            expected_version=expected_version,
-            reason=reason,
-        )
-    except Exception as exc:
-        raise RuntimeError(f"Canonical write failed: {exc}") from exc
-
-    # Derive the prior phase from the orchestrator's receipt when available;
-    # "unknown" only when the backend didn't report from_status.
-    from_status = None
-    if isinstance(transition_result, dict):
-        receipt = transition_result.get("transition_receipt")
-        if isinstance(receipt, dict):
-            from_status = receipt.get("from_status")
-    from_phase = "unknown"
-    if from_status:
-        try:
-            from_phase = WORKFLOW_PHASE_CAPTURE_BY_STATUS.get(
-                PMTaskStatus(from_status), "unknown"
-            )
-        except ValueError:
-            from_phase = "unknown"
-
-    emit_pm_promotable_source_event(
-        "workflow.phase_changed",
-        project_id=config.project_id,
-        work_item_id=task_id,
-        canonical_system="task-orchestrator",
-        operation_type=PMActionKind.WORKFLOW_TRANSITION.value,
-        payload={
-            "from_phase": from_phase,
-            "from_status": from_status,
-            "to_phase": WORKFLOW_PHASE_CAPTURE_BY_STATUS.get(new_status, "maintenance"),
-            "status": new_status.value,
-            "transition": transition_name,
-            "reason": reason,
-            "expected_version": expected_version,
-        },
-    )
-    task_event_type = TASK_STATUS_CAPTURE_EVENTS.get(new_status)
-    if task_event_type:
-        emit_pm_promotable_source_event(
-            task_event_type,
-            project_id=config.project_id,
-            work_item_id=task_id,
-            canonical_system="task-orchestrator",
-            operation_type=PMActionKind.WORKFLOW_TRANSITION.value,
-            payload={
-                "title": f"Workflow item {task_id}",
-                "status": new_status.value,
-                "transition": transition_name,
-                "reason": reason,
-            },
-        )
-    if from_status == PMTaskStatus.BLOCKED.value and new_status != PMTaskStatus.BLOCKED:
-        emit_pm_promotable_source_event(
-            "blocker.cleared",
-            project_id=config.project_id,
-            work_item_id=task_id,
-            canonical_system="task-orchestrator",
-            operation_type=PMActionKind.WORKFLOW_TRANSITION.value,
-            payload={
-                "task_id": task_id,
-                "title": f"Workflow item {task_id}",
-                "status": new_status.value,
-                "transition": transition_name,
-                "reason": reason,
-            },
-        )
-
-    return CanonicalReceipt(
-        canonical_system="task-orchestrator",
-        canonical_id=task_id,
-        success=True,
-        operation_type=PMActionKind.WORKFLOW_TRANSITION.value,
-        version=expected_version + 1,
-        mirror_receipts=[],
-        reconciliation_state="SYNCED",
-    )
+def pm_transition_command(config: PMWriteConfig, command: Dict[str, Any]) -> Dict[str, Any]:
+    """Return the validated canonical receipt; delivery belongs to the server outbox."""
+    from .adapters.ownership import SyncOwnershipAdapter
+    if not isinstance(config.orchestrator_client, SyncOwnershipAdapter):
+        raise RuntimeError("Explicit authenticated v2 adapter required")
+    if config.project_id != config.orchestrator_client.project_id:
+        raise ValueError("Adapter project mismatch")
+    return config.orchestrator_client.transition_command(command)
 
 
 def pm_log_progress(

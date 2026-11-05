@@ -1,0 +1,74 @@
+{
+  "status": "SYNTHETIC_ADOPTED_SOURCE_ONLY",
+  "command": {
+    "schema_version": "dopemux.pm.transition-command.v1",
+    "task_id": "task_fixture_legacy_1",
+    "transition": "start",
+    "expected_version": 4,
+    "expected_binding_version": 1,
+    "admission_epoch": 2,
+    "idempotency_key": "fixture-start-001",
+    "reason": "Resume scoped work",
+    "completion_evidence_ref": null
+  },
+  "trusted_context_fixture": {
+    "operation_kind": "task.transition",
+    "project_id": "prj_fixture_a",
+    "principal_id": "principal_fixture_a",
+    "client_id": "client_fixture_a"
+  },
+  "fingerprint_fields": {
+    "operation_kind": "task.transition",
+    "project_id": "prj_fixture_a",
+    "principal_id": "principal_fixture_a",
+    "client_id": "client_fixture_a",
+    "schema_version": "dopemux.pm.transition-command.v1",
+    "task_id": "task_fixture_legacy_1",
+    "transition": "start",
+    "expected_version": 4,
+    "expected_binding_version": 1,
+    "admission_epoch": 2,
+    "reason": "Resume scoped work",
+    "completion_evidence_ref": null
+  },
+  "fingerprint_preimage_hex": "646f70656d75782e706d2e636f6d6d616e642e7631007b2261646d697373696f6e5f65706f6368223a322c22636c69656e745f6964223a22636c69656e745f666978747572655f61222c22636f6d706c6574696f6e5f65766964656e63655f726566223a6e756c6c2c2265787065637465645f62696e64696e675f76657273696f6e223a312c2265787065637465645f76657273696f6e223a342c226f7065726174696f6e5f6b696e64223a227461736b2e7472616e736974696f6e222c227072696e636970616c5f6964223a227072696e636970616c5f666978747572655f61222c2270726f6a6563745f6964223a2270726a5f666978747572655f61222c22726561736f6e223a22526573756d652073636f70656420776f726b222c22736368656d615f76657273696f6e223a22646f70656d75782e706d2e7472616e736974696f6e2d636f6d6d616e642e7631222c227461736b5f6964223a227461736b5f666978747572655f6c65676163795f31222c227472616e736974696f6e223a227374617274227d",
+  "request_sha256": "9adb0b8ffb9a2400d59c4672defab90c22998827ca14992c7d8f2b4bd64efe12",
+  "receipt": {
+    "schema_version": "dopemux.pm.transition-receipt.v1",
+    "outcome": "APPLIED",
+    "receipt_id": "receipt_fixture_1",
+    "event_id": "event_fixture_1",
+    "event_sequence": 6,
+    "project_id": "prj_fixture_a",
+    "task_id": "task_fixture_legacy_1",
+    "principal_id": "principal_fixture_a",
+    "client_id": "client_fixture_a",
+    "verifier_id": "fixture_verifier_only",
+    "credential_generation": "fixture_credential_1",
+    "operation_kind": "task.transition",
+    "idempotency_key": "fixture-start-001",
+    "request_sha256": "9adb0b8ffb9a2400d59c4672defab90c22998827ca14992c7d8f2b4bd64efe12",
+    "binding_version": 1,
+    "admission_epoch_at_commit": 2,
+    "from_status": "TODO",
+    "to_status": "IN_PROGRESS",
+    "version_before": 4,
+    "version_after": 5,
+    "committed_at_utc": "2026-11-04T00:00:00Z",
+    "source_binding_ref": "fixture_binding_event_1",
+    "completion_verification": null
+  },
+  "receipt_sha256": "388f9a2331cfe93b6ddf2550916da9b83c5574440cb27e8d739f987c69c25032",
+  "identity_tuple": {
+    "project_id": "prj_fixture_a",
+    "source_system": "leantime",
+    "source_instance_id": "fixture_leantime_a",
+    "source_task_id": "42"
+  },
+  "task_id_preimage_hex": "646f70656d75782e706d2e7461736b2e7632007b2270726f6a6563745f6964223a2270726a5f666978747572655f61222c22736f757263655f696e7374616e63655f6964223a22666978747572655f6c65616e74696d655f61222c22736f757263655f73797374656d223a226c65616e74696d65222c22736f757263655f7461736b5f6964223a223432227d",
+  "proposed_new_task_id": "pmt_855b08bbe5a432a247bff64ddd18e3920cfe3c9497cf6ef1741caff155a3f6e9",
+  "unicode_vector": {
+    "description": "Sort keys by scalar value; reject lone surrogates before encoding",
+    "canonical_hex": "7b22ee8080223a22626d70222c22f0908080223a2261737472616c227d"
+  }
+}

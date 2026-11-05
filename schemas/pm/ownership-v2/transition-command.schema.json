@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ownership v2 source contract: transition command; not implemented",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "transition",
+    "expected_version",
+    "expected_binding_version",
+    "admission_epoch",
+    "idempotency_key",
+    "reason",
+    "completion_evidence_ref"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "dopemux.pm.transition-command.v1"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transition": {
+      "enum": [
+        "start",
+        "block",
+        "done",
+        "resume"
+      ]
+    },
+    "expected_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "expected_binding_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "admission_epoch": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[!-~](?:[ -~]*[!-~])?$"
+    },
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 4096
+    },
+    "completion_evidence_ref": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "sha256"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "transition": {
+            "const": "done"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "completion_evidence_ref": {
+            "type": "object"
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "completion_evidence_ref": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "transition": {
+            "const": "resume"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        }
+      }
+    }
+  ]
+}

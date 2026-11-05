@@ -221,7 +221,7 @@ async def test_reordered_lists_replay_returns_conflict_and_winner_unchanged():
 
 
 @pytest.mark.asyncio
-async def test_workflow_route_family_live_certification():
+async def test_in_process_workflow_family_holds_unowned_project_reads():
     service = WorkflowService(workspace_id=Path("/tmp/workflow-route-cert"))
     service.store._client = MemoryBridgeClient()
     app.state.coordinator = SimpleNamespace(workflow_service=service)
@@ -299,23 +299,11 @@ async def test_workflow_route_family_live_certification():
             assert epic_missing.status_code == 404
             assert epic_missing.json()["detail"] == "epic not found: epic_missing"
 
-            workflow_state = await client.get("/api/projects/123/workflow/state")
-            assert workflow_state.status_code == 200
-            assert workflow_state.json()["state"]["ideas"]["under-review"]["count"] == 1
-            assert workflow_state.json()["state"]["epics"]["ready"]["count"] == 1
-
-            workflow_queue = await client.get("/api/projects/123/workflow/queue")
-            assert workflow_queue.status_code == 200
-            assert workflow_queue.json()["queue_items"][0]["workflow_id"] == epic_id
-            assert workflow_queue.json()["queue_items"][0]["priority"] == "critical"
-
-            workflow_blockers = await client.get("/api/projects/123/workflow/blockers")
-            assert workflow_blockers.status_code == 200
-            assert workflow_blockers.json()["active_blockers"] == []
-
-            workflow_missing_project = await client.get("/api/projects/unknown/workflow/state")
-            assert workflow_missing_project.status_code == 404
-            assert workflow_missing_project.json()["detail"] == "project not found"
+            for path in ("/api/projects/123/workflow/state", "/api/projects/123/workflow/queue",
+                         "/api/projects/123/workflow/blockers", "/api/projects/unknown/workflow/state"):
+                response = await client.get(path)
+                assert response.status_code == 503
+                assert response.json() == {"detail": "Canonical ownership v2 required; v1 reads held"}
     finally:
         project_workflow._workflow_service_instance = prior_service
         del app.state.coordinator

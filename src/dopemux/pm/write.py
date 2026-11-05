@@ -1,7 +1,6 @@
 """PM Plane write tools — canonical mutation with authority enforcement."""
 
 import logging
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from dopemux.pm.adapters.conport import ConPortAdapter
@@ -9,12 +8,18 @@ from dopemux.pm.adapters.orchestrator import TaskOrchestratorAdapter
 from dopemux.pm.chronicle import pm_append_work_chronicle
 from dopemux.pm.models import (
     PMTask,
-    PMTransitionRequest,
-    WORKFLOW_SIGNIFICANT_FIELDS,
 )
 from dopemux.pm.store import PMTaskStore
 
 logger = logging.getLogger(__name__)
+
+
+async def pm_transition_command(*, adapter, command: Dict[str, Any]) -> Dict[str, Any]:
+    """The explicit authenticated v2 path never mutates a local mirror first."""
+    from .adapters.ownership import AsyncOwnershipAdapter
+    if not isinstance(adapter, AsyncOwnershipAdapter):
+        raise RuntimeError("Explicit authenticated v2 adapter required")
+    return await adapter.transition_command(command)
 
 # Single instances of the adapters
 _orchestrator = TaskOrchestratorAdapter()
@@ -81,31 +86,8 @@ async def pm_transition_work_item(
     idempotency_key: str,
     reason: Optional[str] = None,
 ) -> PMTask:
-    """Execute a workflow transition in both the store and the Orchestrator."""
-    
-    # 1. Perform local store transition (verifies version and idempotency)
-    req = PMTransitionRequest(
-        idempotency_key=idempotency_key,
-        expected_version=expected_version,
-        new_status=new_status,
-        ts_utc=datetime.now(timezone.utc),
-        source="pm-plane",
-        reason=reason,
-    )
-    
-    task = store.transition(task_id, req)
-    
-    # 2. Update Task Orchestrator (Mirror the transition)
-    try:
-        await _orchestrator.transition(
-            project_id=project_id,
-            workflow_id=workflow_id,
-            transition_name=new_status.lower(),
-        )
-    except Exception as e:
-        logger.error(f"Failed to mirror transition to Task Orchestrator: {e}")
-        
-    return task
+    """Legacy local-first lifecycle writes are held; use an explicit v2 command."""
+    raise RuntimeError("Canonical ownership requires authenticated v2 transition_command")
 
 
 async def pm_update_work_item(
@@ -116,31 +98,5 @@ async def pm_update_work_item(
     expected_version: Optional[int] = None,
     idempotency_key: Optional[str] = None,
 ) -> PMTask:
-    """Update a work item, enforcing authority boundaries."""
-    
-    # Check if this is a workflow update
-    has_workflow_fields = any(k in WORKFLOW_SIGNIFICANT_FIELDS for k in patch)
-    
-    if has_workflow_fields:
-        if expected_version is None or idempotency_key is None:
-            raise ValueError("Workflow-significant updates require expected_version and idempotency_key")
-            
-        if "status" in patch:
-            req = PMTransitionRequest(
-                idempotency_key=idempotency_key,
-                expected_version=expected_version,
-                new_status=patch["status"],
-                ts_utc=datetime.now(timezone.utc),
-                source="pm-plane",
-            )
-            task = store.transition(task_id, req)
-            
-            # Apply remaining metadata from the same patch
-            metadata_patch = {k: v for k, v in patch.items() if k not in WORKFLOW_SIGNIFICANT_FIELDS}
-            if metadata_patch:
-                task = store.patch_metadata(task_id, metadata_patch)
-                
-            return task
-    
-    # 2. Pure metadata patch
-    return store.patch_metadata(task_id, patch)
+    """Legacy PM store mutation cannot bypass protected ownership."""
+    raise RuntimeError("Canonical metadata and graph edits are unavailable in ownership v2")
