@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -82,7 +83,8 @@ def _write_fixture_repo(
 ) -> Path:
     repo = tmp_path / "proj"
     repo.mkdir()
-    (repo / ".git").mkdir()
+    # Identity comes from git only, so the fixture must be a real repository.
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
     servers = mcp_servers or {
         "conport": {
             "type": "sse",
@@ -214,24 +216,35 @@ def test_build_desired_services_unions_catalog_defaults():
     assert "task-orchestrator" in names
 
 
-def test_resolve_identity_forces_repo_over_ambient(tmp_path: Path):
+def test_resolve_identity_ignores_ambient(tmp_path: Path, monkeypatch):
+    for name in (
+        "DOPEMUX_WORKSPACE_ROOT",
+        "DOPEMUX_PROJECT_ROOT",
+        "DOPEMUX_INSTANCE_ID",
+        "DOPEMUX_WORKSPACE_ID",
+        "TASK_ORCHESTRATOR_PROJECT_ROOT",
+    ):
+        monkeypatch.delenv(name, raising=False)
     target = tmp_path / "target-repo"
-    target.mkdir()
-    (target / ".git").mkdir()
     foreign = tmp_path / "foreign-repo"
-    foreign.mkdir()
-    (foreign / ".git").mkdir()
+    for repo in (target, foreign):
+        repo.mkdir()
+        subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
 
     view = resolve_identity_view(
         target,
         envrc_values={
             "DOPEMUX_WORKSPACE_ROOT": str(foreign),
             "DOPEMUX_PROJECT_ROOT": str(foreign),
+            "DOPEMUX_INSTANCE_ID": "dcd6",
+            "DOPEMUX_WORKSPACE_ID": str(foreign),
             "TASK_ORCHESTRATOR_PROJECT_ROOT": str(foreign),
         },
     )
     assert view.worktree_root == str(target.resolve())
-    assert any("forced identity" in e for e in view.evidence)
+    assert view.project_root == str(target.resolve())
+    assert view.workspace_id == str(target.resolve())
+    assert not any("forced identity" in e for e in view.evidence)
 
 
 def test_doctor_ignores_foreign_cwd_compose(tmp_path: Path, monkeypatch):

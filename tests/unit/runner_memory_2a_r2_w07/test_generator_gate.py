@@ -281,7 +281,7 @@ def generate_env(tmp_path, monkeypatch, seams):
     (repo / ".envrc.dopemux-mcp").write_text(
         f"export DOPE_MEMORY_PORT={MEMORY_PORT}\nexport CONPORT_HTTP_PORT={CONPORT_PORT}\n"
     )
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo))
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(repo))
     out = tmp_path / "out"
     return repo, out
 

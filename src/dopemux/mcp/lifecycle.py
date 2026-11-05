@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import re
 import socket
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
@@ -135,11 +136,29 @@ class LifecycleResult:
         return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
 
-def resolve_target_repo(repo: Optional[str | Path]) -> Path:
+def resolve_target_repo(
+    repo: Optional[str | Path], *, cwd: Optional[Path] = None
+) -> Path:
+    """Explicit ``repo`` wins; otherwise the git top-level of ``cwd`` (default process cwd)."""
     if repo is not None:
         path = Path(repo).expanduser().resolve()
     else:
-        path = Path.cwd().resolve()
+        base = Path(cwd).expanduser().resolve() if cwd is not None else Path.cwd().resolve()
+        path = base
+        if base.is_dir():
+            try:
+                proc = subprocess.run(
+                    ["git", "rev-parse", "--show-toplevel"],
+                    cwd=base,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                    check=False,
+                )
+            except (OSError, subprocess.SubprocessError):
+                proc = None
+            if proc is not None and proc.returncode == 0 and proc.stdout.strip():
+                path = Path(proc.stdout.strip()).resolve()
     if not path.is_dir():
         raise FileNotFoundError(f"Target path not found: {path}")
     return path
@@ -433,6 +452,7 @@ def run_lifecycle(
     process_env: Optional[Mapping[str, str]] = None,
     port_is_free_fn: Optional[Callable[[int], bool]] = None,
     product_root: Optional[Path] = None,
+    trust_env: bool = False,
 ) -> LifecycleResult:
     """Execute start|stop|restart|status for project-scoped MCP sidecars."""
     op = operation.lower().strip()
@@ -445,7 +465,7 @@ def run_lifecycle(
     doctor_env = merge_envrc_into_environ(dict(process_env or {}), envrc, override=True)
     mcp_json = load_mcp_json(target / PROJECT_MCP_FILENAME)
     mcp_servers = mcp_json.get("servers") or {}
-    identity = resolve_identity_view(target, envrc_values=doctor_env)
+    identity = resolve_identity_view(target, envrc_values=doctor_env, trust_env=trust_env)
 
     selected = select_services(services, mcp_servers, catalog)
     reg_path = registry_path or default_registry_path()
@@ -459,6 +479,7 @@ def run_lifecycle(
             skip_docker=False,
             skip_port_probe=True,
             process_env=doctor_env,
+            trust_env=trust_env,
             docker_runner=docker_runner,
         )
     elif op == "status":
@@ -468,6 +489,7 @@ def run_lifecycle(
             skip_docker=False,
             skip_port_probe=False,
             process_env=doctor_env,
+            trust_env=trust_env,
             docker_runner=docker_runner,
             port_is_free_fn=is_free,
         )
@@ -1222,10 +1244,8 @@ def _start_services(**kw: Any) -> LifecycleResult:
         "DOPEMUX_PROJECT_ROOT": project_root,
         "DOPEMUX_WORKTREE_ROOT": worktree_root,
         "DOPEMUX_WORKSPACE_ROOT": worktree_root,
-        "DOPE_MEMORY_WORKSPACE_ID": doctor_env.get("DOPE_MEMORY_WORKSPACE_ID")
-        or Path(worktree_root).name,
-        "DOPE_MEMORY_INSTANCE_ID": doctor_env.get("DOPE_MEMORY_INSTANCE_ID")
-        or (identity.instance_id or worktree_hash),
+        "DOPE_MEMORY_WORKSPACE_ID": Path(worktree_root).name,
+        "DOPE_MEMORY_INSTANCE_ID": identity.instance_id or worktree_hash,
         "TASK_ORCHESTRATOR_PROJECT_ROOT": project_root,
         "CONPORT_CONTAINER_NAME": container_names.get("conport", ""),
         **{k: str(v) for k, v in ports.items()},

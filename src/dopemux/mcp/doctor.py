@@ -233,6 +233,7 @@ def run_mcp_doctor(
     skip_docker: bool = False,
     skip_port_probe: bool = False,
     process_env: Optional[Mapping[str, str]] = None,
+    trust_env: bool = False,
 ) -> DoctorReport:
     """
     Run the full read-only doctor against ``repo``.
@@ -320,7 +321,7 @@ def run_mcp_doctor(
     doctor_env = merge_envrc_into_environ(base_env, envrc, override=True)
 
     # --- Identity ---
-    identity = resolve_identity_view(repo_path, envrc_values=doctor_env)
+    identity = resolve_identity_view(repo_path, envrc_values=doctor_env, trust_env=trust_env)
     if identity.identity_confidence in {"HIGH", "MEDIUM"} and identity.project_id:
         _add(
             findings,

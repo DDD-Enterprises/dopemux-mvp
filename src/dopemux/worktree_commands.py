@@ -50,46 +50,34 @@ _WORKTREE_CACHE = {
 _CACHE_LOCK = threading.Lock()
 
 
-def get_repo_root(fallback_cwd: bool = True) -> Optional[str]:
+def get_repo_root(fallback_cwd: bool = True, *, trust_env: bool = False) -> Optional[str]:
     """
-    Get canonical repository root using git rev-parse with environment override.
+    Get canonical repository root, git first.
 
-    This is the authoritative way to determine the repository root,
-    eliminating Path.cwd() dependency issues in worktree contexts.
+    Runs ``git rev-parse --show-toplevel`` in the current directory. The
+    ``DOPEMUX_WORKSPACE_ROOT`` / ``DOPEMUX_PROJECT_ROOT`` exports (often left
+    over from sourcing another checkout's ``.envrc.dopemux-mcp``) are consulted
+    only when ``trust_env`` is true.
 
     Args:
-        fallback_cwd: If True and git fails, return Path.cwd() (default: True)
+        fallback_cwd: If True and no root is found, return Path.cwd() (default: True)
+        trust_env: If True, the environment variables take precedence over git
+            (the pre-D3 behaviour; the CLI exposes this as ``--trust-env``).
 
     Returns:
         Absolute path to repo root, or None if not in a git repo
 
-    Environment:
-        DOPEMUX_WORKSPACE_ROOT: Current worktree (PRIORITY - set by dopemux start)
-        DOPEMUX_PROJECT_ROOT: Main repo root override (for testing)
-
-    Performance:
-        - With env var: 0ms (instant)
-        - Without: 10-50ms (git subprocess)
-
-    Example:
-        # With dopemux start (instant):
-        export DOPEMUX_WORKSPACE_ROOT="/Users/hue/code/ui-build"
-        repo_root = get_repo_root()  # Returns /Users/hue/code/ui-build (0ms!)
-
-        # Without (slower):
-        repo_root = get_repo_root()  # Runs git rev-parse (10-50ms)
+    Environment (only with ``trust_env``):
+        DOPEMUX_WORKSPACE_ROOT: Worktree override
+        DOPEMUX_PROJECT_ROOT: Main repo root override
     """
-    # 0. Check shared workspace first (FASTEST - instant!)
-    env_workspace = os.environ.get('DOPEMUX_WORKSPACE_ROOT')
-    if env_workspace:
-        return str(Path(env_workspace).resolve())
 
-    # 1. Check legacy override
-    env_root = os.environ.get('DOPEMUX_PROJECT_ROOT')
-    if env_root:
-        return str(Path(env_root).resolve())
+    if trust_env:
+        for name in ("DOPEMUX_WORKSPACE_ROOT", "DOPEMUX_PROJECT_ROOT"):
+            value = os.environ.get(name)
+            if value:
+                return str(Path(value).resolve())
 
-    # 2. Use git to get canonical repo root
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
@@ -97,21 +85,16 @@ def get_repo_root(fallback_cwd: bool = True) -> Optional[str]:
             text=True,
             timeout=5
         )
-
         if result.returncode == 0:
-            return result.stdout.strip()
+            return str(Path(result.stdout.strip()).resolve())
+    except Exception:
+        pass
 
-        # Git failed - fallback to cwd if requested
-        if fallback_cwd:
-            return str(Path.cwd().resolve())
+    if fallback_cwd:
+        return str(Path.cwd().resolve())
+    return None
 
-        return None
 
-    except Exception as e:
-        # Exception - fallback to cwd if requested
-        if fallback_cwd:
-            return str(Path.cwd().resolve())
-        return None
 def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optional[str]:
     """
     Get the current worktree path with intelligent caching.

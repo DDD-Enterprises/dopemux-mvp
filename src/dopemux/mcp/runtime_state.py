@@ -106,35 +106,16 @@ def resolve_identity_view(
     repo_path: Path,
     *,
     envrc_values: Optional[Mapping[str, str]] = None,
+    trust_env: bool = False,
 ) -> ProjectIdentityView:
-    """Resolve project identity for doctor; never raises — degrades to UNKNOWN."""
+    """Resolve project identity for doctor; never raises — degrades to UNKNOWN.
+
+    Identity comes from git for ``repo_path``. ``envrc_values`` (process env plus
+    the repo envrc) only participates when ``trust_env`` is true; otherwise an
+    ambient ``DOPEMUX_*`` export from another checkout cannot change the answer.
+    """
     evidence: List[str] = []
-    env_map = dict(envrc_values or {})
-    # --repo / explicit target path must win over ambient shell exports.
-    # setdefault would leave a foreign DOPEMUX_WORKSPACE_ROOT in place and
-    # resolve_project_identity would diagnose the previously sourced repo.
-    repo_str = str(Path(repo_path).expanduser().resolve())
-    prior_ws = env_map.get("DOPEMUX_WORKSPACE_ROOT")
-    env_map["DOPEMUX_WORKSPACE_ROOT"] = repo_str
-    if prior_ws:
-        try:
-            prior_ws_res = str(Path(prior_ws).expanduser().resolve())
-        except OSError:
-            prior_ws_res = str(prior_ws)
-        if prior_ws_res != repo_str:
-            # Foreign ambient workspace — scrub project roots that rode along with it.
-            env_map["DOPEMUX_PROJECT_ROOT"] = repo_str
-            prior_pr = env_map.get("TASK_ORCHESTRATOR_PROJECT_ROOT")
-            if prior_pr:
-                try:
-                    prior_pr_res = str(Path(prior_pr).expanduser().resolve())
-                except OSError:
-                    prior_pr_res = str(prior_pr)
-                if prior_pr_res == prior_ws_res:
-                    env_map["TASK_ORCHESTRATOR_PROJECT_ROOT"] = repo_str
-            evidence.append(
-                f"forced identity to target path (ambient DOPEMUX_WORKSPACE_ROOT={prior_ws})"
-            )
+    env_map = dict(envrc_values or {}) if trust_env else {}
 
     try:
         identity: ProjectIdentity = resolve_project_identity(cwd=repo_path, env=env_map)

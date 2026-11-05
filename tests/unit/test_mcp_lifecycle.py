@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -55,7 +56,8 @@ def _catalog():
 def _fixture_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "dNh_CRM"
     repo.mkdir()
-    (repo / ".git").mkdir()
+    # Identity comes from git only, so the fixture must be a real repository.
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
     (repo / ".mcp.json").write_text(
         json.dumps(
             {

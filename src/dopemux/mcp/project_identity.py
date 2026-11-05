@@ -13,7 +13,6 @@ EVIDENCE_ONLY alias dicts that registry consumers register/match against.
 from __future__ import annotations
 
 import hashlib
-import os
 import re
 import subprocess
 from dataclasses import dataclass
@@ -105,9 +104,12 @@ def resolve_project_identity(
     ``TASK_ORCHESTRATOR_PROJECT_ROOT`` and ``DOPEMUX_PROJECT_ROOT`` are explicit
     overrides for repo-scoped state and may point at non-git directories. Without
     those overrides this fails closed outside git instead of inventing identity.
+
+    ``env=None`` means an empty environment (git only); pass the mapping
+    explicitly to honour overrides. ``os.environ`` is never read implicitly.
     """
 
-    env_map = os.environ if env is None else env
+    env_map = env or {}
     base_cwd = Path(cwd or env_map.get("DOPEMUX_WORKSPACE_ROOT") or Path.cwd()).resolve()
 
     workspace_override = env_map.get("DOPEMUX_WORKSPACE_ROOT")

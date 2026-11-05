@@ -110,7 +110,20 @@ def _lifecycle_repo_option():
         "repo_arg",
         type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
         default=None,
-        help="Target repo/worktree (default: cwd). Works without compose.yml in the target.",
+        help="Target repo/worktree (default: git top-level of cwd). Works without compose.yml in the target.",
+    )
+
+
+def _trust_env_option():
+    return click.option(
+        "--trust-env",
+        "trust_env",
+        is_flag=True,
+        default=False,
+        help=(
+            "Let ambient DOPEMUX_*/TASK_ORCHESTRATOR_* environment variables override "
+            "the checkout's git identity (default: identity comes from git only)."
+        ),
     )
 
 
@@ -130,6 +143,7 @@ def _run_lifecycle_cli(
     services: Optional[str],
     dry_run: bool,
     json_output: bool,
+    trust_env: bool = False,
 ) -> None:
     """Shared entry for start/stop/restart/status reconciler."""
     from dopemux.mcp.lifecycle import format_lifecycle_human, run_lifecycle
@@ -143,6 +157,7 @@ def _run_lifecycle_cli(
         catalog=catalog,
         dry_run=dry_run,
         process_env=dict(os.environ),
+        trust_env=trust_env,
     )
     if json_output:
         sys.stdout.write(result.to_json())
@@ -162,10 +177,17 @@ def _run_lifecycle_cli(
 
 @mcp.command("start")
 @_lifecycle_repo_option()
+@_trust_env_option()
 @_lifecycle_services_option()
 @click.option("--dry-run", is_flag=True, help="Plan only; no Docker mutations, no registry writes.")
 @click.option("--json", "json_output", is_flag=True, help="Emit lifecycle JSON report.")
-def mcp_start_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: bool, json_output: bool):
+def mcp_start_cmd(
+    repo_arg: Optional[Path],
+    trust_env: bool,
+    services: Optional[str],
+    dry_run: bool,
+    json_output: bool,
+):
     """
     🚀 Start project-scoped MCP sidecars (repo-aware reconciler)
 
@@ -179,15 +201,23 @@ def mcp_start_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: bo
         services=services,
         dry_run=dry_run,
         json_output=json_output,
+        trust_env=trust_env,
     )
 
 
 @mcp.command("stop")
 @_lifecycle_repo_option()
+@_trust_env_option()
 @_lifecycle_services_option()
 @click.option("--dry-run", is_flag=True, help="Plan only; do not stop containers.")
 @click.option("--json", "json_output", is_flag=True, help="Emit lifecycle JSON report.")
-def mcp_stop_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: bool, json_output: bool):
+def mcp_stop_cmd(
+    repo_arg: Optional[Path],
+    trust_env: bool,
+    services: Optional[str],
+    dry_run: bool,
+    json_output: bool,
+):
     """
     🛑 Stop Dopemux-managed MCP sidecars for a target repo
 
@@ -200,15 +230,23 @@ def mcp_stop_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: boo
         services=services,
         dry_run=dry_run,
         json_output=json_output,
+        trust_env=trust_env,
     )
 
 
 @mcp.command("restart")
 @_lifecycle_repo_option()
+@_trust_env_option()
 @_lifecycle_services_option()
 @click.option("--dry-run", is_flag=True, help="Plan stop+start without mutations.")
 @click.option("--json", "json_output", is_flag=True, help="Emit lifecycle JSON report.")
-def mcp_restart_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: bool, json_output: bool):
+def mcp_restart_cmd(
+    repo_arg: Optional[Path],
+    trust_env: bool,
+    services: Optional[str],
+    dry_run: bool,
+    json_output: bool,
+):
     """♻️ Restart project-scoped MCP sidecars (safe stop then start)."""
     _run_lifecycle_cli(
         "restart",
@@ -216,6 +254,7 @@ def mcp_restart_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: 
         services=services,
         dry_run=dry_run,
         json_output=json_output,
+        trust_env=trust_env,
     )
 
 
@@ -223,12 +262,14 @@ def mcp_restart_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: 
 @click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
 @click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")
 @_lifecycle_repo_option()
+@_trust_env_option()
 @click.option("--dry-run", is_flag=True, help="When --repo is set: plan-only reconciler start.")
 @click.option("--json", "json_output", is_flag=True, help="When --repo is set: JSON lifecycle report.")
 def mcp_up_cmd(
     all_services: bool,
     services: str,
     repo_arg: Optional[Path],
+    trust_env: bool,
     dry_run: bool,
     json_output: bool,
 ):
@@ -247,6 +288,7 @@ def mcp_up_cmd(
             services=services,
             dry_run=dry_run,
             json_output=json_output,
+            trust_env=trust_env,
         )
         return
     try:
@@ -301,11 +343,13 @@ def mcp_up_cmd(
 
 @mcp.command("down")
 @_lifecycle_repo_option()
+@_trust_env_option()
 @_lifecycle_services_option()
 @click.option("--dry-run", is_flag=True, help="When --repo is set: plan-only stop.")
 @click.option("--json", "json_output", is_flag=True, help="When --repo is set: JSON lifecycle report.")
 def mcp_down_cmd(
     repo_arg: Optional[Path],
+    trust_env: bool,
     services: Optional[str],
     dry_run: bool,
     json_output: bool,
@@ -324,6 +368,7 @@ def mcp_down_cmd(
             services=services,
             dry_run=dry_run,
             json_output=json_output,
+            trust_env=trust_env,
         )
         return
     try:
@@ -347,13 +392,16 @@ def mcp_down_cmd(
 
 @mcp.command("status")
 @_lifecycle_repo_option()
+@_trust_env_option()
 @click.option("--json", "json_output", is_flag=True, help="Emit repo-aware status JSON (registry+docker+probes).")
 @click.option(
     "--legacy-compose",
     is_flag=True,
     help="Force legacy `docker compose ps` from cwd (ignores --repo).",
 )
-def mcp_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose: bool):
+def mcp_status_cmd(
+    repo_arg: Optional[Path], trust_env: bool, json_output: bool, legacy_compose: bool
+):
     """
     📊 Diagnostic HUD: Interrogate MCP service health
 
@@ -387,6 +435,7 @@ def mcp_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose: 
             services=None,
             dry_run=False,
             json_output=json_output,
+            trust_env=trust_env,
         )
         return
     from ..mcp.docker_runtime import env_with_compose_interpolation
@@ -502,28 +551,32 @@ def servers():
 @click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
 @click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")
 @click.option("--repo", "repo_arg", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path), default=None)
+@_trust_env_option()
 @click.option("--dry-run", is_flag=True)
 @click.option("--json", "json_output", is_flag=True)
 def servers_up_cmd(
     all_services: bool,
     services: str,
     repo_arg: Optional[Path],
+    trust_env: bool,
     dry_run: bool,
     json_output: bool,
 ):
     """
     ⚡ Ignite Engine (Alias): Deploy MCP servers via Docker Compose
     """
-    mcp_up_cmd.callback(all_services, services, repo_arg, dry_run, json_output)
+    mcp_up_cmd.callback(all_services, services, repo_arg, trust_env, dry_run, json_output)
 
 
 @servers.command("down")
 @click.option("--repo", "repo_arg", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path), default=None)
 @click.option("--services", "services", default=None)
+@_trust_env_option()
 @click.option("--dry-run", is_flag=True)
 @click.option("--json", "json_output", is_flag=True)
 def servers_down_cmd(
     repo_arg: Optional[Path],
+    trust_env: bool,
     services: Optional[str],
     dry_run: bool,
     json_output: bool,
@@ -531,18 +584,21 @@ def servers_down_cmd(
     """
     💧 Cool Down Cores (Alias): Terminate MCP containers and volumes
     """
-    mcp_down_cmd.callback(repo_arg, services, dry_run, json_output)
+    mcp_down_cmd.callback(repo_arg, trust_env, services, dry_run, json_output)
 
 
 @servers.command("status")
 @click.option("--repo", "repo_arg", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path), default=None)
 @click.option("--json", "json_output", is_flag=True)
 @click.option("--legacy-compose", is_flag=True)
-def servers_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose: bool):
+@_trust_env_option()
+def servers_status_cmd(
+    repo_arg: Optional[Path], json_output: bool, legacy_compose: bool, trust_env: bool
+):
     """
     📊 Diagnostic HUD (Alias): Interrogate MCP service health
     """
-    mcp_status_cmd.callback(repo_arg, json_output, legacy_compose)
+    mcp_status_cmd.callback(repo_arg, trust_env, json_output, legacy_compose)
 
 
 @servers.command("logs")
@@ -924,8 +980,14 @@ def _write_envrc(
     port_vars: Dict[str, int],
     worktree: str,
     project_root: str,
+    *,
+    preserve: Mapping[str, str],
 ) -> None:
-    """Write the per-worktree env file (sourced by direnv `.envrc` or `.env.mcp` consumers)."""
+    """Write the per-worktree env file (sourced by direnv `.envrc` or `.env.mcp` consumers).
+
+    ``preserve`` holds tenant keys (``CONPORT_DB_*``) read from the previous file;
+    they are re-emitted so ``init --force`` cannot orphan an existing database.
+    """
     env_exports = _project_env_exports(worktree, project_root)
     lines = [
         "# Generated by `dopemux mcp init`. Do not edit by hand — re-run init to regenerate.",
@@ -939,6 +1001,11 @@ def _write_envrc(
     lines.append("")
     for var, port in sorted(port_vars.items()):
         lines.append(f"export {var}={port}")
+    if preserve:
+        lines.append("")
+        lines.append("# Preserved from the previous file (tenant keys)")
+        for var, value in sorted(preserve.items()):
+            lines.append(f"export {var}={shlex_quote(str(value))}")
     envrc_path.write_text("\n".join(lines) + "\n")
 
 
@@ -1668,7 +1735,15 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
         "profile core-code when omitted. Never all servers."
     ),
 )
-def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str]):
+@_lifecycle_repo_option()
+@_trust_env_option()
+def mcp_init_cmd(
+    force: bool,
+    extra: Tuple[str, ...],
+    profile_name: Optional[str],
+    repo_arg: Optional[Path],
+    trust_env: bool,
+):
     """
     🌱 Bootstrap Worktree: Scaffold .mcp.json + per-worktree env file
 
@@ -1676,17 +1751,23 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
     per-worktree servers (default: compatibility profile ``core-code``) plus any
     `--with NAME` extras. Allocates ports deterministically from the worktree
     path so two worktrees never collide on the same host port.
+
+    The target is ``--repo`` when given, else the current git checkout; ambient
+    ``DOPEMUX_*`` variables are ignored unless ``--trust-env`` is passed.
     """
     from dopemux.mcp import profile_policy
 
-    repo = get_repo_root(fallback_cwd=False)
+    if repo_arg is not None:
+        repo = str(Path(repo_arg).expanduser().resolve())
+    else:
+        repo = get_repo_root(fallback_cwd=False, trust_env=trust_env)
     if not repo:
         raise click.ClickException("Not inside a git repository.")
     repo_path = Path(repo)
-    identity_env = dict(os.environ)
-    identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
     try:
-        identity = resolve_project_identity(cwd=repo_path, env=identity_env)
+        identity = resolve_project_identity(
+            cwd=repo_path, env=(dict(os.environ) if trust_env else {})
+        )
     except ProjectIdentityError as exc:
         raise click.ClickException(f"Could not resolve project identity: {exc}") from exc
 
@@ -1778,7 +1859,8 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
         _atomic_write_json(mcp_json_path, config)
         wrote_mcp_json = True
 
-    _write_envrc(envrc_path, port_vars, repo, str(identity.project_root))
+    preserved = {k: v for k, v in existing_env.items() if k.startswith("CONPORT_DB_")}
+    _write_envrc(envrc_path, port_vars, repo, str(identity.project_root), preserve=preserved)
 
     if wrote_mcp_json:
         console.logger.info(f"[success]Wrote {mcp_json_path}[/success]")
@@ -1972,6 +2054,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
     default=None,
     help="Target repo/worktree to diagnose (defaults to current git root). Works from any cwd.",
 )
+@_trust_env_option()
 @click.option(
     "--json",
     "json_output",
@@ -2004,6 +2087,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
 )
 def mcp_doctor_cmd(
     repo_arg: Optional[Path],
+    trust_env: bool,
     json_output: bool,
     verbose: bool,
     skip_docker: bool,
@@ -2046,7 +2130,7 @@ def mcp_doctor_cmd(
     if repo_arg is not None:
         repo = str(repo_arg.resolve())
     else:
-        repo = get_repo_root(fallback_cwd=False)
+        repo = get_repo_root(fallback_cwd=False, trust_env=trust_env)
         if not repo:
             raise click.ClickException(
                 "Not inside a git repository. Pass --repo <path> to diagnose another project."
@@ -2067,6 +2151,7 @@ def mcp_doctor_cmd(
         compose_path=compose_candidate,
         skip_docker=skip_docker,
         process_env=dict(os.environ),
+        trust_env=trust_env,
     )
 
     if json_output:
@@ -2277,11 +2362,11 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
     return {k: v for k, v in entry.items() if k != "description"}
 
 
-def _resolve_repo_arg(repo_arg: Optional[Path]) -> Path:
+def _resolve_repo_arg(repo_arg: Optional[Path], *, trust_env: bool = False) -> Path:
     """Resolve --repo or current git root to an absolute path."""
     if repo_arg is not None:
         return Path(repo_arg).expanduser().resolve()
-    repo = get_repo_root(fallback_cwd=False)
+    repo = get_repo_root(fallback_cwd=False, trust_env=trust_env)
     if not repo:
         raise click.ClickException(
             "Not inside a git repository. Pass --repo <path> to target another project."
@@ -2407,11 +2492,13 @@ def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
     default=None,
     help="Target repo/worktree (defaults to current git root).",
 )
+@_trust_env_option()
 @click.option("--dry-run", is_flag=True, help="Plan only; write nothing.")
 @click.option("--apply", is_flag=True, help="Write local .mcp.json / envrc / agent bootstrap doc.")
 @click.option("--json", "json_output", is_flag=True, help="Emit repair plan JSON to stdout.")
 def mcp_repair_config_cmd(
     repo_arg: Optional[Path],
+    trust_env: bool,
     dry_run: bool,
     apply: bool,
     json_output: bool,
@@ -2430,7 +2517,7 @@ def mcp_repair_config_cmd(
 
     from dopemux.mcp.config_repair import apply_repair, format_repair_human, plan_repair
 
-    repo_path = _resolve_repo_arg(repo_arg)
+    repo_path = _resolve_repo_arg(repo_arg, trust_env=trust_env)
     catalog = _load_catalog()
     catalog_path = _catalog_path()
     catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
@@ -2441,6 +2528,7 @@ def mcp_repair_config_cmd(
         dry_run=dry_run,
         catalog_paths=catalog_paths,
         process_env=dict(os.environ),
+        trust_env=trust_env,
     )
 
     if apply and plan.status != "BLOCKED":

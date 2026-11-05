@@ -178,7 +178,7 @@ def test_snapshot_tools_reports_write_failure(tmp_path, monkeypatch):
 def test_snapshot_tools_default_output_path_uses_repo_root(tmp_path, monkeypatch):
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
     monkeypatch.setattr(
-        mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path)
+        mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(tmp_path)
     )
     monkeypatch.setattr(
         tool_snapshot,
@@ -205,7 +205,7 @@ def test_snapshot_tools_default_output_path_uses_repo_root(tmp_path, monkeypatch
 
 def test_snapshot_tools_no_repo_root_and_no_output_raises(monkeypatch):
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: None)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: None)
 
     result = CliRunner().invoke(mcp_commands.mcp_snapshot_tools_cmd, ["--offline"])
 
