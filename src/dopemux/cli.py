@@ -4153,6 +4153,20 @@ def native_hooks():
     """
     pass
 
+@native_hooks.command("run")
+def native_hooks_run() -> None:
+    """
+    Run one native hook: read a Claude Code hook payload (JSON) on stdin,
+    write the response JSON to stdout, and exit with the adapter's code.
+
+    This is the installed-package fallback used by the hook dispatcher when
+    a checkout carries no native_hooks.py or no usable virtualenv.
+    """
+    from dopemux.claude import native_hooks as native_hooks_module
+
+    native_hooks_module.main()
+
+
 @native_hooks.command("register")
 @click.option("--global", "is_global", is_flag=True, help="🌐 Global Calibration: Register ritual hooks in the global configuration ledger.")
 def native_hooks_register(is_global: bool):
@@ -4170,7 +4184,17 @@ def native_hooks_register(is_global: bool):
     # repo the repo-relative dispatcher would not resolve, so pin the interpreter
     # running dopemux plus the absolute native_hooks.py (a bare `python3` can
     # resolve to one without dopemux's dependencies, e.g. pydantic).
-    repo_dispatcher = Path.cwd() / ".claude" / "hooks" / "run_native_hooks.sh"
+    # Project mode targets the git toplevel (cwd outside a repository), so running
+    # from a subdirectory registers the checkout rather than a stray nested .claude/.
+    try:
+        toplevel = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, check=True, timeout=10,
+        ).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        toplevel = ""
+    project_root = Path(toplevel) if toplevel else Path.cwd()
+    repo_dispatcher = project_root / ".claude" / "hooks" / "run_native_hooks.sh"
     if not is_global and repo_dispatcher.is_file():
         cmd = 'sh "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh"'
     else:
@@ -4196,7 +4220,7 @@ def native_hooks_register(is_global: bool):
     if is_global:
         settings_path = Path.home() / ".claude" / "settings.json"
     else:
-        settings_path = Path.cwd() / ".claude" / "settings.json"
+        settings_path = project_root / ".claude" / "settings.json"
         
     # Read existing settings. Invalid JSON must fail closed so a registration
     # attempt cannot silently discard the operator's existing settings.

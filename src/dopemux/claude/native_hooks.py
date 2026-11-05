@@ -670,16 +670,21 @@ class NativeHookAdapter:
 
 def main() -> None:
     """CLI entry point for the hook script."""
-    raw_input = sys.stdin.read()
-    if not raw_input:
+    # Fail open: an unreadable or non-JSON payload must never block the session.
+    try:
+        raw_input = sys.stdin.read()
+        payload = json.loads(raw_input) if raw_input else None
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        sys.exit(EXIT_SUCCESS)
+    if not isinstance(payload, dict):
         sys.exit(EXIT_SUCCESS)
 
-    try:
-        payload = json.loads(raw_input)
-    except json.JSONDecodeError:
-        sys.exit(1)
-
-    adapter = NativeHookAdapter()
+    # Claude Code runs hooks with cwd set to the session checkout, which the
+    # payload's "cwd" also names; honour it so workflow state follows the checkout.
+    cwd = payload.get("cwd")
+    adapter = NativeHookAdapter(
+        project_root=Path(cwd) if isinstance(cwd, str) and cwd else None
+    )
     exit_code, response = adapter.handle_event(payload)
     if response:
         sys.stdout.write(json.dumps(response))

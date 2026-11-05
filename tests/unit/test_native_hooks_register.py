@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import shlex
+import subprocess
 import sys
 from pathlib import Path
 
@@ -111,6 +112,29 @@ def test_register_includes_subagent_start(project_dir: Path) -> None:
     assert result.exit_code == 0, result.output
     settings = json.loads((project_dir / ".claude" / "settings.json").read_text())
     assert "SubagentStart" in settings["hooks"]
+
+
+def test_register_writes_to_git_toplevel_not_cwd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "repo"
+    subdir = repo / "src" / "pkg"
+    subdir.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", str(repo)], check=True, capture_output=True)
+    dispatcher = repo / ".claude" / "hooks" / "run_native_hooks.sh"
+    dispatcher.parent.mkdir(parents=True)
+    dispatcher.write_text("#!/usr/bin/env sh\n", encoding="utf-8")
+    monkeypatch.chdir(subdir)
+
+    result = _register()
+
+    assert result.exit_code == 0, result.output
+    settings = json.loads((repo / ".claude" / "settings.json").read_text())
+    for event in EXPECTED_EVENTS:
+        assert _dopemux_commands(settings, event) == [
+            'sh "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh"'
+        ]
+    assert not (subdir / ".claude").exists()
 
 
 def test_register_is_idempotent(project_dir: Path) -> None:
