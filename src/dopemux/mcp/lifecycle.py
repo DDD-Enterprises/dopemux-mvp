@@ -1320,16 +1320,64 @@ def _start_services(**kw: Any) -> LifecycleResult:
             continue
 
         commands: List[List[str]] = []
+        image_name = ""
+        image_findings: List[Dict[str, Any]] = []
+        will_build = False
         if svc in {"conport", "dope-memory"}:
-            cmd = dr.compose_up_command(
-                product=product,
-                override_path=Path(artifact_paths["compose.override.yml"]),
-                env_file=Path(artifact_paths["mcp.env"]),
-                project_name=compose_proj,
-                services=[svc],
-                no_deps=True,
+            interp_env = dr.env_with_compose_interpolation(product=product)
+            override_file = Path(artifact_paths["compose.override.yml"])
+            env_file = Path(artifact_paths["mcp.env"])
+            # compose.yml has `build:` with no `image:` for these services; a
+            # never-started project has no image, so `up` would build inline
+            # and blow the up budget. Probe (read-only) and build first.
+            image_name = dr.compose_image_name(compose_proj, svc)
+            present = dr.docker_image_exists(
+                image_name, runner=cmd_runner, env=interp_env
             )
-            commands.append(cmd)
+            will_build = present is False
+            if will_build:
+                commands.append(
+                    dr.compose_build_command(
+                        product=product,
+                        override_path=override_file,
+                        env_file=env_file,
+                        project_name=compose_proj,
+                        services=[svc],
+                    )
+                )
+                image_findings.append(
+                    {
+                        "code": "IMAGE_MISSING_WILL_BUILD",
+                        "severity": "INFO",
+                        "message": (
+                            f"image {image_name} not found; `compose build {svc}` "
+                            f"will run first with a {dr.build_timeout_secs():.0f}s "
+                            f"budget ({dr.BUILD_TIMEOUT_ENV})"
+                        ),
+                    }
+                )
+            elif present is None:
+                image_findings.append(
+                    {
+                        "code": "IMAGE_PRESENCE_UNKNOWN",
+                        "severity": "WARN",
+                        "message": (
+                            f"could not determine whether image {image_name} exists "
+                            "(docker image inspect was inconclusive); running `up` "
+                            "without a pre-build"
+                        ),
+                    }
+                )
+            commands.append(
+                dr.compose_up_command(
+                    product=product,
+                    override_path=override_file,
+                    env_file=env_file,
+                    project_name=compose_proj,
+                    services=[svc],
+                    no_deps=True,
+                )
+            )
         elif svc == "task-orchestrator":
             # Wrapper uses project resolution from env; set identity env
             cmd = dr.task_orchestrator_start_command(product, dry_run=False)
@@ -1361,7 +1409,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     "labels": labels,
                     "runtime_files": list(artifact_paths.values()),
                     "commands": [dr.redact_command(c) for c in commands],
-                    "preflight_findings": [],
+                    "preflight_findings": list(image_findings),
                 }
             )
             continue
@@ -1371,12 +1419,62 @@ def _start_services(**kw: Any) -> LifecycleResult:
             # Ensure data dir for memory
             if svc == "dope-memory":
                 memory_data.mkdir(parents=True, exist_ok=True)
+            build_result = None
+            findings = list(image_findings)
+            up_cmd = commands[-1]
+            if will_build:
+                build_result = dr.run_cmd(
+                    commands[0],
+                    runner=cmd_runner,
+                    cwd=product,
+                    env=interp_env,
+                    dry_run=False,
+                    timeout=dr.build_timeout_secs(),
+                )
+            if build_result is not None and build_result.exit_code != 0:
+                overall_fail = True
+                tail = (build_result.stderr or build_result.stdout or "").strip()[-300:]
+                findings.append(
+                    {
+                        "code": "IMAGE_BUILD_FAILED",
+                        "severity": "ERROR",
+                        "message": (
+                            f"compose build {svc} exited "
+                            f"{build_result.exit_code}: {tail}"
+                        ),
+                    }
+                )
+                service_results.append(
+                    {
+                        "service": svc,
+                        "action": "failed",
+                        "container_names": [cname],
+                        "ports": svc_ports,
+                        "probe_status": "UNKNOWN",
+                        "registry_updated": False,
+                        "findings": findings,
+                        "commands": [dr.redact_command(c) for c in commands],
+                        "result": build_result.to_dict(),
+                        "build_result": build_result.to_dict(),
+                        "image": image_name,
+                    }
+                )
+                continue
+            if build_result is not None:
+                findings.append(
+                    {
+                        "code": "IMAGE_BUILT",
+                        "severity": "INFO",
+                        "message": f"built image {image_name}",
+                    }
+                )
             result = dr.run_cmd(
-                commands[0],
+                up_cmd,
                 runner=cmd_runner,
                 cwd=product,
-                env=dr.env_with_compose_interpolation(),
+                env=interp_env,
                 dry_run=False,
+                timeout=dr.up_timeout_secs(),
             )
             action = "started" if result.exit_code == 0 else "failed"
             if result.exit_code != 0:
@@ -1399,7 +1497,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     labels=labels,
                     status="running" if probe != "FAIL" else "unhealthy",
                     last_start={
-                        "command": [dr.redact_command(commands[0])],
+                        "command": [dr.redact_command(up_cmd)],
                         "exit_code": result.exit_code,
                     },
                     last_probe={"status": probe},
@@ -1412,9 +1510,11 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     "ports": svc_ports,
                     "probe_status": probe,
                     "registry_updated": result.exit_code == 0,
-                    "findings": [],
-                    "commands": [dr.redact_command(commands[0])],
+                    "findings": findings,
+                    "commands": [dr.redact_command(c) for c in commands],
                     "result": result.to_dict(),
+                    "build_result": build_result.to_dict() if build_result else None,
+                    "image": image_name,
                 }
             )
         elif svc == "task-orchestrator":
