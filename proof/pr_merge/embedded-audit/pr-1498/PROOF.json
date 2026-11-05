@@ -1,0 +1,156 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-opus-5-5 (coordinator, W13 and the main merges); claude-sonnet-5-5 (children W01-W12); self-reported, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop (coordinator); claude-code-agent (children)",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high (contained: init.tools == [], see review_bundle/AUDIT_INVOCATION.txt); grok CLI 1.0.70; session_id=01a1a6b4-3266-79b3-830b-49456dc7dc50; grok exit=0 2026-11-04T13:19:38Z; one attempt; raw stream retained in review_bundle/GROK_AUDIT_STREAM.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1498-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "GROK-1",
+        "severity": "MEDIUM",
+        "title": "Unauthenticated /health used by Codex gate",
+        "status": "OPEN",
+        "body": "src/dopemux/commands/mcp_commands.py:_fetch_health and _MEMORY_HEALTH_TARGETS; /health on both servers returns auth_mode, identity_required_writes, auth_unverified_calls without authentication (dope_memory_main.py health_check; enhanced_server.py health_check). A spoofed local listener on the envrc ports can make evaluate_codex_memory_gate succeed and write .codex/config.toml. Gate is generation-time only; later mode changes are not re-checked. Disclosed residual; loopback-only mitigates remote risk. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-2",
+        "severity": "MEDIUM",
+        "title": "Bare python and stdio working directory UNKNOWN for Codex",
+        "status": "OPEN",
+        "body": "fleet_catalog.py / mcp_commands.py MEMORY_BRIDGE_PYTHON=\"python\"; http_stdio_bridge.py discover_profile walks from Path.cwd() with no --workdir. How-to step 8 and W07_RETURN residual risks name both as UNKNOWN until live Codex run (NOT_RUN). Fails closed if import missing or envrc absent; live acceptance is operator step 10. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-3",
+        "severity": "MEDIUM",
+        "title": "ADR-227 Dockerfile exemptions: case-fold asymmetry",
+        "status": "OPEN",
+        "body": "red_lane_rules.py Amendment 1 lookaheads (?!Dockerfile\\.dope-memory\\Z) and (?!Dockerfile\\Z); dcp_surface_guard case-folds so Edit to capitalized Dockerfiles still denied; PR Steward/scanner case-sensitive. ADR-227 Amendment 1 and tests/unit/runner_memory_2a_r2_w09 document fail-closed acceptance. 22 file-exact exemptions; no directory widen. Guard fails closed; W10 COPY lines landed outside Edit-tool path. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-4",
+        "severity": "LOW",
+        "title": "Keychain guard does not cover services/*/tests",
+        "status": "OPEN",
+        "body": "tests/conftest.py:_no_real_keychain autouse; AMENDMENT_02 residual and disclosed limitations. W05 keychain_guard_plugin is opt-in. After real token issue, suites under services/*/tests could read the real keychain unless separately guarded. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-5",
+        "severity": "LOW",
+        "title": "Known make-test failure: catalog untouched guard vs intentional W07 edit",
+        "status": "OPEN",
+        "body": "tests/mcp/test_fleet_catalog_v2_runtime.py::test_live_catalog_files_are_untouched_by_this_packet asserts mcp_catalog.yaml absent from git diff origin/main...HEAD; W07 changed codex full-sequenced→full for conport and dope-memory (mcp_catalog.yaml; default_catalog.yaml). AMENDMENT_05 accepts this failure. Docstring CATALOG_V2_CUTOVER=BLOCKED_NOT_APPLIED refers to a different cutover; W07's agents: matrix edit is authorized Wave 2A scope, not a forbidden catalog cutover. No reason to doubt Amendment 05 explanation; packet-local guard fails on any branch that touches the catalog by design. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-6",
+        "severity": "LOW",
+        "title": "Enforce unreachable in 2A; container callers remain unverified",
+        "status": "OPEN",
+        "body": "AGENTS.md §12.7 Not built; how-to step 11; W05_RETURN open items 2–5; PROXY_TOKEN_PROVIDER defaults to None inside images; adhd_engine/claude_brain/dopecon-bridge lack /usr/bin/security. By design for 2A; log mode records unverified. Not a defect relative to stated intent. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-1",
+        "severity": "MEDIUM",
+        "title": "Unverified proxy write in log mode stores 'internal:bridge-proxy' instead of 'unverified' when fallback token is active",
+        "status": "OPEN",
+        "body": "[docker/mcp-servers-source/conport/enhanced_server.py:448] In docker/mcp-servers-source/conport/auth_identity.py:364-370, build_rest_write_headers attaches the fallback internal:bridge-proxy token in log mode when a caller to server.py sent no token, alongside X-Dopemux-Unverified-Caller. In docker/mcp-servers-source/conport/enhanced_server.py:444-449, auth_middleware detects identity.principal == PROXY_PRINCIPAL and forwarded, records the unverified caller via record_unverified, but still sets _WRITE_PRINCIPAL.set(identity.principal) ('internal:bridge-proxy') instead of UNVERIFIED_PRINCIPAL ('unverified'). In production today PROXY_TOKEN_PROVIDER in docker/mcp-servers-source/conport/server.py:33 returns None, so writes still record 'unverified', but if a proxy token is injected or configured later, unverified proxy callers will be stored under principal 'internal:bridge-proxy'. Corroborating auditor, partial scope. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-2",
+        "severity": "LOW",
+        "title": "ConPort REST /mcp custom_data write tools double-count unverified callers in log mode",
+        "status": "OPEN",
+        "body": "[docker/mcp-servers-source/conport/enhanced_server.py:2229] When conport_save_custom_data or conport_delete_custom_data is invoked via POST /mcp on enhanced_server.py (lines 2257-2263), auth_middleware (lines 427-455) authorizes the request and records an unverified caller once, then _request_custom_data_tool (lines 2221-2235) performs an HTTP loopback POST/DELETE to /api/custom_data on the same server. The loopback request re-enters auth_middleware without the original User-Agent header, recording a second unverified call in auth_unverified_calls under the loopback aiohttp client. Corroborating auditor, partial scope. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-3",
+        "severity": "LOW",
+        "title": "Whitespace-only path workspace_id in update_context skips path-versus-body mismatch check",
+        "status": "OPEN",
+        "body": "[docker/mcp-servers-source/conport/enhanced_server.py:477] In docker/mcp-servers-source/conport/enhanced_server.py:476-480, _write_ids sets ws = workspace_id if workspace_id is not None else body_ws, and only checks body_ws != workspace_id when str(workspace_id).strip() is non-empty. If the URL path workspace_id is whitespace (e.g. POST /api/context/%20) and the JSON body contains a mismatched workspace_id, the mismatch check is skipped and validate_write_ids replaces the blank ws with bound_workspace_id instead of rejecting the mismatched body workspace_id. The write still lands on bound_workspace_id and cannot cross workspaces. Corroborating auditor, partial scope. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-4",
+        "severity": "LOW",
+        "title": "SQLite migration v1_3_0_add_write_principal.sql is not idempotent if executed directly more than once",
+        "status": "OPEN",
+        "body": "[services/working-memory-assistant/chronicle/migrations/v1_3_0_add_write_principal.sql:27] Lines 27-37 execute eight ALTER TABLE ... ADD COLUMN statements before INSERT OR IGNORE INTO schema_migrations (line 39). Because SQLite does not support ADD COLUMN IF NOT EXISTS, re-running this SQL script directly (or after a partial run) fails with duplicate column name unless the caller in chronicle/store.py (not visible in this diff) gates execution on schema_migrations or catches duplicate-column errors. Corroborating auditor, partial scope. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-5",
+        "severity": "LOW",
+        "title": "Stdio bridge has no upper bound on stdin line size or HTTP response body size",
+        "status": "OPEN",
+        "body": "[src/dopemux/mcp/http_stdio_bridge.py:340] In src/dopemux/mcp/http_stdio_bridge.py:340 (response.read()) and lines 521, 550, 638 (sys.stdin.readline()), the bridge reads entire lines and HTTP response bodies into memory without a byte limit, unlike WriteAuthMiddleware which caps request bodies at MAX_BODY_BYTES (4 MiB). Corroborating auditor, partial scope. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-6",
+        "severity": "LOW",
+        "title": "Principal, token, and digest regexes use $ instead of \\Z",
+        "status": "OPEN",
+        "body": "[src/dopemux/auth/tokens.py:15] PRINCIPAL_RE (src/dopemux/auth/tokens.py:15, docker/mcp-servers-source/conport/auth_identity.py:87, services/working-memory-assistant/auth_identity.py:71), _SHA256_HEX_RE, and _WRITABLE_TOKEN_RE (src/dopemux/auth/keychain.py:34) terminate with $ rather than \\Z, which in Python re matches before a single trailing newline. In keychain.py:107-117, a trailing newline would break the single-line security -i command, though the immediate get_token read-back check via hmac.compare_digest catches it and fails closed. Corroborating auditor, partial scope. OPERATOR: decision pending."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "GROK-1 (MEDIUM, OPEN): Unauthenticated /health used by Codex gate",
+      "GROK-2 (MEDIUM, OPEN): Bare python and stdio working directory UNKNOWN for Codex",
+      "GROK-3 (MEDIUM, OPEN): ADR-227 Dockerfile exemptions: case-fold asymmetry",
+      "GROK-4 (LOW, OPEN): Keychain guard does not cover services/*/tests",
+      "GROK-5 (LOW, OPEN): Known make-test failure: catalog untouched guard vs intentional W07 edit",
+      "GROK-6 (LOW, OPEN): Enforce unreachable in 2A; container callers remain unverified",
+      "AGY-1 (MEDIUM, OPEN): Unverified proxy write in log mode stores 'internal:bridge-proxy' instead of 'unverified' when fallback token is active",
+      "AGY-2 (LOW, OPEN): ConPort REST /mcp custom_data write tools double-count unverified callers in log mode",
+      "AGY-3 (LOW, OPEN): Whitespace-only path workspace_id in update_context skips path-versus-body mismatch check",
+      "AGY-4 (LOW, OPEN): SQLite migration v1_3_0_add_write_principal.sql is not idempotent if executed directly more than once",
+      "AGY-5 (LOW, OPEN): Stdio bridge has no upper bound on stdin line size or HTTP response body size",
+      "AGY-6 (LOW, OPEN): Principal, token, and digest regexes use $ instead of \\Z",
+      "Grok risk: Live validation NOT_RUN: no live server, real keychain issue, migration 008 on a real database, rebuilt image beyond CI, or live Codex session; security exit 44 unobserved.",
+      "Grok risk: Token helper duplicated across 11 callers; tokens not cached (each write may spawn security with 10s timeout).",
+      "Grok risk: released_only=False defaults remain on merge/render helpers; product path passes True.",
+      "Grok risk: services/dope-memory/mcp_stdio_adapter.py stale; pre-existing import breakage in claude_brain and ddg_mcp_stdio.py unchanged.",
+      "Grok risk: Proof/review_bundle markdown addresses auditors and records verdicts; treated as candidate claims only, not authority.",
+      "Grok risk: Instruction-like scanner: detected=false; no secret/PII beyond test-fixture fake passwords.",
+      "AGY risk: No tools were used per Hard Rule 1; 159 of the 172 changed files (including chronicle/store.py, conport_mcp_stdio.py, src/dopemux/commands/mcp_commands.py, and unmodified hunks of enhanced_server.py such as setup_routes() and _execute_mcp_tool()) are outside this audit slice and treated as UNKNOWN.",
+      "AGY risk: Live runtime verification is NOT_RUN: no live server, real macOS keychain token issuance, observed security exit 44, migration 008 on a live PostgreSQL database, or live Codex session has been executed.",
+      "AGY risk: In docker/mcp-servers-source/conport/enhanced_server.py:505, _principal_tables queries information_schema.columns with hardcoded table_schema = 'public', whereas migrations/008_write_principal.sql:52 checks current_schema(); deployments using a non-public default schema would report auth_principal_column=missing and reject writes with 503 in enforce mode.",
+      "Audit scope: Grok saw the whole diff 4cd889877...97b799629 minus 44 proof-only files (EXCLUDED_PROOF_FILES.txt). AGY saw 13 of 172 files.",
+      "Grok found no defect beyond limitations named in the brief, and gave paths and function names, not the path:line asked for. Supervisor spot checks of seven claims matched the code; those are not a re-audit.",
+      "Auditor model identity: requested grok-4.5; init.model grok-4.5; receipt grok-4.5-build; self-reported grok-4; provider attestation UNKNOWN.",
+      "AGY silently truncates a message at about 192 KB. Its verdict covers only the focused files, and it cannot stand in for Grok's (AGY_MESSAGE_CAP.md).",
+      "AGY tool permissions were always-proceed; containment rests on the observed absence of tool steps.",
+      "AGY's process did not exit after its result and was killed, so its wrapper exit is 137 (AGY_RUN_RECORD.md). The verdict is unaffected.",
+      "The bundle's AUDIT_PROMPT.txt carries /Users/hue on 3 lines of tracked R2 records, as does the branch itself."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  },
+  "generated_at": "2026-11-04T23:19:58Z",
+  "head_sha": "97b79962936da518888c12f3ff1ae8b6f0084eda",
+  "packet_id": "TP-DMX-PR1498-L3-AUDIT-001",
+  "pr_number": 1498,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
