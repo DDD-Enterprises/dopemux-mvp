@@ -210,3 +210,146 @@ def test_init_force_preserves_conport_db_keys(repos, init_env):
     text = envrc.read_text()
     assert "export CONPORT_DB_NAME=x" in text
     assert "export CONPORT_DB_USER=tenant" in text
+
+
+# --- fix round 1: doctor --legacy, add, ensure, servers aliases ---------------
+
+
+def _spy_identity(monkeypatch) -> list:
+    seen: list = []
+    real = mcp_commands.resolve_project_identity
+
+    def spy(*args, **kwargs):
+        identity = real(*args, **kwargs)
+        seen.append(identity)
+        return identity
+
+    monkeypatch.setattr(mcp_commands, "resolve_project_identity", spy)
+    return seen
+
+
+def _set_foreign_env(monkeypatch, foreign: Path) -> None:
+    for name, value in _foreign_env(foreign).items():
+        monkeypatch.setenv(name, value)
+
+
+def test_doctor_legacy_ignores_ambient_without_trust_env(repos, init_env, monkeypatch):
+    _set_foreign_env(monkeypatch, repos.foreign)
+    monkeypatch.chdir(repos.main)
+    seen = _spy_identity(monkeypatch)
+
+    # exit code is irrelevant (the stub repo has no .mcp.json); only identity matters
+    CliRunner().invoke(mcp_commands.mcp, ["doctor", "--legacy"])
+
+    assert [i.project_root for i in seen] == [repos.main]
+
+    seen.clear()
+    CliRunner().invoke(mcp_commands.mcp, ["doctor", "--legacy", "--trust-env"])
+
+    assert [i.project_root for i in seen] == [repos.foreign]
+
+
+def test_add_ignores_ambient_project_root(repos, init_env, monkeypatch):
+    (repos.main / ".mcp.json").write_text('{"mcpServers": {}}\n')
+    _set_foreign_env(monkeypatch, repos.foreign)
+    monkeypatch.chdir(repos.main)
+
+    result = CliRunner().invoke(mcp_commands.mcp, ["add", "dope-memory"])
+
+    assert result.exit_code == 0, result.output
+    assert "dope-memory" in (repos.main / ".mcp.json").read_text()
+    envrc = (repos.main / ".envrc.dopemux-mcp").read_text()
+    assert str(repos.main) in envrc
+    assert str(repos.foreign) not in envrc
+    assert not (repos.foreign / ".envrc.dopemux-mcp").exists()
+
+
+def test_ensure_ignores_ambient_project_root(repos, init_env, monkeypatch):
+    _set_foreign_env(monkeypatch, repos.foreign)
+    monkeypatch.chdir(repos.main)
+
+    # --full path: identity and repo come from git
+    repo_path, identity = mcp_commands._ensure_context()
+    assert repo_path == repos.main
+    assert identity.project_root == repos.main
+
+    # --fast path: no subprocess, walks up from cwd; env ignored without --trust-env
+    checked: list = []
+    monkeypatch.setattr(
+        mcp_commands,
+        "_ensure_fast_problems",
+        lambda catalog, repo, project: checked.append((repo, project)) or [],
+    )
+    result = CliRunner().invoke(mcp_commands.mcp, ["ensure", "--fast"])
+    assert result.exit_code == 0, result.output
+    assert checked == [(repos.main, repos.main)]
+
+    # --trust-env keeps the pre-D3 behaviour
+    checked.clear()
+    result = CliRunner().invoke(mcp_commands.mcp, ["ensure", "--fast", "--trust-env"])
+    assert result.exit_code == 0, result.output
+    assert checked == [(repos.foreign, repos.foreign)]
+    repo_path, _ = mcp_commands._ensure_context(trust_env=True)
+    assert repo_path == repos.foreign
+
+
+_ALIAS_CASES = {
+    "up": (
+        "mcp_up_cmd",
+        ["all_services", "services", "repo_arg", "trust_env", "dry_run", "json_output"],
+        [
+            (["--all"], {"all_services": True}),
+            (["--services", "a,b"], {"services": "a,b"}),
+            (["--trust-env"], {"trust_env": True}),
+            (["--dry-run"], {"dry_run": True}),
+            (["--json"], {"json_output": True}),
+        ],
+    ),
+    "down": (
+        "mcp_down_cmd",
+        ["repo_arg", "trust_env", "services", "dry_run", "json_output"],
+        [
+            (["--services", "a,b"], {"services": "a,b"}),
+            (["--trust-env"], {"trust_env": True}),
+            (["--dry-run"], {"dry_run": True}),
+            (["--json"], {"json_output": True}),
+        ],
+    ),
+    "status": (
+        "mcp_status_cmd",
+        ["repo_arg", "trust_env", "json_output", "legacy_compose"],
+        [
+            (["--trust-env"], {"trust_env": True}),
+            (["--json"], {"json_output": True}),
+            (["--legacy-compose"], {"legacy_compose": True}),
+        ],
+    ),
+}
+
+
+@pytest.mark.parametrize("alias", sorted(_ALIAS_CASES))
+def test_servers_aliases_invoke_without_error(alias, repos, monkeypatch):
+    target_name, param_names, cases = _ALIAS_CASES[alias]
+    target = getattr(mcp_commands, target_name)
+    calls: list = []
+
+    def recorder(*args):
+        assert len(args) == len(param_names), args
+        calls.append(dict(zip(param_names, args)))
+
+    monkeypatch.setattr(target, "callback", recorder)
+
+    # --repo, positionally forwarded, must land on repo_arg
+    result = CliRunner().invoke(mcp_commands.servers, [alias, "--repo", str(repos.main)])
+    assert result.exit_code == 0, result.output
+    assert calls[-1]["repo_arg"] == repos.main
+    assert not any(v for k, v in calls[-1].items() if k != "repo_arg")
+
+    for flags, expected in cases:
+        calls.clear()
+        result = CliRunner().invoke(mcp_commands.servers, [alias, *flags])
+        assert result.exit_code == 0, (flags, result.output)
+        (got,) = calls
+        want = {name: None if name in ("repo_arg", "services") else False for name in param_names}
+        want.update(expected)
+        assert got == want, (flags, got)

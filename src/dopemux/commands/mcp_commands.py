@@ -1457,12 +1457,12 @@ def _apply_in_repo_agent_configs(
         )
 
 
-def _ensure_context() -> tuple[Path, Any]:
-    repo = get_repo_root(fallback_cwd=False)
+def _ensure_context(*, trust_env: bool = False) -> tuple[Path, Any]:
+    repo = get_repo_root(fallback_cwd=False, trust_env=trust_env)
     if not repo:
         raise click.ClickException("Not inside a git repository.")
     repo_path = Path(repo)
-    identity_env = dict(os.environ)
+    identity_env = dict(os.environ) if trust_env else {}
     identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
     try:
         identity = resolve_project_identity(cwd=repo_path, env=identity_env)
@@ -1471,8 +1471,11 @@ def _ensure_context() -> tuple[Path, Any]:
     return repo_path, identity
 
 
-def _ensure_fast_context() -> tuple[Path, Path]:
-    env_repo = os.environ.get("DOPEMUX_WORKSPACE_ROOT") or os.environ.get("DOPEMUX_PROJECT_ROOT")
+def _ensure_fast_context(*, trust_env: bool = False) -> tuple[Path, Path]:
+    # Fast mode never spawns a subprocess, so the checkout is found by walking up
+    # from cwd; ambient DOPEMUX_*/TASK_ORCHESTRATOR_* only count with --trust-env.
+    env_map = os.environ if trust_env else {}
+    env_repo = env_map.get("DOPEMUX_WORKSPACE_ROOT") or env_map.get("DOPEMUX_PROJECT_ROOT")
     if env_repo:
         repo_path = Path(env_repo).expanduser().resolve()
         if not repo_path.is_dir():
@@ -1493,7 +1496,7 @@ def _ensure_fast_context() -> tuple[Path, Path]:
                 "set DOPEMUX_WORKSPACE_ROOT or run from the repository root."
             )
 
-    project_override = os.environ.get("TASK_ORCHESTRATOR_PROJECT_ROOT") or os.environ.get("DOPEMUX_PROJECT_ROOT")
+    project_override = env_map.get("TASK_ORCHESTRATOR_PROJECT_ROOT") or env_map.get("DOPEMUX_PROJECT_ROOT")
     if project_override:
         project_root = Path(project_override).expanduser().resolve()
         if not project_root.is_dir():
@@ -1643,13 +1646,14 @@ def _report_ensure_problems(problems: List[str]) -> None:
 
 
 @mcp.command("ensure")
+@_trust_env_option()
 @click.option(
     "--fast",
     is_flag=True,
     help="Static prerequisite checks only (config/env presence) — no daemon probes, no health checks.",
 )
 @click.option("--full", "full_mode", is_flag=True, help="Run local checks plus bounded service remediation/probes.")
-def mcp_ensure_cmd(fast: bool, full_mode: bool):
+def mcp_ensure_cmd(trust_env: bool, fast: bool, full_mode: bool):
     """
     🛠️ Stabilize Fleet: Check or remediate catalog-backed MCP prerequisites
 
@@ -1667,9 +1671,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
 
     catalog = _load_catalog()
     if fast:
-        repo_path, project_root = _ensure_fast_context()
+        repo_path, project_root = _ensure_fast_context(trust_env=trust_env)
     else:
-        repo_path, identity = _ensure_context()
+        repo_path, identity = _ensure_context(trust_env=trust_env)
         project_root = identity.project_root
     problems = _ensure_fast_problems(catalog, repo_path, project_root)
     if problems:
@@ -1883,17 +1887,18 @@ def mcp_init_cmd(
 
 @mcp.command("add")
 @click.argument("name")
-def mcp_add_cmd(name: str):
+@_trust_env_option()
+def mcp_add_cmd(name: str, trust_env: bool):
     """
     ➕ Append Server: Add a per-worktree MCP from the catalog to .mcp.json
 
     The server must be present in `mcp_catalog.yaml` with `scope: per-worktree`.
     Singletons are added via `dopemux mcp sync-globals` instead.
     """
-    repo = get_repo_root(fallback_cwd=False)
+    repo = get_repo_root(fallback_cwd=False, trust_env=trust_env)
     if not repo:
         raise click.ClickException("Not inside a git repository.")
-    identity_env = dict(os.environ)
+    identity_env = dict(os.environ) if trust_env else {}
     identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
     try:
         identity = resolve_project_identity(cwd=repo, env=identity_env)
@@ -2120,7 +2125,7 @@ def mcp_doctor_cmd(
             raise click.ClickException(
                 "--legacy does not support --repo; omit --legacy for repo-aware doctor."
             )
-        _mcp_doctor_legacy()
+        _mcp_doctor_legacy(trust_env=trust_env)
         return
 
     catalog = _load_catalog()
@@ -2174,10 +2179,10 @@ def mcp_doctor_cmd(
         sys.exit(report.exit_code)
 
 
-def _mcp_doctor_legacy() -> None:
+def _mcp_doctor_legacy(trust_env: bool = False) -> None:
     """Pre-Packet-001 doctor: problem list for cwd git root (compat)."""
     catalog = _load_catalog()
-    repo = get_repo_root(fallback_cwd=False)
+    repo = get_repo_root(fallback_cwd=False, trust_env=trust_env)
     if not repo:
         raise click.ClickException("Not inside a git repository.")
 
@@ -2185,7 +2190,7 @@ def _mcp_doctor_legacy() -> None:
     mcp_json_path = Path(repo) / PROJECT_MCP_FILENAME
     problems: List[str] = []
     try:
-        identity_env = dict(os.environ)
+        identity_env = dict(os.environ) if trust_env else {}
         identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
         identity = resolve_project_identity(cwd=repo, env=identity_env)
     except ProjectIdentityError as exc:
