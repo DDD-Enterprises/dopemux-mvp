@@ -121,6 +121,21 @@ def model_steps(document, data):
     return calls
 
 
+@pytest.mark.parametrize("name", [
+    "gemini-dispatch.yml", "gemini-scheduled-triage.yml",
+])
+def test_pr_policy_summary_explicitly_denies_token_permissions(name):
+    doc = workflow(name)
+    job = doc["jobs"]["pr-policy"]
+    # An absent mapping inherits repository defaults; the summary needs no token.
+    assert job.get("permissions") == {}
+    assert evaluate(job["if"], context("pull_request"))
+    assert not evaluate(job["if"], context("push"))
+    assert "uses" not in job
+    assert all("uses" not in step and "run" in step for step in job["steps"])
+    assert model_steps({"jobs": {"pr-policy": job}}, context("pull_request")) == []
+
+
 @pytest.mark.parametrize("action", ["opened", "synchronize", "reopened", "ready_for_review"])
 @pytest.mark.parametrize("draft", [False, True])
 @pytest.mark.parametrize("fork", [False, True])

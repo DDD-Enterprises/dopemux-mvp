@@ -149,6 +149,7 @@ jobs:
   pr-policy:
     if: github.event_name == 'pull_request'
     runs-on: 'ubuntu-latest'
+    permissions: {}
     steps:
       - name: 'Report automatic issue-triage policy'
         run: |-
