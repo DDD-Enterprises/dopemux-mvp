@@ -213,6 +213,10 @@ def _doctor_blocking_findings(
                 continue
             if svc and svc not in services and code.startswith("DOCKER_CONTAINER"):
                 continue
+            # Another project's orchestrator on :7890 blocks only a start that
+            # includes task-orchestrator; conport/dope-memory start regardless (T6).
+            if svc and svc not in services and code.startswith("TASK_ORCHESTRATOR_"):
+                continue
             blocking.append(f)
         elif f.get("severity") == "FAIL" and code not in NON_BLOCKING_EVEN_IF_IN_SET:
             # Extra hard FAILs

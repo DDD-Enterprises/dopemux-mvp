@@ -19,6 +19,7 @@ from mcp.server.lowlevel import Server
 from mcp.server.lowlevel.helper_types import ReadResourceContents
 from mcp.shared.exceptions import McpError
 from mcp.shared.memory import create_client_server_memory_streams
+from mcp.shared.message import SessionMessage
 
 from dopemux.mcp import stdio_proxy
 from dopemux.mcp.stdio_proxy import BackendSpec
@@ -210,7 +211,8 @@ class _Backend:
     """A fake backend whose sessions the test can break from the outside."""
 
     def __init__(self, *plan: str) -> None:
-        self.plan = list(plan)  # per session: "ok" | "refuse" | "dead_read"
+        # per session: "ok" | "refuse" | "dead_read" | "terminated" | "terminated_echo"
+        self.plan = list(plan)
         self.sessions: List[Dict[str, Any]] = []
         self.calls: List[str] = []
         self.called = anyio.Event()
@@ -251,16 +253,46 @@ class _Backend:
                     )
                     if mode == "dead_read":
                         await server_streams[1].aclose()  # nothing can ever be answered
+                    write: Any = client_streams[1]
+                    if mode.startswith("terminated"):
+                        write, outbound = anyio.create_memory_object_stream(0)
+                        tg.start_soon(
+                            self._terminate,
+                            mode,
+                            outbound,
+                            client_streams[1],
+                            server_streams[1].clone(),
+                        )
                     self.sessions.append(
                         {"mode": mode, "client": client_streams, "server": server_streams}
                     )
-                    async with ClientSession(
-                        client_streams[0], client_streams[1], **client_kwargs
-                    ) as session:
+                    async with ClientSession(client_streams[0], write, **client_kwargs) as session:
                         yield session
                     tg.cancel_scope.cancel()
 
         return factory
+
+    @staticmethod
+    async def _terminate(mode: str, outbound: Any, to_server: Any, to_client: Any) -> None:
+        """The streamable HTTP transport after a backend restart (SDK 1.29).
+
+        Every POST on the old session gets HTTP 404 and the transport answers that
+        request with ``JSONRPCError(32600, "Session terminated")``; the server never
+        sees it. ``terminated_echo`` does that only to ``echo`` tool calls.
+        """
+        async with outbound, to_client:
+            async for message in outbound:
+                root = message.message.root
+                if (
+                    isinstance(root, types.JSONRPCRequest)
+                    and root.method != "initialize"
+                    and (mode == "terminated" or (root.params or {}).get("name") == "echo")
+                ):
+                    error = types.ErrorData(code=32600, message="Session terminated")
+                    reply = types.JSONRPCError(jsonrpc="2.0", id=root.id, error=error)
+                    await to_client.send(SessionMessage(types.JSONRPCMessage(reply)))
+                else:
+                    await to_server.send(message)
 
 
 @asynccontextmanager
@@ -360,3 +392,55 @@ async def test_proxy_bounds_a_request_with_a_read_timeout(monkeypatch):
     assert "Timed out" in info.value.error.message
     assert again.content[0].text == "ok:1"
     assert len(backend.sessions) == 1
+
+
+# --- Streamable HTTP "Session terminated" (fix round 2) ---------------------
+
+
+async def test_proxy_reconnects_and_resends_after_streamable_session_terminated():
+    backend = _Backend("terminated", "ok")
+    async with _runner_via(backend) as (runner, box):
+        with anyio.fail_after(5):
+            result = await runner.call_tool("echo", {})
+        assert "code" not in box  # still serving the runner
+    assert result.content[0].text == "ok:2"
+    assert backend.calls == ["echo"]  # the backend executed it exactly once
+    assert len(backend.sessions) == 2
+
+
+async def test_proxy_does_not_loop_when_fresh_session_is_also_terminated():
+    backend = _Backend("terminated", "terminated")
+    async with _runner_via(backend) as (runner, box):
+        with anyio.fail_after(5):
+            with pytest.raises(McpError) as info:
+                await runner.call_tool("echo", {})
+            while "code" not in box:  # the reconnect dropped too: exit 1
+                await anyio.sleep(0.01)
+    assert info.value.error.code == 32600
+    assert info.value.error.message == "Session terminated"
+    assert len(backend.sessions) == 2
+    assert backend.calls == []
+    assert box["code"] == 1
+
+
+async def test_proxy_in_flight_other_requests_survive_a_session_terminated_reconnect():
+    backend = _Backend("terminated_echo", "ok")
+    outcome: Dict[str, Any] = {}
+    async with _runner_via(backend) as (runner, _box):
+
+        async def _block() -> None:
+            try:
+                outcome["result"] = await runner.call_tool("block", {})
+            except McpError as exc:
+                outcome["error"] = exc.error
+
+        with anyio.fail_after(5):  # a replayed "block" would never answer
+            async with anyio.create_task_group() as tg:
+                tg.start_soon(_block)
+                await backend.called.wait()  # accepted by session 1
+                echo = await runner.call_tool("echo", {})
+    assert echo.content[0].text == "ok:2"
+    assert backend.calls == ["block", "echo"]  # "block" ran once, never replayed
+    assert "result" not in outcome
+    assert outcome["error"].code == types.CONNECTION_CLOSED
+    assert "not retried" in outcome["error"].message

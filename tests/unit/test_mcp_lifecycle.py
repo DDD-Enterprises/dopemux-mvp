@@ -771,3 +771,64 @@ def test_task_orchestrator_start_rechecks_owner_under_lock(tmp_path: Path, monke
     assert any(
         f["code"].startswith("TASK_ORCHESTRATOR_START_BLOCKED") for f in to_svc["findings"]
     )
+
+
+# --- a foreign orchestrator only blocks orchestrator starts (fix round 2) ---
+
+
+def _foreign_to_doctor():
+    return SimpleNamespace(
+        findings=[
+            {
+                "code": "TASK_ORCHESTRATOR_WRONG_PROJECT_RUNTIME",
+                "severity": "FAIL",
+                "service": "task-orchestrator",
+                "message": "task-orchestrator on :7890 belongs to another project (/x/other)",
+            },
+            {
+                "code": "TASK_ORCHESTRATOR_FIXED_PORT_OCCUPIED_OTHER_PROJECT",
+                "severity": "FAIL",
+                "service": "task-orchestrator",
+                "message": ":7890 occupied by another project's task-orchestrator",
+            },
+        ]
+    )
+
+
+@pytest.mark.parametrize("services", [["conport"], ["dope-memory"], ["conport", "dope-memory"]])
+def test_foreign_orchestrator_does_not_block_conport_only_start(services):
+    from dopemux.mcp.lifecycle import _doctor_blocking_findings
+
+    assert _doctor_blocking_findings(_foreign_to_doctor(), services=services) == []
+
+
+@pytest.mark.parametrize("services", [["task-orchestrator"], ["conport", "task-orchestrator"]])
+def test_foreign_orchestrator_still_blocks_orchestrator_start(services):
+    from dopemux.mcp.lifecycle import _doctor_blocking_findings
+
+    codes = [f["code"] for f in _doctor_blocking_findings(_foreign_to_doctor(), services=services)]
+    assert "TASK_ORCHESTRATOR_WRONG_PROJECT_RUNTIME" in codes
+
+
+def test_conport_start_proceeds_while_another_project_owns_the_orchestrator(
+    tmp_path: Path, monkeypatch
+):
+    """End to end: `run_lifecycle("start", ["conport"])` with that doctor report."""
+    from dopemux.mcp import lifecycle as lc
+
+    monkeypatch.setattr(lc, "run_mcp_doctor", lambda *a, **k: _foreign_to_doctor())
+    result = run_lifecycle(
+        "start",
+        repo=_fixture_repo(tmp_path),
+        services=["conport"],
+        catalog=_catalog(),
+        dry_run=True,
+        registry_path=tmp_path / "reg" / "instances.json",
+        docker_runner=_docker_empty(),
+        product_root=_product(tmp_path),
+        process_env={},
+        port_is_free_fn=lambda p: True,
+    )
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "TASK_ORCHESTRATOR_WRONG_PROJECT_RUNTIME" not in codes, result.blocking_findings
+    assert result.status == "PLANNED", result.blocking_findings

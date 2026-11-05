@@ -16,6 +16,11 @@ Rules:
   send, so a request is never written to a session known to be dead: it is sent
   once on the reconnected session. A request in flight when its session drops
   gets an error at once and is never replayed (its effect is unknown).
+* A Streamable HTTP backend restart invalidates the session: each POST on it
+  gets HTTP 404, which the SDK answers with ``32600 "Session terminated"``. The
+  backend never processed that request, so the session is dropped and the
+  request is sent once on the reconnected (freshly initialized) session; a
+  second "Session terminated" is returned to the runner, never retried again.
 * Every forwarded request is bounded by ``REQUEST_TIMEOUT_S`` and every backend
   ``initialize`` by ``INITIALIZE_TIMEOUT_S``; a timeout is an error for that
   request only, not a dead session.
@@ -111,6 +116,25 @@ async def _refuse_roots(context: Any) -> types.ErrorData:
 
 def _connection_lost(detail: str) -> McpError:
     return McpError(types.ErrorData(code=types.CONNECTION_CLOSED, message=detail))
+
+
+#: What SDK 1.29's streamable HTTP client answers when a POST on its session gets
+#: HTTP 404 (``streamable_http.py``, ``_send_session_terminated_error``).
+SESSION_TERMINATED_CODE = 32600
+SESSION_TERMINATED_MESSAGE = "Session terminated"
+
+
+def _session_terminated(error: types.ErrorData) -> bool:
+    """True when the backend rejected the request unprocessed: its session is gone.
+
+    Code and text must both match. The code alone is not enough: a backend's
+    own error with that code may come from a request it did process, which must
+    never be replayed. If the SDK rewords the message, this degrades to passing
+    the error to the runner (the behaviour before), never to a duplicate call.
+    """
+    return error.code == SESSION_TERMINATED_CODE and SESSION_TERMINATED_MESSAGE in (
+        error.message or ""
+    )
 
 
 def _can_receive(session: ClientSession) -> bool:
@@ -260,7 +284,7 @@ class _BackendLink:
         # The runner's frame validated with its `jsonrpc`/`id` kept as extras;
         # rebuild from method and params so the backend frame gets its own.
         request = type(request)(method=request.method, params=request.params)
-        for _ in range(MAX_BACKEND_SESSIONS):
+        for attempt in range(1, MAX_BACKEND_SESSIONS + 1):
             session = await self._live_session()
             with anyio.CancelScope() as scope:
                 self._inflight[scope] = session
@@ -271,6 +295,13 @@ class _BackendLink:
                         request_read_timeout_seconds=timedelta(seconds=REQUEST_TIMEOUT_S),
                     )
                 except McpError as exc:
+                    if _session_terminated(exc.error):
+                        # Streamable HTTP restart: unprocessed, so resend once on
+                        # the reconnected session; a second one is the result.
+                        self._drop(session)
+                        if attempt == MAX_BACKEND_SESSIONS:
+                            raise
+                        continue
                     if exc.error.code != types.CONNECTION_CLOSED:
                         raise  # the backend's own error, or this request's timeout
                     self._drop(session)
