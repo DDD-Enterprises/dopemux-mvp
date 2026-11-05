@@ -146,6 +146,41 @@ def labels_as_compose_map(labels: Mapping[str, str]) -> str:
     return "\n".join(lines)
 
 
+DOPE_MEMORY_AUTH_MODES = ("off", "log", "enforce")
+DOPE_MEMORY_AUTH_MOUNT = "/run/dopemux-auth"
+
+
+def resolve_dope_memory_auth_mode(auth_mode: Optional[str] = None) -> str:
+    """The dope-memory auth mode for a sidecar: argument, else env, else ``log``."""
+    raw = (auth_mode or os.environ.get("DOPE_MEMORY_AUTH_MODE") or "log").strip().lower()
+    if raw not in DOPE_MEMORY_AUTH_MODES:
+        raise ValueError(
+            f"invalid dope-memory auth mode {raw!r}; use one of "
+            f"{', '.join(DOPE_MEMORY_AUTH_MODES)}"
+        )
+    return raw
+
+
+def default_dope_memory_auth_dir() -> Path:
+    """Host directory holding the token-hash file (never inside a repo)."""
+    return Path.home() / ".config" / "dopemux" / "auth"
+
+
+def resolve_conport_auth_mode(auth_mode: Optional[str] = None) -> str:
+    """The ConPort auth mode for a sidecar: argument, else env, else ``log``.
+
+    ConPort and dope-memory are switched to ``enforce`` separately, so this
+    reads ``CONPORT_AUTH_MODE`` and never ``DOPE_MEMORY_AUTH_MODE``.
+    """
+    raw = (auth_mode or os.environ.get("CONPORT_AUTH_MODE") or "log").strip().lower()
+    if raw not in DOPE_MEMORY_AUTH_MODES:
+        raise ValueError(
+            f"invalid conport auth mode {raw!r}; use one of "
+            f"{', '.join(DOPE_MEMORY_AUTH_MODES)}"
+        )
+    return raw
+
+
 def generate_compose_override(
     *,
     services: Sequence[str],
@@ -154,9 +189,22 @@ def generate_compose_override(
     container_names: Mapping[str, str],
     labels_by_service: Mapping[str, Mapping[str, str]],
     memory_data_path: Path,
+    auth_mode: Optional[str] = None,
+    auth_dir: Optional[Path] = None,
+    conport_auth_mode: Optional[str] = None,
 ) -> str:
-    """Generate compose.override.yml that neutralizes fixed names + relative volumes."""
+    """Generate compose.override.yml that neutralizes fixed names + relative volumes.
+
+    Auth, per sidecar: ``DOPE_MEMORY_AUTH_MODE`` (``auth_mode``) for dope-memory
+    and ``CONPORT_AUTH_MODE`` (``conport_auth_mode``) for ConPort, each switched
+    to ``enforce`` separately. When the host auth directory exists it is mounted
+    read-only into both (as a directory, so an atomic replace of the hash file
+    survives) with ``DOPE_MEMORY_AUTH_DIR`` / ``CONPORT_AUTH_DIR`` pointing at
+    it. Token values never travel through env or the override.
+    """
     blocks: List[str] = ["services:"]
+    host_auth_dir = Path(auth_dir) if auth_dir is not None else default_dope_memory_auth_dir()
+    mount_auth = host_auth_dir.is_dir()
 
     if "conport" in services:
         cname = container_names["conport"]
@@ -164,6 +212,15 @@ def generate_compose_override(
         http_p = int(ports.get("CONPORT_HTTP_PORT", 3004))
         mcp_p = int(ports.get("CONPORT_MCP_PORT", 3005))
         info_p = int(ports.get("CONPORT_INFO_PORT", 4004))
+        cp_mode = resolve_conport_auth_mode(conport_auth_mode)
+        cp_auth_env = f'      CONPORT_AUTH_MODE: "{cp_mode}"\n'
+        cp_volumes = ""
+        if mount_auth:
+            cp_auth_env += f'      CONPORT_AUTH_DIR: "{DOPE_MEMORY_AUTH_MOUNT}"\n'
+            cp_volumes = (
+                "    volumes:\n"
+                f'      - "{host_auth_dir.resolve()}:{DOPE_MEMORY_AUTH_MOUNT}:ro"\n'
+            )
         # ports: !override replaces compose.yml all-interface publishes with loopback-only.
         blocks.append(
             f"""  conport:
@@ -178,7 +235,7 @@ def generate_compose_override(
       DOPEMUX_PROJECT_ROOT: "{identity.get('DOPEMUX_PROJECT_ROOT', '')}"
       DOPEMUX_WORKTREE_ROOT: "{identity.get('DOPEMUX_WORKTREE_ROOT', '')}"
       DOPEMUX_WORKSPACE_ROOT: "{identity.get('DOPEMUX_WORKSPACE_ROOT', '')}"
-{labels}
+{cp_auth_env}{cp_volumes}{labels}
 """
         )
 
@@ -187,6 +244,14 @@ def generate_compose_override(
         labels = labels_as_compose_map(labels_by_service["dope-memory"])
         data = str(memory_data_path.resolve())
         mem_p = int(ports.get("DOPE_MEMORY_PORT", 3020))
+        mode = resolve_dope_memory_auth_mode(auth_mode)
+        auth_env = f'      DOPE_MEMORY_AUTH_MODE: "{mode}"\n'
+        auth_volume = ""
+        if mount_auth:
+            auth_env += f'      DOPE_MEMORY_AUTH_DIR: "{DOPE_MEMORY_AUTH_MOUNT}"\n'
+            auth_volume = (
+                f'      - "{host_auth_dir.resolve()}:{DOPE_MEMORY_AUTH_MOUNT}:ro"\n'
+            )
         blocks.append(
             f"""  dope-memory:
     container_name: {cname}
@@ -199,9 +264,9 @@ def generate_compose_override(
       DOPEMUX_PROJECT_ROOT: "{identity.get('DOPEMUX_PROJECT_ROOT', '')}"
       DOPEMUX_WORKTREE_ROOT: "{identity.get('DOPEMUX_WORKTREE_ROOT', '')}"
       DOPEMUX_INSTANCE_ID: "{identity.get('DOPEMUX_INSTANCE_ID', '')}"
-    volumes:
+{auth_env}    volumes:
       - "{data}:/data"
-{labels}
+{auth_volume}{labels}
 """
         )
 

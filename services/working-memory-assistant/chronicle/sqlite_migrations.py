@@ -20,6 +20,9 @@ _FILENAME_VERSION_RE = re.compile(r"^v(\d+)_(\d+)_(\d+)_.*\.sql$")
 _APPLIED_VERSION_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 _BEGIN_RE = re.compile(r"(?im)^\s*BEGIN(?:\s+TRANSACTION)?\s*;")
 _COMMIT_RE = re.compile(r"(?im)^\s*COMMIT\s*;")
+_ADD_COLUMN_RE = re.compile(
+    r"(?im)^[ \t]*ALTER[ \t]+TABLE[ \t]+(\w+)[ \t]+ADD[ \t]+COLUMN[ \t]+(\w+)\b[^;]*;[ \t]*\n?"
+)
 
 
 def _table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
@@ -55,6 +58,26 @@ def _migration_entries(migrations_dir: Path) -> list[tuple[tuple[int, int, int],
         entries.append((version_tuple, version_str, path))
     entries.sort(key=lambda item: item[0])
     return entries
+
+
+def _skip_existing_add_columns(conn: sqlite3.Connection, script: str) -> str:
+    """Drop ``ALTER TABLE .. ADD COLUMN`` statements that cannot or need not run.
+
+    SQLite has no ``ADD COLUMN IF NOT EXISTS``. Without this a migration fails
+    on a ledger whose fresh schema.sql already created the column, or when two
+    processes (server and a hook) migrate the same ledger at once. A statement
+    whose table does not exist yet (a legacy ledger that predates the table) is
+    dropped too: schema.sql creates that table with the column already in it.
+    """
+
+    def _replace(match: re.Match[str]) -> str:
+        table, column = match.group(1), match.group(2)
+        if not _table_exists(conn, table):
+            return ""
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        return "" if column in existing else match.group(0)
+
+    return _ADD_COLUMN_RE.sub(_replace, script)
 
 
 def _script_has_explicit_transaction(script: str) -> bool:
@@ -114,12 +137,23 @@ def apply_chronicle_migrations(
             # Support bootstrap paths where schema.sql already seeded a newer version.
             continue
 
-        migration_sql = migration_path.read_text(encoding="utf-8")
+        migration_sql = _skip_existing_add_columns(
+            conn, migration_path.read_text(encoding="utf-8")
+        )
         try:
             _execute_script_transactional(conn, migration_sql)
             conn.commit()
         except Exception as exc:
             conn.rollback()
+            if conn.execute(
+                "SELECT 1 FROM schema_migrations WHERE version = ? LIMIT 1",
+                (version_str,),
+            ).fetchone():
+                # Another process applied it between our read and our write.
+                logger.info("ALREADY APPLIED %s (by another process)", migration_path.name)
+                applied_versions.add(version_str)
+                current_max = version_tuple
+                continue
             raise RuntimeError(
                 f"Failed applying chronicle migration {migration_path.name}: {exc}"
             ) from exc

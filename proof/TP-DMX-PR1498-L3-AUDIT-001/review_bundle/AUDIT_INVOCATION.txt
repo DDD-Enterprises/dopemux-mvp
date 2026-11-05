@@ -1,0 +1,22 @@
+PR #1498 final L3 audit (packet TP-DMX-PR1498-L3-AUDIT-001), head 97b79962936da518888c12f3ff1ae8b6f0084eda, base 4cd889877f929c88ce69958d6ee42b8a643bfab8 (main = merge-base)
+
+Both runs were one attempt from a sealed dir holding only the prompt, under ~/.local/share/dopemux/evidence/pr1498/r1/.
+Each wrapper recorded `<runner> exit=$?` and the UTC end time. AGY's 137 is a kill after its result was complete: see below.
+
+GOVERNING: grok grok 1.0.70 (f50904eaee6c) [stable] -m grok-4.5 --effort high contained ; prompt=grok/AUDIT_PROMPT.txt ; started=2026-11-04T13:16:29Z
+  cd <sealed grok dir>
+  grok -m grok-4.5 --effort high --sandbox workspace --cwd <sealed grok dir> --system-prompt-override "$(cat GROK_SYSTEM_PROMPT.txt)"
+    --disallowed-tools "$(cat GROK_DISALLOWED_TOOLS.txt)" --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources"
+    --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim
+    --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt > GROK_RAW.jsonl 2> GROK_STDERR.txt
+  wrapper: grok exit=0 2026-11-04T13:19:38Z   session_id=01a1a6b4-3266-79b3-830b-49456dc7dc50
+  Prompt sha256 31fe6da66cb9b2f16e14766187dbe932478a5105a859a5c2b67ed2117173106f: 172 changed files, all but the 44 proof-only files in EXCLUDED_PROOF_FILES.txt.
+  Filler probe before the run (same flags, no repo content): init.tools == [].
+
+CORROBORATING, PARTIAL SCOPE: agy 1.5.0 --model gemini-4-argon-high ; prompt=agy/AUDIT_PROMPT.txt ; started=2026-11-04T13:30:33Z
+  cd <sealed agy dir>
+  agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m
+    --print="$(cat AUDIT_PROMPT.txt)" > AGY_RAW.jsonl 2> AGY_STDERR.txt
+  wrapper: agy exit=137 2026-11-04T23:17:05Z   conversation_id=798ac257-03cd-47dd-8355-447cb6bb8fc2
+  The CLI stream ended at 13:37:41Z with status SUCCESS, but the agy process did not exit and --print-timeout did not stop it. It ignored SIGTERM at 23:15:22Z and was killed with SIGKILL at about 23:17:05Z, so exit 137 records that kill, not the audit.
+  Prompt sha256 a5eb53ea2281cb9d58271bdffa3281d6a328f657daccd82116732bda638f359c: 13 files (AGY_FOCUSED_FILES.txt). Stored in the bundle as AGY_AUDIT_PROMPT.txt.

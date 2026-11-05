@@ -1,0 +1,184 @@
+{
+ "id": "TP-DMX-RUNNERMEM2A-R2-W10-SCOPE-EXTENSION-001",
+ "project": "dopemux-mvp",
+ "target": "R2 scope extension (operator, 2026-10-31): ADR-227 Amendment 1 exempting exactly the two Dockerfiles that must COPY the new auth_identity.py, one COPY line in each, a static test that each image copies every local module its entry points import, and the integration test W01's new ledger columns broke.",
+ "invariants": [
+  "C01 Shared workspace: other workers may edit this checkout. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in the execution worktree .worktrees/runner-memory-2a on feat/runner-memory-2a (base 97b6d5040496e2271c41d24c339d039303bbe6b1); verify `git rev-parse --show-toplevel` and the branch before the first write.",
+  "C02 You never commit, push, merge, open a PR, mark ready, sign, tag, change git config or rewrite history. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+  "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+  "C04 Secrets: never read or print .env*, credential files, keychain items, bearer tokens or token hashes from a real install; never write a real secret into a file, test fixture, log or return. A `.envrc.dopemux-mcp` may be read only for `*_PORT` keys (it exports a database password). Tests use obviously fake values generated in the test. Log a principal name, never a token or an Authorization header.",
+  "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Anything live that you did not observe is NOT_RUN. Use only interfaces this packet names or that you confirm in source with file:line; otherwise write UNKNOWN.",
+  "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers (each with the action that clears it), advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+  "C07 Stop and return evidence instead of improvising when: a needed file is outside your write_surface; a contract-sensitive surface outside your write_surface (schema, hook registration, MCP manifest, compose definition, red-lane rules) would change; a required fact is UNKNOWN; or validation still fails after one fix attempt for the same cause (no cheap-model repair loop).",
+  "C08 Authority order: this packet, then runtime code, then schemas, then tests, then docs. The design is docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md revision 2 (sha256 c83aea50bb6bbf98160311c6b46a5ef3fc1741a130705cd955163bf4610734ed); it states intent, not runtime facts. Where the design and runtime code disagree, STOP and report. No workstream edits the design file.",
+  "C09 Evidence input: proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md (sha256 4baa2184923bf0522d2ebb930c09d3e9eb394920c5ac4451f69f2ad0c4d1f117, committed) is R1's W00 result and is fixed input for R2, not re-run. If the hash differs, STOP. Its GATE_TABLE `reductions`, `design_changes` and `evidence` are binding where this packet does not say otherwise; the operator's rulings are proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/OPERATOR_RULINGS_R2.md.",
+  "C10 No live mutation: never start, stop, restart or rebuild a container; never run `dopemux mcp start|up|init|ensure`, `docker compose`, a migration against a real database, `dopemux auth issue|rotate|revoke --apply`, or `dopemux mcp generate --apply`; never write the keychain, ~/.config/dopemux/ or any file outside the worktree. Tests use temp directories, fakes and a stubbed `security` subprocess.",
+  "C11 Python 3.12 through uv (`uv run --frozen --extra test pytest ...`); the harness python3 may be 3.9 and is not evidence. New tests go in this workstream's own directory under tests/unit/ with an empty __init__.py. CI also runs services/working-memory-assistant/tests/test_mcp_http_endpoint.py (ci-complete.yml:195-199); tests at the tests/ root are not run by CI and are run explicitly here.",
+  "C12 DCP red lane (DCP-RED-MERGE-SEAM-0001): ADR-227 is accepted (J01-CARVEOUT) and the operator approved Amendment 1 for exactly the two Dockerfiles in B01. Edit red_lane_rules.py first (B01); only then edit the two Dockerfiles (B02), and nothing else under services/working-memory-assistant/, docker/mcp-servers-source/conport/ or services/dopecon-bridge/. If the PreToolUse guard denies an edit, STOP: never work around the guard, never edit through another tool, never ask another session to make the edit.",
+  "A01 PROPOSED allowances for this workstream (caps, not forecasts; accepted by the operator's scope extension): elapsed wall time 60 min from dispatch; subagent tokens 600,000; tool uses 150; child attempts: 1 attempt + 1 retry; team-lead review rounds: 1 diff re-read + at most 1 correction round. Active time is not recordable: UNKNOWN; elapsed is the enforceable bound.",
+  "A02 The team lead reads the counters from the child's completion notice (duration_ms, subagent_tokens, tool_uses) and records them with the return. A retry is allowed only after a failed validation with a named cause and only once; a second failure, any exceeded cap or any advisor call ends the workstream.",
+  "A03 When a cap is hit: stop the workstream, start no further attempt, preserve the uncommitted diff untouched, and return NEEDS_SUPERVISOR with the counters and the evidence. No model upgrade, provider change or extra attempt without a new operator ruling.",
+  "B01 ADR-227 Amendment 1. Add file-exact exemptions for exactly services/working-memory-assistant/Dockerfile.dope-memory and docker/mcp-servers-source/conport/Dockerfile to the existing patterns in src/dopemux/dcp/red_lane_rules.py, with the same `(?!\u2026\\Z)` construction as the 20 existing ones (no directory exemption). Append an 'Amendment 1 (2026-10-31)' section to docs/90-adr/adr-227-memory-spine-seam-narrow-carveout.md: the two files, why (both images COPY modules one by one and do not copy the new auth_identity.py, so a rebuilt image fails at import), the operator's words recorded in proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AMENDMENT_01.md, and the new total of 22. Update the prelude's count. The status stays accepted. Update the W09 tests and tests/test_dcp_surface_guard.py to the 22-file set and add near-miss tests (another Dockerfile name in each tree, a suffix or prefix variant, `services/working-memory-assistant/Dockerfile` without the suffix) that stay blocked.",
+  "B02 Add exactly one line to each Dockerfile, next to the other module COPY lines: `COPY services/working-memory-assistant/auth_identity.py .` in services/working-memory-assistant/Dockerfile.dope-memory and `COPY docker/mcp-servers-source/conport/auth_identity.py .` in docker/mcp-servers-source/conport/Dockerfile. Change nothing else in either file.",
+  "B03 New static test under tests/unit/runner_memory_2a_r2_w10/: parse each Dockerfile's COPY lines and assert that every top-level module imported (top-level import statements) by the image's entry modules that exists as a .py file directly in the service source directory is copied into the image. Entry modules: dope_memory_main.py, mcp_http.py, eventbus_consumer.py for dope-memory; server.py, enhanced_server.py, conport_mcp_stdio.py for ConPort. Show it failing before B02 (TDD) and record the failing run.",
+  "B04 tests/integration/test_dual_capture_convergence.py: the read-only check (around line 250) uses a column-less INSERT that W01's two new ledger columns broke. Name its 11 columns explicitly so it again tests the read-only connection; change nothing else in that file.",
+  "B05 Never build, pull or run an image or container (C10). The static test is the evidence; a live image build is NOT_RUN."
+ ],
+ "depends_on": [
+  "W09",
+  "W01",
+  "W02"
+ ],
+ "repo_binding": {
+  "project_id": "dopemux-mvp",
+  "repo_marker": ".dopetaskroot",
+  "origin_hint": "DDD-Enterprises/dopemux-mvp",
+  "require_identity_match": true
+ },
+ "series": {
+  "id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+  "base_branch": "main",
+  "parent_tp_id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+  "final_packet": false
+ },
+ "execution": {
+  "agent": "claude",
+  "branch": "feat/runner-memory-2a",
+  "base_branch": "main"
+ },
+ "commit": {
+  "message": "fix(images): ADR-227 Amendment 1 and COPY the new auth module into both memory images (Wave 2A R2 W10)",
+  "allowlist": [
+   "docs/90-adr/adr-227-memory-spine-seam-narrow-carveout.md",
+   "src/dopemux/dcp/red_lane_rules.py",
+   "tests/test_dcp_surface_guard.py",
+   "tests/unit/runner_memory_2a_r2_w09/",
+   "services/working-memory-assistant/Dockerfile.dope-memory",
+   "docker/mcp-servers-source/conport/Dockerfile",
+   "tests/integration/test_dual_capture_convergence.py",
+   "tests/unit/runner_memory_2a_r2_w10/"
+  ],
+  "verify": [
+   "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_r2_w10/ tests/unit/runner_memory_2a_r2_w09/ tests/test_dcp_surface_guard.py tests/integration/test_dual_capture_convergence.py",
+   "git diff --check",
+   "git status --porcelain   # every modified or untracked path is inside the allowlist (git diff does not list new files)"
+  ]
+ },
+ "pr": {
+  "title": "feat(runner-memory): Wave 2A - verified runner identity for dope-memory and ConPort (Codex first)",
+  "body": "Implements MACRO-DMX-RUNNER-MEMORY-2A-001-R2 from docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md revision 2. Draft until the single final independent L3 audit and operator review.",
+  "base": "main"
+ },
+ "steps": [
+  {
+   "id": "W10-S1",
+   "task": "Read this packet, ADR-227, red_lane_rules.py, the W09 tests, both Dockerfiles and the integration test; verify pins",
+   "requirements": [
+    "Record the current exemption count and the COPY lines of both Dockerfiles before any edit."
+   ],
+   "commands": [
+    "shasum -a 256 proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md"
+   ],
+   "expected_files": [],
+   "validation": [
+    "pins verified"
+   ],
+   "context_files": [
+    "docs/90-adr/adr-227-memory-spine-seam-narrow-carveout.md",
+    "src/dopemux/dcp/red_lane_rules.py",
+    "tests/unit/runner_memory_2a_r2_w09/test_redlane_carveout.py",
+    "tests/test_dcp_surface_guard.py",
+    "services/working-memory-assistant/Dockerfile.dope-memory",
+    "docker/mcp-servers-source/conport/Dockerfile",
+    "tests/integration/test_dual_capture_convergence.py",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AMENDMENT_01.md"
+   ]
+  },
+  {
+   "id": "W10-S2",
+   "task": "TDD: failing tests first (B01 near-misses and the new exemptions, B03 static test), then B01, then B02, then B04",
+   "requirements": [
+    "Record each failing-first run.",
+    "Edit the Dockerfiles only after red_lane_rules.py exempts them."
+   ],
+   "commands": [
+    "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_r2_w10/"
+   ],
+   "expected_files": [
+    "tests/unit/runner_memory_2a_r2_w10/__init__.py"
+   ],
+   "validation": [
+    "new tests fail first, then pass"
+   ],
+   "context_files": []
+  },
+  {
+   "id": "W10-S3",
+   "task": "Run commit.verify",
+   "requirements": [
+    "Report every command with its exit code and bucket."
+   ],
+   "commands": [
+    "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_r2_w10/ tests/unit/runner_memory_2a_r2_w09/ tests/test_dcp_surface_guard.py tests/integration/test_dual_capture_convergence.py",
+    "git diff --check"
+   ],
+   "expected_files": [],
+   "validation": [
+    "all named suites PASS or carry a NOT_RUN reason"
+   ],
+   "context_files": []
+  },
+  {
+   "id": "W10-S4",
+   "task": "Return",
+   "requirements": [
+    "Status, validation table, files_written, advisor_calls, observed_model, blockers."
+   ],
+   "commands": [
+    "git status --porcelain",
+    "git diff --stat"
+   ],
+   "expected_files": [],
+   "validation": [
+    "diff limited to the write_surface"
+   ],
+   "context_files": []
+  }
+ ],
+ "schema_version": "dopemux.governed_execution.task_packet.v2",
+ "macro_id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+ "workstream_id": "W10",
+ "risk_lane": "L3",
+ "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+ "execution_requirements": {
+  "preferred_route": {
+   "runner": "claude-code-agent",
+   "model": "claude-sonnet-5-5",
+   "effort": "UNKNOWN"
+  },
+  "allowed_fallbacks": [],
+  "binding": "LIVE_PROOF_REQUIRED",
+  "auditor_independence": "DIFFERENT_FAMILY"
+ },
+ "write_surface": [
+  "docs/90-adr/adr-227-memory-spine-seam-narrow-carveout.md",
+  "src/dopemux/dcp/red_lane_rules.py",
+  "tests/test_dcp_surface_guard.py",
+  "tests/unit/runner_memory_2a_r2_w09/",
+  "services/working-memory-assistant/Dockerfile.dope-memory",
+  "docker/mcp-servers-source/conport/Dockerfile",
+  "tests/integration/test_dual_capture_convergence.py",
+  "tests/unit/runner_memory_2a_r2_w10/"
+ ],
+ "canonical_writers": [
+  "W10-implementer"
+ ],
+ "semantic_scope": [
+  "dcp-red-lane-carveout-amendment",
+  "memory-image-build-inputs"
+ ],
+ "rollback_boundary": "git revert <W10 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+ "operator_gate_required": true,
+ "receipt_refs": {},
+ "authority": "NONE"
+}

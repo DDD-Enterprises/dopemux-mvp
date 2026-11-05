@@ -1,0 +1,122 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "macro_id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+  "stage": "dispatch",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "task-packets/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/WORKSTREAMS/W04/TASK_PACKET.json",
+    "operator_gate_refs": [
+      "operator chat 2026-10-31, verbatim \"Approve and authorize\" in answer to \"Approve Wave 2A design revision 2 and authorize R2 (W01-W09, starting with the ADR-227 carve-out)?\" (proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AUTHORIZATION_RECORD.md)",
+      "operator chat 2026-10-31, verbatim \"Accept ADR-227\" in answer to \"do you accept ADR-227 as written (exactly 20 files exempted, everything else stays blocked), or do you want to change something first?\" (proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/ADR227_ACCEPTANCE.md); J01-CARVEOUT met"
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L3"
+  },
+  "selection": {
+    "runner": "claude-code-agent",
+    "runner_availability": "PROVEN",
+    "model": "claude-sonnet-5-5",
+    "effort": "UNKNOWN",
+    "connector": "agent-tool",
+    "configured_identity": "claude-sonnet-5-5",
+    "response_claimed_identity": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": []
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read",
+      "edit",
+      "validate"
+    ],
+    "forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready"
+    ],
+    "stop_conditions": [
+      "operator gate absent",
+      "authority conflict",
+      "write outside the W04 write_surface",
+      "any edit under a red-lane path",
+      "advisor call by the child",
+      "subagent spawn by the child",
+      "allowance exceeded",
+      "any real keychain read or write, any live server call, any container",
+      "reading any .envrc.dopemux-mcp key other than *_PORT, *_WORKSPACE_ID or *_INSTANCE_ID",
+      "a token in argv, stdout, stderr, a log or a file",
+      "any edit through Bash or a script instead of the Edit/Write tools"
+    ],
+    "custody_constraints": [
+      "writes only the W04 write_surface (src/dopemux/mcp/http_stdio_bridge.py, tests/unit/runner_memory_2a_r2_w04/) in .worktrees/runner-memory-2a on feat/runner-memory-2a",
+      "the team lead enforces the write_surface by git status before commit"
+    ],
+    "context_constraints": [
+      "child receives only its TASK_PACKET plus cited context_files"
+    ]
+  },
+  "justification": {
+    "why_runner": "Agent tool child of the Control Tower team-lead session, as for W01, W02, W06, W10",
+    "why_model": "pinned by the TASK_PACKET execution_requirements: claude-sonnet-5-5",
+    "why_effort": "effort not settable per child from this runner",
+    "alternatives_considered": [
+      {
+        "route": "claude-opus-5-5",
+        "disposition": "rejected",
+        "reason": "no judgment-tier trigger; handshake, discovery and fail-closed rules are fixed by B01-B05 and W00's bridge probes; the W03 helper API is committed"
+      }
+    ],
+    "cost_latency_tradeoff": "UNKNOWN (no current price evidence recorded)",
+    "evidence": [
+      "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W03_RETURN.md",
+      "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W01_RETURN.md",
+      "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W02_RETURN.md",
+      "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L3"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "NOT_RUN"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "recorded_at": "2026-11-01T06:13:07Z",
+  "runner_version": "UNKNOWN",
+  "effort_requested": "UNKNOWN",
+  "effort_observed": "UNKNOWN",
+  "auth_profile_ref": "UNKNOWN",
+  "network_posture": "no-network",
+  "containment_posture": "worktree-scoped",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "not triggered"
+  },
+  "response_claimed_model": "UNKNOWN",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "UNKNOWN",
+  "qualification_receipt_ref": "NOT_RUN",
+  "packet_id": "TP-DMX-RUNNERMEM2A-R2-W04-STDIO-BRIDGE-001"
+}

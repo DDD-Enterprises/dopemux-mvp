@@ -1,0 +1,219 @@
+{
+  "id": "TP-DMX-RUNNERMEM2A-W00-INVESTIGATION-001",
+  "project": "dopemux-mvp",
+  "target": "Read-only investigation for Runner Memory Parity Wave 2A. Verify the facts the design marks unknown or model-extracted (task orchestrator 4.0.0 auth and migration, ConPort transport parity, the bridge handshake, keychain behaviour, identity paths in dope-memory and ConPort, the generator gate, internal callers, cross-repo reach) and return a go / no-go per build workstream with evidence. The verdicts gate W01 to W08.",
+  "invariants": [
+    "C01 Shared workspace: other workers may edit this checkout. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in the execution worktree .worktrees/runner-memory-2a on feat/runner-memory-2a (base 97b6d5040496e2271c41d24c339d039303bbe6b1); verify `git rev-parse --show-toplevel` and the branch before the first write.",
+    "C02 You never commit, push, merge, open a PR, mark ready, sign, tag, change git config or rewrite history. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env*, credential files, keychain items, bearer tokens or token hashes from a real install; never write a real secret into a file, test fixture, log or return. Tests use obviously fake values generated in the test (for example 'test-token-<n>'). Log a principal name, never a token or an Authorization header.",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Anything live that you did not observe is NOT_RUN. The conport, dope-memory and serena MCP connectors were unreachable in the issuing session (a Docker outage on 2026-10-30, since recovered): do not invent endpoints, tool names, request fields, settings or ports. Use only interfaces this packet names or that you confirm in source with file:line; otherwise write UNKNOWN.",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers (each with the action that clears it), advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when: a needed file is outside your write_surface; a contract-sensitive surface outside your write_surface (schema, hook registration, MCP manifest, compose service definition) would change; a required fact is UNKNOWN; or validation still fails after one fix attempt for the same cause (no cheap-model repair loop).",
+    "C08 Authority order: this packet, then runtime code, then schemas, then tests, then docs. The design is docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md (sha256 1fea60130d55d151dfbc70eb24571efb90c8ecee9e9183a05f3beb0915970cd3); it states intent, not runtime facts. Where the design and runtime code disagree, STOP and report; do not pick one silently. No workstream edits the design file.",
+    "C10 No live mutation: never start, stop, restart or rebuild a container; never run `dopemux mcp start|up|init`, `docker compose`, a migration against a real database, `dopemux auth issue|rotate|revoke`, or the orchestrator cutover; never write the keychain, ~/.config/dopemux/ or any file outside the worktree (global runner configs included). Tests use temp directories, fakes and a stubbed `security` subprocess.",
+    "C11 Python 3.12 through the repo Makefile/uv (`uv run --frozen --extra test pytest ...`); the harness python3 may be 3.9 and is not evidence. New tests go in this workstream's own directory under tests/unit/ (CI runs tests/unit, tests/arch, tests/dcp, tests/integration; services/*/tests and docker/*/tests are not run by CI). Each new test directory carries an empty __init__.py.",
+    "A01 PROPOSED allowances for this workstream (caps, not forecasts; the operator accepts them by authorizing the macro): elapsed wall time 150 min from dispatch; subagent tokens 1,800,000; tool uses 350; child attempts: 1 attempt + 1 retry; team-lead review rounds: 1 diff re-read + at most 1 correction round. Active (model-working) time is not separately recordable by the harness: UNKNOWN; elapsed is the enforceable bound.",
+    "A02 The team lead reads the recordable counters from the child's completion notice (duration_ms, subagent_tokens, tool_uses) and records them with the return. A retry is allowed only after a failed validation with a named cause and only once; a second failure, any exceeded cap or any advisor call ends the workstream.",
+    "A03 When a cap is hit: stop the workstream, start no further attempt, preserve the uncommitted diff untouched, and return NEEDS_SUPERVISOR with the counters and the evidence. No model upgrade, provider change or extra attempt without a new operator ruling.",
+    "R01 This workstream is READ-ONLY toward code, config, services, the keychain and the checkout. Its single write is proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md; `git status --porcelain` must show only that path.",
+    "R02 Network: read-only GitHub reads of the upstream task-orchestrator repository (`gh api`, `gh release view`, `gh repo view`, or WebFetch of its github.com pages). Identify the upstream repository and image from the pinned image reference in scripts/mcp-wrappers/task-orchestrator-http-singleton.sh; do not guess it. No `docker pull`, `docker run`, `docker exec`, package install or other download: image-level facts that need the image are NOT_RUN with the reason.",
+    "R03 Loopback probes only, against the host ports in this worktree's .envrc.dopemux-mcp: `curl -sS -m 3` GET /health, and JSON-RPC `initialize`, `notifications/initialized` and `tools/list` (never `tools/call`, never a write route). A refused or timed-out probe is NOT_RUN with the exact error, not a finding about the service. Never start, stop or restart anything.",
+    "R04 Keychain: never create, read or delete a keychain item. For Q5 write the exact operator procedure (a throwaway item under service `dopemux-mcp-probe`, the read from a non-interactive Python subprocess, and the cleanup) and mark the result NOT_RUN.",
+    "R05 Cross-repo scan (Q11): list file paths only. Use `grep -l` for the string 7890 over .mcp.json and .codex/config.toml files under ~/code (maxdepth 4, skipping node_modules and .worktrees) and over the global Claude Code, Codex and Command Code config files; print no line content (global configs can hold credentials). Report counts and paths.",
+    "R06 Pre-issuance evidence (supervisor observation, not W00's result; confirm or refute in source): proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/PRE_ISSUANCE_CONPORT_PARITY.json (sha256 cf7bbeed7634c67533beed9e58b6d954d082463826c2a0aa24cff26460c1fc91), produced by proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/conport_parity_probe.py (sha256 8f70cdc7958c9f1c3242b4aab281dd438243e450c5cf31181506f0857b4b3e05) on 2026-10-30 against ConPort REST on host :3019 (container 3004) and SSE on host :3007 (container 3005). It shows: `initialize` on POST /mcp returns -32601; REST lists 13 tools, all prefixed `conport_`; SSE lists 17 unprefixed tools (serverInfo `conport 1.30.0`), the four extra being fork_instance, promote, promote_all and workspace_summary; and src/dopemux/mcp/http_stdio_bridge.py forwards every message, including `initialize`, unchanged. If the hashes differ, STOP.",
+    "R07 Verdict vocabulary: GO, GO_REDUCED (buildable with a stated reduction), NO_GO or UNKNOWN. Every verdict cites file:line or a URL with the exact quoted line; a verdict without evidence is UNKNOWN. Do not soften a blocker to make the build possible. A finding that changes a design decision goes in GATE_TABLE.design_changes with the design section and the affected workstreams.",
+    "R08 GATE_TABLE: end the findings file with one fenced ```json block (the first line of the fence content is the JSON object) of exactly this shape: {\"orchestrator_v4\": {\"upstream_repo\": str, \"image_ref_current\": str, \"image_ref_4_0_0\": str, \"auth_setting\": str, \"token_file_format\": str, \"body_actor_refused\": V, \"permissive_phase\": V, \"sqlite_path\": str, \"migration_reversible\": V}, \"conport_transport\": {\"choice\": \"STREAMABLE_HTTP_APP\" | \"REST_JSONRPC\" | \"UNKNOWN\", \"verdict\": V, \"sse_only_write_tools\": [str]}, \"bridge\": {\"handshake\": str, \"verdict\": V}, \"keychain_noninteractive\": V or \"NOT_RUN\", \"dope_memory_identity\": V, \"conport_identity\": V, \"conport_migration\": V, \"generator_gate\": V, \"internal_callers\": [{\"caller\": str, \"server\": str, \"route\": str, \"evidence\": str}], \"cutover_scope\": {\"repo_mcp_json\": int, \"repo_codex_toml\": int, \"global_configs\": [str]}, \"workstream_go\": {\"W01\": V, \"W02\": V, \"W03\": V, \"W04\": V, \"W05\": V, \"W06\": V, \"W07\": V, \"W08\": V}, \"design_changes\": [{\"section\": str, \"change\": str, \"affects\": [str]}], \"reductions\": [str], \"authority_conflicts\": [str], \"unknowns\": [str], \"evidence\": {key: [str]}} where V is one of GO, GO_REDUCED, NO_GO, UNKNOWN. It must parse with `python3 -m json.tool`.",
+    "R09 Questions you must answer (each with evidence and a bucket):",
+    "Q1 Task orchestrator 4.0.0 (design 5.5, 5.6, 5.10, W5): from the upstream release notes, docs and source at the 4.0.0 tag, give the auth setting name and values (the design says `API_AUTH_MODE`; confirm or correct), the token file format and how the server locates it (`token_sha256` was reported), whether a request body `actor` is refused and with what error, whether any permissive or log-only phase exists, the JWKS option, the transport and path it serves, where the SQLite database lives in the container, and whether 3.8 to 4.0 migrates it automatically and irreversibly. Name the current pin (scripts/mcp-wrappers/) and the 4.0.0 image reference.",
+    "Q2 ConPort transport (design 5.4): confirm R06 from source (docker/mcp-servers-source/conport/server.py FastMCP tool definitions; enhanced_server.py mcp_endpoint near line 1816 and its tool map). Report the `mcp` package version the ConPort image installs and whether its FastMCP offers a streamable-HTTP app beside `sse_app()`. Choose STREAMABLE_HTTP_APP or REST_JSONRPC with evidence; list which SSE-only tools write.",
+    "Q3 The other two servers' MCP endpoints (dope-memory mcp_http.py, the orchestrator): what an MCP client must send for the handshake (initialize, Accept header, Mcp-Session-Id echo, SSE-framed responses), so W04 can make the bridge speak it. Probe per R03.",
+    "Q4 Stdio bridge today (src/dopemux/mcp/http_stdio_bridge.py): confirm with file:line how it forwards requests and notifications, its timeout and error mapping, and what must change for design 5.3 (envrc discovery from the working directory, keychain token, fail-closed).",
+    "Q5 Keychain (design 5.2, 5.3): how a non-interactive subprocess reads a generic password (`security find-generic-password -s <service> -a <account> -w`), which item ACL avoids a prompt on every launch (`-T` trusted applications, `-A`), and the risk each choice carries. Operator procedure per R04; result NOT_RUN.",
+    "Q6 dope-memory identity today (design section 1, 5.1, W1): confirm services/working-memory-assistant/dope_memory_main.py:57-58 and mcp_http.py:110-116; list every mutating MCP tool and REST route with file:line; where the ledger path comes from (DOPEMUX_CAPTURE_LEDGER_PATH); the SQLite tables a write touches and how its schema migrates (migration_runner.py, chronicle/).",
+    "Q7 ConPort identity today (design 5.1, 5.9, W2): confirm instance_detector.py:52-78; list every mutating tool and route on both surfaces, including the SSE-only write tools; the Postgres tables written; the migration mechanism (migrations/, schema.sql); and the known migration-gate deadlock on a fresh database with its workaround.",
+    "Q8 Orchestrator actor enforcement in this repo (design 5.5, W5): confirm .claude/hooks/orchestrator_enforcement.py:117-149 and src/dopemux/claude/native_hooks.py:438-444, the `actor_authentication` block in .taskorchestrator/config.yaml, and which existing tests (tests/test_orchestrator_enforcement_hooks.py) assert the actor requirement.",
+    "Q9 Generator gate (design 5.7, W6): confirm src/dopemux/commands/mcp_commands.py:1079 (`--allow-sequenced`), the catalog rows marked `codex: full-sequenced` (mcp_catalog.yaml, src/dopemux/mcp/default_catalog.yaml, fleet_catalog.py), and how Codex and Claude Code configs are rendered and where they are written today.",
+    "Q10 Internal callers (design 5.3, W8): every in-repo caller of a write path on the three servers, with file:line, server and route: native_hooks.py, src/dopemux/memory/capture_client.py, src/dopemux/pm/adapters/dope_memory.py, services/working-memory-assistant/conport_client.py, the cockpit client (find its path; it is not in W08's allowlist until a revision adds it) and any other you find.",
+    "Q11 Cross-repo reach (design 5.6): per R05, the configs on this machine that reference :7890, as counts and paths; does the cutover dry-run list in design 5.6 cover them?",
+    "Q12 Ports and catalog: which catalog, registry and compose entries W01, W02 and W06 will touch, and whether the port-drift test proposed in PR #1485 (unmerged) would constrain them."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-RUNNER-MEMORY-2A-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-RUNNER-MEMORY-2A-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/runner-memory-2a",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(runner-memory): W00 go/no-go findings for Wave 2A",
+    "allowlist": [
+      "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md"
+    ],
+    "verify": [
+      "git status --porcelain   # equals exactly ?? proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md",
+      "python3 - <<'PY'\nimport json,re\nt=open('proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md').read()\nm=re.findall(r'```json\\n(.*?)\\n```',t,re.S)\nd=json.loads(m[-1])\nassert set(d['workstream_go'])=={'W01','W02','W03','W04','W05','W06','W07','W08'}\nprint('GATE_TABLE parses')\nPY"
+    ]
+  },
+  "pr": {
+    "title": "feat(runner-memory): Wave 2A - verified runner identity for dope-memory, ConPort and the task orchestrator (Codex first)",
+    "body": "Implements MACRO-DMX-RUNNER-MEMORY-2A-001 from docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md. Draft until the single final independent L3 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W00-S1",
+      "task": "Upstream orchestrator 4.0.0 (Q1) from GitHub, read-only",
+      "requirements": [
+        "Quote the exact lines you rely on with their URL; no image pull."
+      ],
+      "commands": [
+        "grep -n 'image\\|ghcr\\|docker.io' scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+        "gh release view v4.0.0 -R <upstream repo found above>"
+      ],
+      "expected_files": [],
+      "validation": [
+        "Q1 answered or UNKNOWN per field"
+      ],
+      "context_files": [
+        "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+        "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
+        "scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh",
+        ".taskorchestrator/config.yaml"
+      ]
+    },
+    {
+      "id": "W00-S2",
+      "task": "Trace repo sources for Q2, Q4, Q6 to Q10 and Q12",
+      "requirements": [
+        "file:line for every claim; docs never outrank code."
+      ],
+      "commands": [
+        "sed -n 1800,1880p docker/mcp-servers-source/conport/enhanced_server.py",
+        "sed -n 1,140p src/dopemux/mcp/http_stdio_bridge.py",
+        "sed -n 40,80p services/working-memory-assistant/dope_memory_main.py",
+        "sed -n 1060,1100p src/dopemux/commands/mcp_commands.py"
+      ],
+      "expected_files": [],
+      "validation": [
+        "each question answered or UNKNOWN"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md",
+        "docs/90-adr/adr-mcpint-002-agent-exposure-and-read-plane.md",
+        "task-packets/DMX-MEMSPINE-IDENTITY-005.json",
+        "docker/mcp-servers-source/conport/server.py",
+        "docker/mcp-servers-source/conport/enhanced_server.py",
+        "docker/mcp-servers-source/conport/instance_detector.py",
+        "docker/mcp-servers-source/conport/migrations/",
+        "docker/mcp-servers-source/conport/schema.sql",
+        "services/working-memory-assistant/dope_memory_main.py",
+        "services/working-memory-assistant/mcp_http.py",
+        "services/working-memory-assistant/migration_runner.py",
+        "services/working-memory-assistant/chronicle/",
+        "src/dopemux/mcp/http_stdio_bridge.py",
+        ".claude/hooks/orchestrator_enforcement.py",
+        "src/dopemux/claude/native_hooks.py",
+        "src/dopemux/commands/mcp_commands.py",
+        "src/dopemux/mcp/fleet_catalog.py",
+        "mcp_catalog.yaml",
+        "src/dopemux/mcp/default_catalog.yaml",
+        "src/dopemux/memory/capture_client.py",
+        "src/dopemux/pm/adapters/dope_memory.py",
+        "services/working-memory-assistant/conport_client.py",
+        "compose.yml",
+        "services/registry.yaml"
+      ]
+    },
+    {
+      "id": "W00-S3",
+      "task": "Loopback probes (Q2, Q3) per R03 and the cross-repo scan (Q11) per R05",
+      "requirements": [
+        "Exact command and result per probe; refused means NOT_RUN."
+      ],
+      "commands": [
+        "python3 -I proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/conport_parity_probe.py <CONPORT_HTTP_PORT> <CONPORT_MCP_PORT>   # ports from .envrc.dopemux-mcp",
+        "curl -sS -m 3 -o /dev/null -w '%{http_code}\\n' http://127.0.0.1:<DOPE_MEMORY_PORT>/health"
+      ],
+      "expected_files": [],
+      "validation": [
+        "probe table with exit codes and buckets"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/PRE_ISSUANCE_CONPORT_PARITY.json",
+        "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/conport_parity_probe.py"
+      ]
+    },
+    {
+      "id": "W00-S4",
+      "task": "Write the findings file: go / no-go table first, one section per question, the operator keychain procedure (Q5), then GATE_TABLE",
+      "requirements": [
+        "Only proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md."
+      ],
+      "commands": [
+        "git status --porcelain"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md"
+      ],
+      "validation": [
+        "GATE_TABLE parses with the commit.verify snippet"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W00-S5",
+      "task": "Return",
+      "requirements": [
+        "Status, the GATE_TABLE verbatim, the probe table, advisor_calls, files_written, observed_model."
+      ],
+      "commands": [
+        "git status --porcelain"
+      ],
+      "expected_files": [],
+      "validation": [
+        "only the findings file changed"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-RUNNER-MEMORY-2A-001",
+  "workstream_id": "W00",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md"
+  ],
+  "canonical_writers": [
+    "W00-implementer"
+  ],
+  "semantic_scope": [
+    "runner-memory-2a-investigation"
+  ],
+  "rollback_boundary": "git revert <W00 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

@@ -7,6 +7,7 @@ import importlib.util
 import json
 import logging
 import os
+import re
 import sqlite3
 import threading
 from dataclasses import dataclass
@@ -55,8 +56,28 @@ PROMOTABLE_CAPTURE_EVENT_TYPES = frozenset(
 )
 
 
+# Wave 2A R2 W06: this writer opens the SQLite ledger directly and carries no
+# token, so it records a self-asserted internal principal (never verified).
+# Callers that are not the CLI (native_hooks) pass their own principal.
+PRINCIPAL_CLI = "internal:cli"
+PRINCIPAL_HOOKS = "internal:hooks"
+_INTERNAL_PRINCIPAL_RE = re.compile(r"^internal:[a-z0-9][a-z0-9_.-]{0,63}$")
+
+
 class CaptureError(RuntimeError):
     """Raised when capture cannot proceed safely."""
+
+
+def _resolve_write_principal(principal: Optional[str]) -> str:
+    """Return the self-asserted principal to record, failing closed on bad input."""
+    if principal is None:
+        return PRINCIPAL_CLI
+    if not isinstance(principal, str) or not _INTERNAL_PRINCIPAL_RE.match(principal):
+        raise CaptureError(
+            "Invalid write principal: local writers may only self-assert "
+            "'internal:<name>' matching ^internal:[a-z0-9][a-z0-9_.-]{0,63}$"
+        )
+    return principal
 
 
 @dataclass(frozen=True)
@@ -380,6 +401,9 @@ def _emit_to_event_stream(event: dict[str, Any]) -> None:
             "source": event["source"],
             "data": _stable_json(event["payload"]),
         }
+        if event.get("write_principal"):
+            envelope["write_principal"] = event["write_principal"]
+            envelope["write_principal_self_asserted"] = "1"
         client.xadd(stream_name, envelope)
     except Exception as exc:  # pragma: no cover - best effort
         LOGGER.debug("event stream emit failed: %s", exc)
@@ -396,6 +420,7 @@ def emit_promotable_capture_event(
     lane: Optional[str] = None,
     session_id: Optional[str] = None,
     ttl_days: int = 7,
+    principal: Optional[str] = None,
 ) -> CaptureResult:
     """Write a high-signal capture event only when WMA can promote its type."""
 
@@ -418,6 +443,7 @@ def emit_promotable_capture_event(
         repo_root=repo_root,
         emit_event_bus=emit_event_bus,
         lane=lane,
+        principal=principal,
     )
 
 
@@ -432,6 +458,7 @@ def try_emit_promotable_capture_event(
     lane: Optional[str] = None,
     session_id: Optional[str] = None,
     ttl_days: int = 7,
+    principal: Optional[str] = None,
 ) -> Optional[CaptureResult]:
     """Best-effort wrapper for source-event capture; callers stay authoritative."""
 
@@ -446,6 +473,7 @@ def try_emit_promotable_capture_event(
             lane=lane,
             session_id=session_id,
             ttl_days=ttl_days,
+            principal=principal,
         )
     except Exception as exc:
         LOGGER.debug("promotable capture emit failed for %s: %s", event_type, exc)
@@ -459,8 +487,15 @@ def emit_capture_event(
     repo_root: Optional[Path] = None,
     emit_event_bus: Optional[bool] = None,
     lane: Optional[str] = None,
+    principal: Optional[str] = None,
 ) -> CaptureResult:
-    """Redact + write raw activity event to canonical per-project ledger."""
+    """Redact + write raw activity event to canonical per-project ledger.
+
+    ``principal`` is the self-asserted ``internal:<name>`` recorded on the row
+    (default ``internal:cli``); native_hooks passes ``internal:hooks``. It is
+    never read from ``event``, so a payload cannot choose its own identity.
+    """
+    write_principal = _resolve_write_principal(principal)
     root = repo_root.resolve() if repo_root else resolve_repo_root_strict()
     selected_mode = resolve_capture_mode(mode, repo_root=root)
     source = str(event.get("source") or _default_source_for_mode(selected_mode))
@@ -543,8 +578,9 @@ def emit_capture_event(
             INSERT OR IGNORE INTO raw_activity_events (
                 id, workspace_id, instance_id, session_id,
                 ts_utc, event_type, source,
-                payload_json, redaction_level, ttl_days, created_at_utc
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                payload_json, redaction_level, ttl_days, created_at_utc,
+                write_principal, write_principal_self_asserted
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
             """,
             (
                 event_id,
@@ -558,6 +594,7 @@ def emit_capture_event(
                 "strict",
                 int(event.get("ttl_days", 7)),
                 datetime.now(timezone.utc).isoformat(),
+                write_principal,
             ),
         )
         conn.commit()
@@ -583,6 +620,7 @@ def emit_capture_event(
                 "source": source,
                 "payload": redacted_payload,
                 "ts_utc": ts_utc,
+                "write_principal": write_principal,
             }
         )
 

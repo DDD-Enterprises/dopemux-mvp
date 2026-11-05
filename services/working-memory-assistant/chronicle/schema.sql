@@ -16,7 +16,10 @@ CREATE TABLE IF NOT EXISTS raw_activity_events (
   redaction_level TEXT NOT NULL DEFAULT 'strict',
 
   ttl_days INTEGER NOT NULL DEFAULT 7,
-  created_at_utc TEXT NOT NULL
+  created_at_utc TEXT NOT NULL,
+  -- Wave 2A R2 W01 (v1.3.0): who wrote this row. See migrations/v1_3_0_add_write_principal.sql.
+  write_principal TEXT DEFAULT 'unverified',
+  write_principal_self_asserted INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_raw_events_ws_ts
@@ -77,7 +80,10 @@ CREATE TABLE IF NOT EXISTS work_log_entries (
   supersedes_entry_id TEXT,
 
   created_at_utc TEXT NOT NULL,
-  updated_at_utc TEXT NOT NULL
+  updated_at_utc TEXT NOT NULL,
+  -- Wave 2A R2 W01 (v1.3.0): who wrote this row. See migrations/v1_3_0_add_write_principal.sql.
+  write_principal TEXT DEFAULT 'unverified',
+  write_principal_self_asserted INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_worklog_ws_ts
@@ -110,6 +116,9 @@ CREATE TABLE IF NOT EXISTS issue_links (
   evidence_window_min INTEGER NOT NULL DEFAULT 30,
 
   created_at_utc TEXT NOT NULL,
+  -- Wave 2A R2 W01 (v1.3.0): who wrote this row. See migrations/v1_3_0_add_write_principal.sql.
+  write_principal TEXT DEFAULT 'unverified',
+  write_principal_self_asserted INTEGER NOT NULL DEFAULT 0,
 
   FOREIGN KEY (issue_entry_id) REFERENCES work_log_entries(id),
   FOREIGN KEY (resolution_entry_id) REFERENCES work_log_entries(id)
@@ -143,7 +152,10 @@ CREATE TABLE IF NOT EXISTS reflection_cards (
   source_entry_ids_json TEXT NOT NULL DEFAULT '[]',
 
   promotion_candidates_json TEXT NOT NULL DEFAULT '[]',
-  created_at_utc TEXT NOT NULL
+  created_at_utc TEXT NOT NULL,
+  -- Wave 2A R2 W01 (v1.3.0): who wrote this row. See migrations/v1_3_0_add_write_principal.sql.
+  write_principal TEXT DEFAULT 'unverified',
+  write_principal_self_asserted INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_reflection_ws_ts
@@ -170,5 +182,10 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
   applied_at_utc TEXT NOT NULL
 );
 
+-- The seed stays at v1.2.1 on purpose: initialize_schema() runs this file on
+-- every open, so seeding v1.3.0 here would mark the migration applied on
+-- ledgers that still lack the principal columns. v1.3.0 is recorded by
+-- migrations/v1_3_0_add_write_principal.sql (its ADD COLUMN statements are
+-- skipped where a fresh schema already created the columns).
 INSERT OR IGNORE INTO schema_migrations (version, applied_at_utc)
 VALUES ('v1.2.1', datetime('now'));

@@ -1,0 +1,13 @@
+docker/mcp-servers-source/conport/auth_identity.py
+docker/mcp-servers-source/conport/enhanced_server.py
+docker/mcp-servers-source/conport/server.py
+docker/mcp-servers-source/conport/migrations/008_write_principal.sql
+docker/mcp-servers-source/conport/migrations/008_rollback.sql
+services/working-memory-assistant/auth_identity.py
+services/working-memory-assistant/dope_memory_main.py
+services/working-memory-assistant/mcp_http.py
+services/working-memory-assistant/chronicle/migrations/v1_3_0_add_write_principal.sql
+src/dopemux/mcp/http_stdio_bridge.py
+src/dopemux/auth/keychain.py
+src/dopemux/auth/hashfile.py
+src/dopemux/auth/tokens.py

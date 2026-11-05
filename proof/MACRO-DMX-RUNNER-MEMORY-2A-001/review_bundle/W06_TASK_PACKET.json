@@ -1,0 +1,182 @@
+{
+  "id": "TP-DMX-RUNNERMEM2A-W06-GENERATOR-GATE-001",
+  "project": "dopemux-mvp",
+  "target": "Generator: Codex and Claude Code config for the three identity-bearing servers through the stdio route, and the real gate that replaces `--allow-sequenced` (design 5.3, 5.7, W6).",
+  "invariants": [
+    "C01 Shared workspace: other workers may edit this checkout. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in the execution worktree .worktrees/runner-memory-2a on feat/runner-memory-2a (base 97b6d5040496e2271c41d24c339d039303bbe6b1); verify `git rev-parse --show-toplevel` and the branch before the first write.",
+    "C02 You never commit, push, merge, open a PR, mark ready, sign, tag, change git config or rewrite history. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env*, credential files, keychain items, bearer tokens or token hashes from a real install; never write a real secret into a file, test fixture, log or return. Tests use obviously fake values generated in the test (for example 'test-token-<n>'). Log a principal name, never a token or an Authorization header.",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Anything live that you did not observe is NOT_RUN. The conport, dope-memory and serena MCP connectors were unreachable in the issuing session (a Docker outage on 2026-10-30, since recovered): do not invent endpoints, tool names, request fields, settings or ports. Use only interfaces this packet names or that you confirm in source with file:line; otherwise write UNKNOWN.",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers (each with the action that clears it), advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when: a needed file is outside your write_surface; a contract-sensitive surface outside your write_surface (schema, hook registration, MCP manifest, compose service definition) would change; a required fact is UNKNOWN; or validation still fails after one fix attempt for the same cause (no cheap-model repair loop).",
+    "C08 Authority order: this packet, then runtime code, then schemas, then tests, then docs. The design is docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md (sha256 1fea60130d55d151dfbc70eb24571efb90c8ecee9e9183a05f3beb0915970cd3); it states intent, not runtime facts. Where the design and runtime code disagree, STOP and report; do not pick one silently. No workstream edits the design file.",
+    "C09 Evidence input: proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md is the W00 result this workstream is sized from. The team lead commits it at J01-GATE and passes you its sha256 at dispatch; if the file's hash differs, STOP. GATE_TABLE.workstream_go for this workstream must be GO or GO_REDUCED (otherwise STOP: the team lead should not have dispatched you); its GATE_TABLE.reductions are binding. If any GATE_TABLE.design_changes entry lists this workstream, STOP: the supervisor issues a revision (R2) instead.",
+    "C10 No live mutation: never start, stop, restart or rebuild a container; never run `dopemux mcp start|up|init`, `docker compose`, a migration against a real database, `dopemux auth issue|rotate|revoke`, or the orchestrator cutover; never write the keychain, ~/.config/dopemux/ or any file outside the worktree (global runner configs included). Tests use temp directories, fakes and a stubbed `security` subprocess.",
+    "C11 Python 3.12 through the repo Makefile/uv (`uv run --frozen --extra test pytest ...`); the harness python3 may be 3.9 and is not evidence. New tests go in this workstream's own directory under tests/unit/ (CI runs tests/unit, tests/arch, tests/dcp, tests/integration; services/*/tests and docker/*/tests are not run by CI). Each new test directory carries an empty __init__.py.",
+    "A01 PROPOSED allowances for this workstream (caps, not forecasts; the operator accepts them by authorizing the macro): elapsed wall time 120 min from dispatch; subagent tokens 1,500,000; tool uses 300; child attempts: 1 attempt + 1 retry; team-lead review rounds: 1 diff re-read + at most 1 correction round. Active (model-working) time is not separately recordable by the harness: UNKNOWN; elapsed is the enforceable bound.",
+    "A02 The team lead reads the recordable counters from the child's completion notice (duration_ms, subagent_tokens, tool_uses) and records them with the return. A retry is allowed only after a failed validation with a named cause and only once; a second failure, any exceeded cap or any advisor call ends the workstream.",
+    "A03 When a cap is hit: stop the workstream, start no further attempt, preserve the uncommitted diff untouched, and return NEEDS_SUPERVISOR with the counters and the evidence. No model upgrade, provider change or extra attempt without a new operator ruling.",
+    "B01 Gate (design 5.7): before writing a write-capable Codex config, the generator checks (1) dope-memory and ConPort health report enforce mode and identity-required writes (the W01 B05 and W02 fields), (2) the orchestrator reports token auth (W05), (3) a keychain token exists for the target runner (W03 helper). Any failure writes the preview only and prints the failed check. `--allow-sequenced` is removed or becomes an error that names the new gate.",
+    "B02 Release only dope-memory, ConPort and the task orchestrator, through the stdio route; serena, dope-context, gpt-researcher and pal-stdio stay out of the generated Codex config (design 5.7). Hand-added entries in a user's global config are not touched.",
+    "B03 Claude Code (design 5.3, G5): its generated config uses the same stdio route for the three servers, with runner:claude.",
+    "B04 Catalog: update mcp_catalog.yaml, src/dopemux/mcp/default_catalog.yaml and fleet_catalog.py for the route and any port W02 added; keep the existing catalog tests green. A schema change under schemas/ is outside this allowlist: STOP and report.",
+    "B05 Never run `dopemux mcp generate --apply` against this repo (it writes tracked config); tests render into temp directories.",
+    "B06 Tests: each gate check failing alone writes preview only; all passing writes the three servers via the stdio route for Codex and Claude Code; excluded servers stay out; --allow-sequenced no longer bypasses."
+  ],
+  "depends_on": [
+    "W00",
+    "W01",
+    "W02",
+    "W03",
+    "W04",
+    "W05"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-RUNNER-MEMORY-2A-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-RUNNER-MEMORY-2A-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/runner-memory-2a",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(mcp): real Codex gate and stdio-route config for the identity servers (Wave 2A W06)",
+    "allowlist": [
+      "src/dopemux/mcp/fleet_catalog.py",
+      "src/dopemux/commands/mcp_commands.py",
+      "mcp_catalog.yaml",
+      "src/dopemux/mcp/default_catalog.yaml",
+      "tests/test_mcp_config_generation.py",
+      "tests/unit/test_mcp_commands_catalog.py",
+      "tests/unit/runner_memory_2a_w06/"
+    ],
+    "verify": [
+      "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_w06/ tests/test_mcp_config_generation.py tests/unit/test_mcp_commands_catalog.py",
+      "uv run --frozen dopemux mcp generate --help",
+      "git diff --check",
+      "git status --porcelain   # every modified or untracked path is inside the allowlist (git diff does not list new files)"
+    ]
+  },
+  "pr": {
+    "title": "feat(runner-memory): Wave 2A - verified runner identity for dope-memory, ConPort and the task orchestrator (Codex first)",
+    "body": "Implements MACRO-DMX-RUNNER-MEMORY-2A-001 from docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md. Draft until the single final independent L3 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W06-S1",
+      "task": "Read W00_FINDINGS.md (GATE_TABLE first), the design sections this packet cites and the code you will change",
+      "requirements": [
+        "Confirm GATE_TABLE.workstream_go and the reductions that bind you before any edit."
+      ],
+      "commands": [
+        "python3 -c \"import re,json;t=open('proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md').read();print(json.dumps(json.loads(re.findall(r'```json\\n(.*?)\\n```',t,re.S)[-1])['workstream_go'],indent=1))\""
+      ],
+      "expected_files": [],
+      "validation": [
+        "binding verdict and reductions recorded in the return"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md",
+        "docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md",
+        "src/dopemux/commands/mcp_commands.py",
+        "src/dopemux/mcp/fleet_catalog.py",
+        "mcp_catalog.yaml",
+        "src/dopemux/mcp/default_catalog.yaml"
+      ]
+    },
+    {
+      "id": "W06-S2",
+      "task": "TDD: write the failing tests first, then the code",
+      "requirements": [
+        "Show each new test failing before the code that makes it pass (record the failing run in the return)."
+      ],
+      "commands": [
+        "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_w06/"
+      ],
+      "expected_files": [
+        "tests/unit/runner_memory_2a_w06/__init__.py"
+      ],
+      "validation": [
+        "new tests fail first, then pass"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W06-S3",
+      "task": "Run this workstream's validation and the existing suites named in commit.verify",
+      "requirements": [
+        "Report every command with its exit code and bucket."
+      ],
+      "commands": [
+        "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_w06/ tests/test_mcp_config_generation.py tests/unit/test_mcp_commands_catalog.py",
+        "git diff --check"
+      ],
+      "expected_files": [],
+      "validation": [
+        "all named suites PASS or carry a NOT_RUN reason"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W06-S4",
+      "task": "Return",
+      "requirements": [
+        "Status, validation table, files_written, advisor_calls, observed_model, blockers."
+      ],
+      "commands": [
+        "git status --porcelain",
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the write_surface"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-RUNNER-MEMORY-2A-001",
+  "workstream_id": "W06",
+  "risk_lane": "L3",
+  "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "src/dopemux/mcp/fleet_catalog.py",
+    "src/dopemux/commands/mcp_commands.py",
+    "mcp_catalog.yaml",
+    "src/dopemux/mcp/default_catalog.yaml",
+    "tests/test_mcp_config_generation.py",
+    "tests/unit/test_mcp_commands_catalog.py",
+    "tests/unit/runner_memory_2a_w06/"
+  ],
+  "canonical_writers": [
+    "W06-implementer"
+  ],
+  "semantic_scope": [
+    "generator-gate"
+  ],
+  "rollback_boundary": "git revert <W06 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

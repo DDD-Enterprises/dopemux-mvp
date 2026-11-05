@@ -5,6 +5,9 @@ Verifies:
 - Tools delegate to DopeMemoryMCPServer (store -> search round trip).
 - Tool failures surface as MCP tool errors, not silent successes.
 - dope_memory_main mounts the MCP app so /mcp resolves on the FastAPI app.
+- Writes fill an omitted workspace_id / instance_id from the server's binding
+  and reject a workspace other than the bound one (Wave 2A R2 W01, Amendment 04);
+  reads keep working without ids.
 
 Requires fastmcp (installed in the service image via dopemux[services]);
 skipped automatically where fastmcp is unavailable.
@@ -18,6 +21,14 @@ from fastmcp import Client  # noqa: E402
 from fastmcp.exceptions import ToolError  # noqa: E402
 
 import mcp_http  # noqa: E402
+from auth_identity import AuthGate  # noqa: E402
+
+BOUND_WORKSPACE = "test-ws"
+WRITE_IDS = {"workspace_id": BOUND_WORKSPACE, "instance_id": "A"}
+
+
+def _gate():
+    return AuthGate(mode="log", auth_dir=None)
 
 EXPECTED_TOOLS = {
     "memory_search",
@@ -48,8 +59,9 @@ def backend(tmp_path, monkeypatch):
 def mcp_server(backend):
     return mcp_http.build_mcp_server(
         lambda: backend,
-        default_workspace_id="test-ws",
-        default_instance_id="A",
+        bound_workspace_id=BOUND_WORKSPACE,
+        read_default_instance_id="A",
+        gate=_gate(),
     )
 
 
@@ -70,6 +82,7 @@ async def test_should_round_trip_store_and_search(mcp_server):
                 "entry_type": "decision",
                 "summary": "MCP endpoint round-trip entry",
                 "importance_score": 8,
+                **WRITE_IDS,
             },
         )
         assert stored.data["created"] is True
@@ -89,14 +102,17 @@ async def test_should_raise_tool_error_when_backend_fails(mcp_server):
             # Nonexistent entry id -> backend returns success=False.
             await client.call_tool(
                 "memory_mark_issue",
-                {"issue_entry_id": "missing-entry", "description": "nope"},
+                {"issue_entry_id": "missing-entry", "description": "nope", **WRITE_IDS},
             )
 
 
 @pytest.mark.asyncio
 async def test_should_error_when_backend_not_initialized():
     mcp_server = mcp_http.build_mcp_server(
-        lambda: None, default_workspace_id="x", default_instance_id="A"
+        lambda: None,
+        bound_workspace_id="x",
+        read_default_instance_id="A",
+        gate=_gate(),
     )
     async with Client(mcp_server) as client:
         with pytest.raises(ToolError, match="not initialized"):
@@ -136,7 +152,10 @@ async def test_should_unwrap_dict_shaped_backend_results():
             return {"success": False, "error": "dict backend failure"}
 
     mcp_server = mcp_http.build_mcp_server(
-        lambda: DictBackend(), default_workspace_id="x", default_instance_id="A"
+        lambda: DictBackend(),
+        bound_workspace_id="x",
+        read_default_instance_id="A",
+        gate=_gate(),
     )
     async with Client(mcp_server) as client:
         ok = await client.call_tool("memory_trajectory", {})
@@ -144,3 +163,37 @@ async def test_should_unwrap_dict_shaped_backend_results():
         assert "success" not in ok.data
         with pytest.raises(ToolError, match="dict backend failure"):
             await client.call_tool("memory_recap", {})
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("missing", ["workspace_id", "instance_id"])
+async def test_should_fill_an_omitted_id_from_the_servers_binding(mcp_server, missing):
+    # Amendment 04 (W12): an omitted id is filled from the binding, so the entry is
+    # stored under the server's own workspace and instance and the read finds it.
+    args = {
+        "category": "implementation",
+        "entry_type": "decision",
+        "summary": "filled from the binding",
+        **{k: v for k, v in WRITE_IDS.items() if k != missing},
+    }
+    async with Client(mcp_server) as client:
+        stored = await client.call_tool("memory_store", args)
+        found = await client.call_tool("memory_search", {"query": "filled from"})
+    assert stored.data["created"] is True
+    assert [i["summary"] for i in found.data["items"]] == ["filled from the binding"]
+
+
+@pytest.mark.asyncio
+async def test_should_reject_store_for_a_workspace_other_than_the_bound_one(mcp_server):
+    async with Client(mcp_server) as client:
+        with pytest.raises(ToolError, match="bound"):
+            await client.call_tool(
+                "memory_store",
+                {
+                    "category": "implementation",
+                    "entry_type": "decision",
+                    "summary": "wrong workspace",
+                    "workspace_id": "some-other-repo",
+                    "instance_id": "A",
+                },
+            )

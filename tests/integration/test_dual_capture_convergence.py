@@ -248,7 +248,9 @@ def test_global_rollup_never_writes_to_project_ledger(tmp_path, monkeypatch):
         # Verify read-only connection prevents writes
         with pytest.raises(sqlite3.OperationalError, match="readonly database"):
             conn.execute(
-                "INSERT INTO raw_activity_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO raw_activity_events (id, workspace_id, instance_id, session_id, ts_utc, "
+                "event_type, source, payload_json, redaction_level, ttl_days, created_at_utc) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 ("fake_id", "ws", "inst", "sess", "2026-02-08", "fake", "test", "{}", "none", 7, "2026-02-08"),
             )
     finally:

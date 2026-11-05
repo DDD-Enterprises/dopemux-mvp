@@ -3337,6 +3337,11 @@ from .commands.cockpit_commands import cockpit  # noqa: E402
 cli.add_command(cockpit)
 
 
+from .commands.auth_commands import auth  # noqa: E402
+
+cli.add_command(auth)
+
+
 # ============================================================
 # Commands extracted back from submodules (use @cli.command)
 # ============================================================
