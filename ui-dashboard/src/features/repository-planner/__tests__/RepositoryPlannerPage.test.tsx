@@ -179,6 +179,36 @@ describe('RepositoryPlannerPage', () => {
       });
     }
   });
+
+  test('CandidateShaChip in ProvenancePanel copies observed head SHA to clipboard with custom labelPrefix', async () => {
+    const observedHeadSha = dopemuxFixture.observed_head;
+    const shortSha = observedHeadSha.slice(0, 12);
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      configurable: true,
+    });
+
+    try {
+      render(<RepositoryPlannerPage />);
+      const inspectBtn = screen.getByRole('button', { name: /Inspect dopemux-mvp pcp-planner-foundation/ });
+      fireEvent.click(inspectBtn);
+
+      const chip = screen.getByRole('button', { name: new RegExp(`Copy observed head SHA ${shortSha}`) });
+      expect(chip).toBeVisible();
+
+      fireEvent.click(chip);
+
+      expect(writeTextMock).toHaveBeenCalledWith(observedHeadSha);
+      expect(await screen.findByText(`Observed head SHA ${shortSha} copied`)).toBeVisible();
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        configurable: true,
+      });
+    }
+  });
 });
 
 describe('extension registry', () => {
