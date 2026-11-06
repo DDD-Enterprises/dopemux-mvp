@@ -1,0 +1,11 @@
+{
+  "content_head": "a8b401558adc5126a850dc38d76b26181d2b9df2",
+  "base_head": "a14ecfe51f1b7bd90fb12f173d95d7dcdbe4905c",
+  "scope": "Four-file PR1501 follow-up only",
+  "files": {
+    ".github/workflows/gemini-dispatch.yml": "c51a07c767c275724a63ff6aceff08b1ec400b6e0ae00c21c75e5cfa0591c595",
+    ".github/workflows/gemini-scheduled-triage.yml": "40721dd424bcb79c847ce8534a2b32fdd4101bfa81dc01460373342fae99a81d",
+    "tests/unit/dopemux/pm/test_writes.py": "305ab90872906bf86dc9c59e0a8cb2f0164b10fd9f56ce39522087348bbd875f",
+    "tests/unit/test_ci_subscription_policy.py": "cfcc3de4f2b920715049ada2d31ae0579505413b34e35a661cd2a79168c2b7de"
+  }
+}
