@@ -27,6 +27,8 @@ defaults:
 
 jobs:
   triage:
+    # PR validation must not invoke the issue-triage provider or mutate labels.
+    if: ${{ !startsWith(github.event_name, 'pull_request') && github.event_name != 'merge_group' }}
     runs-on: 'ubuntu-latest'
     timeout-minutes: 7
     env:
@@ -143,6 +145,16 @@ jobs:
               }
             }
           prompt: '/gemini-scheduled-triage'
+
+  pr-policy:
+    if: github.event_name == 'pull_request'
+    runs-on: 'ubuntu-latest'
+    permissions: {}
+    steps:
+      - name: 'Report automatic issue-triage policy'
+        run: |-
+          echo '## Gemini issue triage: NOT_RUN' >> "$GITHUB_STEP_SUMMARY"
+          echo 'PR validation does not invoke API-backed issue triage. Independent review evidence remains pending.' >> "$GITHUB_STEP_SUMMARY"
 
   label:
     runs-on: 'ubuntu-latest'

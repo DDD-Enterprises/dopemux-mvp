@@ -58,6 +58,9 @@ VALID_WORKFLOW_PHASES = frozenset({
 VALID_OUTCOMES = frozenset({
     'success', 'partial', 'blocked', 'abandoned', 'in_progress', 'failed',
 })
+VALID_CORRECTION_TYPES = frozenset({
+    'update', 'summary', 'tags', 'category', 'outcome', 'retraction',
+})
 
 LOGGER = logging.getLogger(__name__)
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
@@ -606,8 +609,8 @@ class ChronicleStore:
         workspace_id: str,
         instance_id: str,
         supersedes_entry_id: str,
-        correction_type: str,  # "update" or "retraction"
-        summary: str,
+        correction_type: str,
+        summary: Optional[str],
         *,
         session_id: Optional[str] = None,
         reason: Optional[str] = None,
@@ -617,23 +620,49 @@ class ChronicleStore:
         idempotency_key: Optional[str] = None,
         write_principal: Optional[str] = None,
         principal_self_asserted: bool = False,
+        corrected_tags: Optional[list[str]] = None,
+        corrected_category: Optional[str] = None,
+        corrected_entry_type: Optional[str] = None,
     ) -> str:
         """Insert a corrected entry that supersedes an existing one (Packet F §3.3).
         
-        Correction Types:
-        - update: Corrects or adds information.
-        - retraction: Retracts the original. Creates a tombstone.
+        Omitted fields inherit the target. Keyed retries are first-write-wins,
+        including legacy identities; new identities are scoped to the target.
+        Corrections retain event time, while insertion records processing time.
         """
+        if correction_type not in VALID_CORRECTION_TYPES:
+            raise ValueError(f"Invalid correction_type '{correction_type}'.")
+
         # 1. Idempotency Check (Packet H)
         if idempotency_key:
-            source_event_id = f"manual:{idempotency_key}"
+            identity = json.dumps(
+                [workspace_id, instance_id, supersedes_entry_id, idempotency_key],
+                ensure_ascii=True, separators=(",", ":"),
+            )
+            source_event_id = "manual:v2:" + hashlib.sha256(identity.encode("utf-8")).hexdigest()
             conn = self.connect()
             existing = conn.execute(
-                "SELECT id FROM work_log_entries WHERE source_event_id = ? AND supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
-                (source_event_id, supersedes_entry_id, workspace_id, instance_id)
+                "SELECT id FROM work_log_entries WHERE source_event_id IN (?, ?) "
+                "AND supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+                (source_event_id, f"manual:{idempotency_key}", supersedes_entry_id, workspace_id, instance_id),
             ).fetchone()
             if existing:
                 return existing[0]
+
+        # Preserve keyed first-write-wins before validating a new correction.
+        required_payload = {
+            "summary": summary,
+            "tags": corrected_tags,
+            "category": corrected_category,
+            "outcome": outcome,
+        }
+        if correction_type in required_payload and required_payload[correction_type] is None:
+            raise ValueError(f"Correction type '{correction_type}' requires its corrected field.")
+        if correction_type == "update" and all(value is None for value in (
+            summary, corrected_tags, corrected_category, corrected_entry_type,
+            details, reason, outcome, importance_score, session_id,
+        )):
+            raise ValueError("Correction type 'update' requires at least one corrected field.")
 
         # 2. Resolve target head (Packet F §6.5)
         # First check if the entry exists
@@ -650,31 +679,29 @@ class ChronicleStore:
 
         # 3. Prepare correction semantics (Packet F §4.1)
         # Use target's metadata to preserve context
-        final_category = target["category"]
-        final_entry_type = target["entry_type"]
+        final_category = target["category"] if corrected_category is None else corrected_category
+        final_entry_type = target["entry_type"] if corrected_entry_type is None else corrected_entry_type
         final_workflow_phase = target["workflow_phase"]
         
         # Override defaults or use target values
-        final_outcome = outcome or target["outcome"]
+        final_outcome = target["outcome"] if outcome is None else outcome
         final_importance_score = importance_score if importance_score is not None else target["importance_score"]
         
         # Provenance: manual correction convention
-        # Use idempotency key if provided to ensure stable ID
-        if idempotency_key:
-            source_event_id = f"manual:{idempotency_key}"
-            # Use deterministic timestamp for idempotent retries
-            now_utc = "1970-01-01T00:00:00Z" 
-        else:
+        if not idempotency_key:
             source_event_id = f"manual:{_generate_ulid()}"
-            now_utc = datetime.now(timezone.utc).isoformat()
+
+        def inherited_json(field: str) -> Any:
+            value = target[field]
+            return json.loads(value) if value is not None else None
+
+        final_summary = target["summary"] if summary is None else summary
 
         if correction_type == "retraction":
             # Retraction tombstone semantics (Packet F §4.1)
-            final_summary = f"[RETRACTED] {summary}"
+            final_summary = f"[RETRACTED] {final_summary}"
             final_outcome = "abandoned"
             final_importance_score = min(final_importance_score, 3) # Lower importance
-        else:
-            final_summary = summary
 
         # 4. Perform insertion
         return self.insert_work_log_entry(
@@ -686,14 +713,21 @@ class ChronicleStore:
             source_event_id=source_event_id,
             source_event_type=f"correction.{correction_type}",
             source_adapter="mcp-server",
-            source_event_ts_utc=now_utc,
+            source_event_ts_utc=target["source_event_ts_utc"],
             promotion_rule=f"correction.{correction_type}",
-            session_id=session_id or target["session_id"],
+            session_id=target["session_id"] if session_id is None else session_id,
             workflow_phase=final_workflow_phase,
-            details=details,
-            reasoning=reason,
+            details=inherited_json("details_json") if details is None else details,
+            reasoning=target["reasoning"] if reason is None else reason,
             outcome=final_outcome,
             importance_score=final_importance_score,
+            tags=inherited_json("tags_json") if corrected_tags is None else corrected_tags,
+            linked_files=inherited_json("linked_files_json"),
+            linked_commits=inherited_json("linked_commits_json"),
+            linked_decisions=inherited_json("linked_decisions_json"),
+            linked_chat_range=inherited_json("linked_chat_range_json"),
+            parent_entry_id=target["parent_entry_id"],
+            duration_sec=target["duration_sec"],
             supersedes_entry_id=supersedes_entry_id,
             write_principal=write_principal,
             principal_self_asserted=principal_self_asserted,

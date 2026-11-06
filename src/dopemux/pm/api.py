@@ -20,7 +20,7 @@ from .writes import (
     classify_pm_action,
     classify_pm_write,
     emit_pm_promotable_source_event,
-    is_workflow_significant_payload,
+    is_workflow_significant_payload as is_workflow_significant_payload,
 )
 
 class PMWriteBoundary:
@@ -102,80 +102,15 @@ class PMWriteBoundary:
             }
 
     async def pm_transition_work_item(self, work_item_id: str, transition: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """
-        The only sanctioned workflow-significant path.
-        Routes to Task Orchestrator through the project-scoped workflow endpoint.
-        """
-        try:
-            if not self.orchestrator:
-                raise RuntimeError("Task Orchestrator client unavailable")
-            await self.orchestrator.transition_task(
-                self.project_id,
-                work_item_id,
-                transition,
-                payload or {},
-            )
-            normalized_transition = str(transition).strip().lower()
-            if normalized_transition in {"done", "complete", "completed"}:
-                emit_pm_promotable_source_event(
-                    "task.completed",
-                    project_id=self.project_id,
-                    work_item_id=work_item_id,
-                    canonical_system="task-orchestrator",
-                    operation_type="transition",
-                    payload={
-                        "title": f"Workflow item {work_item_id}",
-                        "transition": transition,
-                    },
-                )
-            elif normalized_transition in {"block", "blocked"}:
-                emit_pm_promotable_source_event(
-                    "task.blocked",
-                    project_id=self.project_id,
-                    work_item_id=work_item_id,
-                    canonical_system="task-orchestrator",
-                    operation_type="transition",
-                    payload={
-                        "title": f"Workflow item {work_item_id}",
-                        "transition": transition,
-                        "reason": (payload or {}).get("reason", ""),
-                    },
-                )
-            emit_pm_promotable_source_event(
-                "workflow.phase_changed",
-                project_id=self.project_id,
-                work_item_id=work_item_id,
-                canonical_system="task-orchestrator",
-                operation_type="transition",
-                payload={
-                    "from_phase": "unknown",
-                    "to_phase": (payload or {}).get("phase")
-                    or TRANSITION_PHASE_CAPTURE_DEFAULTS.get(
-                        normalized_transition,
-                        "implementation",
-                    ),
-                    "transition": transition,
-                },
-            )
-
-            return {
-                "success": True,
-                "operation_type": "transition",
-                "canonical_backend": "task_orchestrator",
-                "reflection_state": "not_requested",
-                "reconciliation_state": "synchronized",
-                "message": "transition succeeded canonically via the project-scoped workflow endpoint"
-            }
-
-        except Exception as e:
-            logger.error(f"Task Orchestrator transition failed: {e}")
-            return {
-                "success": False,
-                "operation_type": "transition",
-                "canonical_backend": "task_orchestrator",
-                "reflection_state": "failed",
-                "error": str(e)
-            }
+        """Accept only a complete v2 body through an explicitly bound async adapter."""
+        from .adapters.ownership import AsyncOwnershipAdapter
+        from .ownership import TransitionCommand
+        if not isinstance(self.orchestrator, AsyncOwnershipAdapter):
+            raise RuntimeError("Canonical ownership requires an explicit v2 adapter")
+        body = TransitionCommand.model_validate(payload).model_dump()
+        if self.project_id != self.orchestrator.project_id or body["task_id"] != work_item_id or body["transition"] != transition:
+            raise ValueError("Explicit command identity mismatch")
+        return await self.orchestrator.transition_command(body)
 
     async def pm_log_progress(self, work_item_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """

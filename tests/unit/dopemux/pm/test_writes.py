@@ -8,6 +8,7 @@ from src.dopemux.pm.writes import (
     is_workflow_significant_payload,
     pm_log_decision,
     pm_log_progress,
+    pm_transition_command,
     pm_transition_work_item,
     pm_update_work_item,
 )
@@ -202,76 +203,79 @@ def test_pm_update_work_item_supports_legacy_update_task_client():
     ]
 
 
-def test_pm_transition_work_item_fail_closed():
-    config = PMWriteConfig(leantime_client=None, orchestrator_client=None, conport_client=None, memory_client=None)
-    with pytest.raises(RuntimeError) as exc:
-        pm_transition_work_item(
-            config=config,
-            task_id="task-1",
-            new_status=PMTaskStatus.IN_PROGRESS,
-            reason="starting",
-            idempotency_key="key-2",
-            expected_version=1,
-        )
-    assert "Task Orchestrator client" in str(exc.value)
+@pytest.mark.parametrize("new_status", list(PMTaskStatus))
+@pytest.mark.parametrize("clients_present", [False, True])
+def test_pm_transition_work_item_requires_v2_without_effects(
+    new_status, clients_present, monkeypatch
+):
+    """V1 cannot supply authenticated binding/admission/completion evidence."""
+    import src.dopemux.pm.writes as writes_module
 
-
-def test_pm_transition_work_item_rejects_unsupported_phase1_status():
-    config = PMWriteConfig(
-        leantime_client=None,
-        orchestrator_client=MockOrchestratorClient(),
-        conport_client=None,
-        memory_client=None,
+    emitted = []
+    monkeypatch.setattr(
+        writes_module,
+        "try_emit_promotable_capture_event",
+        lambda *args, **kwargs: emitted.append((args, kwargs)),
     )
-    with pytest.raises(ValueError) as exc:
-        pm_transition_work_item(
-            config=config,
-            task_id="task-1",
-            new_status=PMTaskStatus.TODO,
-            reason="backfill",
-            idempotency_key="key-2",
-            expected_version=1,
-        )
-    assert "Unsupported phase-1 workflow target TODO" in str(exc.value)
-
-
-def test_pm_transition_work_item_uses_project_scoped_transition_only():
-    orch_client = MockOrchestratorClient()
-    leantime_client = MockLeantimeClient()
+    clients = [MockLeantimeClient(), MockOrchestratorClient(),
+               MockConportClient(), MockMemoryClient()]
     config = PMWriteConfig(
-        leantime_client=leantime_client,
-        orchestrator_client=orch_client,
-        conport_client=None,
-        memory_client=None,
+        leantime_client=clients[0] if clients_present else None,
+        orchestrator_client=clients[1] if clients_present else None,
+        conport_client=clients[2] if clients_present else None,
+        memory_client=clients[3] if clients_present else None,
         project_id="proj-7",
     )
 
-    receipt = pm_transition_work_item(
-        config=config,
-        task_id="task-1",
-        new_status=PMTaskStatus.IN_PROGRESS,
-        reason="starting work",
-        idempotency_key="key-2",
-        expected_version=1,
-    )
-
-    assert receipt.success
-    assert receipt.canonical_system == "task-orchestrator"
-    assert receipt.operation_type == PMActionKind.WORKFLOW_TRANSITION.value
-    assert receipt.mirror_receipts == []
-    assert orch_client.calls == [
-        (
-            "transition",
-            "proj-7",
-            "task-1",
-            "start",
-            "dopemux",
-            "starting work",
-            1,
-            "key-2",
+    with pytest.raises(RuntimeError, match="authenticated v2 transition_command"):
+        pm_transition_work_item(
+            config=config,
+            task_id="task-1",
+            new_status=new_status,
+            reason="legacy request cannot prove admission",
+            idempotency_key="key-2",
+            expected_version=1,
         )
-    ]
-    assert leantime_client.calls == []
+
+    assert all(client.calls == [] for client in clients)
+    assert emitted == []
+
+
+@pytest.mark.parametrize("client", [None, MockOrchestratorClient()])
+def test_pm_transition_command_rejects_unauthenticated_legacy_client(client):
+    config = PMWriteConfig(
+        leantime_client=None, orchestrator_client=client,
+        conport_client=None, memory_client=None, project_id="proj-7",
+    )
+    with pytest.raises(RuntimeError, match="Explicit authenticated v2 adapter required"):
+        pm_transition_command(config, {})
+    if client is not None:
+        assert client.calls == []
+
+
+def test_pm_transition_command_project_mismatch_has_no_transport_effects():
+    import httpx
+    from src.dopemux.pm.adapters.ownership import SyncOwnershipAdapter
+
+    requests = []
+    credentials = []
+    adapter = SyncOwnershipAdapter(
+        project_id="proj-7", writer_instance_id="writer-7",
+        endpoint="https://fixture", principal_id="alice", client_id="client-7",
+        credential_supplier=lambda: credentials.append(True) or "Bearer fixture",
+        transport=httpx.MockTransport(lambda request: requests.append(request)),
+    )
+    config = PMWriteConfig(
+        leantime_client=None, orchestrator_client=adapter,
+        conport_client=None, memory_client=None, project_id="other-project",
+    )
+    try:
+        with pytest.raises(ValueError, match="Adapter project mismatch"):
+            pm_transition_command(config, {})
+        assert requests == []
+        assert credentials == []
+    finally:
+        adapter.close()
 
 
 def test_pm_log_progress_fail_closed():
@@ -335,155 +339,3 @@ def test_pm_log_decision_marks_conport_decision_and_memory_mirror():
         )
     ]
     assert receipt.mirror_receipts[0].persisted_id == "chron-1"
-
-
-def test_pm_transition_emits_real_from_phase_from_receipt(monkeypatch):
-    """workflow.phase_changed carries the backend-reported prior phase."""
-    import src.dopemux.pm.writes as writes_module
-
-    emitted = []
-    monkeypatch.setattr(
-        writes_module,
-        "try_emit_promotable_capture_event",
-        lambda event_type, payload, **kwargs: emitted.append((event_type, payload)),
-    )
-
-    class ReceiptOrchestratorClient(MockOrchestratorClient):
-        def transition(self, **kwargs):
-            super().transition(**kwargs)
-            return {
-                "transition_receipt": {
-                    "status": "success",
-                    "from_status": "TODO",
-                    "version_after": 2,
-                }
-            }
-
-    config = PMWriteConfig(
-        leantime_client=MockLeantimeClient(),
-        orchestrator_client=ReceiptOrchestratorClient(),
-        conport_client=None,
-        memory_client=None,
-        project_id="proj-7",
-    )
-
-    pm_transition_work_item(
-        config=config,
-        task_id="task-1",
-        new_status=PMTaskStatus.IN_PROGRESS,
-        reason="starting work",
-        idempotency_key="key-3",
-        expected_version=1,
-    )
-
-    phase_events = [p for (t, p) in emitted if t == "workflow.phase_changed"]
-    assert len(phase_events) == 1
-    assert phase_events[0]["from_phase"] == "planning"
-    assert phase_events[0]["from_status"] == "TODO"
-    assert phase_events[0]["to_phase"] == "implementation"
-
-
-def test_pm_transition_from_phase_unknown_without_receipt(monkeypatch):
-    """Clients that return no receipt keep the honest 'unknown' fallback."""
-    import src.dopemux.pm.writes as writes_module
-
-    emitted = []
-    monkeypatch.setattr(
-        writes_module,
-        "try_emit_promotable_capture_event",
-        lambda event_type, payload, **kwargs: emitted.append((event_type, payload)),
-    )
-
-    config = PMWriteConfig(
-        leantime_client=MockLeantimeClient(),
-        orchestrator_client=MockOrchestratorClient(),
-        conport_client=None,
-        memory_client=None,
-        project_id="proj-7",
-    )
-
-    pm_transition_work_item(
-        config=config,
-        task_id="task-1",
-        new_status=PMTaskStatus.DONE,
-        reason="done",
-        idempotency_key="key-4",
-        expected_version=3,
-    )
-
-    phase_events = [p for (t, p) in emitted if t == "workflow.phase_changed"]
-    assert len(phase_events) == 1
-    assert phase_events[0]["from_phase"] == "unknown"
-    assert phase_events[0]["from_status"] is None
-
-
-def test_pm_transition_emits_blocker_cleared_when_leaving_blocked(monkeypatch):
-    """A transition out of BLOCKED emits a promotable blocker.cleared event."""
-    import src.dopemux.pm.writes as writes_module
-
-    emitted = []
-    monkeypatch.setattr(
-        writes_module,
-        "try_emit_promotable_capture_event",
-        lambda event_type, payload, **kwargs: emitted.append((event_type, payload)),
-    )
-
-    class BlockedReceiptClient(MockOrchestratorClient):
-        def transition(self, **kwargs):
-            super().transition(**kwargs)
-            return {"transition_receipt": {"status": "success", "from_status": "BLOCKED"}}
-
-    config = PMWriteConfig(
-        leantime_client=MockLeantimeClient(),
-        orchestrator_client=BlockedReceiptClient(),
-        conport_client=None,
-        memory_client=None,
-        project_id="proj-7",
-    )
-
-    pm_transition_work_item(
-        config=config,
-        task_id="task-9",
-        new_status=PMTaskStatus.IN_PROGRESS,
-        reason="unblocked by fix",
-        idempotency_key="key-5",
-        expected_version=2,
-    )
-
-    types = [t for (t, _p) in emitted]
-    assert "blocker.cleared" in types
-    cleared = [p for (t, p) in emitted if t == "blocker.cleared"][0]
-    assert cleared["task_id"] == "task-9"
-    # from_phase on the phase event should reflect BLOCKED -> review
-    phase = [p for (t, p) in emitted if t == "workflow.phase_changed"][0]
-    assert phase["from_phase"] == "review"
-
-
-def test_pm_transition_no_blocker_cleared_without_blocked_prior(monkeypatch):
-    import src.dopemux.pm.writes as writes_module
-
-    emitted = []
-    monkeypatch.setattr(
-        writes_module,
-        "try_emit_promotable_capture_event",
-        lambda event_type, payload, **kwargs: emitted.append(event_type),
-    )
-
-    config = PMWriteConfig(
-        leantime_client=MockLeantimeClient(),
-        orchestrator_client=MockOrchestratorClient(),
-        conport_client=None,
-        memory_client=None,
-        project_id="proj-7",
-    )
-
-    pm_transition_work_item(
-        config=config,
-        task_id="task-9",
-        new_status=PMTaskStatus.IN_PROGRESS,
-        reason="starting",
-        idempotency_key="key-6",
-        expected_version=1,
-    )
-
-    assert "blocker.cleared" not in emitted

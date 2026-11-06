@@ -194,6 +194,20 @@ async def lifespan_context(name: str, startup_func, shutdown_func):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
+    from dopemux.pm.runtime import CanonicalTaskRuntime
+    factory = getattr(app.state, "canonical_runtime_factory", None)
+    app.state.task_runtime = None
+    if factory is not None:
+        runtime = factory()
+        if type(runtime) is not CanonicalTaskRuntime:
+            raise RuntimeError("Explicit canonical runtime factory returned invalid runtime")
+        app.state.task_runtime = runtime
+        try:
+            yield
+        finally:
+            runtime.close()
+            app.state.task_runtime = None
+        return
     async with lifespan_context("task-orchestrator", init_coordinator, shutdown_coordinator) as state:
         app.state.coordinator = state.get("coordinator")
         yield
@@ -206,6 +220,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 app.include_router(project_workflow_router)
+from dopemux.pm.runtime import ownership_router
+app.include_router(ownership_router)
 
 # CORS middleware for web integration
 app.add_middleware(

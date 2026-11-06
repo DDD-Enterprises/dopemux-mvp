@@ -1,0 +1,41 @@
+{
+  "scope": "Retained source validation from sealed prior run; fresh review transport/subject validation",
+  "source_tests": {
+    "status": "PASS",
+    "run_date": "2026-11-05",
+    "reexecuted_in_this_review_run": false,
+    "policy": 308,
+    "legacy_pm": 30,
+    "ownership_api_route": 249,
+    "total_distinct": 587
+  },
+  "source_precommit": {
+    "status": "PASS",
+    "run_date": "2026-11-05",
+    "receipt_sha256": "ab5c2e427282ed6634323156fd8d5bc9ea42df12ef4fc357e03c3b428ea358e3"
+  },
+  "review": {
+    "status": "PASS_WITH_RISKS",
+    "required_static_checks": [
+      "C1",
+      "C2",
+      "C3",
+      "C4"
+    ],
+    "runtime_tests_by_auditor": "NOT_RUN",
+    "single_response_controls": "PASS",
+    "responses": 1,
+    "input_tokens": 19846,
+    "output_tokens": 3757,
+    "elapsed_seconds": 30.906,
+    "raw_cli_exit_code": 1,
+    "harness_exit_code": 0,
+    "native_budget_stop": "EXPECTED_AFTER_COMPLETE_SINGLE_RESPONSE"
+  },
+  "current_publication": "PREPARED_NOT_PUSHED",
+  "full_hosted_unit_lane": "NOT_RUN_FOR_SUCCESSOR",
+  "hosted_codeql_closure": "NOT_RUN_FOR_SUCCESSOR",
+  "signed_acceptance": "NOT_SIGNED",
+  "merge": "NOT_AUTHORIZED",
+  "activation": "NOT_AUTHORIZED"
+}

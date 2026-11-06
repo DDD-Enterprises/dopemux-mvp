@@ -1,0 +1,19 @@
+{
+  "source_head": "39617b3891fc15c74278aafeb1a31ff5c324a86c",
+  "original_status": "NEEDS_SUPERVISOR",
+  "original_static_checks": {
+    "C1": "PASS",
+    "C2": "PASS",
+    "C3": "PASS",
+    "C4": "PASS",
+    "C5": "UNKNOWN"
+  },
+  "supplemental_status": "PASS_WITH_RISKS",
+  "C5": "Resolved by independent supplemental disclosure review",
+  "publication_condition": "SATISFIED_FOR_DRAFT_ONLY",
+  "all_three_original_low_findings": "OPEN",
+  "signed_acceptance": "NOT_GRANTED",
+  "full_inherited_source_acceptance": "NOT_ESTABLISHED",
+  "source_changed": false,
+  "raw_format_note": "Supplement uses PASS_WITH_RISKS as its C5 bucket and abbreviated independent-audit JSON. Raw report/JSON preserved; canonical embedded audit shape records the explicit overall verdict without claiming a new whole-source verdict."
+}

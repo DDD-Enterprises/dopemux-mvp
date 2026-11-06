@@ -106,6 +106,8 @@ jobs:
     timeout-minutes: 25  # 25-minute focus session
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    outputs:
+      model_review_outcome: ${{ steps.model_review.outcome }}
 
     steps:
       - name: 📥 Checkout code
@@ -115,7 +117,8 @@ jobs:
           fetch-depth: 2
 
       - name: 🛡️ AI-Powered Security Analysis
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        id: model_review
+        if: ${{ !startsWith(github.event_name, 'pull_request') && github.event_name != 'merge_group' && env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
           comment-pr: true
@@ -129,11 +132,26 @@ jobs:
           claudecode-timeout: "20"
 
       - name: 🎯 Gentle Security Summary
-        if: always() && github.event_name == 'pull_request'
+        if: always()
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MODEL_REVIEW_OUTCOME: ${{ steps.model_review.outcome }}
         run: |
-          echo "## 🔒 Security Check Complete" >> $GITHUB_STEP_SUMMARY
-          echo "AI-powered analysis finished! Check PR comments for details." >> $GITHUB_STEP_SUMMARY
-          echo "_Remember: Security is about progress, not perfection._" >> $GITHUB_STEP_SUMMARY
+          echo '## 🔒 Security Review' >> "$GITHUB_STEP_SUMMARY"
+          case "$EVENT_NAME" in
+            pull_request*|merge_group)
+              echo '**NOT_RUN** — automatic API-backed security analysis is disabled; independent security review remains pending.' >> "$GITHUB_STEP_SUMMARY"
+              echo 'The required Security Review check remains blocking. Signed embedded-audit evidence is enforced separately.' >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          if [ "$MODEL_REVIEW_OUTCOME" = 'success' ]; then
+            echo 'Model analysis completed; inspect its findings. This is not merge approval.' >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$MODEL_REVIEW_OUTCOME" = 'skipped' ]; then
+            echo '**NOT_RUN** — no model analysis executed; security review remains pending.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '**Security review incomplete** — inspect the action failure or cancellation.' >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   docs:
     name: "📚 Documentation Check"
@@ -512,10 +530,12 @@ jobs:
           fi
 
           # Security Status
-          if [ "${{ needs.security.result }}" == "success" ]; then
-            echo "✅ **Security:** Clear - Memory systems are secure!" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ needs.security.result }}" == "skipped" ]; then
-            echo "⏭️ **Security:** Skipped - API key missing or not required" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" == "pull_request" ] || [ "${{ github.event_name }}" == "merge_group" ]; then
+            echo "🔒 **Security: NOT_RUN** - Automatic API model review is disabled; independent security review remains pending and the required Security Review check stays blocking." >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.security.outputs.model_review_outcome }}" == "success" ] && [ "${{ needs.security.result }}" == "success" ]; then
+            echo "🔒 **Security:** Model analysis completed - inspect its findings; this is not merge approval." >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.security.outputs.model_review_outcome }}" == "skipped" ]; then
+            echo "🔒 **Security: NOT_RUN** - No model analysis executed; security review remains pending." >> $GITHUB_STEP_SUMMARY
           else
             echo "🔒 **Security:** Review needed - Check findings above" >> $GITHUB_STEP_SUMMARY
           fi
@@ -600,8 +620,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ needs.code-quality.result }}" == "success" ] && [ "${{ needs.security.result }}" == "success" ] && [ "${{ needs.docs.result }}" == "success" ] && [ "${{ needs.tests.result }}" == "success" ] && [ "${{ needs.extractor-smoke.result }}" == "success" ]; then
-            echo "**🎉 Excellent work!** All checks passed. Ready to merge when you are!" >> $GITHUB_STEP_SUMMARY
-            echo "_Take a well-deserved break - you've earned it._" >> $GITHUB_STEP_SUMMARY
+            echo "Deterministic checks completed. Required security and independent audit evidence gates still apply." >> $GITHUB_STEP_SUMMARY
           else
             echo "**📋 Focus areas:** Fix required checks first, then address any slower-lane issues." >> $GITHUB_STEP_SUMMARY
             echo "**⏰ Tip:** Use 25-minute Pomodoro sessions for fixes." >> $GITHUB_STEP_SUMMARY
@@ -616,8 +635,10 @@ jobs:
           # Required blocking jobs (always run on PRs, never structurally skipped):
           #   code-quality, tests, extractor-smoke, audit-validator,
           #   routing-consistency, extractor-full, auditor-router, extractor-lint
-          # Advisory jobs (skipped on PRs via `if: github.event_name != 'pull_request'`
-          #   or structurally always-exit-0): security, docs, installer-smoke,
+          # Jobs excluded from this deterministic aggregate gate: security,
+          #   docs, installer-smoke, scoped-coverage, integration.
+          # Security is a separate required check; NOT_RUN remains blocking.
+          # Other advisory jobs include docs, installer-smoke,
           #   scoped-coverage, integration
           # NOTE: branch protection truth is UNKNOWN; operator must verify that
           #   "ci-summary" is registered as a required status check in branch protection.

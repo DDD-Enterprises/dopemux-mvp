@@ -1,11 +1,9 @@
 """Task Orchestrator backend adapter for PM-plane workflow integration."""
 
-import json
 import logging
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 import httpx
-from dopemux.orchestrator.idempotency import IdempotencyStore, IdempotencyState
 
 logger = logging.getLogger(__name__)
 
@@ -23,48 +21,17 @@ class TaskOrchestratorAdapter:
             return response
 
     async def get_queue(self, project_id: str) -> Dict[str, Any]:
-        """Get project priority queue."""
-        try:
-            response = await self._request("GET", f"/api/projects/{project_id}/workflow/queue")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Failed to get queue from task-orchestrator: {e}")
-            raise
+        raise RuntimeError("Unscoped legacy workflow reads are held")
 
     async def get_blockers(self, project_id: str) -> Dict[str, Any]:
-        """Get project blockers."""
-        try:
-            response = await self._request("GET", f"/api/projects/{project_id}/workflow/blockers")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Failed to get blockers from task-orchestrator: {e}")
-            raise
+        raise RuntimeError("Unscoped legacy workflow reads are held")
 
     async def get_state(self, project_id: str) -> Dict[str, Any]:
-        """Get project workflow state."""
-        try:
-            response = await self._request("GET", f"/api/projects/{project_id}/workflow/state")
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Failed to get state from task-orchestrator: {e}")
-            raise
+        raise RuntimeError("Unscoped legacy workflow reads are held")
 
     async def transition(self, project_id: str, workflow_id: str, transition_name: str) -> Dict[str, Any]:
-        """Execute a workflow transition."""
-        payload = {
-            "workflow_id": workflow_id,
-            "transition": transition_name
-        }
-        try:
-            response = await self._request("POST", f"/api/projects/{project_id}/workflow/transition", json=payload)
-            response.raise_for_status()
-            return response.json()
-        except Exception as e:
-            logger.error(f"Failed to execute transition on task-orchestrator: {e}")
-            raise
+        """Legacy transition transport is held; v2 never uses this cache/path."""
+        raise RuntimeError("Canonical ownership requires an explicit v2 adapter")
 
     async def get_project_context(self, project_id: str) -> Dict[str, Any]:
         """Get project context from the orchestrator."""
@@ -103,7 +70,6 @@ class SyncTaskOrchestratorAdapter:
         self.base_url = (base_url or os.getenv("TASK_ORCHESTRATOR_URL", "http://localhost:8000")).rstrip("/")
         self.default_project_id = default_project_id
         self.client = httpx.Client(timeout=10.0)
-        self.idempotency_store = IdempotencyStore()
 
     def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
         """Helper to make an HTTP request."""
@@ -120,55 +86,8 @@ class SyncTaskOrchestratorAdapter:
         expected_version: Optional[int] = None,
         reason: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Execute a workflow transition."""
-        payload = {
-            "workflow_id": workflow_id,
-            "transition": transition_name,
-            "actor": actor,
-            "idempotency_key": idempotency_key,
-            "expected_version": expected_version,
-            "reason": reason,
-        }
-
-        # 3-phase idempotency state machine transitions
-        if idempotency_key:
-            # We call the atomic, thread-safe claim_transition method.
-            claim = self.idempotency_store.claim_transition(
-                idempotency_key=idempotency_key,
-                project_id=project_id,
-                workflow_id=workflow_id,
-                transition_name=transition_name
-            )
-
-            if claim["action"] == "COMPLETED":
-                if claim["response_json"]:
-                    return json.loads(claim["response_json"])
-                return {"status": "success", "idempotency_cached": True}
-
-        try:
-            response = self._request("POST", f"/api/projects/{project_id}/workflow/transition", json=payload)
-            response.raise_for_status()
-            result = response.json()
-
-            if idempotency_key:
-                self.idempotency_store.update_status(
-                    idempotency_key=idempotency_key,
-                    status=IdempotencyState.COMPLETED,
-                    response_json=json.dumps(result)
-                )
-
-            return result
-        except Exception as e:
-            if idempotency_key:
-                try:
-                    self.idempotency_store.update_status(
-                        idempotency_key=idempotency_key,
-                        status=IdempotencyState.INTENT
-                    )
-                except Exception as rollback_err:
-                    logger.error(f"Failed to rollback idempotency status: {rollback_err}")
-            logger.error(f"Failed to execute transition on task-orchestrator: {e}")
-            raise
+        """Legacy transition transport is held; v2 never uses this cache/path."""
+        raise RuntimeError("Canonical ownership requires an explicit v2 adapter")
 
     def close(self):
         self.client.close()

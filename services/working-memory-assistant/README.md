@@ -230,6 +230,33 @@ Fields validated at write time:
 
 **MCP tool effect**: the `memory_store` MCP tool returns `success=false` with the validation error message when any of the above checks fail. Callers should not treat a returned `entry_id` as evidence of a successful write without also checking `success`.
 
+### Correction Contract (Dope-Memory)
+
+The `dope_memory_main.py` REST endpoint `/tools/memory_correct` and the mounted
+Streamable HTTP MCP tool `memory_correct` share the canonical Chronicle writer.
+Supported correction types are `update`, `summary`, `tags`, `category`, `outcome`,
+and `retraction`. A new field-specific correction requires its corresponding
+`corrected_*` field; `update` requires at least one corrected field. Omitted
+fields inherit the original values; an explicit empty tags list clears tags.
+Retraction writes a tombstone without requiring a replacement field.
+
+An idempotency key is scoped to workspace, instance, and target entry. Retrying
+that key returns the first stored correction, including its stored type, even
+if the new request changes or omits its payload. Use a new key and the current
+head entry for a new correction. Existing keyless behavior remains available.
+Corrections preserve the original event time; this is not a correction-time
+activity feed. Previously persisted correction identities are not rewritten.
+
+The public correction adapters expose summary, tags, category, entry type, and
+outcome. They do not expose the store's details, reasoning, importance, or session
+overrides. Unknown REST correction fields are rejected. The separate legacy
+`wma_mcp/server.py` backend does not implement this full correction signature;
+it is not the backend used by the mounted `dope_memory_main.py` MCP service.
+
+MCP tools run on the same event-loop thread as REST so their shared SQLite
+connection retains thread affinity. Database work remains synchronous, as it
+already is in REST; this change does not establish throughput or latency bounds.
+
 ### Promotion-Time Validation for Manual Events
 
 `manual.memory_store` events carry caller-controlled `category`, `entry_type`, `outcome`, and `workflow_phase`. The promotion handler (`promotion/promotion.py:_promote_manual_memory_store`) validates these fields before constructing a `PromotedEntry`:

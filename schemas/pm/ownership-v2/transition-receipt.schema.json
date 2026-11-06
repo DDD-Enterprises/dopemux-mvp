@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ownership v2 source contract: applied receipt; relational invariants require writer checks",
+  "type": "object",
+  "required": [
+    "receipt_id",
+    "event_id",
+    "project_id",
+    "task_id",
+    "principal_id",
+    "client_id",
+    "verifier_id",
+    "credential_generation",
+    "operation_kind",
+    "idempotency_key",
+    "source_binding_ref",
+    "schema_version",
+    "outcome",
+    "request_sha256",
+    "committed_at_utc",
+    "from_status",
+    "to_status",
+    "event_sequence",
+    "binding_version",
+    "admission_epoch_at_commit",
+    "version_before",
+    "version_after",
+    "completion_verification"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "receipt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "principal_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "client_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verifier_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "credential_generation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "operation_kind": {
+      "const": "task.transition"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_binding_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_version": {
+      "const": "dopemux.pm.transition-receipt.v1"
+    },
+    "outcome": {
+      "const": "APPLIED"
+    },
+    "request_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "committed_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "from_status": {
+      "enum": [
+        "TODO",
+        "IN_PROGRESS",
+        "BLOCKED"
+      ]
+    },
+    "to_status": {
+      "enum": [
+        "IN_PROGRESS",
+        "BLOCKED",
+        "DONE"
+      ]
+    },
+    "event_sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "binding_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "admission_epoch_at_commit": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "version_before": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "version_after": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "completion_verification": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "policy_id",
+            "policy_version",
+            "snapshot_sha256",
+            "gate_scope"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "policy_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "policy_version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "snapshot_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "gate_scope": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "to_status": {
+            "const": "DONE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "completion_verification": {
+            "type": "object"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "completion_verification": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

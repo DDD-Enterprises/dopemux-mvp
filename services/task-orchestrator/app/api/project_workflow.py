@@ -2,13 +2,12 @@
 
 import logging
 import os
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from fastapi import APIRouter, HTTPException, Request
-from dopemux.pm.mapping import CANONICAL_TO_ORCHESTRATOR, ORCHESTRATOR_TO_CANONICAL
-from dopemux.pm.models import PMTaskStatus, PMTransitionRequest
+from dopemux.pm.mapping import ORCHESTRATOR_TO_CANONICAL
+from dopemux.pm.models import PMTaskStatus
 
 from app.models.workflow import (
     BlockersResult,
@@ -272,171 +271,19 @@ def _runtime_queue_snapshot(runtime: Any) -> Tuple[List[Dict[str, Any]], List[st
     return queue_items, blockers
 
 
-def _runtime_allowed_transitions(runtime: Any) -> List[str]:
-    """Derive the currently legal transition names from runtime state."""
-
-    queue_items, _ = _runtime_queue_snapshot(runtime)
-    transitions: List[str] = []
-    if queue_items:
-        transitions.extend(["start", "block"])
-    if any(_runtime_canonical_status(runtime, task.id) == PMTaskStatus.IN_PROGRESS for task in runtime.tasks.values()):
-        transitions.append("done")
-    return transitions
-
-
-def _runtime_task_status_after_transition(target: PMTaskStatus):
-    """Map canonical PM status back into the task-runtime status dialect."""
-
-    from task_orchestrator.models import TaskStatus
-
-    runtime_status = CANONICAL_TO_ORCHESTRATOR[target]
-    return TaskStatus(runtime_status)
-
-
 @router.get("/queue", response_model=PriorityQueueResult)
 async def get_project_workflow_queue(project_id: str, request: Request):
-    """
-    Get the priority queue of next actions for a project.
-
-    Returns prioritized next actions / queue items, blocker summary if queue
-    generation depends on blocker analysis, and next-action data.
-    """
-    if not project_id or project_id == "unknown":
-        raise HTTPException(status_code=404, detail="project not found")
-
-    if project_id == "no_state":
-        raise HTTPException(status_code=404, detail="workflow state unavailable")
-
-    runtime = _task_runtime(request)
-    if runtime is not None:
-        queue_items, blockers = _runtime_queue_snapshot(runtime)
-        return PriorityQueueResult(
-            project_id=project_id,
-            linked_ids={},
-            legality_result="allowed",
-            blockers=blockers,
-            next_action=queue_items[0] if queue_items else None,
-            queue_items=queue_items,
-        )
-
-    try:
-        _, epics = await _load_project_records(project_id)
-    except Exception as exc:
-        logger.warning("workflow queue unavailable for %s: %s", project_id, exc)
-        return _empty_queue_result(project_id)
-
-    queue_items = _build_queue_items(epics)
-    return PriorityQueueResult(
-        project_id=project_id,
-        linked_ids=_collect_linked_ids(epics),
-        legality_result="available",
-        blockers=[],
-        next_action=queue_items[0] if queue_items else None,
-        queue_items=queue_items,
-    )
+    raise HTTPException(status_code=503, detail="Canonical ownership v2 required; v1 reads held")
 
 
 @router.get("/blockers", response_model=BlockersResult)
 async def get_project_workflow_blockers(project_id: str, request: Request):
-    """
-    Get active blockers for a project's workflow.
-
-    Returns active blockers, impacted workflow items, and legality/availability notes.
-    """
-    if not project_id or project_id == "unknown":
-        raise HTTPException(status_code=404, detail="project not found")
-
-    if project_id == "no_state":
-        raise HTTPException(status_code=404, detail="workflow state unavailable")
-
-    try:
-        _, epics = await _load_project_records(project_id)
-    except Exception as exc:
-        logger.warning("workflow blockers unavailable for %s: %s", project_id, exc)
-        return _empty_blockers_result(project_id)
-
-    queue_items = _build_queue_items(epics)
-    active_blockers = []
-    for epic in epics:
-        reflection = epic.get("leantime_reflection") or {}
-        if reflection.get("status") not in {"failed", "degraded"}:
-            continue
-        active_blockers.append(
-            {
-                "workflow_id": epic.get("id"),
-                "title": epic.get("title"),
-                "blocker_type": "leantime_reflection",
-                "reflection_status": reflection.get("status"),
-                "warning": reflection.get("warning"),
-                "linked_ids": _epic_linked_ids(epic),
-            }
-        )
-
-    return BlockersResult(
-        project_id=project_id,
-        linked_ids=_collect_linked_ids(epics),
-        legality_result="available",
-        blockers=[str(blocker["workflow_id"]) for blocker in active_blockers],
-        next_action=queue_items[0] if queue_items else None,
-        active_blockers=active_blockers,
-    )
+    raise HTTPException(status_code=503, detail="Canonical ownership v2 required; v1 reads held")
 
 
 @router.get("/state", response_model=WorkflowStateResult)
 async def get_project_workflow_state(project_id: str, request: Request):
-    """
-    Get a snapshot of the project's workflow state.
-
-    Returns project workflow snapshot, phases/stages, current legal next transitions,
-    and linked workflow IDs and PM IDs.
-    """
-    if not project_id or project_id == "unknown":
-        raise HTTPException(status_code=404, detail="project not found")
-
-    if project_id == "no_state":
-        raise HTTPException(status_code=404, detail="workflow state unavailable")
-
-    runtime = _task_runtime(request)
-    if runtime is not None:
-        queue_items, blockers = _runtime_queue_snapshot(runtime)
-        return WorkflowStateResult(
-            project_id=project_id,
-            linked_ids={},
-            legality_result="allowed",
-            blockers=blockers,
-            next_action=queue_items[0] if queue_items else None,
-            state={
-                "task_count": len(runtime.tasks),
-                "ready_count": len(queue_items),
-                "in_progress_count": sum(
-                    1
-                    for task in runtime.tasks.values()
-                    if _runtime_canonical_status(runtime, task.id) == PMTaskStatus.IN_PROGRESS
-                ),
-                "blocked_count": len(blockers),
-            },
-            allowed_transitions=_runtime_allowed_transitions(runtime),
-        )
-
-    try:
-        ideas, epics = await _load_project_records(project_id)
-    except Exception as exc:
-        logger.warning("workflow state unavailable for %s: %s", project_id, exc)
-        return _empty_workflow_state_result(project_id)
-
-    queue_items = _build_queue_items(epics)
-    return WorkflowStateResult(
-        project_id=project_id,
-        linked_ids=_collect_linked_ids(epics),
-        legality_result="available",
-        blockers=[],
-        next_action=queue_items[0] if queue_items else None,
-        state={
-            "ideas": _status_snapshot(ideas, _IDEA_STATUSES),
-            "epics": _status_snapshot(epics, _EPIC_STATUSES),
-        },
-        allowed_transitions=[],
-    )
+    raise HTTPException(status_code=503, detail="Canonical ownership v2 required; v1 reads held")
 
 
 async def execute_transition_project_workflow(
@@ -444,129 +291,7 @@ async def execute_transition_project_workflow(
     payload: TransitionWorkflowRequest,
     request: Optional[Request] = None,
 ):
-    """
-    Transition a workflow item to a new state.
-
-    Returns transition legality result, resulting state, blockers if denied,
-    next_action if relevant, linked IDs, and canonical receipt / audit metadata.
-    """
-    if not project_id or project_id == "unknown":
-        raise HTTPException(status_code=404, detail="project not found")
-
-    if project_id == "no_state":
-        raise HTTPException(status_code=404, detail="workflow state unavailable")
-
-    runtime = _task_runtime(request)
-    if runtime is not None:
-        task = runtime.tasks.get(payload.workflow_id)
-        current_status = _runtime_canonical_status(runtime, payload.workflow_id)
-        current_pm_task = runtime.pm_store.get(payload.workflow_id)
-        if task is None or current_status is None:
-            raise HTTPException(status_code=404, detail="workflow entity not found")
-
-        transition_name = payload.transition.lower()
-        transition_spec = _RUNTIME_TRANSITIONS.get(transition_name)
-        if transition_spec is None:
-            return TransitionResult(
-                project_id=project_id,
-                workflow_id=payload.workflow_id,
-                linked_ids={},
-                legality_result="illegal",
-                blockers=[],
-                next_action=None,
-                transition_receipt={"status": "illegal", "transition": payload.transition},
-                resulting_state={"workflow_id": payload.workflow_id, "current_status": current_status.value},
-            )
-
-        allowed_from, target_status = transition_spec
-        if current_status not in allowed_from:
-            return TransitionResult(
-                project_id=project_id,
-                workflow_id=payload.workflow_id,
-                linked_ids={},
-                legality_result="illegal",
-                blockers=[],
-                next_action=None,
-                transition_receipt={"status": "illegal", "transition": payload.transition},
-                resulting_state={"workflow_id": payload.workflow_id, "current_status": current_status.value},
-            )
-
-        pm_task = runtime.pm_store.transition(
-            payload.workflow_id,
-            PMTransitionRequest(
-                idempotency_key=payload.idempotency_key or f"runtime-{payload.workflow_id}-{transition_name}",
-                expected_version=payload.expected_version or (current_pm_task.version if current_pm_task else 1),
-                new_status=target_status,
-                ts_utc=datetime.now(timezone.utc),
-                source=payload.actor or "system",
-                reason=payload.reason,
-            ),
-        )
-        task.status = _runtime_task_status_after_transition(target_status)
-        return TransitionResult(
-            project_id=project_id,
-            workflow_id=payload.workflow_id,
-            linked_ids={},
-            legality_result="allowed",
-            blockers=[],
-            next_action=None,
-            transition_receipt={
-                "status": "success",
-                "transition": payload.transition,
-                "canonical_backend": "task-orchestrator",
-                "version_after": pm_task.version,
-                # Prior status so PM capture events can report a real
-                # from_phase instead of "unknown" (additive, free-form dict).
-                "from_status": current_status.value,
-            },
-            resulting_state={
-                "workflow_id": payload.workflow_id,
-                "status": pm_task.status.value,
-                "version": pm_task.version,
-            },
-        )
-
-    # Simulate missing required workflow entity linkage or illegal transition
-    if payload.workflow_id == "missing_linkage":
-        raise HTTPException(status_code=404, detail="missing required workflow entity linkage")
-
-    if payload.transition == "illegal_target":
-        raise HTTPException(status_code=400, detail="transition request references illegal or unresolved target")
-
-    if request is None:
-        raise HTTPException(status_code=503, detail="workflow request context unavailable")
-
-    service = _workflow_service_from_request(request)
-    
-    try:
-        # Check if the epic exists before transitioning to follow fail-closed invariants
-        # Use get_epic if the workflow_id is an epic id
-        if payload.workflow_id.startswith("epic_"):
-            from app.services.workflow_service import WorkflowNotFoundError
-            try:
-                epic = await service.get_epic(payload.workflow_id)
-            except WorkflowNotFoundError:
-                raise HTTPException(status_code=404, detail="workflow entity not found")
-            
-            # Additional legality checking can go here
-            if payload.transition not in ["start_work", "mark_blocked", "complete"]:
-                raise HTTPException(status_code=400, detail="illegal transition target")
-                
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-    return TransitionResult(
-        project_id=project_id,
-        workflow_id=payload.workflow_id,
-        linked_ids={},
-        legality_result="allowed",
-        blockers=[],
-        next_action=None,
-        transition_receipt={"transition": payload.transition, "status": "success"},
-        resulting_state={"status": payload.transition},
-    )
+    raise HTTPException(status_code=503, detail="Canonical ownership v2 required; v1 transitions held")
 
 
 @router.post("/transition", response_model=TransitionResult)

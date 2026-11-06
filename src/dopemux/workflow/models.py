@@ -47,15 +47,13 @@ def utc_now_iso() -> str:
 
 
 def contains_completion_token(text: str, token: str) -> bool:
-    """Return True if text contains the completion token, possibly inside a <promise>."""
+    """Recognize only an explicit completion directive, never quoted prose."""
     if not token:
         return False
-    # Check for direct inclusion
-    if token in text:
-        return True
-    # Check for promise wrapping
-    pattern = rf"<promise\b[^>]*>.*?{re.escape(token)}.*?</promise>"
-    return bool(re.search(pattern, text, re.DOTALL | re.IGNORECASE))
+    text = text.strip()
+    return text == token or bool(re.fullmatch(
+        rf"<promise>\s*{re.escape(token)}\s*</promise>", text
+    ))
 
 
 def workflow_brand_meta(
@@ -385,20 +383,14 @@ class WorkflowState:
 
     def can_stop(self) -> bool:
         """Return True if the workflow is in a stoppable state."""
-        # A workflow can stop if there's an approved checkpoint for the current phase
-        # or if a completion token was seen in history.
-        for h in self.history:
-            msg = h.get("message", "")
-            if contains_completion_token(msg, self.completion_token) or (
-                self.completion_token and self.completion_token in msg
-            ):
-                return True
+        if self.status == WorkflowStatus.COMPLETE:
+            return not validate_phase_entry(self, WorkflowPhase.COMPLETE)
+        relevant = [
+            c for c in self.checkpoints
+            if c.phase == self.phase and c.task_id == self.current_task_id
+        ]
+        return bool(relevant and relevant[-1].status.is_stop_safe)
 
-        latest = self.latest_checkpoint(phase=self.phase)
-        if latest and latest.status.is_stop_safe:
-            return True
-
-        return False
 
     def current_task(self) -> Optional[WorkflowTask]:
         if not self.current_task_id:
@@ -424,19 +416,43 @@ class WorkflowState:
         return filtered[-1] if filtered else None
 
 
-def task_artifact_presence(task: WorkflowTask) -> Dict[str, bool]:
+def _usable_artifact(path: Path, root: Path) -> bool:
+    """Check local evidence shape and containment, not semantic correctness."""
+    try:
+        resolved = path.resolve(strict=True)
+        return (
+            resolved.is_relative_to(root.resolve(strict=True))
+            and resolved.is_file()
+            and resolved.stat().st_size > 0
+        )
+    except (OSError, ValueError, RuntimeError):
+        return False
+
+
+def task_artifact_presence(
+    task: WorkflowTask, workspace_root: Optional[str] = None
+) -> Dict[str, bool]:
     """Return a map of required artifact stems to their local presence."""
     if not task.artifact_dir:
         return {stem: False for stem in task.required_artifacts}
 
     art_dir = Path(task.artifact_dir)
-    if not art_dir.is_dir():
+    root = Path(workspace_root) if workspace_root is not None else art_dir
+    try:
+        contained = art_dir.resolve(strict=True).is_relative_to(root.resolve(strict=True))
+    except (OSError, ValueError, RuntimeError):
+        contained = False
+    if not contained or not art_dir.is_dir():
         return {stem: False for stem in task.required_artifacts}
 
     # Gather all file stems in the directory
     names = set()
-    for p in art_dir.iterdir():
-        if p.is_file():
+    try:
+        candidates = list(art_dir.iterdir())
+    except OSError:
+        return {stem: False for stem in task.required_artifacts}
+    for p in candidates:
+        if _usable_artifact(p, root):
             lowered = p.name.lower()
             names.add(lowered)
             # Support both hyphen and underscore normalization
@@ -458,12 +474,11 @@ def _checkpoint_status(
     phase: WorkflowPhase,
     status: WorkflowCheckpointStatus,
 ) -> bool:
-    return any(
-        checkpoint.phase == phase
-        and checkpoint.status == status
-        and (task_id is None or checkpoint.task_id == task_id)
-        for checkpoint in checkpoints
-    )
+    relevant = [
+        checkpoint for checkpoint in checkpoints
+        if checkpoint.phase == phase and checkpoint.task_id == task_id
+    ]
+    return bool(relevant and relevant[-1].status == status)
 
 
 def validate_phase_entry(
@@ -478,7 +493,7 @@ def validate_phase_entry(
         if task is None:
             failures.append("No active task is selected for research review.")
         else:
-            presence = task_artifact_presence(task)
+            presence = task_artifact_presence(task, state.workspace_root)
             if not presence.get("research", False) and not _checkpoint_status(
                 state.checkpoints,
                 task_id=task_id,
@@ -502,7 +517,7 @@ def validate_phase_entry(
         if task is None:
             failures.append("No active task is selected for plan review.")
         else:
-            presence = task_artifact_presence(task)
+            presence = task_artifact_presence(task, state.workspace_root)
             if not presence.get("plan", False) and not _checkpoint_status(
                 state.checkpoints,
                 task_id=task_id,
@@ -539,9 +554,15 @@ def validate_phase_entry(
                 "Cannot complete while workflow tasks are still incomplete."
             )
         root = Path(state.workspace_root)
+        for workflow_task in state.tasks:
+            presence = task_artifact_presence(workflow_task, state.workspace_root)
+            if not presence or not all(presence.values()):
+                failures.append(
+                    f"Cannot complete while task '{workflow_task.task_id}' evidence is missing or invalid."
+                )
         for artifact_rel_path in state.required_artifacts:
-            if not (root / artifact_rel_path).exists():
-                failures.append("Cannot complete while required artifacts are missing.")
+            if not _usable_artifact(root / artifact_rel_path, root):
+                failures.append("Cannot complete while required artifacts are missing or invalid.")
                 break
     return failures
 

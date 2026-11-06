@@ -29,7 +29,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2  # Get enough history for diff analysis
       - name: 🔐 ADHD-Optimized Security Review
-        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        id: model_review
+        if: ${{ !startsWith(github.event_name, 'pull_request') && github.event_name != 'merge_group' && env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
           comment-pr: true
@@ -56,6 +57,27 @@ jobs:
           # Run on every commit for comprehensive coverage
           run-every-commit: false
 
+      - name: Report security review status
+        if: always()
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MODEL_REVIEW_OUTCOME: ${{ steps.model_review.outcome }}
+        run: |
+          echo '## Security Review' >> "$GITHUB_STEP_SUMMARY"
+          case "$EVENT_NAME" in
+            pull_request*|merge_group)
+              echo '**NOT_RUN** — automatic API-backed security analysis is disabled; independent security review remains pending.' >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+              ;;
+          esac
+          if [ "$MODEL_REVIEW_OUTCOME" = 'success' ]; then
+            echo 'Model analysis completed; inspect its findings. This is not merge approval.' >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$MODEL_REVIEW_OUTCOME" = 'skipped' ]; then
+            echo '**NOT_RUN** — no model analysis executed; security review remains pending.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '**Security review incomplete** — inspect the action failure or cancellation.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   # ADHD-friendly summary for non-technical stakeholders
   security-summary:
     name: "📊 ADHD-Friendly Security Summary"
@@ -66,27 +88,7 @@ jobs:
     steps:
       - name: 🎯 Generate gentle security report
         run: |
-          echo "🧠 **ADHD-Friendly Security Check Complete**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ "${{ needs.security-review.result }}" == "success" ]; then
-            echo "✅ **Great news!** Your code changes look secure." >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**What this means:**" >> $GITHUB_STEP_SUMMARY
-            echo "- No high-severity security issues detected" >> $GITHUB_STEP_SUMMARY
-            echo "- Memory system components are safe" >> $GITHUB_STEP_SUMMARY
-            echo "- Ready for merge when tests pass!" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ needs.security-review.result }}" == "skipped" ]; then
-            echo "⏭️ **Security review skipped** (API key missing or not required)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ **Security items need attention**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
-            echo "1. Check the detailed findings in the PR comments above" >> $GITHUB_STEP_SUMMARY
-            echo "2. Address high-priority items first (marked 🔴)" >> $GITHUB_STEP_SUMMARY
-            echo "3. Ask for help if anything is unclear" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**💡 Remember:** Small, focused security fixes work best!" >> $GITHUB_STEP_SUMMARY
-          echo "_Take breaks and tackle one issue at a time._" >> $GITHUB_STEP_SUMMARY
+          echo '## Security Review: NOT_RUN' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Automatic API-backed PR analysis is disabled. Independent security review remains pending; a skipped or successful workflow job is not security acceptance.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Required security and signed embedded-audit gates remain in force.' >> "$GITHUB_STEP_SUMMARY"
+          exit 1

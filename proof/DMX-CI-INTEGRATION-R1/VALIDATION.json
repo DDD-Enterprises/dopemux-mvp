@@ -1,0 +1,59 @@
+{
+  "content_head": "39617b3891fc15c74278aafeb1a31ff5c324a86c",
+  "base_head": "583720375df69fbe50f7b8a6b199eaf026f46fb5",
+  "PASS": {
+    "contained_integration_tests": 598,
+    "groups": {
+      "PM": 306,
+      "workflow_extra": 13,
+      "memory": 67,
+      "identity": 212
+    },
+    "CI_policy_tests": 306,
+    "other_worker_focused_regressions": 148,
+    "configured_precommit_checks": "PASS",
+    "candidate_hashes": 56,
+    "preserved_prior_evidence_files": 1511
+  },
+  "FAIL": [
+    {
+      "check": "tests/ci/test_pr_gate.py::TestCiSummaryStructure::test_ci_summary_needs_exact_job_count",
+      "evidence": "Expected 12 jobs, current main already has 13. Same failure reproduced on sealed unchanged main preimage; retained."
+    },
+    {
+      "check": "Supplemental Ruff F scan",
+      "evidence": "Four current-main findings retained: F541 in services/task-orchestrator/app/main.py; F401 base64 in services/working-memory-assistant/chronicle/store.py; F841 exc in src/dopemux/pm/reads.py; F401 Iterable in src/dopemux/workflow/service.py."
+    }
+  ],
+  "NOT_RUN": [
+    "full repository suite",
+    "hosted CI on this branch",
+    "live services",
+    "live concurrency/performance",
+    "signed PR-head acceptance",
+    "merge",
+    "activation"
+  ],
+  "qualification": "PASS; exactly one response",
+  "provider_controls": "Existing Claude Max subscription, usage credits and auto-reload OFF, no fallback or retries",
+  "accounting": {
+    "qualification_input": 773,
+    "qualification_output": 9,
+    "audit_input": 53047,
+    "audit_output": 11330,
+    "cash_charge_measurement": "UNKNOWN; estimated list price is not a cash receipt"
+  },
+  "source_receipt_hashes": {
+    "TEST_RESULTS.json": "4de58aa7253f46cbd13e57bfa684fdfd6bb873a4fe4cc1b05ae7b5549881e289",
+    "PRECOMMIT.json": "af9e1c3191b6e4e21e15ccce3e7cb672524e1edb7f8e66de4daa444e91693900",
+    "validation/RUFF_BASELINE.json": "dc5fa27b0f7763b950f50186bcc2beddc75103be438028744c5745560b7abf5b",
+    "CI/RETURN.json": "0e8bd47c7001921a306f6175e9eb1ad816447aa311e5b3b7ee2bda53bc07969d",
+    "Q/RETURN.json": "fd1b6759dc08ebd575d978baaf220f54990b506a2b5f5f6d876c9289d7f06cb4",
+    "AUD/RETURN.json": "661727fbd220cc8f5d750941ed7caaff4427b49da1e03058e54a47c9b00b0aee"
+  },
+  "original_audit": "NEEDS_SUPERVISOR: C1-C4 PASS (static only), C5 UNKNOWN; three LOW findings. No medium/high/critical findings reported.",
+  "supplemental_disclosure_review": "PASS_WITH_RISKS; C5 resolved only; original verdict preserved",
+  "failed_intervening_attempt": "SPENT_INCOMPLETE_NOT_ACCEPTED; full allowance consumed, no replay",
+  "signed_acceptance": "NOT_RUN",
+  "publication": "PREPARED_DRAFT_AUTHORIZED"
+}

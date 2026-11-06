@@ -32,47 +32,11 @@ def test_async_task_orchestrator_adapter_defaults_to_active_runtime_port():
     assert adapter.base_url == "http://localhost:8000"
 
 
-def test_sync_task_orchestrator_adapter_uses_project_scoped_transition_path(monkeypatch):
-    captured = {}
-
-    def fake_request(method, path, **kwargs):
-        captured["method"] = method
-        captured["path"] = path
-        captured["json"] = kwargs["json"]
-
-        class Response:
-            def raise_for_status(self):
-                return None
-
-            def json(self):
-                return {"status": "ok"}
-
-        return Response()
-
+def test_sync_legacy_adapter_denies_before_transport(monkeypatch):
     adapter = SyncTaskOrchestratorAdapter(base_url="http://localhost:8000")
-    monkeypatch.setattr(adapter, "_request", fake_request)
-    monkeypatch.setattr(adapter.idempotency_store, "claim_transition", lambda *args, **kwargs: {"action": "PROCEED"})
-    monkeypatch.setattr(adapter.idempotency_store, "update_status", lambda *args, **kwargs: None)
-
-    adapter.transition(
-        project_id="proj-123",
-        workflow_id="wf-1",
-        transition_name="start",
-        actor="tester",
-        idempotency_key="idem-1",
-        expected_version=4,
-        reason="begin work",
-    )
-
-    assert captured == {
-        "method": "POST",
-        "path": "/api/projects/proj-123/workflow/transition",
-        "json": {
-            "workflow_id": "wf-1",
-            "transition": "start",
-            "actor": "tester",
-            "idempotency_key": "idem-1",
-            "expected_version": 4,
-            "reason": "begin work",
-        },
-    }
+    monkeypatch.setattr(adapter, "_request", lambda *a, **k: pytest.fail("v1 transport called"))
+    try:
+        with pytest.raises(RuntimeError, match="explicit v2"):
+            adapter.transition(project_id="proj-123", workflow_id="wf-1", transition_name="start", idempotency_key="idem-1", expected_version=4)
+    finally:
+        adapter.close()

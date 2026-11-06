@@ -42,6 +42,21 @@ Invariants:
 
 # Consequences
 
+## Adopted ownership amendment — 2026-11-04, source-only
+
+The adopted project-ownership v2 contract interprets stable legacy task IDs as
+stable **within the composite `(project_id, task_id)` lookup identity**, not as
+globally unique unscoped keys. Existing ID bytes are preserved. New task IDs bind
+the registered project, source system, source instance and stable source task ID
+using the versioned canonical byte algorithm. Registry identity and PM domain
+admission remain separate authorities.
+
+One admitted project store owns lifecycle writes and immutable original receipts.
+Runtime views and bridges are projections. The source-only implementation and its
+remaining live qualification gates are documented in
+[Project ownership v2](../03-reference/planes/pm/project-ownership-v2.md).
+This amendment does not authorize live enrollment, migration or activation.
+
 - Positive:
 - Deterministic lifecycle behavior across task-orchestrator, taskmaster, and CLI surfaces.
 - Explicit source and provenance tracking for auditability.
