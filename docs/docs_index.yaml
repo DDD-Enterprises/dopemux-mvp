@@ -1,5 +1,5 @@
 version: '1.0'
-last_updated: '2026-05-19'
+last_updated: '2026-10-29'
 description: Machine-readable index of dopemux-mvp documentation for AI/tool consumption
 entry_points:
   quickstart: docs/01-tutorials/quickstart.md
@@ -119,6 +119,12 @@ reference:
   repo_truth_extractor_v5_ui_live_output: docs/03-reference/extraction/v5-ui-live-output.md
   dope_context_docs_contextual_embedding_contract: docs/03-reference/dope-context/dope-context-docs-contextual-embedding-v1.md
   dope_context_architecture_and_boundaries: docs/03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md
+  mod_pulse_reference: docs/03-reference/mods/pulse.md
+  mod_route_ledger_reference: docs/03-reference/mods/route-ledger.md
+  mod_memory_bridge_reference: docs/03-reference/mods/memory-bridge.md
+  command_drift_gate_reference: docs/03-reference/command-drift-gate.md
+  runbook_claude_code_mods_live_verification: docs/92-runbooks/claude-code-mods-live-verification.md
+  runbook_signed_proof_merge_order: docs/92-runbooks/signed-proof-merge-order.md
 explanation:
   directory: docs/04-explanation/
   repo_truth_extractor_deep_analysis: docs/04-explanation/technical-deep-dives/repo-truth-extractor-structure-architecture-and-optimal-design.md
@@ -129,6 +135,7 @@ explanation:
   dope_context: docs/04-explanation/technical-deep-dives/dopemux-context-deep-dive-2.md
   workflow_kit_architecture: docs/04-explanation/workflow-kit-architecture.md
   pr_merge_queue_orchestration: docs/04-explanation/pr-merge-queue-orchestration.md
+  claude_code_mods: docs/04-explanation/claude-code-mods.md
   repo_truth_extractor_v5_upgrade_design: docs/04-explanation/architecture/v5-extraction-pipeline-upgrade-design.md
   product_public_copy_variants: docs/04-explanation/product/public-copy-variants.md
   product_homepage_copy: docs/04-explanation/product/homepage-copy.md
