@@ -181,11 +181,20 @@ def check_script_refs(commands_dir: Path, repo_root: Path) -> list[str]:
     return violations
 
 
-# ConPort's `update_context` stores named fields only. A `context_data` payload
-# is dropped and the call still reports success
-# (enhanced_server.py:_update_context).
-_DROPPED_PAYLOAD = re.compile(r"\bcontext_data\b")
+# ConPort's SSE `update_context` posts `context_data` as the request body, and
+# `_update_context` stores only the fields it reads. Any other key is dropped
+# while the call still reports success, so payload keys are checked against
+# the server source.
+_CONPORT_DIR = REPO_ROOT / "docker" / "mcp-servers-source" / "conport"
+_CONTEXT_PAYLOAD = re.compile(r'\bcontext_data"?\s*[:=]\s*(?=\{)')
+_PAYLOAD_TOKEN = re.compile(r'[{}]|"(\w+)"\s*:')
 _WORKSPACE_ROOT = "$(git rev-parse --show-toplevel)"
+
+# ConPort's schema rejects any other progress status. The window holds the
+# arguments that follow a tool name in a command file.
+_PROGRESS_CALL = re.compile(r"mcp__conport__(?:log|update|get)_progress")
+_STATUS_ARG = re.compile(r'"?\bstatus"?\s*[:=]\s*"([A-Z][A-Z_]*)"')
+_PROGRESS_CALL_WINDOW = 300
 
 # Custom-data records one command saves and others read: (category, key,
 # {command file: calls}). A save and a read that disagree on workspace,
@@ -204,17 +213,68 @@ _SHARED_RECORDS = (
 )
 
 
+def _update_context_fields() -> frozenset[str]:
+    source = (_CONPORT_DIR / "enhanced_server.py").read_text(encoding="utf-8")
+    body = source.split("async def _update_context(", 1)[1]
+    body = body.split("\n    async def ", 1)[0]
+    return frozenset(re.findall(r"data\.get\('(\w+)'\)", body))
+
+
+def _progress_statuses() -> frozenset[str]:
+    schema = (_CONPORT_DIR / "schema.sql").read_text(encoding="utf-8")
+    table = schema.split("CREATE TABLE progress_entries", 1)[1]
+    values = re.search(r"CHECK \(status IN \(([^)]*)\)\)", table).group(1)
+    return frozenset(re.findall(r"'(\w+)'", values))
+
+
+def _payload_keys(text: str) -> list[str]:
+    """Top-level keys of the JSON-like object that opens `text`."""
+    keys, depth = [], 0
+    for token in _PAYLOAD_TOKEN.finditer(text):
+        if token.group(0) == "{":
+            depth += 1
+        elif token.group(0) == "}":
+            depth -= 1
+            if depth == 0:
+                break
+        elif depth == 1:
+            keys.append(token.group(1))
+    return keys
+
+
 def check_context_payloads(commands_dir: Path) -> list[str]:
+    supported = _update_context_fields()
     violations = []
     for path in _command_files(commands_dir):
         rel = path.relative_to(commands_dir)
         text = path.read_text(encoding="utf-8")
-        for lineno, line in enumerate(text.splitlines(), start=1):
-            if _DROPPED_PAYLOAD.search(line):
-                violations.append(
-                    f"{rel}:{lineno}: update_context drops context_data"
-                )
+        for payload in _CONTEXT_PAYLOAD.finditer(text):
+            lineno = text.count("\n", 0, payload.start()) + 1
+            for key in _payload_keys(text[payload.end():]):
+                if key not in supported:
+                    violations.append(
+                        f"{rel}:{lineno}: update_context drops {key}"
+                    )
     return violations
+
+
+def check_progress_statuses(commands_dir: Path) -> list[str]:
+    allowed = _progress_statuses()
+    violations = set()
+    for path in _command_files(commands_dir):
+        rel = path.relative_to(commands_dir)
+        text = path.read_text(encoding="utf-8")
+        for call in _PROGRESS_CALL.finditer(text):
+            start = call.end()
+            args = text[start:start + _PROGRESS_CALL_WINDOW]
+            for status in _STATUS_ARG.finditer(args):
+                if status.group(1) not in allowed:
+                    lineno = text.count("\n", 0, start + status.start()) + 1
+                    violations.add(
+                        f"{rel}:{lineno}: schema.sql rejects progress "
+                        f"status {status.group(1)}"
+                    )
+    return sorted(violations)
 
 
 def check_shared_records(
@@ -267,8 +327,14 @@ def test_should_reference_existing_scripts_when_commands_mention_scripts():
     assert check_script_refs(COMMANDS_DIR, REPO_ROOT) == []
 
 
-def test_should_not_send_dropped_payload_when_commands_update_context():
+def test_should_send_only_stored_fields_when_commands_update_context():
+    assert "active_context" in _update_context_fields()
     assert check_context_payloads(COMMANDS_DIR) == []
+
+
+def test_should_use_schema_statuses_when_commands_call_progress_tools():
+    assert "PLANNED" in _progress_statuses()
+    assert check_progress_statuses(COMMANDS_DIR) == []
 
 
 def test_should_share_one_record_when_commands_save_and_read_session_data():
@@ -278,15 +344,38 @@ def test_should_share_one_record_when_commands_save_and_read_session_data():
 # --- Negative controls ----------------------------------------------------
 
 
-def test_should_report_violation_when_command_sends_context_data(tmp_path):
+def test_should_accept_stored_field_when_command_sends_context_data(tmp_path):
     commands = tmp_path / "commands"
-    _write_command(
-        commands, 'mcp__conport__update_context(context_data={"a": 1})'
-    )
+    _write_command(commands, 'context_data={"active_context": "focus"}')
+
+    assert check_context_payloads(commands) == []
+
+
+def test_should_report_violation_when_context_data_key_is_unstored(tmp_path):
+    commands = tmp_path / "commands"
+    _write_command(commands, 'context_data={"last_research": {"id": "x"}}')
 
     violations = check_context_payloads(commands)
 
-    assert violations == ["sample.md:4: update_context drops context_data"]
+    assert violations == ["sample.md:4: update_context drops last_research"]
+
+
+def test_should_report_violation_when_status_is_not_in_schema(tmp_path):
+    commands = tmp_path / "commands"
+    _write_command(commands, 'mcp__conport__log_progress\n  "status": "TODO"')
+
+    violations = check_progress_statuses(commands)
+
+    assert violations == [
+        "sample.md:5: schema.sql rejects progress status TODO"
+    ]
+
+
+def test_should_ignore_status_when_no_progress_tool_is_named(tmp_path):
+    commands = tmp_path / "commands"
+    _write_command(commands, '"status": "NOT_RUN"')
+
+    assert check_progress_statuses(commands) == []
 
 
 def test_should_report_violation_when_reader_uses_another_key(tmp_path):

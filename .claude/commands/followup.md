@@ -5,7 +5,7 @@ Call: `mcp__conport__log_progress`
 ```json
 {
   "workspace_id": "<workspace_root>",
-  "status": "PENDING",
+  "status": "PLANNED",
   "description": "[followup] followup:<slug> <follow-up text>"
 }
 ```

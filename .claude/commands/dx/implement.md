@@ -37,12 +37,12 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 
 **If no task_id provided**:
 
-- Query ConPort for TODO tasks:
+- Query ConPort for PLANNED tasks:
 
   ```bash
   Use mcp__conport__get_progress with:
     workspace_id: "/Users/hue/code/dopemux-mvp"
-    status: "TODO"
+    status: "PLANNED"
     limit: 10
   ```
 
@@ -227,11 +227,20 @@ What's the status?
 
 ### Step 4.2: Update ConPort
 
+ConPort stores only `PLANNED`, `IN_PROGRESS`, `COMPLETED`, `BLOCKED` and `CANCELLED`, so map the answer first:
+
+| Answer | `STORED_STATUS` |
+|---|---|
+| DONE | `COMPLETED` |
+| IN_PROGRESS | `IN_PROGRESS` |
+| BLOCKED | `BLOCKED` |
+| CONTEXT_SWITCH | `PLANNED` (back in the queue for a later session) |
+
 ```bash
 Use mcp__conport__update_progress with:
   progress_id: TASK_ID
   updates: {
-    "status": USER_SELECTED_STATUS,
+    "status": STORED_STATUS,
     "description": "DESCRIPTION (+ brief progress note)"
   }
 ```
@@ -293,7 +302,7 @@ Use mcp__conport__save_custom_data with:
     "session_type": "implement",
     "target_duration": 25,
     "last_session_end": "CURRENT_TIMESTAMP",
-    "last_task_status": "USER_STATUS",
+    "last_task_status": "STORED_STATUS",
     "session_completed": true
   }
 ```
