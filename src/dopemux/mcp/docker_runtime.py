@@ -29,13 +29,48 @@ LABEL_CREATED_BY = "dopemux.created_by"
 COMPOSE_INTERPOLATION_PLACEHOLDER = "dopemux-compose-interpolation-only"
 
 
+# Product compose.yml marks HOST_CODE_PARENT_DIR as required (`${VAR:?...}`);
+# compose interpolates the whole file, so one unset variable fails every
+# service.
+# HOST_PROJECT_RELATIVE_PATH is its companion for the dope-context mount.
+COMPOSE_HOST_PATH_VARS = ("HOST_CODE_PARENT_DIR", "HOST_PROJECT_RELATIVE_PATH")
+
+
 def env_with_compose_interpolation(
     base: Optional[Mapping[str, str]] = None,
+    *,
+    host_path_defaults: bool = True,
 ) -> Dict[str, str]:
-    """Copy *base* (or os.environ) and set a parse-only bridge token if unset."""
+    """Copy *base* (or os.environ) and fill compose interpolation defaults.
+
+    Sets a parse-only bridge token when unset. When *host_path_defaults* is
+    true, also derives HOST_CODE_PARENT_DIR / HOST_PROJECT_RELATIVE_PATH from
+    :func:`product_root` for any of them that is unset or blank (a non-blank
+    operator value always wins). If the product root cannot be located both
+    are left untouched so compose fails closed with its own ``:?`` message.
+
+    Callers that may start ``dope-context`` must pass
+    ``host_path_defaults=False``: the defaults are for interpolation only and
+    must never silently supply the ``/workspaces`` mount source of the
+    dope-context singleton.
+    """
     env = dict(os.environ if base is None else base)
     if not str(env.get("DOPECON_BRIDGE_TOKEN") or "").strip():
         env["DOPECON_BRIDGE_TOKEN"] = COMPOSE_INTERPOLATION_PLACEHOLDER
+    if host_path_defaults and any(
+        not str(env.get(name) or "").strip() for name in COMPOSE_HOST_PATH_VARS
+    ):
+        try:
+            root = product_root()
+        except FileNotFoundError:
+            return env
+        derived = {
+            "HOST_CODE_PARENT_DIR": str(root.parent),
+            "HOST_PROJECT_RELATIVE_PATH": root.name,
+        }
+        for name, value in derived.items():
+            if not str(env.get(name) or "").strip():
+                env[name] = value
     return env
 
 
