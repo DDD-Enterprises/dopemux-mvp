@@ -32,7 +32,7 @@ jobs:
         if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
-          comment-pr: true
+          comment-pr: "${{ github.event_name == 'pull_request' }}"
           claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
           upload-results: true
 
