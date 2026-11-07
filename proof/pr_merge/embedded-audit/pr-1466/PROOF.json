@@ -1,0 +1,48 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1466,
+  "head_sha": "7c12570f28df4cfa738001ae3b909e4a951d63b8",
+  "generated_at": "2026-10-22T11:28:45Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <sealed> --system-prompt-override \"<SYSTEM_PROMPT.txt>\" --disallowed-tools \"<DISALLOWED_TOOLS.txt: 45 tool ids incl. use_tool/search_tool/x_search>\" --deny \"Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources\" --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1466-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "validation_status is NOT_RUN: tools and execution are disabled for this embedded audit, so the new tests/governance/test_validate_change_contract_lanes.py suite and any broader governance regression suite were not executed against head 7c12570f28df4cfa738001ae3b909e4a951d63b8.",
+      "max_lane([]) still returns L0 as a pure-function edge; fail-closed empty-diff behavior is only in evaluate() via _DEFAULT_LANE. Any other caller of max_lane on an empty iterable retains the low-lane result.",
+      "Auth basename/token regexes are intentionally narrower than a naive substring match; unusual auth-related names outside the tested token grammar could still miss L3, and unusual non-auth names that fit the token grammar could still escalate.",
+      "L0 proof/task-packet rules are narrower than the prior patterns (safe segments only; txt/json/md or PROOF.json.sig). Legitimate packaging paths with unsafe segments or other extensions will now fail closed to the L2 default; CRITICAL_PROOF_ONLY_DELTA is pinned in tests but is not a full corpus proof.",
+      "Auditor route: grok-cli / grok-4.5 is a packet-specific operator-approved fallback (operator selected 'Use Grok' on 2026-10-22) because the operator-approved AGY gemini-4-argon-high route returned HTTP 429 RESOURCE_EXHAUSTED (individual quota, reset ~40h) with no verdict.",
+      "Auditor ran with an empty tool list and a replaced system prompt (validation_status=NOT_RUN); test evidence at the audited head comes from CI and the local runs in this packet's validations."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}
