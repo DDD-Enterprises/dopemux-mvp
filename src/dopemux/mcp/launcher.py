@@ -12,8 +12,10 @@ Design D2/D4/D7 of claudedocs/mcp-just-works-design-2026-11-05.md:
 4. Task Orchestrator: under ``reserved_port_lock(7890)``, ownership is proven
    from the labels of the container publishing 7890; foreign or unknown
    owners refuse, a free port starts this project's jar.
-5. Attach record, then the SDK stdio proxy with a reconnect guard that re-proves
-   the backend's owner from Docker labels before every reconnect.
+5. Attach record, then the SDK stdio proxy with an owner guard that re-proves
+   the backend's owner from Docker labels before every backend connect (the
+   first included; this launch-time check's reserved lock is released by then)
+   and again right after each ``initialize``.
 
 Every refusal is one line ``CODE: remedy`` on stderr and exit code 3 (an
 ``OSError`` before the proxy runs is ``LAUNCH_IO_ERROR``). SIGTERM and SIGHUP
@@ -609,7 +611,8 @@ def reconnect_guard(
     dope-memory: the container publishing the backend port must carry
     ``dopemux.managed=true`` and this instance's ``dopemux.project_id`` and
     ``dopemux.worktree_hash`` (``LAUNCH_BACKEND_OWNER_CHANGED``). A free port passes:
-    nothing can answer there, so the reconnect attempt fails and is retried.
+    nothing can answer there, so the connect attempt fails and is retried. The
+    proxy calls it before every connect and again after every ``initialize``.
     """
 
     def inspect() -> Any:

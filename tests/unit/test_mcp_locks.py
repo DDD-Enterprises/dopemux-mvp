@@ -423,3 +423,26 @@ def test_save_state_locked_returns_mutate_errors(tmp_path: Path, monkeypatch):
 
     error = locks.save_state_locked(RuntimeRegistry, path, boom)
     assert error and "nope" in error
+
+
+# --- audit F3: a non-blocking instance lock for automatic reaps -----------------------
+
+
+def test_non_blocking_instance_lock_raises_lock_busy_when_held(tmp_path: Path):
+    rt = tmp_path / "rt"
+    with locks.instance_lock(rt):
+        started = time.monotonic()
+        with pytest.raises(locks.LockBusy):
+            with locks.instance_lock(rt, blocking=False):
+                pass  # pragma: no cover
+        assert time.monotonic() - started < 1.0  # never waits
+    with locks.instance_lock(rt, blocking=False):  # free again: acquired at once
+        pass
+
+
+def test_non_blocking_instance_lock_is_exclusive_while_held(tmp_path: Path):
+    rt = tmp_path / "rt"
+    with locks.instance_lock(rt, blocking=False):
+        with pytest.raises(locks.LockBusy):
+            with locks.instance_lock(rt, blocking=False):
+                pass  # pragma: no cover

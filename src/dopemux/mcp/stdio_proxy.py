@@ -22,14 +22,21 @@ Rules:
   request is sent once on the reconnected (freshly initialized) session; a
   second "Session terminated" is returned to the runner, never retried again
   (at most ``MAX_SENDS_PER_REQUEST`` sends per runner request).
-* Reconnect guard: ``reconnect_guard()`` runs before every reconnect attempt
-  (never before the first session). The launcher passes one that re-proves the
-  backend's owner from Docker labels, because after ``switch-project`` or a
-  worktree swap another project's sidecar can listen on the same URL. When it
-  raises ``ProxyRefused(code, remedy)`` (any other exception counts as a refusal
-  too: fail closed), nothing is resent, waiting runner requests get
-  ``McpError(-32000, "<code>: <remedy>")``, the ``<code>: <remedy>`` line is
-  printed on stderr and the proxy exits 1.
+* Owner guard (``reconnect_guard``), two checkpoints per backend session, the
+  first session included: (1) immediately before the connect, and (2) right
+  after ``initialize`` succeeds, before the session is handed to any runner
+  request. The launcher passes a guard that re-proves the backend's owner from
+  Docker labels: its own launch-time check ran under the reserved lock, which is
+  released before the proxy starts, and after ``switch-project`` or a worktree
+  swap another project's sidecar can listen on the same URL; checkpoint 2
+  closes the interval between checkpoint 1 and the connect. When it raises
+  ``ProxyRefused(code, remedy)`` (any other exception counts as a refusal too:
+  fail closed), nothing is sent or resent on that session, the
+  ``<code>: <remedy>`` line is printed on stderr and the proxy exits 1. Waiting
+  runner requests get ``McpError(-32000, "<code>: <remedy>")``; when the very
+  first session is refused, the proxy still answers the runner's
+  ``initialize`` and then gives its first request that error (for up to
+  ``REFUSAL_LINGER_S``), so the runner sees the code.
 * Reconnect budget: at most one reconnect per ``RECONNECT_WINDOW_S``. A backend
   that refuses connections while reconnecting is retried with backoff
   (``RECONNECT_BACKOFF_S`` doubling, capped at ``RECONNECT_BACKOFF_MAX_S``) for
@@ -106,6 +113,9 @@ RECONNECT_WINDOW_S = 60.0
 GUARD_TIMEOUT_S = 20.0
 #: Code of a guard that failed with anything but ``ProxyRefused`` (fail closed).
 GUARD_FAILED_CODE = "LAUNCH_RECONNECT_GUARD_FAILED"
+#: How long a proxy whose first session was refused waits for a runner request
+#: to answer with the refusal before it exits 1.
+REFUSAL_LINGER_S = 10.0
 #: Upper bound on one forwarded request (slow tools included).
 REQUEST_TIMEOUT_S = 300.0
 #: Upper bound on a backend ``initialize`` (first connect and the reconnect).
@@ -296,14 +306,14 @@ class _BackendLink:
                 task_status.started(init)
 
         name = self.backend.name
-        up = await self._session_once(on_started)
-        if not up:
+        outcome = await self._guarded_session(on_started)
+        if outcome == "failed":
             # The first session never came up: one immediate retry, which is
             # this window's reconnect.
             self._last_reconnect = anyio.current_time()
             _say(f"backend {name} did not answer; retrying once")
-            up = await self._guard_allows() and await self._session_once(on_started)
-        while up:  # a session was established and has ended
+            outcome = await self._guarded_session(on_started)
+        while outcome == "ended":  # a session was established and has ended
             now = anyio.current_time()
             if (
                 self._last_reconnect is not None
@@ -316,7 +326,7 @@ class _BackendLink:
                 break
             self._last_reconnect = now
             _say(f"backend {name} session ended; reconnecting")
-            up = await self._reconnect(on_started)
+            outcome = await self._reconnect(on_started)
         if self.refusal is not None:
             print(
                 f"{self.refusal.code}: {self.refusal.remedy}",
@@ -330,16 +340,30 @@ class _BackendLink:
         if not started:
             task_status.started(None)
 
-    async def _session_once(self, on_started: Callable[[Any], None]) -> bool:
-        """Connect, initialize and hold one session until it drops; True if it came up."""
+    async def _guarded_session(self, on_started: Callable[[Any], None]) -> str:
+        """Checkpoint 1 (the guard before the connect), then one session."""
+        if not await self._guard_allows():
+            return "refused"
+        return await self._session_once(on_started)
+
+    async def _session_once(self, on_started: Callable[[Any], None]) -> str:
+        """Connect, initialize, re-check the owner and hold one session until it drops.
+
+        Returns ``"ended"`` (it was in use and has ended), ``"failed"`` (connect or
+        ``initialize`` failed) or ``"refused"`` (checkpoint 2: the guard refused
+        right after ``initialize``; the session was never handed out).
+        """
         self._dropped = anyio.Event()
         session: Optional[ClientSession] = None
-        established = False
+        outcome = "failed"
         try:
             async with self._factory(**self.client_kwargs()) as session:
                 with anyio.fail_after(INITIALIZE_TIMEOUT_S):
                     init = await session.initialize()
-                established = True
+                if not await self._guard_allows():
+                    outcome = "refused"  # the owner changed between guard and connect
+                    return outcome
+                outcome = "ended"
                 self.session = session
                 self._connected.set()
                 on_started(init)
@@ -348,19 +372,18 @@ class _BackendLink:
             _say(f"backend {self.backend.name} at {self.backend.url}: {exc!r}")
         finally:
             self._end_session(session)
-        return established
+        return outcome
 
-    async def _reconnect(self, on_started: Callable[[Any], None]) -> bool:
-        """Guard, then connect; retry a refusing backend with backoff until the wait ends."""
+    async def _reconnect(self, on_started: Callable[[Any], None]) -> str:
+        """Guard, connect, re-check; retry a refusing backend with backoff until the wait ends."""
         deadline = anyio.current_time() + RECONNECT_WAIT_S
         delay = RECONNECT_BACKOFF_S
         while True:
-            if not await self._guard_allows():
-                return False
-            if await self._session_once(on_started):
-                return True
+            outcome = await self._guarded_session(on_started)
+            if outcome != "failed":
+                return outcome
             if anyio.current_time() + delay > deadline:
-                return False
+                return "failed"
             _say(f"backend {self.backend.name} not answering; retrying in {delay:g} s")
             await anyio.sleep(delay)
             delay = min(delay * 2, RECONNECT_BACKOFF_MAX_S)
@@ -499,6 +522,40 @@ def _build_server(link: _BackendLink, init: types.InitializeResult) -> Server:
     return server
 
 
+async def _answer_with_refusal(
+    link: _BackendLink, read_stream: Any, write_stream: Any
+) -> None:
+    """The first session was refused: let the runner see the code, then return.
+
+    The runner's ``initialize`` is answered (no backend capabilities), its first
+    request gets ``McpError(-32000, "<code>: <remedy>")``; nothing reaches any
+    backend. Returns after that answer, when stdin closes, or after
+    ``REFUSAL_LINGER_S``.
+    """
+    server: Server = Server(name=link.backend.name)
+    answered = anyio.Event()
+    error = link._unavailable()
+
+    async def refuse(_request: Any) -> types.ServerResult:
+        answered.set()
+        raise error
+
+    for request_type in _FORWARDED:
+        server.request_handlers[request_type] = refuse
+    options = server.create_initialization_options()
+    async with anyio.create_task_group() as tg:
+
+        async def run_server() -> None:
+            await server.run(read_stream, write_stream, options)
+            answered.set()
+
+        tg.start_soon(run_server)
+        with anyio.move_on_after(REFUSAL_LINGER_S):
+            await answered.wait()
+        await anyio.sleep(0.05)  # let the error frame go out
+        tg.cancel_scope.cancel()
+
+
 async def serve(
     backend: BackendSpec,
     read_stream: Any,
@@ -512,8 +569,9 @@ async def serve(
     ``session_factory(**client_kwargs)`` yields an entered, uninitialized
     ``ClientSession`` built with the given kwargs (the proxy's callbacks); the
     default connects to ``backend.url`` with the SDK transport.
-    ``reconnect_guard()`` runs before every reconnect (see the module docstring).
-    Returns 0 when the read side closes, 1 when the backend is gone for good.
+    ``reconnect_guard()`` runs before every connect and after every
+    ``initialize`` (see the module docstring). Returns 0 when the read side
+    closes, 1 when the backend is gone for good or its owner was refused.
     """
     link = _BackendLink(
         backend,
@@ -524,6 +582,8 @@ async def serve(
     async with anyio.create_task_group() as tg:
         init = await tg.start(link.run)
         if init is None:
+            if link.refusal is not None:
+                await _answer_with_refusal(link, read_stream, write_stream)
             tg.cancel_scope.cancel()
             return 1
         server = _build_server(link, init)

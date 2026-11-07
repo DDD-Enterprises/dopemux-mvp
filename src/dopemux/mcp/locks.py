@@ -17,6 +17,10 @@ Lock order when nested (never the reverse):
 the same process while already holding it deadlocks. Never nest it with
 ``locked_reload_and_save``, which takes it itself.
 
+``instance_lock(runtime_dir, blocking=False)`` never waits: it raises
+``LockBusy`` when another holder has the lock (automatic reaps skip that
+instance instead of stalling past their deadline).
+
 ``reserved_port_lock`` is the one exception: it is re-entrant within a thread,
 because the launcher and ``switch-project`` hold it around a lifecycle start
 whose own orchestrator preflight takes it again. Other threads and processes
@@ -66,16 +70,22 @@ _LOCK_ATTEMPTS = 50
 _LOCK_RETRY_SLEEP_S = 0.005
 
 
+class LockBusy(RuntimeError):
+    """A non-blocking lock attempt found the lock held by someone else."""
+
+
 @contextmanager
-def _flock(path: Path) -> Iterator[None]:
+def _flock(path: Path, *, blocking: bool = True) -> Iterator[None]:
     """Exclusive ``flock`` on ``path`` that never holds an orphaned inode.
 
     A holder may delete the lock file (reap removes a whole runtime dir while
     holding its ``launch.lock``). A waiter that acquired the old inode would then
     run alongside a newer holder of a freshly created file, so after acquiring the
     lock the path is re-checked against the open descriptor and the attempt is
-    retried when the file is gone or replaced.
+    retried when the file is gone or replaced. With ``blocking=False`` a held
+    lock raises ``LockBusy`` at once (``LOCK_NB``).
     """
+    mode = fcntl.LOCK_EX if blocking else fcntl.LOCK_EX | fcntl.LOCK_NB
     for _ in range(_LOCK_ATTEMPTS):
         try:
             _mkdir_private(path.parent)
@@ -85,7 +95,10 @@ def _flock(path: Path) -> Iterator[None]:
             continue
         acquired = False
         try:
-            fcntl.flock(fd, fcntl.LOCK_EX)
+            try:
+                fcntl.flock(fd, mode)
+            except BlockingIOError:
+                raise LockBusy(f"{path} is held by another process") from None
             try:
                 held = os.fstat(fd)
                 current = os.stat(path)
@@ -182,9 +195,12 @@ def reserved_port_lock(port: int) -> ContextManager[None]:
     return _reentrant_flock(_runtime_dir() / f"reserved-{int(port)}.lock")
 
 
-def instance_lock(runtime_dir: Path) -> ContextManager[None]:
-    """Serialize launches of one worktree instance (``<runtime_dir>/launch.lock``)."""
-    return _flock(Path(runtime_dir) / "launch.lock")
+def instance_lock(runtime_dir: Path, *, blocking: bool = True) -> ContextManager[None]:
+    """Serialize launches of one worktree instance (``<runtime_dir>/launch.lock``).
+
+    ``blocking=False`` raises ``LockBusy`` instead of waiting for another holder.
+    """
+    return _flock(Path(runtime_dir) / "launch.lock", blocking=blocking)
 
 
 def project_dir(project_id: str) -> Path:

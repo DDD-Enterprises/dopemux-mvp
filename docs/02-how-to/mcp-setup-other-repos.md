@@ -68,8 +68,9 @@ When the client connects, `dopemux mcp launch <name>`:
    per-worktree lock so two simultaneous launchers start it once;
 4. writes an attach record, then proxies stdio to the sidecar (SSE for `conport`,
    Streamable HTTP for `dope-memory` and `task-orchestrator`; the backend transports are
-   unchanged, only the client side is stdio). Before every reconnect the proxy re-proves the
-   backend's owner from Docker labels (see [Sidecar restarts](#sidecar-restarts)).
+   unchanged, only the client side is stdio). Before every backend connect, the first one
+   included, and again right after each `initialize`, the proxy re-proves the backend's owner
+   from Docker labels (see [Sidecar restarts](#sidecar-restarts)).
 
 Refusals are one line `CODE: remedy` on stderr with exit code 3. A launcher stopped with
 SIGTERM or SIGHUP still removes its attach record (exit 143 or 129).
@@ -223,7 +224,10 @@ instance, 45 s deadline), and at every launcher start (throttled the same way, a
 instance, 8 s deadline). Hook runs stop at most 3 candidates with
 `docker stop --time 5`; the launcher stops at most 1 with `--time 2` and 3 s per docker call.
 Under a deadline every docker call is also cut to the time left, and a run that could start
-none of its candidates leaves the `reap.last` throttle as it was. Reaping never removes
+none of its candidates leaves the `reap.last` throttle as it was. Automatic runs never wait:
+an instance whose lock is busy (a launcher is starting it) is skipped as `locked`, and the
+initial `docker ps -a` gets at most the time left (a timed-out inspection skips the run and
+leaves the throttle as it was); `dopemux mcp reap --apply` still waits for locks. Reaping never removes
 images (they are shared). `SessionEnd` hooks share a
 1.5 s budget unless the hook sets `timeout` (Claude Code hooks and environment-variable
 references, read 2026-11-05), so `.claude/settings.json` sets `"timeout": 60` on that hook entry
@@ -305,11 +309,17 @@ The proxy reconnects at most once per 60 s window: a later restart in the same s
 too, but a backend that drops twice inside one window ends that proxy (exit 1); run
 `/mcp reconnect <name>` (or `all`).
 
-Before every reconnect the proxy re-proves who owns the backend port from Docker labels:
-the task-orchestrator must still be this project's (`TASK_ORCHESTRATOR_START_BLOCKED_*`
+The proxy re-proves who owns the backend port from Docker labels at two checkpoints for
+every backend session, the first one included: immediately before the connect, and right
+after `initialize`, before any request is sent on that session. The launch-time check runs
+under the host-wide `:7890` lock, which is released before the proxy starts, so a
+`switch-project` from another project in between is caught at the first session too. The
+task-orchestrator must still be this project's (`TASK_ORCHESTRATOR_START_BLOCKED_*`
 otherwise), and `conport`/`dope-memory` must still be this worktree's
-(`LAUNCH_BACKEND_OWNER_CHANGED` otherwise). On a refusal nothing is resent, the waiting request
-gets the `CODE: remedy` text as its error, the same line goes to stderr and the proxy exits 1.
+(`LAUNCH_BACKEND_OWNER_CHANGED` otherwise). On a refusal nothing is sent or resent on that
+session, the waiting request (or, when the first session is refused, the runner's first
+request) gets the `CODE: remedy` text as its error, the same line goes to stderr and the proxy
+exits 1.
 
 ---
 
@@ -378,6 +388,10 @@ dopemux mcp fleet doctor --repo ~/code/your-project \
   the same probe). Do not rely on these launchers from Codex.
 * **Cost: two sidecar containers per worktree** (`conport`, `dope-memory`) plus the one
   orchestrator, bounded by reap.
+* A launcher killed with SIGKILL before any other launcher of that worktree detaches leaves
+  no `last_detach`, so its instance is left to the worktree-missing rule (the idle rule
+  needs `last_detach`) until a later launcher detaches or a reap or full `stop` prunes the
+  dead attach record.
 * The first launch on a host (per Dockerfile version) is a full image build; later
   worktrees and projects reuse the shared image. A change to sidecar source code that leaves
   its Dockerfile alone is not picked up until you [force a rebuild](#force-a-rebuild).

@@ -1176,9 +1176,11 @@ def _owner_switch_factory(served: List[str], connects: List[str]):
     return factory
 
 
-def test_launch_binds_the_real_reconnect_guard(
-    tmp_path: Path, monkeypatch, registry, capsys
+def _memory_proxy(
+    served: List[str], connects: List[str], outcome: Dict[str, Any], seen=None
 ):
+    """A ``run_proxy`` stand-in: the real ``stdio_proxy.serve`` with the guard
+    ``launch`` passed, on in-memory streams, and a runner that calls one tool."""
     import anyio
     from mcp import ClientSession
     from mcp.shared.exceptions import McpError
@@ -1186,31 +1188,10 @@ def test_launch_binds_the_real_reconnect_guard(
 
     from dopemux.mcp import stdio_proxy
 
-    repo = _git_repo(tmp_path / "x")
-    monkeypatch.chdir(repo)
-    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
-    monkeypatch.setattr(
-        launcher, "ensure_orchestrator", lambda target, **kw: TO_BACKEND
-    )
-    foreign = str(tmp_path / "elsewhere" / "project-b")
-    theirs = {
-        "dopemux.managed": "true",
-        "dopemux.service": "task-orchestrator",
-        "dopemux.project_id": "project-b",
-        "dopemux.project_root": foreign,
-    }
-    monkeypatch.setattr(
-        launcher,
-        "inspect_running_containers",
-        lambda **kw: di.DockerInspectResult(
-            available=True, containers=[_to_container(theirs)]
-        ),
-    )
-    served: List[str] = []
-    connects: List[str] = []
-    outcome: Dict[str, Any] = {}
-
     def proxy_on_memory_streams(backend: BackendSpec, **kwargs: Any) -> int:
+        if seen is not None:
+            seen()
+
         async def main() -> int:
             box: Dict[str, int] = {}
             async with create_client_server_memory_streams() as (
@@ -1230,7 +1211,7 @@ def test_launch_binds_the_real_reconnect_guard(
 
                     tg.start_soon(serve)
                     async with ClientSession(runner_side[0], runner_side[1]) as runner:
-                        with anyio.fail_after(10):
+                        with anyio.fail_after(15):
                             await runner.initialize()
                             try:
                                 outcome["result"] = await runner.call_tool("whoami", {})
@@ -1243,7 +1224,54 @@ def test_launch_binds_the_real_reconnect_guard(
 
         return anyio.run(main)
 
-    monkeypatch.setattr(launcher, "run_proxy", proxy_on_memory_streams)
+    return proxy_on_memory_streams
+
+
+def _to_labels(project_id: str, project_root: str) -> Dict[str, str]:
+    return {
+        "dopemux.managed": "true",
+        "dopemux.service": "task-orchestrator",
+        "dopemux.project_id": project_id,
+        "dopemux.project_root": project_root,
+    }
+
+
+def _docker_owners(*labels: Dict[str, str]):
+    """``docker ps`` answers: one per call in order, the last one repeated."""
+    calls: List[int] = []
+
+    def inspect(**_kw: Any) -> di.DockerInspectResult:
+        calls.append(1)
+        current = labels[min(len(calls), len(labels)) - 1]
+        return di.DockerInspectResult(
+            available=True, containers=[_to_container(current)]
+        )
+
+    inspect.calls = calls  # type: ignore[attr-defined]
+    return inspect
+
+
+def test_launch_binds_the_real_reconnect_guard(
+    tmp_path: Path, monkeypatch, registry, capsys
+):
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+    monkeypatch.setattr(
+        launcher, "ensure_orchestrator", lambda target, **kw: TO_BACKEND
+    )
+    ident = launcher.build_target(repo, "task-orchestrator", catalog=CATALOG).identity
+    ours = _to_labels(ident.project_id or "", ident.project_root or "")
+    foreign = str(tmp_path / "elsewhere" / "project-b")
+    theirs = _to_labels("project-b", foreign)
+    # A owns :7890 before and after the first connect; switch-project then moves it to B.
+    monkeypatch.setattr(
+        launcher, "inspect_running_containers", _docker_owners(ours, ours, theirs)
+    )
+    served: List[str] = []
+    connects: List[str] = []
+    outcome: Dict[str, Any] = {}
+    monkeypatch.setattr(launcher, "run_proxy", _memory_proxy(served, connects, outcome))
 
     assert launcher.launch("task-orchestrator", env={}) == 1
     assert "result" not in outcome
@@ -1253,4 +1281,67 @@ def test_launch_binds_the_real_reconnect_guard(
         "run dopemux mcp switch-project here to take it over"
     )
     assert served == [] and connects == ["A-terminated"]  # project B never saw the call
+    assert "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT: " in capsys.readouterr().err
+
+
+# --- audit F1: an owner switch before the FIRST session is refused -------------------
+# Auditor's model: ensure_orchestrator proves A's ownership under the reserved lock and
+# releases it; another project's switch-project moves :7890 to B before the proxy's
+# first connect.
+
+
+def test_owner_switch_before_the_first_session_is_refused(
+    tmp_path: Path, monkeypatch, registry, capsys
+):
+    from dopemux.mcp import locks
+
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+    ident = launcher.build_target(repo, "task-orchestrator", catalog=CATALOG).identity
+    ours = _to_labels(ident.project_id or "", ident.project_root or "")
+    foreign = str(tmp_path / "elsewhere" / "project-b")
+    docker = _docker_owners(ours, _to_labels("project-b", foreign))
+    real_ensure = launcher.ensure_orchestrator
+    monkeypatch.setattr(
+        launcher,
+        "ensure_orchestrator",
+        lambda target, **kw: real_ensure(
+            target,
+            docker=docker,
+            lifecycle=FakeLifecycle(),
+            port_is_free=lambda p: False,
+            **kw,
+        ),
+    )
+    monkeypatch.setattr(launcher, "inspect_running_containers", docker)
+    lock_free: List[bool] = []
+
+    def reserved_lock_is_free() -> None:
+        try:
+            with locks._flock(
+                locks._runtime_dir() / "reserved-7890.lock", blocking=False
+            ):
+                lock_free.append(True)
+        except locks.LockBusy:
+            lock_free.append(False)
+
+    served: List[str] = []
+    connects: List[str] = []
+    outcome: Dict[str, Any] = {}
+    monkeypatch.setattr(
+        launcher,
+        "run_proxy",
+        _memory_proxy(served, connects, outcome, reserved_lock_is_free),
+    )
+
+    assert launcher.launch("task-orchestrator", env={}) == 1
+    assert lock_free == [True]  # the launch-time check's reserved lock was released
+    assert "result" not in outcome
+    assert outcome["error"].code == -32000
+    assert outcome["error"].message.startswith(
+        f"TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT: {foreign};"
+    )
+    assert served == [] and connects == []  # refused before the first connect
+    assert len(docker.calls) == 2  # the launch-time check, then the first-session guard
     assert "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT: " in capsys.readouterr().err

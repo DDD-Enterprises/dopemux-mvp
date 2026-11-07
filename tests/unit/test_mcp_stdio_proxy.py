@@ -586,6 +586,8 @@ async def test_reconnect_guard_refusal_reaches_the_runner_and_nothing_is_resent(
 
     def guard() -> None:
         guard_calls.append(1)
+        if len(guard_calls) <= 2:
+            return  # before and after the first connect, A still owns :7890
         raise stdio_proxy.ProxyRefused(
             "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT",
             "/code/b; run dopemux mcp switch-project here to take it over",
@@ -620,7 +622,7 @@ async def test_reconnect_guard_refusal_reaches_the_runner_and_nothing_is_resent(
     )
     assert calls == []  # project B never received A's request
     assert connects == ["A-terminated"]  # the guard ran before any reconnect
-    assert guard_calls == [1]
+    assert len(guard_calls) == 3  # before and after session 1, before the reconnect
     assert box["code"] == 1
     err = capsys.readouterr().err
     assert (
@@ -637,21 +639,25 @@ async def test_reconnect_guard_passing_keeps_the_resend():
         box,
     ):
         with anyio.fail_after(5):
-            tools = await runner.list_tools()  # the first session: no guard
-            assert guard_calls == []
+            tools = await runner.list_tools()
+            assert len(guard_calls) == 2  # before and after the first connect
             result = await runner.call_tool("echo", {})
         assert "code" not in box
     assert [t.name for t in tools.tools] == ["echo", "block"]
     assert result.content[0].text == "ok:2"
     assert backend.calls == ["echo"]
-    assert guard_calls == [1]
+    assert len(guard_calls) == 4  # and before and after the reconnect
 
 
 async def test_reconnect_guard_unexpected_exception_is_a_refusal():
     backend = _Backend("terminated", "ok")
 
+    seen: List[int] = []
+
     def broken_guard() -> None:
-        raise RuntimeError("docker inspect blew up")
+        seen.append(1)
+        if len(seen) > 2:  # fine for the first session, broken at the reconnect
+            raise RuntimeError("docker inspect blew up")
 
     async with _runner_via(backend, reconnect_guard=broken_guard) as (runner, box):
         with anyio.fail_after(5):
@@ -753,3 +759,138 @@ def test_a_signal_deferred_into_a_probe_ends_it_with_system_exit(
         stdio_proxy.probe_backend(SPEC, timeout_s=30.0)
     assert info.value.code == 143
     assert time.monotonic() - started < 5  # cancelled at once, not after the timeout
+
+
+# --- audit F1: the first session is guarded, and every session is re-checked ------
+# after `initialize`, before any runner request is sent on it.
+
+
+def _owner_factory(
+    plan: List[str], owner: Dict[str, str], served: List[str], connects: List[str]
+):
+    """Sessions per ``plan``: "A" (project A answers), "A-terminated" (A answers
+    "Session terminated"), "B" (project B now answers at this URL: ``owner``
+    flips to B as the connect lands, i.e. after the guard passed)."""
+
+    @asynccontextmanager
+    async def factory(**client_kwargs: Any):
+        mode = plan.pop(0)
+        connects.append(mode)
+        name = "B" if mode == "B" else "A"
+        if mode == "B":
+            owner["now"] = "B"
+        server = _owner_server(name, served)
+        async with create_client_server_memory_streams() as (cs, ss):
+            async with anyio.create_task_group() as tg:
+                options = server.create_initialization_options()
+                tg.start_soon(lambda: server.run(ss[0], ss[1], options))
+                write: Any = cs[1]
+                if mode == "A-terminated":
+                    write, outbound = anyio.create_memory_object_stream(0)
+                    tg.start_soon(
+                        _Backend._terminate,
+                        "terminated",
+                        outbound,
+                        cs[1],
+                        ss[1].clone(),
+                    )
+                async with ClientSession(cs[0], write, **client_kwargs) as session:
+                    yield session
+                tg.cancel_scope.cancel()
+
+    return factory
+
+
+def _owner_guard(owner: Dict[str, str], calls: List[str]):
+    def guard() -> None:
+        calls.append(owner["now"])
+        if owner["now"] != "A":
+            raise stdio_proxy.ProxyRefused(
+                "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT",
+                "/code/b; run dopemux mcp switch-project here to take it over",
+            )
+
+    return guard
+
+
+async def _drive(plan: List[str], owner: Dict[str, str], *, list_first: bool):
+    """Runner against the proxy: (outcome, served, connects, guard calls, exit code)."""
+    served: List[str] = []
+    connects: List[str] = []
+    calls: List[str] = []
+    outcome: Dict[str, Any] = {}
+    box: Dict[str, int] = {}
+    async with create_client_server_memory_streams() as (client_streams, proxy_streams):
+        async with anyio.create_task_group() as tg:
+
+            async def _serve() -> None:
+                box["code"] = await stdio_proxy.serve(
+                    SPEC,
+                    proxy_streams[0],
+                    proxy_streams[1],
+                    session_factory=_owner_factory(plan, owner, served, connects),
+                    reconnect_guard=_owner_guard(owner, calls),
+                )
+
+            tg.start_soon(_serve)
+            async with ClientSession(client_streams[0], client_streams[1]) as runner:
+                with anyio.fail_after(10):
+                    await runner.initialize()
+                    try:
+                        if list_first:
+                            await runner.list_tools()
+                        outcome["result"] = await runner.call_tool("whoami", {})
+                    except McpError as exc:
+                        outcome["error"] = exc.error
+                        while "code" not in box:
+                            await anyio.sleep(0.01)
+            tg.cancel_scope.cancel()
+    return outcome, served, connects, calls, box.get("code")
+
+
+WRONG = (
+    "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT: "
+    "/code/b; run dopemux mcp switch-project here to take it over"
+)
+
+
+async def test_the_first_session_is_guarded_too(capsys):
+    # The launcher proved A's ownership under the reserved lock and released it;
+    # another project's switch-project moved :7890 to B before the first connect.
+    owner = {"now": "B"}
+    outcome, served, connects, calls, code = await _drive(
+        ["B"], owner, list_first=False
+    )
+    assert "result" not in outcome
+    assert outcome["error"].code == -32000 and outcome["error"].message == WRONG
+    assert connects == [] and served == []  # nothing was ever sent to B
+    assert calls == ["B"]
+    assert code == 1
+    assert WRONG in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("when", ["first", "reconnect"])
+async def test_an_owner_change_between_guard_and_connect_is_refused_after_initialize(
+    when: str,
+):
+    owner = {"now": "A"}
+    plan = ["B"] if when == "first" else ["A-terminated", "B"]
+    expected = list(plan)
+    outcome, served, connects, calls, code = await _drive(plan, owner, list_first=False)
+    assert "result" not in outcome
+    assert outcome["error"].code == -32000 and outcome["error"].message == WRONG
+    assert served == []  # B initialized, but never got a request
+    assert connects == expected
+    assert calls[-2:] == ["A", "B"]  # passed before the connect, refused right after
+    assert code == 1
+
+
+async def test_own_backend_heals_through_both_checkpoints():
+    owner = {"now": "A"}
+    outcome, served, connects, calls, code = await _drive(
+        ["A-terminated", "A"], owner, list_first=True
+    )
+    assert outcome["result"].content[0].text == "served by project A"
+    assert served == ["A"] and connects == ["A-terminated", "A"]
+    assert calls == ["A", "A", "A", "A"]  # before/after the first and the reconnect
+    assert code is None  # still serving

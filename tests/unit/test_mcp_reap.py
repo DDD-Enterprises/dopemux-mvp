@@ -1098,14 +1098,15 @@ def test_a_call_timeout_is_capped_at_the_time_left(tmp_path: Path, runtime: Path
 
 
 class _Ticks:
-    """A monotonic clock that is past any deadline after its first reading."""
+    """A monotonic clock past any deadline after its first two readings (the
+    deadline itself and the check before the docker inspection)."""
 
     def __init__(self) -> None:
         self.calls = 0
 
     def __call__(self) -> float:
         self.calls += 1
-        return 0.0 if self.calls == 1 else 100.0
+        return 0.0 if self.calls <= 2 else 100.0
 
 
 def test_a_deadline_skip_of_everything_leaves_reap_last_untouched(
@@ -1133,3 +1134,96 @@ def test_a_deadline_skip_of_everything_leaves_reap_last_untouched(
     again = run()
     assert again is not None and again.skip_reasons == ["deadline"]
     assert state.stat().st_mtime == NOW - 5000
+
+
+# --- audit F3: automatic reaps never wait on a held instance lock or a slow docker ----
+
+
+def test_automatic_reap_skips_an_instance_whose_lock_is_held(
+    tmp_path: Path, runtime: Path
+):
+    import time
+
+    from dopemux.mcp.locks import instance_lock
+
+    _reg, containers = _many_pairs(tmp_path, runtime, 1)
+    rt = runtime / "proj0-aa000000"
+    runner = Recorder()
+    state = tmp_path / "s"
+    deadline_s = 8.0
+    with instance_lock(rt):  # a launcher is starting this instance right now
+        started = time.monotonic()
+        got = reap.maybe_reap(
+            throttle_s=600,
+            state_file=state,
+            now=lambda: NOW,
+            inspector=FakeInspect(containers),
+            runner=runner,
+            deadline_s=deadline_s,
+        )
+        elapsed = time.monotonic() - started
+    assert elapsed < 1.0 < deadline_s  # did not wait for the lock
+    assert got is not None and got.reaped == [] and got.skip_reasons == ["locked"]
+    assert runner.calls == []
+    assert not state.exists()  # nothing was attempted: the throttle is not consumed
+    assert rt.is_dir()
+
+
+def test_explicit_apply_still_waits_for_the_instance_lock(
+    tmp_path: Path, runtime: Path
+):
+    import threading
+
+    from dopemux.mcp.locks import instance_lock
+
+    reg, containers = _many_pairs(tmp_path, runtime, 1)
+    cands = _plan(reg, containers)
+    rt = runtime / "proj0-aa000000"
+    held = threading.Event()
+    release = threading.Event()
+
+    def holder() -> None:
+        with instance_lock(rt):
+            held.set()
+            release.wait(5)
+
+    thread = threading.Thread(target=holder)
+    thread.start()
+    held.wait(5)
+    threading.Timer(0.3, release.set).start()
+    report = reap.apply_reap(cands, runner=Recorder())  # the CLI path: blocking
+    thread.join(5)
+    assert len(report.reaped) == 1 and report.skipped == []
+
+
+def test_a_docker_inspection_past_the_deadline_skips_the_run(
+    tmp_path: Path, runtime: Path
+):
+    import time
+
+    _reg, containers = _many_pairs(tmp_path, runtime, 1)
+    seen: Dict[str, float] = {}
+
+    def slow_docker(*, timeout: float) -> DockerInspectResult:
+        seen["timeout"] = timeout
+        time.sleep(timeout)  # docker hangs until the timeout kills it
+        return DockerInspectResult(available=False, error="docker ps -a timed out")
+
+    state = tmp_path / "s"
+    runner = Recorder()
+    started = time.monotonic()
+    got = reap.maybe_reap(
+        throttle_s=600,
+        state_file=state,
+        now=lambda: NOW,
+        inspector=slow_docker,
+        runner=runner,
+        cmd_timeout_s=3.0,
+        deadline_s=0.3,
+    )
+    elapsed = time.monotonic() - started
+    assert seen["timeout"] <= 0.3  # min(cmd_timeout_s, time left)
+    assert elapsed < 1.5
+    assert got is not None and got.reaped == [] and got.skipped == []
+    assert runner.calls == []
+    assert not state.exists()  # the run was skipped: nothing touched

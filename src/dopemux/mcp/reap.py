@@ -34,8 +34,12 @@ Safety rules (all fail closed):
   candidate also clears entries and leases with an empty service (owned by nobody).
 * Automatic runs are bounded (candidate cap, ``docker stop --time``, command timeout,
   deadline). Under a deadline each docker call gets ``min(cmd_timeout_s, time left)``;
-  a candidate is skipped (``deadline``) only once no time is left. A run that skipped
-  every candidate that way leaves the ``reap.last`` throttle as it was.
+  a candidate is skipped (``deadline``) only once no time is left. They never wait:
+  each instance lock is taken non-blocking (a busy instance is skipped, ``locked``)
+  and the initial ``docker ps -a`` is bounded by ``min(cmd_timeout_s, time left)``;
+  a timed-out inspection skips the whole run. A run that attempted no candidate
+  (``deadline``/``cap``/``locked``), or whose inspection timed out, leaves the
+  ``reap.last`` throttle as it was. The explicit CLI ``--apply`` waits for locks.
 * Automatic reaping (:func:`maybe_reap`: hooks and launcher) honours a kill switch:
   the file ``<runtime root>/reap.disabled`` or ``DOPEMUX_MCP_REAP`` set to
   ``0``/``off``/``false``. The explicit CLI ``dopemux mcp reap --apply`` ignores it.
@@ -60,7 +64,13 @@ from . import docker_runtime as dr
 from .docker_inspect import DockerContainerInfo, inspect_all_managed_containers
 from .docker_runtime import run_cmd
 from .lifecycle import runtime_dir_for_paths
-from .locks import _mkdir_private, _runtime_dir, instance_lock, save_state_locked
+from .locks import (
+    LockBusy,
+    _mkdir_private,
+    _runtime_dir,
+    instance_lock,
+    save_state_locked,
+)
 from .port_leases import PortLeaseRegistry, default_lease_registry_path
 from .runtime_registry import REGISTRY_ENV, RuntimeRegistry, default_registry_path
 
@@ -268,7 +278,8 @@ class ReapReport:
     skip_reasons: List[str] = field(default_factory=list)  # parallel to ``skipped``
 
     def skip(self, cand: ReapCandidate, reason: str) -> None:
-        """``reason``: ``attached`` (a launcher attached first), ``cap`` or ``deadline``."""
+        """``reason``: ``attached`` (a launcher attached first), ``cap``, ``deadline``
+        or ``locked`` (an automatic run found the instance lock busy)."""
         self.skipped.append(cand)
         self.skip_reasons.append(reason)
 
@@ -630,6 +641,7 @@ def _reap_one(
     stop_time_s: Optional[int],
     call_timeout: Callable[[], Optional[float]] = lambda: None,
     out_of_time: Callable[[], bool] = lambda: False,
+    blocking_lock: bool = True,
 ) -> None:
     label = f"{cand.project_id}/{cand.worktree_hash}"
     if not _runtime_dir_is_ours(cand, registry_path):
@@ -637,7 +649,12 @@ def _reap_one(
             f"{label}: runtime dir {cand.runtime_dir} is outside {registry_path.parent}"
         )
         return
-    with instance_lock(cand.runtime_dir):
+    with contextlib.ExitStack() as stack:
+        try:
+            stack.enter_context(instance_lock(cand.runtime_dir, blocking=blocking_lock))
+        except LockBusy:
+            report.skip(cand, "locked")  # a launcher or stop holds it: next run
+            return
         if live_attachments(cand.runtime_dir) > 0:
             report.skip(cand, "attached")
             return
@@ -684,8 +701,12 @@ def apply_reap(
     cmd_timeout_s: Optional[float] = None,
     deadline: Optional[float] = None,
     clock: Callable[[], float] = time.monotonic,
+    blocking_locks: bool = True,
 ) -> ReapReport:
     """Reap each candidate under its instance lock; failures are recorded, never raised.
+
+    ``blocking_locks=False`` (automatic runs) skips a candidate whose instance lock
+    is busy (reason ``locked``) instead of waiting for it.
 
     ``max_candidates`` caps the work of one call, ``stop_time_s`` becomes
     ``docker stop --time N``, ``cmd_timeout_s`` is the per-command timeout and
@@ -735,6 +756,7 @@ def apply_reap(
                 stop_time_s=stop_time_s,
                 call_timeout=call_timeout,
                 out_of_time=out_of_time,
+                blocking_lock=blocking_locks,
             )
         except Exception as exc:  # noqa: BLE001 - one bad candidate stops no other
             report.errors.append(f"{cand.project_id}/{cand.worktree_hash}: {exc}")
@@ -770,8 +792,10 @@ def maybe_reap(
     10 and a 45 s deadline.
 
     ``state_file`` is touched before any work (so concurrent hooks do not all run);
-    when candidates existed but the deadline or the cap let none be attempted, the
-    touch is undone, so a run that did nothing never consumes the throttle.
+    when candidates existed but none was attempted (deadline, cap, or a busy
+    instance lock), or the docker inspection timed out, the touch is undone, so a
+    run that did nothing never consumes the throttle. Instance locks are taken
+    non-blocking and the inspection is bounded by ``min(cmd_timeout_s, time left)``.
     """
     if reaping_disabled_reason() is not None:
         return None
@@ -802,12 +826,28 @@ def maybe_reap(
         return report
     if not registry.instances():
         return report
-    docker = (
-        inspector()
-        if inspector
-        else inspect_all_managed_containers(timeout=_HOOK_DOCKER_TIMEOUT_S)
+    inspect_timeout = min(
+        _HOOK_DOCKER_TIMEOUT_S, cmd_timeout_s or _HOOK_DOCKER_TIMEOUT_S
     )
+    if deadline is not None:
+        left = deadline - monotonic()
+        if left <= 0:
+            _restore_throttle(state, previous)
+            report.errors.append("deadline reached before docker inspection; skipped")
+            return report
+        inspect_timeout = min(inspect_timeout, left)
+    run_inspect = inspector or inspect_all_managed_containers
+    docker = run_inspect(timeout=inspect_timeout)
     if not docker.available:
+        timed_out = "timed out" in str(docker.error or "").lower() or (
+            deadline is not None and monotonic() >= deadline
+        )
+        if timed_out:  # a slow docker skips the whole run and touches nothing
+            _restore_throttle(state, previous)
+            report.errors.append(
+                f"docker inspection timed out; skipped ({docker.error})"
+            )
+            return report
         report.errors.append(f"docker unavailable: {docker.error}")
         return report
     candidates = plan_reap(
@@ -827,8 +867,11 @@ def maybe_reap(
         cmd_timeout_s=cmd_timeout_s,
         deadline=deadline,
         clock=monotonic,
+        blocking_locks=False,
     )
-    not_attempted = sum(1 for r in report.skip_reasons if r in {"cap", "deadline"})
+    not_attempted = sum(
+        1 for r in report.skip_reasons if r in {"cap", "deadline", "locked"}
+    )
     if not_attempted == len(candidates):
         _restore_throttle(state, previous)
     return report
