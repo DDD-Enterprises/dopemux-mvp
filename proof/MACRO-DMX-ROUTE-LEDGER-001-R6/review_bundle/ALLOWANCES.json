@@ -1,0 +1,81 @@
+{
+  "status": "PROPOSED",
+  "applies_to": "MACRO-DMX-ROUTE-LEDGER-001-R6",
+  "basis": "Transcribed from R4's ALLOWANCES.json for BOTH audit legs and for R4's W01 and W04 caps. Timeouts are scaled by the supervisor's 2026-10-31 decision: the AGY real-run --print-timeout 10m -> 15m (R4 recorded basis kept: probes 12,970 and 15,359 tokens, run 85,070 tokens, 300 s run, 5 min 43 s probes plus run, cost not reported), and the Grok run and wall caps scaled the same way (x1.5; R4 passed no Grok timeout flag, its run took 106.6 s of a 10 min cap, probes plus run 2 min 16 s, cost USD 0.0804). The R6 prompt is built from the same template with a larger diff (forecast about 191 KB against R4's 136 KB), so the token and cost caps are estimates, not measurements. R4 and R5 spend is sunk cost, not R6 budget. Revise by an amended revision after the run.",
+  "units": {
+    "time": "minutes",
+    "tokens": "the auditor stream figure, counting basis UNKNOWN",
+    "tool_calls": "not applicable (no child dispatch)"
+  },
+  "per_workstream": {
+    "W01": {
+      "max_elapsed_min": 40,
+      "child_dispatches": 0,
+      "automatic_retries": 0,
+      "max_coordinator_advisor_calls": 0,
+      "executor": "coordinator, deterministic committed script (no model dispatch)"
+    },
+    "W02": {
+      "max_audit_attempts": 1,
+      "max_automatic_retries": 0,
+      "max_probes": 3,
+      "max_wall_min_probes_and_run": 30,
+      "max_run_wall_min": 15,
+      "max_cost_usd_as_streams_report": 0.3,
+      "child_dispatches": 0,
+      "max_coordinator_advisor_calls": 0,
+      "executor": "coordinator shell (grok-cli grok-4.5, PRIMARY)"
+    },
+    "W03": {
+      "max_audit_attempts": 1,
+      "max_automatic_retries": 0,
+      "max_probes": 2,
+      "max_wall_min_probes_and_run": 30,
+      "max_run_wall_min": 15,
+      "max_total_tokens_if_reported": 400000,
+      "cost": "UNKNOWN unless the stream reports it",
+      "child_dispatches": 0,
+      "max_coordinator_advisor_calls": 0,
+      "executor": "coordinator shell (agy gemini-4-argon-high, CORROBORATING)"
+    },
+    "W04": {
+      "max_elapsed_min": 45,
+      "child_dispatches": 0,
+      "max_coordinator_advisor_calls": 0,
+      "executor": "coordinator"
+    }
+  },
+  "macro": {
+    "max_active_min": 45,
+    "max_elapsed_min": 150,
+    "max_child_dispatches": 0,
+    "max_automatic_retries": 0,
+    "max_child_tool_calls": 0,
+    "max_child_total_tokens": 0,
+    "max_intermediate_model_audits": 0,
+    "max_final_independent_audits": 2,
+    "final_audits_note": "OPERATOR-RATIFIED EXCEPTION to the one-final-audit default (AGENTS.md step 14 and docs/03-reference/governance/evidence-economy.md): two independent routes on ONE frozen head, one attempt each, no retry, no cross-fallback, no intermediate audit (operator answer 'Both: Grok + AGY', 2026-10-31). Not a licence for a third.",
+    "max_post_freeze_repair_rounds": 0,
+    "max_child_advisor_calls": 0,
+    "max_coordinator_advisor_calls": 0
+  },
+  "review_rounds": {
+    "coordinator_diff_rereads_per_workstream": 2,
+    "intermediate_model_audits": 0,
+    "final_independent_audits": 2,
+    "post_freeze_repair_rounds_without_operator": 0
+  },
+  "recordable_measures": {
+    "elapsed": "coordinator wall clock at start and end of each workstream",
+    "active": "W02/W03: the stream duration_ms or the recorded launch and finish times",
+    "tokens": "audits: the stream figure where reported",
+    "cost": "W02: total_cost_usd from the streams; W03: only if the stream reports it, otherwise UNKNOWN",
+    "advisor_calls": "counted by hand; the expected value is 0 everywhere",
+    "not_recordable": [
+      "coordinator's own tokens and active time (UNKNOWN, not budgeted)"
+    ]
+  },
+  "on_limit": "When ANY limit is reached or about to be exceeded: stop at the next safe point, dispatch nothing further, retry nothing, substitute nothing, leave uncommitted edits uncommitted, and report NEEDS_SUPERVISOR with the allowance, the measured value, the cap and the files touched. A cap changes only by an amended package revision with new hashes and a new operator AUTHORIZE line.",
+  "enforcement": "Coordinator discipline only. Neither macro_packet.v2 nor execution_binding.v2 has a field for allowances and `ct validate-macro` does not check them. The numbers are pinned through each child text, the macro stop-condition and base_policy text, and ALLOWANCES.json by sha256 in base_policy.",
+  "closure": "At close the coordinator writes ALLOWANCE_LEDGER.json (measured vs cap, per workstream and macro) into the flat review_bundle; no value is invented."
+}

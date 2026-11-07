@@ -1,0 +1,197 @@
+{
+ "id": "TP-DMX-RUNNERMEM2A-R2-W12-DEFAULT-TO-BINDING-001",
+ "project": "dopemux-mvp",
+ "target": "Amendment 04 (operator, 2026-11-01): dope-memory and ConPort fill an omitted workspace_id and instance_id from their own binding instead of rejecting the write; a supplied workspace_id that differs from the binding is still rejected; an unbound server still rejects every write. Tool schemas and REST models mark the ids optional. Docs updated to match.",
+ "invariants": [
+  "C01 Shared workspace: other workers may edit this checkout. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in the execution worktree .worktrees/runner-memory-2a on feat/runner-memory-2a (base 97b6d5040496e2271c41d24c339d039303bbe6b1); verify `git rev-parse --show-toplevel` and the branch before the first write.",
+  "C02 You never commit, push, merge, open a PR, mark ready, sign, tag, change git config or rewrite history. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+  "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+  "C04 Secrets: never read or print .env*, credential files, keychain items, bearer tokens or token hashes from a real install; never write a real secret into a file, test fixture, log or return. A `.envrc.dopemux-mcp` may be read only for `*_PORT` keys (it exports a database password). Tests use obviously fake values generated in the test. Log a principal name, never a token or an Authorization header.",
+  "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Anything live that you did not observe is NOT_RUN. Use only interfaces this packet names or that you confirm in source with file:line; otherwise write UNKNOWN.",
+  "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers (each with the action that clears it), advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+  "C07 Stop and return evidence instead of improvising when: a needed file is outside your write_surface; a contract-sensitive surface outside your write_surface (schema, hook registration, MCP manifest, compose definition, red-lane rules) would change; a required fact is UNKNOWN; or validation still fails after one fix attempt for the same cause (no cheap-model repair loop).",
+  "C08 Authority order: this packet, then runtime code, then schemas, then tests, then docs. The design is docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md revision 2 (sha256 c83aea50bb6bbf98160311c6b46a5ef3fc1741a130705cd955163bf4610734ed); it states intent, not runtime facts. Where the design and runtime code disagree, STOP and report. No workstream edits the design file.",
+  "C09 Evidence input: proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md (sha256 4baa2184923bf0522d2ebb930c09d3e9eb394920c5ac4451f69f2ad0c4d1f117, committed) is R1's W00 result and is fixed input for R2, not re-run. If the hash differs, STOP. Its GATE_TABLE `reductions`, `design_changes` and `evidence` are binding where this packet does not say otherwise; the operator's rulings are proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/OPERATOR_RULINGS_R2.md.",
+  "C10 No live mutation: never start, stop, restart or rebuild a container; never run `dopemux mcp start|up|init|ensure`, `docker compose`, a migration against a real database, `dopemux auth issue|rotate|revoke --apply`, or `dopemux mcp generate --apply`; never write the keychain, ~/.config/dopemux/ or any file outside the worktree. Tests use temp directories, fakes and a stubbed `security` subprocess.",
+  "C11 Python 3.12 through uv (`uv run --frozen --extra test pytest ...`); the harness python3 may be 3.9 and is not evidence. New tests go in this workstream's own directory under tests/unit/ with an empty __init__.py. CI also runs services/working-memory-assistant/tests/test_mcp_http_endpoint.py (ci-complete.yml:195-199); tests at the tests/ root are not run by CI and are run explicitly here.",
+  "C12 DCP red lane (DCP-RED-MERGE-SEAM-0001): ADR-227 (with Amendment 1) is accepted. Of red-lane paths you may edit only the ADR-227-exempt files in your write_surface. If the PreToolUse guard denies an edit, STOP: never work around the guard, never edit through another tool, never ask another session to make the edit.",
+  "A01 PROPOSED allowances for this workstream (caps, not forecasts; accepted by the operator's Amendment 04 ruling): elapsed wall time 90 min from dispatch; subagent tokens 1,000,000; tool uses 200; child attempts: 1 attempt + 1 retry; team-lead review rounds: 1 diff re-read + at most 1 correction round. Active time is not recordable: UNKNOWN; elapsed is the enforceable bound.",
+  "A02 The team lead reads the counters from the child's completion notice (duration_ms, subagent_tokens, tool_uses) and records them with the return. A retry is allowed only after a failed validation with a named cause and only once; a second failure, any exceeded cap or any advisor call ends the workstream.",
+  "A03 When a cap is hit: stop the workstream, start no further attempt, preserve the uncommitted diff untouched, and return NEEDS_SUPERVISOR with the counters and the evidence. No model upgrade, provider change or extra attempt without a new operator ruling.",
+  "B01 dope-memory (services/working-memory-assistant/auth_identity.py validate_write_ids and its callers in dope_memory_main.py and mcp_http.py): an omitted or empty workspace_id becomes the bound workspace (DOPE_MEMORY_WORKSPACE_ID); an omitted or empty instance_id becomes the server's DEFAULT_INSTANCE_ID (DOPE_MEMORY_INSTANCE_ID, else 'A', as before 2A). A supplied workspace_id that differs from the binding is still rejected with the same clear error; a server with no binding still rejects every write. Caller-supplied values are never replaced.",
+  "B02 ConPort (docker/mcp-servers-source/conport/auth_identity.py validate_write_ids, enhanced_server.py _write_ids and the REST/MCP write paths, server.py tool signatures): an omitted or empty workspace_id becomes the bound workspace (DOPEMUX_WORKSPACE_ID); an omitted instance_id where the table carries one becomes the server's DOPEMUX_INSTANCE_ID when set, else `shared` (NULL), as before 2A. A path workspace and a body workspace that disagree are still rejected; a supplied workspace_id that differs from the binding is still rejected; an unbound server still rejects every write. fork_instance's target_instance stays required (it names the target, not the caller).",
+  "B03 Schemas: every MCP write tool and REST request model marks workspace_id and instance_id optional (default None), with a description saying the server fills them from its binding. The health field identity_required_writes stays true; its docstring/comment now says it means writes are bound to the server's workspace (a mismatched workspace is rejected), because W07's gate reads it.",
+  "B04 Tests: update the W01 and W02 tests that asserted 'missing ids rejected' to assert 'missing ids filled from the binding', keep every mismatch and unbound-server rejection test, and add tests under tests/unit/runner_memory_2a_r2_w12/: omitted ids filled (MCP and REST, both servers), empty strings treated as omitted, supplied matching ids kept, supplied mismatched workspace rejected, unbound server rejects, ConPort instance fallback to the server instance then to shared. services/working-memory-assistant/tests/test_mcp_http_endpoint.py stays green.",
+  "B05 Docs: docs/02-how-to/runner-memory-identity.md, docs/90-adr/adr-mcpint-002-amendment-runner-identity.md, AGENTS.md section 12.7 and .claude/claude.md: replace every claim that writes without ids are rejected, and the W08 caveat that Claude Code's direct writes may get 400s, with the new rule (omitted ids default to the binding; a mismatched workspace is rejected), citing AMENDMENT_04.md. Every claim traced; nothing else in those files changes.",
+  "B06 Never build, pull or run an image or container, never run a migration or any operator step (C10)."
+ ],
+ "depends_on": [
+  "W01",
+  "W02",
+  "W07",
+  "W08"
+ ],
+ "repo_binding": {
+  "project_id": "dopemux-mvp",
+  "repo_marker": ".dopetaskroot",
+  "origin_hint": "DDD-Enterprises/dopemux-mvp",
+  "require_identity_match": true
+ },
+ "series": {
+  "id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+  "base_branch": "main",
+  "parent_tp_id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+  "final_packet": false
+ },
+ "execution": {
+  "agent": "claude",
+  "branch": "feat/runner-memory-2a",
+  "base_branch": "main"
+ },
+ "commit": {
+  "message": "fix(memory): servers fill omitted write ids from their own binding (Wave 2A R2 W12, Amendment 04)",
+  "allowlist": [
+   "services/working-memory-assistant/auth_identity.py",
+   "services/working-memory-assistant/mcp_http.py",
+   "services/working-memory-assistant/dope_memory_main.py",
+   "services/working-memory-assistant/tests/test_mcp_http_endpoint.py",
+   "docker/mcp-servers-source/conport/auth_identity.py",
+   "docker/mcp-servers-source/conport/server.py",
+   "docker/mcp-servers-source/conport/enhanced_server.py",
+   "docker/mcp-servers-source/conport/instance_detector.py",
+   "tests/unit/runner_memory_2a_r2_w01/",
+   "tests/unit/runner_memory_2a_r2_w02/",
+   "tests/unit/runner_memory_2a_r2_w12/",
+   "docs/02-how-to/runner-memory-identity.md",
+   "docs/90-adr/adr-mcpint-002-amendment-runner-identity.md",
+   "AGENTS.md",
+   ".claude/claude.md"
+  ],
+  "verify": [
+   "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_r2_w12/ tests/unit/runner_memory_2a_r2_w01/ tests/unit/runner_memory_2a_r2_w02/ tests/unit/runner_memory_2a_r2_w04/ tests/unit/runner_memory_2a_r2_w07/",
+   "uv run --frozen --extra test pytest -q services/working-memory-assistant/tests/test_mcp_http_endpoint.py tests/test_conport_wiring.py",
+   "SKIP=markdownlint pre-commit run --files docs/02-how-to/runner-memory-identity.md docs/90-adr/adr-mcpint-002-amendment-runner-identity.md AGENTS.md .claude/claude.md",
+   "git diff --check",
+   "git status --porcelain   # every modified or untracked path is inside the allowlist"
+  ]
+ },
+ "pr": {
+  "title": "feat(runner-memory): Wave 2A - verified runner identity for dope-memory and ConPort (Codex first)",
+  "body": "Implements MACRO-DMX-RUNNER-MEMORY-2A-001-R2 from docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md revision 2. Draft until the single final independent L3 audit and operator review.",
+  "base": "main"
+ },
+ "steps": [
+  {
+   "id": "W12-S1",
+   "task": "Read AMENDMENT_04.md, W01_RETURN.md, W02_RETURN.md, W08's docs and the code B01-B03 name; verify pins",
+   "requirements": [
+    "List every place that rejects a missing id today, with file:line, before any edit."
+   ],
+   "commands": [
+    "shasum -a 256 proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md"
+   ],
+   "expected_files": [],
+   "validation": [
+    "pins verified"
+   ],
+   "context_files": [
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AMENDMENT_04.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W01_RETURN.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W02_RETURN.md"
+   ]
+  },
+  {
+   "id": "W12-S2",
+   "task": "TDD: failing tests first (B04), then B01-B03, then B05",
+   "requirements": [
+    "Record the failing-first run."
+   ],
+   "commands": [
+    "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_r2_w12/"
+   ],
+   "expected_files": [
+    "tests/unit/runner_memory_2a_r2_w12/__init__.py"
+   ],
+   "validation": [
+    "new tests fail first, then pass"
+   ],
+   "context_files": []
+  },
+  {
+   "id": "W12-S3",
+   "task": "Run commit.verify",
+   "requirements": [
+    "Report every command with its exit code and bucket."
+   ],
+   "commands": [
+    "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_r2_w12/ tests/unit/runner_memory_2a_r2_w01/ tests/unit/runner_memory_2a_r2_w02/ tests/unit/runner_memory_2a_r2_w04/ tests/unit/runner_memory_2a_r2_w07/",
+    "uv run --frozen --extra test pytest -q services/working-memory-assistant/tests/test_mcp_http_endpoint.py tests/test_conport_wiring.py",
+    "SKIP=markdownlint pre-commit run --files docs/02-how-to/runner-memory-identity.md docs/90-adr/adr-mcpint-002-amendment-runner-identity.md AGENTS.md .claude/claude.md",
+    "git diff --check"
+   ],
+   "expected_files": [],
+   "validation": [
+    "all PASS or NOT_RUN with a reason"
+   ],
+   "context_files": []
+  },
+  {
+   "id": "W12-S4",
+   "task": "Return",
+   "requirements": [
+    "Status, validation table, files_written, advisor_calls, observed_model, blockers."
+   ],
+   "commands": [
+    "git status --porcelain",
+    "git diff --stat"
+   ],
+   "expected_files": [],
+   "validation": [
+    "diff limited to the write_surface"
+   ],
+   "context_files": []
+  }
+ ],
+ "schema_version": "dopemux.governed_execution.task_packet.v2",
+ "macro_id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+ "workstream_id": "W12",
+ "risk_lane": "L3",
+ "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+ "execution_requirements": {
+  "preferred_route": {
+   "runner": "claude-code-agent",
+   "model": "claude-sonnet-5-5",
+   "effort": "UNKNOWN"
+  },
+  "allowed_fallbacks": [],
+  "binding": "LIVE_PROOF_REQUIRED",
+  "auditor_independence": "DIFFERENT_FAMILY"
+ },
+ "write_surface": [
+  "services/working-memory-assistant/auth_identity.py",
+  "services/working-memory-assistant/mcp_http.py",
+  "services/working-memory-assistant/dope_memory_main.py",
+  "services/working-memory-assistant/tests/test_mcp_http_endpoint.py",
+  "docker/mcp-servers-source/conport/auth_identity.py",
+  "docker/mcp-servers-source/conport/server.py",
+  "docker/mcp-servers-source/conport/enhanced_server.py",
+  "docker/mcp-servers-source/conport/instance_detector.py",
+  "tests/unit/runner_memory_2a_r2_w01/",
+  "tests/unit/runner_memory_2a_r2_w02/",
+  "tests/unit/runner_memory_2a_r2_w12/",
+  "docs/02-how-to/runner-memory-identity.md",
+  "docs/90-adr/adr-mcpint-002-amendment-runner-identity.md",
+  "AGENTS.md",
+  ".claude/claude.md"
+ ],
+ "canonical_writers": [
+  "W12-implementer"
+ ],
+ "semantic_scope": [
+  "memory-write-id-defaulting"
+ ],
+ "rollback_boundary": "git revert <W12 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+ "operator_gate_required": true,
+ "receipt_refs": {},
+ "authority": "NONE"
+}

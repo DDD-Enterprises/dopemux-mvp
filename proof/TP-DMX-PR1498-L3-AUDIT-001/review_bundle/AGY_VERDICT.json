@@ -1,0 +1,156 @@
+{
+  "status": "completed",
+  "verdict": "PASS_WITH_RISKS",
+  "model_self_reported": "Gemini 4 Argon (High)",
+  "validation_status": "NOT_RUN",
+  "delivery_token": "22ca02e4193f14ac4dbc51cf",
+  "rationale": "Across the 13 high-risk files inspected in PR 1498 (base 4cd889877f929c88ce69958d6ee42b8a643bfab8, head 97b79962936da518888c12f3ff1ae8b6f0084eda), both dope-memory and ConPort enforce fail-closed auth mode parsing, constant-time SHA-256 token digest comparison over all hash-file entries via hmac.compare_digest, strict principal regex validation from the hash file only, and mandatory workspace binding that rejects all writes when unbound or when a mismatched workspace_id is supplied while filling omitted workspace_id/instance_id from the server's own binding. Keychain operations keep tokens off argv via security -i stdin and verify writes by reading back and comparing with hmac.compare_digest; hashfile writes are atomic with 0700 directory and 0600 file permissions; and the stdio bridge scrubs tokens from error/response bodies, disables HTTP redirects and environment proxies, restricts .envrc.dopemux-mcp discovery to the current git checkout/worktree, and never overwrites caller-supplied IDs. Verdict is PASS_WITH_RISKS due to six bounded code findings (most notably that ConPort's REST auth_middleware stores 'internal:bridge-proxy' instead of 'unverified' if a proxy fallback token is ever supplied in log mode, double-counts unverified calls on custom_data MCP loopback tools, and relies on an unseen migration runner to make SQLite v1_3_0 ALTER TABLE statements idempotent) plus the disclosed NOT_RUN live validation and 159 changed files outside this audit slice.",
+  "inspected_paths": [
+    "docker/mcp-servers-source/conport/auth_identity.py",
+    "docker/mcp-servers-source/conport/enhanced_server.py",
+    "docker/mcp-servers-source/conport/server.py",
+    "docker/mcp-servers-source/conport/migrations/008_write_principal.sql",
+    "docker/mcp-servers-source/conport/migrations/008_rollback.sql",
+    "services/working-memory-assistant/auth_identity.py",
+    "services/working-memory-assistant/dope_memory_main.py",
+    "services/working-memory-assistant/mcp_http.py",
+    "services/working-memory-assistant/chronicle/migrations/v1_3_0_add_write_principal.sql",
+    "src/dopemux/mcp/http_stdio_bridge.py",
+    "src/dopemux/auth/keychain.py",
+    "src/dopemux/auth/hashfile.py",
+    "src/dopemux/auth/tokens.py"
+  ],
+  "evidence_refs": [
+    "docker/mcp-servers-source/conport/auth_identity.py:123-131",
+    "docker/mcp-servers-source/conport/auth_identity.py:140-181",
+    "docker/mcp-servers-source/conport/auth_identity.py:217-298",
+    "docker/mcp-servers-source/conport/auth_identity.py:335-370",
+    "docker/mcp-servers-source/conport/auth_identity.py:439-520",
+    "docker/mcp-servers-source/conport/enhanced_server.py:177-189",
+    "docker/mcp-servers-source/conport/enhanced_server.py:401-536",
+    "docker/mcp-servers-source/conport/enhanced_server.py:782-814",
+    "docker/mcp-servers-source/conport/enhanced_server.py:863-894",
+    "docker/mcp-servers-source/conport/enhanced_server.py:1202-1254",
+    "docker/mcp-servers-source/conport/enhanced_server.py:1277-1370",
+    "docker/mcp-servers-source/conport/enhanced_server.py:1398-1442",
+    "docker/mcp-servers-source/conport/enhanced_server.py:1492-1554",
+    "docker/mcp-servers-source/conport/enhanced_server.py:1819-1869",
+    "docker/mcp-servers-source/conport/enhanced_server.py:1957-2094",
+    "docker/mcp-servers-source/conport/enhanced_server.py:2221-2263",
+    "docker/mcp-servers-source/conport/server.py:27-56",
+    "docker/mcp-servers-source/conport/server.py:98-376",
+    "docker/mcp-servers-source/conport/migrations/008_write_principal.sql:27-63",
+    "docker/mcp-servers-source/conport/migrations/008_rollback.sql:14-38",
+    "services/working-memory-assistant/auth_identity.py:93-140",
+    "services/working-memory-assistant/auth_identity.py:176-257",
+    "services/working-memory-assistant/auth_identity.py:312-388",
+    "services/working-memory-assistant/dope_memory_main.py:66-75",
+    "services/working-memory-assistant/dope_memory_main.py:799-935",
+    "services/working-memory-assistant/dope_memory_main.py:1148-1418",
+    "services/working-memory-assistant/mcp_http.py:66-120",
+    "services/working-memory-assistant/mcp_http.py:136-388",
+    "services/working-memory-assistant/chronicle/migrations/v1_3_0_add_write_principal.sql:27-40",
+    "src/dopemux/mcp/http_stdio_bridge.py:175-256",
+    "src/dopemux/mcp/http_stdio_bridge.py:258-599",
+    "src/dopemux/auth/keychain.py:44-131",
+    "src/dopemux/auth/hashfile.py:52-128",
+    "src/dopemux/auth/tokens.py:15-61"
+  ],
+  "findings": [
+    {
+      "id": "F-01",
+      "severity": "medium",
+      "path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "line": 448,
+      "title": "Unverified proxy write in log mode stores 'internal:bridge-proxy' instead of 'unverified' when fallback token is active",
+      "detail": "In docker/mcp-servers-source/conport/auth_identity.py:364-370, build_rest_write_headers attaches the fallback internal:bridge-proxy token in log mode when a caller to server.py sent no token, alongside X-Dopemux-Unverified-Caller. In docker/mcp-servers-source/conport/enhanced_server.py:444-449, auth_middleware detects identity.principal == PROXY_PRINCIPAL and forwarded, records the unverified caller via record_unverified, but still sets _WRITE_PRINCIPAL.set(identity.principal) ('internal:bridge-proxy') instead of UNVERIFIED_PRINCIPAL ('unverified'). In production today PROXY_TOKEN_PROVIDER in docker/mcp-servers-source/conport/server.py:33 returns None, so writes still record 'unverified', but if a proxy token is injected or configured later, unverified proxy callers will be stored under principal 'internal:bridge-proxy'."
+    },
+    {
+      "id": "F-02",
+      "severity": "low",
+      "path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "line": 2229,
+      "title": "ConPort REST /mcp custom_data write tools double-count unverified callers in log mode",
+      "detail": "When conport_save_custom_data or conport_delete_custom_data is invoked via POST /mcp on enhanced_server.py (lines 2257-2263), auth_middleware (lines 427-455) authorizes the request and records an unverified caller once, then _request_custom_data_tool (lines 2221-2235) performs an HTTP loopback POST/DELETE to /api/custom_data on the same server. The loopback request re-enters auth_middleware without the original User-Agent header, recording a second unverified call in auth_unverified_calls under the loopback aiohttp client."
+    },
+    {
+      "id": "F-03",
+      "severity": "low",
+      "path": "docker/mcp-servers-source/conport/enhanced_server.py",
+      "line": 477,
+      "title": "Whitespace-only path workspace_id in update_context skips path-versus-body mismatch check",
+      "detail": "In docker/mcp-servers-source/conport/enhanced_server.py:476-480, _write_ids sets ws = workspace_id if workspace_id is not None else body_ws, and only checks body_ws != workspace_id when str(workspace_id).strip() is non-empty. If the URL path workspace_id is whitespace (e.g. POST /api/context/%20) and the JSON body contains a mismatched workspace_id, the mismatch check is skipped and validate_write_ids replaces the blank ws with bound_workspace_id instead of rejecting the mismatched body workspace_id. The write still lands on bound_workspace_id and cannot cross workspaces."
+    },
+    {
+      "id": "F-04",
+      "severity": "low",
+      "path": "services/working-memory-assistant/chronicle/migrations/v1_3_0_add_write_principal.sql",
+      "line": 27,
+      "title": "SQLite migration v1_3_0_add_write_principal.sql is not idempotent if executed directly more than once",
+      "detail": "Lines 27-37 execute eight ALTER TABLE ... ADD COLUMN statements before INSERT OR IGNORE INTO schema_migrations (line 39). Because SQLite does not support ADD COLUMN IF NOT EXISTS, re-running this SQL script directly (or after a partial run) fails with duplicate column name unless the caller in chronicle/store.py (not visible in this diff) gates execution on schema_migrations or catches duplicate-column errors."
+    },
+    {
+      "id": "F-05",
+      "severity": "low",
+      "path": "src/dopemux/mcp/http_stdio_bridge.py",
+      "line": 340,
+      "title": "Stdio bridge has no upper bound on stdin line size or HTTP response body size",
+      "detail": "In src/dopemux/mcp/http_stdio_bridge.py:340 (response.read()) and lines 521, 550, 638 (sys.stdin.readline()), the bridge reads entire lines and HTTP response bodies into memory without a byte limit, unlike WriteAuthMiddleware which caps request bodies at MAX_BODY_BYTES (4 MiB)."
+    },
+    {
+      "id": "F-06",
+      "severity": "low",
+      "path": "src/dopemux/auth/tokens.py",
+      "line": 15,
+      "title": "Principal, token, and digest regexes use $ instead of \\Z",
+      "detail": "PRINCIPAL_RE (src/dopemux/auth/tokens.py:15, docker/mcp-servers-source/conport/auth_identity.py:87, services/working-memory-assistant/auth_identity.py:71), _SHA256_HEX_RE, and _WRITABLE_TOKEN_RE (src/dopemux/auth/keychain.py:34) terminate with $ rather than \\Z, which in Python re matches before a single trailing newline. In keychain.py:107-117, a trailing newline would break the single-line security -i command, though the immediate get_token read-back check via hmac.compare_digest catches it and fails closed."
+    }
+  ],
+  "risks": [
+    "No tools were used per Hard Rule 1; 159 of the 172 changed files (including chronicle/store.py, conport_mcp_stdio.py, src/dopemux/commands/mcp_commands.py, and unmodified hunks of enhanced_server.py such as setup_routes() and _execute_mcp_tool()) are outside this audit slice and treated as UNKNOWN.",
+    "Live runtime verification is NOT_RUN: no live server, real macOS keychain token issuance, observed security exit 44, migration 008 on a live PostgreSQL database, or live Codex session has been executed.",
+    "In docker/mcp-servers-source/conport/enhanced_server.py:505, _principal_tables queries information_schema.columns with hardcoded table_schema = 'public', whereas migrations/008_write_principal.sql:52 checks current_schema(); deployments using a non-public default schema would report auth_principal_column=missing and reject writes with 503 in enforce mode."
+  ],
+  "question_results": [
+    {
+      "id": "Q1",
+      "result": "PASS",
+      "evidence": "docker/mcp-servers-source/conport/auth_identity.py:123-131,199-201,285-298 and services/working-memory-assistant/auth_identity.py:93-103,158-160,244-257 default missing/blank auth mode env vars to 'log' and raise ValueError on any value outside ('off', 'log', 'enforce') at server initialization (docker/mcp-servers-source/conport/enhanced_server.py:178, docker/mcp-servers-source/conport/server.py:27, services/working-memory-assistant/dope_memory_main.py:75). Modes 'off', 'log', and 'enforce' behave as specified across REST and MCP write paths, with the caveat noted in F-01 (enhanced_server.py:444-449 when a proxy fallback token is injected in log mode) and F-02 (enhanced_server.py:2221-2263 loopback double-counting)."
+    },
+    {
+      "id": "Q2",
+      "result": "PASS",
+      "evidence": "docker/mcp-servers-source/conport/auth_identity.py:259-272 and services/working-memory-assistant/auth_identity.py:218-231 hash the bounded bearer token (MAX_TOKEN_CHARS=512) with SHA-256 and compare against all validated hash-file entries using hmac.compare_digest without early exit. Principals are loaded exclusively from memory-token-hashes.json (validated against _SHA256_HEX_RE and _PRINCIPAL_RE at conport/auth_identity.py:244-253 and working-memory-assistant/auth_identity.py:203-212) and passed via ContextVar _WRITE_PRINCIPAL (enhanced_server.py:68,448) or FastAPI/FastMCP server-side dependencies (dope_memory_main.py:1153-1162, mcp_http.py:95-120); no request header, query parameter, or payload field can spoof a verified principal. Tokens and hashes never appear in logs, errors, responses, health_fields (conport/auth_identity.py:300-313, working-memory-assistant/auth_identity.py:259-272), or stored rows."
+    },
+    {
+      "id": "Q3",
+      "result": "UNKNOWN",
+      "evidence": "Visible write routes in dope-memory are REST POST /tools/memory_store, /tools/memory_mark_issue, /tools/memory_link_resolution, /tools/memory_correct, /tools/memory_generate_reflection (services/working-memory-assistant/dope_memory_main.py:1253-1418) and MCP tools in WRITE_TOOLS (services/working-memory-assistant/auth_identity.py:56-64, services/working-memory-assistant/mcp_http.py:177-363, gated at HTTP layer by WriteAuthMiddleware on POST /mcp at auth_identity.py:331-337); visible read routes (/health, memory_search, memory_recap, memory_replay_session, memory_reflections, memory_trajectory) are not gated. Visible ConPort write routes are update_context, log_decision, fork_instance, promote_progress, promote_all, log_progress, update_progress, save_custom_data, delete_custom_data, claim_custom_data plus POST /mcp tools in REST_WRITE_TOOLS (docker/mcp-servers-source/conport/enhanced_server.py:401-425,773-2094) and the 9 FastMCP tools in PROXY_WRITE_TOOLS on SSE/streamable write_paths (docker/mcp-servers-source/conport/server.py:98-376, docker/mcp-servers-source/conport/auth_identity.py:67-80). However, setup_routes() and _execute_mcp_tool() in docker/mcp-servers-source/conport/enhanced_server.py are outside the diff hunks provided, so whether any non-mutating POST /api/* route is wrongly gated by request.path.startswith('/api/') (enhanced_server.py:424) or any mutating route exists outside /api/ and /mcp is UNKNOWN from this message alone."
+    },
+    {
+      "id": "Q4",
+      "result": "PASS",
+      "evidence": "docker/mcp-servers-source/conport/auth_identity.py:140-181 and services/working-memory-assistant/auth_identity.py:112-140 reject all writes when bound_workspace_id is unset/empty, fill omitted/blank workspace_id from bound_workspace_id (never 'default'), and reject any supplied workspace_id != bound_workspace_id. ConPort checks path-vs-body workspace agreement in _write_ids (docker/mcp-servers-source/conport/enhanced_server.py:476-480, with minor whitespace-path edge case noted in F-03, which still writes only to bound_workspace_id), verifies existing row workspace ownership on _promote_progress (lines 1287-1291) and _update_progress (lines 1498-1501), requires a non-shared target_instance on _fork_instance with fill_instance=False (lines 1208-1212), requires a non-shared instance_id on _promote_all (lines 1339-1340), requires no instance on custom_data (lines 1824,1964,2011), and records normalized created_by_instance on _log_decision (lines 867-883)."
+    },
+    {
+      "id": "Q5",
+      "result": "UNKNOWN",
+      "evidence": "docker/mcp-servers-source/conport/migrations/008_write_principal.sql:27-63 and 008_rollback.sql:14-38 are transactional, safe on existing rows, and idempotent via ADD COLUMN IF NOT EXISTS / DROP COLUMN IF EXISTS with post-condition count checks. However, services/working-memory-assistant/chronicle/migrations/v1_3_0_add_write_principal.sql:27-40 executes eight SQLite ALTER TABLE ... ADD COLUMN statements without IF NOT EXISTS before INSERT OR IGNORE INTO schema_migrations; whether the migration runner in chronicle/store.py (not visible in this input) prevents re-execution on an already-migrated database is UNKNOWN."
+    },
+    {
+      "id": "Q6",
+      "result": "PASS",
+      "evidence": "In src/dopemux/mcp/http_stdio_bridge.py:536-547, the token is fetched via get_token(principal), never placed in argv or os.environ, scrubbed from error details and response bodies via _scrub (lines 317-318,353,364), excluded from __repr__ (lines 314-315), and protected against redirects/proxies via _NoRedirect and ProxyHandler({}) (lines 258-266). _fill_ids (lines 465-487) checks key not in arguments so caller-supplied IDs are never replaced. _hide_filled_required (lines 428-463) removes only bridge-fillable keys from inputSchema.required after _learn_schemas (lines 381-393,499-500). HTTP 401/403 exits with EXIT_AUTH=3 (lines 347-348,564-572), HTTP 404 with a session re-initializes once (lines 349-350,366-378), other HTTP/network/non-JSON errors return JSON-RPC -32000 errors (lines 290-291,573-586), and _find_envrc / _read_selected_keys stop at .git and filter to non-secret profile keys before parsing (lines 197-232). Unbounded stdin readline() and response.read() are noted in F-05."
+    },
+    {
+      "id": "Q7",
+      "result": "PASS",
+      "evidence": "src/dopemux/auth/keychain.py:98-118 validates principal and token against strict regexes (with tokens starting with '-' rejected in src/dopemux/auth/tokens.py:50-56 and keychain.py:34), passes add-generic-password on stdin to ['/usr/bin/security', '-i'] with shell=False and TIMEOUT_SECONDS=10.0 (lines 31,44-60,107-108), handles exit code 44 as TokenNotFoundError/False (lines 33,82-85,127-128), and verifies store_token by reading back via get_token and comparing with hmac.compare_digest (lines 113-117). src/dopemux/auth/hashfile.py:52-79 enforces 0o700 on the directory and 0o600 on the temp file created in the same directory via tempfile.mkstemp, flushes and fsyncs both file and directory, and atomically replaces the target via os.replace."
+    },
+    {
+      "id": "Q8",
+      "result": "PASS",
+      "evidence": "Tested all 13 files for auth bypasses, batch JSON-RPC handling, header/payload principal spoofing, in-process and stdio fallback paths (services/working-memory-assistant/mcp_http.py:103-118, docker/mcp-servers-source/conport/auth_identity.py:373-397), workspace mismatch and cross-workspace ID updates, loopback custom_data calls, hash-file refresh/failure handling, regex boundary behavior, and token scrubbing. Found no fail-open path, cross-workspace write, or token exposure; all edge cases found are recorded in findings F-01 through F-06."
+    }
+  ]
+}

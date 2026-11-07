@@ -18,6 +18,7 @@ CREATE TABLE workspace_contexts (
     focus_state VARCHAR(50),
     session_milestone TEXT,
     instance_id VARCHAR(255),
+    write_principal VARCHAR(255) DEFAULT 'unverified',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -40,6 +41,7 @@ CREATE TABLE decisions (
     confidence_level VARCHAR(20) DEFAULT 'medium',
     decision_type VARCHAR(50) DEFAULT 'implementation',
     created_by_instance VARCHAR(255),
+    write_principal VARCHAR(255) DEFAULT 'unverified',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -69,6 +71,7 @@ CREATE TABLE progress_entries (
     estimated_hours DECIMAL(5,2),
     actual_hours DECIMAL(5,2),
     instance_id VARCHAR(255),
+    write_principal VARCHAR(255) DEFAULT 'unverified',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     completed_at TIMESTAMP WITH TIME ZONE
@@ -112,6 +115,7 @@ CREATE TABLE custom_data (
     category VARCHAR(100) NOT NULL,
     key VARCHAR(255) NOT NULL,
     value JSONB NOT NULL,
+    write_principal VARCHAR(255) DEFAULT 'unverified',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(workspace_id, category, key)

@@ -1,0 +1,5 @@
+real_launched_at=2026-10-30T07:49:23Z
+real_finished_at=2026-10-30T07:51:28Z
+real_exit=0
+probe1_launched_at=2026-10-30T07:48:50Z
+probe2_launched_at=2026-10-30T07:49:04Z

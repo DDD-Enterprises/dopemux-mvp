@@ -1,0 +1,319 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-PULSE-001",
+  "objective": "Pulse (opportunity map build 1): make the ADHD signal visible. Fix the ADHD Engine /state key contract, ship the read-only dopemux-pulse Claude Code mod (truthful status line plus 25-minute focus clock) under plugins/, and document it. Source: claudedocs/dopemux-mods-plugins-opportunity-map-2026-10-16.md sections 3 and 4.1 (M1, M2) and 6 (P1).",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants I01-I08 in each child",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator chat 2026-10-21: '1,2,3' (next-work list, item 3 = Pulse) and AskUserQuestion answer 'In the repo (Recommended)' for where Pulse lives"
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit",
+      "push_branch",
+      "open_draft_pr"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_PULSE_001_EXECUTION=YES absent",
+      "worktree HEAD != fresh origin/main at start",
+      "any write outside a child allowlist",
+      "plugin-authoring declaration file not supplied to W02",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "07a70d10658613e329d4c74d9851cd18b115d85e44f1dd3ba67978e36d1239db"
+    },
+    "authority_ceiling": "Child-specific intersection only; team lead alone commits (one commit per workstream, explicit pathspec) and may push the branch / open a PR only after the final audit returns and the operator confirms",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "2245af78962a9c82837b6264e180f46ba8703326505eab491a506639ad7d6d35"
+      },
+      "objective": "Fix the ADHD Engine GET /api/v1/state key contract: it returns `energy` and `attention`, but the TUI (src/dopemux/ui/dashboard.py), .claude/hooks/check_energy.sh, services/adhd_engine/scripts/adhd-tmux-status.sh and the dope-memory recap read `energy_level` and `attention_state`, so those consumers silently show defaults. Make the endpoint serve both spellings, non-breaking, with a contract test.",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "services/adhd_engine/api/routes.py",
+        "services/adhd_engine/tests/test_state_contract.py"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "adhd-state-contract"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W01 commit> on feat/pulse-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-PULSE-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "76ebafc930bcd1ced8de34f54987be215ace6bdaa99bba5becaa384012ce7e56"
+      },
+      "objective": "Build the `dopemux-pulse` Claude Code function-hook mod under plugins/dopemux-pulse/: (M1) a status line that shows real ADHD energy and attention from the engine plus the mod's own session minutes, and (M2) a 25-minute focus clock with /focus, /break and /done commands, a band above the prompt, and a toast at the limit.",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "plugins/dopemux-pulse/.claude-plugin/plugin.json",
+        "plugins/dopemux-pulse/hooks/hooks.json",
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/hooks/register.test.ts",
+        "plugins/dopemux-pulse/README.md"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "pulse-mod"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on feat/pulse-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-PULSE-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "76199835cd7e46593a83076567515e8fecc14441dd78d0b06ebd90e59ac5bc5e"
+      },
+      "objective": "Write the how-to for the Pulse mod at docs/02-how-to/pulse-status-line.md, accurate to what W02 actually built.",
+      "dependencies": [
+        "W02"
+      ],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        "docs/02-how-to/pulse-status-line.md"
+      ],
+      "canonical_writers": [
+        "W03-implementer"
+      ],
+      "semantic_scope": [
+        "pulse-docs"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W03 commit> on feat/pulse-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-haiku-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": [
+          {
+            "runner": "claude-code-agent",
+            "model": "claude-sonnet-5-5",
+            "effort": "UNKNOWN"
+          }
+        ]
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-PULSE-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-BUILD",
+      "requires": [
+        "W01",
+        "W02"
+      ],
+      "condition": "engine contract test and mod validate/test pass with diffs inside allowlists",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J02-FREEZE",
+      "requires": [
+        "W01",
+        "W02",
+        "W03"
+      ],
+      "condition": "docs hooks pass; freeze subject for the single final L2 audit",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 2,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit per frozen L2/L3 subject",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}

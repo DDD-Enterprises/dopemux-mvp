@@ -25,6 +25,31 @@ from .failure_handler import FailureHandler
 
 logger = logging.getLogger(__name__)
 
+# Wave 2A R2 W05: ConPort writes carry this principal's token (design 5.3). This
+# service runs in a Linux container, where the macOS keychain does not exist, so
+# get_token fails there and the write keeps the header it sent before (the
+# legacy CONPORT_API_KEY, if set). Moving a token into the container is a design
+# decision, not made here.
+_PRINCIPAL = "internal:brain"
+
+
+def _bearer_headers() -> Dict[str, str]:
+    """Authorization header for this caller's principal, or {} when no token is available.
+
+    A missing token never fails a write: in log mode the server records it as
+    unverified. Only the principal name is logged, never a token.
+    """
+    try:
+        from dopemux.auth import AuthError, get_token
+    except ImportError:
+        logger.info("dopemux.auth is unavailable; sending %s writes without a token", _PRINCIPAL)
+        return {}
+    try:
+        return {"Authorization": f"Bearer {get_token(_PRINCIPAL)}"}
+    except AuthError:
+        logger.info("no token for %s; sending the write without Authorization", _PRINCIPAL)
+        return {}
+
 
 @dataclass
 class ProviderProfile:
@@ -285,9 +310,16 @@ class ClaudeBrainManager:
                 "implementation_details": f"Operation: {operation}, Cost: ${cost:.4f}, Success: {success}",
                 "tags": ["ai_provider_selection", "cost_optimization", "adhd_optimization", operation]
             }
+            # ConPort rejects a write without its bound workspace_id; the envrc exports these,
+            # but this container's compose environment does not, so they are unknown unless set.
+            for key, env_name in (("workspace_id", "DOPEMUX_WORKSPACE_ID"), ("instance_id", "DOPEMUX_INSTANCE_ID")):
+                if os.getenv(env_name):
+                    decision_data[key] = os.environ[env_name]
 
             async with aiohttp.ClientSession() as session:
                 headers = {"Authorization": f"Bearer {service.api_key}"} if service.api_key else {}
+                # A principal token replaces the legacy api key; without one the legacy header stays.
+                headers.update(await asyncio.to_thread(_bearer_headers))
                 headers["Content-Type"] = "application/json"
 
                 async with session.post(

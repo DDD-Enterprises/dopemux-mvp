@@ -1,0 +1,16 @@
+AGY governing audit, PR #1486 round 5 (packet TP-DMX-PR1486-L2-AUDIT-001)
+
+Exact command, recovered verbatim from the Claude Code session transcript
+(~/.claude/projects/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645.jsonl, Bash tool_use issued 2026-10-30T11:25:44Z; the original
+AUDIT_INVOCATION.txt in the session scratchpad was deleted by a disk cleanup):
+
+  cd <sealed dir holding only AUDIT_PROMPT.txt>
+  agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print="$(cat AUDIT_PROMPT.txt)" > AUDIT_OUTPUT_RAW.jsonl 2> AUDIT_STDERR.txt
+
+Sealed dir: /private/tmp/claude-501/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645/scratchpad/audit-pr1486-r5/agy
+AGY CLI 1.4.11 (AGY_CLI_LOG.txt line 4). Print mode started 2026-10-30T11:25:57Z with
+promptLength=154340 and model="gemini-4-argon-high" (log line 115); terminal sandbox enabled (line 129);
+conversation 0605eb07-a5e9-40ce-a078-59ac6912f0e5 created 11:26:01Z, stream closed 11:27:17Z.
+Harness notice 11:27:20Z: the background command completed with exit code 0.
+Parsed at 11:27:24Z from AUDIT_OUTPUT_RAW.jsonl: step updates user_input=1, agent_response=245, no tool steps;
+verdict PASS_WITH_RISKS, validation NOT_RUN.

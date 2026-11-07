@@ -1,0 +1,10 @@
+#!/bin/bash
+# MACRO-DMX-MEMORY-BRIDGE-001-R5 audit: ONE attempt, grok-cli grok-4.5, tool-less recipe. Sealed cwd holds only AUDIT_PROMPT.txt.
+A=/private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-memory-bridge-001-b349d8/491dc243-44df-4aca-99aa-4aa904cb7e60/scratchpad/audit5
+cd "$A/real_seal" || exit 90
+grok -m grok-4.5 --effort high --sandbox workspace --cwd "$A/real_seal" \
+  --system-prompt-override "$(cat "$A/SYSTEM_PROMPT.txt")" \
+  --disallowed-tools "$(cat "$A/DISALLOWED.txt")" \
+  --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources" \
+  --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim \
+  --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt

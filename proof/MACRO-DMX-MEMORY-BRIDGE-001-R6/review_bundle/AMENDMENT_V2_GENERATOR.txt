@@ -1,0 +1,218 @@
+#!/usr/bin/env python3
+"""Build MACRO-DMX-MEMORY-BRIDGE-001-R6 amendment v2 from the issued v1 package.
+
+v2 adds W03 (three doc corrections from the Copilot review of PR #1483 plus an
+erratum for the R2 wall-time cap) and makes W02 depend on it. W01 is unchanged.
+Usage: gen_r6v2.py <worktree>
+"""
+import copy
+import datetime
+import hashlib
+import json
+import pathlib
+import sys
+
+WT = pathlib.Path(sys.argv[1])
+PKG = WT / "task-packets" / "MACRO-DMX-MEMORY-BRIDGE-001-R6"
+NOW = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+README = "plugins/dopemux-memory-bridge/README.md"
+HOWTO = "docs/02-how-to/memory-bridge.md"
+ERRATUM = "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/review_bundle/ERRATUM_R2_WALL_CAP.md"
+AMEND_REF = (
+    "operator chat 2026-11-01: 'Yes, amend R6' (answer to: fold the four Copilot findings on "
+    "PR #1483 into R6 so the one R6 audit covers them); R6 lines on file: "
+    "AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R6_EXECUTION=YES and "
+    "AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R6_AUDIT_ROUTE=grok-cli:grok-4.5:ONE_ATTEMPT"
+)
+
+
+def load(rel):
+    return json.loads((PKG / rel).read_text(encoding="utf-8"))
+
+
+def dump(rel, doc):
+    text = json.dumps(doc, indent=2, ensure_ascii=False) + "\n"
+    (PKG / rel).parent.mkdir(parents=True, exist_ok=True)
+    (PKG / rel).write_text(text, encoding="utf-8")
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def sha(rel):
+    return hashlib.sha256((PKG / rel).read_bytes()).hexdigest()
+
+
+macro = load("MACRO_PACKET.json")
+binding = load("EXECUTION_BINDING.json")
+w02 = load("WORKSTREAMS/W02/TASK_PACKET.json")
+assert macro["macro_id"] == "MACRO-DMX-MEMORY-BRIDGE-001-R6"
+assert [w["workstream_id"] for w in macro["workstreams"]] == ["W01", "W02"], "already amended?"
+
+# --- team-lead binding: same route, effort re-observed, gate refs current ---
+binding["authority_refs"]["operator_gate_refs"] = [AMEND_REF]
+binding["selection"]["effort"] = "xhigh"
+binding["effort_requested"] = "xhigh"
+binding["effort_observed"] = "xhigh"
+binding["justification"]["why_effort"] = (
+    "session effort observed via $CLAUDE_EFFORT=xhigh at amendment time (it was high at issuance)"
+)
+binding["justification"]["why_runner"] = (
+    "issuing supervisor session (Claude Code desktop, claude-opus-5-5); it also executes W02 "
+    "(local shell) and W03 (three doc corrections whose source evidence it already holds)"
+)
+binding["recorded_at"] = NOW
+binding_sha = dump("EXECUTION_BINDING.json", binding)
+
+# --- W03 task packet (new) ---
+w03 = copy.deepcopy(w02)
+w03["id"] = "TP-DMX-MEMBRIDGE-R6-W03-COPILOT-DOCS-001"
+w03["target"] = (
+    "Correct the three doc statements the Copilot review of PR #1483 found wrong (C1 the "
+    "fallback store is persistent, C2 replay can create .dopemux/chronicle.sqlite, C3 the "
+    "verification query must select id, not event_id) in the README and the how-to, and record "
+    "the R2 wall-time cap breach (C4) as an erratum in the R6 proof without editing R2's records."
+)
+w03["invariants"] = [
+    "C01 Shared workspace: other sessions may change unrelated files (.codex/config.toml, .agents/): never commit, discard or overwrite them. Edit only your write_surface. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head 4f66e7ea6 (W01 done).",
+    "C02 Executed by the team lead (the coordinator session); it commits with an explicit pathspec, never pushes, merges, signs, tags, changes git config or rewrites history.",
+    "C03 ADVISOR FORBIDDEN (budget 0): no `advisor` call and no subagent dispatch for this workstream.",
+    "C04 Secrets: never read or print .env* or credential files. No network. No real `dopemux capture emit`.",
+    "C05 Truth buckets: PASS / FAIL / NOT_RUN / UNKNOWN literally. Live behaviour NOT_RUN.",
+    "C06 Return fields: status (READY_FOR_AUDIT | BLOCKED | NEEDS_SUPERVISOR | INCOMPLETE), subject, validation, proof, audit (NOT_RUN), blockers, advisor_calls, files_written, observed_model.",
+    "C07 Docs only: any finding that needs a change to register.tsx or register.test.ts (for example renaming the `memory-only` label) is out of scope; record it as a residual instead.",
+    "A01 PROPOSED allowances: no child dispatch, 0 subagent tokens; 30 min of work.",
+    "B01 C1: state that without `.dopemux` the rows go to the plugin's `$.store`, a JSON file in the user's Claude Code config directory kept across sessions (STORE_KEEP_SESSIONS = 3, STORE_CAP_BYTES = 262,144; register.tsx:38, :63, :553-574; W01_FINDINGS.md:36), so `memory-only` means no outbox file, not nothing on disk. Fix how-to sections 2, 3 and 7 and the README outbox paragraph.",
+    "B02 C2: limit 'never creates .dopemux' to the outbox writer; state that replay runs regardless of the outbox mode (register.tsx replayTick) and that with the default ledger path `capture_client.py:525-526` creates `<repo-root>/.dopemux/` for chronicle.sqlite; persistOnce re-checks `.dopemux` on every write, so later rows go to the outbox file. Fix the README and how-to sections 2, 5 and 9.",
+    "B03 C3: the README verification query selects `id` (raw_activity_events has no event_id column: chronicle/schema.sql:5-20; the INSERT at capture_client.py:541-548 stores the sent event_id in id).",
+    "B04 C4: write ERRATUM_R2_WALL_CAP.md: R2 RETURN-01.md:29 'No cap was hit' is wrong; the 6 h cap from authorization to a frozen head was exceeded (W02 dispatch 2026-10-23T20:44:55Z, W04 dispatch 2026-10-24T03:11:17Z, content head 52855fb35 at 2026-10-24T03:13:35Z); the macro had no pause exemption and required NEEDS_SUPERVISOR. R2 files stay unchanged; ratification is the operator's.",
+    "B05 Gates: markdown hooks on the changed docs, `claude plugin validate` and `claude plugin test` for the mod, `git diff --check`, `validate_change_contract.py --base origin/main --head HEAD`.",
+]
+w03["depends_on"] = ["TP-DMX-MEMBRIDGE-R6-W01-FLAKY-KEY-TEST-001"]
+w03["commit"] = {
+    "message": "docs(memory-bridge): R6 W03 correct the fallback store, .dopemux creation and ledger query (Copilot review of #1483)",
+    "allowlist": [README, HOWTO, ERRATUM],
+    "verify": [
+        "git diff --check origin/main..HEAD",
+        "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+    ],
+}
+w03["steps"] = [
+    {
+        "id": "W03-S1",
+        "task": "Correct C1-C3 in the README and the how-to",
+        "requirements": ["Every new claim cites the source line it rests on."],
+        "commands": ["claude plugin validate plugins/dopemux-memory-bridge"],
+        "expected_files": [README, HOWTO],
+        "validation": ["docs hooks PASS"],
+        "context_files": [
+            "plugins/dopemux-memory-bridge/hooks/register.tsx",
+            "src/dopemux/memory/capture_client.py",
+            "services/working-memory-assistant/chronicle/schema.sql",
+        ],
+    },
+    {
+        "id": "W03-S2",
+        "task": "Write the C4 erratum",
+        "requirements": ["Do not edit proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/."],
+        "commands": [],
+        "expected_files": [ERRATUM],
+        "validation": ["timestamps match the R2 bindings and git log"],
+        "context_files": ["proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle/RETURN-01.md"],
+    },
+]
+w03["workstream_id"] = "W03"
+w03["execution_requirements"]["preferred_route"] = {
+    "runner": "claude-code-desktop",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh",
+}
+w03["write_surface"] = [README, HOWTO, ERRATUM]
+w03["canonical_writers"] = ["W03-implementer"]
+w03["semantic_scope"] = ["memory-bridge-doc-accuracy"]
+w03["rollback_boundary"] = "git revert <W03 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head 4f66e7ea6"
+w03_sha = dump("WORKSTREAMS/W03/TASK_PACKET.json", w03)
+
+# --- W02: now after W03 ---
+w02["depends_on"] = [
+    "TP-DMX-MEMBRIDGE-R6-W01-FLAKY-KEY-TEST-001",
+    "TP-DMX-MEMBRIDGE-R6-W03-COPILOT-DOCS-001",
+]
+w02["invariants"][0] = w02["invariants"][0].replace(
+    "start head c1256c0600 (a local, unpushed merge of origin/main 97b6d5040).",
+    "start head = the W03 commit (local, unpushed, on top of the merge c1256c0600 of origin/main 97b6d5040 and W01 4f66e7ea6).",
+)
+assert "W03 commit" in w02["invariants"][0]
+w02_sha = dump("WORKSTREAMS/W02/TASK_PACKET.json", w02)
+
+# --- macro ---
+macro["objective"] = (
+    "Memory Bridge R6: fix the flaky R5 key-table test (W01, test file only), correct three doc "
+    "statements and record an R2 erratum from the Copilot review of PR #1483 (W03, docs and one "
+    "proof file), then after PR #1482 merges bring the then-current main into the branch and "
+    "re-run every gate (W02, local-shell), so one final audit of the merged head can be signed "
+    "for PR #1483. The Memory Bridge code (register.tsx) stays byte-identical to the R5 audited "
+    "subject; the content diff changes only by the test fix and the doc corrections. The R5 record "
+    "(audited bce150b5858528bfb26b3b15e3248cb1294a65e5, operator-accepted) and every R2 record stay "
+    "unchanged."
+)
+macro["base_policy"] = macro["base_policy"].replace(
+    "W02 is local-shell with no model call;",
+    "W02 is local-shell with no model call; W03 is executed by the coordinator with no child dispatch;",
+)
+macro["evidence_budget"]["final_audit_policy"] = macro["evidence_budget"]["final_audit_policy"].replace(
+    "W02 is local-shell with no model call;",
+    "W02 is local-shell with no model call; W03 is executed by the coordinator with no child dispatch;",
+).replace(
+    "the prompt carries one line per earlier finding)",
+    "the prompt carries one line per earlier finding, plus the Copilot findings C1-C4)",
+)
+assert "C1-C4" in macro["evidence_budget"]["final_audit_policy"]
+assert "W03 is executed" in macro["base_policy"]
+macro["authority"]["operator_refs"].append(AMEND_REF)
+macro["authority"]["global_stop_conditions"] = [
+    c.replace(
+        "any write outside a child allowlist; any change to register.tsx (W01 must return NEEDS_SUPERVISOR instead)",
+        "any write outside a child allowlist; any change to register.tsx (W01 and W03 must return NEEDS_SUPERVISOR instead)",
+    )
+    for c in macro["authority"]["global_stop_conditions"]
+]
+macro["team_lead"]["execution_binding_ref"]["sha256"] = binding_sha
+
+ws1, ws2 = macro["workstreams"]
+ws2["task_packet_ref"]["sha256"] = w02_sha
+ws2["dependencies"] = ["W01", "W03"]
+ws2["parallel_group"] = "P3"
+ws2["rollback_boundary"] = "git revert <W02 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head = the W03 commit"
+ws3 = copy.deepcopy(ws2)
+ws3.update(
+    {
+        "workstream_id": "W03",
+        "task_packet_ref": {"path": "WORKSTREAMS/W03/TASK_PACKET.json", "sha256": w03_sha},
+        "objective": "Correct the three doc findings C1-C3 and record the R2 wall-cap erratum C4 (Copilot review of PR #1483).",
+        "dependencies": ["W01"],
+        "parallel_group": "P2",
+        "write_surface": [README, HOWTO, ERRATUM],
+        "canonical_writers": ["W03-implementer"],
+        "semantic_scope": ["memory-bridge-doc-accuracy"],
+        "rollback_boundary": "git revert <W03 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head 4f66e7ea6",
+        "execution_route": {
+            "preferred": {"runner": "claude-code-desktop", "model": "claude-opus-5-5", "effort": "xhigh"},
+            "allowed_fallbacks": [],
+        },
+    }
+)
+macro["workstreams"] = [ws1, ws3, ws2]
+macro["joins"][0]["requires"] = ["W01", "W03", "W02"]
+macro["joins"][0]["condition"] = (
+    "the flaky test fixed (12 concurrent runs, 0 failures); C1-C3 corrected and the C4 erratum "
+    "recorded; main merged after #1482; all gates PASS; freeze for the single final L2 audit"
+)
+macro_sha = dump("MACRO_PACKET.json", macro)
+
+print(json.dumps({
+    "MACRO_PACKET.json": macro_sha,
+    "EXECUTION_BINDING.json": binding_sha,
+    "WORKSTREAMS/W01/TASK_PACKET.json": sha("WORKSTREAMS/W01/TASK_PACKET.json"),
+    "WORKSTREAMS/W02/TASK_PACKET.json": w02_sha,
+    "WORKSTREAMS/W03/TASK_PACKET.json": w03_sha,
+    "recorded_at": NOW,
+}, indent=2))

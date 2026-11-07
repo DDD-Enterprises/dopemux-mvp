@@ -1,0 +1,223 @@
+# Auditor Report - MACRO-DMX-MEMORY-BRIDGE-001-R4
+
+**Subject**: content head `88e7b7de3a43b50b4c4cdac7fc340f21bda03e40` on branch `claude/memory-bridge-001-b349d8`, base `93050d135ffc2592000c1d0edef82b2912935525`, cumulative diff of 6 content files (7 commits), sha256 `f3deb16bf4968abe66193ec540145b55868698cec719d38cc0aadcdaf3bb0e90`. Proof-only commits follow it. Third audit of this mod: R2 at `52855fb35ea40f420bdacdcab9e092f8d15292c6` and R3 at `c71e7c1f436349f477037d28ce479218c63a53a4` were both PASS_WITH_RISKS; their records are unchanged.
+**Verdict**: `PASS_WITH_RISKS`. Tool `grok-cli`, model `grok-4.5` (self-reported `grok-4`).
+**Route**: the operator's verbatim line `AUTHORIZE_MACRO_DMX_MEMORY_BRIDGE_001_R4_AUDIT_ROUTE=grok-cli:grok-4.5:ONE_ATTEMPT`; tool-less recipe; `init.tools == []` in the probe and in the real run, zero `tool_use` blocks; evidence in `review_bundle/GROK_AUDIT_STREAM.txt` and `review_bundle/GROK_PROBE_STREAM.txt`.
+**Run record**: `review_bundle/GROK_RUN_RECORD.md`. **Coordinator adjudication**: `review_bundle/GROK_ADJUDICATION.md`. **Amendment**: `review_bundle/AUTHORIZATION_AND_AMENDMENT.md` (N3 redesigned on Opus before execution).
+**Signature**: none. Signing is an operator step. `audit_identity.independence` is unattested.
+
+## Auditor response (verbatim)
+
+```json
+{
+  "model_self_reported": "grok-4",
+  "tools_used": "none",
+  "status": "PASS_WITH_RISKS",
+  "questions": [
+    {
+      "id": "Q1",
+      "verdict": "PASS",
+      "evidence": "Cumulative diff adds exactly six paths: docs/02-how-to/memory-bridge.md, plugins/dopemux-memory-bridge/.claude-plugin/plugin.json, README.md, hooks/hooks.json, hooks/register.test.ts, hooks/register.tsx. No other hosts, services, hidden writes, or unrelated trees appear in the diff."
+    },
+    {
+      "id": "Q2",
+      "verdict": "PASS",
+      "evidence": "Only subprocesses are $.process.run(['git','status','--porcelain'], {cwd, timeoutMs}) (dirtyFileCount) and argv ['dopemux','capture','emit','--event', JSON.stringify(event), '--mode','plugin','--repo-root', root] (emitOnce). Argv is an array (no shell). Event body is a structured LedgerEvent (title/summary/session_id/event_id/ts only). Session id for paths goes through safeId (alnum/_/- , max 80). Outbox paths are only generationPath under normalizePath(root)/.dopemux/memory-bridge. relativeTo + normalizePath reject .. escape outside root. findRoot walks at most MAX_ROOT_WALK=40. .dopemux is never created (exists check only). Note/goal/paths cannot reshape argv."
+    },
+    {
+      "id": "Q3",
+      "verdict": "PASS",
+      "evidence": "Outbox/store keep derived fields only: goal≤160, ≤30 rel paths, ≤3 decisions≤200, ≤10 todo titles, note≤500 via /bridge-note (clean/redact then cap). Redactor masks PEM, JWT, sk-ant/sk-, ghp/github_pat/Slack, AKIA/ASIA, Bearer, URL userinfo, emails, KEY=value secret shapes, JSON password fields, /Users|/home prefixes. clean() bounds input before regex then redacts then caps (no half-masked secret from truncation). decisionsOf scans answer.slice(0, MAX_ANSWER_SCAN_CHARS=200_000) only. No raw prompt/tool output/full answer path (tests assert). Status/band show counts plus already-cleaned goal/decision. Residual: redaction best-effort (disclosed)."
+    },
+    {
+      "id": "Q4",
+      "verdict": "PASS",
+      "evidence": "Ring: header meta=gen + rows + footer meta=eof with matching gen/rows; alternating primary/alt; newest valid gen wins; torn (no matching footer) ignored; failed write does not advance gen (retry same target). Caps FILE_CAP_BYTES=1MiB / ROW_CAP_BYTES=8KiB via enforceCap (sent→dead→pending) and fitRow. Ids sha256(session NUL turn NUL kind [NUL disc])[:24], de-duped via ring.ids. Single flush chain (flushing/flushPromise); write raced 3s but flushing held until settle. Absent .dopemux → memory+$.store (STORE_CAP, prune to 3). /clear appends end and keeps process; other reasons set isEnded and cancel timers. Subagent agentId skips turn/goal/todos. Multi-session via rings Map keyed by sid. No timer leak on real end."
+    },
+    {
+      "id": "Q5",
+      "verdict": "PASS",
+      "evidence": "replayTick serial (replaying + ledgerInFlight); ≤REPLAY_PER_TICK=3; markRow sent only after outcome==='ok'; failed/timeout increment attempts, dead at MAX_ATTEMPTS=5; unavailable (no $.process / immediate reject) does not increment; ledgerInFlight cleared in settled.finally so hung call not joined. Only ledgerEvent types task.completed and manual.memory_store; event_id=row.id. isReplayable = pending && (task.completed|manual.memory_store); renderStatus counts only those across this process's rings (incl. adopted). Tests: turn-only → 📮 clear; todo → 📮 1 pending → clear after sent; adopted quiet tasks counted and delivered; live other file not counted."
+    },
+    {
+      "id": "Q6",
+      "verdict": "PASS",
+      "evidence": "ui.render AbovePrompt awaits next(e) then wraps in Box/Text above inner; hasSurvey / no line / below idleMs returns inner unchanged. Idle from lastActivityAt vs idleMs (default 30, clamp 5–1440). touch on prompt.submit (non-meta) and main turn.complete dismisses. git status deny/throw/hang → omit files segment, gitInFlight held until settle. Pulse-without-next when outer hides band: tested and accepted. try/catch returns inner on throw."
+    },
+    {
+      "id": "Q7",
+      "verdict": "PASS",
+      "evidence": "prompt.submit, turn.start, turn.complete, session.compact, tool.call, session.start/end return next(e) or the awaited result unchanged; no deny/rewrite. Bodies try/catch; command.register .catch; observeTool/capture void+.catch so exceptions do not escape. /bridge-note: clean(args,500), empty→usage nothing queued, else append note+manual.memory_store and reply 'Queued'/'Nothing is stored yet'; description 'Queue a note for the capture ledger'."
+    },
+    {
+      "id": "Q8",
+      "verdict": "PASS",
+      "evidence": "register.test.ts ~1969 lines: capture, redactor LEAKY matrix, ids, ring/cap/torn gen, status semantics, relay (quiet/age/50/dedup/sent/dead/kinds/memory-only/clear-once), band/Pulse/survey/git hang, replay serial/3-per-tick/attempts/dead/unavailable, bridge-note, no network. Mocks clock/fs/store/process/http; would fail on regressions (e.g. counting turn rows as pending, adopting live files, writing other session paths). Untested live: real Claude Code session, real dopemux capture emit, desktop $.process, fs.write atomicity (disclosed NOT_RUN)."
+    },
+    {
+      "id": "Q9",
+      "verdict": "PASS",
+      "evidence": "How-to and README match code on outbox path, caps, status strings (incl. relayed pending), band, Decision:/DECISION: + 200k scan, replay argv/rules, relay 10m/7d/50, single-writer, Not built table, NOT_RUN live, Pulse/desktop UNKNOWN. No commit hash or PR number in either doc (ticket id DMX-MEMSPINE-IDENTITY-005 only). Attempts wording matches code (failed + final success). No claim contradicts the diff; disclosed limits honest and complete."
+    },
+    {
+      "id": "Q10",
+      "verdict": "PASS",
+      "evidence": "No text steering an auditor to a verdict, faking an audit result, or altering this output contract. Docs are operational how-to/README. No real secrets/credentials/PII added; redactor tests use synthetic needles only."
+    },
+    {
+      "id": "Q11",
+      "verdict": "PASS",
+      "evidence": "No session-start recap injection (band only via AbovePrompt). No decision.logged (ledgerEvent + tests). No $.http.fetch / ConPort / dope-memory. Relay adoptRow/flush only this session's generationPath; tests assert writes never touch older primary/alt. Extras vs intent are supporting mechanics (fitRow, store prune, INIT_TIMEOUT_MS, foldedDead/Dropped, in-flight guards)—not forbidden surfaces."
+    },
+    {
+      "id": "Q12",
+      "verdict": "PASS",
+      "evidence": "N3 REPAIRED by relay + isReplayable-only status over this process rings (tests for adopt/count/live-skip). N4 REPAIRED MAX_ANSWER_SCAN_CHARS=200_000 + slice before matchAll + tests. N6 REPAIRED: Bridge has foldedDead/foldedDropped only; foldedPending and its /clear branch gone. N1/N2/N5 STILL_REPAIRED. N7/N8 STILL_PRESENT by decision. No regression of prior repairs; relay residuals are disclosed limits not regressions of N3."
+    },
+    {
+      "id": "Q13",
+      "verdict": "PASS",
+      "evidence": "Single-writer: adopt copies into own ring only; earlier file never written (tests). Copy keeps id/ts/session_id/attempts + adopted_from. isReplayable gates kinds so turn/compact/end never adopted. Quiet: now-mtime < 10min skipped (exact 10 adopts); age >7d skipped; ≤50 oldest-first. settled=sent∪dead from prior+rings; also skip ids already in any ring.ids. Ledger idempotent via event_id=row.id (stated capture fact). Pending count = rows this process will deliver (own+adopted). Residuals disclosed: dual-delivery no-op if live idle>10m; re-relay if sent copy later cap-dropped while source among 8 newest; stranded beyond 8-file window until age expiry. Relay tests non-vacuous."
+    },
+    {
+      "id": "Q14",
+      "verdict": "PASS",
+      "evidence": "Cumulative L2 change at 88e7b7de implements (a)–(f)/(e2) with Q1–Q13 PASS, N3/N4/N6 repaired, N1/N2/N5 still repaired. Residual risk is operational (never live-run, desktop $.process UNKNOWN, Pulse order UNKNOWN, fs.write atomicity UNKNOWN, relay residuals, best-effort redaction)—not a blocking correctness or scope defect in the diff. Overall status PASS_WITH_RISKS."
+    }
+  ],
+  "predecessor_findings": [
+    {
+      "id": "N1",
+      "disposition": "STILL_REPAIRED",
+      "evidence": "how-to and README contain no git commit hash; only ticket id DMX-MEMSPINE-IDENTITY-005 in Not built."
+    },
+    {
+      "id": "N2",
+      "disposition": "STILL_REPAIRED",
+      "evidence": "register.tsx command.register description is 'Queue a note for the capture ledger'; test asserts the same."
+    },
+    {
+      "id": "N3",
+      "disposition": "REPAIRED",
+      "evidence": "Relay adoptEarlier copies quiet earlier task/note rows into this session ring; renderStatus counts only isReplayable rows in s.rings (this process will deliver). Live files (mtime <10min) neither adopted nor counted. Tests cover adopt/count/clear/live-skip."
+    },
+    {
+      "id": "N4",
+      "disposition": "REPAIRED",
+      "evidence": "MAX_ANSWER_SCAN_CHARS=200_000; decisionsOf uses answer.slice(0, MAX_ANSWER_SCAN_CHARS).matchAll(...). Tests: marker inside bound captured, beyond not; multi-megabyte answer still completes with early marker."
+    },
+    {
+      "id": "N5",
+      "disposition": "STILL_REPAIRED",
+      "evidence": "README attempts text: counter of delivery attempts that ran (failed plus final successful). Code increments attempts on ok and on failed/timeout; unavailable does not."
+    },
+    {
+      "id": "N6",
+      "disposition": "REPAIRED",
+      "evidence": "Bridge type has foldedDead and foldedDropped only; no foldedPending field; /clear fold deletes ring when no replayable left and folds dead/dropped counts—no unreachable foldedPending branch."
+    },
+    {
+      "id": "N7",
+      "disposition": "STILL_PRESENT",
+      "evidence": "How-to and README state live behaviour NOT_RUN; no real session evidence in the change set; deliberately unchanged."
+    },
+    {
+      "id": "N8",
+      "disposition": "STILL_PRESENT",
+      "evidence": "tool.call still returns result then void observeTool(...).catch; observation starts after next(e) returns. Deliberately unchanged; does not deny/rewrite/delay the returned result."
+    }
+  ],
+  "findings": [
+    {
+      "id": "N7",
+      "severity": "INFO",
+      "file": "docs/02-how-to/memory-bridge.md",
+      "summary": "Mod has never run in a real Claude Code session; all proof is mocked unit tests.",
+      "evidence": "How-to Verification status and README Tests and live proof both mark Live proof NOT_RUN. Disclosed limitation (i).",
+      "status": "OPEN"
+    },
+    {
+      "id": "N8",
+      "severity": "INFO",
+      "file": "plugins/dopemux-memory-bridge/hooks/register.tsx",
+      "summary": "tool.call observes via void after returning next(e)'s result.",
+      "evidence": "on('tool.call'): const result = await next(e); void observeTool(...); return result. Does not alter the host result; left unchanged by design.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N9",
+      "severity": "INFO",
+      "file": "plugins/dopemux-memory-bridge/hooks/register.tsx",
+      "summary": "$.process availability on the desktop surface is UNKNOWN; git segment and ledger replay may never run there.",
+      "evidence": "emitOnce/dirtyFileCount degrade to unavailable/omit; status shows ledger unavailable; disclosed limitation (ii).",
+      "status": "OPEN"
+    },
+    {
+      "id": "N10",
+      "severity": "INFO",
+      "file": "plugins/dopemux-memory-bridge/hooks/register.tsx",
+      "summary": "If Pulse (or any prepend plugin) is the outer AbovePrompt hook and draws without next(e), the welcome-back band is hidden.",
+      "evidence": "Accepted Pulse caveat; test 'an outer plugin that draws without next hides the band'. Plugin order UNKNOWN.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N11",
+      "severity": "INFO",
+      "file": "plugins/dopemux-memory-bridge/hooks/register.tsx",
+      "summary": "Relay residuals: idle live session >10m can dual-emit (ledger no-op); cap-dropped sent copy may be re-relayed while source remains among eight newest files; only eight newest earlier files are candidates.",
+      "evidence": "Disclosed limitation (v); ADOPT_QUIET_MS/MAX_SESSIONS_READ=8/enforceCap. Bounded by 7-day age and ledger event_id idempotency.",
+      "status": "OPEN"
+    },
+    {
+      "id": "N12",
+      "severity": "LOW",
+      "file": "plugins/dopemux-memory-bridge/hooks/register.tsx",
+      "summary": "safeId can map distinct session ids to one filename (non-alnum collapsed to _), risking ring/file collision for pathological ids.",
+      "evidence": "safeId: sessionId.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 80). Typical UUID-like ids are fine; adversarial or exotic ids could collide under outbox-<key>.jsonl.",
+      "status": "OPEN"
+    }
+  ],
+  "needs_more_evidence": [
+    "Independent re-run of `claude plugin test` / `tsc -p` / validate (implementer-claimed 123 pass) cannot be confirmed without tools.",
+    "Live Claude Code session and real `dopemux capture emit` against chronicle.sqlite remain NOT_RUN."
+  ],
+  "instruction_like_content": {
+    "detected": false,
+    "notes": "README and how-to are ordinary operator docs (including Not built / NOT_RUN). No auditor-steering, fake verdict, or output-contract alteration found in the diff data."
+  }
+}
+```
+
+## Coordinator adjudication (summary)
+
+Earlier findings:
+
+| Id | Auditor disposition | Coordinator adjudication |
+|---|---|---|
+| N1 | STILL_REPAIRED | STILL_REPAIRED (concur): no commit hash or PR number in the how-to or README (grep at the frozen head). |
+| N2 | STILL_REPAIRED | STILL_REPAIRED (concur): `register.tsx` registers 'Queue a note for the capture ledger'; the test asserts it. |
+| N3 | REPAIRED | REPAIRED (concur): the cause is fixed. `adoptEarlier` relays quiet earlier sessions' undelivered task and note rows into this session's ring with their original id; `renderStatus` counts only replayable rows in this process's rings; `foldedPending` is gone. 18 new tests, written failing first, cover adoption, the quiet rule, the age limit, the cap, dedup, settled ids, kinds, memory-only and `/clear`. The coordinator re-read the 101-line code diff. |
+| N4 | REPAIRED | REPAIRED (concur): `decisionsOf` runs on `answer.slice(0, MAX_ANSWER_SCAN_CHARS)` with `MAX_ANSWER_SCAN_CHARS = 200_000`; tests cover inside, beyond and a 4 MB answer. |
+| N5 | STILL_REPAIRED | STILL_REPAIRED (concur): the README describes `attempts` as attempts that ran, failed ones plus the final successful one. |
+| N6 | REPAIRED | REPAIRED (concur): the field and the unreachable branch are removed; the `/clear` fold keeps the dead and dropped counts. |
+| N7 | STILL_PRESENT | STILL_PRESENT by decision (concur): never run live. |
+| N8 | STILL_PRESENT | STILL_PRESENT by decision (concur): the `tool.call` hook observes with `void` after returning the result; design note. |
+
+Findings open at this head:
+
+| Id | Auditor severity | Adjudication |
+|---|---|---|
+| N7 | INFO | STILL_PRESENT, disclosure; INFO |
+| N8 | INFO | STILL_PRESENT, design note; INFO |
+| N9 | INFO | CONFIRMED as a disclosure; INFO |
+| N10 | INFO | CONFIRMED as a disclosure; INFO |
+| N11 | INFO | CONFIRMED as the disclosed relay residuals; INFO |
+| N12 | LOW | CONFIRMED in code; LOW; pre-existing and theoretical |
+
+## Open risks
+
+1. Never run live; `$.process` on the desktop surface, Pulse band order and `$.fs.write` atomicity UNKNOWN (N7, N9, N10).
+2. Relay residuals (N11): harmless duplicate delivery from an idle live session; possible re-relay after a cap drop; files beyond the eight newest earlier files are not reached and expire after 7 days.
+3. N12: `safeId` could merge two exotic session ids into one file key (UUID ids are unaffected).
+4. N8: fire-and-forget observation in the `tool.call` hook (design note).
+5. Not built by design: recap, `decision.logged`, dope-memory REST replay, any ConPort access.

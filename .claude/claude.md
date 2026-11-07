@@ -274,7 +274,26 @@ sharing-class table + command surface (`init`/`start`/`stop`/`doctor` implemente
 `reconcile`/`adopt`/`migrate`/`switch-project` PLANNED — `switch-project` transitional only): AGENTS.md §12.6
 and `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (ACCEPTED with supervisor rulings 2026-07-28).
 
+**Runner memory identity (Wave 2A, AGENTS.md §12.7)**: dope-memory and ConPort take an auth
+mode `off|log|enforce` (`DOPE_MEMORY_AUTH_MODE`, `CONPORT_AUTH_MODE`; sidecar default `log`) and
+store the principal of a valid keychain-held token (`dopemux auth issue <principal> --apply`)
+or `unverified`. `dopemux mcp generate --agent-matrix --apply --output-dir <dir>` writes Codex's
+`conport`/`dope-memory` entries only when both servers report `log` or `enforce` with
+identity-required writes (bound to the server's workspace: an omitted `workspace_id` or
+`instance_id` is filled from the server's binding, a mismatched workspace is rejected) and a
+`runner:codex` token exists. Claude Code stays on direct HTTP
+(`.mcp.json`, `mcp init|ensure` unchanged; its writes need no ids and are stored `unverified`);
+its move to the bridge is Wave 2B. **Not built:**
+`enforce` in 2A (container callers have no keychain, container ids unknown, bridge progress
+route drops `instance_id`, Claude on direct HTTP, other writers), `dopemux mcp doctor`
+reporting of unverified writers (read each server's `/health`: `auth_mode`,
+`auth_unverified_calls`), the orchestrator (Wave 2C), the other runners (Wave 2B). Both memory
+images need a rebuild first. Steps and rollbacks:
+[`docs/02-how-to/runner-memory-identity.md`](../docs/02-how-to/runner-memory-identity.md).
+ADR-MCPINT-002 amendment status: **proposed**.
+
 **Key docs**:
+- [`docs/02-how-to/runner-memory-identity.md`](../docs/02-how-to/runner-memory-identity.md) — Wave 2A operator steps with rollbacks
 - [`docs/02-how-to/mcp-setup-other-repos.md`](../docs/02-how-to/mcp-setup-other-repos.md) — user guide for other projects
 - [`docs/02-how-to/mcp-transport-and-port-bugs.md`](../docs/02-how-to/mcp-transport-and-port-bugs.md) — bug record + correct analysis
 - `AGENTS.md §12` — canonical MCP rules for all agents

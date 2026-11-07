@@ -1,0 +1,215 @@
+{
+  "id": "TP-DMX-PULSE2R2-W03-SUCCESSOR-PACK-001",
+  "project": "dopemux-mvp",
+  "target": "Qualify the successor of PR #1472: after W01 and W02 are committed and the content head C is frozen, run the deterministic closure checks and gates, preserve the predecessor verdict as data, and build the audit input (cumulative frozen diff, audit prompt, lineage record, hashes) as one proof-only commit, so exactly one independent audit of the cumulative subject can be run on an operator-approved route. No verdict, no signing, no push.",
+  "invariants": [
+    "MACRO-DMX-PULSE-002-R2 invariants I01-I08 apply. SUCCESSOR OF PR #1472 (not an unrelated stacked repair): the macro's result is the audited SUCCESSOR HEAD of the whole Pulse feature. Predecessor record, kept verbatim and never edited or relabelled: audited head 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147, signed proof head f4115046484ed0dc580cc4337bb8c7cf55d39af7, verdict PASS_WITH_RISKS with Q3 FAIL on F1, and the operator's 2026-10-22 acceptance of F1 as a disclosed residual risk. The existing signed proofs for #1472 do NOT cover this work. It is judged by exactly ONE new independent audit of the CUMULATIVE subject (merge-base(origin/main, C)..C, the whole feature), not only the delta.",
+    "Purpose: SUCCESSOR QUALIFICATION. Produce deterministic custody, lineage and gate evidence plus the audit input, so that exactly one independent audit of the cumulative successor subject can run. Produce NO verdict, claim NO acceptance, sign nothing, push nothing. The audit itself is NOT part of this workstream: it is a separate, operator-gated step on one proposed route (AUDITOR_BINDING_PROPOSED.json) and is not run by this authorization.",
+    "Executor and route: the team lead runs this workstream itself with deterministic local tools (runner local-shell, model NONE, effort NONE). Model calls: 0. No child is dispatched. Write ONLY the files named in write_surface, all under proof/MACRO-DMX-PULSE-002-R2/review_bundle/ and all flat (no subdirectories).",
+    "Exact custody: worktree /Users/hue/code/dopemux-mvp/.claude/worktrees/pulse-f1-001-5a321f; branch claude/pulse-f1-001-5a321f (local only, nothing pushed); base f4115046484ed0dc580cc4337bb8c7cf55d39af7 = origin/feat/pulse-001 = the head of PR #1472 (signed proof head); HEAD must be hard-equal to the base at W01 start and porcelain must show only the untracked task-packets/MACRO-DMX-PULSE-002/ and task-packets/MACRO-DMX-PULSE-002-R2/. Writers: W01-implementer (Sonnet child) writes only register.tsx and register.test.ts; W02-implementer (Haiku child) writes only README.md and the how-to; W03 is the team lead (local-shell) writing only proof/MACRO-DMX-PULSE-002-R2/review_bundle/. The team lead alone commits, one commit per workstream, explicit pathspec: C1 (W01), C2 (W02) = the content head C that the audit freezes, P (W03) = a proof-only successor. Rollback is git revert in reverse order (P, C2, C1); no reset, no force-push; deleting the branch or worktree is an operator gate.",
+    "Preconditions (any miss: STOP, NEEDS_SUPERVISOR): W01 and W02 are committed as C1 then C2; HEAD = C2 = the content head C; `git rev-list --count f4115046484ed0dc580cc4337bb8c7cf55d39af7..HEAD` = 2; `git rev-parse f4115046484ed0dc580cc4337bb8c7cf55d39af7` is an ancestor of HEAD; `git status --porcelain` shows only the untracked task-packets/ directories; PR #1472 is still OPEN at f4115046484ed0dc580cc4337bb8c7cf55d39af7 (checked with gh).",
+    "CLOSURE_CHECKS.txt, each line PASS or FAIL with the command and its output: (1) 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147 and f4115046484ed0dc580cc4337bb8c7cf55d39af7 are both ancestors of C; (2) `git diff --name-only f4115046484ed0dc580cc4337bb8c7cf55d39af7..C | sort` equals exactly the four files plugins/dopemux-pulse/hooks/register.tsx, plugins/dopemux-pulse/hooks/register.test.ts, plugins/dopemux-pulse/README.md, docs/02-how-to/pulse-status-line.md; (3) `git diff --name-only $(git merge-base origin/main C)..C | sort`, after removing every path that starts with proof/MACRO-DMX-PULSE-001/ or proof/pr_merge/embedded-audit/pr-1472/ (the PR's own earlier proof and signed-attestation files, which must each be unchanged from the base of this macro), equals exactly these eight content files: docs/02-how-to/pulse-status-line.md, plugins/dopemux-pulse/.claude-plugin/plugin.json, plugins/dopemux-pulse/README.md, plugins/dopemux-pulse/hooks/hooks.json, plugins/dopemux-pulse/hooks/register.test.ts, plugins/dopemux-pulse/hooks/register.tsx, services/adhd_engine/api/routes.py, services/adhd_engine/tests/test_state_contract.py; (4) `git diff f4115046484ed0dc580cc4337bb8c7cf55d39af7..C -- proof/MACRO-DMX-PULSE-001 proof/pr_merge/embedded-audit/pr-1472 services src .claude` is empty (the old verdict, proofs, attestations and the engine are untouched); (5) the sha256 of each predecessor verdict file at f4115046484ed0dc580cc4337bb8c7cf55d39af7 equals its sha256 at C: proof/MACRO-DMX-PULSE-001/PROOF.json, proof/MACRO-DMX-PULSE-001/PROOF.json.sig, proof/MACRO-DMX-PULSE-001/AUDITOR_REPORT.md, proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md, proof/MACRO-DMX-PULSE-001/review_bundle/GROK_AUDIT_RESPONSE.txt, proof/pr_merge/embedded-audit/pr-1472/PROOF.json, proof/pr_merge/embedded-audit/pr-1472/PROOF.json.sig.",
+    "GATES.txt: run at C and record every command, its exit code and its bucket PASS/FAIL/NOT_RUN verbatim: `claude plugin validate plugins/dopemux-pulse`; `claude plugin test plugins/dopemux-pulse`; `tsc -p plugins/dopemux-pulse` (NOT_RUN with the reason if the engine did not lay the types); `/Users/hue/code/dopemux-mvp/.venv/bin/pre-commit run --from-ref origin/feat/pulse-001 --to-ref HEAD` (the primary checkout's venv; a worktree has none); `/Users/hue/code/dopemux-mvp/.venv/bin/python scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text` and again with `--base f4115046484ed0dc580cc4337bb8c7cf55d39af7`; `/Users/hue/code/dopemux-mvp/.venv/bin/python -m pytest services/adhd_engine/tests/test_state_contract.py -q` (unchanged, must still pass); `git diff --check`; `! grep -nE '[0-9a-f]{7,40}|#[0-9]{3,5}' plugins/dopemux-pulse/README.md docs/02-how-to/pulse-status-line.md`. A FAIL is reported as FAIL and returned as NEEDS_SUPERVISOR; the team lead does not fix it here. At most one deterministic rerun of a tool that failed for an environmental reason.",
+    "Pack (flat, exactly these 18 names): MACRO_PACKET.json, EXECUTION_BINDING.json, AUDITOR_BINDING_PROPOSED.json, ALLOWANCES_PROPOSED.json, ISSUANCE.md, W01_TASK_PACKET.json, W02_TASK_PACKET.json, W03_TASK_PACKET.json, AUDIT_PROMPT_TEMPLATE.txt, W01_RETURN.md, W02_RETURN.md, SUCCESSOR_LINEAGE.json, GATES.txt, CLOSURE_CHECKS.txt, FROZEN_CUMULATIVE.diff, FROZEN_DELTA.diff, AUDIT_PROMPT.txt, SHA256SUMS.txt. The first nine are copies of the R2 package members taken from task-packets/MACRO-DMX-PULSE-002-R2/ with sha256 re-verified against the macro pins (W01_TASK_PACKET.json, W02_TASK_PACKET.json, W03_TASK_PACKET.json are the three WORKSTREAMS/Wnn/TASK_PACKET.json files renamed). W01_RETURN.md and W02_RETURN.md are the children's final reports, saved verbatim as received together with the requested-versus-observed model (observed = UNKNOWN without a runtime receipt) and the counted advisor_calls (must be 0). FROZEN_CUMULATIVE.diff is `git diff $(git merge-base origin/main C)..C -- ` followed by the eight content paths (the audited subject; the proof files are excluded on purpose); FROZEN_DELTA.diff is `git diff f4115046484ed0dc580cc4337bb8c7cf55d39af7..C`; record the sha256 of both in SUCCESSOR_LINEAGE.json. SHA256SUMS.txt covers every other file of the pack and is written last.",
+    "AUDIT_PROMPT.txt is built from AUDIT_PROMPT_TEMPLATE.txt (sha256 7b0ee9d3dde9ba564e73898eccf14e0fd55927b934bc7350a54d09ccab00d30d) by deterministic substitution only: {{BASE_SHA}} = the merge-base sha, {{HEAD_SHA}} = C, {{COMMIT_COUNT}} (`git rev-list --count <merge-base>..C -- <the eight paths>`) and {{FILE_COUNT}} (8) from git, {{VALIDATION_SUMMARY}} = one line per GATES.txt row with its exact bucket (no adjectives, no claim a row does not support), {{DIFF}} = the contents of FROZEN_CUMULATIVE.diff, substituted last. Each placeholder occurs exactly once; after the first five substitutions the only `{{` left is the single `{{DIFF}}`; the result is at most 150000 bytes, otherwise STOP (never truncate the diff). Do not edit the template text.",
+    "SUCCESSOR_LINEAGE.json (authority NONE) records, as data: predecessor_pr 1472; predecessor_audited_head 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147; predecessor_proof_head f4115046484ed0dc580cc4337bb8c7cf55d39af7; predecessor_verdict exactly \"PASS_WITH_RISKS\" and predecessor_q3 exactly \"FAIL\" (verbatim, never relabelled, never combined with the words superseded or replaced); predecessor_accepted_risk = the 2026-10-22 operator decision on F1 with its source path; predecessor_files_sha256 for every file listed in check (5); successor_content_head C; successor_base = the merge-base sha; delta and cumulative diff sha256; repair_claims for F1, F3, F4, F6 each with status \"CLAIMED_NOT_AUDITED\"; not_repaired for F2, F5, F7 each with its reason; r1_issued_revision = the four R1 pins (MACRO_PACKET 586d94e4…, as listed in ISSUANCE.md of this package); audit = {\"status\": \"NOT_RUN\", \"route\": \"PROPOSED:AUDITOR_BINDING_PROPOSED.json\"}.",
+    "Commit: after every check above is PASS and every file exists, the team lead commits the 18 files as ONE proof-only commit P with an explicit pathspec (no `git add -A`). P must touch nothing outside proof/MACRO-DMX-PULSE-002-R2/review_bundle/. C stays the frozen audit subject; P is a proof-only successor and does not by itself require a new audit. Copy this pack, and the R2 package, to the shared notes folder the same hour (the session scratchpad has been lost before).",
+    "Not in this workstream: running or scheduling the audit; writing PROOF.json, .sig or AUDITOR_REPORT.md for R2 (they exist only after the audit, in a separate operator-gated closure); signing; pushing; opening or retargeting a PR; editing or overwriting anything under proof/MACRO-DMX-PULSE-001/ or proof/pr_merge/embedded-audit/pr-1472/ (the existing signed attestation for the old head), or the R1 package.",
+    "Finite limits for W03 (PROPOSED in ALLOWANCES_PROPOSED.json; binding once the operator sends the R2 AUTHORIZE line): ONE dispatch attempt plus at most ONE supervisor-narrowed repair attempt, and the repair only after a deterministic-gate failure; at most 2 coordinator review rounds; at most 30 minutes active and 60 minutes elapsed; at most 0 child tokens where the runner reports usage (otherwise UNKNOWN, not enforced). Exceeding any limit: STOP and return NEEDS_SUPERVISOR with evidence. No self-extension, no retry beyond the one repair, no provider or model substitution. Model calls are 0, so there is no token budget. A deterministic tool may be rerun once for an environmental failure only."
+  ],
+  "depends_on": [
+    "TP-DMX-PULSE2R2-W02-DOCS-ALIGN-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-PULSE-002-R2",
+    "base_branch": "feat/pulse-001",
+    "parent_tp_id": "MACRO-DMX-PULSE-002-R2",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "shell",
+    "branch": "claude/pulse-f1-001-5a321f",
+    "base_branch": "feat/pulse-001",
+    "stacked_because": "PR #1472 (feat/pulse-001) is open and unmerged; this packet builds its audited successor head on top of the signed proof head."
+  },
+  "commit": {
+    "message": "proof(pulse-002-r2): successor closure checks, gates and audit input for the pulse hardening (proof-only)",
+    "allowlist": [
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/MACRO_PACKET.json",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/EXECUTION_BINDING.json",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDITOR_BINDING_PROPOSED.json",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/ALLOWANCES_PROPOSED.json",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/ISSUANCE.md",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_TASK_PACKET.json",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_TASK_PACKET.json",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W03_TASK_PACKET.json",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDIT_PROMPT_TEMPLATE.txt",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_RETURN.md",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_RETURN.md",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/SUCCESSOR_LINEAGE.json",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/CLOSURE_CHECKS.txt",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/FROZEN_CUMULATIVE.diff",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/FROZEN_DELTA.diff",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDIT_PROMPT.txt",
+      "proof/MACRO-DMX-PULSE-002-R2/review_bundle/SHA256SUMS.txt"
+    ],
+    "verify": [
+      "git diff --name-only HEAD~1..HEAD | sort   # equals the 18 pack paths and nothing else",
+      "sh -c 'cd proof/MACRO-DMX-PULSE-002-R2/review_bundle/ && shasum -a 256 -c SHA256SUMS.txt'",
+      "git diff --check",
+      "/Users/hue/code/dopemux-mvp/.venv/bin/python -I -c \"import json,sys;[json.load(open(f)) for f in sys.argv[1:]]\" proof/MACRO-DMX-PULSE-002-R2/review_bundle/MACRO_PACKET.json proof/MACRO-DMX-PULSE-002-R2/review_bundle/EXECUTION_BINDING.json proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDITOR_BINDING_PROPOSED.json proof/MACRO-DMX-PULSE-002-R2/review_bundle/ALLOWANCES_PROPOSED.json proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_TASK_PACKET.json proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_TASK_PACKET.json proof/MACRO-DMX-PULSE-002-R2/review_bundle/W03_TASK_PACKET.json proof/MACRO-DMX-PULSE-002-R2/review_bundle/SUCCESSOR_LINEAGE.json"
+    ]
+  },
+  "pr": {
+    "title": "fix(pulse): hold the poll guard until the engine fetch settles (successor of #1472)",
+    "body": "MACRO-DMX-PULSE-002-R2 W01 of 3. Delivery vehicle (fast-forward of feat/pulse-001 or a stacked draft PR) is an operator gate, not decided here. Draft until a new independent final audit.",
+    "base": "feat/pulse-001"
+  },
+  "steps": [
+    {
+      "id": "W03-S1",
+      "task": "Verify preconditions and run the five closure checks",
+      "requirements": [
+        "Any miss or FAIL: STOP with NEEDS_SUPERVISOR."
+      ],
+      "commands": [
+        "git rev-list --count f4115046484ed0dc580cc4337bb8c7cf55d39af7..HEAD",
+        "git merge-base origin/main HEAD",
+        "gh pr view 1472 --json state,headRefOid"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/CLOSURE_CHECKS.txt"
+      ],
+      "validation": [
+        "all five closure rows PASS"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-PULSE-001/PROOF.json",
+        "proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md"
+      ]
+    },
+    {
+      "id": "W03-S2",
+      "task": "Run the deterministic gates at C and record them verbatim",
+      "requirements": [
+        "Report FAIL as FAIL; do not fix."
+      ],
+      "commands": [
+        "claude plugin validate plugins/dopemux-pulse",
+        "claude plugin test plugins/dopemux-pulse"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt"
+      ],
+      "validation": [
+        "every gate row has an exit code and a bucket"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W03-S3",
+      "task": "Build the pack: frozen diffs, lineage, audit prompt, hashes",
+      "requirements": [
+        "Flat files only; template sha must match; prompt at most 150000 bytes."
+      ],
+      "commands": [
+        "shasum -a 256 task-packets/MACRO-DMX-PULSE-002-R2/AUDIT_PROMPT_TEMPLATE.txt"
+      ],
+      "expected_files": [
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/MACRO_PACKET.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/EXECUTION_BINDING.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDITOR_BINDING_PROPOSED.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/ALLOWANCES_PROPOSED.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/ISSUANCE.md",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_TASK_PACKET.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_TASK_PACKET.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W03_TASK_PACKET.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDIT_PROMPT_TEMPLATE.txt",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_RETURN.md",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_RETURN.md",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/SUCCESSOR_LINEAGE.json",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/CLOSURE_CHECKS.txt",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/FROZEN_CUMULATIVE.diff",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/FROZEN_DELTA.diff",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDIT_PROMPT.txt",
+        "proof/MACRO-DMX-PULSE-002-R2/review_bundle/SHA256SUMS.txt"
+      ],
+      "validation": [
+        "no placeholder left",
+        "SHA256SUMS.txt verifies"
+      ],
+      "context_files": [
+        "task-packets/MACRO-DMX-PULSE-002-R2/AUDIT_PROMPT_TEMPLATE.txt",
+        "task-packets/MACRO-DMX-PULSE-002-R2/AUDITOR_BINDING_PROPOSED.json"
+      ]
+    },
+    {
+      "id": "W03-S4",
+      "task": "Commit the pack as one proof-only commit and return",
+      "requirements": [
+        "Explicit pathspec; return the aggregate with authority NONE and the audit status NOT_RUN."
+      ],
+      "commands": [
+        "git diff --stat HEAD~1..HEAD"
+      ],
+      "expected_files": [],
+      "validation": [
+        "commit touches only the pack"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-PULSE-002-R2",
+  "workstream_id": "W03",
+  "risk_lane": "L2",
+  "audit_group": "PULSE-002-R2-FINAL-AUDIT",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "local-shell",
+      "model": "NONE",
+      "effort": "NONE"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/MACRO_PACKET.json",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDITOR_BINDING_PROPOSED.json",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/ALLOWANCES_PROPOSED.json",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/ISSUANCE.md",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_TASK_PACKET.json",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_TASK_PACKET.json",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W03_TASK_PACKET.json",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDIT_PROMPT_TEMPLATE.txt",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W01_RETURN.md",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/W02_RETURN.md",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/SUCCESSOR_LINEAGE.json",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/GATES.txt",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/CLOSURE_CHECKS.txt",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/FROZEN_CUMULATIVE.diff",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/FROZEN_DELTA.diff",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/AUDIT_PROMPT.txt",
+    "proof/MACRO-DMX-PULSE-002-R2/review_bundle/SHA256SUMS.txt"
+  ],
+  "canonical_writers": [
+    "W03-team-lead"
+  ],
+  "semantic_scope": [
+    "pulse-successor-proof"
+  ],
+  "rollback_boundary": "git revert <P> on claude/pulse-f1-001-5a321f (REVERT_COMMITS); base f4115046484ed0dc580cc4337bb8c7cf55d39af7",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

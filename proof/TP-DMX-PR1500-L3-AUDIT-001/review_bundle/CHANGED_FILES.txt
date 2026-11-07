@@ -1,0 +1,13 @@
+docker/mcp-servers-source/conport/auth_identity.py
+services/working-memory-assistant/auth_identity.py
+src/dopemux/auth/hashfile.py
+src/dopemux/auth/keychain.py
+src/dopemux/auth/tokens.py
+src/dopemux/commands/auth_commands.py
+src/dopemux/memory/capture_client.py
+tests/unit/runner_memory_2a_r2_w01/test_auth_identity.py
+tests/unit/runner_memory_2a_r2_w02/test_auth_identity.py
+tests/unit/runner_memory_2a_r2_w03/test_auth_commands.py
+tests/unit/runner_memory_2a_r2_w03/test_auth_helper.py
+tests/unit/runner_memory_2a_r2_w03/test_auth_overlap.py
+tests/unit/runner_memory_2a_r2_w06/test_local_writer_principals.py

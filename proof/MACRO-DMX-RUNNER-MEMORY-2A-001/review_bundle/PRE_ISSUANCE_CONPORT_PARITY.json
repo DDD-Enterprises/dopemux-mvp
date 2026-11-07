@@ -1,0 +1,88 @@
+{
+ "rest_initialize": {
+  "http": 200,
+  "error": {
+   "code": -32601,
+   "message": "Method not found: initialize"
+  },
+  "has_result": false
+ },
+ "rest_tools_list": {
+  "http": 200,
+  "count": 13,
+  "error": null
+ },
+ "sse": {
+  "status": "ok (server conport 1.30.0)",
+  "count": 17
+ },
+ "only_rest": [
+  "conport_delete_custom_data",
+  "conport_get_active_work",
+  "conport_get_context",
+  "conport_get_custom_data",
+  "conport_get_decisions",
+  "conport_get_progress",
+  "conport_get_recent_activity",
+  "conport_log_decision",
+  "conport_log_progress",
+  "conport_save_custom_data",
+  "conport_search_content",
+  "conport_update_context",
+  "conport_update_progress"
+ ],
+ "only_sse": [
+  "delete_custom_data",
+  "fork_instance",
+  "get_active_work",
+  "get_context",
+  "get_custom_data",
+  "get_decisions",
+  "get_progress",
+  "get_recent_activity",
+  "log_decision",
+  "log_progress",
+  "promote",
+  "promote_all",
+  "save_custom_data",
+  "search_content",
+  "update_context",
+  "update_progress",
+  "workspace_summary"
+ ],
+ "identical": false,
+ "rest_names": [
+  "conport_delete_custom_data",
+  "conport_get_active_work",
+  "conport_get_context",
+  "conport_get_custom_data",
+  "conport_get_decisions",
+  "conport_get_progress",
+  "conport_get_recent_activity",
+  "conport_log_decision",
+  "conport_log_progress",
+  "conport_save_custom_data",
+  "conport_search_content",
+  "conport_update_context",
+  "conport_update_progress"
+ ],
+ "sse_names": [
+  "delete_custom_data",
+  "fork_instance",
+  "get_active_work",
+  "get_context",
+  "get_custom_data",
+  "get_decisions",
+  "get_progress",
+  "get_recent_activity",
+  "log_decision",
+  "log_progress",
+  "promote",
+  "promote_all",
+  "save_custom_data",
+  "search_content",
+  "update_context",
+  "update_progress",
+  "workspace_summary"
+ ]
+}

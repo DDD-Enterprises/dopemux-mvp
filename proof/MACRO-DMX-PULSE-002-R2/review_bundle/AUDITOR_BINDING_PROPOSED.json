@@ -1,0 +1,130 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "macro_id": "MACRO-DMX-PULSE-002-R2",
+  "stage": "audit_proposed",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "task-packets/MACRO-DMX-PULSE-002-R2/MACRO_PACKET.json",
+    "operator_gate_refs": [
+      "operator instruction 2026-10-23 (relayed by session local_901ed6d9, verbatim): \"Amend the existing Pulse repair packet to qualify #1472's successor, not just create an unrelated stacked repair. Include the guard-lifetime/race fix, exact custody, finite implementation/review limits and one independent audit route. Preserve the old PASS_WITH_RISKS verdict; don't relabel it.\"",
+      "operator decision 2026-10-22 (proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md, \"Operator decisions left\" item 1): F1 accepted as a disclosed residual risk for PR #1472; that record is kept unchanged",
+      "merge-owner finding relayed 2026-10-23: R1 would add a stacked PR without clearing #1472's finalization gate"
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "selection": {
+    "runner": "grok-cli",
+    "runner_availability": "PROPOSED",
+    "model": "grok-4.5",
+    "effort": "high",
+    "connector": "grok.com login via the grok CLI (1.0.67 at the PULSE-001 run; re-check the version at launch)",
+    "configured_identity": "grok-4.5",
+    "response_claimed_identity": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": [
+      "REQUIRED before the verdict counts: the raw event stream with init.tools == [] and no tool_use block, copied into the review bundle",
+      "recipe: reference_grok_cli_contained_audit_recipe (tool-less, no-skills system prompt, 45 disallowed ids, sealed directory holding only the prompt)"
+    ]
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read"
+    ],
+    "forbidden_actions": [
+      "edit",
+      "write",
+      "shell",
+      "mcp",
+      "web_search",
+      "x_search",
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "commit",
+      "push"
+    ],
+    "stop_conditions": [
+      "init.tools != [] in the stream: abort without reading any verdict",
+      "raw stream not saved into the bundle: the audit is void",
+      "launch fails or quota error: STOP, report, no retry, no other route without a new operator line"
+    ],
+    "custody_constraints": [
+      "sealed empty directory holding only AUDIT_PROMPT.txt; no repository mount; no secrets"
+    ],
+    "context_constraints": [
+      "the only input is AUDIT_PROMPT.txt built by W03 from the pinned template"
+    ]
+  },
+  "justification": {
+    "why_runner": "the only route that produced an independent verdict for #1472 and is available without waiting for the Gemini quota reset; different family from the Anthropic implementers",
+    "why_model": "grok-4.5, as in the PULSE-001 audit (self-reported grok-4 there)",
+    "why_effort": "high, as in the recipe",
+    "alternatives_considered": [
+      {
+        "route": "agy gemini-4-argon-high",
+        "disposition": "not proposed",
+        "reason": "429 RESOURCE_EXHAUSTED; quota resets about 2026-10-24T03:30Z; the operator may prefer it for a second family at the cost of waiting"
+      },
+      {
+        "route": "agy gemini-3.1-pro-high",
+        "disposition": "rejected",
+        "reason": "absent"
+      },
+      {
+        "route": "Claude family (any)",
+        "disposition": "rejected",
+        "reason": "same family as the implementers"
+      }
+    ],
+    "cost_latency_tradeoff": "the PULSE-001 run took about 200 s and about USD 0.0436 as reported by its stream; UNKNOWN for a larger prompt",
+    "evidence": [
+      "proof/MACRO-DMX-PULSE-001/review_bundle/GROK_RUN_RECORD.md"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "PROPOSED"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "recorded_at": "2026-10-23T20:50:00Z",
+  "runner_version": "UNKNOWN",
+  "effort_requested": "high",
+  "effort_observed": "UNKNOWN",
+  "auth_profile_ref": "UNKNOWN",
+  "network_posture": "provider-only (one request to the model provider; no repository or secret access)",
+  "containment_posture": "tool-less sealed prompt",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "not triggered"
+  },
+  "response_claimed_model": "UNKNOWN",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "DIFFERENT_FAMILY",
+  "qualification_receipt_ref": "NOT_RUN",
+  "packet_id": "TP-DMX-PULSE2R2-AUDIT-001"
+}

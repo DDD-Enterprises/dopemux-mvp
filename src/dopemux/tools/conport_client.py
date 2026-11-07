@@ -20,15 +20,50 @@ logger = logging.getLogger(__name__)
 # production. Consistency with the other two clients is the point.
 DEFAULT_CONPORT_URL = "http://localhost:3005"
 
+# Wave 2A R2 W05: writes carry this principal's token (design 5.3).
+_PRINCIPAL = "internal:cli"
+
+
+def _bearer_headers() -> Dict[str, str]:
+    """Authorization header for this caller's principal, or {} when no token is available.
+
+    A missing token never fails a write: in log mode the server records it as
+    unverified. Only the principal name is logged, never a token.
+    """
+    try:
+        from dopemux.auth import AuthError, get_token
+    except ImportError:
+        logger.info("dopemux.auth is unavailable; sending %s writes without a token", _PRINCIPAL)
+        return {}
+    try:
+        return {"Authorization": f"Bearer {get_token(_PRINCIPAL)}"}
+    except AuthError:
+        logger.info("no token for %s; sending the write without Authorization", _PRINCIPAL)
+        return {}
+
+
 class ConPortClient:
     """
     Direct HTTP client for ConPort API - bypasses MCP transport issues
     Provides immediate, reliable access to ADHD context preservation features
     """
 
-    def __init__(self, base_url: Optional[str] = None):
+    def __init__(self, base_url: Optional[str] = None, instance_id: Optional[str] = None):
         self.base_url = (base_url or os.getenv("CONPORT_URL", DEFAULT_CONPORT_URL)).rstrip("/")
         self.session: Optional[aiohttp.ClientSession] = None
+        # ConPort requires instance_id on context and progress writes; the envrc exports DOPEMUX_INSTANCE_ID.
+        # workspace_id stays the caller's argument and must equal the server's DOPEMUX_WORKSPACE_ID.
+        self.instance_id = instance_id or os.getenv("DOPEMUX_INSTANCE_ID") or None
+
+    async def _write_headers(self) -> Dict[str, str]:
+        """Content-Type plus this caller's Authorization header when a token is available."""
+        return {"Content-Type": "application/json", **await asyncio.to_thread(_bearer_headers)}
+
+    def _with_instance(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """A copy of ``data`` carrying instance_id when one is known (never overrides the caller's)."""
+        if self.instance_id and "instance_id" not in data:
+            return {**data, "instance_id": self.instance_id}
+        return data
 
     async def _ensure_session(self):
         """Ensure aiohttp session exists"""
@@ -73,8 +108,8 @@ class ConPortClient:
         try:
             async with self.session.post(
                 f"{self.base_url}/api/context/{workspace_id}",
-                json=context_data,
-                headers={"Content-Type": "application/json"}
+                json=self._with_instance(context_data),
+                headers=await self._write_headers()
             ) as response:
                 if response.status == 200:
                     result = await response.json()
@@ -102,8 +137,8 @@ class ConPortClient:
         try:
             async with self.session.post(
                 f"{self.base_url}/api/decisions",
-                json=decision_data,
-                headers={"Content-Type": "application/json"}
+                json=self._with_instance(decision_data),
+                headers=await self._write_headers()
             ) as response:
                 if response.status == 200:
                     result = await response.json()
@@ -149,8 +184,8 @@ class ConPortClient:
         try:
             async with self.session.post(
                 f"{self.base_url}/api/progress",
-                json=progress_data,
-                headers={"Content-Type": "application/json"}
+                json=self._with_instance(progress_data),
+                headers=await self._write_headers()
             ) as response:
                 if response.status == 200:
                     result = await response.json()

@@ -1,0 +1,4 @@
+probe1  start 2026-10-30T10:41:38Z  end 2026-10-30T10:41:44Z  exit 0  total_cost_usd 0.014798296
+probe2  start 2026-10-30T10:42:01Z  end 2026-10-30T10:42:06Z  exit 0  total_cost_usd 0.011786576
+real    start 2026-10-30T10:42:07Z  end 2026-10-30T10:43:54Z  exit 0  duration_ms 106641  total_cost_usd 0.053820096
+total cost 0.080404968 USD; wall clock first probe to end of the real run 2 min 16 s

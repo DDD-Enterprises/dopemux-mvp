@@ -1,0 +1,11 @@
+local validation at aaa2d1ae05048443da7e0e68104f54bbc53075c2 (2026-11-01T06:36:20Z), ui-dashboard
+== npx tsc --noEmit -p .
+exit=0
+== npx vitest run
+ Test Files  11 passed (11)
+      Tests  102 passed (102)
+exit=0
+== npx vite build (outDir outside the repo)
+
+✓ built in 356ms
+exit=0

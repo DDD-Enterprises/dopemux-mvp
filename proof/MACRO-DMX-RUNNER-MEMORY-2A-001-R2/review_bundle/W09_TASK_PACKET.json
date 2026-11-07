@@ -1,0 +1,170 @@
+{
+  "id": "TP-DMX-RUNNERMEM2A-R2-W09-REDLANE-CARVEOUT-001",
+  "project": "dopemux-mvp",
+  "target": "Narrow DCP-RED-MERGE-SEAM-0001 carve-out (design 5.6, G6, operator ruling 1): ADR-227 (status proposed) and file-exact exemptions in src/dopemux/dcp/red_lane_rules.py for exactly the 20 files W01, W02 and W05 name; every other path stays blocked.",
+  "invariants": [
+    "C01 Shared workspace: other workers may edit this checkout. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in the execution worktree .worktrees/runner-memory-2a on feat/runner-memory-2a (base 97b6d5040496e2271c41d24c339d039303bbe6b1); verify `git rev-parse --show-toplevel` and the branch before the first write.",
+    "C02 You never commit, push, merge, open a PR, mark ready, sign, tag, change git config or rewrite history. The team lead alone commits (one commit per workstream, explicit pathspec) after re-reading your diff.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets: never read or print .env*, credential files, keychain items, bearer tokens or token hashes from a real install; never write a real secret into a file, test fixture, log or return. A `.envrc.dopemux-mcp` may be read only for `*_PORT` keys (it exports a database password). Tests use obviously fake values generated in the test. Log a principal name, never a token or an Authorization header.",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Anything live that you did not observe is NOT_RUN. Use only interfaces this packet names or that you confirm in source with file:line; otherwise write UNKNOWN.",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit is held by the supervisor), blockers (each with the action that clears it), advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when: a needed file is outside your write_surface; a contract-sensitive surface outside your write_surface (schema, hook registration, MCP manifest, compose definition, red-lane rules) would change; a required fact is UNKNOWN; or validation still fails after one fix attempt for the same cause (no cheap-model repair loop).",
+    "C08 Authority order: this packet, then runtime code, then schemas, then tests, then docs. The design is docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md revision 2 (sha256 c83aea50bb6bbf98160311c6b46a5ef3fc1741a130705cd955163bf4610734ed); it states intent, not runtime facts. Where the design and runtime code disagree, STOP and report. No workstream edits the design file.",
+    "C09 Evidence input: proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md (sha256 4baa2184923bf0522d2ebb930c09d3e9eb394920c5ac4451f69f2ad0c4d1f117, committed) is R1's W00 result and is fixed input for R2, not re-run. If the hash differs, STOP. Its GATE_TABLE `reductions`, `design_changes` and `evidence` are binding where this packet does not say otherwise; the operator's rulings are proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/OPERATOR_RULINGS_R2.md.",
+    "C10 No live mutation: never start, stop, restart or rebuild a container; never run `dopemux mcp start|up|init|ensure`, `docker compose`, a migration against a real database, `dopemux auth issue|rotate|revoke --apply`, or `dopemux mcp generate --apply`; never write the keychain, ~/.config/dopemux/ or any file outside the worktree. Tests use temp directories, fakes and a stubbed `security` subprocess.",
+    "C11 Python 3.12 through uv (`uv run --frozen --extra test pytest ...`); the harness python3 may be 3.9 and is not evidence. New tests go in this workstream's own directory under tests/unit/ with an empty __init__.py. CI also runs services/working-memory-assistant/tests/test_mcp_http_endpoint.py (ci-complete.yml:195-199); tests at the tests/ root are not run by CI and are run explicitly here.",
+    "C12 DCP red lane (DCP-RED-MERGE-SEAM-0001): paths under services/working-memory-assistant/, docker/mcp-servers-source/conport/ and services/dopecon-bridge/ may be edited only after J01-CARVEOUT has passed (the ADR at docs/90-adr/adr-227-memory-spine-seam-narrow-carveout.md accepted by the operator and the file-exact exemption in effect for this worktree), and only the exact files that ADR exempts. If the PreToolUse guard denies an edit, STOP: never work around the guard, never edit through another tool, never ask another session to make the edit.",
+    "A01 PROPOSED allowances for this workstream (caps, not forecasts; accepted by the R2 authorization): elapsed wall time 90 min from dispatch; subagent tokens 1,000,000; tool uses 200; child attempts: 1 attempt + 1 retry; team-lead review rounds: 1 diff re-read + at most 1 correction round. Active time is not recordable: UNKNOWN; elapsed is the enforceable bound.",
+    "A02 The team lead reads the counters from the child's completion notice (duration_ms, subagent_tokens, tool_uses) and records them with the return. A retry is allowed only after a failed validation with a named cause and only once; a second failure, any exceeded cap or any advisor call ends the workstream.",
+    "A03 When a cap is hit: stop the workstream, start no further attempt, preserve the uncommitted diff untouched, and return NEEDS_SUPERVISOR with the counters and the evidence. No model upgrade, provider change or extra attempt without a new operator ruling.",
+    "B01 Exempt exactly these paths, each as a file-exact negative lookahead anchored with `\\Z` inside the existing pattern for its tree (the ADR-224/226 construction; `.*` patterns compile with re.DOTALL): services/working-memory-assistant/dope_memory_main.py, services/working-memory-assistant/mcp_http.py, services/working-memory-assistant/auth_identity.py, services/working-memory-assistant/eventbus_consumer.py, services/working-memory-assistant/chronicle/store.py, services/working-memory-assistant/chronicle/schema.sql, services/working-memory-assistant/chronicle/sqlite_migrations.py, services/working-memory-assistant/chronicle/migrations/v1_3_0_add_write_principal.sql, services/working-memory-assistant/tests/test_mcp_http_endpoint.py, docker/mcp-servers-source/conport/server.py, docker/mcp-servers-source/conport/enhanced_server.py, docker/mcp-servers-source/conport/instance_detector.py, docker/mcp-servers-source/conport/conport_mcp_stdio.py, docker/mcp-servers-source/conport/auth_identity.py, docker/mcp-servers-source/conport/schema.sql, docker/mcp-servers-source/conport/migrations/008_write_principal.sql, docker/mcp-servers-source/conport/migrations/008_rollback.sql, docker/mcp-servers-source/conport/migrations/conport_migration_gate.py, services/dopecon-bridge/dopecon_bridge/clients.py, services/dopecon-bridge/ddg_mcp_stdio.py. No directory exemption, so no `..` companion is needed; say so in the ADR.",
+    "B02 The ADR (docs/90-adr/adr-227-memory-spine-seam-narrow-carveout.md) follows ADR-224 and ADR-226 in frontmatter and structure, status `proposed`, `relates_to` this macro, ADR-224, ADR-226 and ADR-MCPINT-002; it lists the files, the reason for each (design 5.1-5.3, W00 evidence), what stays blocked, that red_lane_scanner.py content rules still apply, that tools/pr_steward/security_release_gate.py imports FORBIDDEN_PATHS and so follows automatically, and the rollback (revert the rules change).",
+    "B03 Effectiveness (decisive): determine with file:line how the Claude Code PreToolUse guard (.claude/hooks/dcp_surface_guard.py and the native_hooks.py red-lane check) loads FORBIDDEN_PATHS when a session edits a file in this worktree: from this worktree's src, or from the checkout the session started in. Report it as GATE `carveout_effective_in_worktree` = YES / NO / UNKNOWN. If NO or UNKNOWN, the carve-out must land on main as its own PR before W01/W02/W05 can run; say so as a blocker for the operator. Do not test this by attempting a red-lane edit.",
+    "B04 Tests (tests/test_dcp_surface_guard.py and the W09 test directory): every exempted path is allowed; near-misses (same name in another directory, a suffix or prefix variant, a case variant, an embedded newline, a trailing slash, a `..` segment) stay blocked; every other file in the three trees (sample at least five) stays blocked; services/task-orchestrator/ stays blocked."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/runner-memory-2a",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(dcp): ADR-227 narrow DCP-RED-MERGE-SEAM-0001 carve-out for the memory-spine identity files (Wave 2A R2 W09)",
+    "allowlist": [
+      "docs/90-adr/adr-227-memory-spine-seam-narrow-carveout.md",
+      "src/dopemux/dcp/red_lane_rules.py",
+      "tests/test_dcp_surface_guard.py",
+      "tests/unit/runner_memory_2a_r2_w09/"
+    ],
+    "verify": [
+      "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_r2_w09/ tests/test_dcp_surface_guard.py",
+      "git diff --check",
+      "git status --porcelain   # every modified or untracked path is inside the allowlist (git diff does not list new files)"
+    ]
+  },
+  "pr": {
+    "title": "feat(runner-memory): Wave 2A - verified runner identity for dope-memory and ConPort (Codex first)",
+    "body": "Implements MACRO-DMX-RUNNER-MEMORY-2A-001-R2 from docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md revision 2. Draft until the single final independent L3 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W09-S1",
+      "task": "Read the design sections, W00_FINDINGS.md sections and the code this packet cites",
+      "requirements": [
+        "List the W00 reductions and design changes that bind you before any edit."
+      ],
+      "commands": [
+        "shasum -a 256 proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md"
+      ],
+      "expected_files": [],
+      "validation": [
+        "pins verified; binding facts recorded in the return"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md",
+        "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md",
+        "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/OPERATOR_RULINGS_R2.md",
+        "src/dopemux/dcp/red_lane_rules.py",
+        ".claude/hooks/dcp_surface_guard.py",
+        "src/dopemux/claude/native_hooks.py",
+        "docs/90-adr/adr-224-dcp-workflow-seam-narrow-carveout.md",
+        "docs/90-adr/adr-226-dope-context-seam-narrow-carveout.md",
+        "tools/pr_steward/security_release_gate.py"
+      ]
+    },
+    {
+      "id": "W09-S2",
+      "task": "TDD: write the failing tests first, then the code",
+      "requirements": [
+        "Show each new test failing before the code that makes it pass (record the failing run in the return)."
+      ],
+      "commands": [
+        "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_r2_w09/"
+      ],
+      "expected_files": [
+        "tests/unit/runner_memory_2a_r2_w09/__init__.py"
+      ],
+      "validation": [
+        "new tests fail first, then pass"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W09-S3",
+      "task": "Run this workstream's validation and the existing suites in commit.verify",
+      "requirements": [
+        "Report every command with its exit code and bucket."
+      ],
+      "commands": [
+        "uv run --frozen --extra test pytest -q tests/unit/runner_memory_2a_r2_w09/ tests/test_dcp_surface_guard.py",
+        "git diff --check"
+      ],
+      "expected_files": [],
+      "validation": [
+        "all named suites PASS or carry a NOT_RUN reason"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W09-S4",
+      "task": "Return",
+      "requirements": [
+        "Status, validation table, files_written, advisor_calls, observed_model, blockers."
+      ],
+      "commands": [
+        "git status --porcelain",
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the write_surface"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+  "workstream_id": "W09",
+  "risk_lane": "L3",
+  "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "docs/90-adr/adr-227-memory-spine-seam-narrow-carveout.md",
+    "src/dopemux/dcp/red_lane_rules.py",
+    "tests/test_dcp_surface_guard.py",
+    "tests/unit/runner_memory_2a_r2_w09/"
+  ],
+  "canonical_writers": [
+    "W09-implementer"
+  ],
+  "semantic_scope": [
+    "dcp-red-lane-carveout"
+  ],
+  "rollback_boundary": "git revert <W09 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

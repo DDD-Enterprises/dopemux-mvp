@@ -1,0 +1,25 @@
+PR #1486 round 7 audits (packet TP-DMX-PR1486-L2-AUDIT-003), head aaa2d1ae05048443da7e0e68104f54bbc53075c2, base 6fb9d81798cbcca7f99c96f1b9fd07b6d3c7db68 (main = merge-base)
+
+Prompt: scripts.audit.pal_clink_runner --build-prompt over `git diff 6fb9d8179 aaa2d1ae0` with the earlier proof
+directories excluded (`:(exclude)proof/TP-DMX-PR1486-L2-AUDIT-001`, `:(exclude)proof/TP-DMX-PR1486-L2-AUDIT-002`,
+`:(exclude)proof/pr_merge/embedded-audit/pr-1486`); the 58 excluded proof-only paths are listed in EXCLUDED_PROOF_FILES.txt.
+Prompt sha256 4bdc3272d0cfe7c5ec688d873d949faa6f7b85f4f3d3811504aa0cca03b38426. Both runs used a sealed dir holding only AUDIT_PROMPT.txt, under
+~/.local/share/dopemux/evidence/pr1486/r7/. Each wrapper recorded `<runner> exit=$?` and the UTC end time.
+The bundle stores the AGY stream written as AGY_OUTPUT_RAW.jsonl under the name AGY_OUTPUT_RAW.txt (same bytes).
+
+GOVERNING, attempt 1 (spent, no verdict): agy 1.4.12 --model gemini-4-argon-high ; head=aaa2d1ae05048443da7e0e68104f54bbc53075c2 ; started=2026-11-01T06:36:10Z
+  same command with --print-timeout 10m
+  wrapper: agy exit=0 2026-11-01T06:46:14Z   conversation_id=69c12c9b-3104-4359-9866-95c2421c1802
+  stderr: [agy] print timeout after 10m0s with turn in progress; returning partial output
+  result: finished_reason=print_timeout, 0 tokens, empty response (AGY_ATTEMPT1_OUTPUT_RAW.txt). Silent auth
+  succeeded and the message was sent; the model call did not return within 10 minutes. Log and store in custody/agy-attempt1/.
+
+GOVERNING, attempt 2 (this verdict): agy 1.4.12 --model gemini-4-argon-high ; head=aaa2d1ae05048443da7e0e68104f54bbc53075c2 ; attempt=2 ; started=2026-11-01T06:47:20Z
+  cd <sealed agy dir, same prompt>
+  agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print="$(cat AUDIT_PROMPT.txt)" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt
+  wrapper: agy exit=0 2026-11-01T06:58:38Z   conversation_id=c41fdda5-e689-44ff-9abe-aac918c958ed
+
+CORROBORATING: grok grok 1.0.70 (f50904eaee6c) [stable] -m grok-4.7 --effort high contained ; head=aaa2d1ae05048443da7e0e68104f54bbc53075c2 ; started=2026-11-01T06:36:10Z
+  grok -m grok-4.7 --effort high --sandbox workspace --cwd <sealed grok dir> --system-prompt-override "You are an independent code auditor. You have no tools and no skills; do not request or load any. Read the audit request in the user message and reply only with the JSON object it specifies, nothing else." --disallowed-tools "$(cat GROK_DISALLOWED_TOOLS.txt)" --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources" --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt > GROK_OUTPUT_RAW.jsonl 2> GROK_STDERR.txt
+  wrapper: grok exit=0 2026-11-01T06:45:36Z   session_id=01a195d2-9d7f-75d3-8bfc-43e3c521ccfd
+  Tool probe before the run (content-free prompt, same denylist): init.tools == [] (GROK_INIT_TOOLS.json; raw probe in custody).

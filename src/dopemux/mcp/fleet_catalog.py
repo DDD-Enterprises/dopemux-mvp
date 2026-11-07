@@ -77,6 +77,12 @@ _READ_SAFE_DIRECT_PLANES = frozenset({"reasoning"})
 # (legacy or synthetic catalogs) records no restriction and stays renderable.
 _CODEX_RENDERABLE_EXPOSURES = (None, "full", "full-sequenced")
 
+# Of the renderable rows, only these are *released* to the in-repo
+# `.codex/config.toml` write (Wave 2A, design 5.7). `full-sequenced` rows stay in
+# the preview only: their owners (task orchestrator, serena, dope-context,
+# gpt-researcher, pal-stdio) are not released to Codex yet.
+_CODEX_RELEASED_EXPOSURES = (None, "full")
+
 
 REQUIRED_SERVER_PERSONALITIES: dict[str, dict[str, str]] = {
     "conport": {
@@ -250,21 +256,45 @@ def _agent_exposure(spec: dict[str, Any], agent: str) -> str | None:
     return "none"
 
 
-def _codex_server_lines(catalog: dict[str, Any]) -> list[str]:
+def _codex_server_lines(catalog: dict[str, Any], *, released_only: bool = False) -> list[str]:
     """Codex `[mcp_servers.*]` table lines for every codex-renderable server.
 
     Codex currently supports stdio and streamable HTTP MCP servers. SSE-only
     singleton entries stay represented in Claude/global and health outputs.
     Only `full` / `full-sequenced` codex agents-matrix rows render
     (ADR-MCPINT-001 §2 / ADR-MCPINT-002 §1).
+
+    The memory servers (`mcp_commands.MEMORY_BRIDGE_SERVERS`) are per-worktree
+    in the catalog, but their Codex entry is the same in every worktree: it
+    runs the stdio bridge as `runner:codex`, which resolves ports from the
+    checkout it starts in. They therefore render despite the singleton-only
+    rule below; every other per-worktree server is still skipped.
+
+    `released_only` keeps just the rows released to the in-repo write
+    (`full`, or no `agents:` field); the preview leaves it off.
     """
     lines: list[str] = []
     for name, spec in sorted(catalog.get("servers", {}).items()):
-        if spec.get("scope") != "singleton":
+        bridged = name in mcp_commands.MEMORY_BRIDGE_SERVERS
+        if spec.get("scope") != "singleton" and not bridged:
             continue
         if not mcp_commands._is_startable_global_entry(spec):
             continue
-        if _agent_exposure(spec, "codex") not in _CODEX_RENDERABLE_EXPOSURES:
+        exposure = _agent_exposure(spec, "codex")
+        if exposure not in _CODEX_RENDERABLE_EXPOSURES:
+            continue
+        if released_only and exposure not in _CODEX_RELEASED_EXPOSURES:
+            continue
+        if bridged:
+            command, args = mcp_commands._memory_bridge_command(name, mcp_commands.CODEX_MEMORY_PRINCIPAL)
+            lines.extend(
+                [
+                    "",
+                    f"[mcp_servers.{_toml_string(name)}]",
+                    f"command = {_toml_string(command)}",
+                    f"args = {_toml_string_array(args)}",
+                ]
+            )
             continue
         transport = spec.get("transport", "http")
         if transport not in {"stdio", "http"}:
@@ -293,29 +323,39 @@ def _codex_server_lines(catalog: dict[str, Any]) -> list[str]:
 def render_codex_config_fragment(catalog: dict[str, Any]) -> str:
     """Render codex-renderable MCP servers in Codex `config.toml` syntax.
 
-    This is the preview/projection output. The in-repo `.codex/config.toml`
-    write is gated: codex exposure is `full-sequenced` (ADR-MCPINT-002 G1), so
-    `dopemux mcp generate --apply` refuses it without `--allow-sequenced`.
+    This is the preview/projection output: every codex-renderable row, released
+    or not. The in-repo `.codex/config.toml` write is gated (ADR-MCPINT-002 G1,
+    Wave 2A design 5.7): `dopemux mcp generate --apply` writes it only when the
+    memory servers report auth_mode log or enforce with identity-required writes
+    and a keychain token exists for runner:codex, and then writes only the
+    released rows.
     """
 
     lines = [
         "# Generated from mcp_catalog.yaml by `dopemux mcp generate`.",
         "# Dry-run is the default; review before copying into .codex/config.toml.",
-        "# In-repo apply is sequenced (ADR-MCPINT-002 G1): `--apply --allow-sequenced`",
-        "# writes .codex/config.toml only after DMX-MEMSPINE-IDENTITY-005 and",
-        "# task-orchestrator actor_authentication.enabled have landed.",
+        "# In-repo apply is gated: `generate --agent-matrix --apply` writes .codex/config.toml",
+        "# only when dope-memory and ConPort report auth_mode log or enforce with",
+        "# identity-required writes and a keychain token exists for runner:codex; only released",
+        "# rows are written (conport and dope-memory through the stdio route).",
+        "# Other rows here are preview only.",
         *_codex_server_lines(catalog),
     ]
     return "\n".join(lines) + "\n"
 
 
-def render_codex_managed_region(catalog: dict[str, Any]) -> str:
-    """The generator-owned `[mcp_servers.*]` region for in-repo .codex/config.toml."""
+def render_codex_managed_region(catalog: dict[str, Any], *, released_only: bool = False) -> str:
+    """The generator-owned `[mcp_servers.*]` region for in-repo .codex/config.toml.
+
+    `released_only=True` is what `generate --apply` writes and what
+    `validate_codex_config_toml_parity` compares against. The default renders
+    every codex-renderable row (the preview's content).
+    """
     lines = [
         CODEX_MANAGED_BEGIN
-        + " — generated from mcp_catalog.yaml by `dopemux mcp generate --apply"
-        + " --allow-sequenced`. Do not hand-edit this section.",
-        *_codex_server_lines(catalog),
+        + " — generated from mcp_catalog.yaml by `dopemux mcp generate --agent-matrix --apply`."
+        + " Do not hand-edit this section.",
+        *_codex_server_lines(catalog, released_only=released_only),
         "",
         CODEX_MANAGED_END,
     ]
@@ -361,7 +401,7 @@ def _line_terminator(text: str) -> str:
 
 _HAND_AUTHORED_MCP_SERVERS_MESSAGE = (
     ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed "
-    "markers; remove the hand-authored tables before `--allow-sequenced` apply."
+    "markers; remove the hand-authored tables before `dopemux mcp generate --apply`."
 )
 
 
@@ -381,13 +421,18 @@ def _reject_hand_authored_mcp_servers(toml_text: str) -> None:
         raise MCPFleetCatalogError(
             ".codex/config.toml content outside the dopemux-managed markers is not "
             f"valid TOML ({exc}) and mentions mcp_servers; cannot rule out hand-authored "
-            "tables — fix the file before `--allow-sequenced` apply."
+            "tables — fix the file before `dopemux mcp generate --apply`."
         ) from exc
     if declares_servers:
         raise MCPFleetCatalogError(_HAND_AUTHORED_MCP_SERVERS_MESSAGE)
 
 
-def merge_codex_config_toml(existing_text: str | None, catalog: dict[str, Any]) -> str:
+def merge_codex_config_toml(
+    existing_text: str | None,
+    catalog: dict[str, Any],
+    *,
+    released_only: bool = False,
+) -> str:
     """Merge the managed `mcp_servers` region into an existing .codex/config.toml.
 
     Additive and marker-delimited: user keys (model, [agents], approval_policy,
@@ -396,10 +441,14 @@ def merge_codex_config_toml(existing_text: str | None, catalog: dict[str, Any]) 
     a contract violation (generated files are never hand-edited — ADR-MCPINT-001)
     and abort the merge. A uniformly CRLF file receives the region in CRLF so
     the output keeps a single line-ending style.
+
+    The product write path (`generate --apply`) always passes
+    `released_only=True`; the default (every renderable row) exists for callers
+    that merge a preview-shaped region.
     """
     text = existing_text or ""
     newline = _line_terminator(text)
-    region = render_codex_managed_region(catalog).replace("\n", newline)
+    region = render_codex_managed_region(catalog, released_only=released_only).replace("\n", newline)
     span = _locate_marked_region(text, CODEX_MANAGED_BEGIN, CODEX_MANAGED_END)
     if span is not None:
         start, stop = span
@@ -1189,13 +1238,14 @@ def validate_copilot_proxy_config_parity(repo_root: Path) -> list[str]:
 
 
 def validate_codex_config_toml_parity(repo_root: Path) -> list[str]:
-    """Parity gate for the sequenced .codex/config.toml target (ADR-MCPINT-002 G1).
+    """Parity gate for the gated .codex/config.toml target (ADR-MCPINT-002 G1).
 
-    Until `--allow-sequenced` apply lands the managed region (sequencing
-    prerequisites DMX-MEMSPINE-IDENTITY-005 + actor_authentication.enabled are
-    unmet), the gate only enforces that no `[mcp_servers.*]` tables drift into
-    the file outside generator ownership. Once the managed region exists it must
-    equal the fresh catalog render, and nothing outside it may declare servers.
+    Until a gated `dopemux mcp generate --apply` lands the managed region (it
+    needs log- or enforce-mode memory servers and a runner:codex token), the gate only
+    enforces that no `[mcp_servers.*]` tables drift into the file outside
+    generator ownership. Once the managed region exists it must equal the fresh
+    catalog render of the released rows (what `generate --apply` writes), and
+    nothing outside it may declare servers.
     """
     path = repo_root / ".codex/config.toml"
     if not path.exists():
@@ -1208,15 +1258,15 @@ def validate_codex_config_toml_parity(repo_root: Path) -> list[str]:
         if "[mcp_servers." in text:
             return [
                 ".codex/config.toml declares [mcp_servers.*] outside the dopemux-managed "
-                "region — codex configs are produced only by `dopemux mcp generate --apply "
-                "--allow-sequenced` (ADR-MCPINT-001 §2 / ADR-MCPINT-002 §1)"
+                "region — codex configs are produced only by `dopemux mcp generate "
+                "--agent-matrix --apply` (ADR-MCPINT-001 §2 / ADR-MCPINT-002 §1)"
             ]
         return []
     errors: list[str] = []
-    if region != render_codex_managed_region(load_root_catalog(repo_root)):
+    if region != render_codex_managed_region(load_root_catalog(repo_root), released_only=True):
         errors.append(
             ".codex/config.toml dopemux-managed mcp_servers region does not match the "
-            "catalog renderer — re-run `dopemux mcp generate --apply --allow-sequenced`"
+            "catalog renderer — re-run `dopemux mcp generate --agent-matrix --apply`"
         )
     if "[mcp_servers." in text.replace(region, "", 1):
         errors.append(

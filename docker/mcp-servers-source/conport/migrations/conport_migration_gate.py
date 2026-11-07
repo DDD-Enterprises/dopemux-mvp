@@ -37,6 +37,7 @@ REQUIRED_MIGRATIONS = {
     "003_multi_tenancy_foundation.sql",
     "004_unified_query_indexes.sql",
     "007_worktree_support_simple.sql",
+    "008_write_principal.sql",
 }
 
 BASE_SCHEMA_TABLES = (
@@ -74,6 +75,10 @@ REQUIRED_COLUMNS = (
     ("workspace_contexts", "instance_id"),
     ("session_snapshots", "user_id"),
     ("custom_data", "user_id"),
+    ("workspace_contexts", "write_principal"),
+    ("decisions", "write_principal"),
+    ("progress_entries", "write_principal"),
+    ("custom_data", "write_principal"),
 )
 REQUIRED_INDEXES = (
     "idx_decisions_user_fts",
@@ -520,6 +525,16 @@ def migration_schema_errors(conn, schema: str, version: int) -> list[str]:
             "index:idx_progress_instance",
             "index:idx_progress_workspace_instance",
             "index:idx_workspace_contexts_workspace_instance",
+        ),
+        # 008 is recognised here so that "psql, then adopt" works: after the
+        # operator applies 008_write_principal.sql by hand, `apply` adopts it
+        # (records the ledger row) instead of running psql inside the gate's
+        # own open transaction, which self-deadlocks on a fresh database.
+        8: (
+            "column:workspace_contexts:write_principal",
+            "column:decisions:write_principal",
+            "column:progress_entries:write_principal",
+            "column:custom_data:write_principal",
         ),
     }
     if version not in checks:

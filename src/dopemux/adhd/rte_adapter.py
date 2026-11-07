@@ -19,6 +19,27 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Wave 2A R2 W05: ConPort writes carry this principal's token (design 5.3).
+_PRINCIPAL = "internal:adhd"
+
+
+def _bearer_headers() -> Dict[str, str]:
+    """Authorization header for this caller's principal, or {} when no token is available.
+
+    A missing token never fails a write: in log mode the server records it as
+    unverified. Only the principal name is logged, never a token.
+    """
+    try:
+        from dopemux.auth import AuthError, get_token
+    except ImportError:
+        logger.info("dopemux.auth is unavailable; sending %s writes without a token", _PRINCIPAL)
+        return {}
+    try:
+        return {"Authorization": f"Bearer {get_token(_PRINCIPAL)}"}
+    except AuthError:
+        logger.info("no token for %s; sending the write without Authorization", _PRINCIPAL)
+        return {}
+
 
 class RTEAdapter:
     """Boundary adapter between 2025 Cognitive Plane and 2026 RTE architecture."""
@@ -58,9 +79,19 @@ class RTEAdapter:
         for the same pattern). Emission is fail-open: a capture failure never
         surfaces as a ConPort write failure.
         """
+        # ConPort needs the caller's workspace_id (kept as given) and takes the
+        # instance that the envrc exports; never invented, never overriding the caller's.
+        payload = decision_data
+        instance_id = os.getenv("DOPEMUX_INSTANCE_ID")
+        if instance_id and "instance_id" not in decision_data:
+            payload = {**decision_data, "instance_id": instance_id}
+        headers = await asyncio.to_thread(_bearer_headers)
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.conport_url}/api/decisions", json=decision_data, timeout=10.0
+                f"{self.conport_url}/api/decisions",
+                json=payload,
+                timeout=10.0,
+                **({"headers": headers} if headers else {}),
             )
             response.raise_for_status()
             result = response.json()
@@ -165,7 +196,8 @@ class RTEAdapter:
                 ),
                 "source": "RTE_ADAPTER_ADHD_ENGINE",
             },
-            "workspace_id": str(self.workspace_root.name),
+            # ConPort rejects a workspace other than its bound DOPEMUX_WORKSPACE_ID (the envrc value).
+            "workspace_id": os.getenv("DOPEMUX_WORKSPACE_ID") or str(self.workspace_root.name),
         }
 
         # We need to run the async write_decision_to_conport

@@ -1,0 +1,16 @@
+head=0c031b26589f5ae07bc1a6801387b7c02f8e73ff tracked_clean=yes started=2026-11-01T03:34:33Z node=v25.9.0
+== tsc --noEmit
+tsc_exit=0
+== vitest run
+ Test Files  11 passed (11)
+      Tests  91 passed (91)
+vitest_exit=0
+== vite build (outDir outside the repo)
+✓ built in 270ms
+build_exit=0
+== eslint src
+✖ 18 problems (16 errors, 2 warnings)
+eslint_exit=1
+files with problems: src/components/TaskSequencer.tsx src/components/TaskSequencer.tsx:91:54 src/components/TaskSequencer.tsx:117:5 src/components/TaskSequencer.tsx:146:3 src/components/TaskSequencer.tsx:149:5 src/components/TaskSequencer.tsx:374:27 src/components/TaskSequencer.tsx:381:33 src/components/TaskSequencer.tsx:388:19 src/components/__tests__/Accessibility.test.tsx src/features/repository-planner/PortfolioTable.tsx src/features/repository-planner/PortfolioTable.tsx:22:3 src/features/repository-planner/PortfolioTable.tsx:25:5 src/features/repository-planner/RepositoryPlannerPage.tsx src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx 
+files changed by 0c031b265: src/App.test.tsx src/App.tsx src/cognitiveReading.ts src/components/AttentionStatePanel.tsx src/components/LoadInstrument.tsx src/components/SignalFeed.tsx src/components/__tests__/LoadInstrument.test.tsx src/components/__tests__/SignalFeed.test.tsx src/realtimeStateMapping.test.ts src/time.test.ts src/time.ts 
+finished=2026-11-01T03:34:48Z

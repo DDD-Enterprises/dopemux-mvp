@@ -1,0 +1,128 @@
+{
+  "id": "TP-DMX-MEMBRIDGE-R6-W03-COPILOT-DOCS-001",
+  "project": "dopemux-mvp",
+  "target": "Correct the three doc statements the Copilot review of PR #1483 found wrong (C1 the fallback store is persistent, C2 replay can create .dopemux/chronicle.sqlite, C3 the verification query must select id, not event_id) in the README and the how-to, and record the R2 wall-time cap breach (C4) as an erratum in the R6 proof without editing R2's records.",
+  "invariants": [
+    "C01 Shared workspace: other sessions may change unrelated files (.codex/config.toml, .agents/): never commit, discard or overwrite them. Edit only your write_surface. Work only in /Users/hue/code/dopemux-mvp/.claude/worktrees/memory-bridge-001-b349d8 on branch claude/memory-bridge-001-b349d8; start head 4f66e7ea6 (W01 done).",
+    "C02 Executed by the team lead (the coordinator session); it commits with an explicit pathspec, never pushes, merges, signs, tags, changes git config or rewrites history.",
+    "C03 ADVISOR FORBIDDEN (budget 0): no `advisor` call and no subagent dispatch for this workstream.",
+    "C04 Secrets: never read or print .env* or credential files. No network. No real `dopemux capture emit`.",
+    "C05 Truth buckets: PASS / FAIL / NOT_RUN / UNKNOWN literally. Live behaviour NOT_RUN.",
+    "C06 Return fields: status (READY_FOR_AUDIT | BLOCKED | NEEDS_SUPERVISOR | INCOMPLETE), subject, validation, proof, audit (NOT_RUN), blockers, advisor_calls, files_written, observed_model.",
+    "C07 Docs only: any finding that needs a change to register.tsx or register.test.ts (for example renaming the `memory-only` label) is out of scope; record it as a residual instead.",
+    "A01 PROPOSED allowances: no child dispatch, 0 subagent tokens; 30 min of work.",
+    "B01 C1: state that without `.dopemux` the rows go to the plugin's `$.store`, a JSON file in the user's Claude Code config directory kept across sessions (STORE_KEEP_SESSIONS = 3, STORE_CAP_BYTES = 262,144; register.tsx:38, :63, :553-574; W01_FINDINGS.md:36), so `memory-only` means no outbox file, not nothing on disk. Fix how-to sections 2, 3 and 7 and the README outbox paragraph.",
+    "B02 C2: limit 'never creates .dopemux' to the outbox writer; state that replay runs regardless of the outbox mode (register.tsx replayTick) and that with the default ledger path `capture_client.py:525-526` creates `<repo-root>/.dopemux/` for chronicle.sqlite; persistOnce re-checks `.dopemux` on every write, so later rows go to the outbox file. Fix the README and how-to sections 2, 5 and 9.",
+    "B03 C3: the README verification query selects `id` (raw_activity_events has no event_id column: chronicle/schema.sql:5-20; the INSERT at capture_client.py:541-548 stores the sent event_id in id).",
+    "B04 C4: write ERRATUM_R2_WALL_CAP.md: R2 RETURN-01.md:29 'No cap was hit' is wrong; the 6 h cap from authorization to a frozen head was exceeded (W02 dispatch 2026-10-23T20:44:55Z, W04 dispatch 2026-10-24T03:11:17Z, content head 52855fb35 at 2026-10-24T03:13:35Z); the macro had no pause exemption and required NEEDS_SUPERVISOR. R2 files stay unchanged; ratification is the operator's.",
+    "B05 Gates: markdown hooks on the changed docs, `claude plugin validate` and `claude plugin test` for the mod, `git diff --check`, `validate_change_contract.py --base origin/main --head HEAD`."
+  ],
+  "depends_on": [
+    "TP-DMX-MEMBRIDGE-R6-W01-FLAKY-KEY-TEST-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/memory-bridge-001-b349d8",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "docs(memory-bridge): R6 W03 correct the fallback store, .dopemux creation and ledger query (Copilot review of #1483)",
+    "allowlist": [
+      "plugins/dopemux-memory-bridge/README.md",
+      "docs/02-how-to/memory-bridge.md",
+      "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/review_bundle/ERRATUM_R2_WALL_CAP.md"
+    ],
+    "verify": [
+      "git diff --check origin/main..HEAD",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text"
+    ]
+  },
+  "pr": {
+    "title": "feat(memory-bridge): dopemux-memory-bridge mod",
+    "body": "Implements MACRO-DMX-MEMORY-BRIDGE-001-R6. Draft until the final independent L2 audit of the merged head and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W03-S1",
+      "task": "Correct C1-C3 in the README and the how-to",
+      "requirements": [
+        "Every new claim cites the source line it rests on."
+      ],
+      "commands": [
+        "claude plugin validate plugins/dopemux-memory-bridge"
+      ],
+      "expected_files": [
+        "plugins/dopemux-memory-bridge/README.md",
+        "docs/02-how-to/memory-bridge.md"
+      ],
+      "validation": [
+        "docs hooks PASS"
+      ],
+      "context_files": [
+        "plugins/dopemux-memory-bridge/hooks/register.tsx",
+        "src/dopemux/memory/capture_client.py",
+        "services/working-memory-assistant/chronicle/schema.sql"
+      ]
+    },
+    {
+      "id": "W03-S2",
+      "task": "Write the C4 erratum",
+      "requirements": [
+        "Do not edit proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/."
+      ],
+      "commands": [],
+      "expected_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/review_bundle/ERRATUM_R2_WALL_CAP.md"
+      ],
+      "validation": [
+        "timestamps match the R2 bindings and git log"
+      ],
+      "context_files": [
+        "proof/MACRO-DMX-MEMORY-BRIDGE-001-R2/review_bundle/RETURN-01.md"
+      ]
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-MEMORY-BRIDGE-001-R6",
+  "workstream_id": "W03",
+  "risk_lane": "L2",
+  "audit_group": "AUDIT-MEMBRIDGE-001-R6",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-desktop",
+      "model": "claude-opus-5-5",
+      "effort": "xhigh"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-memory-bridge/README.md",
+    "docs/02-how-to/memory-bridge.md",
+    "proof/MACRO-DMX-MEMORY-BRIDGE-001-R6/review_bundle/ERRATUM_R2_WALL_CAP.md"
+  ],
+  "canonical_writers": [
+    "W03-implementer"
+  ],
+  "semantic_scope": [
+    "memory-bridge-doc-accuracy"
+  ],
+  "rollback_boundary": "git revert <W03 commit> on claude/memory-bridge-001-b349d8 (REVERT_COMMITS); start head 4f66e7ea6",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

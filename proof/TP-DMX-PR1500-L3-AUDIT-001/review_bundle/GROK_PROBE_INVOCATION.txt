@@ -1,0 +1,1 @@
+grok grok 1.0.70 (f50904eaee6c) [stable] -m grok-4.5 --effort high contained ; prompt=grok-probe/PROBE.txt ; started=2026-11-05T06:16:50Z

@@ -254,7 +254,9 @@ CREATE TABLE IF NOT EXISTS raw_activity_events (
   payload_json TEXT NOT NULL,
   redaction_level TEXT NOT NULL,
   ttl_days INTEGER NOT NULL,
-  created_at_utc TEXT NOT NULL
+  created_at_utc TEXT NOT NULL,
+  write_principal TEXT DEFAULT 'unverified',
+  write_principal_self_asserted INTEGER NOT NULL DEFAULT 0
 );
 """.strip()
         + "\n",
@@ -290,6 +292,14 @@ def apply_chronicle_migrations(conn, **kwargs):
 
     assert result.ledger_path == (repo_root / ".dopemux" / "chronicle.sqlite").resolve()
     assert result.ledger_path.exists()
+    conn = sqlite3.connect(str(result.ledger_path))
+    try:
+        stored = conn.execute(
+            "SELECT write_principal, write_principal_self_asserted FROM raw_activity_events"
+        ).fetchone()
+    finally:
+        conn.close()
+    assert stored == ("internal:cli", 1)
 
 
 def test_schema_bootstrap_runs_once_per_ledger(tmp_path, monkeypatch):

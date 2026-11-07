@@ -1,0 +1,71 @@
+gates run at 2026-10-30T11:33:29Z on the working tree over HEAD 0ca60b59ba4cd6ec2b79f04b546e991bff4adfd1
+tracked changes:  M .codex/config.toml; M docs/02-how-to/route-ledger.md; M plugins/dopemux-route-ledger/.claude-plugin/plugin.json; M plugins/dopemux-route-ledger/README.md; M plugins/dopemux-route-ledger/hooks/register.test.ts; M plugins/dopemux-route-ledger/hooks/register.tsx; M plugins/dopemux-route-ledger/receipt.schema.json;
+
+### claude plugin validate plugins/dopemux-route-ledger
+  ❯ hooks/hooks.json names a hooks module (a code file listed under `modules`). The plugin directory has rules of its own for such code, and these checks apply none of them, so passing here does not mean the directory accepts the plugin. The developer portal's own validation applies those rules.
+
+These plugin directory checks do not change the result below.
+
+The directory also runs a safety scan and a policy review that this command does not.
+
+ℹ Advice (does not change the verdict):
+
+  ❯ /Users/hue/code/dopemux-mvp/.claude/worktrees/route-ledger-001-8d8032/plugins/dopemux-route-ledger/README.md: This README has no line that installs "dopemux-route-ledger" from a marketplace. Add the install line, which works in one step on Claude Code 2.1.275 or later. Validate the folder that holds its marketplace.json to have <owner>/<repo> filled in, and the name its marketplace lists it under.
+      /plugin install dopemux-route-ledger --marketplace <owner>/<repo>
+
+✔ Validation passed with warnings
+exit=0
+
+### claude plugin test plugins/dopemux-route-ledger
+(pass) rehydrate leaves an unreadable segment alone and skips a corrupt line, nothing throws [18.40ms]
+(pass) the command handlers answer `could not read the ledger.` when the table cannot be built [13.85ms]
+
+ 95 pass
+ 0 fail
+Ran 95 tests across 1 file. [1.80s]
+exit=0
+counts:  95 pass  0 fail
+
+### tsc -p plugins/dopemux-route-ledger --noEmit (in tree, default options)
+exit=0
+
+### jsonschema: receipts printed by the tests vs receipt.schema.json (with negative controls)
+valid receipts 29 {'step_observed': 10, 'agent_request': 14, 'advisor_call': 5} | receipts with an empty effort or advisor id: 0 | negative controls rejected: [('extra key', True), ('empty selection.effort', True), ('empty advisor_use_id', True)]
+exit=0
+
+### git diff --check (working tree, the six files)
+exit=0
+
+### pre-commit run --files <the six files> (SKIP=markdownlint)
+Enforce markdown file locations for changed files..........................................Passed
+Enforce docs placement hygiene (changed files).............................................Passed
+Enforce docs filename hygiene (kebab-case).................................................Passed
+Audit docs filename hygiene (kebab-case, full-tree legacy debt)............................Passed
+Reject executable/config code under UPGRADES (docs-only legacy tree)...(no files to check)Skipped
+Enforce repository root hygiene (no random root files).....................................Passed
+Validate proof bundle embedded_audit schema............................(no files to check)Skipped
+Validate GitHub Actions workflow syntax................................(no files to check)Skipped
+markdownlint..............................................................................Skipped
+trim trailing whitespace...................................................................Passed
+fix end of files...........................................................................Passed
+check yaml.............................................................(no files to check)Skipped
+exit=0
+
+### markdownlint hook
+NOT_RUN: its Node environment cannot install on this host; CI covers it.
+
+### live Claude Code session loading the repaired head
+NOT_RUN: operator step (N1).
+
+### secret pattern scan over the six files (counts: AKIA, xox, ghp_, sk-, password assignment, private key header)
+0 0 0 0 0 0
+
+### mutation sanity (scratch copy of plugins/dopemux-route-ledger/hooks/register.tsx, one mutation at a time; the worktree untouched)
+15 of 15 KILLED: M01 never evict (4 failing); M02 evict with an unjoined request (2); M03 counts not kept (8); M04 no directory check (9); M05 no segment-file link check (1); M06 raw default comparison (1); M07 no reset after /clear (2); M08 main row not kept (4); M09 lastMain never set (6); M10 no second flush at session end (3); M11 budget toast keys not restored (1); M12 unpinned toast keys not restored (1); M13 empty effort accepted (2); M14 empty advisor id accepted (2); M15 description recorded by default (1, the parseConfig unit test; equivalent for the behavioural test, see VERIFY_NOTES.md). Survivors: none.
+
+### validate_change_contract.py --base origin/main --head 26414fef53df4970e39269a3ba9ed93afd6b8f32
+status=PASS | max_lane=L2 | model_audit_required=True | proof_only=False
+(the repair commit changes six content files, so it is a normal L2 content change, not a proof-only successor)
+
+### W01 transcript (structural)
+advisor tool_use blocks 0 | Agent calls 0 | model claude-sonnet-5-5 (74 messages) | tool_use blocks 48 | span 11:13:57Z-11:27:58Z | HEAD unchanged | only the six allowlisted files changed

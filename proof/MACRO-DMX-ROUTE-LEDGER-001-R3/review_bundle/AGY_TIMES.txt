@@ -1,0 +1,4 @@
+agy --version / agy models   2026-10-30T09:31Z   agy 1.4.11 (the issuance recorded 1.4.10 earlier the same day: the CLI updated itself); gemini-4-argon-high listed
+probe1  start 2026-10-30T09:32:47Z  end 2026-10-30T09:32:56Z  exit 0  duration_seconds 6.43  total_tokens 12963
+probe2  start 2026-10-30T09:33:22Z  end 2026-10-30T09:33:34Z  exit 0  duration_seconds 9.12  total_tokens 13480
+real    start 2026-10-30T09:33:54Z  SIGTERM from the coordinator 09:34:56Z  end 2026-10-30T09:35:01Z  exit 1 ("error: interrupted")  no result event, no usage figure

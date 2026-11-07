@@ -80,7 +80,7 @@ except ImportError:
 
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
-from dopemux.memory.capture_client import try_emit_promotable_capture_event  # noqa: E402
+from dopemux.memory.capture_client import PRINCIPAL_HOOKS, try_emit_promotable_capture_event  # noqa: E402
 
 try:
     from dopemux.claude.activity_ratelimit import should_emit_heartbeat
@@ -99,6 +99,9 @@ EXIT_SUCCESS = 0
 EXIT_BLOCK = 2
 DEFAULT_ACTIVITY_STREAM = "dopemux:events"
 NATIVE_HOOK_ACTIVITY_EVENT_TYPE = "native_hook_activity"
+# Wave 2A R2 W06: hooks carry no token, so every ledger row and Redis event they
+# write names this principal and is marked self-asserted (never verified).
+NATIVE_HOOK_WRITE_PRINCIPAL = PRINCIPAL_HOOKS
 
 
 def _native_hook_activity_events_enabled() -> bool:
@@ -170,6 +173,8 @@ def _emit_activity_event(
                 "event_type": NATIVE_HOOK_ACTIVITY_EVENT_TYPE,
                 "timestamp": datetime.utcnow().isoformat() + "Z",
                 "source": "dopemux.native_hooks",
+                "write_principal": NATIVE_HOOK_WRITE_PRINCIPAL,
+                "write_principal_self_asserted": "1",
                 "data": json.dumps(data, sort_keys=True, separators=(",", ":")),
             },
             maxlen=10000,
@@ -225,6 +230,7 @@ def _emit_bounded_hook_error_capture(
             repo_root=project_root,
             emit_event_bus=False,
             session_id=None,
+            principal=NATIVE_HOOK_WRITE_PRINCIPAL,
         )
     except Exception:
         return None

@@ -1,0 +1,855 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-RUNNER-MEMORY-2A-001",
+  "objective": "Runner Memory Parity Wave 2A from docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md (sha256 1fea60130d55d151dfbc70eb24571efb90c8ecee9e9183a05f3beb0915970cd3): verified per-runner identity on dope-memory, ConPort and the task orchestrator, keychain-held tokens, a runner-neutral stdio route, the orchestrator upgraded to 4.0.0 behind an operator-run cutover, and a real generator gate, so a live Codex session reads and writes all three as runner:codex while Claude Code keeps working as runner:claude. W00 is a read-only investigation whose GATE_TABLE gates W01-W08; a design change it finds is handled by a revision (R2), not by dispatch. Wave 2B (other runners' renderers, installed-config doctor, DCP facade, hook parity) is out of scope.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants C01-C11 and A01-A03 in each child. Order of authority: runtime code, then schemas, then tests, then docs. PROPOSED macro allowances (no schema field exists; enforced by the team lead; caps, not forecasts): elapsed wall time 18 h from the authorization to a frozen head, excluding operator gates and the audit; subagent tokens 12,000,000 in total; child dispatches 12 (W00-W08 plus at most 3 retries or fallbacks); team-lead correction rounds 4 across the macro; intermediate model audits 0; advisor calls 0 for every child and for the coordinator; the final independent audit is 1 call outside this budget on an operator-approved route. Hitting any cap: stop dispatching, preserve uncommitted diffs, return NEEDS_SUPERVISOR with the counters (duration_ms, subagent_tokens, tool_uses from each completion notice).",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "Design approval and execution authorization are one operator line: AUTHORIZE_MACRO_DMX_RUNNER_MEMORY_2A_001_EXECUTION=YES approves docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md at sha256 1fea60130d55d151dfbc70eb24571efb90c8ecee9e9183a05f3beb0915970cd3 and authorizes W00-W08 within this packet. Operator decisions already given on 2026-10-30 (design section 0): build for all runners; scope; require verified identity; 4.0.0 means the task orchestrator; cutover all at once; amend the ADR."
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "sign",
+      "push",
+      "open_pr",
+      "migrate",
+      "credential_write"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_RUNNER_MEMORY_2A_001_EXECUTION=YES absent",
+      "worktree HEAD is not feat/runner-memory-2a descended from 97b6d5040496e2271c41d24c339d039303bbe6b1, or origin/main moved and a cited file changed",
+      "design file sha256 differs from 1fea60130d55d151dfbc70eb24571efb90c8ecee9e9183a05f3beb0915970cd3",
+      "W00_FINDINGS.md sha256 differs from the value the team lead recorded at J01-GATE",
+      "a W00 GATE_TABLE design_changes entry affects a workstream about to be dispatched",
+      "any write outside a child allowlist",
+      "any child calls the advisor tool or delegates (advisor budget 0)",
+      "any container start/stop/restart, real-database migration, keychain or ~/.config/dopemux write, cutover run, or file write outside the worktree by a child or a test",
+      "a workstream exceeds its elapsed, token, tool-use or attempt cap (A01-A03), or the macro exceeds its 18 h, 12,000,000-token or 12-dispatch cap",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "850798fca0c343ffd8508fbe5d050f769f9a658eb442b6989b8ad425b440ed4b"
+    },
+    "authority_ceiling": "Child-specific intersection only; the team lead alone commits (one commit per workstream, explicit pathspec). Push, PR, signing, the final-audit route, token issuance, migrations, the enforce switch, the orchestrator cutover, ADR acceptance and the live Codex acceptance run are separate operator gates and are not granted by this packet.",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record and ct validate-binding per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W00",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W00/TASK_PACKET.json",
+        "sha256": "6ff8a9751a843fad8a3b14eaaf39fdd82857b405e39a05f4f66fa36ddf0deac8"
+      },
+      "objective": "Read-only investigation for Runner Memory Parity Wave 2A. Verify the facts the design marks unknown or model-extracted (task orchestrator 4.0.0 auth and migration, ConPort transport parity, the bridge handshake, keychain behaviour, identity paths in dope-memory and ConPort, the generator gate, internal callers, cross-repo reach) and return a go / no-go per build workstream with evidence. The verdicts gate W01 to W08.",
+      "dependencies": [],
+      "parallel_group": "P0",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-RUNNER-MEMORY-2A-001/review_bundle/W00_FINDINGS.md"
+      ],
+      "canonical_writers": [
+        "W00-implementer"
+      ],
+      "semantic_scope": [
+        "runner-memory-2a-investigation"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W00 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "c4b37d1688f74172348e4b594894e4fd217187a00984728602e0670557c86017"
+      },
+      "objective": "dope-memory: required workspace_id and instance_id on every write (MCP and REST), env defaults removed, the ledger path derived from the container's bound workspace, auth middleware with modes off / log / enforce, the verified principal stored on every write, and a health capability field for the generator gate (design 5.1, 5.5, 5.7, 5.9, W1).",
+      "dependencies": [
+        "W00"
+      ],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "services/working-memory-assistant/dope_memory_main.py",
+        "services/working-memory-assistant/mcp_http.py",
+        "services/working-memory-assistant/canonical_ledger.py",
+        "services/working-memory-assistant/migration_runner.py",
+        "services/working-memory-assistant/chronicle/",
+        "services/working-memory-assistant/auth_identity.py",
+        "compose.yml",
+        "tests/unit/runner_memory_2a_w01/"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "dope-memory-identity"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W01 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "8d4a1d412468ce479fdb01e6ea56db67c5bff2d86475107c3a2eb4c17e1bbd56"
+      },
+      "objective": "ConPort: required instance_id on writes with the explicit `shared` instance, the workspace binding check, auth middleware with modes on every tool-serving surface, the principal column with an operator-run migration, and the transport W00 chose for Codex (design 5.1, 5.4, 5.5, 5.9, W2).",
+      "dependencies": [
+        "W00",
+        "W01"
+      ],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        "docker/mcp-servers-source/conport/",
+        "compose.yml",
+        "tests/unit/runner_memory_2a_w02/"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "conport-identity"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "61abf5e6d0af980177328ae9751edcd3d29d92817134bf70b4906d644f9c8fce"
+      },
+      "objective": "`dopemux auth` command group (issue, rotate, revoke, list) and a shared keychain and hash-file helper that the bridge (W04), the orchestrator cutover (W05) and internal callers (W08) reuse (design 5.2, W3).",
+      "dependencies": [
+        "W00"
+      ],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "src/dopemux/commands/auth_commands.py",
+        "src/dopemux/auth/",
+        "src/dopemux/cli.py",
+        "tests/unit/runner_memory_2a_w03/"
+      ],
+      "canonical_writers": [
+        "W03-implementer"
+      ],
+      "semantic_scope": [
+        "runner-tokens"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W03 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W04",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W04/TASK_PACKET.json",
+        "sha256": "9bf153949c93eb848d1f30a29044eebd41099c599f9e3225cf92698e29ef583d"
+      },
+      "objective": "Extend the stdio bridge into the runner-neutral route: resolve the server's base URL from the caller repo's .envrc.dopemux-mcp, attach the runner's bearer token from the keychain, speak each server's MCP handshake, and fail closed (design 5.3, W4).",
+      "dependencies": [
+        "W00",
+        "W03"
+      ],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        "src/dopemux/mcp/http_stdio_bridge.py",
+        "tests/unit/runner_memory_2a_w04/"
+      ],
+      "canonical_writers": [
+        "W04-implementer"
+      ],
+      "semantic_scope": [
+        "stdio-bridge"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W04 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W05",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W05/TASK_PACKET.json",
+        "sha256": "a8f10b32df650a408c617d4e05d2e15c658b9c1955c12d8083fe6fed34d83032"
+      },
+      "objective": "Task orchestrator 4.0.0, built but not activated: the image pin, config migration, token auth, the hooks change in the same change, and an operator-run cutover command with a machine-wide dry run, a database backup and one-command rollback (design 5.5, 5.6, 5.10, W5).",
+      "dependencies": [
+        "W00",
+        "W03"
+      ],
+      "parallel_group": "P3",
+      "mutating": true,
+      "write_surface": [
+        "scripts/mcp-wrappers/task-orchestrator-http-singleton.sh",
+        "scripts/mcp-wrappers/task-orchestrator-current-stdio.sh",
+        "scripts/mcp-wrappers/task-orchestrator-rollback-stdio.sh",
+        ".taskorchestrator/config.yaml",
+        ".claude/hooks/orchestrator_enforcement.py",
+        "src/dopemux/claude/native_hooks.py",
+        "src/dopemux/commands/orchestrator_cutover_commands.py",
+        "src/dopemux/cli.py",
+        "tests/test_orchestrator_enforcement_hooks.py",
+        "tests/unit/runner_memory_2a_w05/"
+      ],
+      "canonical_writers": [
+        "W05-implementer"
+      ],
+      "semantic_scope": [
+        "task-orchestrator-4"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W05 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W08",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W08/TASK_PACKET.json",
+        "sha256": "c00b56c05b7da06a14da9e1a6b3d243ef374b4a300d1f864cf5077dd46c0e02d"
+      },
+      "objective": "In-repo callers of the three servers' write paths send their own internal principals' tokens (internal:hooks, internal:cli, internal:wma) so the REST routes are not an unauthenticated write path (design 5.3, W8).",
+      "dependencies": [
+        "W00",
+        "W01",
+        "W02",
+        "W03",
+        "W05"
+      ],
+      "parallel_group": "P4",
+      "mutating": true,
+      "write_surface": [
+        "src/dopemux/claude/native_hooks.py",
+        "src/dopemux/memory/capture_client.py",
+        "src/dopemux/pm/adapters/dope_memory.py",
+        "services/working-memory-assistant/conport_client.py",
+        "tests/unit/test_memory_capture_client.py",
+        "tests/unit/runner_memory_2a_w08/"
+      ],
+      "canonical_writers": [
+        "W08-implementer"
+      ],
+      "semantic_scope": [
+        "internal-callers"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W08 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W06",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W06/TASK_PACKET.json",
+        "sha256": "fde92b5b91bd1cc3e6f5333370e9a022e1071a251d7862539b23b541a65eede8"
+      },
+      "objective": "Generator: Codex and Claude Code config for the three identity-bearing servers through the stdio route, and the real gate that replaces `--allow-sequenced` (design 5.3, 5.7, W6).",
+      "dependencies": [
+        "W00",
+        "W01",
+        "W02",
+        "W03",
+        "W04",
+        "W05"
+      ],
+      "parallel_group": "P5",
+      "mutating": true,
+      "write_surface": [
+        "src/dopemux/mcp/fleet_catalog.py",
+        "src/dopemux/commands/mcp_commands.py",
+        "mcp_catalog.yaml",
+        "src/dopemux/mcp/default_catalog.yaml",
+        "tests/test_mcp_config_generation.py",
+        "tests/unit/test_mcp_commands_catalog.py",
+        "tests/unit/runner_memory_2a_w06/"
+      ],
+      "canonical_writers": [
+        "W06-implementer"
+      ],
+      "semantic_scope": [
+        "generator-gate"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W06 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W07",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W07/TASK_PACKET.json",
+        "sha256": "05c91a07e07821f476de2145d2bb02c10db7e148c546e5a9567e14d2ebb3e496"
+      },
+      "objective": "How-to, agent-doc entries and the ADR-MCPINT-002 amendment draft (status proposed), derived from the committed W01 to W08 changes; the operator-run steps written as a runbook (design 5.8, G7, W7).",
+      "dependencies": [
+        "W00",
+        "W01",
+        "W02",
+        "W03",
+        "W04",
+        "W05",
+        "W06",
+        "W08"
+      ],
+      "parallel_group": "P6",
+      "mutating": true,
+      "write_surface": [
+        "docs/02-how-to/runner-memory-identity.md",
+        "docs/90-adr/adr-mcpint-002-amendment-runner-identity.md",
+        "AGENTS.md",
+        ".claude/claude.md"
+      ],
+      "canonical_writers": [
+        "W07-implementer"
+      ],
+      "semantic_scope": [
+        "runner-memory-docs"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "sign",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W07 commit> on feat/runner-memory-2a (REVERT_COMMITS); base 97b6d5040496e2271c41d24c339d039303bbe6b1",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-RUNNER-MEMORY-2A-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-GATE",
+      "requires": [
+        "W00"
+      ],
+      "condition": "W00_FINDINGS.md committed and its sha256 recorded; GATE_TABLE parses; a workstream is dispatched only if its verdict is GO or GO_REDUCED and no design_changes entry lists it; otherwise it is held and the supervisor issues R2",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J02-SERVERS",
+      "requires": [
+        "W01",
+        "W02",
+        "W03",
+        "W04"
+      ],
+      "condition": "each workstream's tests pass; no live mutation; diffs inside allowlists; counters inside the A01 caps",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J03-INTEGRATION",
+      "requires": [
+        "W05",
+        "W08",
+        "W06"
+      ],
+      "condition": "hook, capture-client and generator suites pass, including the existing suites in each commit.verify; diffs inside allowlists",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J04-FREEZE",
+      "requires": [
+        "W00",
+        "W01",
+        "W02",
+        "W03",
+        "W04",
+        "W05",
+        "W08",
+        "W06",
+        "W07"
+      ],
+      "condition": "make test (background) and docs hooks pass; change-contract preflight and git diff --check pass; freeze the subject for the single final L3 audit (operator-gated route)",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit of the frozen L3 subject, different family from the claude-code-agent implementers, route operator-gated (AGY gemini or the contained Grok CLI recipe, chosen per run). Copy every audit artifact, including raw streams, into the flat proof review bundle immediately. PROPOSED macro allowances (no schema field exists; enforced by the team lead; caps, not forecasts): elapsed wall time 18 h from the authorization to a frozen head, excluding operator gates and the audit; subagent tokens 12,000,000 in total; child dispatches 12 (W00-W08 plus at most 3 retries or fallbacks); team-lead correction rounds 4 across the macro; intermediate model audits 0; advisor calls 0 for every child and for the coordinator; the final independent audit is 1 call outside this budget on an operator-approved route. Hitting any cap: stop dispatching, preserve uncommitted diffs, return NEEDS_SUPERVISOR with the counters (duration_ms, subagent_tokens, tool_uses from each completion notice).",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "allowance_exceeded",
+      "child_advisor_call",
+      "w00_design_change",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}

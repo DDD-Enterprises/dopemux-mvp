@@ -1,0 +1,61 @@
+head=962434ad61bde3efdd6bd938f81ffdfbe358e71c started=2026-10-30T15:17:13Z node=v25.9.0
+== tsc --noEmit
+tsc_exit=0
+== vitest run
+
+ RUN  v5.0.3 /Users/hue/code/dopemux-mvp/.worktrees/ui-cockpit-refresh/ui-dashboard
+
+
+ Test Files  9 passed (9)
+      Tests  75 passed (75)
+   Start at  08:17:15
+   Duration  3.70s (tests 38%, import 37%, environment 21%, transform 5%)
+
+vitest_exit=
+== vite build (outDir in scratchpad)
+../../../../../../../private/tmp/claude-501/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645/scratchpad/pr1486-bundle/vite-dist/index.html                   0.40 kB │ gzip:   0.27 kB
+../../../../../../../private/tmp/claude-501/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645/scratchpad/pr1486-bundle/vite-dist/assets/index-CmBPAVcN.css    1.52 kB │ gzip:   0.71 kB
+../../../../../../../private/tmp/claude-501/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645/scratchpad/pr1486-bundle/vite-dist/assets/index-CdEL-5Ek.js   428.86 kB │ gzip: 134.25 kB
+
+✓ built in 226ms
+build_exit=
+== eslint
+  89:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 18 problems (16 errors, 2 warnings)
+
+eslint_exit=
+finished=2026-10-30T15:17:21Z
+
+== exit codes (rerun without pipes, 2026-10-30T15:17:38Z)
+vitest_exit=0
+
+ Test Files  9 passed (9)
+      Tests  75 passed (75)
+   Start at  08:17:33
+   Duration  3.50s (tests 42%, import 35%, environment 18%, transform 5%)
+
+build_exit=0
+../../../../../../../private/tmp/claude-501/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645/scratchpad/pr1486-bundle/vite-dist/assets/index-CmBPAVcN.css    1.52 kB │ gzip:   0.71 kB
+../../../../../../../private/tmp/claude-501/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645/scratchpad/pr1486-bundle/vite-dist/assets/index-CdEL-5Ek.js   428.86 kB │ gzip: 134.25 kB
+
+✓ built in 181ms
+eslint_exit=1
+
+✖ 18 problems (16 errors, 2 warnings)
+
+== eslint files with problems
+src/components/TaskSequencer.tsx
+src/components/TaskSequencer.tsx:91:54
+src/components/TaskSequencer.tsx:117:5
+src/components/TaskSequencer.tsx:146:3
+src/components/TaskSequencer.tsx:149:5
+src/components/TaskSequencer.tsx:374:27
+src/components/TaskSequencer.tsx:381:33
+src/components/TaskSequencer.tsx:388:19
+src/components/__tests__/Accessibility.test.tsx
+src/features/repository-planner/PortfolioTable.tsx
+src/features/repository-planner/PortfolioTable.tsx:22:3
+src/features/repository-planner/PortfolioTable.tsx:25:5
+src/features/repository-planner/RepositoryPlannerPage.tsx
+src/features/repository-planner/__tests__/RepositoryPlannerPage.test.tsx

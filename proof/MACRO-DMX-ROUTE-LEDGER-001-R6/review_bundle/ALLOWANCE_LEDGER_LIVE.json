@@ -1,0 +1,37 @@
+{
+  "macro": "MACRO-DMX-ROUTE-LEDGER-001-R6",
+  "events": [
+    {
+      "t": "before 2026-11-01T01:59:17Z",
+      "event": "R6 gate line (all three tokens) typed in chat; not timestamped"
+    },
+    {
+      "t": "2026-11-01T01:59:17Z",
+      "event": "W01 gates run on b275543fe (pin checks, diffs and summary done just before)"
+    },
+    {
+      "t": "2026-11-01T02:10:11Z",
+      "event": "W01 committed 37c63922e (prompt 194244 bytes, builder --check byte-equal)"
+    },
+    {
+      "t": "2026-11-01T02:11:04Z",
+      "event": "W02 probe 1; probe 2 at 02:11:23; real Grok run 02:11:46 to 02:13:20 (exit 0, init.tools empty, 0 tool_use)"
+    },
+    {
+      "t": "2026-11-01T02:14:34Z",
+      "event": "W02 custody committed ced97d784 (verdict not read)"
+    },
+    {
+      "t": "2026-11-01T02:15:28Z",
+      "event": "W03 probe 1; probe 2 at 02:15:57 (both gate OK); real AGY run 02:16:25 to 02:21:47 (exit 0, SUCCESS)"
+    },
+    {
+      "t": "2026-11-01T02:23:02Z",
+      "event": "W03 custody committed 91bf32291 (verdict not read)"
+    },
+    {
+      "t": "2026-11-01T02:29:19Z",
+      "event": "W04 adjudication, proof, report and ledger written (verdicts first read after both custody commits)"
+    }
+  ]
+}

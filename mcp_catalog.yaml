@@ -23,7 +23,10 @@
 # ADR-MCPINT-001 metadata (rendered by MCPINT-FND-CODEGEN-005; data-only here):
 #   agents:      per-agent exposure matrix, or the string "none" for infra/PM-sync
 #                entries with no agent matrix row. ADR-MCPINT-002 constrains when
-#                the generator may honor a row (codex full-sequenced gate).
+#                the generator may honor a row. For codex, `full` rows are released
+#                to the gated in-repo .codex/config.toml write (conport and
+#                dope-memory, through the authenticating stdio route);
+#                `full-sequenced` rows appear in the preview only.
 #   tools:       pointer into the committed mcp_tool_surfaces.json snapshot
 #                (snapshot_key + schema_version). Tool names live ONLY there.
 #   admin_tools: operator-only tools excluded from workflow docs and non-Claude
@@ -559,7 +562,7 @@ servers:
     optional_env: ["GEMINI_API_KEY", "VOYAGEAI_API_KEY", "OPENAI_API_KEY"]
     agents:
       claude: full
-      codex: full-sequenced
+      codex: full
       opencode: read-plane
       gemini: read-plane
       copilot: read-plane
@@ -591,7 +594,7 @@ servers:
     requires_env: ["DOPE_MEMORY_WORKSPACE_ID", "DOPE_MEMORY_INSTANCE_ID"]
     agents:
       claude: full
-      codex: full-sequenced
+      codex: full
       opencode: read-plane
       gemini: read-plane
       copilot: read-plane

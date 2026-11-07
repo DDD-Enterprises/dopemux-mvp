@@ -1,0 +1,9 @@
+#!/bin/bash
+# MACRO-DMX-PULSE-002-R2 audit: ONE attempt, grok-cli grok-4.5, tool-less recipe. Sealed cwd holds only AUDIT_PROMPT.txt.
+cd /private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-pulse-f1-001-5a321f/20e271cd-503b-426a-b344-3c4cc4c70b8a/scratchpad/audit/real_seal || exit 90
+grok -m grok-4.5 --effort high --sandbox workspace --cwd /private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-pulse-f1-001-5a321f/20e271cd-503b-426a-b344-3c4cc4c70b8a/scratchpad/audit/real_seal \
+  --system-prompt-override "$(cat /private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-pulse-f1-001-5a321f/20e271cd-503b-426a-b344-3c4cc4c70b8a/scratchpad/audit/SYSTEM_PROMPT.txt)" \
+  --disallowed-tools "$(cat /private/tmp/claude-501/-Users-hue-code-dopemux-mvp--claude-worktrees-pulse-f1-001-5a321f/20e271cd-503b-426a-b344-3c4cc4c70b8a/scratchpad/audit/DISALLOWED.txt)" \
+  --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources" \
+  --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim \
+  --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt

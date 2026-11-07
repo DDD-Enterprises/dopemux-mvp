@@ -1,0 +1,243 @@
+```json
+{
+  "status": "completed",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "severity": "medium",
+      "title": "Unauthenticated /health used by Codex gate",
+      "evidence": "src/dopemux/commands/mcp_commands.py:_fetch_health and _MEMORY_HEALTH_TARGETS; /health on both servers returns auth_mode, identity_required_writes, auth_unverified_calls without authentication (dope_memory_main.py health_check; enhanced_server.py health_check).",
+      "note": "A spoofed local listener on the envrc ports can make evaluate_codex_memory_gate succeed and write .codex/config.toml. Gate is generation-time only; later mode changes are not re-checked. Disclosed residual; loopback-only mitigates remote risk."
+    },
+    {
+      "severity": "medium",
+      "title": "Bare python and stdio working directory UNKNOWN for Codex",
+      "evidence": "fleet_catalog.py / mcp_commands.py MEMORY_BRIDGE_PYTHON=\"python\"; http_stdio_bridge.py discover_profile walks from Path.cwd() with no --workdir. How-to step 8 and W07_RETURN residual risks name both as UNKNOWN until live Codex run (NOT_RUN).",
+      "note": "Fails closed if import missing or envrc absent; live acceptance is operator step 10."
+    },
+    {
+      "severity": "medium",
+      "title": "ADR-227 Dockerfile exemptions: case-fold asymmetry",
+      "evidence": "red_lane_rules.py Amendment 1 lookaheads (?!Dockerfile\\.dope-memory\\Z) and (?!Dockerfile\\Z); dcp_surface_guard case-folds so Edit to capitalized Dockerfiles still denied; PR Steward/scanner case-sensitive. ADR-227 Amendment 1 and tests/unit/runner_memory_2a_r2_w09 document fail-closed acceptance.",
+      "note": "22 file-exact exemptions; no directory widen. Guard fails closed; W10 COPY lines landed outside Edit-tool path."
+    },
+    {
+      "severity": "low",
+      "title": "Keychain guard does not cover services/*/tests",
+      "evidence": "tests/conftest.py:_no_real_keychain autouse; AMENDMENT_02 residual and disclosed limitations. W05 keychain_guard_plugin is opt-in.",
+      "note": "After real token issue, suites under services/*/tests could read the real keychain unless separately guarded."
+    },
+    {
+      "severity": "low",
+      "title": "Known make-test failure: catalog untouched guard vs intentional W07 edit",
+      "evidence": "tests/mcp/test_fleet_catalog_v2_runtime.py::test_live_catalog_files_are_untouched_by_this_packet asserts mcp_catalog.yaml absent from git diff origin/main...HEAD; W07 changed codex full-sequenced→full for conport and dope-memory (mcp_catalog.yaml; default_catalog.yaml). AMENDMENT_05 accepts this failure. Docstring CATALOG_V2_CUTOVER=BLOCKED_NOT_APPLIED refers to a different cutover; W07's agents: matrix edit is authorized Wave 2A scope, not a forbidden catalog cutover.",
+      "note": "No reason to doubt Amendment 05 explanation; packet-local guard fails on any branch that touches the catalog by design."
+    },
+    {
+      "severity": "low",
+      "title": "Enforce unreachable in 2A; container callers remain unverified",
+      "evidence": "AGENTS.md §12.7 Not built; how-to step 11; W05_RETURN open items 2–5; PROXY_TOKEN_PROVIDER defaults to None inside images; adhd_engine/claude_brain/dopecon-bridge lack /usr/bin/security.",
+      "note": "By design for 2A; log mode records unverified. Not a defect relative to stated intent."
+    }
+  ],
+  "risks": [
+    "Live validation NOT_RUN: no live server, real keychain issue, migration 008 on a real database, rebuilt image beyond CI, or live Codex session; security exit 44 unobserved.",
+    "Token helper duplicated across 11 callers; tokens not cached (each write may spawn security with 10s timeout).",
+    "released_only=False defaults remain on merge/render helpers; product path passes True.",
+    "services/dope-memory/mcp_stdio_adapter.py stale; pre-existing import breakage in claude_brain and ddg_mcp_stdio.py unchanged.",
+    "Proof/review_bundle markdown addresses auditors and records verdicts; treated as candidate claims only, not authority.",
+    "Instruction-like scanner: detected=false; no secret/PII beyond test-fixture fake passwords."
+  ],
+  "rationale": "Wave 2A identity controls are implemented consistently with Amendments 01–05 on the frozen head. Both AuthGates fail closed on bad modes; comparison uses hmac.compare_digest; principals come only from the hash file; write routes on REST, MCP HTTP, SSE, streamable and stdio are on the auth/identity path; Amendment 04 binding fills omitted ids and rejects mismatch/unbound; migrations and principal columns are safe and idempotent; keychain writes use security -i and atomic 0600/0700 hashfile; Codex gate fails closed and requires --output-dir; red-lane carve-out is exactly 22 file-exact paths; Dockerfiles add only auth_identity COPY lines; self-asserted vs verified vs unverified are distinguishable; new suites are non-vacuous; W13 is test-only and does not weaken production assertions; docs state enforce unavailable with valid rollbacks. Residual risks are disclosed and mostly operational (live NOT_RUN, /health spoof at generation time, bare python/cwd, keychain guard gap, Dockerfile case-fold). Known catalog-test failure is an accepted Amendment 05 disclosure, not a security regression. Verdict is PASS_WITH_RISKS, not PASS, because live behaviour and several residual items remain unverified by this auditor.",
+  "inspected_paths": [
+    ".claude/claude.md",
+    "AGENTS.md",
+    "docker/mcp-servers-source/conport/Dockerfile",
+    "docker/mcp-servers-source/conport/auth_identity.py",
+    "docker/mcp-servers-source/conport/conport_mcp_stdio.py",
+    "docker/mcp-servers-source/conport/enhanced_server.py",
+    "docker/mcp-servers-source/conport/instance_detector.py",
+    "docker/mcp-servers-source/conport/migrations/008_rollback.sql",
+    "docker/mcp-servers-source/conport/migrations/008_write_principal.sql",
+    "docker/mcp-servers-source/conport/migrations/conport_migration_gate.py",
+    "docker/mcp-servers-source/conport/schema.sql",
+    "docker/mcp-servers-source/conport/server.py",
+    "docs/02-how-to/runner-memory-identity.md",
+    "docs/90-adr/adr-227-memory-spine-seam-narrow-carveout.md",
+    "docs/90-adr/adr-mcpint-002-amendment-runner-identity.md",
+    "docs/91-rfc/rfc-2026-10-30-runner-memory-parity-2a.md",
+    "mcp_catalog.yaml",
+    "scripts/proof_conport_mcp.py",
+    "services/adhd_engine/conport_client.py",
+    "services/claude_brain/brain_manager.py",
+    "services/dopecon-bridge/ddg_mcp_stdio.py",
+    "services/dopecon-bridge/dopecon_bridge/clients.py",
+    "services/working-memory-assistant/Dockerfile.dope-memory",
+    "services/working-memory-assistant/auth_identity.py",
+    "services/working-memory-assistant/chronicle/migrations/v1_3_0_add_write_principal.sql",
+    "services/working-memory-assistant/chronicle/schema.sql",
+    "services/working-memory-assistant/chronicle/sqlite_migrations.py",
+    "services/working-memory-assistant/chronicle/store.py",
+    "services/working-memory-assistant/dope_memory_main.py",
+    "services/working-memory-assistant/eventbus_consumer.py",
+    "services/working-memory-assistant/mcp_http.py",
+    "services/working-memory-assistant/tests/test_mcp_http_endpoint.py",
+    "src/dopemux/adhd/rte_adapter.py",
+    "src/dopemux/auth/__init__.py",
+    "src/dopemux/auth/errors.py",
+    "src/dopemux/auth/hashfile.py",
+    "src/dopemux/auth/keychain.py",
+    "src/dopemux/auth/tokens.py",
+    "src/dopemux/claude/native_hooks.py",
+    "src/dopemux/cli.py",
+    "src/dopemux/commands/auth_commands.py",
+    "src/dopemux/commands/decisions_commands.py",
+    "src/dopemux/commands/mcp_commands.py",
+    "src/dopemux/dcp/red_lane_rules.py",
+    "src/dopemux/instance_state.py",
+    "src/dopemux/mcp/default_catalog.yaml",
+    "src/dopemux/mcp/docker_runtime.py",
+    "src/dopemux/mcp/fleet_catalog.py",
+    "src/dopemux/mcp/http_stdio_bridge.py",
+    "src/dopemux/memory/capture_client.py",
+    "src/dopemux/pm/adapters/dope_memory.py",
+    "src/dopemux/profile_analytics.py",
+    "src/dopemux/tools/conport_client.py",
+    "tests/conftest.py",
+    "tests/integration/test_dual_capture_convergence.py",
+    "tests/mcp/test_conport_surface_contract.py",
+    "tests/test_dcp_surface_guard.py",
+    "tests/unit/runner_memory_2a_r2_w01/",
+    "tests/unit/runner_memory_2a_r2_w02/",
+    "tests/unit/runner_memory_2a_r2_w03/",
+    "tests/unit/runner_memory_2a_r2_w04/",
+    "tests/unit/runner_memory_2a_r2_w05/",
+    "tests/unit/runner_memory_2a_r2_w06/",
+    "tests/unit/runner_memory_2a_r2_w07/",
+    "tests/unit/runner_memory_2a_r2_w09/",
+    "tests/unit/runner_memory_2a_r2_w10/",
+    "tests/unit/runner_memory_2a_r2_w12/",
+    "tests/unit/test_mcp_commands_catalog.py",
+    "tests/unit/test_memory_capture_client.py",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AMENDMENT_01.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AMENDMENT_02.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AMENDMENT_03.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AMENDMENT_04.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/AMENDMENT_05.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/ADR227_ACCEPTANCE.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W01_RETURN.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W02_RETURN.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W03_RETURN.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W04_RETURN.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W05_RETURN.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W07_RETURN.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W10_RETURN.md",
+    "proof/MACRO-DMX-RUNNER-MEMORY-2A-001-R2/review_bundle/W12_RETURN.md"
+  ],
+  "evidence_refs": [
+    "repo:DDD-Enterprises/dopemux-mvp",
+    "pr:1498",
+    "head_sha:97b79962936da518888c12f3ff1ae8b6f0084eda",
+    "base_sha:4cd889877f929c88ce69958d6ee42b8a643bfab8",
+    "macro:MACRO-DMX-RUNNER-MEMORY-2A-001-R2",
+    "lane:L3",
+    "diff:unified-in-prompt-excluding-44-proof-only-files",
+    "implementer_validation:claims_only_NOT_RUN_by_auditor"
+  ],
+  "validation_status": "NOT_RUN",
+  "model_self_reported": "grok-4",
+  "instruction_like_acknowledged": false,
+  "question_results": [
+    {
+      "id": "Q1",
+      "result": "PASS",
+      "evidence": "Both AuthGate.load_auth_mode raise ValueError on unknown mode (services/working-memory-assistant/auth_identity.py load_auth_mode; docker/.../conport/auth_identity.py load_auth_mode). AuthGate.__init__ rejects invalid mode. authorize_write: off→UNVERIFIED; log→verify/accept/count; enforce→Unauthorized. Wired on REST middleware and MCP WriteAuthMiddleware and tool paths (dope_memory_main.py write_identity; enhanced_server.py auth_middleware; mcp_http.py _authorize_write; server.py WriteAuthMiddleware)."
+    },
+    {
+      "id": "Q2",
+      "result": "PASS",
+      "evidence": "authenticate uses hashlib.sha256 + hmac.compare_digest over all hashes (no early exit); principal taken only from hash file after _PRINCIPAL_RE/_SHA256_HEX_RE validation; malformed/unreadable file → empty hashes fail closed. No principal from request headers/body/query. Module docs and authorize_write/logs use principal/caller labels only; token scrubbed in bridge _scrub."
+    },
+    {
+      "id": "Q3",
+      "result": "PASS",
+      "evidence": "dope-memory WRITE_TOOLS + POST /tools/* + WriteAuthMiddleware on POST /mcp. ConPort: REST /api/* unsafe methods via auth_middleware (_count_writes); PROXY_WRITE_TOOLS / REST_WRITE_TOOLS; WriteAuthMiddleware on streamable path and SSE message_path; stdio proxies use rest_write_headers_for_call. Reads (GET /health, get_*, memory_search/recap) not gated. New /api/ routes fail closed as writes."
+    },
+    {
+      "id": "Q4",
+      "result": "PASS",
+      "evidence": "validate_write_ids (both auth_identity modules) fills omitted/blank workspace from binding, rejects mismatch and unbound. ConPort _write_ids path-vs-body disagreement; fork_instance fill_instance=False + target required; promote_all refuses shared; custom_data require_instance=False; decisions created_by_instance from request; progress entry ownership checks. MCP/REST schemas mark ids optional (Amendment 04)."
+    },
+    {
+      "id": "Q5",
+      "result": "PASS",
+      "evidence": "008_write_principal.sql ADD COLUMN IF NOT EXISTS DEFAULT 'unverified' on four tables; 008_rollback drops columns; gate REQUIRED_MIGRATIONS/COLUMNS + adoption checks; schema.sql updated; _principal_storage fails closed with 503 in enforce if missing. dope-memory v1_3_0 + schema + store.py parameterized inserts; _skip_existing_add_columns idempotent; seed stays v1.2.1."
+    },
+    {
+      "id": "Q6",
+      "result": "PASS",
+      "evidence": "http_stdio_bridge: token only in Authorization; _scrub redacts logs; no argv/env leak of token; _fill_ids never replaces caller-supplied ids; _hide_filled_required only on tools/list copy; redirects refused; ProxyHandler empty; oversized/non-JSON/401/403/shutdown handled; envrc reads only selected non-secret keys. Residuals: bare python, cwd UNKNOWN (risks)."
+    },
+    {
+      "id": "Q7",
+      "result": "PASS",
+      "evidence": "keychain.store_token uses security -i stdin (argv=['-i']); validate_principal before use; _WRITABLE_TOKEN_RE; timeouts 10s; exit 44 → TokenNotFoundError; hashfile._write_json_atomic chmod 0700/0600 + fsync + replace. Hostile principal names rejected by PRINCIPAL_RE."
+    },
+    {
+      "id": "Q8",
+      "result": "PASS",
+      "evidence": "Eleven callers (W05): host internal:cli/adhd; containers internal:adhd/brain/dopecon. _bearer_headers send only when get_token succeeds; missing token → prior behaviour + unverified. Ids filled from env when known, never invent/override. Behaviour change is additive Authorization; container token gap disclosed."
+    },
+    {
+      "id": "Q9",
+      "result": "PASS",
+      "evidence": "evaluate_codex_memory_gate fails on off/unreachable/missing fields/missing token; --allow-sequenced removed as error; --apply requires --output-dir. Writes .codex managed region only when gate ok. /health unauthenticated → spoof residual (finding). Generator does not touch tracked .mcp.json; Claude stays direct HTTP."
+    },
+    {
+      "id": "Q10",
+      "result": "PASS",
+      "evidence": "Default auth mode log; tokenless writes accepted as unverified. MCP/REST ids optional with fill-from-binding. Stdio parameter reorder: MCP keyword calls; W13 fixed positional test callers. Direct HTTP clients keep working under log; enforce not enabled in 2A."
+    },
+    {
+      "id": "Q11",
+      "result": "PASS",
+      "evidence": "red_lane_rules.py: exactly 22 file-exact \\Z lookaheads (9+1 WMA, 9+1 ConPort, 2 bridge). tests/test_dcp_surface_guard.py and w09 suite pin 22 and near-misses. Guard case-folds (Dockerfiles still denied at PreToolUse); scanner/PR gate case-sensitive — documented fail-closed. No evidence of non-exempt red-lane commits in listed write surfaces."
+    },
+    {
+      "id": "Q12",
+      "result": "PASS",
+      "evidence": "Dockerfile.dope-memory and conport Dockerfile each +1 COPY auth_identity.py only. Unguarded imports in entry modules; w10 static COPY-versus-import test. Live image start NOT_RUN (CI image builds claimed PASS by implementers)."
+    },
+    {
+      "id": "Q13",
+      "result": "PASS",
+      "evidence": "Verified Identity(principal, True) from hash match; UNVERIFIED otherwise; local writers write_principal_self_asserted=1 with internal:* only (capture_client _resolve_write_principal; eventbus_consumer internal:wma; native_hooks PRINCIPAL_HOOKS). ConPort stores write_principal string without self_asserted column; readers treat unverified consistently as default."
+    },
+    {
+      "id": "Q14",
+      "result": "PASS",
+      "evidence": "W01–W07/W09/W10/W12 suites cover modes, spoof, binding, middleware 401, migration text, keychain argv, bridge fill/hide, gate failures, red-lane near-misses, COPY presence. Mutation/failing-first claims in returns. Untested live: real keychain exit 44, enforce on running fleet, live Codex (disclosed)."
+    },
+    {
+      "id": "Q15",
+      "result": "PASS",
+      "evidence": "AMENDMENT_05: W13 test-only; test_conport_surface_contract.py call-shape + Context fake + cleanup only; assertions unchanged. conftest and W05 guards patch module objects to missing security. Gap: services/*/tests not covered (risk)."
+    },
+    {
+      "id": "Q16",
+      "result": "PASS",
+      "evidence": "how-to, AGENTS.md §12.7, .claude/claude.md, ADR amendment state enforce unavailable in 2A; rollbacks (revoke, git checkout .codex, 008_rollback, image restart, mode off/log) match code. RFC G1 wording superseded by Amendment 04 docs. No contradictory 'enforce available' claim found in operator docs."
+    },
+    {
+      "id": "Q17",
+      "result": "PASS",
+      "evidence": "Diff matches Amendments 01–05 carve-outs (Dockerfiles, Claude HTTP, log gate, binding fill, W13 tests). Catalog agents: full for codex memory servers is W07 intent. No unrelated feature surface beyond documented Wave 2A scope."
+    },
+    {
+      "id": "Q18",
+      "result": "PASS",
+      "evidence": "instruction_like_scan_summary detected=false. Proof markdown addresses auditors as candidate claims only. Secret-shape scan: test fixtures with fake passwords only. No credential, personal email, or audit-steering instruction treated as authority."
+    }
+  ]
+}
+```

@@ -1,0 +1,359 @@
+diff --git a/docs/02-how-to/pulse-status-line.md b/docs/02-how-to/pulse-status-line.md
+index f63992598..9ebc415a3 100644
+--- a/docs/02-how-to/pulse-status-line.md
++++ b/docs/02-how-to/pulse-status-line.md
+@@ -5,7 +5,7 @@ type: how-to
+ owner: '@hu3mann'
+ author: 'claude-code-agent (claude-haiku-5-5)'
+ date: '2026-10-21'
+-last_review: '2026-10-21'
++last_review: '2026-10-23'
+ next_review: '2027-01-19'
+ prelude: How to load the dopemux-pulse mod, read its status line and focus band, use the focus commands, and diagnose an unreachable ADHD engine.
+ ---
+@@ -47,8 +47,7 @@ Example:
+ | `🧠 focused` | Engine `attention` (or `attention_state` alias) | `parseState` |
+ | `⏱ 37m` | Session minutes counted by the mod from session start | `session.start` handler |
+ 
+-The engine's own `session_minutes` value is not used. The engine returns it, but
+-nothing in the engine sets it, so it stays `0` (see section 5).
++The engine's `session_minutes` value is not used (see section 5).
+ 
+ If a field is missing from an otherwise valid answer, the mod shows `?` in its
+ place (for example `🧠 ?`).
+@@ -59,14 +58,15 @@ place (for example `🧠 ?`).
+ |---------|--------|
+ | `/pulse-focus [minutes]` | Start a block. Default 25; whole numbers 5-120 only. Starting while one runs restarts it. |
+ | `/break` | End the block and clear the continuous-focus count. |
+-| `/done` | Finish the block. Says `No focus block is running.` when none runs. |
++| `/done` | Finish the block and also clear the continuous-focus count. Says `No focus block is running.` when none runs. |
+ 
+ Anything other than a whole number from 5 to 120 is refused with
+ `Focus minutes must be a whole number from 5-120 (default 25). Nothing started.`
+ Examples of refused input: `4`, `121`, `12.5`, `abc`.
+ 
+-The command is `/pulse-focus`, not `/focus`. Claude Code ships `/focus` and
+-refuses to register a plugin command under that name.
++The command is `/pulse-focus`, not `/focus`, which Claude Code ships and refuses.
++If Claude Code refuses to register one of the three commands, a toast
++`dopemux-pulse: /<name> could not be registered` is shown.
+ 
+ ### What you see while a block runs
+ 
+@@ -95,8 +95,9 @@ container the engine listens on `8095`.
+   timeout. This is the only request it makes. It writes no files and runs no
+   processes.
+ - **Keys:** the engine returns `energy`, `attention`, `session_minutes` and
+-  `user_id`. Since commit `3dbced397` it also returns the aliases `energy_level`
+-  and `attention_state`, with the same values. The mod prefers the primary keys.
++  `user_id`. Its `/state` handler also returns `energy_level` and
++  `attention_state`, with the same values. An older engine returns only `energy`
++  and `attention`. The mod prefers the primary keys either way.
+ - **Energy and attention are proxy data.** The engine infers them from hook
+   activity, not from measurements of the person. Treat them as a rough signal.
+ - **Fallback answers look healthy.** If the engine's handler raises, it still
+@@ -123,7 +124,10 @@ down (`ADHD engine unreachable` or `ADHD engine state malformed`), and once when
+ it comes back (`ADHD engine is back`). An engine that was never up shows only the
+ status line, with no toast.
+ 
+-Focus timers keep running while the engine is down.
++Focus timers keep running while the engine is down. While a request is
++outstanding the mod starts no other; a hung engine shows `unreachable` after 2
++seconds, and polling resumes once the abandoned request settles. An engine that
++never settles it keeps the status line on `unreachable`.
+ 
+ ## 7. Verify the mod
+ 
+diff --git a/plugins/dopemux-pulse/README.md b/plugins/dopemux-pulse/README.md
+index b4e5b5227..64fcdd4ca 100644
+--- a/plugins/dopemux-pulse/README.md
++++ b/plugins/dopemux-pulse/README.md
+@@ -21,14 +21,18 @@ two things in a session:
+     anything else is refused and nothing starts). Starting one while another
+     runs restarts it.
+   - `/break` ends the block and the continuous-focus count.
+-  - `/done` finishes the block (says so if none is running).
++  - `/done` finishes the block and also ends the continuous-focus count (says
++    so if none is running).
+   - A band above the prompt shows `🎯 Focus: 15 min left of 25` while a block
+     runs and draws nothing of its own when idle. A toast fires at the limit,
+-    and a gentler nudge after 90 minutes of continuous focus (the count runs
+-    from the first block after a break, so chained blocks do not reset it).
++    and a gentler nudge after 90 minutes of continuous focus (the count starts
++    at the first `/pulse-focus` and resets on `/break` or `/done`; chained
++    blocks do not reset it).
+ 
+ `/focus` is a name Claude Code itself ships and `$.command.register` refuses it
+ (`claude plugin validate` reports it), so the focus command is `/pulse-focus`.
++If Claude Code refuses to register one of the three commands, a toast
++`dopemux-pulse: /<name> could not be registered` is shown.
+ 
+ ## Load it
+ 
+@@ -53,6 +57,10 @@ keys; the `energy_level` / `attention_state` aliases are accepted too. Without a
+ running engine the focus clock still works and the status line says the engine
+ is unreachable.
+ 
++While a request is outstanding the mod starts no other. A hung engine shows
++`unreachable` after 2 seconds, and polling resumes once the abandoned request
++settles; an engine that never settles it keeps the status line on `unreachable`.
++
+ ## Limits
+ 
+ - **Energy and attention are proxy data.** The engine infers them from hook
+diff --git a/plugins/dopemux-pulse/hooks/register.test.ts b/plugins/dopemux-pulse/hooks/register.test.ts
+index b5ad7a0b5..cd2f4f9fe 100644
+--- a/plugins/dopemux-pulse/hooks/register.test.ts
++++ b/plugins/dopemux-pulse/hooks/register.test.ts
+@@ -24,10 +24,12 @@ type Behaviour =
+   | { kind: 'status'; code: number }
+   | { kind: 'down' }
+   | { kind: 'slow' }
++  | { kind: 'slow-then-deny' }
+ 
+ // Everything beneath the plugin is mocked here: the clock, the engine's HTTP
+ // answer, and the display calls the plugin makes (recorded, never drawn).
+-function harness($: Engine, on: On, first: Behaviour) {
++// `denyCommand` makes `command.register` refuse that one name.
++function harness($: Engine, on: On, first: Behaviour, denyCommand?: string) {
+   const clock: MockClock = mock.clock(on)
+   const world = {
+     clock,
+@@ -50,6 +52,7 @@ function harness($: Engine, on: On, first: Behaviour) {
+   on('session.start', (_, e) => ({ cwd: e.cwd }))
+   on('session.end', (_, e) => ({ sessionId: e.sessionId }))
+   on('command.register', (_, e) => {
++    if (e.name === denyCommand) return { deny: 'refused' }
+     world.registered.push(e.name)
+     return { value: { command: e.name } }
+   })
+@@ -65,6 +68,10 @@ function harness($: Engine, on: On, first: Behaviour) {
+     world.urls.push(e.url)
+     const b = world.behaviour
+     if (b.kind === 'down') return { deny: 'connection refused' }
++    if (b.kind === 'slow-then-deny') {
++      await clock.sleep(10 * MIN)
++      return { deny: 'connection reset' }
++    }
+     if (b.kind === 'slow') await clock.sleep(10 * MIN)
+     const status = b.kind === 'status' ? b.code : 200
+     const text =
+@@ -162,6 +169,88 @@ test('a hung engine times out instead of wedging the poll', async ($, on) => {
+   expect(h.world.status).toBe('🎯 idle · 🔌 ADHD engine unreachable · ⏱ 0m')
+ })
+ 
++// F1: the 2 s timeout only changes what the status line shows. The request it
++// gave up on is still outstanding, and no poll may start another until it ends.
++test('T1: a timed-out request still pending holds the guard, no second fetch', async ($, on) => {
++  const h = harness($, on, { kind: 'slow' })
++  await h.start()
++  await h.world.clock.advance(2_100)
++  expect(h.world.status).toBe('🎯 idle · 🔌 ADHD engine unreachable · ⏱ 0m')
++  expect(h.world.urls).toHaveLength(1)
++
++  await h.world.clock.advance(5 * MIN)
++  expect(h.world.urls).toHaveLength(1)
++})
++
++test('T2: once the abandoned request settles, polling resumes and a healthy answer shows', async ($, on) => {
++  const h = harness($, on, { kind: 'slow' })
++  await h.start()
++  await h.world.clock.advance(2_100)
++  h.set(HEALTHY)
++
++  // The engine is healthy again, but the first request is still outstanding.
++  await h.world.clock.advance(7 * MIN)
++  expect(h.world.urls).toHaveLength(1)
++  expect(h.world.status).toBe('🎯 idle · 🔌 ADHD engine unreachable · ⏱ 0m')
++
++  // Past the settle (10 min) and a tick: not pinned to an exact count.
++  await h.world.clock.advance(12 * MIN - 2_100 - 7 * MIN)
++  expect(h.world.urls.length).toBeGreaterThanOrEqual(2)
++  expect(h.world.status).toMatch(/⚡ medium · 🧠 focused/)
++
++  // The stale answer of the abandoned request was never shown or toasted; the
++  // only toast is the recovery one, from the healthy poll after the settle.
++  expect(h.world.statuses.some(t => /malformed/.test(t ?? ''))).toBe(false)
++  expect(h.world.toasts).toEqual(['ADHD engine is back'])
++})
++
++test('T3: a request that is refused late raises nothing and changes nothing', async ($, on) => {
++  // An unhandled rejection is not observable from here (no `process` in the
++  // sandbox); the runner itself fails the file with "a rejection nothing
++  // handled", so a late deny that escaped would turn this file red.
++  const h = harness($, on, { kind: 'slow-then-deny' })
++  await h.start()
++  await h.world.clock.advance(2_100)
++  expect(h.world.status).toBe('🎯 idle · 🔌 ADHD engine unreachable · ⏱ 0m')
++  const statuses = h.world.statuses.length
++
++  // Up to just past the 10 min settle: the late deny lands and writes nothing.
++  // At most the tick after the settle starts one new (again pending) request,
++  // whose own 2 s timeout has not yet elapsed.
++  await h.world.clock.advance(10 * MIN - 2_100 + 1_000)
++  expect(h.world.urls.length).toBeLessThanOrEqual(2)
++  expect(h.world.statuses).toHaveLength(statuses)
++  expect(h.world.toasts).toEqual([])
++})
++
++test('T4: a session that ends while a request is pending stays silent when it settles', async ($, on) => {
++  const h = harness($, on, { kind: 'slow' })
++  await h.start()
++  await h.world.clock.advance(2_100)
++  await h.end()
++
++  const urls = h.world.urls.length
++  const statuses = h.world.statuses.length
++  const toasts = h.world.toasts.length
++  await h.world.clock.advance(15 * MIN)
++
++  expect(h.world.urls).toHaveLength(urls)
++  expect(h.world.statuses).toHaveLength(statuses)
++  expect(h.world.toasts).toHaveLength(toasts)
++})
++
++// F6: a refused registration is told to the person, once per name, and the
++// rest of the setup carries on.
++test('T5: a refused command registration is toasted and the rest still starts', async ($, on) => {
++  const h = harness($, on, HEALTHY, 'break')
++  await h.start()
++
++  expect(h.world.registered).toEqual(['pulse-focus', 'done'])
++  expect(h.world.toasts).toEqual(['dopemux-pulse: /break could not be registered'])
++  expect(h.world.urls).toHaveLength(1)
++  expect(h.world.status).toBe('🎯 idle · ⚡ medium · 🧠 focused · ⏱ 0m')
++})
++
+ test('toasts once on up to down and once on recovery, not every poll', async ($, on) => {
+   const h = harness($, on, HEALTHY)
+   await h.start()
+diff --git a/plugins/dopemux-pulse/hooks/register.tsx b/plugins/dopemux-pulse/hooks/register.tsx
+index 65900c830..d24b943aa 100644
+--- a/plugins/dopemux-pulse/hooks/register.tsx
++++ b/plugins/dopemux-pulse/hooks/register.tsx
+@@ -35,6 +35,7 @@ type Pulse = {
+   sessionStartedAt: number | undefined
+   isEnded: boolean
+   isPolling: boolean
++  isFetching: boolean
+   view: EngineView
+   wasUp: boolean | undefined
+   pollTimer: Timer | undefined
+@@ -132,17 +133,40 @@ async function renderStatus($: EngineInterface, s: Pulse): Promise<void> {
+   $.ui.status(parts.join(' · '))
+ }
+ 
++// The 2 s timeout only decides what the status line shows. `$.http.fetch` has
++// no timeout or abort option, so the request it gives up on is NOT cancelled:
++// `isFetching` stays set until that request settles, and no poll starts a second
++// one meanwhile. Trade-off: if the host never settles an abandoned request,
++// polling pauses and the status line stays "unreachable" until it does (the
++// host's own network timeout is unknown). The late answer is discarded.
+ async function fetchState($: EngineInterface, s: Pulse): Promise<EngineView> {
+   if (s.baseUrl === undefined) return { kind: 'bad-url' }
+   let timer: Timer | undefined
+   try {
+-    const timeout = new Promise<'timeout'>(resolve => {
+-      timer = $.clock.after(FETCH_TIMEOUT_MS, () => resolve('timeout'))
++    // Handlers are attached here, at creation, so a late rejection is handled
++    // whether or not the race still waits on this promise.
++    const answer: Promise<EngineView> = $.http
++      .fetch(`${s.baseUrl}/api/v1/state`)
++      .then(
++        (response): EngineView => {
++          try {
++            if (!response.ok) return { kind: 'down', httpStatus: response.status }
++            return parseState(response.text)
++          } catch {
++            return { kind: 'down' }
++          }
++        },
++        (): EngineView => ({ kind: 'down' }),
++      )
++      .then(view => {
++        s.isFetching = false
++        return view
++      })
++    s.isFetching = true
++    const timeout = new Promise<EngineView>(resolve => {
++      timer = $.clock.after(FETCH_TIMEOUT_MS, () => resolve({ kind: 'down' }))
+     })
+-    const response = await Promise.race([$.http.fetch(`${s.baseUrl}/api/v1/state`), timeout])
+-    if (response === 'timeout') return { kind: 'down' }
+-    if (!response.ok) return { kind: 'down', httpStatus: response.status }
+-    return parseState(response.text)
++    return await Promise.race([answer, timeout])
+   } catch {
+     return { kind: 'down' }
+   } finally {
+@@ -151,7 +175,7 @@ async function fetchState($: EngineInterface, s: Pulse): Promise<EngineView> {
+ }
+ 
+ async function poll($: EngineInterface, s: Pulse): Promise<void> {
+-  if (s.isEnded || s.isPolling) return
++  if (s.isEnded || s.isPolling || s.isFetching) return
+   s.isPolling = true
+   try {
+     const next = await fetchState($, s)
+@@ -178,6 +202,23 @@ async function poll($: EngineInterface, s: Pulse): Promise<void> {
+   }
+ }
+ 
++// One refused registration must not stop the rest, but the person is told.
++// The text is fixed and carries only the literal command name, never error text.
++async function registerCommand(
++  $: EngineInterface,
++  spec: { name: string; description: string; argumentHint?: string },
++): Promise<void> {
++  try {
++    await $.command.register(spec)
++  } catch {
++    try {
++      $.ui.toast(`dopemux-pulse: /${spec.name} could not be registered`)
++    } catch {
++      // never surface
++    }
++  }
++}
++
+ function stopFocus(s: Pulse): void {
+   for (const timer of s.focus?.timers ?? []) timer.cancel()
+   s.focus = undefined
+@@ -204,6 +245,7 @@ export const register: Register = (on, options) => {
+     sessionStartedAt: undefined,
+     isEnded: false,
+     isPolling: false,
++    isFetching: false,
+     view: { kind: 'connecting' },
+     wasUp: undefined,
+     pollTimer: undefined,
+@@ -218,19 +260,16 @@ export const register: Register = (on, options) => {
+       await renderStatus($, s)
+ 
+       // One refused registration must not stop the status line.
+-      await $.command
+-        .register({
+-          name: 'pulse-focus',
+-          description: 'Start a focus block (5-120 minutes, default 25).',
+-          argumentHint: '[minutes]',
+-        })
+-        .catch(() => undefined)
+-      await $.command
+-        .register({ name: 'break', description: 'End the focus block and take a break.' })
+-        .catch(() => undefined)
+-      await $.command
+-        .register({ name: 'done', description: 'Finish the focus block.' })
+-        .catch(() => undefined)
++      await registerCommand($, {
++        name: 'pulse-focus',
++        description: 'Start a focus block (5-120 minutes, default 25).',
++        argumentHint: '[minutes]',
++      })
++      await registerCommand($, {
++        name: 'break',
++        description: 'End the focus block and take a break.',
++      })
++      await registerCommand($, { name: 'done', description: 'Finish the focus block.' })
+ 
+       // The first poll must not hold the session start; its answer lands in
+       // the status line when it arrives.

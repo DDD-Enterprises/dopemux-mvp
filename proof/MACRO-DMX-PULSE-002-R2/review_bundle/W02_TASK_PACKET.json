@@ -1,0 +1,155 @@
+{
+  "id": "TP-DMX-PULSE2R2-W02-DOCS-ALIGN-001",
+  "project": "dopemux-mvp",
+  "target": "Align the Pulse mod's docs with the code and make them durable: (F3) plugins/dopemux-pulse/README.md and docs/02-how-to/pulse-status-line.md must say that /done, like /break, resets the continuous-focus count, and that the count starts at the first /pulse-focus; (F4) the how-to cites commit 3dbced397 by SHA, which will not survive a squash merge, so replace it with durable wording; and document the two W01 behaviours as built (settle-held poll guard, refused-registration toast).",
+  "invariants": [
+    "MACRO-DMX-PULSE-002-R2 invariants I01-I08 apply. SUCCESSOR OF PR #1472 (not an unrelated stacked repair): the macro's result is the audited SUCCESSOR HEAD of the whole Pulse feature. Predecessor record, kept verbatim and never edited or relabelled: audited head 1d2219e8c894c5929ceba6ac5f2650dfe7ba2147, signed proof head f4115046484ed0dc580cc4337bb8c7cf55d39af7, verdict PASS_WITH_RISKS with Q3 FAIL on F1, and the operator's 2026-10-22 acceptance of F1 as a disclosed residual risk. The existing signed proofs for #1472 do NOT cover this work. It is judged by exactly ONE new independent audit of the CUMULATIVE subject (merge-base(origin/main, C)..C, the whole feature), not only the delta. This workstream carries the docs findings F3 and F4 and the as-built notes.",
+    "Exact custody: worktree /Users/hue/code/dopemux-mvp/.claude/worktrees/pulse-f1-001-5a321f; branch claude/pulse-f1-001-5a321f (local only, nothing pushed); base f4115046484ed0dc580cc4337bb8c7cf55d39af7 = origin/feat/pulse-001 = the head of PR #1472 (signed proof head); HEAD must be hard-equal to the base at W01 start and porcelain must show only the untracked task-packets/MACRO-DMX-PULSE-002/ and task-packets/MACRO-DMX-PULSE-002-R2/. Writers: W01-implementer (Sonnet child) writes only register.tsx and register.test.ts; W02-implementer (Haiku child) writes only README.md and the how-to; W03 is the team lead (local-shell) writing only proof/MACRO-DMX-PULSE-002-R2/review_bundle/. The team lead alone commits, one commit per workstream, explicit pathspec: C1 (W01), C2 (W02) = the content head C that the audit freezes, P (W03) = a proof-only successor. Rollback is git revert in reverse order (P, C2, C1); no reset, no force-push; deleting the branch or worktree is an operator gate. Runs AFTER W01 is committed as C1 (HEAD = C1, porcelain as in W01). Derive every statement from the committed plugins/dopemux-pulse/hooks/register.tsx, not from W01's intent. If W01 did not ship F6, do not document the registration toast; if W01 shipped something different, document what was built.",
+    "Edit EXACTLY plugins/dopemux-pulse/README.md and docs/02-how-to/pulse-status-line.md. Do not touch register.tsx, register.test.ts, plugin.json, hooks.json, services/ or the proof/ tree.",
+    "F3 (both files). The code is the authority: `stopContinuous` runs on BOTH /break and /done; `continuousSince` starts at the first /pulse-focus (and only when it is undefined, so chained blocks keep it). README: the `/done` bullet must say it also ends the continuous-focus count, and the parenthetical about the 90-minute nudge must say the count starts at the first /pulse-focus and resets on /break or /done (replace 'the count runs from the first block after a break'). How-to: the command-table `/done` row must say it also clears the continuous-focus count; the nudge bullet in section 3 is already correct, keep its meaning.",
+    "F4 (how-to section 5, 'Keys' bullet). Remove the commit SHA `3dbced397`. Say, without any commit hash, PR number or branch name, that the engine's /state handler also returns the aliases `energy_level` and `attention_state` with the same values, that an engine older than that change returns only `energy` and `attention`, and that the mod prefers the primary keys either way. Then grep both files: no 7-40 hex-digit token and no `#NNNN` PR reference may remain.",
+    "Behaviour notes as built, one or two sentences each, no more: (1) README 'Engine dependency' and how-to section 6: while a request to the engine is outstanding the mod does not start another; a hung engine shows `unreachable` after 2 seconds and polling resumes once the abandoned request settles, so an engine that never settles the request keeps the status line on `unreachable`. (2) README and how-to section 3: if Claude Code refuses to register one of the commands, a toast `dopemux-pulse: /<name> could not be registered` is shown (only if W01 shipped F6). Do not claim any live behaviour; keep the existing 'Not verified' sections accurate and add nothing that was not observed.",
+    "Docs conventions: keep the YAML frontmatter valid (update `last_review` to the edit date if the docs hooks require it; keep `author` truthful to who wrote the change, not the original author), kebab-case filename, Diataxis how-to shape. The how-to is 146 lines today and the earlier packet capped it at under 150: condense wording rather than grow it past 150 lines; the README has no cap but stays concise.",
+    "Do not run the docs hooks from a fresh worktree's own .venv: a new worktree has none. Use the primary checkout's /Users/hue/code/dopemux-mvp/.venv/bin/pre-commit and /Users/hue/code/dopemux-mvp/.venv/bin/python with explicit --files, and say so in the return.",
+    "You never commit, push, open a PR or call the `advisor` tool (advisor_calls must be 0). The coordinator re-reads your diff and commits with an explicit pathspec.",
+    "Finite limits for W02 (PROPOSED in ALLOWANCES_PROPOSED.json; binding once the operator sends the R2 AUTHORIZE line): ONE dispatch attempt plus at most ONE supervisor-narrowed repair attempt, and the repair only after a deterministic-gate failure; at most 2 coordinator review rounds; at most 20 minutes active and 45 minutes elapsed; at most 150000 child tokens where the runner reports usage (otherwise UNKNOWN, not enforced). Exceeding any limit: STOP and return NEEDS_SUPERVISOR with evidence. No self-extension, no retry beyond the one repair, no provider or model substitution. The repair attempt may use the named claude-sonnet-5-5 fallback only if the supervisor accepts the evidence-backed STOP.",
+    "Cost route: you are the cheaper route (claude-haiku-5-5). If you cannot make the code-derived statements verifiably true, or the docs hooks fail twice on content you cannot fix inside the allowlist, STOP with evidence and return NEEDS_SUPERVISOR; the supervisor, not you, decides any escalation to the named fallback."
+  ],
+  "depends_on": [
+    "TP-DMX-PULSE2R2-W01-FETCH-GUARD-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-PULSE-002-R2",
+    "base_branch": "feat/pulse-001",
+    "parent_tp_id": "MACRO-DMX-PULSE-002-R2",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "claude/pulse-f1-001-5a321f",
+    "base_branch": "feat/pulse-001",
+    "stacked_because": "PR #1472 (feat/pulse-001) is open and unmerged; this packet builds its audited successor head on top of the signed proof head."
+  },
+  "commit": {
+    "message": "docs(pulse): /done also resets the continuous-focus count; drop the commit SHA; document the poll guard",
+    "allowlist": [
+      "plugins/dopemux-pulse/README.md",
+      "docs/02-how-to/pulse-status-line.md"
+    ],
+    "verify": [
+      "/Users/hue/code/dopemux-mvp/.venv/bin/python scripts/docs_frontmatter_guard.py --help >/dev/null   # then run it per its usage on the how-to",
+      "/Users/hue/code/dopemux-mvp/.venv/bin/pre-commit run --files plugins/dopemux-pulse/README.md docs/02-how-to/pulse-status-line.md",
+      "! grep -nE '[0-9a-f]{7,40}|#[0-9]{3,5}' plugins/dopemux-pulse/README.md docs/02-how-to/pulse-status-line.md   # no commit hash or PR number remains (a match is a FAIL)",
+      "wc -l docs/02-how-to/pulse-status-line.md   # at most 150",
+      "git diff --check",
+      "git diff --name-only | sort   # must equal the allowlist"
+    ]
+  },
+  "pr": {
+    "title": "fix(pulse): hold the poll guard until the engine fetch settles (successor of #1472)",
+    "body": "MACRO-DMX-PULSE-002-R2 W02 of 3. Delivery vehicle (fast-forward of feat/pulse-001 or a stacked draft PR) is an operator gate, not decided here. Draft until a new independent final audit.",
+    "base": "feat/pulse-001"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Read the committed W01 code and the two docs; list each F3/F4 line to change",
+      "requirements": [
+        "Derive every statement from the committed register.tsx.",
+        "STOP with NEEDS_SUPERVISOR if W01 is not committed (HEAD still f4115046484ed0dc580cc4337bb8c7cf55d39af7)."
+      ],
+      "commands": [
+        "git log --oneline -3",
+        "git status --porcelain   # must be empty"
+      ],
+      "expected_files": [],
+      "validation": [
+        "HEAD is the W01 commit; line list matches the code"
+      ],
+      "context_files": [
+        "plugins/dopemux-pulse/hooks/register.tsx",
+        "plugins/dopemux-pulse/README.md",
+        "docs/02-how-to/pulse-status-line.md",
+        "proof/MACRO-DMX-PULSE-001/review_bundle/GROK_ADJUDICATION.md"
+      ]
+    },
+    {
+      "id": "W02-S2",
+      "task": "Edit the README and the how-to, then pass the docs hooks and the no-hash grep",
+      "requirements": [
+        "Only the two allowlisted files; how-to stays at or under 150 lines."
+      ],
+      "commands": [
+        "/Users/hue/code/dopemux-mvp/.venv/bin/pre-commit run --files plugins/dopemux-pulse/README.md docs/02-how-to/pulse-status-line.md"
+      ],
+      "expected_files": [
+        "plugins/dopemux-pulse/README.md",
+        "docs/02-how-to/pulse-status-line.md"
+      ],
+      "validation": [
+        "docs hooks pass; grep finds no hash or PR number; line cap holds"
+      ],
+      "context_files": [
+        "plugins/dopemux-pulse/README.md",
+        "docs/02-how-to/pulse-status-line.md"
+      ]
+    },
+    {
+      "id": "W02-S3",
+      "task": "Return",
+      "requirements": [
+        "Summary per file, hook results with exit codes, the grep and wc results, advisor_calls (must be 0), files_written, observed model if a runtime receipt exists else UNKNOWN."
+      ],
+      "commands": [
+        "git diff --stat",
+        "git diff --name-only | sort"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-PULSE-002-R2",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "PULSE-002-R2-FINAL-AUDIT",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-haiku-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [
+      {
+        "runner": "claude-code-agent",
+        "model": "claude-sonnet-5-5",
+        "effort": "UNKNOWN"
+      }
+    ],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "plugins/dopemux-pulse/README.md",
+    "docs/02-how-to/pulse-status-line.md"
+  ],
+  "canonical_writers": [
+    "W02-implementer"
+  ],
+  "semantic_scope": [
+    "pulse-docs"
+  ],
+  "rollback_boundary": "git revert <C2> on claude/pulse-f1-001-5a321f (REVERT_COMMITS); base f4115046484ed0dc580cc4337bb8c7cf55d39af7",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
