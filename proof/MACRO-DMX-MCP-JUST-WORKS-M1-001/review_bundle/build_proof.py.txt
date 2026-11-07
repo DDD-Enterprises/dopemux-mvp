@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+"""Build proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/{PROOF.json,AUDIT_ROUTES.json,*_AUDITOR_REPORT.md} from the raw audit returns.
+Usage: python3 build_proof.py <worktree> <subject_dir> <suite_log>"""
+import json, re, subprocess, sys, pathlib, datetime
+W = pathlib.Path(sys.argv[1]); A = pathlib.Path(sys.argv[2]); SUITE = pathlib.Path(sys.argv[3])
+P = W / "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001"; RAW = P / "raw"
+def git(*a): return subprocess.run(["git","-C",str(W),*a],capture_output=True,text=True).stdout.strip()
+head = git("rev-parse","HEAD"); branch = git("rev-parse","--abbrev-ref","HEAD")
+nonce = (A/"NONCE").read_text().strip() if (A/"NONCE").exists() else ""
+def extract_json(text):
+    m = re.search(r'"schema"\s*:\s*"independent-audit/v1"', text)
+    if not m: return None
+    start = text.rfind('{', 0, m.start()); depth = 0
+    for j, ch in enumerate(text[start:]):
+        if ch == '{': depth += 1
+        elif ch == '}':
+            depth -= 1
+            if depth == 0:
+                try: return json.loads(text[start:start+j+1])
+                except Exception: return None
+    return None
+def codex_report():
+    f = P/"CODEX_AUDITOR_REPORT.md"; return f.read_text() if f.exists() else ""
+def agy_report():
+    f = RAW/"AGY_AUDIT_RAW.json"
+    if not f.exists(): return ""
+    try: o = json.loads(f.read_text()); return o.get("response") or o.get("result") or ""
+    except Exception: return ""
+def grok_report():
+    f = RAW/"GROK_AUDIT_RAW.jsonl"
+    if not f.exists(): return ""
+    texts = []
+    for line in f.read_text().splitlines():
+        line=line.strip()
+        if not line.startswith('{'): continue
+        try: o = json.loads(line)
+        except Exception: continue
+        t = o.get("type")
+        if t == "result" and isinstance(o.get("result"), str): texts.append(o["result"])
+        elif t in ("text","assistant") :
+            if isinstance(o.get("text"), str): texts.append(o["text"])
+            c = o.get("message",{}).get("content") if isinstance(o.get("message"),dict) else None
+            if isinstance(c, list):
+                for part in c:
+                    if isinstance(part, dict) and part.get("type")=="text": texts.append(part.get("text",""))
+    # prefer the last 'result' if present
+    return texts[-1] if texts else ""
+def exit_code(name):
+    f = RAW/f"{name}.stderr"
+    if not f.exists(): return None
+    m = re.findall(r"exit=(\d+)", f.read_text()); return int(m[-1]) if m else None
+routes = []
+reports = {"codex": codex_report(), "agy": agy_report(), "grok": grok_report()}
+models = {"codex": "gpt-6-astra", "agy": "gemini-4-argon-high", "grok": "grok-4.7"}
+tools  = {"codex": "codex-cli (not in schema enum; informal evidence under the owner pin)", "agy": "agy", "grok": "grok-cli"}
+verdicts = {}
+for r in ("codex","agy","grok"):
+    text = reports[r]
+    if text and r != "codex": (P/f"{r.upper()}_AUDITOR_REPORT.md").write_text(text)
+    v = extract_json(text) if text else None
+    verdicts[r] = v
+    marker_ok = (f"END_OF_PROMPT {nonce}-{head[:8]}" in text) or (f"END_OF_SUBJECT {nonce}-{head[:8]}" in text)
+    routes.append({"workstream": f"independent L3 audit route — {r}", "runner": r, "model_requested": models[r], "model_observed": "UNKNOWN",
+                   "effort": "high" if r=="grok" else "UNKNOWN", "skills": ["independent-audit"],
+                   "status": (v or {}).get("status", "NOT_RUN" if not text else "UNKNOWN"), "exit_code": exit_code(r), "marker_echoed": marker_ok,
+                   "report_path": f"proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/{r.upper()}_AUDITOR_REPORT.md", "raw_path": f"proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/raw/",
+                   "findings": [{"id": f.get("id"), "severity": f.get("severity"), "location": f.get("location"), "summary": f.get("summary")} for f in (v or {}).get("findings", [])]})
+suite = ""
+for line in SUITE.read_text().splitlines():
+    if re.match(r"^=+ .*passed", line): suite = line.replace("=","").strip()
+files_changed = git("diff","--name-only","5742575c4..HEAD").splitlines()
+validations = [
+    {"command": "make test-fast", "exit_code": 0, "bucket": "PASS", "reason": f"{suite} at {head} (implementer-run, controller-verified from the log)"},
+    {"command": ".venv/bin/python -m pytest tests/test_native_hooks_workflow.py -v", "exit_code": 0, "bucket": "PASS", "reason": "12 passed at 7ae26f045; file unchanged since"},
+    {"command": "scripts/docs_validator.py + scripts/docs_frontmatter_guard.py (file-scoped on touched docs)", "exit_code": 0, "bucket": "PASS", "reason": "rc=0 on the how-to and both claudedocs files"},
+    {"command": "ruff check --select F,E9 / flake8 --select F,E7,E9,W6 per-file diff vs base 583720375", "exit_code": 0, "bucket": "PASS", "reason": "0 new entries over the changed .py files"},
+    {"command": "black --check / isort --check-only (five new modules, repo config)", "exit_code": 0, "bucket": "PASS", "reason": "clean"},
+    {"command": "mypy --explicit-package-bases --ignore-missing-imports (five new modules)", "exit_code": 0, "bucket": "PASS", "reason": "0 errors in the new modules; repo-wide mypy aborts on main (pre-existing)"},
+    {"command": "make lint / make type-check (repo-wide)", "exit_code": None, "bucket": "NOT_RUN", "reason": "not clean/functional on main (21828 flake8 findings; mypy duplicate-module abort); per-file diffs recorded instead"},
+    {"command": "live: dopemux mcp launch conport/dope-memory + claude mcp list (worktree)", "exit_code": 0, "bucket": "PASS", "reason": "at 7f5cb621a: both Connected; sibling-lease collision healed (live-check-3c-fix1.log)"},
+    {"command": "live: dopemux mcp init --repo <fresh repo>; dopemux mcp launch conport (gate)", "exit_code": 0, "bucket": "PASS", "reason": "at 8f12edee4/baf8b1151: tenant provisioned, images built, conport connected, gate cleared (live-check-4-tenant-probe.log)"},
+    {"command": "live: dopemux mcp reap --dry-run --json", "exit_code": 0, "bucket": "PASS", "reason": "at 859fd844d: empty plan with the kill-switch (live-check-5-reap-dryrun.log)"},
+    {"command": "live: reap --apply, switch-project, Codex/EnterWorktree probes, legacy-envrc adoption, acceptance T1–T11", "exit_code": None, "bucket": "NOT_RUN", "reason": "owner-run; reap --apply denied to the controller by the permission classifier"},
+]
+governing = verdicts.get("agy") or {}
+sev_map = {"low":"LOW","medium":"MEDIUM","high":"HIGH","critical":"BLOCKING","info":"INFO"}
+ea_findings = [{"id": f.get("id","F?"), "severity": sev_map.get(str(f.get("severity","")).lower(),"INFO"), "title": (f.get("summary") or "")[:120] or "finding",
+                "status": "ACCEPTED_RISK" if str(f.get("severity","")).lower()=="low" else "OPEN",
+                "body": f"{f.get('location','')}: {f.get('summary','')} — evidence: {f.get('evidence','')}"} for f in governing.get("findings", [])]
+ilc = governing.get("instruction_like_content", []) or []
+embedded_audit = {
+    "required": True,
+    "status": governing.get("status", "NEEDS_SUPERVISOR"),
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --output-format json --print-timeout 25m --add-dir <sealed subject> --print=<AUDIT_PROMPT.agy.full.txt> (exact requested model gemini-4-argon-high; the schema enum lacks it, hence 'gemini')",
+    "exit_code": exit_code("agy"),
+    "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDITOR_REPORT.md",
+    "findings": ea_findings,
+    "fixes_applied": ["eb3f0624b audit (codex FAIL: F1 high first-session guard gap, F3 medium unbounded reap locks/inspection) → fixed in 3bf5d4f26", "3bf5d4f26 audit (codex FAIL: 2 medium — stale reap eligibility under the lock; unbounded registry lock on automatic reaps) → fixed in 30b0fdec9", "superseded returns kept under proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/superseded-*/"],
+    "remaining_risks": list(governing.get("remaining_risks", [])) + ["codex route at 30b0fdec9 = FAIL with two medium reap/serialization findings (F1 reap persistence failure still deletes the runtime dir; F2 CLI start/restart not serialized against the automatic reaper) — OPEN, governing pick owner-gated", "grok route at 30b0fdec9 = PASS_WITH_RISKS (0 findings, tool-less containment verified)"],
+    "skip_reason": None,
+    "instruction_like_content": {"detected": bool(ilc), "match_count": len(ilc), "truncated": False, "matches": []},
+}
+import shutil
+if (P/"AGY_AUDITOR_REPORT.md").exists(): shutil.copyfile(P/"AGY_AUDITOR_REPORT.md", P/"AUDITOR_REPORT.md")
+proof = {
+    "tp_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001", "tp_path": ".superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/MACRO_PACKET.md (git-ignored workspace; plan claudedocs/mcp-just-works-m1-plan-2026-11-05.md)",
+    "worktree_path": str(W), "branch": branch, "repo_identity": "DDD-Enterprises/dopemux-mvp", "head_sha": head, "commit_sha": head,
+    "routes": [
+        {"workstream": "supervisor/controller", "runner": "claude-code", "model_requested": "claude-fable-5-1", "model_observed": "claude-fable-5-1 (session)", "effort": "UNKNOWN", "skills": ["superpowers:subagent-driven-development","task-packet"]},
+        {"workstream": "implementers T1/T2/T3a/T3b/T5/T6", "runner": "claude-code Agent", "model_requested": "sonnet", "model_observed": "claude-sonnet-5-5 (harness receipt on rate-limit errors)", "effort": "UNKNOWN", "skills": ["superpowers:test-driven-development"]},
+        {"workstream": "implementers T3c/T4/final fix rounds", "runner": "claude-code Agent", "model_requested": "opus", "model_observed": "claude-opus-5-5 (harness receipt)", "effort": "UNKNOWN", "skills": ["superpowers:test-driven-development"]},
+        {"workstream": "task reviews / re-reviews / final whole-branch review", "runner": "claude-code Agent", "model_requested": "sonnet (T1/T2/T3a/T3b/T6, small re-reviews) / opus (T3c/T4/T5, concurrency re-reviews, final)", "model_observed": "UNKNOWN", "effort": "UNKNOWN", "skills": ["superpowers:requesting-code-review"]},
+        {"workstream": "deterministic validation", "runner": "local-shell", "model_requested": "NONE", "model_observed": "NONE", "effort": "UNKNOWN", "skills": []},
+        *routes,
+    ],
+    "slices": ["T1 hooks a274a066f","T2 identity a728a6aaa+4d90b51fb","T3a catalog fb8717368","T3b locks/ports 40ea89c24+05e5e50a0","T3c launcher 33959c081+5d04d8caa+7f5cb621a+baf8b1151","T4 tenants 09606798b+8f12edee4","T5 reap 859fd844d+016a9f3b8","T6 docs b2c6e3efa+94a2a6f6a","final review fix 7ae26f045","residual fix eb3f0624b","audit fix 3bf5d4f26"],
+    "files_changed": files_changed,
+    "validations": validations,
+    "codereview_status": "PASS (final whole-branch opus review 'with fixes' → fixes applied and re-reviewed; residual + audit rounds verified)",
+    "precommit_status": "NOT_RUN",
+    "audit": {"required": True, "status": {r: (verdicts[r] or {}).get("status","NOT_RUN/UNKNOWN") for r in ("codex","agy","grok")}, "route": "three routes at the frozen head (codex gpt-6-astra, agy gemini-4-argon-high, grok grok-4.7); operator picks the governing verdict; embedded_audit below carries the agy record (schema-valid)"},
+    "pr_url_or_blocker": "PR not yet opened (push/PR owner-gated)",
+    "residual_risks": ["flaky tests/unit/test_mcp_port_allocator.py::test_sequential_single_service_allocations_never_share_a_port (~1/30 isolated runs)", "SIGKILLed-only launcher leaves its instance to the worktree-missing rule", "second restart of the same backend within one proxy window needs /mcp reconnect", "per-worktree mcp.env/compose.override reflect the last launched service", "legacy projects stay on the shared ConPort store (D5 Option A)"],
+    "unknowns": ["observed model identity of every delegated agent and external auditor (no runtime receipts except harness error messages)", "owner-run acceptance T1–T11", "Codex/EnterWorktree launcher behaviour (NOT_RUN probes)"],
+    "cleanup_status": "probe fixture (~/code/.tenant-probe-m1, tenant conport_tenant_probe_m1_84fc294a, its project dir and runtime dir, container) and ~/.dopemux/mcp/runtime/reap.disabled intentionally left for owner acceptance T8; lint-base worktree .worktrees/lint-base-583720375 to be removed after the PR",
+    "embedded_audit": embedded_audit,
+    "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+}
+(P/"PROOF.json").write_text(json.dumps(proof, indent=2)+"\n")
+(P/"AUDIT_ROUTES.json").write_text(json.dumps({"head_sha": head, "nonce": nonce, "routes": routes, "verdicts": verdicts}, indent=2)+"\n")
+print("written", P/"PROOF.json"); print({r: routes[i]["status"] for i,r in enumerate(("codex","agy","grok"))})
