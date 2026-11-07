@@ -45,7 +45,7 @@ If upsert mode is missing `<id>` or `<key>`, stop and ask (do not guess a key).
 - If `--role` not given, use the role from the schema entry. If the key isn't in the schema and no `--role` is given, stop and ask for `--role` (free-form keys still need a phase).
 - **If the schema entry has a `skill` pointer** (e.g. `pal:analyze`, `verify`): suggest running it and pasting the output as the body:
   ```
-  💡 This note maps to skill "<skill>". Run it (e.g. mcp__pal__analyze) and paste the output,
+  💡 This note maps to skill "<skill>". Run it (e.g. mcp__pal-stdio__analyze) and paste the output,
      or write the note directly. Guidance:
      <guidance text>
   ```
