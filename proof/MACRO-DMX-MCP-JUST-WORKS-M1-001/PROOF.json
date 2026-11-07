@@ -287,7 +287,7 @@
     },
     "route": "three routes at the frozen head (codex gpt-6-astra, agy gemini-4-argon-high, grok grok-4.7); operator picks the governing verdict; embedded_audit below carries the agy record (schema-valid)"
   },
-  "pr_url_or_blocker": "PR not yet opened (push/PR owner-gated)",
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1503 (open; merge owner-gated; embedded-audit signature = owner step)",
   "residual_risks": [
     "flaky tests/unit/test_mcp_port_allocator.py::test_sequential_single_service_allocations_never_share_a_port (~1/30 isolated runs)",
     "SIGKILLed-only launcher leaves its instance to the worktree-missing rule",

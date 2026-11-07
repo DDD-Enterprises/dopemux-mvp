@@ -1,0 +1,62 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1503,
+  "head_sha": "30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
+  "packet_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
+  "generated_at": "2026-11-07T08:16:55Z",
+  "mutation_performed": false,
+  "github_mutation_route_added": false,
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli (controller); claude-code-agent (subagents)",
+      "model": "claude-fable-5-1 (controller, self-reported); claude-opus-5-5 / claude-sonnet-5-5 / claude-haiku-5-5 (subagents, requested; observed UNKNOWN)",
+      "model_family": "anthropic-claude",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "google-antigravity-cli",
+      "effort": "UNKNOWN"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --output-format json --print-timeout 25m --add-dir <sealed subject> --print=<AUDIT_PROMPT.agy.full.txt> (exact requested model gemini-4-argon-high; the schema enum lacks it, hence 'gemini')",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "LOW",
+        "title": "AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared ",
+        "status": "ACCEPTED_RISK",
+        "body": "AGENTS.md:309: AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared per service and Dockerfile version across all worktrees and projects on the host. \u2014 evidence: AGENTS.md:309-310 says 'The first launch in a new worktree builds its images (LAUNCH_IMAGE_BUILDING; then /mcp reconnect all).' Commit 02658fcbe changed docker_runtime.compose_image_name (src/dopemux/mcp/docker_runtime.py:487-516) to tag dopemux-<service>:<12-hex-sha256> per service and Dockerfile content, and updated docs/02-how-to/mcp-setup-other-repos.md:122-128 and .claude/claude.md:270-273 accordingly, leaving AGENTS.md:309 with the pre-I4 wording."
+      }
+    ],
+    "fixes_applied": [
+      "eb3f0624b audit (codex FAIL: F1 high first-session guard gap, F3 medium unbounded reap locks/inspection) \u2192 fixed in 3bf5d4f26",
+      "3bf5d4f26 audit (codex FAIL: 2 medium \u2014 stale reap eligibility under the lock; unbounded registry lock on automatic reaps) \u2192 fixed in 30b0fdec9",
+      "superseded returns kept under proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/superseded-*/"
+    ],
+    "remaining_risks": [
+      "AGENTS.md:309 contains stale wording implying image builds happen per new worktree rather than once per service/Dockerfile version on the host (Finding F1, low).",
+      "In stdio_proxy.py:316-329, an initial connect failure consumes the 60-second reconnect window budget via the immediate startup retry, so if the backend subsequently restarts within 60 seconds of that retry, the proxy will exit 1 and require '/mcp reconnect' rather than auto-healing a second time inside the same 60-second window.",
+      "Deferred M1 items documented in LEDGER_SUMMARY.md \u00a7Deferred (e.g., M2 legacy shared-store row migration, M2 ~/.claude.json global audit, and in-flight tool calls during a task-orchestrator restart returning CONNECTION_CLOSED without replay) remain open by design.",
+      "codex route at 30b0fdec9 = FAIL with two medium reap/serialization findings (F1 reap persistence failure still deletes the runtime dir; F2 CLI start/restart not serialized against the automatic reaper) \u2014 OPEN, governing pick owner-gated",
+      "grok route at 30b0fdec9 = PASS_WITH_RISKS (0 findings, tool-less containment verified)"
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
