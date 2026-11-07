@@ -206,6 +206,8 @@ Status: [LOGGED] Topology Complete
 - [Dope-Context Architecture and Trinity Boundaries](03-reference/dope-context/dope-context-architecture-and-boundaries-v1.md)
 - [Internal Workflow Kit Reference](03-reference/internal-workflow-kit.md)
 - [CI Remediation Specialist Reference](03-reference/ci-remediation-specialist.md)
+- [dopemux adhd status](03-reference/adhd-status-cli.md) - Read-only ADHD engine status command: URL resolution, statuses, exit codes, limits
+- [CI Contract Gates and Port Drift Test](03-reference/ci-contract-gates.md) - What `tests/arch` checks, how CI runs it, and how to add a port exception
 
 ### Features
 - [Features Index](03-reference/features/features-index.md)

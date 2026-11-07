@@ -101,6 +101,8 @@ reference:
   mcp_tools_overview: docs/03-reference/mcp-tools-overview.md
   internal_workflow_kit: docs/03-reference/internal-workflow-kit.md
   ci_remediation_specialist: docs/03-reference/ci-remediation-specialist.md
+  adhd_status_cli: docs/03-reference/adhd-status-cli.md
+  ci_contract_gates: docs/03-reference/ci-contract-gates.md
   doc_audit_prescan_reference: docs/03-reference/doc-audit-prescan.md
   extraction_wizard_reference: docs/03-reference/extraction-wizard.md
   pm_plane_write_matrix: docs/planes/pm/pm-plane-write-matrix.md

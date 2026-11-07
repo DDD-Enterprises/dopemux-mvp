@@ -224,6 +224,15 @@ jobs:
               print(f"import-ok {name}")
           PY
 
+      # Separate pytest process, like the dope-memory gate: tests/arch imports
+      # service packages that must not shadow modules tests/unit imports. Last in the
+      # job so a failure here cannot hide the steps that have no `if:`.
+      - name: ▶️ Run arch contract gate
+        run: |
+          uv run --frozen pytest \
+            tests/arch \
+            --maxfail=1 --disable-warnings --no-cov
+
   extractor-smoke:
     name: "🧪 Extractor Smoke"
     runs-on: ubuntu-latest
