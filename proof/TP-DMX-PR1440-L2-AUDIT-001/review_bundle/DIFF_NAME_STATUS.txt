@@ -1,0 +1,6 @@
+M	.claude/claude.md
+M	AGENTS.md
+M	docs/02-how-to/mcp-setup-other-repos.md
+M	src/dopemux/commands/mcp_commands.py
+M	src/dopemux/mcp/doctor.py
+M	tests/unit/test_mcp_doctor_repo_aware.py
