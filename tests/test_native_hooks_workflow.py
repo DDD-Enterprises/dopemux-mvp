@@ -305,7 +305,7 @@ def test_stop_hook_calls_maybe_reap_before_allow(tmp_path, monkeypatch):
     # No active workflow: the early return must still be preceded by the reap.
     response = handle_event("Stop", {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}})
 
-    assert calls == [{}]
+    assert calls == [{"deadline_s": 60}]  # bounded inside the Stop hook budget
     assert response.get("decision") != "block"
 
 
@@ -324,7 +324,7 @@ def test_stop_hook_reap_runs_before_a_block_decision_too(tmp_path, monkeypatch):
 
     blocked = handle_event("Stop", {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}})
 
-    assert calls == [{}]
+    assert calls == [{"deadline_s": 60}]  # bounded inside the Stop hook budget
     assert blocked["decision"] == "block"
 
 

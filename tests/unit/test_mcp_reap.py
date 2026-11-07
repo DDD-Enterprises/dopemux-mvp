@@ -32,9 +32,12 @@ IDLE = 1200.0
 @pytest.fixture(autouse=True)
 def _isolated(tmp_path: Path, monkeypatch):
     """Registries, leases, lock files and the kill-switch dir all live in tmp_path."""
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "runtime" / "instances.json"))
     monkeypatch.setenv(
-        "DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "runtime" / "port-leases.json")
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "runtime" / "instances.json")
+    )
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_PORT_LEASE_REGISTRY",
+        str(tmp_path / "runtime" / "port-leases.json"),
     )
     monkeypatch.delenv("DOPEMUX_MCP_REAP", raising=False)
 
@@ -113,7 +116,9 @@ def _detached(rt: Path, *, ago: float) -> None:
 
 
 def _plan(reg: RuntimeRegistry, containers: List[DockerContainerInfo], **kw: Any):
-    return reap.plan_reap(registry=reg, containers=containers, now=NOW, idle_s=IDLE, **kw)
+    return reap.plan_reap(
+        registry=reg, containers=containers, now=NOW, idle_s=IDLE, **kw
+    )
 
 
 # --- attach / detach / live_attachments ------------------------------------------
@@ -149,7 +154,9 @@ def test_live_attachments_prunes_dead_and_tolerates_plain_pid_content(tmp_path: 
     attached.mkdir(parents=True)
     dead = subprocess.Popen(["true"])
     dead.wait()
-    (attached / str(dead.pid)).write_text(f"{dead.pid}\n", encoding="utf-8")  # Task 3c format
+    (attached / str(dead.pid)).write_text(
+        f"{dead.pid}\n", encoding="utf-8"
+    )  # Task 3c format
     (attached / str(os.getpid())).write_text(f"{os.getpid()}\n", encoding="utf-8")
     (attached / "not-a-pid").write_text("junk", encoding="utf-8")
     assert reap.live_attachments(rt, prune=False) == 1
@@ -175,7 +182,9 @@ def test_plan_reap_skips_project_and_singleton_scope(tmp_path: Path, runtime: Pa
     assert _plan(reg, containers) == []
 
 
-def test_plan_reap_ignores_containers_of_a_pair_without_registry_entry(tmp_path: Path, runtime: Path):
+def test_plan_reap_ignores_containers_of_a_pair_without_registry_entry(
+    tmp_path: Path, runtime: Path
+):
     reg = _registry(runtime, tmp_path / "removed" / "proj")
     got = _plan(reg, [_container("a1", worktree_hash="ffff0000")])
     assert all("a1" not in c.container_ids for c in got)  # never touched
@@ -212,7 +221,9 @@ def test_plan_reap_not_candidate_when_recently_detached(tmp_path: Path, runtime:
     assert _plan(reg, [_container("a1")]) == []
 
 
-def test_plan_reap_idle_without_last_detach_is_never_a_candidate(tmp_path: Path, runtime: Path):
+def test_plan_reap_idle_without_last_detach_is_never_a_candidate(
+    tmp_path: Path, runtime: Path
+):
     live = tmp_path / "wt" / "proj"
     live.mkdir(parents=True)
     reg = _registry(runtime, live)
@@ -267,7 +278,9 @@ def test_plan_reap_refuses_unsafe_worktree_hash(tmp_path: Path, runtime: Path):
 
 
 class Recorder:
-    def __init__(self, fail: Optional[set] = None, stderr: Optional[Dict[tuple, str]] = None) -> None:
+    def __init__(
+        self, fail: Optional[set] = None, stderr: Optional[Dict[tuple, str]] = None
+    ) -> None:
         self.calls: List[List[str]] = []
         self.kwargs: List[Dict[str, Any]] = []
         self.fail = fail or set()
@@ -285,7 +298,9 @@ class Recorder:
         )
 
 
-def _lease(worktree_root: Path, service: str, port: int, *, scope: str = "worktree") -> Dict[str, Any]:
+def _lease(
+    worktree_root: Path, service: str, port: int, *, scope: str = "worktree"
+) -> Dict[str, Any]:
     return {
         "lease_id": f"lease-{service}-{port}",
         "service": service,
@@ -323,13 +338,17 @@ def test_apply_reap_stops_removes_releases_and_rmtree(tmp_path: Path, runtime: P
     for cid in cands[0].container_ids:
         assert ["docker", "stop", cid] in runner.calls
         assert ["docker", "rm", cid] in runner.calls
-        assert runner.calls.index(["docker", "stop", cid]) < runner.calls.index(["docker", "rm", cid])
+        assert runner.calls.index(["docker", "stop", cid]) < runner.calls.index(
+            ["docker", "rm", cid]
+        )
     assert all("-f" not in c for c in runner.calls)
     leases = PortLeaseRegistry.load(runtime / "port-leases.json")
     status = {L["service"]: L["status"] for L in leases.leases()}
     assert status["conport"] == "released"
     assert status["dope-memory"] == "released"
-    assert status["task-orchestrator"] == "active"  # project-scoped lease is not ours to release
+    assert (
+        status["task-orchestrator"] == "active"
+    )  # project-scoped lease is not ours to release
     registry = RuntimeRegistry.load(runtime / "instances.json")
     assert [i["status"] for i in registry.instances()] == ["stopped"]
     assert not _rt_dir(runtime).exists()
@@ -348,22 +367,36 @@ def test_apply_reap_rechecks_attachment_under_lock(tmp_path: Path, runtime: Path
     assert {L["status"] for L in leases.leases()} == {"active"}
 
 
-def test_apply_reap_keeps_state_when_a_container_fails_to_stop(tmp_path: Path, runtime: Path):
+def test_apply_reap_keeps_state_when_a_container_fails_to_stop(
+    tmp_path: Path, runtime: Path
+):
     missing, cands = _setup_apply(tmp_path, runtime)
     runner = Recorder(fail={("docker", "stop", "a1")})
     report = reap.apply_reap(cands, runner=runner)
     assert report.reaped == []
     assert any("a1" in e for e in report.errors)
-    assert ["docker", "rm", "a1"] not in runner.calls  # never remove what failed to stop
-    assert ["docker", "stop", "a2"] in runner.calls and ["docker", "rm", "a2"] in runner.calls
+    assert [
+        "docker",
+        "rm",
+        "a1",
+    ] not in runner.calls  # never remove what failed to stop
+    assert ["docker", "stop", "a2"] in runner.calls and [
+        "docker",
+        "rm",
+        "a2",
+    ] in runner.calls
     assert _rt_dir(runtime).is_dir()
     leases = PortLeaseRegistry.load(runtime / "port-leases.json")
-    assert {L["status"] for L in leases.leases() if L["service"] == "conport"} == {"active"}
+    assert {L["status"] for L in leases.leases() if L["service"] == "conport"} == {
+        "active"
+    }
     registry = RuntimeRegistry.load(runtime / "instances.json")
     assert [i["status"] for i in registry.instances()] == ["running"]
 
 
-def test_apply_reap_refuses_runtime_dir_outside_registry_dir(tmp_path: Path, runtime: Path):
+def test_apply_reap_refuses_runtime_dir_outside_registry_dir(
+    tmp_path: Path, runtime: Path
+):
     missing, cands = _setup_apply(tmp_path, runtime)
     outside = tmp_path / "precious"
     outside.mkdir()
@@ -432,7 +465,11 @@ def test_maybe_reap_disabled_by_file(tmp_path: Path, runtime: Path):
     inspect = FakeInspect([_container("a1")])
     runner = Recorder()
     got = reap.maybe_reap(
-        throttle_s=0, state_file=tmp_path / "s", now=lambda: NOW, inspector=inspect, runner=runner
+        throttle_s=0,
+        state_file=tmp_path / "s",
+        now=lambda: NOW,
+        inspector=inspect,
+        runner=runner,
     )
     assert got is None
     assert inspect.calls == 0 and runner.calls == []
@@ -441,22 +478,34 @@ def test_maybe_reap_disabled_by_file(tmp_path: Path, runtime: Path):
 
 
 @pytest.mark.parametrize("value", ["0", "off", "false", "OFF", "False"])
-def test_maybe_reap_disabled_by_env(tmp_path: Path, runtime: Path, monkeypatch, value: str):
+def test_maybe_reap_disabled_by_env(
+    tmp_path: Path, runtime: Path, monkeypatch, value: str
+):
     _setup_apply(tmp_path, runtime)
     monkeypatch.setenv("DOPEMUX_MCP_REAP", value)
     inspect = FakeInspect([_container("a1")])
     runner = Recorder()
     got = reap.maybe_reap(
-        throttle_s=0, state_file=tmp_path / "s", now=lambda: NOW, inspector=inspect, runner=runner
+        throttle_s=0,
+        state_file=tmp_path / "s",
+        now=lambda: NOW,
+        inspector=inspect,
+        runner=runner,
     )
     assert got is None
     assert inspect.calls == 0 and runner.calls == []
 
 
-def test_maybe_reap_skips_docker_when_registry_has_no_instances(tmp_path: Path, runtime: Path):
+def test_maybe_reap_skips_docker_when_registry_has_no_instances(
+    tmp_path: Path, runtime: Path
+):
     inspect = FakeInspect([_container("a1")])
     got = reap.maybe_reap(
-        throttle_s=0, state_file=tmp_path / "s", now=lambda: NOW, inspector=inspect, runner=Recorder()
+        throttle_s=0,
+        state_file=tmp_path / "s",
+        now=lambda: NOW,
+        inspector=inspect,
+        runner=Recorder(),
     )
     assert got is not None and got.reaped == []
     assert inspect.calls == 0
@@ -495,14 +544,24 @@ def test_inspect_all_managed_containers_lists_stopped_managed_containers():
 
     result = di.inspect_all_managed_containers(runner=runner)
     assert seen == [
-        ["docker", "ps", "-a", "--filter", "label=dopemux.managed=true", "--format", "{{json .}}"]
+        [
+            "docker",
+            "ps",
+            "-a",
+            "--filter",
+            "label=dopemux.managed=true",
+            "--format",
+            "{{json .}}",
+        ]
     ]
     assert result.available and [c.id for c in result.containers] == ["abcdef012345"]
 
 
 def test_inspect_all_managed_containers_reports_docker_failure():
     def runner(cmd, **kwargs):
-        return SimpleNamespace(returncode=1, stdout="", stderr="Cannot connect to the Docker daemon")
+        return SimpleNamespace(
+            returncode=1, stdout="", stderr="Cannot connect to the Docker daemon"
+        )
 
     result = di.inspect_all_managed_containers(runner=runner)
     assert not result.available and "Cannot connect" in (result.error or "")
@@ -517,9 +576,13 @@ def _cli():
     return mcp_commands.mcp
 
 
-def test_cli_dry_run_json_lists_candidates_and_changes_nothing(tmp_path: Path, runtime: Path, monkeypatch):
+def test_cli_dry_run_json_lists_candidates_and_changes_nothing(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
     _setup_apply(tmp_path, runtime)
-    monkeypatch.setattr(reap, "inspect_all_managed_containers", FakeInspect([_container("a1")]))
+    monkeypatch.setattr(
+        reap, "inspect_all_managed_containers", FakeInspect([_container("a1")])
+    )
     boom = Recorder()
     monkeypatch.setattr(reap, "run_cmd", boom)
     result = CliRunner().invoke(_cli(), ["reap", "--json"])
@@ -532,10 +595,14 @@ def test_cli_dry_run_json_lists_candidates_and_changes_nothing(tmp_path: Path, r
     assert _rt_dir(runtime).is_dir()
 
 
-def test_cli_apply_ignores_disable_file_but_warns(tmp_path: Path, runtime: Path, monkeypatch):
+def test_cli_apply_ignores_disable_file_but_warns(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
     _setup_apply(tmp_path, runtime)
     (runtime / "reap.disabled").write_text("", encoding="utf-8")
-    monkeypatch.setattr(reap, "inspect_all_managed_containers", FakeInspect([_container("a1")]))
+    monkeypatch.setattr(
+        reap, "inspect_all_managed_containers", FakeInspect([_container("a1")])
+    )
     runner = Recorder()
     monkeypatch.setattr(reap, "run_cmd", runner)
     result = CliRunner().invoke(_cli(), ["reap", "--apply", "--json"])
@@ -548,7 +615,9 @@ def test_cli_apply_ignores_disable_file_but_warns(tmp_path: Path, runtime: Path,
     assert not _rt_dir(runtime).exists()
 
 
-def test_cli_json_error_paths_print_a_json_object_and_exit_1(tmp_path: Path, runtime: Path, monkeypatch):
+def test_cli_json_error_paths_print_a_json_object_and_exit_1(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
     monkeypatch.setattr(
         reap,
         "inspect_all_managed_containers",
@@ -601,12 +670,16 @@ def _to_container() -> DockerContainerInfo:
     )
 
 
-def test_apply_reap_never_marks_the_reserved_orchestrator_stopped(tmp_path: Path, runtime: Path):
+def test_apply_reap_never_marks_the_reserved_orchestrator_stopped(
+    tmp_path: Path, runtime: Path
+):
     wt = tmp_path / "removed" / "proj"
     reg = _two_services_registry(runtime, wt)
     leases = PortLeaseRegistry.load(runtime / "port-leases.json", create_missing=True)
     leases.upsert_lease(_lease(wt, "conport", 3100))
-    leases.upsert_lease(_lease(wt, "task-orchestrator", 7890))  # worktree-scope lease row
+    leases.upsert_lease(
+        _lease(wt, "task-orchestrator", 7890)
+    )  # worktree-scope lease row
     leases.save()
     cands = _plan(reg, [_container("side1"), _to_container()])
     assert [c.container_ids for c in cands] == [["side1"]]
@@ -616,22 +689,30 @@ def test_apply_reap_never_marks_the_reserved_orchestrator_stopped(tmp_path: Path
     assert report.errors == []
     assert [c[:2] for c in runner.calls] == [["docker", "stop"], ["docker", "rm"]]
     assert all("to1" not in c for c in runner.calls)
-    status = {i["service"]: i["status"] for i in RuntimeRegistry.load(runtime / "instances.json").instances()}
+    status = {
+        i["service"]: i["status"]
+        for i in RuntimeRegistry.load(runtime / "instances.json").instances()
+    }
     assert status == {"conport": "stopped", "task-orchestrator": "running"}
     lease_status = {
-        L["service"]: L["status"] for L in PortLeaseRegistry.load(runtime / "port-leases.json").leases()
+        L["service"]: L["status"]
+        for L in PortLeaseRegistry.load(runtime / "port-leases.json").leases()
     }
     assert lease_status == {"conport": "released", "task-orchestrator": "active"}
 
 
-def test_apply_reap_releases_only_leases_of_services_it_stopped(tmp_path: Path, runtime: Path):
+def test_apply_reap_releases_only_leases_of_services_it_stopped(
+    tmp_path: Path, runtime: Path
+):
     missing, _ = _setup_apply(tmp_path, runtime)
     reg = RuntimeRegistry.load(runtime / "instances.json")
     cands = _plan(reg, [_container("a1")])  # only conport has a container left
     assert cands[0].services == ["conport"]
     reap.apply_reap(cands, runner=Recorder())
     leases = PortLeaseRegistry.load(runtime / "port-leases.json")
-    assert {L["service"]: L["status"] for L in leases.leases()}["dope-memory"] == "active"
+    assert {L["service"]: L["status"] for L in leases.leases()}[
+        "dope-memory"
+    ] == "active"
     # the next plan finishes the rest from state alone
     again = reap.plan_reap(
         registry=RuntimeRegistry.load(runtime / "instances.json"),
@@ -642,7 +723,9 @@ def test_apply_reap_releases_only_leases_of_services_it_stopped(tmp_path: Path, 
     assert [c.state_only for c in again] == [True]
 
 
-def test_state_only_candidate_finishes_a_reap_killed_after_docker_rm(tmp_path: Path, runtime: Path):
+def test_state_only_candidate_finishes_a_reap_killed_after_docker_rm(
+    tmp_path: Path, runtime: Path
+):
     wt = tmp_path / "removed" / "proj"
     reg = _two_services_registry(runtime, wt)
     rt = _rt_dir(runtime)
@@ -653,20 +736,35 @@ def test_state_only_candidate_finishes_a_reap_killed_after_docker_rm(tmp_path: P
     leases.save()
     kw = {"lease_registry": PortLeaseRegistry.load(runtime / "port-leases.json")}
     cands = _plan(reg, [], **kw)  # docker shows no container for the pair
-    assert len(cands) == 1 and cands[0].state_only and cands[0].reason == "worktree_missing"
+    assert (
+        len(cands) == 1
+        and cands[0].state_only
+        and cands[0].reason == "worktree_missing"
+    )
     runner = Recorder()
     report = reap.apply_reap(cands, runner=runner)
     assert runner.calls == []  # no container is touched
     assert report.errors == [] and report.reaped == cands
-    status = {i["service"]: i["status"] for i in RuntimeRegistry.load(runtime / "instances.json").instances()}
+    status = {
+        i["service"]: i["status"]
+        for i in RuntimeRegistry.load(runtime / "instances.json").instances()
+    }
     assert status == {"conport": "stopped", "task-orchestrator": "running"}
     lease_status = {
-        L["service"]: L["status"] for L in PortLeaseRegistry.load(runtime / "port-leases.json").leases()
+        L["service"]: L["status"]
+        for L in PortLeaseRegistry.load(runtime / "port-leases.json").leases()
     }
     assert lease_status == {"conport": "released", "task-orchestrator": "active"}
     assert not rt.exists()
     # idempotent: nothing left to do
-    assert _plan(RuntimeRegistry.load(runtime / "instances.json"), [], lease_registry=PortLeaseRegistry.load(runtime / "port-leases.json")) == []
+    assert (
+        _plan(
+            RuntimeRegistry.load(runtime / "instances.json"),
+            [],
+            lease_registry=PortLeaseRegistry.load(runtime / "port-leases.json"),
+        )
+        == []
+    )
 
 
 def test_state_only_not_emitted_while_the_worktree_exists_or_a_launcher_is_attached(
@@ -686,7 +784,9 @@ def test_state_only_not_emitted_while_the_worktree_exists_or_a_launcher_is_attac
 def test_stop_or_rm_no_such_container_counts_as_success(tmp_path: Path, runtime: Path):
     missing, cands = _setup_apply(tmp_path, runtime)
     gone = "Error response from daemon: No such container: x"
-    runner = Recorder(stderr={("docker", "stop", "a1"): gone, ("docker", "rm", "a2"): gone})
+    runner = Recorder(
+        stderr={("docker", "stop", "a1"): gone, ("docker", "rm", "a2"): gone}
+    )
     report = reap.apply_reap(cands, runner=runner)
     assert report.errors == [] and report.reaped == cands
     assert ["docker", "rm", "a1"] in runner.calls  # still removed after a vanished stop
@@ -705,14 +805,20 @@ def _many_pairs(tmp_path: Path, runtime: Path, n: int):
     return RuntimeRegistry.load(runtime / "instances.json"), containers
 
 
-def test_apply_reap_bounds_stop_time_timeout_and_candidate_cap(tmp_path: Path, runtime: Path):
+def test_apply_reap_bounds_stop_time_timeout_and_candidate_cap(
+    tmp_path: Path, runtime: Path
+):
     reg, containers = _many_pairs(tmp_path, runtime, 3)
     cands = _plan(reg, containers)
     assert len(cands) == 3
     runner = Recorder()
-    report = reap.apply_reap(cands, runner=runner, max_candidates=1, stop_time_s=3, cmd_timeout_s=10.0)
+    report = reap.apply_reap(
+        cands, runner=runner, max_candidates=1, stop_time_s=3, cmd_timeout_s=10.0
+    )
     assert len(report.reaped) == 1
-    assert [(c.container_ids, r) for c, r in zip(report.skipped, report.skip_reasons)] == [
+    assert [
+        (c.container_ids, r) for c, r in zip(report.skipped, report.skip_reasons)
+    ] == [
         (cands[1].container_ids, "cap"),
         (cands[2].container_ids, "cap"),
     ]
@@ -723,7 +829,9 @@ def test_apply_reap_bounds_stop_time_timeout_and_candidate_cap(tmp_path: Path, r
     assert all(k == {"timeout": 10.0} for k in runner.kwargs)
 
 
-def test_maybe_reap_defaults_cap_three_and_bound_docker_calls(tmp_path: Path, runtime: Path):
+def test_maybe_reap_defaults_cap_three_and_bound_docker_calls(
+    tmp_path: Path, runtime: Path
+):
     reg, containers = _many_pairs(tmp_path, runtime, 4)
     runner = Recorder()
     got = reap.maybe_reap(
@@ -735,7 +843,9 @@ def test_maybe_reap_defaults_cap_three_and_bound_docker_calls(tmp_path: Path, ru
     )
     assert got is not None and len(got.reaped) == 3
     assert [r for r in got.skip_reasons] == ["cap"]
-    assert {tuple(c[:4]) for c in runner.calls if c[1] == "stop"} == {("docker", "stop", "--time", "5")}
+    assert {tuple(c[:4]) for c in runner.calls if c[1] == "stop"} == {
+        ("docker", "stop", "--time", "5")
+    }
     assert all(k == {"timeout": 20.0} for k in runner.kwargs)
 
 
@@ -764,7 +874,9 @@ def test_deadline_skips_remaining_candidates(tmp_path: Path, runtime: Path):
     assert report.to_dict()["skipped"][0]["skip_reason"] == "deadline"
 
 
-def test_deadline_between_stop_and_rm_keeps_state_for_the_next_run(tmp_path: Path, runtime: Path):
+def test_deadline_between_stop_and_rm_keeps_state_for_the_next_run(
+    tmp_path: Path, runtime: Path
+):
     missing, cands = _setup_apply(tmp_path, runtime)
     clock = {"t": 0.0}
 
@@ -774,7 +886,11 @@ def test_deadline_between_stop_and_rm_keeps_state_for_the_next_run(tmp_path: Pat
             return super().__call__(cmd, **kwargs)
 
     report = reap.apply_reap(
-        cands, runner=SlowRunner(), cmd_timeout_s=10.0, deadline=100.0, clock=lambda: clock["t"]
+        cands,
+        runner=SlowRunner(),
+        cmd_timeout_s=10.0,
+        deadline=100.0,
+        clock=lambda: clock["t"],
     )
     assert report.reaped == [] and any("deadline" in e for e in report.errors)
     assert _rt_dir(runtime).is_dir()  # nothing released: containers may still exist
@@ -800,3 +916,142 @@ def test_maybe_reap_deadline_s_is_measured_from_the_call(tmp_path: Path, runtime
         monotonic=lambda: clock["t"],
     )
     assert got is not None and len(got.reaped) == 1 and got.skip_reasons == ["deadline"]
+
+
+# --- final review I2: a pruned dead record stamps last_detach (covers SIGKILL) -------
+
+
+def _dead_record(rt: Path, *, mtime: float) -> Path:
+    attached = rt / "attached"
+    attached.mkdir(parents=True, exist_ok=True)
+    dead = subprocess.Popen(["true"])
+    dead.wait()
+    record = attached / str(dead.pid)
+    record.write_text("2026-11-06T00:00:00Z\n", encoding="utf-8")
+    os.utime(record, (mtime, mtime))
+    return record
+
+
+def test_prune_stamps_last_detach_with_the_dead_record_mtime(tmp_path: Path):
+    rt = tmp_path / "rt"
+    record = _dead_record(rt, mtime=NOW - 300)
+    assert reap.live_attachments(rt, prune=False) == 0
+    assert not (rt / "last_detach").exists()  # a read-only count never writes
+    assert reap.live_attachments(rt) == 0
+    assert not record.exists()
+    assert (rt / "last_detach").stat().st_mtime == NOW - 300
+
+
+def test_prune_never_moves_a_newer_last_detach_back(tmp_path: Path):
+    rt = tmp_path / "rt"
+    _dead_record(rt, mtime=NOW - 300)
+    _detached(rt, ago=10)  # a later clean detach
+    reap.live_attachments(rt)
+    assert (rt / "last_detach").stat().st_mtime == NOW - 10
+
+
+def test_prune_advances_an_older_last_detach(tmp_path: Path):
+    rt = tmp_path / "rt"
+    _dead_record(rt, mtime=NOW - 300)
+    _detached(rt, ago=5000)
+    reap.live_attachments(rt)
+    assert (rt / "last_detach").stat().st_mtime == NOW - 300
+
+
+# --- final review P1 (N1): release a service's state once its containers are gone ----
+
+
+def test_partial_reap_releases_the_services_whose_containers_are_gone(
+    tmp_path: Path, runtime: Path
+):
+    missing, cands = _setup_apply(tmp_path, runtime)
+    reg = RuntimeRegistry.load(runtime / "instances.json")
+    reg.upsert_instance(_record(missing, service="dope-memory"))
+    reg.save()
+    cands = _plan(
+        RuntimeRegistry.load(runtime / "instances.json"),
+        [_container("a1"), _container("a2", service="dope-memory")],
+    )
+    runner = Recorder(
+        fail={("docker", "stop", "a1")}
+    )  # conport's container keeps running
+    report = reap.apply_reap(cands, runner=runner)
+    assert report.reaped == []
+    assert any("a1" in e for e in report.errors)
+    leases = {
+        L["service"]: L["status"]
+        for L in PortLeaseRegistry.load(runtime / "port-leases.json").leases()
+    }
+    assert leases["dope-memory"] == "released"  # a2 is gone: its state goes now
+    assert leases["conport"] == "active"
+    status = {
+        i["service"]: i["status"]
+        for i in RuntimeRegistry.load(runtime / "instances.json").instances()
+    }
+    assert status == {"conport": "running", "dope-memory": "stopped"}
+    assert _rt_dir(runtime).is_dir()  # kept until every container is gone
+
+
+# --- final review P1: `reap --json` keeps skip_reason ---------------------------------
+
+
+def test_cli_apply_json_keeps_skip_reason(tmp_path: Path, runtime: Path, monkeypatch):
+    _setup_apply(tmp_path, runtime)
+    monkeypatch.setattr(
+        reap, "inspect_all_managed_containers", FakeInspect([_container("a1")])
+    )
+    monkeypatch.setattr(reap, "run_cmd", Recorder())
+    real_apply = reap.apply_reap
+
+    def attach_then_apply(candidates, **kwargs):
+        reap.attach(_rt_dir(runtime))  # a launcher attaches between plan and apply
+        return real_apply(candidates, **kwargs)
+
+    monkeypatch.setattr(reap, "apply_reap", attach_then_apply)
+    result = CliRunner().invoke(_cli(), ["reap", "--apply", "--json"])
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.stdout)
+    assert [s["skip_reason"] for s in payload["skipped"]] == ["attached"]
+
+
+# --- final review P1: an entry with an empty service is owned by nobody: cleared ----
+
+
+def test_state_only_reap_clears_entries_and_leases_without_a_service(
+    tmp_path: Path, runtime: Path
+):
+    wt = tmp_path / "removed" / "proj"
+    reg = _registry(runtime, wt, service="")
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json", create_missing=True)
+    blank = _lease(wt, "", 3100)
+    del blank["lease_id"]
+    leases.upsert_lease(blank)
+    leases.save()
+    kw = {"lease_registry": PortLeaseRegistry.load(runtime / "port-leases.json")}
+    cands = _plan(reg, [], **kw)
+    assert [c.state_only for c in cands] == [True]
+    report = reap.apply_reap(cands, runner=Recorder())
+    assert report.errors == []
+    statuses = [
+        i["status"]
+        for i in RuntimeRegistry.load(runtime / "instances.json").instances()
+    ]
+    assert statuses == ["stopped"]
+    after = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert [L["status"] for L in after.leases()] == ["released"]
+    # nothing keeps the pair alive any more
+    assert (
+        _plan(
+            RuntimeRegistry.load(runtime / "instances.json"), [], lease_registry=after
+        )
+        == []
+    )
+
+
+def test_reap_never_removes_images(tmp_path: Path, runtime: Path):
+    # Images are shared by every worktree and project (final review I4).
+    _missing, cands = _setup_apply(tmp_path, runtime)
+    runner = Recorder()
+    reap.apply_reap(cands, runner=runner)
+    assert runner.calls
+    assert all(c[:2] != ["docker", "rmi"] and "image" not in c for c in runner.calls)

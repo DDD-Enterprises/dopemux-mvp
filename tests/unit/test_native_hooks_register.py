@@ -42,7 +42,8 @@ def _dopemux_commands(settings: dict, event: str) -> list[str]:
         hook["command"]
         for group in settings["hooks"][event]
         for hook in group["hooks"]
-        if "native_hooks.py" in hook["command"] or "run_native_hooks.sh" in hook["command"]
+        if "native_hooks.py" in hook["command"]
+        or "run_native_hooks.sh" in hook["command"]
     ]
 
 
@@ -183,7 +184,10 @@ def test_register_preserves_existing_hooks_and_inserts_dopemux_first(
 ) -> None:
     settings_path = project_dir / ".claude" / "settings.json"
     settings_path.parent.mkdir()
-    user_group = {"matcher": "Bash", "hooks": [{"type": "command", "command": "echo mine"}]}
+    user_group = {
+        "matcher": "Bash",
+        "hooks": [{"type": "command", "command": "echo mine"}],
+    }
     original = {
         "permissions": {"allow": ["Bash(ls:*)"]},
         "hooks": {
@@ -227,7 +231,9 @@ def test_register_adds_only_missing_events_when_partially_registered(
 
 
 def _pinned_command() -> str:
-    hook_script = Path(cli_module.__file__).resolve().parent / "claude" / "native_hooks.py"
+    hook_script = (
+        Path(cli_module.__file__).resolve().parent / "claude" / "native_hooks.py"
+    )
     return f"{shlex.quote(sys.executable)} {shlex.quote(str(hook_script))}"
 
 
@@ -271,7 +277,10 @@ def test_register_treats_match_all_group_as_registered(
 ) -> None:
     settings_path = project_dir / ".claude" / "settings.json"
     settings_path.parent.mkdir()
-    group = {**matcher_entry, "hooks": [{"type": "command", "command": _pinned_command()}]}
+    group = {
+        **matcher_entry,
+        "hooks": [{"type": "command", "command": _pinned_command()}],
+    }
     settings_path.write_text(
         json.dumps({"hooks": {"PreToolUse": [group]}}), encoding="utf-8"
     )

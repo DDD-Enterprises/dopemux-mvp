@@ -529,6 +529,14 @@ def _recording_runner(*, inspect_rc=0, build_rc=0, up_rc=0, build_stderr=""):
                 "env": kwargs.get("env"),
             }
         )
+        # The ConPort tenant probe (psql on stdin): a host whose shared store has
+        # this project's rows, so conport stays on it (legacy_shared). An unknown
+        # count would refuse conport (final review R2).
+        sql = kwargs.get("input") or ""
+        if "DPMX_TABLES=" in sql:
+            return SimpleNamespace(returncode=0, stdout="DPMX_TABLES=decisions\n", stderr="")
+        if "DPMX_COUNT=" in sql:
+            return SimpleNamespace(returncode=0, stdout="DPMX_COUNT=3\n", stderr="")
         return SimpleNamespace(returncode=rc, stdout="", stderr=err)
 
     runner.calls = calls
@@ -611,7 +619,10 @@ def test_should_build_then_up_with_budgets_when_image_missing_in_apply(
     conport = _svc(result, "conport")
     assert conport["action"] == "started"
     assert conport["build_result"]["exit_code"] == 0
-    assert conport["image"].endswith("-conport")
+    image = dr.compose_image_name("conport", product=tmp_path / "product")
+    assert conport["image"] == image  # one shared tag per service and source (I4)
+    override = next(p for p in result.runtime_artifacts if p.endswith("compose.override.yml"))
+    assert f"    image: {image}\n" in Path(override).read_text(encoding="utf-8")
     assert "IMAGE_BUILT" in _codes(conport["findings"])
     assert (
         len(conport["commands"]) >= 1 and "up -d --no-deps" in conport["commands"][-1]
@@ -1084,3 +1095,69 @@ def test_stop_failure_keeps_leases_and_runtime_dir(tmp_path: Path):
     assert result.status == "FAIL"
     assert _lease_status(lease_path) == {"conport": "active", "dope-memory": "active"}
     assert runtime_dir.is_dir()
+
+
+# --- final review R1: stop saves the registry under the lock -------------------------
+
+
+def test_stop_keeps_a_record_written_concurrently_between_read_and_save(tmp_path: Path):
+    from dopemux.mcp.locks import locked_reload_and_save
+    from dopemux.mcp.runtime_registry import RuntimeRegistry, build_instance_record
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    repo, reg, _runtime_dir, docker_ps, _lease_path = _stop_world(tmp_path)
+    identity = resolve_identity_view(repo, trust_env=False)
+
+    def record(service: str, worktree_root: str, worktree_hash: str, iid: str):
+        return build_instance_record(
+            instance_id=iid,
+            project_id=identity.project_id,
+            workspace_id=worktree_root,
+            project_root=identity.project_root,
+            worktree_root=worktree_root,
+            worktree_hash=worktree_hash,
+            project_hash=identity.project_hash or "",
+            service=service,
+            scope="worktree",
+            status="running",
+            ports={},
+            urls={},
+            container_names=[dr.container_name_for(
+                dr.project_slug(Path(identity.project_root).name), identity.worktree_hash, service
+            )],
+            compose_project_name="x",
+            labels={},
+        )
+
+    ours = [
+        record(svc, identity.worktree_root, identity.worktree_hash, f"ours-{svc}")
+        for svc in ("conport", "dope-memory")
+    ]
+    locked_reload_and_save(RuntimeRegistry, reg, lambda r: [r.upsert_instance(x) for x in ours])
+    sibling = record("conport", "/elsewhere/wt", "beef0002", "sibling-conport")
+
+    def cmd_runner(cmd, **kwargs):
+        if list(cmd[:2]) == ["docker", "stop"]:  # another start saves while we stop
+            locked_reload_and_save(RuntimeRegistry, reg, lambda r: r.upsert_instance(sibling))
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    result = run_lifecycle(
+        "stop",
+        repo=repo,
+        services=None,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker_ps,
+        cmd_runner=cmd_runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert result.status == "PASS", result.to_dict()
+    status = {i["instance_id"]: i["status"] for i in RuntimeRegistry.load(reg).instances()}
+    assert status == {
+        "ours-conport": "stopped",
+        "ours-dope-memory": "stopped",
+        "sibling-conport": "running",  # the concurrent record survived
+    }

@@ -12,9 +12,12 @@ Design D2/D4/D7 of claudedocs/mcp-just-works-design-2026-11-05.md:
 4. Task Orchestrator: under ``reserved_port_lock(7890)``, ownership is proven
    from the labels of the container publishing 7890; foreign or unknown
    owners refuse, a free port starts this project's jar.
-5. Attach record, then the SDK stdio proxy.
+5. Attach record, then the SDK stdio proxy with a reconnect guard that re-proves
+   the backend's owner from Docker labels before every reconnect.
 
-Every refusal is one line ``CODE: remedy`` on stderr and exit code 3.
+Every refusal is one line ``CODE: remedy`` on stderr and exit code 3 (an
+``OSError`` before the proxy runs is ``LAUNCH_IO_ERROR``). SIGTERM and SIGHUP
+exit 143 and 129 through ``finally``, so the attach record is always detached.
 
 ``launch(service, *, root=None, env=None, registry_path=None, reaper=...)``:
 ``env=None`` means ``os.environ`` read at call time (a default of the mapping
@@ -26,18 +29,21 @@ from __future__ import annotations
 import contextlib
 import json
 import os
+import signal
 import subprocess
 import sys
+import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
+from urllib.parse import urlparse
 
 from . import docker_runtime as dr
 from .docker_inspect import DockerContainerInfo, inspect_running_containers
 from .lifecycle import _port_is_free, run_lifecycle, runtime_dir_for
 from .locks import instance_lock, reserved_port_lock
-from .reap import attach, detach, maybe_reap
+from .reap import _pid_alive, attach, detach, maybe_reap
 from .runtime_registry import RuntimeRegistry, default_registry_path
 from .runtime_state import (
     PROJECT_MCP_FILENAME,
@@ -45,7 +51,13 @@ from .runtime_state import (
     resolve_identity_view,
     sidecar_url,
 )
-from .stdio_proxy import BackendSpec, probe_backend, run_proxy
+from .stdio_proxy import (
+    BackendSpec,
+    ProxyRefused,
+    probe_backend,
+    quiet_sdk_loggers,
+    run_proxy,
+)
 from .task_orchestrator_identity import identity_from_docker_labels, match_target
 
 __all__ = [
@@ -58,6 +70,7 @@ __all__ = [
     "ensure_orchestrator",
     "find_backend",
     "launch",
+    "reconnect_guard",
     "resolve_launch_root",
 ]
 
@@ -71,6 +84,9 @@ TO_PORT = 7890
 TO_BACKEND = BackendSpec(f"http://127.0.0.1:{TO_PORT}/mcp", "http", TO_SERVICE)
 TO_WRONG_PROJECT = "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT"
 TO_UNKNOWN_OWNER = "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER"
+OWNER_CHANGED = "LAUNCH_BACKEND_OWNER_CHANGED"
+#: ``docker ps`` budget of one reconnect-guard call (the proxy bounds the call itself too).
+GUARD_DOCKER_TIMEOUT_S = 10.0
 
 Probe = Callable[[BackendSpec], bool]
 
@@ -141,7 +157,9 @@ def _require_managed_mcp_json(root: Path, service: Optional[str]) -> None:
     if service is not None:
         managed = _is_launcher_entry(service, servers.get(service))
     else:
-        managed = any(_is_launcher_entry(name, entry) for name, entry in servers.items())
+        managed = any(
+            _is_launcher_entry(name, entry) for name, entry in servers.items()
+        )
     if not managed:
         raise LaunchError("LAUNCH_MCP_JSON_NOT_MANAGED", remedy)
 
@@ -210,15 +228,27 @@ def _registry_file(target: LaunchTarget, registry_path: Optional[Path] = None) -
     return Path(registry_path or target.registry_path or default_registry_path())
 
 
-def _backend(target: LaunchTarget, ports: Mapping[str, Any]) -> BackendSpec:
-    clean = {str(k): int(v) for k, v in ports.items() if isinstance(v, int) or str(v).isdigit()}
-    return BackendSpec(sidecar_url(target.spec, clean), target.spec["transport"], target.service)
+def _backend(target: LaunchTarget, ports: Mapping[str, Any]) -> Optional[BackendSpec]:
+    """The sidecar at ``ports``; None when they lack the service's port (never a default)."""
+    clean = {
+        str(k): int(v)
+        for k, v in ports.items()
+        if isinstance(v, int) or str(v).isdigit()
+    }
+    url = sidecar_url(target.spec, clean)
+    if url is None:
+        return None
+    return BackendSpec(url, target.spec["transport"], target.service)
 
 
 def find_backend(
     target: LaunchTarget, *, registry_path: Optional[Path] = None
 ) -> Optional[BackendSpec]:
-    """The newest ``running`` registry record for this worktree and service."""
+    """The newest ``running`` registry record for this worktree and service.
+
+    A record without the service's port is not a backend (the cold path starts
+    through the lifecycle, which records the ports again).
+    """
     registry = RuntimeRegistry.load(_registry_file(target, registry_path))
     if registry.parse_status != "OK":
         return None
@@ -237,7 +267,9 @@ def find_backend(
     return _backend(target, newest.get("ports") or {})
 
 
-def _lifecycle_env(env: Optional[Mapping[str, str]], catalog: Mapping[str, Any]) -> Dict[str, str]:
+def _lifecycle_env(
+    env: Optional[Mapping[str, str]], catalog: Mapping[str, Any]
+) -> Dict[str, str]:
     """Process env for the lifecycle minus ambient identity and catalog port vars.
 
     Ports come from the lease registry (and the checkout's own envrc, which
@@ -262,11 +294,15 @@ def _lifecycle_error(result: Any, service: str) -> LaunchError:
     for finding in getattr(result, "blocking_findings", None) or []:
         if finding.get("code"):
             message = finding.get("message") or "start blocked"
-            return LaunchError(str(finding["code"]), f"{message}; run dopemux mcp doctor")
+            return LaunchError(
+                str(finding["code"]), f"{message}; run dopemux mcp doctor"
+            )
     for svc in getattr(result, "services", None) or []:
         for finding in svc.get("findings") or []:
             if finding.get("severity") in {"ERROR", "FAIL"} and finding.get("code"):
-                return LaunchError(str(finding["code"]), str(finding.get("message") or ""))
+                return LaunchError(
+                    str(finding["code"]), str(finding.get("message") or "")
+                )
     tail = ""
     for svc in getattr(result, "services", None) or []:
         stderr = ((svc.get("result") or {}).get("stderr") or "").strip()
@@ -281,8 +317,17 @@ def _lifecycle_error(result: Any, service: str) -> LaunchError:
 
 def _backend_from_result(target: LaunchTarget, result: Any) -> Optional[BackendSpec]:
     for svc in getattr(result, "services", None) or []:
-        if svc.get("service") == target.service and isinstance(svc.get("ports"), Mapping):
-            return _backend(target, svc["ports"])
+        if svc.get("service") == target.service and isinstance(
+            svc.get("ports"), Mapping
+        ):
+            backend = _backend(target, svc["ports"])
+            if backend is None:
+                raise LaunchError(
+                    "LAUNCH_BACKEND_PORT_UNKNOWN",
+                    f"start reported no {target.spec.get('port_var') or 'port'} for "
+                    f"{target.service}; run dopemux mcp doctor",
+                )
+            return backend
     return None
 
 
@@ -304,15 +349,51 @@ def _wait_for(
 # --- image policy (D4) ----------------------------------------------------------
 
 
+BUILD_PID_FILENAME = "build.pid"
+
+
+def _live_build_pid(pid_file: Path) -> Optional[int]:
+    """The pid of a build still running for this worktree, or None (absent or stale)."""
+    try:
+        pid = int(pid_file.read_text(encoding="utf-8").strip())
+        age = time.time() - pid_file.stat().st_mtime
+    except (OSError, ValueError):
+        return None
+    if pid <= 0 or age > dr.build_timeout_secs() or not _pid_alive(pid):
+        return None  # stale: replaced by the next build
+    return pid
+
+
+def _write_build_pid(pid_file: Path, pid: int) -> None:
+    tmp = pid_file.with_name(f".{pid_file.name}.{os.getpid()}.tmp")
+    tmp.write_text(f"{pid}\n", encoding="utf-8")
+    os.replace(tmp, pid_file)
+
+
 def _build_image_if_missing(target: LaunchTarget) -> None:
+    """Refuse with ``LAUNCH_IMAGE_BUILDING`` while the shared image is missing (D4).
+
+    The first launch spawns one detached ``compose build`` and records its pid in
+    ``<runtime_dir>/build.pid``; a launch while that pid is alive spawns nothing.
+    """
     if target.spec.get("management_model") != "compose-service":
         return
     product = dr.product_root()
     env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
-    image = dr.compose_image_name(target.compose_project, target.service)
+    image = dr.compose_image_name(target.service, product=product)
     if dr.docker_image_exists(image, env=env) is not False:
         return
-    override, env_file = dr.compose_build_inputs(target.runtime_dir)
+    remedy = "building image; retry with /mcp reconnect all in a few minutes"
+    log_path = target.runtime_dir / "build.log"
+    pid_file = target.runtime_dir / BUILD_PID_FILENAME
+    running = _live_build_pid(pid_file)
+    if running is not None:
+        print(
+            f"dopemux mcp launch: {image} is still building (pid {running}); log {log_path}",
+            file=sys.stderr,
+        )
+        raise LaunchError("LAUNCH_IMAGE_BUILDING", remedy)
+    override, env_file = dr.compose_build_inputs(target.runtime_dir, product=product)
     command = dr.compose_build_command(
         product=product,
         override_path=override,
@@ -320,9 +401,10 @@ def _build_image_if_missing(target: LaunchTarget) -> None:
         project_name=target.compose_project,
         services=[target.service],
     )
-    log_path = target.runtime_dir / "build.log"
-    with open(log_path, "ab") as log:  # append: conport and dope-memory may build at once
-        subprocess.Popen(
+    with open(
+        log_path, "ab"
+    ) as log:  # append: conport and dope-memory may build at once
+        proc = subprocess.Popen(
             command,
             stdin=subprocess.DEVNULL,
             stdout=log,
@@ -331,10 +413,9 @@ def _build_image_if_missing(target: LaunchTarget) -> None:
             env=env,
             start_new_session=True,
         )
+    _write_build_pid(pid_file, proc.pid)
     print(f"dopemux mcp launch: building {image}; log {log_path}", file=sys.stderr)
-    raise LaunchError(
-        "LAUNCH_IMAGE_BUILDING", "building image; retry with /mcp reconnect all in a few minutes"
-    )
+    raise LaunchError("LAUNCH_IMAGE_BUILDING", remedy)
 
 
 # --- ensure ---------------------------------------------------------------------
@@ -382,7 +463,9 @@ def ensure_backend(
     return _wait_for(backend, probe=probe, deadline=deadline, clock=clock, sleep=sleep)
 
 
-def _orchestrator_owner_verdict(owners: List[DockerContainerInfo], target: LaunchTarget) -> None:
+def _orchestrator_owner_verdict(
+    owners: List[DockerContainerInfo], target: LaunchTarget
+) -> None:
     """Return when the 7890 container is this project's; raise otherwise."""
     if len(owners) != 1:
         raise LaunchError(TO_UNKNOWN_OWNER, "run dopemux mcp doctor")
@@ -400,9 +483,30 @@ def _orchestrator_owner_verdict(owners: List[DockerContainerInfo], target: Launc
     if verdict == "WRONG_PROJECT":
         owner_root = observed.project_root or observed.project_id or owner.name
         raise LaunchError(
-            TO_WRONG_PROJECT, f"{owner_root}; run dopemux mcp switch-project here to take it over"
+            TO_WRONG_PROJECT,
+            f"{owner_root}; run dopemux mcp switch-project here to take it over",
         )
     raise LaunchError(TO_UNKNOWN_OWNER, "run dopemux mcp doctor")
+
+
+def _orchestrator_port_is_ours(
+    target: LaunchTarget, state: Any, port_is_free: Callable[[int], bool]
+) -> bool:
+    """True when this project's orchestrator publishes :7890, False when the port is free.
+
+    Raises ``LaunchError`` for a foreign or unknown owner.
+    """
+    owners = (
+        [c for c in state.containers if TO_PORT in (c.published_ports or [])]
+        if state.available
+        else []
+    )
+    if owners:
+        _orchestrator_owner_verdict(owners, target)
+        return True
+    if not port_is_free(TO_PORT):
+        raise LaunchError(TO_UNKNOWN_OWNER, "run dopemux mcp doctor")
+    return False
 
 
 def ensure_orchestrator(
@@ -420,17 +524,8 @@ def ensure_orchestrator(
     """The reserved-port orchestrator, proven to be this project's (D2, D7)."""
     deadline = clock() + wait_s
     with reserved_port_lock(TO_PORT):
-        state = docker()
-        owners = (
-            [c for c in state.containers if TO_PORT in (c.published_ports or [])]
-            if state.available
-            else []
-        )
-        if owners:
-            _orchestrator_owner_verdict(owners, target)
+        if _orchestrator_port_is_ours(target, docker(), port_is_free):
             return TO_BACKEND
-        if not port_is_free(TO_PORT):
-            raise LaunchError(TO_UNKNOWN_OWNER, "run dopemux mcp doctor")
         result = lifecycle(
             "start",
             repo=target.root,
@@ -444,21 +539,104 @@ def ensure_orchestrator(
             raise _lifecycle_error(result, TO_SERVICE)
         if probe(TO_BACKEND):
             return TO_BACKEND
-    return _wait_for(TO_BACKEND, probe=probe, deadline=deadline, clock=clock, sleep=sleep)
+    return _wait_for(
+        TO_BACKEND, probe=probe, deadline=deadline, clock=clock, sleep=sleep
+    )
+
+
+# --- reconnect guard (C1) ---------------------------------------------------------
+
+
+def _check_sidecar_owner(
+    target: LaunchTarget,
+    port: Optional[int],
+    state: Any,
+    port_is_free: Callable[[int], bool],
+) -> None:
+    """Pass when ``port`` is free or published by this worktree's own sidecar; else raise."""
+    service = target.service
+    if port is None:
+        raise LaunchError(OWNER_CHANGED, f"the {service} backend URL names no port")
+    owners = (
+        [c for c in state.containers if port in (c.published_ports or [])]
+        if state.available
+        else []
+    )
+    if not owners:
+        if port_is_free(port):
+            return  # backend down: the reconnect attempt fails and retries
+        raise LaunchError(
+            OWNER_CHANGED,
+            f":{port} is held by a process that is not this worktree's {service}; "
+            "run dopemux mcp doctor",
+        )
+    labels = (owners[0].labels or {}) if len(owners) == 1 else {}
+    ident = target.identity
+    if (
+        len(owners) != 1
+        or labels.get(dr.LABEL_MANAGED) != "true"
+        or labels.get("dopemux.project_id") != ident.project_id
+        or labels.get("dopemux.worktree_hash") != ident.worktree_hash
+        or labels.get("dopemux.service", service) != service
+    ):
+        names = ", ".join(c.name for c in owners)
+        raise LaunchError(
+            OWNER_CHANGED,
+            f"{names} now publishes :{port} and is not this worktree's {service}; "
+            f"run /mcp reconnect {service}",
+        )
+
+
+def reconnect_guard(
+    target: LaunchTarget,
+    backend: BackendSpec,
+    *,
+    docker: Optional[Callable[[], Any]] = None,
+    port_is_free: Callable[[int], bool] = _port_is_free,
+) -> Callable[[], None]:
+    """The proxy's ``reconnect_guard`` for ``target``: re-prove who owns the backend port.
+
+    task-orchestrator: the docker inspection and owner verdict of
+    ``ensure_orchestrator`` (``TASK_ORCHESTRATOR_START_BLOCKED_*``). conport and
+    dope-memory: the container publishing the backend port must carry
+    ``dopemux.managed=true`` and this instance's ``dopemux.project_id`` and
+    ``dopemux.worktree_hash`` (``LAUNCH_BACKEND_OWNER_CHANGED``). A free port passes:
+    nothing can answer there, so the reconnect attempt fails and is retried.
+    """
+
+    def inspect() -> Any:
+        if docker is not None:
+            return docker()
+        return inspect_running_containers(timeout=GUARD_DOCKER_TIMEOUT_S)
+
+    port = urlparse(backend.url).port
+
+    def guard() -> None:
+        try:
+            if target.service == TO_SERVICE:
+                _orchestrator_port_is_ours(target, inspect(), port_is_free)
+            else:
+                _check_sidecar_owner(target, port, inspect(), port_is_free)
+        except LaunchError as exc:
+            raise ProxyRefused(exc.code, exc.remedy) from None
+
+    return guard
 
 
 # --- launch -----------------------------------------------------------------------
 
 
-def _load_catalog() -> Dict[str, Any]:
+def _load_catalog(root: Optional[Path] = None) -> Dict[str, Any]:
+    """The MCP catalog for ``root``: ``$DOPEMUX_MCP_CATALOG``, else its repo-local one, else bundled."""
     import click
 
     from dopemux.commands.mcp_commands import _load_catalog as load
 
     try:
-        return load()
+        catalog: Dict[str, Any] = load(repo=root)
     except click.ClickException as exc:
         raise LaunchError("LAUNCH_CATALOG_INVALID", exc.format_message()) from None
+    return catalog
 
 
 # A launcher runs inside Claude's connect budget: one candidate, short docker timeouts.
@@ -466,7 +644,34 @@ LAUNCH_REAP_LIMITS: Dict[str, Any] = {
     "max_candidates": 1,
     "stop_time_s": 3,
     "cmd_timeout_s": 10.0,
+    "deadline_s": 8.0,
 }
+
+#: Exit codes of a launcher ended by a signal (128 + signal number).
+_SIGNAL_EXITS = {"SIGTERM": 143, "SIGHUP": 129}
+
+
+@contextlib.contextmanager
+def _signals_exit_through_finally() -> Iterator[None]:
+    """SIGTERM/SIGHUP raise ``SystemExit(143/129)`` so ``finally`` detaches; restored on exit.
+
+    Only the main thread can install handlers; elsewhere this does nothing.
+    """
+    installed: Dict[int, Any] = {}
+
+    def _exit(signum: int, _frame: Any) -> None:
+        raise SystemExit(128 + signum)
+
+    if threading.current_thread() is threading.main_thread():
+        for name in _SIGNAL_EXITS:
+            signum = getattr(signal, name, None)
+            if signum is not None:
+                installed[signum] = signal.signal(signum, _exit)
+    try:
+        yield
+    finally:
+        for signum, previous in installed.items():
+            signal.signal(signum, previous)
 
 
 def _run_reaper(reaper: Optional[Callable[[], Any]]) -> None:
@@ -507,36 +712,52 @@ def launch(
     """Run the launcher for ``service``; returns the process exit code.
 
     ``env`` defaults to ``os.environ`` as it is when called. ``reaper`` defaults to
-    ``reap.maybe_reap`` (throttled, kill-switchable, capped at one candidate); it runs after this launcher's
-    attach record exists, so its own instance is never reaped, and outside the
-    instance lock. A reap failure never refuses a launch.
+    ``reap.maybe_reap`` (throttled, kill-switchable, capped at one candidate, 8 s
+    deadline); it runs after this launcher's attach record exists, so its own
+    instance is never reaped, and outside the instance lock. A reap failure never
+    refuses a launch. ``root`` (``--root``) picks the checkout and its catalog.
     """
     if env is None:
         env = os.environ
     record: Optional[Path] = None
-    try:
-        # stdout is the MCP channel: nothing before the proxy may print there.
-        with contextlib.redirect_stdout(sys.stderr):
-            launch_root = resolve_launch_root(root, cwd=_process_cwd(), service=service)
-            target = build_target(
-                launch_root, service, catalog=_load_catalog(), registry_path=registry_path
+    with _signals_exit_through_finally(), quiet_sdk_loggers():
+        try:
+            # stdout is the MCP channel: nothing before the proxy may print there.
+            with contextlib.redirect_stdout(sys.stderr):
+                launch_root = resolve_launch_root(
+                    root, cwd=_process_cwd(), service=service
+                )
+                target = build_target(
+                    launch_root,
+                    service,
+                    catalog=_load_catalog(launch_root),
+                    registry_path=registry_path,
+                )
+                # D8: the attach record is written under the instance lock, so a reap
+                # that holds the lock sees either the record or none of this launch.
+                # Released before the reaper (the reap takes the lock itself) and
+                # before ensure_backend (which takes it again; it is not re-entrant).
+                with instance_lock(target.runtime_dir):
+                    record = attach(target.runtime_dir)
+                _run_reaper(reaper)
+                wait_s = _wait_seconds(env)
+                if service == TO_SERVICE:
+                    backend = ensure_orchestrator(target, wait_s=wait_s, env=env)
+                else:
+                    backend = ensure_backend(target, wait_s=wait_s, env=env)
+                guard = reconnect_guard(target, backend)
+            return run_proxy(backend, reconnect_guard=guard)
+        except LaunchError as exc:
+            print(f"{exc.code}: {exc.remedy}", file=sys.stderr, flush=True)
+            return EXIT_REFUSED
+        except OSError as exc:
+            # attach, build.log, a lock that never stabilised: a refusal, not a traceback
+            print(
+                f"LAUNCH_IO_ERROR: {exc}; retry, and run dopemux mcp doctor if it persists",
+                file=sys.stderr,
+                flush=True,
             )
-            # D8: the attach record is written under the instance lock, so a reap
-            # that holds the lock sees either the record or none of this launch.
-            # Released before the reaper (the reap takes the lock itself) and
-            # before ensure_backend (which takes it again; it is not re-entrant).
-            with instance_lock(target.runtime_dir):
-                record = attach(target.runtime_dir)
-            _run_reaper(reaper)
-            wait_s = _wait_seconds(env)
-            if service == TO_SERVICE:
-                backend = ensure_orchestrator(target, wait_s=wait_s, env=env)
-            else:
-                backend = ensure_backend(target, wait_s=wait_s, env=env)
-        return run_proxy(backend)
-    except LaunchError as exc:
-        print(f"{exc.code}: {exc.remedy}", file=sys.stderr, flush=True)
-        return EXIT_REFUSED
-    finally:
-        if record is not None:
-            detach(record)
+            return EXIT_REFUSED
+        finally:
+            if record is not None:
+                detach(record)

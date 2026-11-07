@@ -114,7 +114,11 @@ def _start(tmp_path: Path, repo: Path, paths, *, dry_run: bool = True, cmd_runne
         registry_path=paths.reg,
         docker_runner=_docker_empty(),
         cmd_runner=cmd_runner,
-        product_root=_product(tmp_path) if not (tmp_path / "product").exists() else tmp_path / "product",
+        product_root=(
+            _product(tmp_path)
+            if not (tmp_path / "product").exists()
+            else tmp_path / "product"
+        ),
         process_env={},
         port_is_free_fn=lambda p: True,
     )
@@ -124,12 +128,16 @@ def _active(paths) -> List[Dict[str, Any]]:
     return PortLeaseRegistry.load(paths.leases).active_leases()
 
 
-def test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked(tmp_path, paths):
+def test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked(
+    tmp_path, paths
+):
     repo = _repo(tmp_path)
     result = _start(tmp_path, repo, paths)
 
     codes = {f["code"] for f in result.blocking_findings}
-    assert "ENVRC_MISSING" not in codes and "PORT_UNSET" not in codes, result.blocking_findings
+    assert (
+        "ENVRC_MISSING" not in codes and "PORT_UNSET" not in codes
+    ), result.blocking_findings
     assert result.status == "PLANNED", result.blocking_findings
 
     worktree_root = result.project_identity["worktree_root"]
@@ -139,7 +147,9 @@ def test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked(tmp_pat
         assert lease["worktree_root"] == worktree_root
     assert {"conport", "dope-memory"} <= set(by_service)
     # The planned services use the leased ports.
-    leased_vars = {l["port_var"]: l["port"] for ls in by_service.values() for l in ls}
+    leased_vars = {
+        lease["port_var"]: lease["port"] for ls in by_service.values() for lease in ls
+    }
     conport = next(s for s in result.services if s["service"] == "conport")
     assert conport["ports"]["CONPORT_MCP_PORT"] == leased_vars["CONPORT_MCP_PORT"]
     # Dry run still must not create the instance registry.
@@ -201,11 +211,22 @@ def test_final_registry_save_reloads_under_lock(tmp_path, paths):
             paths.reg.parent.mkdir(parents=True, exist_ok=True)
             doc = {"schema_version": "1.0", "updated_at": "x", "instances": [foreign]}
             paths.reg.write_text(json.dumps(doc))
+        # The ConPort tenant probe: shared-store history present (legacy_shared); an
+        # unanswered probe would refuse conport (final review R2).
+        sql = kwargs.get("input") or ""
+        if "DPMX_TABLES=" in sql:
+            return SimpleNamespace(
+                returncode=0, stdout="DPMX_TABLES=decisions\n", stderr=""
+            )
+        if "DPMX_COUNT=" in sql:
+            return SimpleNamespace(returncode=0, stdout="DPMX_COUNT=3\n", stderr="")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     result = _start(tmp_path, repo, paths, dry_run=False, cmd_runner=cmd_runner)
 
-    assert result.status in {"PASS", "UNKNOWN", "WARN"} or result.exit_code == 0, result.to_dict()
+    assert (
+        result.status in {"PASS", "UNKNOWN", "WARN"} or result.exit_code == 0
+    ), result.to_dict()
     ids = {i["instance_id"] for i in RuntimeRegistry.load(paths.reg).instances()}
     assert "other-proj-beef-conport" in ids
     assert any(i.endswith("-conport") and i != "other-proj-beef-conport" for i in ids)
@@ -278,7 +299,9 @@ def test_non_dry_run_lock_follows_registry_path_not_home(tmp_path, monkeypatch):
         dry_run=False,
         registry_path=reg,
         docker_runner=_docker_empty(),
-        cmd_runner=lambda cmd, **kw: SimpleNamespace(returncode=0, stdout="", stderr=""),
+        cmd_runner=lambda cmd, **kw: SimpleNamespace(
+            returncode=0, stdout="", stderr=""
+        ),
         product_root=_product(tmp_path),
         process_env={},
         port_is_free_fn=lambda p: True,
@@ -293,7 +316,9 @@ def test_resolve_ports_lease_identity_matches_init_allocation(tmp_path, monkeypa
     """`_resolve_ports` (start) and `_allocate_ports` (init) write identical lease docs."""
     from dopemux.commands import mcp_commands
 
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json")
+    )
     repo = _repo(tmp_path)
     identity = resolve_identity_view(repo)
     init_leases = tmp_path / "init" / "port-leases.json"
@@ -322,7 +347,14 @@ def test_resolve_ports_lease_identity_matches_init_allocation(tmp_path, monkeypa
         for lease in PortLeaseRegistry.load(path).active_leases():
             out[lease["port_var"]] = {
                 k: lease.get(k)
-                for k in ("project_id", "lease_id", "worktree_root", "instance_id", "workspace_id", "port")
+                for k in (
+                    "project_id",
+                    "lease_id",
+                    "worktree_root",
+                    "instance_id",
+                    "workspace_id",
+                    "port",
+                )
             }
         return out
 
@@ -337,11 +369,17 @@ def _seed_collision(paths, identity) -> int:
     from dopemux.mcp.port_allocator import build_role_requests
 
     ports = lc._resolve_ports(
-        identity, ["conport"], _catalog(), lease_path=paths.leases, is_free_fn=lambda p: True
+        identity,
+        ["conport"],
+        _catalog(),
+        lease_path=paths.leases,
+        is_free_fn=lambda p: True,
     )
     collided = ports["CONPORT_HTTP_PORT"]
     reg = PortLeaseRegistry.load(paths.leases)
-    sibling = next(L for L in reg.active_leases() if L["port_var"] == "CONPORT_HTTP_PORT")
+    sibling = next(
+        L for L in reg.active_leases() if L["port_var"] == "CONPORT_HTTP_PORT"
+    )
     role = build_role_requests(
         ["dope-memory"],
         _catalog(),
@@ -378,7 +416,9 @@ def _conport_container(identity, port: int):
     )
 
 
-def test_resolve_ports_releases_lease_held_by_another_services_container(tmp_path, paths):
+def test_resolve_ports_releases_lease_held_by_another_services_container(
+    tmp_path, paths
+):
     from dopemux.mcp import docker_inspect as di
 
     repo = _repo(tmp_path)
@@ -399,7 +439,9 @@ def test_resolve_ports_releases_lease_held_by_another_services_container(tmp_pat
     leases = PortLeaseRegistry.load(paths.leases).leases()
     old = next(L for L in leases if L["lease_id"] == "lease_collided_dope_memory")
     assert old["status"] == "released"
-    dm = [L for L in leases if L["service"] == "dope-memory" and L["status"] == "active"]
+    dm = [
+        L for L in leases if L["service"] == "dope-memory" and L["status"] == "active"
+    ]
     assert [int(L["port"]) for L in dm] == [got["DOPE_MEMORY_PORT"]]
 
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from dopemux.commands import mcp_commands
@@ -10,7 +9,6 @@ from dopemux.mcp import fleet_catalog
 from dopemux.mcp.doctor import run_mcp_doctor
 from dopemux.mcp.mcp_json import plan_mcp_json_repairs
 from dopemux.mcp.runtime_state import build_desired_services, sidecar_url
-
 from tests.unit.test_mcp_doctor_repo_aware import _catalog, _write_fixture_repo
 
 
@@ -77,14 +75,19 @@ def test_expected_client_type_launcher_is_stdio():
     assert fleet_catalog.expected_client_type(_launcher_spec()) == "stdio"
     assert fleet_catalog.catalog_client_shape({"transport": "sse"}) == "direct"
     assert fleet_catalog.expected_client_type({"transport": "sse"}) == "sse"
-    assert fleet_catalog.expected_client_type({"transport": "http", "client": "direct"}) == "http"
+    assert (
+        fleet_catalog.expected_client_type({"transport": "http", "client": "direct"})
+        == "http"
+    )
 
 
 def test_sidecar_url_expands_port_var():
     spec = _launcher_spec()
 
     assert sidecar_url(spec, {"CONPORT_MCP_PORT": 3007}) == "http://localhost:3007/sse"
-    assert sidecar_url(spec, {}) == "http://localhost:3005/sse"
+    # final review M3: never the template default (another worktree's port)
+    assert sidecar_url(spec, {}) is None
+    assert sidecar_url(spec, {"CONPORT_HTTP_PORT": 3004}) is None
 
 
 def test_doctor_accepts_stdio_entry_for_launcher_spec(tmp_path: Path):
@@ -121,14 +124,19 @@ def test_doctor_flags_url_entry_for_launcher_spec(tmp_path: Path):
         process_env={},
     )
 
-    mismatched = {f["service"] for f in report.findings if f["code"] == "TRANSPORT_MISMATCH"}
+    mismatched = {
+        f["service"] for f in report.findings if f["code"] == "TRANSPORT_MISMATCH"
+    }
     assert mismatched == {"conport", "dope-memory", "task-orchestrator"}
 
 
 def test_repair_plans_launcher_entry_from_url_entry():
     catalog = _launcher_catalog()
     old = {
-        "conport": {"type": "sse", "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"},
+        "conport": {
+            "type": "sse",
+            "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
+        },
     }
 
     merged, planned, _preserved = plan_mcp_json_repairs(
@@ -178,7 +186,9 @@ def test_copilot_proxy_config_renders_launcher_as_command_args():
     import yaml
 
     catalog = fleet_catalog.load_root_catalog(Path(__file__).resolve().parents[2])
-    servers = yaml.safe_load(fleet_catalog.render_copilot_proxy_config(catalog))["mcpServers"]
+    servers = yaml.safe_load(fleet_catalog.render_copilot_proxy_config(catalog))[
+        "mcpServers"
+    ]
 
     assert servers["conport"] == {
         "type": "stdio",

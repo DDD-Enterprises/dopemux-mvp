@@ -1064,8 +1064,10 @@ def test_doctor_unreachable_postgres_is_info_naming_the_shared_store_fallback(tm
     _repo, report = _sidecar_doctor(tmp_path, psql=down)
     finding = next(f for f in report.findings if f["code"] == "CONPORT_TENANT_UNVERIFIED")
     assert finding["severity"] == "INFO"
-    assert "CONPORT_LEGACY_SHARED_STORE" in finding["recommendation"]
-    assert "shared" in finding["recommendation"]
+    # final review R2: a start in this state refuses instead of guessing the shared store
+    assert "CONPORT_TENANT_UNKNOWN_HISTORY" in finding["recommendation"]
+    assert "CONPORT_LEGACY_SHARED_STORE" not in finding["recommendation"]
+    assert not [f for f in report.findings if f["code"] == "CONPORT_TENANT_UNKNOWN_HISTORY"]
 
 
 def test_doctor_cli_asks_for_the_conport_tenant_check(tmp_path: Path, monkeypatch):

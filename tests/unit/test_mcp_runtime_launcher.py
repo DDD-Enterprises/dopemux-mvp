@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -73,9 +74,7 @@ def _fake_product_root(monkeypatch, tmp_path: Path) -> Path:
     return root
 
 
-def test_env_with_compose_interpolation_derives_host_paths(
-    monkeypatch, tmp_path
-):
+def test_env_with_compose_interpolation_derives_host_paths(monkeypatch, tmp_path):
     root = _fake_product_root(monkeypatch, tmp_path)
     env = dr.env_with_compose_interpolation({"PATH": "/bin"})
     assert env["HOST_CODE_PARENT_DIR"] == str(root.parent)
@@ -124,9 +123,7 @@ def test_env_with_compose_interpolation_host_path_defaults_disabled(
     monkeypatch, tmp_path
 ):
     _fake_product_root(monkeypatch, tmp_path)
-    env = dr.env_with_compose_interpolation(
-        {"PATH": "/bin"}, host_path_defaults=False
-    )
+    env = dr.env_with_compose_interpolation({"PATH": "/bin"}, host_path_defaults=False)
     assert "HOST_CODE_PARENT_DIR" not in env
     assert "HOST_PROJECT_RELATIVE_PATH" not in env
     assert env["DOPECON_BRIDGE_TOKEN"] == dr.COMPOSE_INTERPOLATION_PLACEHOLDER
@@ -163,11 +160,11 @@ def test_labels_required_keys():
     assert labels["dopemux.service"] == "conport"
 
 
-def test_should_name_image_project_dash_service_when_compose_has_build_only():
-    # Arrange / Act
-    name = dr.compose_image_name("dopemux_adops_a22d", "conport")
+def test_should_name_image_per_service_not_per_compose_project():
+    # Arrange / Act: no project or worktree goes into the name (final review I4)
+    name = dr.compose_image_name("conport")
     # Assert
-    assert name == "dopemux_adops_a22d-conport"
+    assert name.startswith("dopemux-conport:")
 
 
 def test_should_build_inspect_command_with_id_format_when_probing_image():
@@ -338,3 +335,71 @@ def test_should_report_image_unknown_when_daemon_unreachable_exits_one():
     present = dr.docker_image_exists("proj-conport", runner=runner)
     # Assert
     assert present is None
+
+
+# --- final review I4: one shared image per service and source version -------------
+
+
+def _fake_product(root: Path, conport: bytes = b"FROM python:3.12\n") -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "compose.yml").write_text("services: {}\n", encoding="utf-8")
+    for svc, rel in dr.SIDECAR_DOCKERFILES.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(conport if svc == "conport" else b"FROM python:3.12-slim\n")
+    return root
+
+
+def test_shared_image_name_is_per_service_and_source_version(tmp_path: Path):
+    product = _fake_product(tmp_path / "product")
+    name = dr.compose_image_name("conport", product=product)
+    assert re.fullmatch(r"dopemux-conport:[0-9a-f]{12}", name)
+    assert dr.compose_image_name("conport", product=product) == name  # stable
+    assert dr.compose_image_name("dope-memory", product=product).startswith(
+        "dopemux-dope-memory:"
+    )
+    (product / dr.SIDECAR_DOCKERFILES["conport"]).write_bytes(b"FROM python:3.13\n")
+    assert (
+        dr.compose_image_name("conport", product=product) != name
+    )  # a source change rebuilds
+
+
+def test_sidecar_dockerfiles_match_compose_yml():
+    import yaml
+
+    compose = yaml.safe_load(
+        (dr.product_root() / "compose.yml").read_text(encoding="utf-8")
+    )
+    for svc, rel in dr.SIDECAR_DOCKERFILES.items():
+        build = compose["services"][svc]["build"]
+        assert build["context"] == "."
+        assert build["dockerfile"] == rel
+
+
+def test_build_inputs_tag_the_shared_image(tmp_path: Path):
+    product = _fake_product(tmp_path / "product")
+    override, env_file = dr.compose_build_inputs(tmp_path / "rt", product=product)
+    assert env_file == tmp_path / "rt" / "mcp.env" and env_file.exists()
+    assert override.name == "compose.build.yml"
+    text = override.read_text(encoding="utf-8")
+    for svc in dr.SIDECAR_DOCKERFILES:
+        assert f"image: {dr.compose_image_name(svc, product=product)}" in text
+
+
+def test_override_renderer_sets_the_shared_image(tmp_path: Path):
+    product = _fake_product(tmp_path / "product")
+    images = {
+        s: dr.compose_image_name(s, product=product) for s in dr.SIDECAR_DOCKERFILES
+    }
+    text = dr.generate_compose_override(
+        services=["conport", "dope-memory"],
+        identity={},
+        ports={},
+        container_names={"conport": "c1", "dope-memory": "m1"},
+        labels_by_service={"conport": {}, "dope-memory": {}},
+        memory_data_path=tmp_path / "data",
+        images=images,
+        auth_dir=tmp_path / "no-auth",
+    )
+    for svc, image in images.items():
+        assert f"    image: {image}\n" in text

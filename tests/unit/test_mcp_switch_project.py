@@ -24,11 +24,15 @@ from dopemux.mcp.runtime_state import resolve_identity_view
 
 @pytest.fixture
 def repo(tmp_path: Path, monkeypatch) -> Path:
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json")
+    )
     path = tmp_path / "proj"
     path.mkdir()
     subprocess.run(["git", "init", "-q", str(path)], check=True)
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: {"version": 1, "servers": {}})
+    monkeypatch.setattr(
+        mcp_commands, "_load_catalog", lambda: {"version": 1, "servers": {}}
+    )
     return path.resolve()
 
 
@@ -48,7 +52,9 @@ def rec(monkeypatch) -> Recorder:
 
     def run_lifecycle(operation: str, **kwargs: Any):
         recorder.lifecycle.append({"operation": operation, **kwargs})
-        return SimpleNamespace(exit_code=0, status="PASS", blocking_findings=[], services=[])
+        return SimpleNamespace(
+            exit_code=0, status="PASS", blocking_findings=[], services=[]
+        )
 
     monkeypatch.setattr(dr, "run_cmd", run_cmd)
     monkeypatch.setattr(lc, "run_lifecycle", run_lifecycle)
@@ -60,7 +66,9 @@ def _docker(monkeypatch, *containers: di.DockerContainerInfo) -> None:
     monkeypatch.setattr(
         di,
         "inspect_running_containers",
-        lambda **_k: di.DockerInspectResult(available=True, containers=list(containers)),
+        lambda **_k: di.DockerInspectResult(
+            available=True, containers=list(containers)
+        ),
     )
 
 
@@ -84,7 +92,9 @@ def _labels(project_id: str, project_root: str) -> Dict[str, str]:
 
 
 def _invoke(repo: Path, *extra: str):
-    return CliRunner().invoke(mcp_commands.mcp, ["switch-project", "--repo", str(repo), *extra])
+    return CliRunner().invoke(
+        mcp_commands.mcp, ["switch-project", "--repo", str(repo), *extra]
+    )
 
 
 def test_switch_project_noop_when_owned(repo: Path, rec: Recorder, monkeypatch):
@@ -115,7 +125,9 @@ def test_switch_project_stops_owner_and_starts_target_with_yes(
     assert rec.lifecycle[0]["services"] == ["task-orchestrator"]
 
 
-def test_switch_project_refuses_unmanaged_listener(repo: Path, rec: Recorder, monkeypatch):
+def test_switch_project_refuses_unmanaged_listener(
+    repo: Path, rec: Recorder, monkeypatch
+):
     _docker(monkeypatch, _to({"dopemux.project_root": "/somewhere"}))
     unlabeled = _invoke(repo, "--yes")
     _docker(monkeypatch)
@@ -198,7 +210,10 @@ def test_switch_project_confirms_outside_the_reserved_lock(
     result = _invoke(repo)
     assert result.exit_code == 0, result.output
     assert asked == [False]  # the prompt never holds the host-wide lock
-    assert rec.commands == [["docker", "stop", "0123456789ab"], ["docker", "rm", "0123456789ab"]]
+    assert rec.commands == [
+        ["docker", "stop", "0123456789ab"],
+        ["docker", "rm", "0123456789ab"],
+    ]
     assert under_lock == [True, True]
     assert len(rec.lifecycle) == 1
 
@@ -218,10 +233,17 @@ def test_switch_project_decline_changes_nothing(
 
 @pytest.mark.parametrize("change", ["other_container", "was_free"])
 def test_switch_project_refuses_when_owner_changed_after_confirm(
-    change: str, repo: Path, rec: Recorder, lock_spy: LockSpy, tmp_path: Path, monkeypatch
+    change: str,
+    repo: Path,
+    rec: Recorder,
+    lock_spy: LockSpy,
+    tmp_path: Path,
+    monkeypatch,
 ):
     if change == "other_container":
-        _docker_sequence(monkeypatch, [_foreign(tmp_path)], [_foreign(tmp_path, "fedcba987654")])
+        _docker_sequence(
+            monkeypatch, [_foreign(tmp_path)], [_foreign(tmp_path, "fedcba987654")]
+        )
     else:
         _docker_sequence(monkeypatch, [], [_foreign(tmp_path)])
     result = _invoke(repo, "--yes")
@@ -229,3 +251,61 @@ def test_switch_project_refuses_when_owner_changed_after_confirm(
     assert "changed" in result.output
     assert rec.commands == []
     assert rec.lifecycle == []
+
+
+# --- final review M4: the stopped owner's registry entry is marked stopped -----------
+
+
+def test_switch_project_marks_the_old_owners_entry_stopped(
+    repo: Path, rec: Recorder, tmp_path: Path, monkeypatch
+):
+    from dopemux.mcp.locks import locked_reload_and_save
+    from dopemux.mcp.runtime_registry import (
+        RuntimeRegistry,
+        build_instance_record,
+        default_registry_path,
+    )
+
+    def entry(project_id: str, service: str, root: str) -> Dict[str, Any]:
+        return build_instance_record(
+            instance_id=f"{project_id}-{service}",
+            project_id=project_id,
+            workspace_id=root,
+            project_root=root,
+            worktree_root=root,
+            worktree_hash="beef0003",
+            project_hash="p" * 8,
+            service=service,
+            scope="project" if service == "task-orchestrator" else "worktree",
+            status="running",
+            ports={},
+            urls={},
+            container_names=[
+                "task-orchestrator-owner" if service == "task-orchestrator" else "c"
+            ],
+            compose_project_name="x",
+            labels={},
+        )
+
+    foreign_root = str(tmp_path / "other-project")
+    records = [
+        entry("other-project", "task-orchestrator", foreign_root),
+        entry("other-project", "conport", foreign_root),
+    ]
+    reg_path = default_registry_path()
+    locked_reload_and_save(
+        RuntimeRegistry, reg_path, lambda r: [r.upsert_instance(x) for x in records]
+    )
+    _docker(monkeypatch, _to(_labels("other-project", foreign_root)))
+
+    result = _invoke(repo, "--yes")
+
+    assert result.exit_code == 0, result.output
+    status = {
+        i["instance_id"]: i["status"]
+        for i in RuntimeRegistry.load(reg_path).instances()
+    }
+    assert status == {
+        "other-project-task-orchestrator": "stopped",
+        "other-project-conport": "running",  # only the orchestrator that was stopped
+    }

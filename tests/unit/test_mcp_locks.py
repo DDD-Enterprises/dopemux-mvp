@@ -90,7 +90,9 @@ locked_reload_and_save(RuntimeRegistry, path, mutate)
 def test_locked_reload_and_save_merges_concurrent_upserts(tmp_path: Path):
     reg = tmp_path / "rt" / "instances.json"
     leases = tmp_path / "rt" / "port-leases.json"
-    procs = [_spawn(UPSERT_CODE, reg, leases, str(reg), iid) for iid in ("inst-a", "inst-b")]
+    procs = [
+        _spawn(UPSERT_CODE, reg, leases, str(reg), iid) for iid in ("inst-a", "inst-b")
+    ]
     _finish(procs)
 
     data = json.loads(reg.read_text())
@@ -117,7 +119,9 @@ def test_locked_reload_tolerates_corrupt_registry(tmp_path: Path, monkeypatch):
 
 
 def test_locked_reload_works_for_lease_registry(tmp_path: Path, monkeypatch):
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json")
+    )
     leases = tmp_path / "rt" / "port-leases.json"
     leases.parent.mkdir(parents=True)
     leases.write_text("not json")
@@ -125,7 +129,9 @@ def test_locked_reload_works_for_lease_registry(tmp_path: Path, monkeypatch):
     fresh = locks.locked_reload_and_save(
         PortLeaseRegistry,
         leases,
-        lambda r: r.data.setdefault("leases", []).append({"lease_id": "l1", "status": "active"}),
+        lambda r: r.data.setdefault("leases", []).append(
+            {"lease_id": "l1", "status": "active"}
+        ),
     )
 
     assert fresh.recovered_from_corrupt is True
@@ -175,7 +181,9 @@ def test_lock_files_created_0700_parents(tmp_path: Path, monkeypatch):
 
 
 def test_lock_released_on_exception(tmp_path: Path, monkeypatch):
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json")
+    )
     with pytest.raises(RuntimeError):
         with locks.registry_lock():
             raise RuntimeError("boom")
@@ -191,8 +199,12 @@ def test_lock_released_on_exception(tmp_path: Path, monkeypatch):
 
 
 @pytest.mark.parametrize("bad", ["", ".", "..", "a/b", "a\\b"])
-def test_provision_lock_rejects_unsafe_project_id(bad: str, tmp_path: Path, monkeypatch):
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
+def test_provision_lock_rejects_unsafe_project_id(
+    bad: str, tmp_path: Path, monkeypatch
+):
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json")
+    )
     with pytest.raises(ValueError):
         with locks.provision_lock(bad):
             pass
@@ -243,7 +255,9 @@ def test_reserved_port_lock_reentrant_in_thread_exclusive_across_threads(
     import fcntl
     import threading
 
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json")
+    )
     lock_file = tmp_path / "rt" / "reserved-7890.lock"
     other_thread_got_it = threading.Event()
 
@@ -252,11 +266,15 @@ def test_reserved_port_lock_reentrant_in_thread_exclusive_across_threads(
             other_thread_got_it.set()
 
     with locks.reserved_port_lock(7890):
-        with locks.reserved_port_lock(7890):  # the lifecycle preflight under the launcher
+        with locks.reserved_port_lock(
+            7890
+        ):  # the lifecycle preflight under the launcher
             pass
         contender = threading.Thread(target=contend)
         contender.start()
-        assert not other_thread_got_it.wait(HOLD_SECS)  # still held after the inner exit
+        assert not other_thread_got_it.wait(
+            HOLD_SECS
+        )  # still held after the inner exit
     contender.join(timeout=10)
     assert other_thread_got_it.is_set()
 
@@ -270,12 +288,16 @@ def test_reserved_port_lock_reentrant_in_thread_exclusive_across_threads(
 # --- fix round 1: lock file deleted while held (reap removes a runtime dir) -----------
 
 
-def test_instance_lock_waiter_never_holds_an_orphaned_inode(tmp_path: Path, monkeypatch):
+def test_instance_lock_waiter_never_holds_an_orphaned_inode(
+    tmp_path: Path, monkeypatch
+):
     """Port of the reviewer's reapcheck_lock.py: at most one holder at any time."""
     import shutil
     import threading
 
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "reg" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "reg" / "instances.json")
+    )
     rt = tmp_path / "rt" / "proj-h1"
     guard = threading.Lock()
     inside: List[str] = []
@@ -304,10 +326,14 @@ def test_instance_lock_waiter_never_holds_an_orphaned_inode(tmp_path: Path, monk
     old.join(5)
     new.join(5)
     assert not old.is_alive() and not new.is_alive()
-    assert peak["n"] == 1, "two holders at once: a waiter kept the deleted lock file's inode"
+    assert (
+        peak["n"] == 1
+    ), "two holders at once: a waiter kept the deleted lock file's inode"
 
 
-def test_flock_retries_when_the_parent_vanishes_before_open(tmp_path: Path, monkeypatch):
+def test_flock_retries_when_the_parent_vanishes_before_open(
+    tmp_path: Path, monkeypatch
+):
     real_mkdir = locks._mkdir_private
     calls = {"n": 0}
 
@@ -342,24 +368,37 @@ def test_flock_gives_up_after_bounded_attempts(tmp_path: Path, monkeypatch):
 
 
 def test_save_state_locked_updates_and_reports_success(tmp_path: Path, monkeypatch):
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json")
+    )
     path = tmp_path / "r" / "port-leases.json"
     reg = PortLeaseRegistry.load(path, create_missing=True)
     reg.upsert_lease({"lease_id": "l1", "service": "s", "port": 1, "status": "active"})
     reg.save()
-    assert locks.save_state_locked(PortLeaseRegistry, path, lambda r: r.mark_released(lease_id="l1")) is None
+    assert (
+        locks.save_state_locked(
+            PortLeaseRegistry, path, lambda r: r.mark_released(lease_id="l1")
+        )
+        is None
+    )
     assert PortLeaseRegistry.load(path).leases()[0]["status"] == "released"
 
 
 def test_save_state_locked_missing_file_is_a_noop(tmp_path: Path, monkeypatch):
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json")
+    )
     path = tmp_path / "r" / "port-leases.json"
     assert locks.save_state_locked(PortLeaseRegistry, path, lambda r: 1 / 0) is None
     assert not path.exists()
 
 
-def test_save_state_locked_refuses_to_touch_a_corrupt_registry(tmp_path: Path, monkeypatch):
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json"))
+def test_save_state_locked_refuses_to_touch_a_corrupt_registry(
+    tmp_path: Path, monkeypatch
+):
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json")
+    )
     path = tmp_path / "r" / "instances.json"
     path.parent.mkdir()
     path.write_text("{corrupt", encoding="utf-8")
@@ -367,11 +406,15 @@ def test_save_state_locked_refuses_to_touch_a_corrupt_registry(tmp_path: Path, m
     error = locks.save_state_locked(RuntimeRegistry, path, lambda r: ran.append(True))
     assert error and "unreadable" in error
     assert ran == []  # mutate never ran
-    assert path.read_text(encoding="utf-8") == "{corrupt"  # not replaced by an empty document
+    assert (
+        path.read_text(encoding="utf-8") == "{corrupt"
+    )  # not replaced by an empty document
 
 
 def test_save_state_locked_returns_mutate_errors(tmp_path: Path, monkeypatch):
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "r" / "instances.json")
+    )
     path = tmp_path / "r" / "instances.json"
     RuntimeRegistry.load(path, create_missing=True)
 

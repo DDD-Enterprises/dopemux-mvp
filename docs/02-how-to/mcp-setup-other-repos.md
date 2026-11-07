@@ -62,15 +62,17 @@ When the client connects, `dopemux mcp launch <name>`:
    session directory, so that is the checkout you opened the session in) and refuses
    outside git, or when `.mcp.json` has no dopemux launcher entry for that server;
 2. derives the identity (`project_id`, worktree hash) **from git only**; ambient
-   `DOPEMUX_*` and `TASK_ORCHESTRATOR_*` variables and the env file are not read;
+   `DOPEMUX_*` and `TASK_ORCHESTRATOR_*` variables and the env file are not used for it;
 3. finds this worktree's running sidecar (registry record plus an MCP probe) and, if there
    is none, starts it through the same lifecycle that `dopemux mcp start` uses, under a
    per-worktree lock so two simultaneous launchers start it once;
 4. writes an attach record, then proxies stdio to the sidecar (SSE for `conport`,
    Streamable HTTP for `dope-memory` and `task-orchestrator`; the backend transports are
-   unchanged, only the client side is stdio).
+   unchanged, only the client side is stdio). Before every reconnect the proxy re-proves the
+   backend's owner from Docker labels (see [Sidecar restarts](#sidecar-restarts)).
 
-Refusals are one line `CODE: remedy` on stderr with exit code 3.
+Refusals are one line `CODE: remedy` on stderr with exit code 3. A launcher stopped with
+SIGTERM or SIGHUP still removes its attach record (exit 143 or 129).
 
 ### Host prerequisite: one stable `dopemux` on PATH
 
@@ -116,11 +118,14 @@ connect. Two things are expected the first time:
   project's `.mcp.json`; a new project's servers show `Pending approval` in `claude mcp list`
   until the first interactive session approves them (observed). That is Claude Code's prompt,
   not a launcher failure.
-- **A new worktree builds its images once.** Images are per compose project, so the first
-  launch in a worktree with no image prints `LAUNCH_IMAGE_BUILDING` and exits while a
-  detached build runs (about 2.5 minutes observed on 2026-11-05; the build log path is
-  printed). When the build finishes, run `/mcp reconnect all` in the session. Running
-  `dopemux mcp init --repo <worktree>` first pre-builds them instead.
+- **The first launch on a host builds the images once.** There is one image per service and
+  source version, `dopemux-<service>:<key>`, where `<key>` hashes the dopemux-mvp checkout
+  path and the service's Dockerfile; every worktree and project shares it. So the first
+  launch on the host (and the first after that Dockerfile changes) prints
+  `LAUNCH_IMAGE_BUILDING` and exits while one detached build runs (about 2.5 minutes observed
+  on 2026-11-05; the build log path is printed); later worktrees reuse the image. When the
+  build finishes, run `/mcp reconnect all` in the session. Running
+  `dopemux mcp init --repo <checkout>` first pre-builds them instead.
 
 The launcher waits up to 25 s for a starting sidecar (`DOPEMUX_LAUNCH_WAIT`, or
 `dopemux mcp launch --wait SECONDS`), inside Claude Code's 30 s MCP connect limit (`MCP_TIMEOUT` defaults to 30 s; Claude Code
@@ -134,10 +139,14 @@ environment-variable reference, read 2026-11-05). If that is exceeded it exits w
 cd ~/code/your-project && dopemux mcp launch conport
 ```
 
-(A successful run waits for an MCP client on stdin and prints SDK telemetry lines on
-stderr; both are harmless. Press Ctrl-C.)
+(A successful run waits for an MCP client on stdin; the SDK's own INFO lines are kept off
+stderr. Press Ctrl-C.)
 
 ### Launcher refusal codes
+
+Each code is printed as one `CODE: remedy` line. `LAUNCH_IMAGE_BUILDING` first prints one more
+line, `dopemux mcp launch: building <image>; log <path>` (or `... is still building (pid N);
+log <path>` while a build runs).
 
 | Code | Meaning and remedy |
 |---|---|
@@ -146,14 +155,19 @@ stderr; both are harmless. Press Ctrl-C.)
 | `LAUNCH_SERVICE_UNKNOWN` | The name is not a launcher service in the catalog. Run `dopemux mcp doctor`. |
 | `LAUNCH_CATALOG_INVALID` | The MCP catalog failed to load; the message names the problem. |
 | `PROJECT_IDENTITY_UNKNOWN` | Git identity could not be resolved. Run `dopemux mcp doctor`. |
-| `LAUNCH_IMAGE_BUILDING` | Image missing; a detached build started. Retry with `/mcp reconnect all` in a few minutes. |
+| `LAUNCH_IMAGE_BUILDING` | Image missing; one detached build started (its pid is in `build.pid` in the worktree's runtime dir; a launch during that build starts no second one). Retry with `/mcp reconnect all` in a few minutes. |
 | `LAUNCH_WAIT_EXCEEDED` | Sidecar still starting after the wait. Run `/mcp reconnect all`. |
 | `LAUNCH_START_FAILED` | The lifecycle start failed; the line carries the tail of its stderr. Run `dopemux mcp doctor`. |
+| `LAUNCH_BACKEND_PORT_UNKNOWN` | The start reported no port for the server, so the launcher refuses rather than guess the default port. Run `dopemux mcp doctor`. |
+| `LAUNCH_IO_ERROR` | A file or lock under the runtime dir could not be written (disk full, permissions, a lock that never settled). Retry; run `dopemux mcp doctor` if it persists. |
+| `LAUNCH_BACKEND_OWNER_CHANGED` | On a reconnect, the container publishing this worktree's `conport` or `dope-memory` port is not this worktree's (labels `dopemux.managed`, `dopemux.project_id`, `dopemux.worktree_hash`). Nothing was resent. Run `/mcp reconnect <name>`. |
+| `LAUNCH_RECONNECT_GUARD_FAILED` | The reconnect owner check itself failed (for example Docker did not answer); treated as a refusal. Run `dopemux mcp doctor`, then `/mcp reconnect <name>`. |
 | `TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT` | Another project owns `:7890`. Run `dopemux mcp switch-project` here. |
 | `TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER` | `:7890` is held by something that is not a labeled task-orchestrator container. Run `dopemux mcp doctor`. |
 
-Lifecycle findings (for example `CONPORT_TENANT_GATE_FAILED`, `IMAGE_BUILD_FAILED`) can also
-surface through `LAUNCH_START_FAILED` or `dopemux mcp doctor`.
+Lifecycle findings with severity FAIL print under their own code (for example
+`CONPORT_TENANT_UNKNOWN_HISTORY`, `CONPORT_TENANT_GATE_FAILED`); others surface through
+`LAUNCH_START_FAILED` or `dopemux mcp doctor`.
 
 ---
 
@@ -174,7 +188,12 @@ dopemux mcp switch-project --repo ~/code/other-project
 ```
 
 Then run `/mcp reconnect all` in the session. The command refuses when `:7890` is held by
-anything that is not a managed task-orchestrator container.
+anything that is not a managed task-orchestrator container. It stops and removes the old
+owner's container with `docker stop` and `docker rm` under the host-wide `:7890` lock, marks
+that owner's runtime-registry entry `stopped`, and starts this project's orchestrator through
+the lifecycle. A session still connected to the old owner gets
+`TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT` on its next request instead of being served by
+the new owner.
 
 ---
 
@@ -198,9 +217,11 @@ A full `dopemux mcp stop` for a worktree also releases its leases and removes it
 
 Reaping also runs automatically, bounded and never as a daemon: at the `Stop` and
 `SubagentStop` hooks (throttled to once per 600 s through
-`~/.dopemux/mcp/runtime/reap.last`), at `SessionEnd` (unthrottled, at most one instance), and at
-every launcher start (throttled the same way, at most one instance). Hook runs stop at most 3 candidates with
-`docker stop --time 5`; the launcher stops at most 1 with `--time 3`. `SessionEnd` hooks share a
+`~/.dopemux/mcp/runtime/reap.last`, 60 s deadline), at `SessionEnd` (unthrottled, at most one
+instance, 45 s deadline), and at every launcher start (throttled the same way, at most one
+instance, 8 s deadline). Hook runs stop at most 3 candidates with
+`docker stop --time 5`; the launcher stops at most 1 with `--time 3`. Reaping never removes
+images (they are shared). `SessionEnd` hooks share a
 1.5 s budget unless the hook sets `timeout` (Claude Code hooks and environment-variable
 references, read 2026-11-05), so `.claude/settings.json` sets `"timeout": 60` on that hook entry
 (`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` is the alternative). A reap interrupted after
@@ -211,8 +232,10 @@ references, read 2026-11-05), so `.claude/settings.json` sets `"timeout": 60` on
 The explicit `dopemux mcp reap --apply` ignores the kill switch and prints a note on stderr.
 
 An instance recorded by an older launcher (no `last_detach` file) is reaped only when its
-worktree path is missing. A worktree on an unmounted volume looks missing, so its sidecars
-get reaped; the next launch recreates them.
+worktree path is missing. A launcher killed outright (SIGKILL) leaves a dead attach record;
+when a later reap or full `stop` prunes it, `last_detach` takes that record's time. A worktree
+on an unmounted volume looks missing, so its sidecars get reaped; the next launch recreates
+them.
 
 ---
 
@@ -227,13 +250,16 @@ this order, and `init` prints which one applied:
 | `legacy_envrc` | `CONPORT_DB_*` found in the checkout's `.envrc.dopemux-mcp` (or the main checkout's) were copied into the secrets file once. |
 | `provisioned` | A new database and login role were created in the host Postgres (`CONNECT` revoked from `PUBLIC`), then the migration gate adopted the schema. |
 | `legacy_shared` | The project already has rows in the shared `dopemux_knowledge_graph` store, so it keeps using it. |
+| (refused) `CONPORT_TENANT_UNKNOWN_HISTORY` | Postgres (or docker) did not answer, so whether the project has rows in the shared store is unknown. A start refuses `conport` with this FAIL and changes nothing; start `dopemux-postgres-age` or fix docker, then retry. |
 
 `legacy_shared` is reported by `dopemux mcp doctor` as the WARN `CONPORT_LEGACY_SHARED_STORE`:
 that project has no per-project wall yet, and moving its rows to a tenant is a later milestone
-(M2). Nothing needs doing now. If Postgres does not answer, `doctor` reports
-`CONPORT_TENANT_UNVERIFIED`.
+(M2). Nothing needs doing now. If Postgres does not answer, `doctor` reports the INFO
+`CONPORT_TENANT_UNVERIFIED` and a start reports `CONPORT_TENANT_UNKNOWN_HISTORY`.
 
-Provisioning never prints, logs or rotates a password. If a login role already exists but the
+Provisioning never prints, logs or rotates a password. `CREATE ROLE` receives a SCRAM-SHA-256
+verifier, not the password, so the plaintext never reaches Postgres or its log; only the
+secrets file holds it, for the client. If a login role already exists but the
 project has no secrets file, `init` fails closed with `ROLE_EXISTS_WITHOUT_SECRETS` and names
 the secrets path to restore from backup. `CONPORT_TENANT_GATE_FAILED` also names the secrets
 file. An interrupted provisioning resumes where it stopped on the next `init` or start.
@@ -242,16 +268,21 @@ file. An interrupted provisioning resumes where it stopped on the next `init` or
 
 ## The env file is informational
 
-`.envrc.dopemux-mcp` is still written by `init`, so humans can read the ports and ids, but
-**nothing you do needs it sourced** and the launcher ignores it. Credentials live in
-`~/.dopemux/mcp/projects/<project_id>/secrets.env`, not in the repo (`git grep CONPORT_DB_`
-in a project set up this way finds nothing).
+`.envrc.dopemux-mcp` is still written by `init`, so humans can read the ports and ids, and
+**nothing you do needs it sourced**. dopemux reads it itself: `init`, `doctor` and each sidecar
+start (including the one a launcher runs) take its ports, and the first ConPort tenant
+resolution adopts legacy `CONPORT_DB_*` from it once (`legacy_envrc`). Identity never comes
+from it. Credentials live in `~/.dopemux/mcp/projects/<project_id>/secrets.env`, not in the
+repo (`git grep CONPORT_DB_` in a project set up this way finds nothing).
 
 Ambient `DOPEMUX_WORKSPACE_ROOT`, `DOPEMUX_PROJECT_ROOT`, `DOPEMUX_INSTANCE_ID`,
-`DOPEMUX_WORKSPACE_ID` and `TASK_ORCHESTRATOR_PROJECT_ROOT` are ignored by `launch`, `start`,
-`stop`, `status`, `doctor`, `init` and `repair-config`. A shell that still has another project's
-env file sourced therefore cannot redirect them. The escape hatch is `--trust-env` on those
-commands (meant for tests; no hook or launcher sets it).
+`DOPEMUX_WORKSPACE_ID` and `TASK_ORCHESTRATOR_PROJECT_ROOT` are always ignored by `launch`,
+and by `start`, `stop`, `restart`, `up --repo`, `status`, `doctor`, `init` and `repair-config`
+unless you pass `--trust-env` to them (`launch` has no such option). `start`, `stop`,
+`restart`, `up --repo` and `status` also drop ambient port, container-name and `CONPORT_DB_*`
+exports before the lifecycle runs, so a lease is never beaten by another checkout's export.
+A shell that still has another project's env file sourced therefore cannot redirect them.
+`--trust-env` is meant for tests; no hook or launcher sets it.
 
 The legacy cwd-compose forms (`dopemux mcp up|down|logs` without `--repo`) still run on your
 shell environment; they are not part of this recipe.
@@ -261,9 +292,19 @@ shell environment; they are not part of this recipe.
 ## Sidecar restarts
 
 If a backend sidecar restarts during a session, the proxy reconnects and resends the rejected
-request once, so the first restart of a backend heals itself. A request that was in flight
-during the restart gets an error and is not retried. A **second** restart of the same backend
-in the same session ends that proxy; run `/mcp reconnect <name>` (or `all`).
+request once. While the backend refuses connections the proxy retries with backoff (0.25 s,
+doubling, at most 2 s apart) for up to 10 s. A request that was in flight during the restart
+gets an error and is not retried.
+
+The proxy reconnects at most once per 60 s window: a later restart in the same session heals
+too, but a backend that drops twice inside one window ends that proxy (exit 1); run
+`/mcp reconnect <name>` (or `all`).
+
+Before every reconnect the proxy re-proves who owns the backend port from Docker labels:
+the task-orchestrator must still be this project's (`TASK_ORCHESTRATOR_START_BLOCKED_*`
+otherwise), and `conport`/`dope-memory` must still be this worktree's
+(`LAUNCH_BACKEND_OWNER_CHANGED` otherwise). On a refusal nothing is resent, the waiting request
+gets the `CODE: remedy` text as its error, the same line goes to stderr and the proxy exits 1.
 
 ---
 
@@ -272,7 +313,7 @@ in the same session ends that proxy; run `/mcp reconnect <name>` (or `all`).
 | Surface | Command | Mutates |
 |---------|---------|---------|
 | Local `.mcp.json` + `.envrc.dopemux-mcp` | `mcp init`, `mcp repair-config --dry-run` / `--apply` | Target repo only |
-| Sidecars by hand | `mcp start`, `mcp stop`, `mcp status` (each takes `--repo`, `--dry-run`, `--json`) | Docker + runtime registry |
+| Sidecars by hand | `mcp start`, `mcp stop`, `mcp restart` (each takes `--repo`, `--services`, `--dry-run`, `--json`, `--trust-env`); `mcp status` (`--repo`, `--json`, `--legacy-compose`, `--trust-env`) | Docker + runtime registry |
 | Orchestrator owner | `mcp switch-project` | The container on `:7890` |
 | Idle or removed worktrees | `mcp reap` | Containers, leases, runtime dirs |
 | Global `~/.claude.json` singletons | `mcp sync-globals` (explicit `--apply`) | Home global config |
@@ -332,7 +373,11 @@ dopemux mcp fleet doctor --repo ~/code/your-project \
   the same probe). Do not rely on these launchers from Codex.
 * **Cost: two sidecar containers per worktree** (`conport`, `dope-memory`) plus the one
   orchestrator, bounded by reap.
-* A first launch in a new worktree is a full image build (images are per compose project).
+* The first launch on a host (per Dockerfile version) is a full image build; later
+  worktrees and projects reuse the shared image.
+* **The Copilot proxy config (`mcp-proxy-config.copilot.yaml`) is rendered but NOT_RUN /
+  unverified**: `dopemux mcp generate` writes the launcher entries into it, and no Copilot
+  session has been run against them.
 * A project that already has rows in the shared ConPort store stays on it (`legacy_shared`).
 * Preferred ports still derive from hash `%100`; leases rebind on conflict.
 * Lease prune is not automatic; `doctor` may report `LEASE_STALE` without deleting.
@@ -419,7 +464,8 @@ dopemux mcp launch conport
 
 ### `LAUNCH_IMAGE_BUILDING` again and again
 
-The build is still running, or it failed. Read `~/.dopemux/mcp/runtime/<slug>-<worktree-hash>/build.log`.
+The build is still running (the extra stderr line says `is still building (pid N)`), or it
+failed. Read `~/.dopemux/mcp/runtime/<slug>-<worktree-hash>/build.log`.
 `dopemux mcp init --repo <worktree>` builds synchronously and prints the failure.
 
 ### Sidecar running but the tools are missing
@@ -448,6 +494,29 @@ instead of silently colliding. Fix: adjust `default_port_base` for the conflicti
 hand -> probe the sidecar with the right transport -> `docker logs` the container
 (`docker ps --format '{{.Names}}' | grep -E 'conport|dope-memory|task-orchestrator'`) ->
 `./mcp_server_health_report.sh`.
+
+---
+
+## Rollback
+
+To go back to the pre-launcher setup (URL entries plus a sourced env file):
+
+1. Put the old CLI back: `uv tool uninstall dopemux`, then install the older dopemux-mvp
+   checkout (`uv tool install --editable <old checkout>`), or re-point `~/.local/bin/dopemux`
+   at the old binary.
+2. With that old tool, run `dopemux mcp repair-config --apply` in each project to turn the
+   launcher entries in `.mcp.json` back into URL entries.
+3. If the old flow must reach a tenant this version provisioned, copy the three `CONPORT_DB_*`
+   lines from `~/.dopemux/mcp/projects/<project_id>/secrets.env` into the project's
+   `.envrc.dopemux-mcp` by hand (never commit that file).
+4. Keep `~/.dopemux/mcp/projects/*`. Deleting a project's secrets file while its login role
+   exists makes the next provisioning fail closed with `ROLE_EXISTS_WITHOUT_SECRETS`.
+5. The runtime registry (`instances.json`) and the lease registry (`port-leases.json`) keep
+   their formats, so the old tool reads them as they are.
+6. Delete `~/.dopemux/mcp/runtime/reap.disabled` only if you intend automatic reaping to run.
+
+The shared `dopemux-<service>:<key>` images can stay; the old tool builds its own
+per-project images next to them.
 
 ---
 

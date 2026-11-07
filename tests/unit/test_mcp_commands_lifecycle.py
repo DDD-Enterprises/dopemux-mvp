@@ -519,3 +519,89 @@ def test_cli_registry_reconcile_help_lists_flags_and_warning():
     for flag in ("--dry-run", "--apply", "--json"):
         assert flag in result.output
     assert "concurrently" in result.output
+
+
+# --- final review M6: ambient identity/port exports never reach the lifecycle ----------
+
+
+def _capture_lifecycle(monkeypatch):
+    from dopemux.mcp import lifecycle
+
+    seen: list = []
+
+    def fake(operation, **kwargs):
+        seen.append({"operation": operation, **kwargs})
+        return SimpleNamespace(
+            status="PASS", exit_code=0, to_json=lambda: "{}", services=[], warnings=[]
+        )
+
+    monkeypatch.setattr(lifecycle, "run_lifecycle", fake)
+    monkeypatch.setattr(lifecycle, "format_lifecycle_human", lambda result: "ok")
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
+    return seen
+
+
+def test_cli_lifecycle_commands_scrub_ambient_vars_unless_trust_env(tmp_path, monkeypatch):
+    from dopemux.mcp import docker_runtime as dr
+
+    repo = _repo(tmp_path)
+    seen = _capture_lifecycle(monkeypatch)
+    monkeypatch.setenv("CONPORT_HTTP_PORT", "39999")
+    monkeypatch.setenv("DOPEMUX_PROJECT_ROOT", "/another/checkout")
+    monkeypatch.setenv("UNRELATED_SETTING", "kept")
+    for argv in (["start"], ["stop"], ["restart"], ["up"]):
+        result = CliRunner().invoke(mcp_commands.mcp, [*argv, "--repo", str(repo)])
+        assert result.exit_code == 0, result.output
+    for call in seen:
+        env = call["process_env"]
+        assert not set(dr.AMBIENT_SCRUB_VARS) & set(env), call["operation"]
+        assert env["UNRELATED_SETTING"] == "kept"
+    assert len(seen) == 4
+    seen.clear()
+    trusted = CliRunner().invoke(mcp_commands.mcp, ["start", "--repo", str(repo), "--trust-env"])
+    assert trusted.exit_code == 0, trusted.output
+    assert seen[0]["process_env"]["CONPORT_HTTP_PORT"] == "39999"
+
+
+def test_cli_start_ambient_port_no_longer_beats_the_lease(tmp_path, monkeypatch):
+    import subprocess
+
+    repo = tmp_path / "leased"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)  # identity is git-only
+    (repo / ".mcp.json").write_text(
+        json.dumps(
+            {
+                "mcpServers": {
+                    "conport": {"type": "sse", "url": "http://localhost:${CONPORT_MCP_PORT}/sse"}
+                }
+            }
+        )
+    )
+    reg = tmp_path / "rt" / "instances.json"
+    product = tmp_path / "product"
+    product.mkdir()
+    (product / "compose.yml").write_text("services: {}\n")
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "rt" / "leases.json"))
+    monkeypatch.setenv("DOPEMUX_MVP_ROOT", str(product))
+    import dopemux.mcp.docker_inspect as di
+
+    monkeypatch.setattr(
+        di,
+        "inspect_running_containers",
+        lambda **kw: di.DockerInspectResult(available=True, containers=[]),
+    )
+
+    def plan() -> dict:
+        result = CliRunner().invoke(
+            mcp_commands.mcp,
+            ["start", "--repo", str(repo), "--services", "conport", "--dry-run", "--json"],
+        )
+        payload = json.loads(result.output)
+        return next(s for s in payload["services"] if s["service"] == "conport")["ports"]
+
+    leased = plan()["CONPORT_HTTP_PORT"]  # a dry run records the lease
+    monkeypatch.setenv("CONPORT_HTTP_PORT", "39999")  # another checkout's sourced envrc
+    assert plan()["CONPORT_HTTP_PORT"] == leased

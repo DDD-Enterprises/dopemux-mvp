@@ -37,13 +37,18 @@ def _fake_backend() -> Server:
             types.Tool(
                 name=name,
                 description=name,
-                inputSchema={"type": "object", "properties": {"text": {"type": "string"}}},
+                inputSchema={
+                    "type": "object",
+                    "properties": {"text": {"type": "string"}},
+                },
             )
             for name in ("echo", "notify", "sample", "elicit", "roots")
         ]
 
     @server.call_tool()
-    async def _call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+    async def _call_tool(
+        name: str, arguments: Dict[str, Any]
+    ) -> List[types.TextContent]:
         session = server.request_context.session
         if name == "echo":
             return [types.TextContent(type="text", text=str(arguments.get("text", "")))]
@@ -55,7 +60,8 @@ def _fake_backend() -> Server:
                 await session.create_message(
                     [
                         types.SamplingMessage(
-                            role="user", content=types.TextContent(type="text", text="hi")
+                            role="user",
+                            content=types.TextContent(type="text", text="hi"),
                         )
                     ],
                     max_tokens=5,
@@ -67,7 +73,11 @@ def _fake_backend() -> Server:
             else:
                 await session.list_roots()
         except McpError as exc:
-            return [types.TextContent(type="text", text=f"{exc.error.code}:{exc.error.message}")]
+            return [
+                types.TextContent(
+                    type="text", text=f"{exc.error.code}:{exc.error.message}"
+                )
+            ]
         return [types.TextContent(type="text", text="answered")]
 
     @server.list_resources()
@@ -76,7 +86,9 @@ def _fake_backend() -> Server:
 
     @server.read_resource()
     async def _read_resource(uri: Any) -> List[ReadResourceContents]:
-        return [ReadResourceContents(content="hello from backend", mime_type="text/plain")]
+        return [
+            ReadResourceContents(content="hello from backend", mime_type="text/plain")
+        ]
 
     return server
 
@@ -86,10 +98,15 @@ def _factory(server: Server):
 
     @asynccontextmanager
     async def factory(**client_kwargs: Any):
-        async with create_client_server_memory_streams() as (client_streams, server_streams):
+        async with create_client_server_memory_streams() as (
+            client_streams,
+            server_streams,
+        ):
             async with anyio.create_task_group() as tg:
                 options = server.create_initialization_options()
-                tg.start_soon(lambda: server.run(server_streams[0], server_streams[1], options))
+                tg.start_soon(
+                    lambda: server.run(server_streams[0], server_streams[1], options)
+                )
                 async with ClientSession(
                     client_streams[0], client_streams[1], **client_kwargs
                 ) as session:
@@ -108,7 +125,10 @@ async def _runner_via_proxy(server: Server, *, message_handler=None):
 
             async def _serve() -> None:
                 box["code"] = await stdio_proxy.serve(
-                    SPEC, proxy_streams[0], proxy_streams[1], session_factory=_factory(server)
+                    SPEC,
+                    proxy_streams[0],
+                    proxy_streams[1],
+                    session_factory=_factory(server),
                 )
 
             tg.start_soon(_serve)
@@ -132,7 +152,13 @@ async def test_proxy_lists_and_calls_backend_tools():
             result = await runner.call_tool("echo", {"text": "hi"})
             resources = await runner.list_resources()
             read = await runner.read_resource(RESOURCE_URI)
-    assert [t.name for t in tools.tools] == ["echo", "notify", "sample", "elicit", "roots"]
+    assert [t.name for t in tools.tools] == [
+        "echo",
+        "notify",
+        "sample",
+        "elicit",
+        "roots",
+    ]
     assert result.isError is False
     assert result.content[0].text == "hi"
     assert [str(r.uri) for r in resources.resources] == [RESOURCE_URI]
@@ -151,7 +177,10 @@ async def test_proxy_forwards_tool_list_changed():
             seen.append(message.root)
             changed.set()
 
-    async with _runner_via_proxy(_fake_backend(), message_handler=handler) as (runner, _box):
+    async with _runner_via_proxy(_fake_backend(), message_handler=handler) as (
+        runner,
+        _box,
+    ):
         with anyio.fail_after(5):
             await runner.list_tools()
             result = await runner.call_tool("notify", {})
@@ -177,7 +206,10 @@ async def test_proxy_exits_one_when_backend_cannot_connect_after_one_retry():
         raise OSError("connection refused")
         yield  # pragma: no cover
 
-    async with create_client_server_memory_streams() as (_client_streams, proxy_streams):
+    async with create_client_server_memory_streams() as (
+        _client_streams,
+        proxy_streams,
+    ):
         with anyio.fail_after(5):
             code = await stdio_proxy.serve(
                 SPEC, proxy_streams[0], proxy_streams[1], session_factory=broken
@@ -197,7 +229,9 @@ def _closed_port() -> int:
 @pytest.mark.parametrize("transport,path", [("sse", "/sse"), ("http", "/mcp")])
 def test_probe_backend_false_on_refused_port(transport: str, path: str):
     backend = BackendSpec(
-        url=f"http://127.0.0.1:{_closed_port()}{path}", transport=transport, name="refused"
+        url=f"http://127.0.0.1:{_closed_port()}{path}",
+        transport=transport,
+        name="refused",
     )
     started = time.monotonic()
     assert stdio_proxy.probe_backend(backend, timeout_s=1.0) is False
@@ -217,6 +251,9 @@ class _Backend:
         self.calls: List[str] = []
         self.called = anyio.Event()
         self.server = self._server()
+        #: While ``time.monotonic()`` is below this, every connect is refused.
+        self.down_until = 0.0
+        self.refused = 0
 
     def _server(self) -> Server:
         server: Server = Server("breakable-backend")
@@ -229,7 +266,9 @@ class _Backend:
             ]
 
         @server.call_tool()
-        async def _call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+        async def _call_tool(
+            name: str, arguments: Dict[str, Any]
+        ) -> List[types.TextContent]:
             self.calls.append(name)
             self.called.set()
             if name == "block":
@@ -241,15 +280,23 @@ class _Backend:
     def factory(self):
         @asynccontextmanager
         async def factory(**client_kwargs: Any):
+            if time.monotonic() < self.down_until:
+                self.refused += 1
+                raise OSError("connection refused (backend restarting)")
             mode = self.plan.pop(0) if self.plan else "ok"
             if mode == "refuse":
                 self.sessions.append({"mode": mode})
                 raise OSError("connection refused")
-            async with create_client_server_memory_streams() as (client_streams, server_streams):
+            async with create_client_server_memory_streams() as (
+                client_streams,
+                server_streams,
+            ):
                 async with anyio.create_task_group() as tg:
                     options = self.server.create_initialization_options()
                     tg.start_soon(
-                        lambda: self.server.run(server_streams[0], server_streams[1], options)
+                        lambda: self.server.run(
+                            server_streams[0], server_streams[1], options
+                        )
                     )
                     if mode == "dead_read":
                         await server_streams[1].aclose()  # nothing can ever be answered
@@ -264,16 +311,24 @@ class _Backend:
                             server_streams[1].clone(),
                         )
                     self.sessions.append(
-                        {"mode": mode, "client": client_streams, "server": server_streams}
+                        {
+                            "mode": mode,
+                            "client": client_streams,
+                            "server": server_streams,
+                        }
                     )
-                    async with ClientSession(client_streams[0], write, **client_kwargs) as session:
+                    async with ClientSession(
+                        client_streams[0], write, **client_kwargs
+                    ) as session:
                         yield session
                     tg.cancel_scope.cancel()
 
         return factory
 
     @staticmethod
-    async def _terminate(mode: str, outbound: Any, to_server: Any, to_client: Any) -> None:
+    async def _terminate(
+        mode: str, outbound: Any, to_server: Any, to_client: Any
+    ) -> None:
         """The streamable HTTP transport after a backend restart (SDK 1.29).
 
         Every POST on the old session gets HTTP 404 and the transport answers that
@@ -286,7 +341,10 @@ class _Backend:
                 if (
                     isinstance(root, types.JSONRPCRequest)
                     and root.method != "initialize"
-                    and (mode == "terminated" or (root.params or {}).get("name") == "echo")
+                    and (
+                        mode == "terminated"
+                        or (root.params or {}).get("name") == "echo"
+                    )
                 ):
                     error = types.ErrorData(code=32600, message="Session terminated")
                     reply = types.JSONRPCError(jsonrpc="2.0", id=root.id, error=error)
@@ -296,14 +354,18 @@ class _Backend:
 
 
 @asynccontextmanager
-async def _runner_via(backend: _Backend):
+async def _runner_via(backend: _Backend, *, reconnect_guard=None):
     box: Dict[str, int] = {}
     async with create_client_server_memory_streams() as (client_streams, proxy_streams):
         async with anyio.create_task_group() as tg:
 
             async def _serve() -> None:
                 box["code"] = await stdio_proxy.serve(
-                    SPEC, proxy_streams[0], proxy_streams[1], session_factory=backend.factory()
+                    SPEC,
+                    proxy_streams[0],
+                    proxy_streams[1],
+                    session_factory=backend.factory(),
+                    reconnect_guard=reconnect_guard,
                 )
 
             tg.start_soon(_serve)
@@ -320,7 +382,9 @@ async def test_proxy_resends_unwritten_request_on_reconnected_session():
     async with _runner_via(backend) as (runner, _box):
         with anyio.fail_after(5):
             await runner.list_tools()
-        await backend.sessions[0]["client"][1].aclose()  # the next write fails: never written
+        await backend.sessions[0]["client"][
+            1
+        ].aclose()  # the next write fails: never written
         with anyio.fail_after(5):
             result = await runner.call_tool("echo", {})
     assert result.content[0].text == "ok:2"
@@ -335,7 +399,9 @@ async def test_proxy_reconnects_when_backend_read_side_ended_while_idle():
             await runner.list_tools()
         # An SSE backend restart: the transport closes only the read side.
         await backend.sessions[0]["server"][1].aclose()
-        with anyio.fail_after(5):  # used to hang: the request was written, never answered
+        with anyio.fail_after(
+            5
+        ):  # used to hang: the request was written, never answered
             result = await runner.call_tool("echo", {})
     assert result.content[0].text == "ok:2"
     assert backend.calls == ["echo"]
@@ -366,6 +432,9 @@ async def test_proxy_fails_in_flight_request_without_replay():
 
 async def test_proxy_fails_fast_and_exits_one_when_reconnect_cannot_answer(monkeypatch):
     monkeypatch.setattr(stdio_proxy, "INITIALIZE_TIMEOUT_S", 0.3)
+    # A failed reconnect attempt is retried with backoff for RECONNECT_WAIT_S (I3);
+    # this test is about the reconnect giving up, so the wait is shorter than a retry.
+    monkeypatch.setattr(stdio_proxy, "RECONNECT_WAIT_S", 0.2)
     backend = _Backend("ok", "dead_read")
     async with _runner_via(backend) as (runner, box):
         with anyio.fail_after(5):
@@ -388,7 +457,9 @@ async def test_proxy_bounds_a_request_with_a_read_timeout(monkeypatch):
         with anyio.fail_after(5):
             with pytest.raises(McpError) as info:
                 await runner.call_tool("block", {})
-            again = await runner.call_tool("echo", {})  # a slow tool does not end the session
+            again = await runner.call_tool(
+                "echo", {}
+            )  # a slow tool does not end the session
     assert "Timed out" in info.value.error.message
     assert again.content[0].text == "ok:1"
     assert len(backend.sessions) == 1
@@ -444,3 +515,210 @@ async def test_proxy_in_flight_other_requests_survive_a_session_terminated_recon
     assert "result" not in outcome
     assert outcome["error"].code == types.CONNECTION_CLOSED
     assert "not retried" in outcome["error"].message
+
+
+# --- reconnect guard (final review C1) ---------------------------------------
+# Port of the reviewer's scratch probe `to_reconnect_probe.py`: switch-project
+# stopped project A's orchestrator (its session answers "Session terminated")
+# and project B's now listens on the same URL. Without a guard the proxy resent
+# A's runner request to B ("served by project B").
+
+
+def _owner_server(owner: str, calls: List[str]) -> Server:
+    server: Server = Server(f"jar-{owner}")
+
+    @server.list_tools()
+    async def _list_tools() -> List[types.Tool]:
+        return [
+            types.Tool(name="whoami", description="x", inputSchema={"type": "object"})
+        ]
+
+    @server.call_tool()
+    async def _call_tool(
+        name: str, arguments: Dict[str, Any]
+    ) -> List[types.TextContent]:
+        calls.append(owner)
+        return [types.TextContent(type="text", text=f"served by project {owner}")]
+
+    return server
+
+
+def _switched_owner_factory(calls: List[str], connects: List[str]):
+    plan = ["A-terminated", "B"]
+
+    @asynccontextmanager
+    async def factory(**client_kwargs: Any):
+        mode = plan.pop(0)
+        connects.append(mode)
+        server = _owner_server("A" if mode.startswith("A") else "B", calls)
+        async with create_client_server_memory_streams() as (
+            client_streams,
+            server_streams,
+        ):
+            async with anyio.create_task_group() as tg:
+                options = server.create_initialization_options()
+                tg.start_soon(
+                    lambda: server.run(server_streams[0], server_streams[1], options)
+                )
+                write: Any = client_streams[1]
+                if mode == "A-terminated":
+                    write, outbound = anyio.create_memory_object_stream(0)
+                    tg.start_soon(
+                        _Backend._terminate,
+                        "terminated",
+                        outbound,
+                        client_streams[1],
+                        server_streams[1].clone(),
+                    )
+                async with ClientSession(
+                    client_streams[0], write, **client_kwargs
+                ) as session:
+                    yield session
+                tg.cancel_scope.cancel()
+
+    return factory
+
+
+async def test_reconnect_guard_refusal_reaches_the_runner_and_nothing_is_resent(capsys):
+    calls: List[str] = []
+    connects: List[str] = []
+    guard_calls: List[int] = []
+
+    def guard() -> None:
+        guard_calls.append(1)
+        raise stdio_proxy.ProxyRefused(
+            "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT",
+            "/code/b; run dopemux mcp switch-project here to take it over",
+        )
+
+    box: Dict[str, int] = {}
+    async with create_client_server_memory_streams() as (client_streams, proxy_streams):
+        async with anyio.create_task_group() as tg:
+
+            async def _serve() -> None:
+                box["code"] = await stdio_proxy.serve(
+                    SPEC,
+                    proxy_streams[0],
+                    proxy_streams[1],
+                    session_factory=_switched_owner_factory(calls, connects),
+                    reconnect_guard=guard,
+                )
+
+            tg.start_soon(_serve)
+            async with ClientSession(client_streams[0], client_streams[1]) as runner:
+                with anyio.fail_after(5):
+                    await runner.initialize()
+                    with pytest.raises(McpError) as info:
+                        await runner.call_tool("whoami", {})
+                    while "code" not in box:
+                        await anyio.sleep(0.01)
+            tg.cancel_scope.cancel()
+    assert info.value.error.code == -32000
+    assert info.value.error.message == (
+        "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT: "
+        "/code/b; run dopemux mcp switch-project here to take it over"
+    )
+    assert calls == []  # project B never received A's request
+    assert connects == ["A-terminated"]  # the guard ran before any reconnect
+    assert guard_calls == [1]
+    assert box["code"] == 1
+    err = capsys.readouterr().err
+    assert (
+        "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT: /code/b; "
+        "run dopemux mcp switch-project here to take it over"
+    ) in err
+
+
+async def test_reconnect_guard_passing_keeps_the_resend():
+    backend = _Backend("terminated_echo", "ok")
+    guard_calls: List[int] = []
+    async with _runner_via(backend, reconnect_guard=lambda: guard_calls.append(1)) as (
+        runner,
+        box,
+    ):
+        with anyio.fail_after(5):
+            tools = await runner.list_tools()  # the first session: no guard
+            assert guard_calls == []
+            result = await runner.call_tool("echo", {})
+        assert "code" not in box
+    assert [t.name for t in tools.tools] == ["echo", "block"]
+    assert result.content[0].text == "ok:2"
+    assert backend.calls == ["echo"]
+    assert guard_calls == [1]
+
+
+async def test_reconnect_guard_unexpected_exception_is_a_refusal():
+    backend = _Backend("terminated", "ok")
+
+    def broken_guard() -> None:
+        raise RuntimeError("docker inspect blew up")
+
+    async with _runner_via(backend, reconnect_guard=broken_guard) as (runner, box):
+        with anyio.fail_after(5):
+            with pytest.raises(McpError) as info:
+                await runner.call_tool("echo", {})
+            while "code" not in box:
+                await anyio.sleep(0.01)
+    assert info.value.error.code == -32000
+    assert info.value.error.message.startswith("LAUNCH_RECONNECT_GUARD_FAILED: ")
+    assert "docker inspect blew up" in info.value.error.message
+    assert backend.calls == []
+    assert len(backend.sessions) == 1  # never reconnected
+    assert box["code"] == 1
+
+
+# --- reconnect backoff and the per-window budget (final review I3) ------------
+
+
+async def test_reconnect_backs_off_until_a_briefly_down_backend_answers():
+    backend = _Backend()
+    async with _runner_via(backend) as (runner, box):
+        with anyio.fail_after(5):
+            await runner.list_tools()
+        backend.down_until = time.monotonic() + 0.6
+        await backend.sessions[0]["client"][1].aclose()  # the next write fails
+        with anyio.fail_after(5):
+            result = await runner.call_tool("echo", {})
+        assert "code" not in box
+    assert result.content[0].text == "ok:2"
+    assert backend.refused >= 2  # retried, with backoff, while it was down
+    assert backend.calls == ["echo"]
+
+
+async def test_two_drops_inside_one_window_end_the_proxy():
+    backend = _Backend()
+    async with _runner_via(backend) as (runner, box):
+        with anyio.fail_after(5):
+            await runner.list_tools()
+        await backend.sessions[0]["client"][1].aclose()
+        with anyio.fail_after(5):
+            first = await runner.call_tool("echo", {})
+        await backend.sessions[1]["client"][1].aclose()
+        with anyio.fail_after(5):
+            with pytest.raises(McpError) as info:
+                await runner.call_tool("echo", {})
+            while "code" not in box:
+                await anyio.sleep(0.01)
+    assert first.content[0].text == "ok:2"
+    assert info.value.error.code == types.CONNECTION_CLOSED
+    assert len(backend.sessions) == 2
+    assert box["code"] == 1
+
+
+async def test_two_drops_in_separate_windows_both_heal(monkeypatch):
+    monkeypatch.setattr(stdio_proxy, "RECONNECT_WINDOW_S", 0.3)
+    backend = _Backend()
+    async with _runner_via(backend) as (runner, box):
+        with anyio.fail_after(5):
+            await runner.list_tools()
+        await backend.sessions[0]["client"][1].aclose()
+        with anyio.fail_after(5):
+            first = await runner.call_tool("echo", {})
+        await anyio.sleep(0.4)  # the next drop falls in a new window
+        await backend.sessions[1]["client"][1].aclose()
+        with anyio.fail_after(5):
+            second = await runner.call_tool("echo", {})
+        assert "code" not in box
+    assert first.content[0].text == "ok:2"
+    assert second.content[0].text == "ok:3"
+    assert backend.calls == ["echo", "echo"]

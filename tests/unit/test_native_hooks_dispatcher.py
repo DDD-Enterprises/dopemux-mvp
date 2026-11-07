@@ -84,7 +84,9 @@ class Env:
     def env(self, extra: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         # PATH: fake bin first, then only the dirs holding the tools the script
         # itself needs (git, dirname), so a host-installed `dopemux` cannot leak in.
-        system = {str(Path(shutil.which(tool)).parent) for tool in ("git", "dirname", "sh")}
+        system = {
+            str(Path(shutil.which(tool)).parent) for tool in ("git", "dirname", "sh")
+        }
         env = {
             "PATH": os.pathsep.join([str(self.bin), *sorted(system)]),
             "HOME": str(self.home),
@@ -121,7 +123,9 @@ def env_without_hook(tmp_path: Path) -> Env:
     return Env(tmp_path, with_hook_file=False)
 
 
-def test_dispatcher_prefers_checkout_hook_file_with_main_venv(env_with_hook: Env) -> None:
+def test_dispatcher_prefers_checkout_hook_file_with_main_venv(
+    env_with_hook: Env,
+) -> None:
     env = env_with_hook
     assert not (env.worktree / ".venv").exists()
     _write_exe(env.main / ".venv" / "bin" / "python", FAKE_PYTHON)
@@ -135,7 +139,9 @@ def test_dispatcher_prefers_checkout_hook_file_with_main_venv(env_with_hook: Env
 
 def test_dispatcher_prefers_checkout_venv_over_main_venv(env_with_hook: Env) -> None:
     env = env_with_hook
-    _write_exe(env.main / ".venv" / "bin" / "python", '#!/bin/sh\necho "main-venv"\nexit 7\n')
+    _write_exe(
+        env.main / ".venv" / "bin" / "python", '#!/bin/sh\necho "main-venv"\nexit 7\n'
+    )
     _write_exe(env.worktree / ".venv" / "bin" / "python", FAKE_PYTHON)
 
     result = env.run()
@@ -155,7 +161,9 @@ def test_dispatcher_resolves_main_venv_from_a_subdirectory(env_with_hook: Env) -
     assert f"ran:{env.worktree / HOOK_REL}" in result.stdout
 
 
-def test_dispatcher_uses_installed_dopemux_when_no_hook_file(env_without_hook: Env) -> None:
+def test_dispatcher_uses_installed_dopemux_when_no_hook_file(
+    env_without_hook: Env,
+) -> None:
     env = env_without_hook
     _write_exe(env.bin / "dopemux", FAKE_DOPEMUX)
     payload = '{"hook_event_name":"SessionStart","cwd":"/somewhere"}'
@@ -195,7 +203,9 @@ def test_dispatcher_keeps_inherited_claude_project_dir(env_with_hook: Env) -> No
     assert "project_dir:/elsewhere" in result.stdout
 
 
-def test_dispatcher_defaults_claude_project_dir_to_checkout_top(env_with_hook: Env) -> None:
+def test_dispatcher_defaults_claude_project_dir_to_checkout_top(
+    env_with_hook: Env,
+) -> None:
     env = env_with_hook
     _write_exe(env.main / ".venv" / "bin" / "python", FAKE_PYTHON)
 
@@ -226,7 +236,10 @@ def _run_main(monkeypatch: pytest.MonkeyPatch, stdin_text: str) -> None:
 def test_main_passes_payload_cwd_to_adapter(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _run_main(monkeypatch, json.dumps({"hook_event_name": "SessionStart", "cwd": str(tmp_path)}))
+    _run_main(
+        monkeypatch,
+        json.dumps({"hook_event_name": "SessionStart", "cwd": str(tmp_path)}),
+    )
 
     assert _Recorder.calls == [tmp_path]
 

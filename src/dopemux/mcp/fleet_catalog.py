@@ -38,7 +38,7 @@ def catalog_client_shape(spec: dict[str, Any]) -> Literal["launcher", "direct"]:
     client = spec.get("client", "direct")
     if client not in {"launcher", "direct"}:
         raise MCPFleetCatalogError(f"unsupported catalog `client` value: {client!r}")
-    return client
+    return "launcher" if client == "launcher" else "direct"
 
 
 def expected_client_type(spec: dict[str, Any]) -> str:
@@ -681,6 +681,7 @@ def render_copilot_proxy_config(catalog: dict[str, Any]) -> str:
                 deferred.append(name)
             continue
         transport = spec.get("transport", "http")
+        entry: dict[str, Any]
         if catalog_client_shape(spec) == "launcher":
             entry = mcp_commands._launcher_entry(name)
         elif transport == "stdio":
@@ -689,7 +690,7 @@ def render_copilot_proxy_config(catalog: dict[str, Any]) -> str:
                 raise MCPFleetCatalogError(
                     f"`{name}` requires `command` for the Copilot proxy config."
                 )
-            entry: dict[str, Any] = {
+            entry = {
                 "type": "stdio",
                 "command": command,
                 "args": list(spec.get("args") or []),

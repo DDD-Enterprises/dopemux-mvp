@@ -514,3 +514,20 @@ def test_existing_lease_on_a_sibling_port_is_not_reused(tmp_path: Path, monkeypa
     assert any(
         L["port_var"] == "CONPORT_HTTP_PORT" and int(L["port"]) == collided for L in active
     )
+
+
+def test_rebind_off_a_sibling_lease_names_the_sibling(tmp_path: Path, monkeypatch):
+    # final review P1: a same-worktree sibling lease is not "another project"
+    reg_path = tmp_path / "leases.json"
+    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(reg_path))
+    wt = str(tmp_path / "wt")
+    (tmp_path / "wt").mkdir()
+    common = dict(
+        worktree=wt, project_root=wt, registry_path=reg_path, persist=True,
+        is_free_fn=lambda p: True,
+    )
+    first = allocate_ports(["conport"], _catalog(), **common)
+    envrc = {"DOPE_MEMORY_PORT": str(first.ports["CONPORT_HTTP_PORT"])}
+    second = allocate_ports(["dope-memory"], _catalog(), existing_envrc=envrc, **common)
+    reasons = [r["reason"] for r in second.rebinds]
+    assert reasons == ["LEASE_HELD_BY_SIBLING_SERVICE"]

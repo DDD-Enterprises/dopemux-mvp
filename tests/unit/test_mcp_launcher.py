@@ -63,12 +63,20 @@ CATALOG: Dict[str, Any] = {
         },
     },
 }
-CONPORT_PORTS = {"CONPORT_MCP_PORT": 3105, "CONPORT_HTTP_PORT": 3104, "CONPORT_INFO_PORT": 4104}
+CONPORT_PORTS = {
+    "CONPORT_MCP_PORT": 3105,
+    "CONPORT_HTTP_PORT": 3104,
+    "CONPORT_INFO_PORT": 4104,
+}
 TO_BACKEND = BackendSpec("http://127.0.0.1:7890/mcp", "http", "task-orchestrator")
 
 
 def _managed_entry(name: str) -> Dict[str, Any]:
-    return {"type": "stdio", "command": "${DOPEMUX_BIN:-dopemux}", "args": ["mcp", "launch", name]}
+    return {
+        "type": "stdio",
+        "command": "${DOPEMUX_BIN:-dopemux}",
+        "args": ["mcp", "launch", name],
+    }
 
 
 def _git_repo(tmp_path: Path, servers: Dict[str, Any] | None = None) -> Path:
@@ -77,7 +85,9 @@ def _git_repo(tmp_path: Path, servers: Dict[str, Any] | None = None) -> Path:
     subprocess.run(["git", "init", "-q", str(repo)], check=True)
     if servers is None:
         servers = {name: _managed_entry(name) for name in CATALOG["servers"]}
-    (repo / ".mcp.json").write_text(json.dumps({"mcpServers": servers}), encoding="utf-8")
+    (repo / ".mcp.json").write_text(
+        json.dumps({"mcpServers": servers}), encoding="utf-8"
+    )
     return repo.resolve()
 
 
@@ -123,7 +133,9 @@ def _write_running_record(target: launcher.LaunchTarget, ports: Dict[str, int]) 
         labels={},
     )
     locked_reload_and_save(
-        RuntimeRegistry, launcher._registry_file(target), lambda reg: reg.upsert_instance(record)
+        RuntimeRegistry,
+        launcher._registry_file(target),
+        lambda reg: reg.upsert_instance(record),
     )
 
 
@@ -131,7 +143,14 @@ def _started(service: str, ports: Dict[str, int], code: int = 0) -> SimpleNamesp
     return SimpleNamespace(
         exit_code=code,
         blocking_findings=[],
-        services=[{"service": service, "action": "started", "ports": dict(ports), "findings": []}],
+        services=[
+            {
+                "service": service,
+                "action": "started",
+                "ports": dict(ports),
+                "findings": [],
+            }
+        ],
     )
 
 
@@ -230,7 +249,8 @@ def test_launch_refuses_unmanaged_mcp_json(
     tmp_path: Path, monkeypatch, capsys, docker_spy, registry
 ):
     repo = _git_repo(
-        tmp_path, servers={"conport": {"type": "sse", "url": "http://localhost:3005/sse"}}
+        tmp_path,
+        servers={"conport": {"type": "sse", "url": "http://localhost:3005/sse"}},
     )
     monkeypatch.chdir(repo)
     code = launcher.launch("conport", env={}, registry_path=registry)
@@ -255,7 +275,9 @@ def test_ensure_backend_warm_path_skips_lifecycle(tmp_path: Path, registry):
     assert lifecycle.calls == []
 
 
-def test_ensure_backend_cold_path_starts_then_waits(tmp_path: Path, registry, no_image_build):
+def test_ensure_backend_cold_path_starts_then_waits(
+    tmp_path: Path, registry, no_image_build
+):
     target = _target(tmp_path)
     lifecycle = FakeLifecycle(_started("conport", CONPORT_PORTS))
     clock = FakeClock()
@@ -307,13 +329,15 @@ def test_ensure_backend_image_missing_spawns_build_and_exits(
     monkeypatch.setattr(subprocess, "Popen", fake_popen)
     lifecycle = FakeLifecycle(_started("conport", CONPORT_PORTS))
     with pytest.raises(LaunchError) as info:
-        launcher.ensure_backend(target, wait_s=5, lifecycle=lifecycle, probe=lambda b: False)
+        launcher.ensure_backend(
+            target, wait_s=5, lifecycle=lifecycle, probe=lambda b: False
+        )
     assert info.value.code == "LAUNCH_IMAGE_BUILDING"
     assert lifecycle.calls == []
     assert len(spawned) == 1
     expected = dr.compose_build_command(
         product=dr.product_root(),
-        override_path=target.runtime_dir / "compose.override.yml",
+        override_path=target.runtime_dir / "compose.build.yml",
         env_file=target.runtime_dir / "mcp.env",
         project_name=target.compose_project,
         services=["conport"],
@@ -321,6 +345,10 @@ def test_ensure_backend_image_missing_spawns_build_and_exits(
     assert spawned[0]["cmd"] == expected
     assert spawned[0]["start_new_session"] is True
     assert spawned[0]["log"] == str(target.runtime_dir / "build.log")
+    # the build tags the one shared image
+    image = dr.compose_image_name("conport", product=dr.product_root())
+    assert f"image: {image}" in (target.runtime_dir / "compose.build.yml").read_text()
+    assert (target.runtime_dir / "build.pid").read_text().strip() == "4242"
 
 
 def test_two_launchers_one_start(tmp_path: Path, registry, no_image_build):
@@ -406,7 +434,10 @@ def test_ensure_orchestrator_wrong_project_refuses(tmp_path: Path, registry):
             target, docker=_docker_with(_to_container(labels)), lifecycle=lifecycle
         )
     assert info.value.code == "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT"
-    assert info.value.remedy == f"{foreign}; run dopemux mcp switch-project here to take it over"
+    assert (
+        info.value.remedy
+        == f"{foreign}; run dopemux mcp switch-project here to take it over"
+    )
     assert lifecycle.calls == []
 
 
@@ -419,7 +450,10 @@ def test_ensure_orchestrator_unlabelled_refuses(tmp_path: Path, registry):
         )
     with pytest.raises(LaunchError) as process_case:  # a non-container listener on 7890
         launcher.ensure_orchestrator(
-            target, docker=_docker_with(), lifecycle=lifecycle, port_is_free=lambda p: False
+            target,
+            docker=_docker_with(),
+            lifecycle=lifecycle,
+            port_is_free=lambda p: False,
         )
     for info in (container_case, process_case):
         assert info.value.code == "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER"
@@ -429,7 +463,9 @@ def test_ensure_orchestrator_unlabelled_refuses(tmp_path: Path, registry):
 
 def test_ensure_orchestrator_free_starts(tmp_path: Path, registry):
     target = _target(tmp_path, "task-orchestrator")
-    lifecycle = FakeLifecycle(_started("task-orchestrator", {"TASK_ORCHESTRATOR_HTTP_PORT": 7890}))
+    lifecycle = FakeLifecycle(
+        _started("task-orchestrator", {"TASK_ORCHESTRATOR_HTTP_PORT": 7890})
+    )
     backend = launcher.ensure_orchestrator(
         target,
         docker=_docker_with(),
@@ -457,11 +493,13 @@ def test_attach_record_written_and_removed(tmp_path: Path, monkeypatch, registry
     # Through launch: present while proxying, removed afterwards, also on refusal.
     repo = _git_repo(tmp_path / "x")
     monkeypatch.chdir(repo)
-    monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
     seen: List[bool] = []
-    attached_dir = launcher.build_target(repo, "conport", catalog=CATALOG).runtime_dir / "attached"
+    attached_dir = (
+        launcher.build_target(repo, "conport", catalog=CATALOG).runtime_dir / "attached"
+    )
 
-    def fake_proxy(backend: BackendSpec) -> int:
+    def fake_proxy(backend: BackendSpec, **kw: Any) -> int:
         seen.append((attached_dir / str(os.getpid())).is_file())
         return 0
 
@@ -480,11 +518,15 @@ def test_attach_record_written_and_removed(tmp_path: Path, monkeypatch, registry
     assert list(attached_dir.iterdir()) == []
 
 
-def test_launch_reaps_after_attach_and_before_ensure_backend(tmp_path: Path, monkeypatch, registry):
+def test_launch_reaps_after_attach_and_before_ensure_backend(
+    tmp_path: Path, monkeypatch, registry
+):
     repo = _git_repo(tmp_path / "x")
     monkeypatch.chdir(repo)
-    monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
-    attached_dir = launcher.build_target(repo, "conport", catalog=CATALOG).runtime_dir / "attached"
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+    attached_dir = (
+        launcher.build_target(repo, "conport", catalog=CATALOG).runtime_dir / "attached"
+    )
     order: List[str] = []
     limits: List[dict] = []
 
@@ -498,11 +540,18 @@ def test_launch_reaps_after_attach_and_before_ensure_backend(tmp_path: Path, mon
 
     monkeypatch.setattr(launcher, "maybe_reap", fake_reap)
     monkeypatch.setattr(launcher, "ensure_backend", fake_ensure)
-    monkeypatch.setattr(launcher, "run_proxy", lambda backend: 0)
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend, **kw: 0)
     assert launcher.launch("conport", env={}) == 0
     assert order == ["reap attached=True", "ensure_backend"]
     # launcher-style bounds: it runs inside Claude's connect budget
-    assert limits == [{"max_candidates": 1, "stop_time_s": 3, "cmd_timeout_s": 10.0}]
+    assert limits == [
+        {
+            "max_candidates": 1,
+            "stop_time_s": 3,
+            "cmd_timeout_s": 10.0,
+            "deadline_s": 8.0,
+        }
+    ]
 
 
 def test_launch_attaches_under_the_instance_lock_and_releases_it_before_reaping(
@@ -512,7 +561,7 @@ def test_launch_attaches_under_the_instance_lock_and_releases_it_before_reaping(
 
     repo = _git_repo(tmp_path / "x")
     monkeypatch.chdir(repo)
-    monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
     events: List[str] = []
     held = {"now": False}
 
@@ -534,26 +583,43 @@ def test_launch_attaches_under_the_instance_lock_and_releases_it_before_reaping(
 
     monkeypatch.setattr(launcher, "instance_lock", spy_lock)
     monkeypatch.setattr(launcher, "attach", spy_attach)
-    monkeypatch.setattr(launcher, "maybe_reap", lambda **kw: events.append(f"reap(held={held['now']})"))
     monkeypatch.setattr(
-        launcher, "ensure_backend", lambda target, **kw: events.append("ensure") or BackendSpec("u", "sse", "conport")
+        launcher, "maybe_reap", lambda **kw: events.append(f"reap(held={held['now']})")
     )
-    monkeypatch.setattr(launcher, "run_proxy", lambda backend: 0)
+    monkeypatch.setattr(
+        launcher,
+        "ensure_backend",
+        lambda target, **kw: events.append("ensure")
+        or BackendSpec("u", "sse", "conport"),
+    )
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend, **kw: 0)
     assert launcher.launch("conport", env={}) == 0
-    assert events == ["lock", "attach(held=True)", "unlock", "reap(held=False)", "ensure"]
+    assert events == [
+        "lock",
+        "attach(held=True)",
+        "unlock",
+        "reap(held=False)",
+        "ensure",
+    ]
 
 
-def test_reap_failure_never_refuses_a_launch(tmp_path: Path, monkeypatch, registry, capsys):
+def test_reap_failure_never_refuses_a_launch(
+    tmp_path: Path, monkeypatch, registry, capsys
+):
     repo = _git_repo(tmp_path / "x")
     monkeypatch.chdir(repo)
-    monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
 
     def boom(**kwargs) -> None:
         raise RuntimeError("docker exploded")
 
     monkeypatch.setattr(launcher, "maybe_reap", boom)
-    monkeypatch.setattr(launcher, "ensure_backend", lambda target, **kw: BackendSpec("u", "sse", "conport"))
-    monkeypatch.setattr(launcher, "run_proxy", lambda backend: 0)
+    monkeypatch.setattr(
+        launcher,
+        "ensure_backend",
+        lambda target, **kw: BackendSpec("u", "sse", "conport"),
+    )
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend, **kw: 0)
     assert launcher.launch("conport", env={}) == 0
     assert "reap skipped: docker exploded" in capsys.readouterr().err
 
@@ -567,7 +633,7 @@ def test_launch_env_default_is_resolved_at_call_time(tmp_path: Path, monkeypatch
 
     repo = _git_repo(tmp_path)
     monkeypatch.chdir(repo)
-    monkeypatch.setattr(launcher, "_load_catalog", lambda: CATALOG)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
     monkeypatch.setenv(launcher.WAIT_ENV, "7")
     seen: Dict[str, Any] = {}
 
@@ -576,7 +642,405 @@ def test_launch_env_default_is_resolved_at_call_time(tmp_path: Path, monkeypatch
         return BackendSpec("u", "sse", "conport")
 
     monkeypatch.setattr(launcher, "ensure_backend", fake_ensure)
-    monkeypatch.setattr(launcher, "run_proxy", lambda backend: 0)
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend, **kw: 0)
     assert launcher.launch("conport") == 0
     assert seen["wait_s"] == 7.0
     assert seen["env"][launcher.WAIT_ENV] == "7"
+
+
+# --- reconnect guard (final review C1) --------------------------------------------
+
+
+def _sidecar_container(target: launcher.LaunchTarget, port: int, **overrides: str):
+    labels = {
+        "dopemux.managed": "true",
+        "dopemux.project_id": target.identity.project_id or "",
+        "dopemux.worktree_hash": target.identity.worktree_hash or "",
+        "dopemux.service": target.service,
+        "dopemux.scope": "worktree",
+    }
+    labels.update(overrides)
+    return di.DockerContainerInfo(
+        id="cafe0001", name="sidecar-now-on-port", labels=labels, published_ports=[port]
+    )
+
+
+def test_orchestrator_reconnect_guard_reproves_the_owner(tmp_path: Path, registry):
+    from dopemux.mcp.stdio_proxy import ProxyRefused
+
+    target = _target(tmp_path, "task-orchestrator")
+    ours = {
+        "dopemux.managed": "true",
+        "dopemux.service": "task-orchestrator",
+        "dopemux.project_id": target.identity.project_id,
+        "dopemux.project_root": target.identity.project_root,
+    }
+    foreign = str(tmp_path / "elsewhere" / "project-b")
+    theirs = {
+        **ours,
+        "dopemux.project_id": "project-b",
+        "dopemux.project_root": foreign,
+    }
+
+    def guard(docker, free=True):
+        return launcher.reconnect_guard(
+            target, TO_BACKEND, docker=docker, port_is_free=lambda p: free
+        )
+
+    guard(_docker_with(_to_container(ours)))()  # still ours: passes
+    guard(_docker_with())()  # nothing on :7890 yet: passes, the connect retries
+    with pytest.raises(ProxyRefused) as wrong:
+        guard(_docker_with(_to_container(theirs)))()
+    assert wrong.value.code == "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT"
+    assert wrong.value.remedy.startswith(foreign)
+    with pytest.raises(ProxyRefused) as unknown:
+        guard(_docker_with(), free=False)()  # a non-container listener
+    assert unknown.value.code == "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER"
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"dopemux.worktree_hash": "ffff0000"},
+        {"dopemux.project_id": "someone-else"},
+        {"dopemux.managed": "false"},
+    ],
+)
+def test_sidecar_reconnect_guard_refuses_another_owner(
+    tmp_path: Path, registry, overrides
+):
+    from dopemux.mcp.stdio_proxy import ProxyRefused
+
+    target = _target(tmp_path, "conport")
+    backend = BackendSpec("http://localhost:3105/sse", "sse", "conport")
+    ok = launcher.reconnect_guard(
+        target, backend, docker=_docker_with(_sidecar_container(target, 3105))
+    )
+    ok()
+    bad = launcher.reconnect_guard(
+        target,
+        backend,
+        docker=_docker_with(_sidecar_container(target, 3105, **overrides)),
+    )
+    with pytest.raises(ProxyRefused) as info:
+        bad()
+    assert info.value.code == "LAUNCH_BACKEND_OWNER_CHANGED"
+
+
+def test_sidecar_reconnect_guard_free_port_passes_and_foreign_listener_refuses(
+    tmp_path: Path, registry
+):
+    from dopemux.mcp.stdio_proxy import ProxyRefused
+
+    target = _target(tmp_path, "dope-memory")
+    backend = BackendSpec("http://localhost:3120/mcp", "http", "dope-memory")
+    launcher.reconnect_guard(
+        target, backend, docker=_docker_with(), port_is_free=lambda p: True
+    )()
+    with pytest.raises(ProxyRefused) as info:
+        launcher.reconnect_guard(
+            target, backend, docker=_docker_with(), port_is_free=lambda p: False
+        )()
+    assert info.value.code == "LAUNCH_BACKEND_OWNER_CHANGED"
+
+
+def test_launch_hands_the_proxy_a_reconnect_guard(
+    tmp_path: Path, monkeypatch, registry
+):
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+    backend = BackendSpec("http://localhost:3105/sse", "sse", "conport")
+    monkeypatch.setattr(launcher, "ensure_backend", lambda target, **kw: backend)
+    seen: Dict[str, Any] = {}
+
+    def fake_proxy(spec: BackendSpec, **kwargs: Any) -> int:
+        seen["backend"] = spec
+        seen.update(kwargs)
+        return 0
+
+    monkeypatch.setattr(launcher, "run_proxy", fake_proxy)
+    assert launcher.launch("conport", env={}) == 0
+    assert seen["backend"] == backend
+    assert callable(seen["reconnect_guard"])
+
+
+# --- M1: OSError never escapes as a traceback --------------------------------------
+
+
+@pytest.mark.parametrize("where", ["attach", "instance_lock"])
+def test_launch_maps_os_errors_to_a_refusal(
+    tmp_path: Path, monkeypatch, registry, capsys, where
+):
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+
+    def boom(*_a: Any, **_k: Any) -> Any:
+        if where == "attach":
+            raise OSError(28, "No space left on device", "/rt/attached/1")
+        raise OSError("could not acquire a stable lock on /rt/launch.lock")
+
+    monkeypatch.setattr(launcher, where, boom)
+    assert launcher.launch("conport", env={}) == 3
+    err = capsys.readouterr().err
+    assert err.startswith("LAUNCH_IO_ERROR: ")
+    assert "Traceback" not in err
+
+
+# --- M5: --root drives the catalog lookup ----------------------------------------
+
+
+def test_launch_root_selects_the_repo_local_catalog(
+    tmp_path: Path, monkeypatch, registry
+):
+    import yaml
+
+    other = _git_repo(tmp_path / "other")
+    marker = {"version": 1, "servers": {"conport": {"marker": "from-root"}}}
+    (other / "mcp_catalog.yaml").write_text(yaml.safe_dump(marker), encoding="utf-8")
+    elsewhere = _git_repo(tmp_path / "cwd-repo")
+    monkeypatch.chdir(elsewhere)
+    monkeypatch.delenv("DOPEMUX_MCP_CATALOG", raising=False)
+    seen: Dict[str, Any] = {}
+
+    def capture(root: Path, service: str, *, catalog, registry_path=None):
+        seen["root"] = root
+        seen["catalog"] = catalog
+        raise LaunchError("LAUNCH_SERVICE_UNKNOWN", "stop here")
+
+    monkeypatch.setattr(launcher, "build_target", capture)
+    assert launcher.launch("conport", root=other, env={}) == 3
+    assert seen["root"] == other
+    assert seen["catalog"]["servers"]["conport"] == {"marker": "from-root"}
+
+
+# --- I2: a launcher killed by SIGTERM/SIGHUP still detaches -------------------------
+# Port of the reviewer's scratch probe `detach_probe.py`: before the fix the
+# signal killed the process without running `finally`, so no `last_detach`.
+
+_SIGNAL_CHILD = r"""
+import sys
+from contextlib import asynccontextmanager
+from pathlib import Path
+from types import SimpleNamespace
+
+import anyio
+from mcp import ClientSession, types
+from mcp.server.lowlevel import Server
+from mcp.shared.memory import create_client_server_memory_streams
+
+from dopemux.mcp import launcher, stdio_proxy
+
+rt = Path(sys.argv[1])
+target = launcher.LaunchTarget(
+    root=rt, identity=SimpleNamespace(), service="conport", spec={},
+    runtime_dir=rt, compose_project="x",
+)
+launcher.resolve_launch_root = lambda *a, **k: rt
+launcher._load_catalog = lambda *a, **k: {}
+launcher.build_target = lambda *a, **k: target
+launcher.maybe_reap = lambda **k: None
+launcher.ensure_backend = lambda *a, **k: stdio_proxy.BackendSpec("u", "sse", "conport")
+
+
+@asynccontextmanager
+async def factory(**client_kwargs):
+    server = Server("held")
+    async with create_client_server_memory_streams() as (c, s):
+        async with anyio.create_task_group() as tg:
+            opts = server.create_initialization_options()
+            tg.start_soon(lambda: server.run(s[0], s[1], opts))
+            async with ClientSession(c[0], c[1], **client_kwargs) as session:
+                (rt / "proxy-up").write_text("1")
+                yield session
+            tg.cancel_scope.cancel()
+
+
+real_run_proxy = stdio_proxy.run_proxy
+launcher.run_proxy = lambda backend, **kw: real_run_proxy(backend, session_factory=factory)
+sys.exit(launcher.launch("conport", env={}))
+"""
+
+
+@pytest.mark.parametrize("signame,code", [("SIGTERM", 143), ("SIGHUP", 129)])
+def test_launcher_killed_by_signal_still_detaches(
+    tmp_path: Path, signame: str, code: int
+):
+    import signal
+    import sys
+    import time
+
+    rt = tmp_path / "rt"
+    rt.mkdir()
+    env = dict(
+        os.environ,
+        DOPEMUX_MCP_RUNTIME_REGISTRY=str(tmp_path / "reg" / "instances.json"),
+    )
+    child = subprocess.Popen(
+        [sys.executable, "-c", _SIGNAL_CHILD, str(rt)],
+        stdin=subprocess.PIPE,  # held open: the proxy keeps serving
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=env,
+    )
+    try:
+        deadline = time.monotonic() + 30
+        while not (rt / "proxy-up").exists():
+            assert child.poll() is None, (
+                child.stderr.read().decode() if child.stderr else ""
+            )
+            assert time.monotonic() < deadline, "child never reached the proxy"
+            time.sleep(0.05)
+        assert (rt / "attached" / str(child.pid)).is_file()
+        child.send_signal(getattr(signal, signame))
+        assert child.wait(timeout=20) == code
+    finally:
+        if child.poll() is None:
+            child.kill()
+            child.wait()
+        for pipe in (child.stdin, child.stdout, child.stderr):
+            if pipe is not None:
+                pipe.close()
+    assert (rt / "last_detach").is_file()
+    assert not (rt / "attached" / str(child.pid)).exists()
+
+
+# --- I4: one shared image per service; one build at a time ---------------------------
+
+
+def _linked_worktree(repo: Path, where: Path) -> Path:
+    git = [
+        "git",
+        "-C",
+        str(repo),
+        "-c",
+        "user.name=t",
+        "-c",
+        "user.email=t@example.com",
+    ]
+    subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "init"], check=True)
+    subprocess.run([*git, "worktree", "add", "-q", str(where)], check=True)
+    return where.resolve()
+
+
+def test_image_name_is_shared_by_worktrees_and_projects(
+    tmp_path: Path, registry, monkeypatch
+):
+    repo = _git_repo(tmp_path / "one")
+    sibling = _linked_worktree(repo, tmp_path / "one-wt")
+    (sibling / ".mcp.json").write_text(
+        (repo / ".mcp.json").read_text(), encoding="utf-8"
+    )
+    other = _git_repo(tmp_path / "two")
+    asked: List[str] = []
+
+    def exists(image: str, **_kw: Any) -> bool:
+        asked.append(image)
+        return True
+
+    monkeypatch.setattr(dr, "docker_image_exists", exists)
+    targets = [
+        launcher.build_target(r, "conport", catalog=CATALOG)
+        for r in (repo, sibling, other)
+    ]
+    assert len({t.compose_project for t in targets}) == 3  # three compose projects ...
+    for target in targets:
+        launcher._build_image_if_missing(target)
+    assert len(asked) == 3 and len(set(asked)) == 1  # ... one image
+    assert asked[0] == dr.compose_image_name("conport", product=dr.product_root())
+
+
+def test_second_launch_during_a_live_build_spawns_nothing(
+    tmp_path: Path, registry, monkeypatch, capsys
+):
+    target = _target(tmp_path)
+    monkeypatch.setattr(dr, "docker_image_exists", lambda *a, **k: False)
+    spawned: List[Any] = []
+
+    def fake_popen(cmd, **kwargs):
+        spawned.append(cmd)
+        return SimpleNamespace(pid=os.getpid())  # alive for the whole test
+
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    for _ in range(2):
+        with pytest.raises(LaunchError) as info:
+            launcher._build_image_if_missing(target)
+        assert info.value.code == "LAUNCH_IMAGE_BUILDING"
+    assert len(spawned) == 1
+    err = capsys.readouterr().err
+    assert "still building" in err and str(target.runtime_dir / "build.log") in err
+
+
+def test_a_stale_build_pid_file_is_replaced(tmp_path: Path, registry, monkeypatch):
+    target = _target(tmp_path)
+    target.runtime_dir.mkdir(parents=True, exist_ok=True)
+    dead = subprocess.Popen(["true"])
+    dead.wait()
+    (target.runtime_dir / "build.pid").write_text(f"{dead.pid}\n", encoding="utf-8")
+    monkeypatch.setattr(dr, "docker_image_exists", lambda *a, **k: False)
+    spawned: List[Any] = []
+    monkeypatch.setattr(
+        subprocess,
+        "Popen",
+        lambda cmd, **kw: spawned.append(cmd) or SimpleNamespace(pid=4243),
+    )
+    with pytest.raises(LaunchError):
+        launcher._build_image_if_missing(target)
+    assert len(spawned) == 1
+    assert (target.runtime_dir / "build.pid").read_text().strip() == "4243"
+
+
+# --- M3: a record without the port never resolves to the template default ---------
+
+
+def test_find_backend_ignores_a_running_record_without_its_port(
+    tmp_path: Path, registry
+):
+    target = _target(tmp_path)
+    _write_running_record(target, {"CONPORT_HTTP_PORT": 3104})  # no CONPORT_MCP_PORT
+    assert launcher.find_backend(target) is None  # not http://localhost:3005/sse
+
+
+def test_start_result_without_the_port_refuses(
+    tmp_path: Path, registry, no_image_build
+):
+    target = _target(tmp_path)
+    lifecycle = FakeLifecycle(_started("conport", {"CONPORT_HTTP_PORT": 3104}))
+    with pytest.raises(LaunchError) as info:
+        launcher.ensure_backend(
+            target, wait_s=5, lifecycle=lifecycle, probe=lambda b: True
+        )
+    assert info.value.code == "LAUNCH_BACKEND_PORT_UNKNOWN"
+    assert "CONPORT_MCP_PORT" in info.value.remedy
+
+
+# --- P1: SDK INFO lines (httpx/mcp) stay out of a launcher's stderr ------------------
+
+
+def test_launch_quiets_sdk_info_logs_while_probing(
+    tmp_path: Path, monkeypatch, registry, caplog
+):
+    import logging
+
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+
+    def probing_ensure(target, **kw):  # what probe_backend's SDK session logs
+        logging.getLogger("httpx").info("HTTP Request: POST http://localhost:3105/mcp")
+        logging.getLogger("mcp.client.streamable_http").info("Received session ID: x")
+        logging.getLogger("httpx").warning("a real problem")
+        return BackendSpec("http://localhost:3105/sse", "sse", "conport")
+
+    monkeypatch.setattr(launcher, "ensure_backend", probing_ensure)
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend, **kw: 0)
+    before = {n: logging.getLogger(n).level for n in ("httpx", "httpcore", "mcp")}
+    with caplog.at_level(logging.INFO):
+        assert launcher.launch("conport", env={}) == 0
+    messages = [r.getMessage() for r in caplog.records]
+    assert "a real problem" in messages
+    assert not [m for m in messages if "HTTP Request" in m or "session ID" in m]
+    assert {
+        n: logging.getLogger(n).level for n in before
+    } == before  # restored afterwards

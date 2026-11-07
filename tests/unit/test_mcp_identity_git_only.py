@@ -36,11 +36,20 @@ def _clean_ambient_env(monkeypatch):
 def _git_init(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
     subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=path, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.name", "t"], cwd=path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "t@example.com"],
+        cwd=path,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "t"], cwd=path, check=True, capture_output=True
+    )
     (path / "README").write_text("x\n")
     subprocess.run(["git", "add", "README"], cwd=path, check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-m", "init"], cwd=path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "commit", "-m", "init"], cwd=path, check=True, capture_output=True
+    )
 
 
 def _foreign_env(foreign: Path) -> Dict[str, str]:
@@ -60,7 +69,12 @@ def repos(tmp_path):
     _git_init(main)
     _git_init(foreign)
     linked = (tmp_path / "linked").resolve()
-    subprocess.run(["git", "worktree", "add", str(linked)], cwd=main, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "worktree", "add", str(linked)],
+        cwd=main,
+        check=True,
+        capture_output=True,
+    )
     return SimpleNamespace(main=main, foreign=foreign, linked=linked)
 
 
@@ -113,7 +127,10 @@ def test_get_repo_root_trust_env_restores_precedence(repos, monkeypatch):
     monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(repos.foreign))
     monkeypatch.chdir(repos.linked)
 
-    assert Path(get_repo_root(fallback_cwd=False, trust_env=True)).resolve() == repos.foreign
+    assert (
+        Path(get_repo_root(fallback_cwd=False, trust_env=True)).resolve()
+        == repos.foreign
+    )
 
 
 def test_resolve_target_repo_uses_git_toplevel_from_subdir(repos):
@@ -147,7 +164,9 @@ def _docker_empty():
     return runner
 
 
-def test_run_lifecycle_dry_run_identity_matches_clean_shell(repos, tmp_path, monkeypatch):
+def test_run_lifecycle_dry_run_identity_matches_clean_shell(
+    repos, tmp_path, monkeypatch
+):
     monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "leases.json"))
     monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "runtime.json"))
     product = tmp_path / "product"
@@ -340,7 +359,9 @@ def test_servers_aliases_invoke_without_error(alias, repos, monkeypatch):
     monkeypatch.setattr(target, "callback", recorder)
 
     # --repo, positionally forwarded, must land on repo_arg
-    result = CliRunner().invoke(mcp_commands.servers, [alias, "--repo", str(repos.main)])
+    result = CliRunner().invoke(
+        mcp_commands.servers, [alias, "--repo", str(repos.main)]
+    )
     assert result.exit_code == 0, result.output
     assert calls[-1]["repo_arg"] == repos.main
     assert not any(v for k, v in calls[-1].items() if k != "repo_arg")
@@ -350,6 +371,9 @@ def test_servers_aliases_invoke_without_error(alias, repos, monkeypatch):
         result = CliRunner().invoke(mcp_commands.servers, [alias, *flags])
         assert result.exit_code == 0, (flags, result.output)
         (got,) = calls
-        want = {name: None if name in ("repo_arg", "services") else False for name in param_names}
+        want = {
+            name: None if name in ("repo_arg", "services") else False
+            for name in param_names
+        }
         want.update(expected)
         assert got == want, (flags, got)

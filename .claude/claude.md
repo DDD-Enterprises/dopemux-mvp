@@ -190,7 +190,7 @@ All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
 
 ## 🪝 Lifecycle Hooks
 
-The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStart`, `SubagentStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `.claude/hooks/run_native_hooks.sh`, which resolves the checkout from the current directory (the hook's cwd) and runs that checkout's `src/dopemux/claude/native_hooks.py` with `<checkout>/.venv/bin/python`, else the main checkout's `.venv/bin/python`; otherwise it runs `dopemux native-hooks run` from PATH (or `~/.local/bin`), and if neither exists it prints one line to stderr and exits 0 (fails open). It never falls back to a bare `python3`, which can lack the repo's dependencies (e.g. `pydantic`). The `Stop`/`SubagentStop` and `SessionEnd` events also run a bounded, kill-switchable `dopemux mcp reap`; `SessionEnd` gets `"timeout": 60` in `.claude/settings.json` because SessionEnd hooks otherwise share a 1.5 s budget. Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
+The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStart`, `SubagentStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `.claude/hooks/run_native_hooks.sh`, which resolves the checkout from the current directory (the hook's cwd) and runs that checkout's `src/dopemux/claude/native_hooks.py` with `<checkout>/.venv/bin/python`, else the main checkout's `.venv/bin/python`; otherwise it runs `dopemux native-hooks run` from PATH (or `~/.local/bin`), and if neither exists it prints one line to stderr and exits 0 (fails open). It never falls back to a bare `python3`, which can lack the repo's dependencies (e.g. `pydantic`). The `Stop`/`SubagentStop` and `SessionEnd` events also run a bounded, kill-switchable `dopemux mcp reap`; `SessionEnd` gets `"timeout": 60` in `.claude/settings.json` because SessionEnd hooks otherwise share a 1.5 s budget (Claude Code docs, read 2026-11-05). Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
 
 **Orchestrator-coordination hooks** (ported from upstream `claude-plugins/task-orchestrator`, TP-CS-101 / Path B — see [docs/03-reference/orchestrator-integration/plugin-hooks-port.md](../docs/03-reference/orchestrator-integration/plugin-hooks-port.md)): available as `.claude/hooks/orchestrator_session_start.py` (SessionStart context inject), `orchestrator_post_edit_nudge.py` (PostToolUse edit nudge), `orchestrator_subagent_protocol.py` (SubagentStart agent-owned-phase protocol for implementation subagents), and `orchestrator_enforcement.py` (PreToolUse actor-attribution enforcement [dormant until `actor_authentication.enabled`], skill-invocation enforcement, and EnterPlanMode/ExitPlanMode guidance). These route through `native_hooks.py` when invoked and fail open (no-op) when their helpers or config are absent.
 
@@ -263,10 +263,12 @@ dopemux mcp init --repo ~/code/target-repo   # tenant + image pre-build + .mcp.j
 dopemux mcp doctor --repo ~/code/target-repo
 ```
 Identity is git-only (ambient `DOPEMUX_*` is ignored unless `--trust-env`); `.envrc.dopemux-mcp`
-is informational only. `dopemux mcp switch-project` moves the single task-orchestrator;
+needs no sourcing (dopemux reads its ports itself). `dopemux mcp switch-project` moves the single task-orchestrator;
 `dopemux mcp reap` (dry run by default) cleans up removed or idle worktrees; automatic reaping
-is disabled by the file `~/.dopemux/mcp/runtime/reap.disabled` or `DOPEMUX_MCP_REAP=0`. First
-launch in a new worktree builds images (`LAUNCH_IMAGE_BUILDING`, then `/mcp reconnect all`).
+is disabled by the file `~/.dopemux/mcp/runtime/reap.disabled` or `DOPEMUX_MCP_REAP=0`. Images are
+one per service and source version (`dopemux-<service>:<key>`), shared by every worktree and
+project: only the first launch on a host per Dockerfile version builds (`LAUNCH_IMAGE_BUILDING`,
+then `/mcp reconnect all`); later worktrees reuse them and reap never removes them.
 Guide: `docs/02-how-to/mcp-setup-other-repos.md`.
 
 **Debug sequence**: run `dopemux mcp launch <name>` by hand in the checkout (prints the

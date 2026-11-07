@@ -24,10 +24,10 @@ import subprocess
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, List, Mapping, NoReturn, Optional, Tuple
+from typing import Any, Callable, Dict, List, Mapping, NoReturn, Optional, Tuple, TypeVar
 from urllib.parse import urlparse
 
 import click
@@ -114,7 +114,10 @@ def _lifecycle_repo_option():
     )
 
 
-def _trust_env_option():
+_F = TypeVar("_F", bound=Callable[..., Any])
+
+
+def _trust_env_option() -> Callable[[_F], _F]:
     return click.option(
         "--trust-env",
         "trust_env",
@@ -125,6 +128,22 @@ def _trust_env_option():
             "the checkout's git identity (default: identity comes from git only)."
         ),
     )
+
+
+def _lifecycle_process_env(trust_env: bool) -> Dict[str, str]:
+    """``os.environ`` for the lifecycle, minus ``AMBIENT_SCRUB_VARS`` unless ``--trust-env``.
+
+    A shell that sourced another checkout's env file carries its identity, port
+    and tenant exports; ports an env names win over the lease registry, so they
+    must not reach the lifecycle by default (D3, final review M6).
+    """
+    from dopemux.mcp.docker_runtime import AMBIENT_SCRUB_VARS
+
+    env = dict(os.environ)
+    if not trust_env:
+        for name in AMBIENT_SCRUB_VARS:
+            env.pop(name, None)
+    return env
 
 
 def _lifecycle_services_option():
@@ -156,7 +175,7 @@ def _run_lifecycle_cli(
         services=svc_list,
         catalog=catalog,
         dry_run=dry_run,
-        process_env=dict(os.environ),
+        process_env=_lifecycle_process_env(trust_env),
         trust_env=trust_env,
     )
     if json_output:
@@ -342,7 +361,7 @@ def mcp_reap_cmd(dry_run: bool, json_output: bool):
             "automatic_reaping_disabled": disabled,
             "candidates": [c.to_dict() for c in candidates],
             "reaped": [c.to_dict() for c in report.reaped] if report else [],
-            "skipped": [c.to_dict() for c in report.skipped] if report else [],
+            "skipped": report.to_dict()["skipped"] if report else [],  # keeps skip_reason
             "errors": list(report.errors) if report else [],
         }
         click.echo(json.dumps(payload, indent=2))
@@ -373,11 +392,14 @@ def mcp_switch_project_cmd(repo_arg: Optional[Path], yes: bool):
     :7890 is held by anything that is not a managed task-orchestrator container.
     The confirmation is asked without holding the host-wide :7890 lock; the
     owner is then re-inspected under the lock and must be the same container.
+    The stopped owner's registry entry is marked stopped (registry lock inside
+    the reserved lock).
     """
     from dopemux.mcp import docker_inspect as di
     from dopemux.mcp import docker_runtime as dr
     from dopemux.mcp import lifecycle as lc
-    from dopemux.mcp.locks import reserved_port_lock
+    from dopemux.mcp.locks import reserved_port_lock, save_state_locked
+    from dopemux.mcp.runtime_registry import RuntimeRegistry, default_registry_path
     from dopemux.mcp.runtime_state import resolve_identity_view
     from dopemux.mcp.task_orchestrator_identity import identity_from_docker_labels, match_target
 
@@ -464,13 +486,30 @@ def mcp_switch_project_cmd(repo_arg: Optional[Path], yes: bool):
                 if res.exit_code != 0:
                     detail = (res.stderr or res.stdout or "").strip()
                     refuse(f"docker {verb} {current.id} failed: {detail}")
+            owner_id = (current.labels or {}).get("dopemux.project_id") or ""
+            stopped_name = current.name
+
+            def mark_owner_stopped(reg: Any) -> None:
+                now = datetime.now(timezone.utc).isoformat()
+                for inst in reg.instances():
+                    if inst.get("service") != "task-orchestrator" or inst.get("status") == "stopped":
+                        continue
+                    if (owner_id and inst.get("project_id") == owner_id) or stopped_name in (
+                        inst.get("container_names") or []
+                    ):
+                        inst["status"] = "stopped"
+                        inst["updated_at"] = now
+
+            error = save_state_locked(RuntimeRegistry, default_registry_path(), mark_owner_stopped)
+            if error:
+                click.echo(f"warning: previous owner's registry entry not updated: {error}", err=True)
         click.echo(f"Starting task-orchestrator for {identity.project_root}")
         result = lc.run_lifecycle(
             "start",
             repo=target,
             services=["task-orchestrator"],
             catalog=catalog,
-            process_env=dict(os.environ),
+            process_env=_lifecycle_process_env(False),
         )
     if result.exit_code:
         for finding in result.blocking_findings or []:
@@ -853,8 +892,12 @@ PROJECT_MCP_FILENAME = ".mcp.json"
 ENVRC_FILENAME = ".envrc.dopemux-mcp"   # sourced from .envrc; keeps generated content separate
 
 
-def _catalog_path() -> Optional[Path]:
-    """Locate an explicit or repo-local MCP catalog path, if present."""
+def _catalog_path(repo: Optional[Path] = None) -> Optional[Path]:
+    """Locate an explicit or repo-local MCP catalog path, if present.
+
+    ``repo`` (the launcher's ``--root`` checkout) replaces the git top-level of
+    the current directory as the place to look for a repo-local catalog.
+    """
     explicit = os.environ.get(CATALOG_ENV_VAR)
     if explicit:
         path = Path(explicit).expanduser().resolve()
@@ -864,16 +907,16 @@ def _catalog_path() -> Optional[Path]:
             )
         return path
 
-    repo = get_repo_root(fallback_cwd=False)
-    if repo:
-        candidate = Path(repo) / CATALOG_FILENAME
+    root = str(repo) if repo is not None else get_repo_root(fallback_cwd=False)
+    if root:
+        candidate = Path(root) / CATALOG_FILENAME
         if candidate.exists():
             return candidate
     return None
 
 
-def _load_catalog() -> Dict[str, Any]:
-    catalog_path = _catalog_path()
+def _load_catalog(repo: Optional[Path] = None) -> Dict[str, Any]:
+    catalog_path = _catalog_path(repo) if repo is not None else _catalog_path()
     if catalog_path:
         with catalog_path.open("r", encoding="utf-8") as fh:
             data = yaml.safe_load(fh) or {}
@@ -1234,8 +1277,9 @@ def _write_envrc(
     """
     env_exports = _project_env_exports(worktree, project_root)
     lines = [
-        "# Generated by `dopemux mcp init` for humans and tools that still read it; no dopemux command reads this file.",
-        "# Identity and ports come from git and the lease registry. Re-run init to regenerate.",
+        "# Generated by `dopemux mcp init` for humans; nothing needs it sourced. dopemux reads it itself:",
+        "# init, doctor and each sidecar start take its ports, and the first ConPort tenant resolution",
+        "# adopts legacy CONPORT_DB_* from it once (legacy_envrc). Identity comes from git; re-run init to regenerate.",
         f"# Worktree: {worktree}",
         f"# Project:  {project_root}",
         f"# Generated: {datetime.now().isoformat(timespec='seconds')}",
@@ -2038,11 +2082,11 @@ def _init_sidecars(
     log_path = runtime_dir / "build.log"
     budget = dr.build_timeout_secs()
     for svc in wanted:
-        image = dr.compose_image_name(compose_project, svc)
+        image = dr.compose_image_name(svc, product=product)  # shared by every worktree
         if dr.docker_image_exists(image, runner=runner, env=env) is True:
             say(f"[info]Image {image} present; no pre-build for {svc}.[/info]")
             continue
-        override, env_file = dr.compose_build_inputs(runtime_dir)
+        override, env_file = dr.compose_build_inputs(runtime_dir, product=product)
         say(
             f"[info]Building the {svc} image {image} (up to {budget:.0f}s, "
             f"{dr.BUILD_TIMEOUT_ENV}); log {escape(str(log_path))}[/info]"
@@ -2489,6 +2533,7 @@ def mcp_doctor_cmd(
     catalog_path = _catalog_path()
     catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
 
+    repo: Optional[str]
     if repo_arg is not None:
         repo = str(repo_arg.resolve())
     else:

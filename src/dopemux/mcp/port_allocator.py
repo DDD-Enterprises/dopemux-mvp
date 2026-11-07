@@ -602,7 +602,11 @@ def allocate_ports(
                     continue
                 if cand in blocked:
                     if cand == preferred:
-                        rebind_reason = rebind_reason or "LEASE_BELONGS_TO_OTHER_PROJECT"
+                        rebind_reason = rebind_reason or (
+                            "LEASE_HELD_BY_SIBLING_SERVICE"  # same worktree, other service
+                            if cand in sibling_ports
+                            else "LEASE_BELONGS_TO_OTHER_PROJECT"
+                        )
                     continue
                 if cand in plan_ports:
                     if cand == preferred:

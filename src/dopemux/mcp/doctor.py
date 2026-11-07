@@ -280,6 +280,21 @@ def _check_conport_tenant(
             provision=False,
         )
     except ct.TenantError as exc:
+        if exc.code == ct.UNKNOWN_HISTORY:
+            _add(
+                findings,
+                "CONPORT_TENANT_UNVERIFIED",
+                "INFO",
+                f"conport tenant not determined: {exc.detail}",
+                service="conport",
+                evidence=[f"{TENANT_SOURCE_PREFIX}unverified"],
+                recommendation=(
+                    "Postgres did not answer, so the tenant is unknown. A start in this "
+                    f"state refuses conport with {ct.UNKNOWN_HISTORY} and changes nothing; "
+                    "check that dopemux-postgres-age is running and re-run the doctor."
+                ),
+            )
+            return
         _add(
             findings,
             exc.code,
@@ -294,22 +309,6 @@ def _check_conport_tenant(
     except (OSError, ValueError):
         return
     if creds is None:  # a start would provision a fresh tenant (R1: no finding)
-        return
-    if creds.source == "legacy_shared" and creds.evidence.startswith(ct.UNREACHABLE_EVIDENCE):
-        _add(
-            findings,
-            "CONPORT_TENANT_UNVERIFIED",
-            "INFO",
-            f"conport tenant not determined: {creds.evidence}",
-            service="conport",
-            evidence=[f"{TENANT_SOURCE_PREFIX}unverified"],
-            recommendation=(
-                f"Postgres did not answer, so the tenant is unknown. A start in this state "
-                f"falls back to the shared {ct.SHARED_DB} store and records "
-                "CONPORT_LEGACY_SHARED_STORE; check that dopemux-postgres-age is running "
-                "and re-run the doctor."
-            ),
-        )
         return
     if creds.source == "legacy_shared":
         _add(

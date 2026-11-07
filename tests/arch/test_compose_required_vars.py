@@ -27,9 +27,7 @@ EXPECTED_REQUIRED = {"HOST_CODE_PARENT_DIR", "DOPECON_BRIDGE_TOKEN", "HOME"}
 
 
 def _required_vars() -> set[str]:
-    return set(
-        REQUIRED_VAR_RE.findall(COMPOSE_PATH.read_text(encoding="utf-8"))
-    )
+    return set(REQUIRED_VAR_RE.findall(COMPOSE_PATH.read_text(encoding="utf-8")))
 
 
 def test_compose_required_set_is_known():

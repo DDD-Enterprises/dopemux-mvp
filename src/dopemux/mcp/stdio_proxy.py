@@ -20,20 +20,35 @@ Rules:
   gets HTTP 404, which the SDK answers with ``32600 "Session terminated"``. The
   backend never processed that request, so the session is dropped and the
   request is sent once on the reconnected (freshly initialized) session; a
-  second "Session terminated" is returned to the runner, never retried again.
+  second "Session terminated" is returned to the runner, never retried again
+  (at most ``MAX_SENDS_PER_REQUEST`` sends per runner request).
+* Reconnect guard: ``reconnect_guard()`` runs before every reconnect attempt
+  (never before the first session). The launcher passes one that re-proves the
+  backend's owner from Docker labels, because after ``switch-project`` or a
+  worktree swap another project's sidecar can listen on the same URL. When it
+  raises ``ProxyRefused(code, remedy)`` (any other exception counts as a refusal
+  too: fail closed), nothing is resent, waiting runner requests get
+  ``McpError(-32000, "<code>: <remedy>")``, the ``<code>: <remedy>`` line is
+  printed on stderr and the proxy exits 1.
+* Reconnect budget: at most one reconnect per ``RECONNECT_WINDOW_S``. A backend
+  that refuses connections while reconnecting is retried with backoff
+  (``RECONNECT_BACKOFF_S`` doubling, capped at ``RECONNECT_BACKOFF_MAX_S``) for
+  up to ``RECONNECT_WAIT_S``; so a later restart in the same session heals too,
+  while a backend that drops twice inside one window (flapping) ends the proxy.
+  A first session that never comes up gets one immediate retry, no backoff.
 * Every forwarded request is bounded by ``REQUEST_TIMEOUT_S`` and every backend
   ``initialize`` by ``INITIALIZE_TIMEOUT_S``; a timeout is an error for that
   request only, not a dead session.
-* Exit 0 when stdin closes; exit 1 once the backend session has dropped and the
-  single reconnect has failed or dropped too (runner requests still waiting get
-  their error first).
+* Exit 0 when stdin closes; exit 1 once the backend is gone for good: a
+  reconnect failed, the guard refused, or the session dropped again inside the
+  window (runner requests still waiting get their error first).
 * Nothing but MCP frames ever reaches stdout.
 
-``serve(backend, read_stream, write_stream, *, session_factory=None)`` is the
-stream-level core; ``session_factory(**client_kwargs)`` must return an async
-context manager yielding an entered, not yet initialized ``ClientSession``
-constructed with exactly those keyword arguments (the proxy's sampling,
-elicitation and roots callbacks and its message handler).
+``serve(backend, read_stream, write_stream, *, session_factory=None,
+reconnect_guard=None)`` is the stream-level core; ``session_factory(**client_kwargs)``
+must return an async context manager yielding an entered, not yet initialized
+``ClientSession`` constructed with exactly those keyword arguments (the
+proxy's sampling, elicitation and roots callbacks and its message handler).
 """
 
 from __future__ import annotations
@@ -43,26 +58,52 @@ import logging
 import os
 import sys
 import threading
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import partial
-from typing import Any, AsyncContextManager, AsyncIterator, Callable, Dict, Literal, Optional
+from typing import (
+    Any,
+    AsyncContextManager,
+    AsyncIterator,
+    Callable,
+    Dict,
+    Iterator,
+    Literal,
+    Optional,
+)
 
 import anyio
+import anyio.to_thread
 from mcp import ClientSession, types
 from mcp.server.lowlevel.server import NotificationOptions, Server
 from mcp.server.session import ServerSession
 from mcp.server.stdio import stdio_server
 from mcp.shared.exceptions import McpError
 
-__all__ = ["BackendSpec", "probe_backend", "run_proxy", "serve"]
+__all__ = [
+    "BackendSpec",
+    "ProxyRefused",
+    "probe_backend",
+    "quiet_sdk_loggers",
+    "run_proxy",
+    "serve",
+]
 
 NOT_SUPPORTED_MESSAGE = "not supported by dopemux proxy"
-#: The first backend session plus one reconnect.
-MAX_BACKEND_SESSIONS = 2
-#: How long a runner request waits for a reconnecting backend.
+#: Sends of one runner request: the first, plus one resend after "Session terminated".
+MAX_SENDS_PER_REQUEST = 2
+#: How long one reconnect keeps retrying a backend that refuses connections.
 RECONNECT_WAIT_S = 10.0
+#: First retry delay of a reconnect; doubles per attempt up to ``RECONNECT_BACKOFF_MAX_S``.
+RECONNECT_BACKOFF_S = 0.25
+RECONNECT_BACKOFF_MAX_S = 2.0
+#: At most one reconnect per window: a second drop inside it ends the proxy.
+RECONNECT_WINDOW_S = 60.0
+#: Upper bound on one ``reconnect_guard`` call (the launcher's asks docker).
+GUARD_TIMEOUT_S = 20.0
+#: Code of a guard that failed with anything but ``ProxyRefused`` (fail closed).
+GUARD_FAILED_CODE = "LAUNCH_RECONNECT_GUARD_FAILED"
 #: Upper bound on one forwarded request (slow tools included).
 REQUEST_TIMEOUT_S = 300.0
 #: Upper bound on a backend ``initialize`` (first connect and the reconnect).
@@ -71,6 +112,7 @@ INITIALIZE_TIMEOUT_S = 10.0
 DRAIN_S = 1.0
 
 SessionFactory = Callable[..., AsyncContextManager[ClientSession]]
+ReconnectGuard = Callable[[], None]
 
 # Every runner request the proxy serves, with the result type the backend returns.
 _FORWARDED: Dict[type, type] = {
@@ -92,6 +134,15 @@ class BackendSpec:
     url: str
     transport: Literal["sse", "http"]
     name: str
+
+
+class ProxyRefused(Exception):
+    """A ``reconnect_guard`` refusal: the finding code and a one-line remedy."""
+
+    def __init__(self, code: str, remedy: str) -> None:
+        super().__init__(f"{code}: {remedy}")
+        self.code = code
+        self.remedy = remedy
 
 
 def _say(message: str) -> None:
@@ -151,7 +202,7 @@ def _can_receive(session: ClientSession) -> bool:
     if statistics is None:
         return True
     try:
-        return statistics().open_send_streams > 0
+        return bool(statistics().open_send_streams > 0)
     except Exception:  # noqa: BLE001 - unknown stream type: assume alive
         return True
 
@@ -165,30 +216,49 @@ async def _sdk_session(
         from mcp.client.sse import sse_client
 
         async with sse_client(backend.url) as (read_stream, write_stream):
-            async with ClientSession(read_stream, write_stream, **client_kwargs) as session:
+            async with ClientSession(
+                read_stream, write_stream, **client_kwargs
+            ) as session:
                 yield session
     elif backend.transport == "http":
         from mcp.client.streamable_http import streamable_http_client
 
-        async with streamable_http_client(backend.url) as (read_stream, write_stream, _sid):
-            async with ClientSession(read_stream, write_stream, **client_kwargs) as session:
+        async with streamable_http_client(backend.url) as (
+            read_stream,
+            write_stream,
+            _sid,
+        ):
+            async with ClientSession(
+                read_stream, write_stream, **client_kwargs
+            ) as session:
                 yield session
     else:
         raise ValueError(f"unsupported backend transport: {backend.transport!r}")
 
 
 class _BackendLink:
-    """The backend client session, its single reconnect, and in-flight requests."""
+    """The backend client session, its reconnects, and in-flight requests."""
 
-    def __init__(self, backend: BackendSpec, factory: SessionFactory) -> None:
+    def __init__(
+        self,
+        backend: BackendSpec,
+        factory: SessionFactory,
+        *,
+        reconnect_guard: Optional[ReconnectGuard] = None,
+    ) -> None:
         self.backend = backend
         self._factory = factory
+        self._guard = reconnect_guard
         self.session: Optional[ClientSession] = None
         self.downstream: Optional[ServerSession] = None
         self.failed = anyio.Event()
+        #: Set when the guard refused a reconnect; waiting requests get its code.
+        self.refusal: Optional[ProxyRefused] = None
         self._connected = anyio.Event()
         self._dropped = anyio.Event()
         self._inflight: Dict[anyio.CancelScope, ClientSession] = {}
+        #: ``anyio.current_time()`` when the latest reconnect began.
+        self._last_reconnect: Optional[float] = None
         #: Runner requests currently inside ``forward``.
         self.active = 0
 
@@ -216,30 +286,101 @@ class _BackendLink:
     async def run(self, *, task_status: Any = anyio.TASK_STATUS_IGNORED) -> None:
         """Hold backend sessions; report the first ``InitializeResult`` (or None)."""
         started = False
-        for attempt in range(1, MAX_BACKEND_SESSIONS + 1):
-            self._dropped = anyio.Event()
-            session: Optional[ClientSession] = None
-            try:
-                async with self._factory(**self.client_kwargs()) as session:
-                    with anyio.fail_after(INITIALIZE_TIMEOUT_S):
-                        init = await session.initialize()
-                    self.session = session
-                    self._connected.set()
-                    if not started:
-                        started = True
-                        task_status.started(init)
-                    await self._dropped.wait()
-            except Exception as exc:  # noqa: BLE001 - any transport failure ends the session
-                _say(f"backend {self.backend.name} at {self.backend.url}: {exc!r}")
-            finally:
-                self._end_session(session)
-            if attempt < MAX_BACKEND_SESSIONS:
-                _say(f"backend {self.backend.name} session ended; reconnecting once")
-        _say(f"backend {self.backend.name} unavailable; run /mcp reconnect after fixing it")
+
+        def on_started(init: Any) -> None:
+            nonlocal started
+            if not started:
+                started = True
+                task_status.started(init)
+
+        name = self.backend.name
+        up = await self._session_once(on_started)
+        if not up:
+            # The first session never came up: one immediate retry, which is
+            # this window's reconnect.
+            self._last_reconnect = anyio.current_time()
+            _say(f"backend {name} did not answer; retrying once")
+            up = await self._guard_allows() and await self._session_once(on_started)
+        while up:  # a session was established and has ended
+            now = anyio.current_time()
+            if (
+                self._last_reconnect is not None
+                and now - self._last_reconnect < RECONNECT_WINDOW_S
+            ):
+                _say(
+                    f"backend {name} dropped again within {RECONNECT_WINDOW_S:g} s; "
+                    "not reconnecting"
+                )
+                break
+            self._last_reconnect = now
+            _say(f"backend {name} session ended; reconnecting")
+            up = await self._reconnect(on_started)
+        if self.refusal is not None:
+            print(
+                f"{self.refusal.code}: {self.refusal.remedy}",
+                file=sys.stderr,
+                flush=True,
+            )
+        else:
+            _say(f"backend {name} unavailable; run /mcp reconnect after fixing it")
         self.failed.set()
         self._connected.set()  # wake waiters so they see the failure
         if not started:
             task_status.started(None)
+
+    async def _session_once(self, on_started: Callable[[Any], None]) -> bool:
+        """Connect, initialize and hold one session until it drops; True if it came up."""
+        self._dropped = anyio.Event()
+        session: Optional[ClientSession] = None
+        established = False
+        try:
+            async with self._factory(**self.client_kwargs()) as session:
+                with anyio.fail_after(INITIALIZE_TIMEOUT_S):
+                    init = await session.initialize()
+                established = True
+                self.session = session
+                self._connected.set()
+                on_started(init)
+                await self._dropped.wait()
+        except Exception as exc:  # noqa: BLE001 - a transport failure ends it
+            _say(f"backend {self.backend.name} at {self.backend.url}: {exc!r}")
+        finally:
+            self._end_session(session)
+        return established
+
+    async def _reconnect(self, on_started: Callable[[Any], None]) -> bool:
+        """Guard, then connect; retry a refusing backend with backoff until the wait ends."""
+        deadline = anyio.current_time() + RECONNECT_WAIT_S
+        delay = RECONNECT_BACKOFF_S
+        while True:
+            if not await self._guard_allows():
+                return False
+            if await self._session_once(on_started):
+                return True
+            if anyio.current_time() + delay > deadline:
+                return False
+            _say(f"backend {self.backend.name} not answering; retrying in {delay:g} s")
+            await anyio.sleep(delay)
+            delay = min(delay * 2, RECONNECT_BACKOFF_MAX_S)
+
+    async def _guard_allows(self) -> bool:
+        """Run the reconnect guard; any failure is a refusal recorded in ``refusal``."""
+        if self._guard is None:
+            return True
+        try:
+            with anyio.fail_after(GUARD_TIMEOUT_S):
+                await anyio.to_thread.run_sync(self._guard, abandon_on_cancel=True)
+        except ProxyRefused as exc:
+            self.refusal = exc
+        except Exception as exc:  # noqa: BLE001 - fail closed on anything unexpected
+            self.refusal = ProxyRefused(
+                GUARD_FAILED_CODE,
+                f"the reconnect check failed ({exc!r}); run dopemux mcp doctor, "
+                "then /mcp reconnect",
+            )
+        else:
+            return True
+        return False
 
     def _detach(self, session: Optional[ClientSession]) -> None:
         """Stop handing out ``session``; waiters block until the reconnect."""
@@ -261,7 +402,11 @@ class _BackendLink:
             self._dropped.set()
 
     def _unavailable(self) -> McpError:
-        return _connection_lost(f"dopemux proxy: backend {self.backend.name} unavailable")
+        if self.refusal is not None:
+            return _connection_lost(f"{self.refusal.code}: {self.refusal.remedy}")
+        return _connection_lost(
+            f"dopemux proxy: backend {self.backend.name} unavailable"
+        )
 
     async def _live_session(self) -> ClientSession:
         """A session that can still answer, waiting out at most one reconnect.
@@ -269,7 +414,11 @@ class _BackendLink:
         Returns without awaiting after the final check, so the caller's
         ``send_request`` registers its response stream before anything else runs.
         """
-        with anyio.move_on_after(RECONNECT_WAIT_S):
+        # A reconnect retries for RECONNECT_WAIT_S; its last attempt adds one guard
+        # call and one initialize.
+        with anyio.move_on_after(
+            RECONNECT_WAIT_S + GUARD_TIMEOUT_S + INITIALIZE_TIMEOUT_S
+        ):
             while not self.failed.is_set():
                 session = self.session
                 if session is None:
@@ -277,14 +426,16 @@ class _BackendLink:
                 elif _can_receive(session):
                     return session
                 else:
-                    self._drop(session)  # read side ended: nothing sent there is answered
+                    self._drop(
+                        session
+                    )  # read side ended: nothing sent there is answered
         raise self._unavailable()
 
     async def forward(self, request: Any, result_type: type) -> Any:
         # The runner's frame validated with its `jsonrpc`/`id` kept as extras;
         # rebuild from method and params so the backend frame gets its own.
         request = type(request)(method=request.method, params=request.params)
-        for attempt in range(1, MAX_BACKEND_SESSIONS + 1):
+        for attempt in range(1, MAX_SENDS_PER_REQUEST + 1):
             session = await self._live_session()
             with anyio.CancelScope() as scope:
                 self._inflight[scope] = session
@@ -292,21 +443,25 @@ class _BackendLink:
                     return await session.send_request(
                         types.ClientRequest(request),
                         result_type,
-                        request_read_timeout_seconds=timedelta(seconds=REQUEST_TIMEOUT_S),
+                        request_read_timeout_seconds=timedelta(
+                            seconds=REQUEST_TIMEOUT_S
+                        ),
                     )
                 except McpError as exc:
                     if _session_terminated(exc.error):
                         # Streamable HTTP restart: unprocessed, so resend once on
                         # the reconnected session; a second one is the result.
                         self._drop(session)
-                        if attempt == MAX_BACKEND_SESSIONS:
+                        if attempt == MAX_SENDS_PER_REQUEST:
                             raise
                         continue
                     if exc.error.code != types.CONNECTION_CLOSED:
                         raise  # the backend's own error, or this request's timeout
                     self._drop(session)
                 except (anyio.ClosedResourceError, anyio.BrokenResourceError):
-                    self._drop(session)  # never written: safe to send on the next session
+                    self._drop(
+                        session
+                    )  # never written: safe to send on the next session
                     continue
                 finally:
                     self._inflight.pop(scope, None)
@@ -348,15 +503,21 @@ async def serve(
     write_stream: Any,
     *,
     session_factory: Optional[SessionFactory] = None,
+    reconnect_guard: Optional[ReconnectGuard] = None,
 ) -> int:
     """Serve MCP on ``read_stream``/``write_stream``, forwarding to ``backend``.
 
     ``session_factory(**client_kwargs)`` yields an entered, uninitialized
     ``ClientSession`` built with the given kwargs (the proxy's callbacks); the
-    default connects to ``backend.url`` with the SDK transport. Returns 0 when
-    the read side closes, 1 when the backend is gone after one reconnect.
+    default connects to ``backend.url`` with the SDK transport.
+    ``reconnect_guard()`` runs before every reconnect (see the module docstring).
+    Returns 0 when the read side closes, 1 when the backend is gone for good.
     """
-    link = _BackendLink(backend, session_factory or partial(_sdk_session, backend))
+    link = _BackendLink(
+        backend,
+        session_factory or partial(_sdk_session, backend),
+        reconnect_guard=reconnect_guard,
+    )
     exit_code = 1
     async with anyio.create_task_group() as tg:
         init = await tg.start(link.run)
@@ -364,7 +525,9 @@ async def serve(
             tg.cancel_scope.cancel()
             return 1
         server = _build_server(link, init)
-        options = server.create_initialization_options(NotificationOptions(tools_changed=True))
+        options = server.create_initialization_options(
+            NotificationOptions(tools_changed=True)
+        )
 
         async def serve_runner() -> None:
             nonlocal exit_code
@@ -430,7 +593,9 @@ class _DaemonStdin:
             finally:
                 put(None)
 
-        threading.Thread(target=pump, name="dopemux-mcp-launch-stdin", daemon=True).start()
+        threading.Thread(
+            target=pump, name="dopemux-mcp-launch-stdin", daemon=True
+        ).start()
         while True:
             line = await queue.get()
             if line is None:
@@ -438,20 +603,48 @@ class _DaemonStdin:
             yield line
 
 
+#: Loggers of the SDK client stack; their INFO lines (every HTTP request, session
+#: ids, protocol versions) are noise on a launcher's stderr.
+SDK_LOGGERS = ("httpx", "httpcore", "mcp")
+
+
+@contextmanager
+def quiet_sdk_loggers() -> Iterator[None]:
+    """SDK client loggers at WARNING for the block; their levels are restored after."""
+    saved = {name: logging.getLogger(name).level for name in SDK_LOGGERS}
+    for name in SDK_LOGGERS:
+        logging.getLogger(name).setLevel(logging.WARNING)
+    try:
+        yield
+    finally:
+        for name, level in saved.items():
+            logging.getLogger(name).setLevel(level)
+
+
 def _route_logging_to_stderr() -> None:
-    """stdout carries MCP frames only: move every non-file log handler to stderr."""
+    """stdout carries MCP frames only: move every non-file log handler to stderr.
+
+    The SDK client loggers go to WARNING for the rest of the process.
+    """
     root = logging.getLogger()
     for handler in list(root.handlers):
         if not isinstance(handler, logging.FileHandler):
             root.removeHandler(handler)
     stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.setFormatter(logging.Formatter("%(levelname)s %(name)s: %(message)s"))
+    stderr_handler.setFormatter(
+        logging.Formatter("%(levelname)s %(name)s: %(message)s")
+    )
     root.addHandler(stderr_handler)
     root.setLevel(logging.WARNING)
+    for name in SDK_LOGGERS:
+        logging.getLogger(name).setLevel(logging.WARNING)
 
 
 def run_proxy(
-    backend: BackendSpec, *, session_factory: Optional[SessionFactory] = None
+    backend: BackendSpec,
+    *,
+    session_factory: Optional[SessionFactory] = None,
+    reconnect_guard: Optional[ReconnectGuard] = None,
 ) -> int:
     """Serve the runner over this process's stdio until stdin closes."""
     _route_logging_to_stderr()
@@ -459,10 +652,16 @@ def run_proxy(
     async def _main() -> int:
         exit_code = 1
         with anyio.CancelScope() as scope:
-            stdin: Any = _DaemonStdin()  # duck-types the anyio.AsyncFile it reads lines from
+            stdin: Any = (
+                _DaemonStdin()
+            )  # duck-types the anyio.AsyncFile it reads lines from
             async with stdio_server(stdin=stdin) as (read_stream, write_stream):
                 exit_code = await serve(
-                    backend, read_stream, write_stream, session_factory=session_factory
+                    backend,
+                    read_stream,
+                    write_stream,
+                    session_factory=session_factory,
+                    reconnect_guard=reconnect_guard,
                 )
                 scope.cancel()  # stop the stdio reader/writer tasks
         return exit_code
@@ -483,5 +682,5 @@ def probe_backend(backend: BackendSpec, *, timeout_s: float = 1.0) -> bool:
         return anyio.run(_probe)
     except (KeyboardInterrupt, SystemExit):
         raise
-    except BaseException:  # noqa: BLE001 - refused, timed out, protocol error: all "not ready"
+    except BaseException:  # noqa: BLE001 - refused, timeout, protocol: not ready
         return False

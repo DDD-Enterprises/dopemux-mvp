@@ -39,7 +39,9 @@ def test_worktree_setup_guide_is_retired() -> None:
 
 
 def test_how_to_documents_the_one_command_recipe() -> None:
-    text = (REPO / "docs/02-how-to/mcp-setup-other-repos.md").read_text(encoding="utf-8")
+    text = (REPO / "docs/02-how-to/mcp-setup-other-repos.md").read_text(
+        encoding="utf-8"
+    )
     for needle in (
         "dopemux mcp init --repo",
         "dopemux mcp launch",
@@ -55,15 +57,21 @@ def test_how_to_documents_the_one_command_recipe() -> None:
 # --- fix round 1: no stale envrc/"per worktree" hints in generated output -------------
 
 
-def test_init_next_steps_do_not_tell_the_user_to_source_the_env_file(tmp_path, monkeypatch) -> None:
+def test_init_next_steps_do_not_tell_the_user_to_source_the_env_file(
+    tmp_path, monkeypatch
+) -> None:
     """Runs the real `mcp init` (sidecar step faked out) and checks the rendered "Next:" lines."""
     from dopemux.commands import mcp_commands
 
     repo = tmp_path / "proj"
     repo.mkdir()
     subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
-    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "rt" / "port-leases.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json")
+    )
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "rt" / "port-leases.json")
+    )
     monkeypatch.setattr(mcp_commands, "_init_sidecars", lambda *a, **k: True)
 
     result = CliRunner().invoke(mcp_commands.mcp, ["init", "--repo", str(repo)])
@@ -76,9 +84,13 @@ def test_init_next_steps_do_not_tell_the_user_to_source_the_env_file(tmp_path, m
     assert "dopemux mcp doctor --repo" in result.output.split("Next:", 1)[1]
     header = (repo / ".envrc.dopemux-mcp").read_text(encoding="utf-8").splitlines()[0]
     assert "Do not edit by hand" not in header
-    assert "no dopemux command reads this file" in "\n".join(
-        (repo / ".envrc.dopemux-mcp").read_text(encoding="utf-8").splitlines()[:3]
+    top = "\n".join(
+        (repo / ".envrc.dopemux-mcp").read_text(encoding="utf-8").splitlines()[:4]
     )
+    # final review M9: the header says what really reads the file
+    assert "no dopemux command reads this file" not in top
+    assert "nothing needs it sourced" in top
+    assert "legacy_envrc" in top
 
 
 def test_config_repair_next_actions_do_not_source_the_env_file(tmp_path) -> None:
@@ -142,10 +154,19 @@ def test_no_live_reference_to_the_retired_worktree_setup_guide() -> None:
     hits = []
     for top in ("src", "scripts", ".claude/modules", "docs"):
         for path in sorted((REPO / top).rglob("*")):
-            if not path.is_file() or path.suffix not in {".py", ".md", ".sh", ".yaml", ".yml", ".toml"}:
+            if not path.is_file() or path.suffix not in {
+                ".py",
+                ".md",
+                ".sh",
+                ".yaml",
+                ".yml",
+                ".toml",
+            }:
                 continue
             rel = path.relative_to(REPO).as_posix()
-            if rel in _BOOTSTRAP_NAME_ALLOWED or rel.startswith(_HISTORICAL_DOC_PREFIXES):
+            if rel in _BOOTSTRAP_NAME_ALLOWED or rel.startswith(
+                _HISTORICAL_DOC_PREFIXES
+            ):
                 continue
             if needle in path.read_text(encoding="utf-8", errors="ignore"):
                 hits.append(rel)

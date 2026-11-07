@@ -280,16 +280,23 @@ def expand_url_template(template: str, env: Mapping[str, str]) -> str:
     return _ENV_PLACEHOLDER.sub(repl, template)
 
 
-def sidecar_url(spec: Mapping[str, Any], ports: Mapping[str, int]) -> str:
+def sidecar_url(spec: Mapping[str, Any], ports: Mapping[str, int]) -> Optional[str]:
     """The sidecar endpoint a catalog entry resolves to, given its leased ports.
 
-    Expands `url_template`'s `${VAR:-default}` placeholders from `ports`
-    (falling back to the template default when a port is absent). The catalog,
-    not `.mcp.json`, is the source: a launcher entry carries no URL.
+    Expands `url_template`'s `${VAR:-default}` placeholders from `ports`. Returns
+    None when `ports` lacks the entry's `port_var` or any variable the template
+    names: the template default may be another worktree's port, so callers refuse
+    rather than guess. The catalog, not `.mcp.json`, is the source: a launcher
+    entry carries no URL.
     """
     template = spec.get("url_template") or spec.get("url")
     if not template:
         raise ValueError("catalog entry has no `url_template`/`url` to resolve a sidecar URL from")
+    needed = {m.group(1) for m in _ENV_PLACEHOLDER.finditer(str(template))}
+    if spec.get("port_var"):
+        needed.add(str(spec["port_var"]))
+    if any(name not in ports for name in needed):
+        return None
     return expand_url_template(str(template), {k: str(v) for k, v in ports.items()})
 
 

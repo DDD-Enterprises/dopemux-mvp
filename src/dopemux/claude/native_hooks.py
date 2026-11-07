@@ -628,7 +628,7 @@ class NativeHookAdapter:
         return self._allow()
 
     def _on_stop(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-        _best_effort_reap()
+        _best_effort_reap(deadline_s=60)  # Stop/SubagentStop: hook defaults, 60 s deadline
         state = self._active_state()
         if not state:
             return self._allow()

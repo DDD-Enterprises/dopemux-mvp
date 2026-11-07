@@ -91,7 +91,9 @@ class FakePsql:
         if "DPMX_DB=" in sql:
             return _out(_aligned(f"DPMX_DB={1 if self.db_exists else 0}"))
         if "DPMX_PRESENT=" in sql:
-            return _out(_aligned(f"DPMX_PRESENT={'true' if self.schema_present else 'false'}"))
+            return _out(
+                _aligned(f"DPMX_PRESENT={'true' if self.schema_present else 'false'}")
+            )
         if "DPMX_VERIFY=" in sql:
             return _out(_aligned("DPMX_VERIFY=12,0,0,1"))
         return _out("")
@@ -141,8 +143,12 @@ def _repo(tmp_path: Path, name: str = "Tenant-Proj") -> Path:
 @pytest.fixture(autouse=True)
 def _isolated(tmp_path: Path, monkeypatch):
     """Locks, registries and the default secrets dir all live under tmp_path."""
-    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json"))
-    monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "rt" / "port-leases.json"))
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "rt" / "instances.json")
+    )
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "rt" / "port-leases.json")
+    )
 
 
 def _identity(repo: Path):
@@ -172,7 +178,9 @@ def test_resolve_tenant_prefers_secrets_file(tmp_path: Path):
     path = ct.secrets_path(identity.project_id, secrets_root=root)
     ct.write_secrets(
         path,
-        ct.TenantCredentials("conport_from_file", "conport_from_file", "fake-file-pw", "secrets"),
+        ct.TenantCredentials(
+            "conport_from_file", "conport_from_file", "fake-file-pw", "secrets"
+        ),
     )
     psql = FakePsql(legacy_count=7)
 
@@ -261,14 +269,19 @@ def test_resolve_tenant_provisions_when_no_history(tmp_path: Path, monkeypatch):
     ]
     # The schema and every migration run AS the tenant role, never as the superuser.
     for _db, sql in psql.calls:
-        if _label(sql) in {"schema", "workspace_rows"} or (_label(sql) or "").startswith(
-            "migration:"
-        ):
+        if _label(sql) in {"schema", "workspace_rows"} or (
+            _label(sql) or ""
+        ).startswith("migration:"):
             assert sql.lstrip().startswith(f"SET ROLE {creds.db_user};"), sql[:80]
     # The seed block of the sealed schema never reaches the database.
-    schema_sql = next(sql for _db, sql in psql.calls if "CREATE TABLE workspace_contexts" in sql)
+    schema_sql = next(
+        sql for _db, sql in psql.calls if "CREATE TABLE workspace_contexts" in sql
+    )
     assert "INSERT INTO" not in schema_sql
-    assert "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO dopemux_age" in schema_sql
+    assert (
+        "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO dopemux_age"
+        in schema_sql
+    )
     # Workspace registration uses the project root (path form).
     ws_sql = next(sql for _db, sql in psql.calls if _label(sql) == "workspace_rows")
     assert str(identity.project_root) in ws_sql
@@ -276,9 +289,14 @@ def test_resolve_tenant_provisions_when_no_history(tmp_path: Path, monkeypatch):
     path = ct.secrets_path(identity.project_id, secrets_root=root)
     assert _mode(path) == 0o600
     stored = ct.load_secrets(path)
-    assert (stored.db_name, stored.db_password) == (creds.db_name, FAKE_PROVISIONED_PASSWORD)
+    assert (stored.db_name, stored.db_password) == (
+        creds.db_name,
+        FAKE_PROVISIONED_PASSWORD,
+    )
     # The gate is still owed (it needs this instance's conport container).
-    assert ct.pending_gate_credentials(identity.project_id, secrets_root=root) is not None
+    assert (
+        ct.pending_gate_credentials(identity.project_id, secrets_root=root) is not None
+    )
 
 
 def test_provision_migrations_match_the_sealed_gate_required_set():
@@ -325,14 +343,23 @@ def test_provision_database_refuses_existing_role_directly():
     [FakePsql(rc=2), FakePsql(raises=OSError("docker: not found"))],
     ids=["nonzero-exit", "exception"],
 )
-def test_resolve_tenant_unreachable_postgres_is_legacy_shared(tmp_path: Path, psql):
+def test_resolve_tenant_unknown_history_fails_closed(tmp_path: Path, psql):
+    # final review R2: an unknown row count is no longer read as "has history"
     identity = _identity(_repo(tmp_path))
     root = tmp_path / "secrets"
 
-    creds = ct.resolve_tenant(identity, envrc_values={}, psql=psql, secrets_root=root)
-
-    assert creds.source == "legacy_shared"
-    assert "postgres unreachable" in creds.evidence
+    for provision in (True, False):  # a start and the doctor both refuse to guess
+        with pytest.raises(ct.TenantError) as excinfo:
+            ct.resolve_tenant(
+                identity,
+                envrc_values={},
+                psql=psql,
+                secrets_root=root,
+                provision=provision,
+            )
+        assert excinfo.value.code == "CONPORT_TENANT_UNKNOWN_HISTORY"
+        assert "nothing was changed" in excinfo.value.detail
+        assert "postgres" in excinfo.value.detail.lower()
     assert _labels(psql.calls) == []
     assert not ct.secrets_path(identity.project_id, secrets_root=root).exists()
 
@@ -355,8 +382,18 @@ def test_count_legacy_rows_unions_the_seven_tables_with_escaped_aliases():
 
 def test_legacy_aliases_include_worktrees(tmp_path: Path):
     repo = _repo(tmp_path, "aliasproj")
-    _git(repo, "-c", "user.email=t@example.invalid", "-c", "user.name=t", "commit",
-         "--allow-empty", "-q", "-m", "init")
+    _git(
+        repo,
+        "-c",
+        "user.email=t@example.invalid",
+        "-c",
+        "user.name=t",
+        "commit",
+        "--allow-empty",
+        "-q",
+        "-m",
+        "init",
+    )
     linked = tmp_path / "linked-wt"
     _git(repo, "worktree", "add", "-q", str(linked))
 
@@ -364,7 +401,9 @@ def test_legacy_aliases_include_worktrees(tmp_path: Path):
 
     assert aliases[0] == str(repo)
     assert "aliasproj" in aliases
-    assert str(linked.resolve()) in [str(Path(a).resolve()) for a in aliases if "/" in a]
+    assert str(linked.resolve()) in [
+        str(Path(a).resolve()) for a in aliases if "/" in a
+    ]
     assert len(aliases) == len(set(aliases))
 
 
@@ -382,14 +421,18 @@ def test_secrets_never_in_mcp_env():
 
 
 def test_tenant_credentials_repr_hides_password():
-    creds = ct.TenantCredentials("conport_x", "conport_x", FAKE_ENVRC_PASSWORD, "secrets")
+    creds = ct.TenantCredentials(
+        "conport_x", "conport_x", FAKE_ENVRC_PASSWORD, "secrets"
+    )
     assert FAKE_ENVRC_PASSWORD not in repr(creds)
 
 
 def test_write_secrets_is_atomic_0600_and_round_trips_odd_values(tmp_path: Path):
     path = tmp_path / "p" / "secrets.env"
     odd = "fake pw with 'quote' #hash $dollar"
-    ct.write_secrets(path, ct.TenantCredentials("conport_x", "conport_x", odd, "secrets"))
+    ct.write_secrets(
+        path, ct.TenantCredentials("conport_x", "conport_x", odd, "secrets")
+    )
     assert _mode(path) == 0o600 and _mode(path.parent) == 0o700
     assert [p.name for p in path.parent.iterdir()] == ["secrets.env"]
     assert ct.load_secrets(path).db_password == odd
@@ -430,7 +473,11 @@ def test_doctor_mode_never_writes_or_provisions(tmp_path: Path):
     )
     assert _labels(psql.calls) == []
     adopted = ct.resolve_tenant(
-        identity, envrc_values=_envrc_creds(), psql=psql, secrets_root=root, provision=False
+        identity,
+        envrc_values=_envrc_creds(),
+        psql=psql,
+        secrets_root=root,
+        provision=False,
     )
     assert adopted.source == "legacy_envrc"
     assert not ct.secrets_path(identity.project_id, secrets_root=root).exists()
@@ -439,8 +486,18 @@ def test_doctor_mode_never_writes_or_provisions(tmp_path: Path):
 def test_main_checkout_envrc_is_adopted_from_a_linked_worktree(tmp_path: Path):
     """A worktree without its own envrc must not provision past a hand-made tenant."""
     repo = _repo(tmp_path, "handmade")
-    _git(repo, "-c", "user.email=t@example.invalid", "-c", "user.name=t", "commit",
-         "--allow-empty", "-q", "-m", "init")
+    _git(
+        repo,
+        "-c",
+        "user.email=t@example.invalid",
+        "-c",
+        "user.name=t",
+        "commit",
+        "--allow-empty",
+        "-q",
+        "-m",
+        "init",
+    )
     lines = [f"export {k}={v}" for k, v in _envrc_creds().items()]
     (repo / ".envrc.dopemux-mcp").write_text("\n".join(lines) + "\n")
     linked = tmp_path / "wt"
@@ -469,8 +526,17 @@ def test_default_psql_runner_feeds_sql_on_stdin_never_argv():
     result = psql("conport_x", "CREATE ROLE conport_x LOGIN PASSWORD 'fake';")
 
     assert seen["cmd"] == [
-        "docker", "exec", "-i", "dopemux-postgres-age",
-        "psql", "-v", "ON_ERROR_STOP=1", "-U", "dopemux_age", "-d", "conport_x",
+        "docker",
+        "exec",
+        "-i",
+        "dopemux-postgres-age",
+        "psql",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "dopemux_age",
+        "-d",
+        "conport_x",
     ]
     assert seen["input"].startswith("CREATE ROLE")
     assert result.returncode == 0 and result.stdout == "ok"
@@ -514,7 +580,9 @@ def _init_catalog() -> Dict[str, Any]:
 class FakeCmdRunner:
     """subprocess.run stand-in: answers psql (via FakePsql) and docker calls."""
 
-    def __init__(self, psql: FakePsql, *, image_present: bool = False, build_rc: int = 0):
+    def __init__(
+        self, psql: FakePsql, *, image_present: bool = False, build_rc: int = 0
+    ):
         self.psql = psql
         self.calls: List[Dict[str, Any]] = []
         self.image_present = image_present
@@ -522,16 +590,24 @@ class FakeCmdRunner:
 
     def __call__(self, cmd, **kwargs):
         cmd = list(cmd)
-        self.calls.append({"cmd": cmd, "timeout": kwargs.get("timeout"), "env": kwargs.get("env")})
+        self.calls.append(
+            {"cmd": cmd, "timeout": kwargs.get("timeout"), "env": kwargs.get("env")}
+        )
         if cmd[:4] == ["docker", "exec", "-i", "dopemux-postgres-age"]:
             res = self.psql(cmd[-1], kwargs.get("input") or "")
-            return SimpleNamespace(returncode=res.returncode, stdout=res.stdout, stderr=res.stderr)
+            return SimpleNamespace(
+                returncode=res.returncode, stdout=res.stdout, stderr=res.stderr
+            )
         if cmd[:3] == ["docker", "image", "inspect"]:
             if self.image_present:
                 return SimpleNamespace(returncode=0, stdout="sha256:fake\n", stderr="")
-            return SimpleNamespace(returncode=1, stdout="", stderr=f"Error: No such image: {cmd[3]}")
+            return SimpleNamespace(
+                returncode=1, stdout="", stderr=f"Error: No such image: {cmd[3]}"
+            )
         if "build" in cmd:
-            return SimpleNamespace(returncode=self.build_rc, stdout="build log line\n", stderr="")
+            return SimpleNamespace(
+                returncode=self.build_rc, stdout="build log line\n", stderr=""
+            )
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
 
@@ -556,9 +632,13 @@ def test_password_never_printed(tmp_path: Path, monkeypatch, capsys):
     assert result.exit_code == 0, shown
     assert "provisioned" in shown
     assert FAKE_PROVISIONED_PASSWORD not in shown
-    assert not any(FAKE_PROVISIONED_PASSWORD in " ".join(c["cmd"]) for c in runner.calls)
-    # The password reached Postgres only through stdin (CREATE ROLE).
-    assert any(FAKE_PROVISIONED_PASSWORD in sql for _db, sql in runner.psql.calls)
+    assert not any(
+        FAKE_PROVISIONED_PASSWORD in " ".join(c["cmd"]) for c in runner.calls
+    )
+    # final review M7: Postgres gets a SCRAM verifier on stdin, never the plaintext
+    # (which would land in the server log on a statement error).
+    assert not any(FAKE_PROVISIONED_PASSWORD in sql for _db, sql in runner.psql.calls)
+    assert any("PASSWORD 'SCRAM-SHA-256$4096:" in sql for _db, sql in runner.psql.calls)
     # Both sidecar images were pre-built synchronously with the #1459 budget.
     builds = [c for c in runner.calls if "build" in c["cmd"]]
     assert [b["cmd"][-1] for b in builds] == ["conport", "dope-memory"]
@@ -608,7 +688,9 @@ def test_compose_interpolation_env_ignores_ambient_vars(monkeypatch):
 
     assert env["CONPORT_DB_PASSWORD"] == "fake-extra-pw"
     assert "DOPE_MEMORY_PORT" not in env
-    assert not [n for n in dr.AMBIENT_SCRUB_VARS if n != "CONPORT_DB_PASSWORD" and n in env]
+    assert not [
+        n for n in dr.AMBIENT_SCRUB_VARS if n != "CONPORT_DB_PASSWORD" and n in env
+    ]
     # Not scrubbed: exact set, not a prefix sweep.
     assert env["AGE_PASSWORD"] == "fake-age-pw"
     assert env["CONPORT_MAX_CHILD_FAILURES"] == "9"
@@ -629,7 +711,10 @@ def test_launcher_lifecycle_env_uses_the_shared_scrub_set(monkeypatch):
 
 
 def _lc_catalog() -> Dict[str, Any]:
-    return {"version": 1, **{k: v for k, v in _init_catalog().items() if k != "version"}}
+    return {
+        "version": 1,
+        **{k: v for k, v in _init_catalog().items() if k != "version"},
+    }
 
 
 def _lc_repo(tmp_path: Path) -> Path:
@@ -693,10 +778,18 @@ class LifecycleRunner(FakeCmdRunner):
                 raise self.gate_raises
             env_file = Path(cmd[3])
             self.gate_files.append(
-                {"path": env_file, "text": env_file.read_text(), "mode": _mode(env_file)}
+                {
+                    "path": env_file,
+                    "text": env_file.read_text(),
+                    "mode": _mode(env_file),
+                }
             )
-            self.calls.append({"cmd": cmd, "timeout": kwargs.get("timeout"), "env": None})
-            return SimpleNamespace(returncode=self.gate_rc, stdout="", stderr=self.gate_stderr)
+            self.calls.append(
+                {"cmd": cmd, "timeout": kwargs.get("timeout"), "env": None}
+            )
+            return SimpleNamespace(
+                returncode=self.gate_rc, stdout="", stderr=self.gate_stderr
+            )
         result = super().__call__(cmd, **kwargs)
         if "up" in cmd and "compose" in cmd:
             self.up = True
@@ -731,7 +824,9 @@ def _lc_start(tmp_path: Path, repo: Path, runner: LifecycleRunner):
         catalog=_lc_catalog(),
         dry_run=False,
         registry_path=tmp_path / "rt" / "instances.json",
-        docker_runner=lambda *a, **k: SimpleNamespace(returncode=0, stdout="", stderr=""),
+        docker_runner=lambda *a, **k: SimpleNamespace(
+            returncode=0, stdout="", stderr=""
+        ),
         cmd_runner=runner,
         product_root=_lc_product(tmp_path),
         process_env={},
@@ -749,7 +844,9 @@ def test_start_passes_tenant_env_to_compose_only(tmp_path: Path, monkeypatch):
     identity = _identity(repo)
     ct.write_secrets(
         ct.secrets_path(identity.project_id),
-        ct.TenantCredentials("conport_lc_tenant", "conport_lc_tenant", "fake-lc-pw", "secrets"),
+        ct.TenantCredentials(
+            "conport_lc_tenant", "conport_lc_tenant", "fake-lc-pw", "secrets"
+        ),
     )
     # Another checkout's sourced envrc in the process environment.
     monkeypatch.setenv("CONPORT_DB_NAME", "conport_foreign")
@@ -784,7 +881,9 @@ def test_start_passes_tenant_env_to_compose_only(tmp_path: Path, monkeypatch):
     assert not [k for k in runner.kinds() if k.startswith("gate:")]
 
 
-def _assert_password_absent(password: str, *, runner, result, capsys, tmp_path: Path) -> None:
+def _assert_password_absent(
+    password: str, *, runner, result, capsys, tmp_path: Path
+) -> None:
     for call in runner.calls:
         assert password not in " ".join(call["cmd"])
     assert password not in json.dumps(result.to_dict())
@@ -812,10 +911,25 @@ def test_start_runs_gate_after_first_provision(tmp_path: Path, monkeypatch, caps
     assert runner.kinds() == ["psql", "up", "gate:apply", "gate:verify"]
     assert "create_role" in _labels(runner.psql.calls)
     cname = _conport(result)["container_names"][0]
-    apply_cmd, verify_cmd = [c["cmd"] for c in runner.calls if c["cmd"][:3] == ["docker", "exec", "--env-file"]]
-    assert apply_cmd[4:] == ["-e", "DPMX_CONPORT_MIGRATION_APPLY=1", cname, "python",
-                             "migrations/conport_migration_gate.py", "apply"]
-    assert verify_cmd[4:] == [cname, "python", "migrations/conport_migration_gate.py", "verify"]
+    apply_cmd, verify_cmd = [
+        c["cmd"]
+        for c in runner.calls
+        if c["cmd"][:3] == ["docker", "exec", "--env-file"]
+    ]
+    assert apply_cmd[4:] == [
+        "-e",
+        "DPMX_CONPORT_MIGRATION_APPLY=1",
+        cname,
+        "python",
+        "migrations/conport_migration_gate.py",
+        "apply",
+    ]
+    assert verify_cmd[4:] == [
+        cname,
+        "python",
+        "migrations/conport_migration_gate.py",
+        "verify",
+    ]
     assert "--database-url" not in apply_cmd + verify_cmd
     # The URL travelled in a 0600 temp env file that is gone afterwards.
     for seen in runner.gate_files:
@@ -828,7 +942,11 @@ def test_start_runs_gate_after_first_provision(tmp_path: Path, monkeypatch, caps
     assert up["env"]["CONPORT_DB_PASSWORD"] == FAKE_PROVISIONED_PASSWORD
     assert ct.pending_gate_credentials(identity.project_id) is None
     _assert_password_absent(
-        FAKE_PROVISIONED_PASSWORD, runner=runner, result=result, capsys=capsys, tmp_path=tmp_path
+        FAKE_PROVISIONED_PASSWORD,
+        runner=runner,
+        result=result,
+        capsys=capsys,
+        tmp_path=tmp_path,
     )
 
 
@@ -845,12 +963,18 @@ def test_gate_failure_is_fail_and_next_start_retries_without_reprovisioning(
 
     assert failed.exit_code == 1
     finding = next(
-        f for f in _conport(failed)["findings"] if f["code"] == "CONPORT_TENANT_GATE_FAILED"
+        f
+        for f in _conport(failed)["findings"]
+        if f["code"] == "CONPORT_TENANT_GATE_FAILED"
     )
     assert finding["severity"] == "FAIL"
     assert str(ct.secrets_path(identity.project_id)) in finding["message"]
     _assert_password_absent(
-        FAKE_PROVISIONED_PASSWORD, runner=first, result=failed, capsys=capsys, tmp_path=tmp_path
+        FAKE_PROVISIONED_PASSWORD,
+        runner=first,
+        result=failed,
+        capsys=capsys,
+        tmp_path=tmp_path,
     )
     assert ct.pending_gate_credentials(identity.project_id) is not None
 
@@ -859,7 +983,10 @@ def test_gate_failure_is_fail_and_next_start_retries_without_reprovisioning(
 
     assert retried.exit_code == 0, retried.to_dict()
     assert second.psql.calls == []  # never re-provision, never rotate
-    assert [k for k in second.kinds() if k.startswith("gate:")] == ["gate:apply", "gate:verify"]
+    assert [k for k in second.kinds() if k.startswith("gate:")] == [
+        "gate:apply",
+        "gate:verify",
+    ]
     assert ct.pending_gate_credentials(identity.project_id) is None
 
 
@@ -877,6 +1004,22 @@ def test_start_marks_legacy_shared_store_and_passes_no_credentials(tmp_path: Pat
     assert not [k for k in runner.kinds() if k.startswith("gate:")]
 
 
+def test_start_refuses_conport_when_the_shared_history_is_unknown(tmp_path: Path):
+    repo = _lc_repo(tmp_path)
+    runner = LifecycleRunner(FakePsql(rc=2))  # postgres does not answer
+
+    result = _lc_start(tmp_path, repo, runner)
+
+    assert result.exit_code == 1
+    finding = next(
+        f
+        for f in _conport(result)["findings"]
+        if f["code"] == "CONPORT_TENANT_UNKNOWN_HISTORY"
+    )
+    assert finding["severity"] == "FAIL"
+    assert "up" not in runner.kinds()  # conport never started on a guessed store
+
+
 def test_start_turns_existing_role_into_fail_finding(tmp_path: Path):
     repo = _lc_repo(tmp_path)
     identity = _identity(repo)
@@ -886,7 +1029,9 @@ def test_start_turns_existing_role_into_fail_finding(tmp_path: Path):
 
     assert result.exit_code == 1
     finding = next(
-        f for f in _conport(result)["findings"] if f["code"] == "ROLE_EXISTS_WITHOUT_SECRETS"
+        f
+        for f in _conport(result)["findings"]
+        if f["code"] == "ROLE_EXISTS_WITHOUT_SECRETS"
     )
     assert finding["severity"] == "FAIL"
     assert str(ct.secrets_path(identity.project_id)) in finding["message"]
@@ -894,7 +1039,9 @@ def test_start_turns_existing_role_into_fail_finding(tmp_path: Path):
 
 
 def test_adopt_with_gate_refuses_real_docker_under_pytest():
-    creds = ct.TenantCredentials("conport_x", "conport_x", "fake-gate-pw", "provisioned")
+    creds = ct.TenantCredentials(
+        "conport_x", "conport_x", "fake-gate-pw", "provisioned"
+    )
     with pytest.raises(ct.TenantError) as excinfo:
         ct.adopt_with_gate("dopemux-x-conport", creds)
     assert excinfo.value.code == "CONPORT_TENANT_GATE_FAILED"
@@ -905,7 +1052,10 @@ def test_adopt_with_gate_refuses_real_docker_under_pytest():
 
 
 def _state(identity, root: Optional[Path] = None) -> str:
-    path = ct.secrets_path(identity.project_id, secrets_root=root).parent / ct.STATE_FILENAME
+    path = (
+        ct.secrets_path(identity.project_id, secrets_root=root).parent
+        / ct.STATE_FILENAME
+    )
     return path.read_text().strip() if path.exists() else ""
 
 
@@ -918,7 +1068,9 @@ def _passwords(monkeypatch, *values: str) -> None:
 SECOND_FAKE_PASSWORD = "beef" * 12
 
 
-def test_resume_after_create_database_failure_keeps_password_and_role(tmp_path, monkeypatch):
+def test_resume_after_create_database_failure_keeps_password_and_role(
+    tmp_path, monkeypatch
+):
     identity = _identity(_repo(tmp_path))
     root = tmp_path / "secrets"
     _passwords(monkeypatch, FAKE_PROVISIONED_PASSWORD, SECOND_FAKE_PASSWORD)
@@ -929,7 +1081,10 @@ def test_resume_after_create_database_failure_keeps_password_and_role(tmp_path, 
 
     assert excinfo.value.code == "CONPORT_TENANT_PROVISION_FAILED"
     assert FAKE_PROVISIONED_PASSWORD not in str(excinfo.value)
-    assert _labels(first.calls) == ["create_role", "create_database"]  # the second one failed
+    assert _labels(first.calls) == [
+        "create_role",
+        "create_database",
+    ]  # the second one failed
     assert _state(identity, root) == "database"
 
     second = FakePsql(role_exists=True, db_exists=False)
@@ -947,7 +1102,9 @@ def test_resume_after_create_database_failure_keeps_password_and_role(tmp_path, 
     assert _state(identity, root) == "gate"
 
 
-def test_resume_after_migration_003_failure_applies_exactly_the_rest(tmp_path, monkeypatch):
+def test_resume_after_migration_003_failure_applies_exactly_the_rest(
+    tmp_path, monkeypatch
+):
     identity = _identity(_repo(tmp_path))
     root = tmp_path / "secrets"
     _passwords(monkeypatch, FAKE_PROVISIONED_PASSWORD, SECOND_FAKE_PASSWORD)
@@ -984,7 +1141,9 @@ def test_unreadable_state_file_fails_closed(tmp_path):
     repo = _lc_repo(tmp_path)
     identity = _identity(repo)
     path = ct.secrets_path(identity.project_id)
-    ct.write_secrets(path, ct.TenantCredentials("conport_s", "conport_s", "fake-state-pw", "secrets"))
+    ct.write_secrets(
+        path, ct.TenantCredentials("conport_s", "conport_s", "fake-state-pw", "secrets")
+    )
     state_path = path.parent / ct.STATE_FILENAME
     state_path.mkdir()  # reading it raises IsADirectoryError
 
@@ -996,7 +1155,11 @@ def test_unreadable_state_file_fails_closed(tmp_path):
     runner = LifecycleRunner(FakePsql())
     result = _lc_start(tmp_path, repo, runner)
     assert result.exit_code == 1
-    finding = next(f for f in _conport(result)["findings"] if f["code"] == "TENANT_STATE_UNREADABLE")
+    finding = next(
+        f
+        for f in _conport(result)["findings"]
+        if f["code"] == "TENANT_STATE_UNREADABLE"
+    )
     assert finding["severity"] == "FAIL" and str(state_path) in finding["message"]
     assert "up" not in runner.kinds()
 
@@ -1051,7 +1214,11 @@ def test_gate_skipped_when_another_start_already_adopted(tmp_path, monkeypatch):
     assert result.exit_code == 0, result.to_dict()
     assert not [k for k in runner.kinds() if k.startswith("gate:")]
     assert lock["taken"] == 1  # the state was re-read under the lock
-    notes = [f for f in _conport(result)["findings"] if f["code"] == "CONPORT_TENANT_GATE_ADOPTED"]
+    notes = [
+        f
+        for f in _conport(result)["findings"]
+        if f["code"] == "CONPORT_TENANT_GATE_ADOPTED"
+    ]
     assert notes and "already" in notes[0]["message"]
 
 
@@ -1069,7 +1236,9 @@ def test_gate_runner_oserror_is_a_gate_failed_finding(tmp_path, monkeypatch):
 
     assert result.exit_code == 1
     finding = next(
-        f for f in _conport(result)["findings"] if f["code"] == "CONPORT_TENANT_GATE_FAILED"
+        f
+        for f in _conport(result)["findings"]
+        if f["code"] == "CONPORT_TENANT_GATE_FAILED"
     )
     assert finding["severity"] == "FAIL"
     assert "Permission denied" in finding["message"]
@@ -1105,7 +1274,9 @@ def test_init_reports_oserror_filename_and_strerror(tmp_path, monkeypatch, capsy
     projects = ct.secrets_path(identity.project_id).parent.parent
     projects.parent.mkdir(parents=True, exist_ok=True)
     projects.write_text("not a directory\n")
-    monkeypatch.setattr(mcp_commands, "_INIT_RUNNER", FakeCmdRunner(FakePsql(legacy_count=0)))
+    monkeypatch.setattr(
+        mcp_commands, "_INIT_RUNNER", FakeCmdRunner(FakePsql(legacy_count=0))
+    )
 
     ok = mcp_commands._init_sidecars(repo, ["conport"], {})
 
@@ -1134,3 +1305,126 @@ def test_start_legacy_shared_never_passes_ambient_tenant_vars(tmp_path, monkeypa
     env_file = Path(up["cmd"][up["cmd"].index("--env-file") + 1])
     text = env_file.read_text()
     assert "CONPORT_DB_" not in text and "ambient-fake" not in text
+
+
+# --- final review M7: CREATE ROLE carries a SCRAM-SHA-256 verifier ---------------------
+
+_SCRAM_RE = re.compile(
+    r"SCRAM-SHA-256\$4096:(?P<salt>[A-Za-z0-9+/=]+)\$(?P<stored>[A-Za-z0-9+/=]+):(?P<server>[A-Za-z0-9+/=]+)"
+)
+
+
+def test_create_role_sends_a_scram_verifier_not_the_password(
+    tmp_path: Path, monkeypatch
+):
+    import base64
+    import hashlib
+    import hmac
+
+    identity = _identity(_repo(tmp_path))
+    psql = FakePsql(legacy_count=0)
+    monkeypatch.setattr(ct.secrets, "token_hex", lambda n: FAKE_PROVISIONED_PASSWORD)
+
+    creds = ct.resolve_tenant(
+        identity, envrc_values={}, psql=psql, secrets_root=tmp_path / "s"
+    )
+
+    create = next(sql for _db, sql in psql.calls if sql.startswith("CREATE ROLE"))
+    assert FAKE_PROVISIONED_PASSWORD not in create
+    match = _SCRAM_RE.search(create)
+    assert match, create
+    salt = base64.b64decode(match["salt"])
+    assert len(salt) == 16
+    # the verifier is the one the plaintext in the secrets file logs in with
+    salted = hashlib.pbkdf2_hmac("sha256", creds.db_password.encode(), salt, 4096)
+    client_key = hmac.new(salted, b"Client Key", "sha256").digest()
+    assert base64.b64decode(match["stored"]) == hashlib.sha256(client_key).digest()
+    assert (
+        base64.b64decode(match["server"])
+        == hmac.new(salted, b"Server Key", "sha256").digest()
+    )
+    stored = ct.load_secrets(
+        ct.secrets_path(identity.project_id, secrets_root=tmp_path / "s")
+    )
+    assert (
+        stored.db_password == FAKE_PROVISIONED_PASSWORD
+    )  # the client still gets plaintext
+
+
+def test_scram_verifier_matches_the_rfc_7677_exchange():
+    """RFC 7677 section 3 test vector (user "user", password "pencil")."""
+    import base64
+    import hashlib
+    import hmac
+
+    verifier = ct.scram_sha256_verifier(
+        "pencil", salt=base64.b64decode("W22ZaJ0SNY7soEsUEjb6gQ==")
+    )
+    match = _SCRAM_RE.fullmatch(verifier)
+    assert match and match["salt"] == "W22ZaJ0SNY7soEsUEjb6gQ=="
+    stored = base64.b64decode(match["stored"])
+    server = base64.b64decode(match["server"])
+    nonce = "rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0"
+    auth = (
+        "n=user,r=rOprNGfwEbeRWgbNEkqO,"
+        f"r={nonce},s=W22ZaJ0SNY7soEsUEjb6gQ==,i=4096,"
+        f"c=biws,r={nonce}"
+    ).encode()
+    signature = hmac.new(server, auth, "sha256").digest()
+    assert (
+        base64.b64encode(signature).decode()
+        == "6rriTRBi23WpRR/wtup+mMhUZUn/dB5nLTJRsjl95G4="
+    )
+    proof = base64.b64decode("dHzbZapWIk4jUhN+Ute9ytag9zjfMHgsqmmiz7AndVQ=")
+    client_key = bytes(
+        a ^ b for a, b in zip(proof, hmac.new(stored, auth, "sha256").digest())
+    )
+    assert hashlib.sha256(client_key).digest() == stored
+
+
+def test_a_failing_create_role_never_echoes_the_verifier():
+    inner = FakePsql(legacy_count=0)
+
+    def psql(database: str, sql: str):
+        if sql.startswith("CREATE ROLE"):  # Postgres echoes the failing statement
+            return subprocess.CompletedProcess(
+                ["psql"], 1, "", f"ERROR: boom\nSTATEMENT: {sql}"
+            )
+        return inner(database, sql)
+
+    with pytest.raises(ct.TenantError) as excinfo:
+        ct.provision_database(
+            slug="fake_tenant",
+            workspace_id="/tmp/fake",
+            password=FAKE_PROVISIONED_PASSWORD,
+            psql=psql,
+            schema_path=ct.schema_path(),
+            migrations_dir=ct.migrations_dir(),
+        )
+    assert "STATEMENT" in excinfo.value.detail and "***" in excinfo.value.detail
+    assert "SCRAM-SHA-256$" not in excinfo.value.detail
+    assert FAKE_PROVISIONED_PASSWORD not in excinfo.value.detail
+
+
+# --- final review P1: the tenant gate reports failure by flag, not by detail text ----
+
+
+def test_gate_failure_with_an_empty_detail_is_still_a_failure(
+    tmp_path: Path, monkeypatch
+):
+    from dopemux.mcp import lifecycle as lc
+
+    identity = _identity(_repo(tmp_path))
+    creds = ct.TenantCredentials(
+        "conport_x", "conport_x", "fake-gate-pw", "provisioned"
+    )
+    monkeypatch.setattr(ct, "pending_gate_credentials", lambda project_id: creds)
+
+    def gate_fails_silently(*_a, **_k):
+        raise ct.TenantError("CONPORT_TENANT_GATE_FAILED", "")
+
+    monkeypatch.setattr(ct, "adopt_with_gate", gate_fails_silently)
+    findings = lc._run_tenant_gate(identity, "dopemux-x-conport", None, expected=True)
+    assert [(f["code"], f["severity"]) for f in findings] == [
+        ("CONPORT_TENANT_GATE_FAILED", "FAIL")
+    ]

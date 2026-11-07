@@ -1558,6 +1558,7 @@ def _run_tenant_gate(
         path = ct.secrets_path(project_id)
     except ValueError:
         return []
+    failed = False  # explicit: an empty detail must never read as success
     detail = ""
     try:
         if not expected and ct.pending_gate_credentials(project_id) is None:
@@ -1577,10 +1578,12 @@ def _run_tenant_gate(
     except ct.TenantError as exc:
         if exc.code != "CONPORT_TENANT_GATE_FAILED":
             return [{"code": exc.code, "severity": "FAIL", "message": exc.detail or exc.code}]
-        detail = exc.detail
+        failed = True
+        detail = exc.detail or "migration gate failed"
     except (OSError, ValueError) as exc:
+        failed = True
         detail = f"migration gate could not run ({ct.os_error_detail(exc)})"
-    if detail:
+    if failed:
         return [
             {
                 "code": "CONPORT_TENANT_GATE_FAILED",
@@ -1669,6 +1672,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
             container_names=container_names,
             labels_by_service=labels_by_service,
             memory_data_path=memory_data,
+            images={svc: dr.compose_image_name(svc, product=product) for svc in compose_services},
         )
 
     plan_doc = {
@@ -1764,10 +1768,10 @@ def _start_services(**kw: Any) -> LifecycleResult:
             interp_env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
             override_file = Path(artifact_paths["compose.override.yml"])
             env_file = Path(artifact_paths["mcp.env"])
-            # compose.yml has `build:` with no `image:` for these services; a
-            # never-started project has no image, so `up` would build inline
-            # and blow the up budget. Probe (read-only) and build first.
-            image_name = dr.compose_image_name(compose_proj, svc)
+            # The override names one shared image per service and source version
+            # (D4); missing on this host, `up` would build inline and blow the up
+            # budget. Probe (read-only) and build first.
+            image_name = dr.compose_image_name(svc, product=product)
             present = dr.docker_image_exists(
                 image_name, runner=cmd_runner, env=interp_env
             )
@@ -2265,6 +2269,7 @@ def _stop_services(**kw: Any) -> LifecycleResult:
 
     results = []
     fail = False
+    stopped: List[str] = []  # services this run stopped; replayed on a locked reload
 
     for svc in selected:
         cname = container_names[svc]
@@ -2352,17 +2357,17 @@ def _stop_services(**kw: Any) -> LifecycleResult:
                         "result": res.to_dict(),
                     }
                 )
-                if res.exit_code == 0:
-                    registry.mark_stopped(
-                        project_id=project_id,
-                        service=svc,
-                        worktree_root=worktree_root,
-                    )
+                if res.exit_code == 0 and svc not in stopped:
+                    stopped.append(svc)
 
-    if not dry_run and registry.parse_status == "OK":
-        try:
-            registry.save()
-        except RegistryError:
+    if not dry_run and registry.parse_status == "OK" and stopped:
+        # Reload under the registry lock and apply only this run's changes, so a
+        # record another start saved meanwhile survives (never save the pre-lock read).
+        def _mark_stopped(fresh: RuntimeRegistry) -> None:
+            for svc in stopped:
+                fresh.mark_stopped(project_id=project_id, service=svc, worktree_root=worktree_root)
+
+        if save_state_locked(RuntimeRegistry, reg_path, _mark_stopped):
             fail = True
 
     warnings: List[Dict[str, Any]] = []

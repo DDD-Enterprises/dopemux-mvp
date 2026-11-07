@@ -89,7 +89,10 @@ def _flock(path: Path) -> Iterator[None]:
             try:
                 held = os.fstat(fd)
                 current = os.stat(path)
-                acquired = (held.st_dev, held.st_ino) == (current.st_dev, current.st_ino)
+                acquired = (held.st_dev, held.st_ino) == (
+                    current.st_dev,
+                    current.st_ino,
+                )
             except FileNotFoundError:
                 acquired = False
             if acquired:
@@ -118,7 +121,9 @@ def _runtime_dir() -> Path:
     if os.environ.get("PYTEST_CURRENT_TEST") and not os.environ.get(
         "DOPEMUX_ALLOW_HOME_LEASE_REGISTRY"
     ):
-        uid = getpass.getuser() or str(os.getuid() if hasattr(os, "getuid") else "nouser")
+        uid = getpass.getuser() or str(
+            os.getuid() if hasattr(os, "getuid") else "nouser"
+        )
         worker = os.environ.get("PYTEST_XDIST_WORKER") or "gw0"
         node = os.environ.get("PYTEST_CURRENT_TEST") or "unknown"
         session = os.environ.get("PYTEST_XDIST_TESTRUNUID") or os.environ.get(
@@ -223,6 +228,7 @@ def locked_reload_and_save(
     reg_path = Path(path)
     with registry_lock(reg_path):
         recovered = False
+        fresh: R
         try:
             fresh = registry_cls.load(reg_path, create_missing=True)  # type: ignore[attr-defined]
             if getattr(fresh, "parse_status", "OK") == "ERROR":

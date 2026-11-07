@@ -9,8 +9,10 @@ Resolution order (``resolve_tenant``):
    provision a database and LOGIN role (``CONNECT`` revoked from ``PUBLIC``)
    under ``provision_lock(project_id)``, ported from the sealed
    ``scripts/migration/provision_conport_project_db.sh``.
-4. History in the shared store (or the row count is unavailable): keep the
-   shared store (``legacy_shared``, Option A); migration to a tenant is M2.
+4. History in the shared store: keep the shared store (``legacy_shared``,
+   Option A); migration to a tenant is M2. When the row count is unavailable
+   (Postgres or docker did not answer) the history is unknown and resolution
+   fails closed with ``CONPORT_TENANT_UNKNOWN_HISTORY``; nothing is changed.
 
 Provisioning has two phases. The database phase (role, database, extensions,
 filtered schema, SQL migrations as the role, workspace rows) runs here,
@@ -25,13 +27,18 @@ re-provisioning or re-running non-idempotent SQL.
 Administration uses ``docker exec`` into ``dopemux-postgres-age`` as the
 bootstrap superuser, exactly like the script. SQL travels on psql's stdin,
 never argv. A password is never printed, logged, put in argv or rotated:
-an existing role without a secrets file fails closed.
+an existing role without a secrets file fails closed. ``CREATE ROLE`` carries
+a SCRAM-SHA-256 verifier (RFC 5802/7677), so the plaintext never reaches the
+server (or its statement log); only the 0600 secrets file holds it, for the
+client.
 """
 
 from __future__ import annotations
 
+import base64
 import contextlib
 import hashlib
+import hmac
 import os
 import re
 import secrets
@@ -39,7 +46,17 @@ import subprocess
 import tempfile
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Mapping, Optional, Sequence, Tuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+)
 from urllib.parse import quote
 
 from . import docker_runtime as dr
@@ -65,6 +82,7 @@ __all__ = [
     "psql_command",
     "resolve_tenant",
     "schema_path",
+    "scram_sha256_verifier",
     "secrets_path",
     "tenant_compose_env",
     "tenant_slug",
@@ -75,6 +93,7 @@ AGE_CONTAINER = "dopemux-postgres-age"
 SUPERUSER = "dopemux_age"
 SHARED_DB = "dopemux_knowledge_graph"
 UNREACHABLE_EVIDENCE = "postgres unreachable"
+UNKNOWN_HISTORY = "CONPORT_TENANT_UNKNOWN_HISTORY"
 ENVRC_FILENAME = ".envrc.dopemux-mcp"
 SECRETS_FILENAME = "secrets.env"
 STATE_FILENAME = "conport-tenant.state"
@@ -152,7 +171,9 @@ def _state_path(secrets_file: Path) -> Path:
 
 
 def schema_path() -> Path:
-    return dr.product_root() / "docker" / "mcp-servers-source" / "conport" / "schema.sql"
+    return (
+        dr.product_root() / "docker" / "mcp-servers-source" / "conport" / "schema.sql"
+    )
 
 
 def migrations_dir() -> Path:
@@ -164,7 +185,9 @@ def migrations_dir() -> Path:
 
 def _format_value(value: str) -> str:
     if any(ch in value for ch in ("\n", "\r", "\x00")):
-        raise TenantError("CONPORT_TENANT_SECRETS_INVALID", "credential values must be one line")
+        raise TenantError(
+            "CONPORT_TENANT_SECRETS_INVALID", "credential values must be one line"
+        )
     if _SAFE_VALUE_RE.match(value):
         return value
     if "'" not in value:
@@ -186,7 +209,9 @@ def _atomic_write(path: Path, text: str) -> None:
     path = Path(path)
     _mkdir_private(path.parent)
     os.chmod(path.parent, 0o700)
-    fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
+    fd, tmp = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent)
+    )
     try:
         os.fchmod(fd, 0o600)
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
@@ -204,7 +229,9 @@ def _atomic_write(path: Path, text: str) -> None:
 def write_secrets(path: Path, creds: TenantCredentials) -> None:
     """``KEY=VALUE`` lines for the three ``CONPORT_DB_*`` keys; dir 0700, file 0600, atomic."""
     values = (creds.db_name, creds.db_user, creds.db_password)
-    body = "".join(f"{key}={_format_value(val)}\n" for key, val in zip(CRED_KEYS, values))
+    body = "".join(
+        f"{key}={_format_value(val)}\n" for key, val in zip(CRED_KEYS, values)
+    )
     _atomic_write(Path(path), body)
 
 
@@ -346,7 +373,10 @@ def default_psql_runner(
         argv = psql_command(database)
         if runner is None and _hermetic_refusal():
             return subprocess.CompletedProcess(
-                argv, 1, "", "refused: a real psql under pytest needs an injected runner"
+                argv,
+                1,
+                "",
+                "refused: a real psql under pytest needs an injected runner",
             )
         res = dr.run_cmd(argv, runner=runner, input_text=sql, timeout=timeout)
         return subprocess.CompletedProcess(argv, res.exit_code, res.stdout, res.stderr)
@@ -363,6 +393,31 @@ def _literal(value: str) -> str:
     if "\x00" in value:
         raise ValueError("NUL in SQL literal")
     return "'" + value.replace("'", "''") + "'"
+
+
+SCRAM_ITERATIONS = 4096
+SCRAM_SALT_BYTES = 16
+
+
+def scram_sha256_verifier(
+    password: str, *, salt: Optional[bytes] = None, iterations: int = SCRAM_ITERATIONS
+) -> str:
+    """Postgres ``SCRAM-SHA-256$<iter>:<salt>$<StoredKey>:<ServerKey>`` (RFC 5802/7677).
+
+    ``CREATE ROLE ... PASSWORD '<verifier>'`` stores it as is, so the plaintext
+    never reaches the server. ``password`` must already be SASLprep-normalised
+    (provisioning only uses generated hex). ``salt`` defaults to 16 random bytes.
+    """
+    salt = secrets.token_bytes(SCRAM_SALT_BYTES) if salt is None else salt
+    salted = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, iterations)
+    client_key = hmac.new(salted, b"Client Key", "sha256").digest()
+    stored_key = hashlib.sha256(client_key).digest()
+    server_key = hmac.new(salted, b"Server Key", "sha256").digest()
+
+    def b64(raw: bytes) -> str:
+        return base64.b64encode(raw).decode("ascii")
+
+    return f"SCRAM-SHA-256${iterations}:{b64(salt)}${b64(stored_key)}:{b64(server_key)}"
 
 
 def _redact(text: str, secret: str) -> str:
@@ -436,9 +491,13 @@ def count_legacy_rows(aliases: Sequence[str], *, psql: PsqlRunner) -> Optional[i
             return 0
         in_list = ", ".join(_literal(a) for a in names)
         union = "\n    UNION ALL\n    ".join(
-            f"SELECT 1 FROM public.{t} WHERE workspace_id IN ({in_list})" for t in present
+            f"SELECT 1 FROM public.{t} WHERE workspace_id IN ({in_list})"
+            for t in present
         )
-        result = psql(SHARED_DB, f"SELECT 'DPMX_COUNT=' || count(*) FROM (\n    {union}\n) AS legacy;\n")
+        result = psql(
+            SHARED_DB,
+            f"SELECT 'DPMX_COUNT=' || count(*) FROM (\n    {union}\n) AS legacy;\n",
+        )
         if result.returncode != 0:
             return None
         value = _marker(result, "DPMX_COUNT")
@@ -462,7 +521,9 @@ def tenant_slug(identity: Any) -> str:
         digest = hashlib.sha256(root.encode("utf-8")).hexdigest()
     slug = f"{base}_{digest[:8]}"
     if not _SLUG_RE.match(slug):
-        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", f"cannot derive a tenant slug for {root}")
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED", f"cannot derive a tenant slug for {root}"
+        )
     return slug
 
 
@@ -479,7 +540,10 @@ def filtered_schema(path: Path) -> str:
             out.append(line)
     sql = "".join(out)
     if re.search(r"^INSERT INTO", sql, re.M):
-        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", "schema seed filter left INSERT statements")
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED",
+            "schema seed filter left INSERT statements",
+        )
     return sql
 
 
@@ -532,11 +596,16 @@ def provision_database(
     told each one as soon as it has applied, so progress survives a kill.
     """
     if not _SLUG_RE.match(slug):
-        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", f"unsafe tenant slug {slug!r}")
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED", f"unsafe tenant slug {slug!r}"
+        )
     if not _HEX_PASSWORD_RE.match(password):
-        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", "tenant password must be generated hex")
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED", "tenant password must be generated hex"
+        )
     role = db = f"conport_{slug}"
     as_role = f"SET ROLE {role};\n"
+    hidden = [password]  # plus the SCRAM verifier once there is one
 
     def run(database: str, sql: str, what: str) -> subprocess.CompletedProcess:
         try:
@@ -546,16 +615,21 @@ def provision_database(
                 "CONPORT_TENANT_PROVISION_FAILED", f"{what}: {exc.__class__.__name__}"
             ) from None
         if res.returncode != 0:
-            tail = _redact(str(res.stderr or res.stdout or "").strip()[-300:], password)
+            tail = str(res.stderr or res.stdout or "").strip()[-300:]
+            for secret in hidden:
+                tail = _redact(tail, secret)
             raise TenantError(
-                "CONPORT_TENANT_PROVISION_FAILED", f"{what} failed (psql exit {res.returncode}): {tail}"
+                "CONPORT_TENANT_PROVISION_FAILED",
+                f"{what} failed (psql exit {res.returncode}): {tail}",
             )
         return res
 
     def scalar(database: str, sql: str, name: str, what: str) -> str:
         value = _marker(run(database, sql, what), name)
         if value is None:
-            raise TenantError("CONPORT_TENANT_PROVISION_FAILED", f"{what}: unexpected psql output")
+            raise TenantError(
+                "CONPORT_TENANT_PROVISION_FAILED", f"{what}: unexpected psql output"
+            )
         return value
 
     # 1. role + database (superuser); the wall: no PUBLIC connect
@@ -571,7 +645,14 @@ def provision_database(
     if persist is not None:
         persist()
     if not role_exists:
-        run("postgres", f"CREATE ROLE {role} LOGIN PASSWORD {_literal(password)};", "CREATE ROLE")
+        # A SCRAM verifier, never the plaintext: a failing statement is logged verbatim.
+        verifier = scram_sha256_verifier(password)
+        hidden.append(verifier)
+        run(
+            "postgres",
+            f"CREATE ROLE {role} LOGIN PASSWORD {_literal(verifier)};",
+            "CREATE ROLE",
+        )
     db_sql = f"SELECT 'DPMX_DB=' || count(*) FROM pg_catalog.pg_database WHERE datname = {_literal(db)};"
     if scalar("postgres", db_sql, "DPMX_DB", "database lookup") == "0":
         run("postgres", f"CREATE DATABASE {db} OWNER {role};", "CREATE DATABASE")
@@ -581,15 +662,27 @@ def provision_database(
         "REVOKE CONNECT",
     )
     # 2. extensions (superuser-only); AGE is optional, as in the script
-    run(db, 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";\nCREATE EXTENSION IF NOT EXISTS "pg_trgm";\n', "extensions")
+    run(
+        db,
+        'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";\nCREATE EXTENSION IF NOT EXISTS "pg_trgm";\n',
+        "extensions",
+    )
     with contextlib.suppress(Exception):
         psql(db, "CREATE EXTENSION IF NOT EXISTS age;\n")
     # 3. + 4. filtered schema and SQL migrations AS the role (it owns its tables);
     # skipped when a previous run already created them (schema.sql is not idempotent)
-    probe = as_role + "SELECT 'DPMX_PRESENT=' || (to_regclass('public.decisions') IS NOT NULL)::text;\n"
+    probe = (
+        as_role
+        + "SELECT 'DPMX_PRESENT=' || (to_regclass('public.decisions') IS NOT NULL)::text;\n"
+    )
     present = scalar(db, probe, "DPMX_PRESENT", "schema probe") == "true"
+    todo: Tuple[str, ...]
     if not present:
-        run(db, as_role + "BEGIN;\n" + filtered_schema(schema_path) + "\nCOMMIT;\n", "schema")
+        run(
+            db,
+            as_role + "BEGIN;\n" + filtered_schema(schema_path) + "\nCOMMIT;\n",
+            "schema",
+        )
         todo = PROVISION_MIGRATIONS
     else:
         todo = _remaining_migrations(applied_through)
@@ -605,18 +698,27 @@ def provision_database(
     try:
         _tables, decisions, progress, workspaces = (int(c) for c in counts)
     except ValueError:
-        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", "verification: unexpected counts") from None
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED", "verification: unexpected counts"
+        ) from None
     if not present and (decisions or progress):
-        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", "verification: seed rows leaked into the tenant")
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED",
+            "verification: seed rows leaked into the tenant",
+        )
     if workspaces < 1:
-        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", "verification: workspace not registered")
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED", "verification: workspace not registered"
+        )
 
 
 # --- gate phase ---------------------------------------------------------------------
 
 
 def _gate_database_url(creds: TenantCredentials) -> str:
-    user, pw, db = (quote(v, safe="") for v in (creds.db_user, creds.db_password, creds.db_name))
+    user, pw, db = (
+        quote(v, safe="") for v in (creds.db_user, creds.db_password, creds.db_name)
+    )
     return f"postgresql://{user}:{pw}@{AGE_CONTAINER}:5432/{db}"
 
 
@@ -634,10 +736,13 @@ def adopt_with_gate(
     file's path. The file is removed in ``finally``.
     """
     if creds.source == "legacy_shared" or not creds.db_password:
-        raise TenantError("CONPORT_TENANT_GATE_FAILED", "no tenant credentials to adopt")
+        raise TenantError(
+            "CONPORT_TENANT_GATE_FAILED", "no tenant credentials to adopt"
+        )
     if runner is None and _hermetic_refusal():
         raise TenantError(
-            "CONPORT_TENANT_GATE_FAILED", "refused: a real docker exec under pytest needs an injected runner"
+            "CONPORT_TENANT_GATE_FAILED",
+            "refused: a real docker exec under pytest needs an injected runner",
         )
     fd, tmp = tempfile.mkstemp(prefix="dopemux-conport-gate-", suffix=".env")
     try:
@@ -651,7 +756,9 @@ def adopt_with_gate(
             argv += [container_name, "python", GATE_SCRIPT, command]
             res = dr.run_cmd(argv, runner=runner, timeout=timeout)
             if res.exit_code != 0:
-                tail = _redact((res.stderr or res.stdout or "").strip()[-300:], creds.db_password)
+                tail = _redact(
+                    (res.stderr or res.stdout or "").strip()[-300:], creds.db_password
+                )
                 raise TenantError(
                     "CONPORT_TENANT_GATE_FAILED",
                     f"migration gate {command} in {container_name} exited {res.exit_code}: {tail}",
@@ -664,7 +771,9 @@ def adopt_with_gate(
 # --- resolution -----------------------------------------------------------------------
 
 
-def _envrc_credentials(values: Optional[Mapping[str, str]]) -> Optional[TenantCredentials]:
+def _envrc_credentials(
+    values: Optional[Mapping[str, str]],
+) -> Optional[TenantCredentials]:
     vals = values or {}
     if not all(str(vals.get(key) or "").strip() for key in CRED_KEYS):
         return None
@@ -687,7 +796,9 @@ def _legacy_shared(evidence: str) -> TenantCredentials:
 
 
 def _with_path(exc: TenantError, path: Path) -> TenantError:
-    detail = f"{exc.detail}; secrets file {path}" if exc.detail else f"secrets file {path}"
+    detail = (
+        f"{exc.detail}; secrets file {path}" if exc.detail else f"secrets file {path}"
+    )
     return TenantError(exc.code, detail)
 
 
@@ -708,9 +819,13 @@ def _resume_locked(identity: Any, path: Path, psql: PsqlRunner) -> TenantCredent
     """Finish an interrupted database phase with the password already on disk."""
     creds = load_secrets(path)
     if creds is None:
-        raise TenantError("CONPORT_TENANT_SECRETS_INVALID", f"{path} vanished during provisioning")
+        raise TenantError(
+            "CONPORT_TENANT_SECRETS_INVALID", f"{path} vanished during provisioning"
+        )
     if not creds.db_name.startswith("conport_"):
-        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", f"{path} names no provisioned tenant")
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED", f"{path} names no provisioned tenant"
+        )
     progress = _database_progress(_read_state(path)) or ""
     try:
         provision_database(
@@ -738,7 +853,9 @@ def _provision_locked(identity: Any, path: Path, psql: PsqlRunner) -> TenantCred
     )
 
     def persist() -> None:
-        _write_state(path, STATE_DATABASE)  # before the secrets: a crash in between re-provisions
+        _write_state(
+            path, STATE_DATABASE
+        )  # before the secrets: a crash in between re-provisions
         write_secrets(path, creds)
 
     try:
@@ -769,12 +886,15 @@ def resolve_tenant(
     """Secrets file → legacy envrc → shared store with history → provision.
 
     ``provision=False`` (doctor) never writes and never provisions: it returns
-    None where a start would provision. ``identity`` is the lifecycle's own
+    None where a start would provision. An unavailable legacy row count raises
+    ``CONPORT_TENANT_UNKNOWN_HISTORY`` either way. ``identity`` is the lifecycle's own
     identity object (``project_id``, ``project_root``, ``project_hash``).
     """
     project_id = str(getattr(identity, "project_id", "") or "")
     if not project_id:
-        raise TenantError("PROJECT_IDENTITY_UNKNOWN", "conport tenant needs a git project identity")
+        raise TenantError(
+            "PROJECT_IDENTITY_UNKNOWN", "conport tenant needs a git project identity"
+        )
     path = secrets_path(project_id, secrets_root=secrets_root)
 
     current = _current(path)
@@ -788,7 +908,9 @@ def resolve_tenant(
                 return _current(path) or current
             return _resume_locked(identity, path, psql)
 
-    adopted = _envrc_credentials(envrc_values) or _envrc_credentials(_main_checkout_envrc(identity))
+    adopted = _envrc_credentials(envrc_values) or _envrc_credentials(
+        _main_checkout_envrc(identity)
+    )
     if adopted is not None:
         if not provision:
             return adopted
@@ -802,9 +924,18 @@ def resolve_tenant(
 
     count = count_legacy_rows(legacy_workspace_aliases(identity), psql=psql)
     if count is None:
-        return _legacy_shared(f"{UNREACHABLE_EVIDENCE}; legacy row count unavailable ({SHARED_DB})")
+        # Unknown is not "has history": guessing either way could split a project's
+        # data between the shared store and a new tenant (final review R2).
+        raise TenantError(
+            UNKNOWN_HISTORY,
+            f"{UNREACHABLE_EVIDENCE}: this project's history in the shared {SHARED_DB} "
+            f"store is unknown; start Postgres ({AGE_CONTAINER}) or fix docker, then "
+            "retry; nothing was changed",
+        )
     if count > 0:
-        return _legacy_shared(f"{count} rows for this project in the shared {SHARED_DB} store")
+        return _legacy_shared(
+            f"{count} rows for this project in the shared {SHARED_DB} store"
+        )
     if not provision:
         return None
     with provision_lock(project_id):
