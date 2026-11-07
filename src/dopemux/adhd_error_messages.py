@@ -147,7 +147,7 @@ WORKTREE_ERRORS: Dict[str, ADHDErrorMessage] = {
         fix=[
             "Run 'dopemux doctor --worktree -v' to see what went wrong",
             "Check that .claude.json has a section for your workspace",
-            "Try manual configuration as fallback: check docs/WORKTREE_MCP_SETUP.md"
+            "Try manual configuration as fallback: check docs/02-how-to/mcp-setup-other-repos.md"
         ],
         context="Auto-configuration updates ConPort and Dope-Context settings for workspace isolation"
     ),

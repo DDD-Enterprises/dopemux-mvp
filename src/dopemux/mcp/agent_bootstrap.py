@@ -45,7 +45,7 @@ dopemux mcp doctor
 ## Healthy Sequence
 
 ```bash
-dopemux mcp init                 # once per worktree (scaffolds config)
+dopemux mcp init --repo <path>   # once per project, never per worktree (scaffolds config)
 dopemux mcp repair-config --dry-run
 dopemux mcp repair-config --apply
 dopemux mcp start

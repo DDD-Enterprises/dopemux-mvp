@@ -2,7 +2,7 @@ import pathlib
 roots = [
   ".claude/claude.md",
   ".claude/context.md",
-  ".claude/WORKTREE_MCP_SETUP.md",
+  "docs/02-how-to/mcp-setup-other-repos.md",
   "docs/03-reference/services/task-orchestrator.md",
   "docs/90-adr/adr-203-task-orchestrator-un-deprecation-3.md"
 ]

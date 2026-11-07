@@ -113,21 +113,22 @@ Open the session in the checkout, or let the runner make a worktree. The launche
 connect. Two things are expected the first time:
 
 - **Approve the project servers once.** Claude Code asks once to approve the servers in a
-  project's `.mcp.json`; until you do, `claude mcp list` shows them as "Pending approval".
-  That is Claude Code's prompt, not a launcher failure.
+  project's `.mcp.json`; a new project's servers show `Pending approval` in `claude mcp list`
+  until the first interactive session approves them (observed). That is Claude Code's prompt,
+  not a launcher failure.
 - **A new worktree builds its images once.** Images are per compose project, so the first
   launch in a worktree with no image prints `LAUNCH_IMAGE_BUILDING` and exits while a
-  detached build runs (about 2.5 minutes on one measured host; the build log path is
+  detached build runs (about 2.5 minutes observed on 2026-11-05; the build log path is
   printed). When the build finishes, run `/mcp reconnect all` in the session. Running
   `dopemux mcp init --repo <worktree>` first pre-builds them instead.
 
 The launcher waits up to 25 s for a starting sidecar (`DOPEMUX_LAUNCH_WAIT`, or
-`dopemux mcp launch --wait SECONDS`), inside Claude Code's 30 s MCP connect limit
-(`MCP_TIMEOUT`). If that is exceeded it exits with `LAUNCH_WAIT_EXCEEDED`; run
+`dopemux mcp launch --wait SECONDS`), inside Claude Code's 30 s MCP connect limit (`MCP_TIMEOUT` defaults to 30 s; Claude Code
+environment-variable reference, read 2026-11-05). If that is exceeded it exits with `LAUNCH_WAIT_EXCEEDED`; run
 `/mcp reconnect all`.
 
-`claude mcp list` only shows `CONNECTION_CLOSED` for a refused launcher and hides the stderr
-remedy. To see the code and remedy, run the launcher by hand from the checkout:
+`claude mcp list` shows `CONNECTION_CLOSED` for a refused launcher (observed with Claude Code
+2.1.318) and hides the stderr remedy. To see the code and remedy, run the launcher by hand from the checkout:
 
 ```bash
 cd ~/code/your-project && dopemux mcp launch conport
@@ -200,7 +201,8 @@ Reaping also runs automatically, bounded and never as a daemon: at the `Stop` an
 `~/.dopemux/mcp/runtime/reap.last`), at `SessionEnd` (unthrottled, at most one instance), and at
 every launcher start (throttled the same way, at most one instance). Hook runs stop at most 3 candidates with
 `docker stop --time 5`; the launcher stops at most 1 with `--time 3`. `SessionEnd` hooks share a
-short default budget, so `.claude/settings.json` sets `"timeout": 60` on that hook entry
+1.5 s budget unless the hook sets `timeout` (Claude Code hooks and environment-variable
+references, read 2026-11-05), so `.claude/settings.json` sets `"timeout": 60` on that hook entry
 (`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` is the alternative). A reap interrupted after
 `docker rm` is finished by the next run.
 

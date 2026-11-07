@@ -264,8 +264,7 @@ def plan_repair(
         },
         next_actions=[
             "dopemux mcp start",
-            "source .envrc.dopemux-mcp",
-            "dopemux mcp doctor",
+            f"dopemux mcp doctor --repo {repo_path}",
         ],
     )
 
