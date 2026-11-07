@@ -348,7 +348,7 @@ def test_ensure_backend_image_missing_spawns_build_and_exits(
     # the build tags the one shared image
     image = dr.compose_image_name("conport", product=dr.product_root())
     assert f"image: {image}" in (target.runtime_dir / "compose.build.yml").read_text()
-    assert (target.runtime_dir / "build.pid").read_text().strip() == "4242"
+    assert (target.runtime_dir / "build-conport.pid").read_text().strip() == "4242"
 
 
 def test_two_launchers_one_start(tmp_path: Path, registry, no_image_build):
@@ -545,12 +545,7 @@ def test_launch_reaps_after_attach_and_before_ensure_backend(
     assert order == ["reap attached=True", "ensure_backend"]
     # launcher-style bounds: it runs inside Claude's connect budget
     assert limits == [
-        {
-            "max_candidates": 1,
-            "stop_time_s": 3,
-            "cmd_timeout_s": 10.0,
-            "deadline_s": 8.0,
-        }
+        {"max_candidates": 1, "stop_time_s": 2, "cmd_timeout_s": 3.0, "deadline_s": 8.0}
     ]
 
 
@@ -894,7 +889,9 @@ def test_launcher_killed_by_signal_still_detaches(
             time.sleep(0.05)
         assert (rt / "attached" / str(child.pid)).is_file()
         child.send_signal(getattr(signal, signame))
-        assert child.wait(timeout=20) == code
+        returncode = child.wait(timeout=20)
+        err = child.stderr.read().decode(errors="replace") if child.stderr else ""
+        assert returncode == code, err[-2000:]
     finally:
         if child.poll() is None:
             child.kill()
@@ -977,7 +974,9 @@ def test_a_stale_build_pid_file_is_replaced(tmp_path: Path, registry, monkeypatc
     target.runtime_dir.mkdir(parents=True, exist_ok=True)
     dead = subprocess.Popen(["true"])
     dead.wait()
-    (target.runtime_dir / "build.pid").write_text(f"{dead.pid}\n", encoding="utf-8")
+    (target.runtime_dir / "build-conport.pid").write_text(
+        f"{dead.pid}\n", encoding="utf-8"
+    )
     monkeypatch.setattr(dr, "docker_image_exists", lambda *a, **k: False)
     spawned: List[Any] = []
     monkeypatch.setattr(
@@ -988,7 +987,7 @@ def test_a_stale_build_pid_file_is_replaced(tmp_path: Path, registry, monkeypatc
     with pytest.raises(LaunchError):
         launcher._build_image_if_missing(target)
     assert len(spawned) == 1
-    assert (target.runtime_dir / "build.pid").read_text().strip() == "4243"
+    assert (target.runtime_dir / "build-conport.pid").read_text().strip() == "4243"
 
 
 # --- M3: a record without the port never resolves to the template default ---------
@@ -1044,3 +1043,214 @@ def test_launch_quiets_sdk_info_logs_while_probing(
     assert {
         n: logging.getLogger(n).level for n in before
     } == before  # restored afterwards
+
+
+# --- residual fix B1: one build pid per service ---------------------------------------
+# Port of the re-review probe `rr2/t/test_rr2_build_pid_cross_service.py`: conport's
+# live build used to block dope-memory's (one runtime dir, one build.pid).
+
+
+def test_one_services_build_never_blocks_the_others(
+    tmp_path: Path, registry, monkeypatch, capsys
+):
+    repo = _git_repo(tmp_path)
+    conport = launcher.build_target(repo, "conport", catalog=CATALOG)
+    memory = launcher.build_target(repo, "dope-memory", catalog=CATALOG)
+    assert conport.runtime_dir == memory.runtime_dir
+    monkeypatch.setattr(dr, "docker_image_exists", lambda *a, **k: False)
+    spawned: List[Any] = []
+
+    def fake_popen(cmd, **kwargs):
+        spawned.append(cmd)
+        return SimpleNamespace(pid=os.getpid())  # conport's build is still running
+
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    for target in (conport, memory):
+        with pytest.raises(LaunchError) as info:
+            launcher._build_image_if_missing(target)
+        assert info.value.code == "LAUNCH_IMAGE_BUILDING"
+    assert [cmd[-1] for cmd in spawned] == ["conport", "dope-memory"]
+    assert "still building" not in capsys.readouterr().err
+    for svc in ("conport", "dope-memory"):
+        pid_file = conport.runtime_dir / f"build-{svc}.pid"
+        assert pid_file.read_text().strip() == str(os.getpid())
+    # a second conport launch is still held off by conport's own build
+    with pytest.raises(LaunchError):
+        launcher._build_image_if_missing(conport)
+    assert len(spawned) == 2
+    assert "dopemux-conport:" in capsys.readouterr().err
+
+
+# --- residual fix B5: a build pid is stale after the build budget, not the up budget ---
+
+
+def test_build_pid_goes_stale_after_the_build_budget(tmp_path: Path, monkeypatch):
+    import time
+
+    monkeypatch.delenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS", raising=False)
+    pid_file = tmp_path / "build-conport.pid"
+    pid_file.write_text(f"{os.getpid()}\n", encoding="utf-8")
+
+    def aged(seconds: float) -> None:
+        then = time.time() - seconds
+        os.utime(pid_file, (then, then))
+
+    aged(200)  # past the 180 s `up` budget, well inside the 1800 s build budget
+    assert launcher._live_build_pid(pid_file) == os.getpid()
+    aged(dr.DEFAULT_BUILD_TIMEOUT_SECS + 60)
+    assert launcher._live_build_pid(pid_file) is None
+    # the budget follows the env
+    monkeypatch.setenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS", "100")
+    aged(200)
+    assert launcher._live_build_pid(pid_file) is None
+
+
+# --- residual fix B4: launch hands the proxy the real guard ---------------------------
+# Adapted from the re-review probe `rr2/to_reconnect_probe_guarded.py`, but driven
+# through `launch`: switch-project moved :7890 to project B while this session was
+# connected to project A's orchestrator.
+
+
+def _owner_switch_factory(served: List[str], connects: List[str]):
+    from contextlib import asynccontextmanager
+
+    import anyio
+    from mcp import ClientSession, types
+    from mcp.server.lowlevel import Server
+    from mcp.shared.memory import create_client_server_memory_streams
+    from mcp.shared.message import SessionMessage
+
+    plan = ["A-terminated", "B"]
+
+    def jar(owner: str) -> Server:
+        server: Server = Server(f"jar-{owner}")
+
+        @server.list_tools()
+        async def _list_tools() -> List[types.Tool]:
+            return [
+                types.Tool(
+                    name="whoami", description="x", inputSchema={"type": "object"}
+                )
+            ]
+
+        @server.call_tool()
+        async def _call_tool(
+            name: str, arguments: Dict[str, Any]
+        ) -> List[types.TextContent]:
+            served.append(owner)
+            return [types.TextContent(type="text", text=f"served by project {owner}")]
+
+        return server
+
+    async def terminate(outbound: Any, to_server: Any, to_client: Any) -> None:
+        async with outbound, to_client:
+            async for message in outbound:
+                root = message.message.root
+                if (
+                    isinstance(root, types.JSONRPCRequest)
+                    and root.method == "tools/call"
+                ):
+                    error = types.ErrorData(code=32600, message="Session terminated")
+                    reply = types.JSONRPCError(jsonrpc="2.0", id=root.id, error=error)
+                    await to_client.send(SessionMessage(types.JSONRPCMessage(reply)))
+                else:
+                    await to_server.send(message)
+
+    @asynccontextmanager
+    async def factory(**client_kwargs: Any):
+        mode = plan.pop(0)
+        connects.append(mode)
+        server = jar("A" if mode.startswith("A") else "B")
+        async with create_client_server_memory_streams() as (client, srv):
+            async with anyio.create_task_group() as tg:
+                options = server.create_initialization_options()
+                tg.start_soon(lambda: server.run(srv[0], srv[1], options))
+                write: Any = client[1]
+                if mode == "A-terminated":
+                    write, outbound = anyio.create_memory_object_stream(0)
+                    tg.start_soon(terminate, outbound, client[1], srv[1].clone())
+                async with ClientSession(client[0], write, **client_kwargs) as session:
+                    yield session
+                tg.cancel_scope.cancel()
+
+    return factory
+
+
+def test_launch_binds_the_real_reconnect_guard(
+    tmp_path: Path, monkeypatch, registry, capsys
+):
+    import anyio
+    from mcp import ClientSession
+    from mcp.shared.exceptions import McpError
+    from mcp.shared.memory import create_client_server_memory_streams
+
+    from dopemux.mcp import stdio_proxy
+
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+    monkeypatch.setattr(
+        launcher, "ensure_orchestrator", lambda target, **kw: TO_BACKEND
+    )
+    foreign = str(tmp_path / "elsewhere" / "project-b")
+    theirs = {
+        "dopemux.managed": "true",
+        "dopemux.service": "task-orchestrator",
+        "dopemux.project_id": "project-b",
+        "dopemux.project_root": foreign,
+    }
+    monkeypatch.setattr(
+        launcher,
+        "inspect_running_containers",
+        lambda **kw: di.DockerInspectResult(
+            available=True, containers=[_to_container(theirs)]
+        ),
+    )
+    served: List[str] = []
+    connects: List[str] = []
+    outcome: Dict[str, Any] = {}
+
+    def proxy_on_memory_streams(backend: BackendSpec, **kwargs: Any) -> int:
+        async def main() -> int:
+            box: Dict[str, int] = {}
+            async with create_client_server_memory_streams() as (
+                runner_side,
+                proxy_side,
+            ):
+                async with anyio.create_task_group() as tg:
+
+                    async def serve() -> None:
+                        box["code"] = await stdio_proxy.serve(
+                            backend,
+                            proxy_side[0],
+                            proxy_side[1],
+                            session_factory=_owner_switch_factory(served, connects),
+                            reconnect_guard=kwargs.get("reconnect_guard"),
+                        )
+
+                    tg.start_soon(serve)
+                    async with ClientSession(runner_side[0], runner_side[1]) as runner:
+                        with anyio.fail_after(10):
+                            await runner.initialize()
+                            try:
+                                outcome["result"] = await runner.call_tool("whoami", {})
+                            except McpError as exc:
+                                outcome["error"] = exc.error
+                                while "code" not in box:
+                                    await anyio.sleep(0.01)
+                    tg.cancel_scope.cancel()
+            return box.get("code", -1)  # -1: the proxy kept serving after the switch
+
+        return anyio.run(main)
+
+    monkeypatch.setattr(launcher, "run_proxy", proxy_on_memory_streams)
+
+    assert launcher.launch("task-orchestrator", env={}) == 1
+    assert "result" not in outcome
+    assert outcome["error"].code == -32000
+    assert outcome["error"].message == (
+        f"TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT: {foreign}; "
+        "run dopemux mcp switch-project here to take it over"
+    )
+    assert served == [] and connects == ["A-terminated"]  # project B never saw the call
+    assert "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT: " in capsys.readouterr().err

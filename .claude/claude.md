@@ -266,9 +266,11 @@ Identity is git-only (ambient `DOPEMUX_*` is ignored unless `--trust-env`); `.en
 needs no sourcing (dopemux reads its ports itself). `dopemux mcp switch-project` moves the single task-orchestrator;
 `dopemux mcp reap` (dry run by default) cleans up removed or idle worktrees; automatic reaping
 is disabled by the file `~/.dopemux/mcp/runtime/reap.disabled` or `DOPEMUX_MCP_REAP=0`. Images are
-one per service and source version (`dopemux-<service>:<key>`), shared by every worktree and
+one per service and Dockerfile version (`dopemux-<service>:<key>`), shared by every worktree and
 project: only the first launch on a host per Dockerfile version builds (`LAUNCH_IMAGE_BUILDING`,
-then `/mcp reconnect all`); later worktrees reuse them and reap never removes them.
+then `/mcp reconnect all`); later worktrees reuse them and reap never removes them. Sidecar
+source edits that leave the Dockerfile unchanged need a forced rebuild (`docker image rm
+dopemux-<service>:<key>`, see the how-to).
 Guide: `docs/02-how-to/mcp-setup-other-repos.md`.
 
 **Debug sequence**: run `dopemux mcp launch <name>` by hand in the checkout (prints the

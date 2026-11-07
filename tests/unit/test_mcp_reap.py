@@ -1055,3 +1055,81 @@ def test_reap_never_removes_images(tmp_path: Path, runtime: Path):
     reap.apply_reap(cands, runner=runner)
     assert runner.calls
     assert all(c[:2] != ["docker", "rmi"] and "image" not in c for c in runner.calls)
+
+
+# --- residual fix B2: the launcher reap really runs inside its 8 s deadline ------------
+# Port of the re-review probe `rr2/t/test_rr2_launcher_reap_limits.py`: with
+# cmd_timeout_s=10 reserved before every docker call and deadline_s=8, the launcher
+# reap skipped every candidate ("deadline") yet still touched reap.last.
+
+
+def test_launcher_limits_reap_one_candidate(tmp_path: Path, runtime: Path):
+    from dopemux.mcp.launcher import LAUNCH_REAP_LIMITS
+
+    _reg, containers = _many_pairs(tmp_path, runtime, 2)
+    runner = Recorder()
+    state = tmp_path / "s"
+    got = reap.maybe_reap(
+        throttle_s=600,
+        state_file=state,
+        now=lambda: NOW,
+        inspector=FakeInspect(containers),
+        runner=runner,
+        **LAUNCH_REAP_LIMITS,
+    )
+    assert got is not None and len(got.reaped) == 1
+    assert got.skip_reasons == ["cap"]  # one candidate per launcher, never "deadline"
+    stops = [c for c in runner.calls if c[1] == "stop"]
+    assert [c[:4] for c in stops] == [["docker", "stop", "--time", "2"]]
+    assert runner.kwargs and all(0 < k["timeout"] <= 3.0 for k in runner.kwargs)
+    assert state.exists()
+
+
+def test_a_call_timeout_is_capped_at_the_time_left(tmp_path: Path, runtime: Path):
+    reg, containers = _many_pairs(tmp_path, runtime, 1)
+    cands = _plan(reg, containers)
+    runner = Recorder()
+    report = reap.apply_reap(
+        cands, runner=runner, cmd_timeout_s=10.0, deadline=4.0, clock=lambda: 0.0
+    )
+    # 4 s are left: the candidate runs, each docker call gets at most those 4 s
+    assert len(report.reaped) == 1 and report.skipped == []
+    assert [k["timeout"] for k in runner.kwargs] == [4.0, 4.0]
+
+
+class _Ticks:
+    """A monotonic clock that is past any deadline after its first reading."""
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def __call__(self) -> float:
+        self.calls += 1
+        return 0.0 if self.calls == 1 else 100.0
+
+
+def test_a_deadline_skip_of_everything_leaves_reap_last_untouched(
+    tmp_path: Path, runtime: Path
+):
+    _reg, containers = _many_pairs(tmp_path, runtime, 1)
+    state = tmp_path / "s"
+
+    def run() -> Any:
+        return reap.maybe_reap(
+            throttle_s=600,
+            state_file=state,
+            now=lambda: NOW,
+            inspector=FakeInspect(containers),
+            runner=Recorder(),
+            deadline_s=8.0,
+            monotonic=_Ticks(),
+        )
+
+    got = run()
+    assert got is not None and got.reaped == [] and got.skip_reasons == ["deadline"]
+    assert not state.exists()  # the throttle is not consumed
+    state.write_text("", encoding="utf-8")
+    os.utime(state, (NOW - 5000, NOW - 5000))
+    again = run()
+    assert again is not None and again.skip_reasons == ["deadline"]
+    assert state.stat().st_mtime == NOW - 5000

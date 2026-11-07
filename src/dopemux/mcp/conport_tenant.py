@@ -428,6 +428,17 @@ def _redact(text: str, secret: str) -> str:
     return text
 
 
+def _redacted_tail(text: str, secrets_: Sequence[str], limit: int = 300) -> str:
+    """The last ``limit`` characters of ``text`` with every secret replaced first.
+
+    Redacting after the cut would miss a secret the cut split, leaving a fragment.
+    """
+    clean = str(text or "").strip()
+    for secret in secrets_:
+        clean = _redact(clean, secret)
+    return clean[-limit:]
+
+
 # --- legacy history in the shared store ---------------------------------------------
 
 
@@ -615,9 +626,7 @@ def provision_database(
                 "CONPORT_TENANT_PROVISION_FAILED", f"{what}: {exc.__class__.__name__}"
             ) from None
         if res.returncode != 0:
-            tail = str(res.stderr or res.stdout or "").strip()[-300:]
-            for secret in hidden:
-                tail = _redact(tail, secret)
+            tail = _redacted_tail(str(res.stderr or res.stdout or ""), hidden)
             raise TenantError(
                 "CONPORT_TENANT_PROVISION_FAILED",
                 f"{what} failed (psql exit {res.returncode}): {tail}",
@@ -756,8 +765,8 @@ def adopt_with_gate(
             argv += [container_name, "python", GATE_SCRIPT, command]
             res = dr.run_cmd(argv, runner=runner, timeout=timeout)
             if res.exit_code != 0:
-                tail = _redact(
-                    (res.stderr or res.stdout or "").strip()[-300:], creds.db_password
+                tail = _redacted_tail(
+                    res.stderr or res.stdout or "", [creds.db_password]
                 )
                 raise TenantError(
                     "CONPORT_TENANT_GATE_FAILED",

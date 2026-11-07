@@ -1768,7 +1768,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
             interp_env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
             override_file = Path(artifact_paths["compose.override.yml"])
             env_file = Path(artifact_paths["mcp.env"])
-            # The override names one shared image per service and source version
+            # The override names one shared image per service and Dockerfile version
             # (D4); missing on this host, `up` would build inline and blow the up
             # budget. Probe (read-only) and build first.
             image_name = dr.compose_image_name(svc, product=product)

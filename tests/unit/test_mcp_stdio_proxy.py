@@ -722,3 +722,34 @@ async def test_two_drops_in_separate_windows_both_heal(monkeypatch):
     assert first.content[0].text == "ok:2"
     assert second.content[0].text == "ok:3"
     assert backend.calls == ["echo", "echo"]
+
+
+# --- a termination signal inside an event loop ends it at a safe point --------------
+
+
+@pytest.fixture
+def fresh_deferred_exit(monkeypatch):
+    """A private deferred-exit slot, so a failure here never leaks into other tests."""
+    monkeypatch.setattr(stdio_proxy, "_deferred_exit", {})
+
+
+def test_defer_exit_outside_an_event_loop_declines(fresh_deferred_exit):
+    assert stdio_proxy.defer_exit_in_event_loop(143) is False
+
+
+def test_a_signal_deferred_into_a_probe_ends_it_with_system_exit(
+    monkeypatch, fresh_deferred_exit
+):
+    @asynccontextmanager
+    async def hanging_session(backend: Any, **_kwargs: Any):
+        # what the launcher's SIGTERM handler does when it fires inside the loop
+        assert stdio_proxy.defer_exit_in_event_loop(143) is True
+        await anyio.sleep_forever()
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(stdio_proxy, "_sdk_session", hanging_session)
+    started = time.monotonic()
+    with pytest.raises(SystemExit) as info:
+        stdio_proxy.probe_backend(SPEC, timeout_s=30.0)
+    assert info.value.code == 143
+    assert time.monotonic() - started < 5  # cancelled at once, not after the timeout

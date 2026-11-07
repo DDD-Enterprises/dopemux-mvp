@@ -23,7 +23,7 @@ Safety rules (all fail closed):
 * Containers are stopped and removed by id, never through ``docker compose`` and
   never with ``rm -f``. A container that fails to stop keeps its leases, registry
   entries and runtime dir. Images are never removed: one image per service and
-  source version is shared by every worktree and project.
+  Dockerfile version is shared by every worktree and project.
 * Registry entries and leases are changed only for the services whose containers
   this reap stopped and removed (the ``dopemux.service`` label), service by service:
   when one service's container fails, the services whose containers are all gone
@@ -32,7 +32,10 @@ Safety rules (all fail closed):
   A pair whose worktree is gone and whose containers are already gone (a reap killed
   after ``docker rm``) is cleaned by a state-only candidate (no container ids); that
   candidate also clears entries and leases with an empty service (owned by nobody).
-* Automatic runs are bounded (candidate cap, ``docker stop --time``, command timeout).
+* Automatic runs are bounded (candidate cap, ``docker stop --time``, command timeout,
+  deadline). Under a deadline each docker call gets ``min(cmd_timeout_s, time left)``;
+  a candidate is skipped (``deadline``) only once no time is left. A run that skipped
+  every candidate that way leaves the ``reap.last`` throttle as it was.
 * Automatic reaping (:func:`maybe_reap`: hooks and launcher) honours a kill switch:
   the file ``<runtime root>/reap.disabled`` or ``DOPEMUX_MCP_REAP`` set to
   ``0``/``off``/``false``. The explicit CLI ``dopemux mcp reap --apply`` ignores it.
@@ -542,11 +545,15 @@ def _stop_and_remove(
     runner: Callable[..., Any],
     *,
     stop_time_s: Optional[int],
-    cmd_timeout_s: Optional[float],
+    call_timeout: Callable[[], Optional[float]] = lambda: None,
     out_of_time: Callable[[], bool] = lambda: False,
 ) -> Tuple[List[str], List[str]]:
-    """``(errors, ids of containers now gone)``."""
-    kwargs: Dict[str, Any] = {} if cmd_timeout_s is None else {"timeout": cmd_timeout_s}
+    """``(errors, ids of containers now gone)``; ``call_timeout()`` bounds each docker call."""
+
+    def kwargs() -> Dict[str, Any]:
+        timeout = call_timeout()
+        return {} if timeout is None else {"timeout": timeout}
+
     stop_cmd = ["docker", "stop"] + (
         [] if stop_time_s is None else ["--time", str(stop_time_s)]
     )
@@ -558,7 +565,7 @@ def _stop_and_remove(
                 f"{cid}: deadline reached before docker call; resumes next run"
             )
             break
-        stop = runner([*stop_cmd, cid], **kwargs)
+        stop = runner([*stop_cmd, cid], **kwargs())
         if stop.exit_code != 0 and not _already_gone(stop):
             errors.append(
                 f"{cid}: docker stop failed ({stop.exit_code}): {stop.stderr.strip()[:200]}"
@@ -567,7 +574,7 @@ def _stop_and_remove(
         if out_of_time():
             errors.append(f"{cid}: deadline reached before docker rm; resumes next run")
             break
-        rm = runner(["docker", "rm", cid], **kwargs)
+        rm = runner(["docker", "rm", cid], **kwargs())
         if rm.exit_code != 0 and not _already_gone(rm):
             errors.append(
                 f"{cid}: docker rm failed ({rm.exit_code}): {rm.stderr.strip()[:200]}"
@@ -621,7 +628,7 @@ def _reap_one(
     report: ReapReport,
     *,
     stop_time_s: Optional[int],
-    cmd_timeout_s: Optional[float],
+    call_timeout: Callable[[], Optional[float]] = lambda: None,
     out_of_time: Callable[[], bool] = lambda: False,
 ) -> None:
     label = f"{cand.project_id}/{cand.worktree_hash}"
@@ -638,7 +645,7 @@ def _reap_one(
             cand,
             runner,
             stop_time_s=stop_time_s,
-            cmd_timeout_s=cmd_timeout_s,
+            call_timeout=call_timeout,
             out_of_time=out_of_time,
         )
         if docker_errors:
@@ -682,10 +689,12 @@ def apply_reap(
 
     ``max_candidates`` caps the work of one call, ``stop_time_s`` becomes
     ``docker stop --time N``, ``cmd_timeout_s`` is the per-command timeout and
-    ``deadline`` an absolute ``clock()`` (monotonic) value: once the next docker call
-    could not finish before it, the remaining candidates are reported under
-    ``skipped`` (reasons ``cap`` / ``deadline``) and wait for the next run. All
-    default to unbounded (the explicit CLI).
+    ``deadline`` an absolute ``clock()`` (monotonic) value. Under a deadline each
+    docker call is bounded by ``min(cmd_timeout_s, time left)``, so a timeout longer
+    than the time left never skips a candidate by itself; once no time is left the
+    remaining candidates are reported under ``skipped`` (reasons ``cap`` /
+    ``deadline``) and wait for the next run. All default to unbounded (the explicit
+    CLI).
     """
     leases = (
         Path(lease_path) if lease_path is not None else default_lease_registry_path()
@@ -695,10 +704,19 @@ def apply_reap(
     )
     report = ReapReport()
     limit = len(candidates) if max_candidates is None else max(0, max_candidates)
-    reserve = cmd_timeout_s or 0.0
+
+    def time_left() -> Optional[float]:
+        return None if deadline is None else deadline - clock()
 
     def out_of_time() -> bool:
-        return deadline is not None and clock() + reserve > deadline
+        left = time_left()
+        return left is not None and left <= 0
+
+    def call_timeout() -> Optional[float]:
+        left = time_left()
+        if left is None:
+            return cmd_timeout_s
+        return left if cmd_timeout_s is None else min(cmd_timeout_s, left)
 
     for index, cand in enumerate(candidates):
         if index >= limit:
@@ -715,7 +733,7 @@ def apply_reap(
                 registry,
                 report,
                 stop_time_s=stop_time_s,
-                cmd_timeout_s=cmd_timeout_s,
+                call_timeout=call_timeout,
                 out_of_time=out_of_time,
             )
         except Exception as exc:  # noqa: BLE001 - one bad candidate stops no other
@@ -747,8 +765,13 @@ def maybe_reap(
     ``throttle_s`` seconds. Docker is only asked when the runtime registry holds
     instances; an unreachable docker reaps nothing. Defaults suit hooks: at most 3
     candidates, ``docker stop --time 5``, 20 s per command; the Stop hook adds a 60 s
-    deadline. A launcher passes 1 / 3 / 10 and an 8 s deadline because it runs inside
-    Claude's connect budget; SessionEnd passes 1 / 3 / 10 and a 45 s deadline.
+    deadline. A launcher passes 1 candidate, ``--time 2``, 3 s per command and an 8 s
+    deadline because it runs inside Claude's connect budget; SessionEnd passes 1 / 3 /
+    10 and a 45 s deadline.
+
+    ``state_file`` is touched before any work (so concurrent hooks do not all run);
+    when candidates existed but the deadline or the cap let none be attempted, the
+    touch is undone, so a run that did nothing never consumes the throttle.
     """
     if reaping_disabled_reason() is not None:
         return None
@@ -763,6 +786,10 @@ def maybe_reap(
                 return None
         except OSError:
             pass
+    try:
+        previous: Optional[float] = state.stat().st_mtime
+    except OSError:
+        previous = None
     with contextlib.suppress(OSError):
         state.parent.mkdir(parents=True, exist_ok=True)
         state.touch()
@@ -792,7 +819,7 @@ def maybe_reap(
     )
     if not candidates:
         return report
-    return apply_reap(
+    report = apply_reap(
         candidates,
         runner=runner or run_cmd,
         max_candidates=max_candidates,
@@ -801,3 +828,16 @@ def maybe_reap(
         deadline=deadline,
         clock=monotonic,
     )
+    not_attempted = sum(1 for r in report.skip_reasons if r in {"cap", "deadline"})
+    if not_attempted == len(candidates):
+        _restore_throttle(state, previous)
+    return report
+
+
+def _restore_throttle(state: Path, previous: Optional[float]) -> None:
+    """Undo ``maybe_reap``'s touch of ``state`` (to ``previous``, or remove it)."""
+    with contextlib.suppress(OSError):
+        if previous is None:
+            state.unlink()
+        else:
+            os.utime(state, (previous, previous))

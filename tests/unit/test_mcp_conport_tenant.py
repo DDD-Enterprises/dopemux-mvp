@@ -1428,3 +1428,67 @@ def test_gate_failure_with_an_empty_detail_is_still_a_failure(
     assert [(f["code"], f["severity"]) for f in findings] == [
         ("CONPORT_TENANT_GATE_FAILED", "FAIL")
     ]
+
+
+# --- residual fix B3: redact before the error tail is cut to 300 characters ----------
+
+
+def test_a_cut_verifier_fragment_never_survives_the_error_tail():
+    inner = FakePsql(legacy_count=0)
+    seen: Dict[str, str] = {}
+    padding = "x" * 238  # the 300-character cut lands inside the verifier
+
+    def psql(database: str, sql: str):
+        if sql.startswith("CREATE ROLE"):
+            seen["verifier"] = re.search(r"'(SCRAM-SHA-256\$[^']+)'", sql).group(1)
+            echoed = f"ERROR: boom\nSTATEMENT: {sql}\n{padding}"
+            return subprocess.CompletedProcess(["psql"], 1, "", echoed)
+        return inner(database, sql)
+
+    with pytest.raises(ct.TenantError) as excinfo:
+        ct.provision_database(
+            slug="fake_tenant",
+            workspace_id="/tmp/fake",
+            password=FAKE_PROVISIONED_PASSWORD,
+            psql=psql,
+            schema_path=ct.schema_path(),
+            migrations_dir=ct.migrations_dir(),
+        )
+    detail = excinfo.value.detail
+    verifier = seen["verifier"]
+    for size in (20, 40, 60):  # no tail fragment of the verifier is left
+        assert verifier[-size:] not in detail
+    assert "***" in detail
+
+
+def test_a_cut_password_fragment_never_survives_the_gate_error_tail():
+    password = "f00d" * 12
+    creds = ct.TenantCredentials("conport_x", "conport_x", password, "provisioned")
+
+    def runner(cmd, **kwargs):
+        leak = (
+            f"could not connect: postgresql://conport_x:{password}@host/db\n"
+            + "y" * 260
+        )
+        return SimpleNamespace(returncode=1, stdout="", stderr=leak)
+
+    with pytest.raises(ct.TenantError) as excinfo:
+        ct.adopt_with_gate("dopemux-x-conport", creds, runner=runner)
+    assert password[-20:] not in excinfo.value.detail
+
+
+def test_init_fails_closed_when_the_shared_history_is_unknown(
+    tmp_path: Path, monkeypatch
+):
+    repo = _repo(tmp_path)
+    runner = FakeCmdRunner(FakePsql(rc=2))  # postgres does not answer
+
+    result = _invoke_init(repo, monkeypatch, runner)
+
+    assert result.exit_code != 0
+    assert "FAIL CONPORT_TENANT_UNKNOWN_HISTORY" in result.output
+    assert "nothing was changed" in result.output
+    # it stops before the images; the config written before the tenant step stays
+    assert not [c for c in runner.calls if "build" in c["cmd"]]
+    assert not ct.secrets_path(_identity(repo).project_id).exists()
+    assert (repo / ".mcp.json").exists()

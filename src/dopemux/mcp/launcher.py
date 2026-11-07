@@ -40,6 +40,7 @@ from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 from urllib.parse import urlparse
 
 from . import docker_runtime as dr
+from . import stdio_proxy
 from .docker_inspect import DockerContainerInfo, inspect_running_containers
 from .lifecycle import _port_is_free, run_lifecycle, runtime_dir_for
 from .locks import instance_lock, reserved_port_lock
@@ -349,11 +350,17 @@ def _wait_for(
 # --- image policy (D4) ----------------------------------------------------------
 
 
-BUILD_PID_FILENAME = "build.pid"
+def build_pid_path(runtime_dir: Path, service: str) -> Path:
+    """``<runtime_dir>/build-<service>.pid``: one per service, so both sidecars may build at once."""
+    return Path(runtime_dir) / f"build-{service}.pid"
 
 
 def _live_build_pid(pid_file: Path) -> Optional[int]:
-    """The pid of a build still running for this worktree, or None (absent or stale)."""
+    """The pid of a build still running, or None (absent, dead, or older than the build budget).
+
+    The age limit is ``build_timeout_secs()`` (``DOPEMUX_MCP_BUILD_TIMEOUT_SECS``,
+    default 1800 s), the budget a build gets, never the shorter ``up`` budget.
+    """
     try:
         pid = int(pid_file.read_text(encoding="utf-8").strip())
         age = time.time() - pid_file.stat().st_mtime
@@ -373,8 +380,10 @@ def _write_build_pid(pid_file: Path, pid: int) -> None:
 def _build_image_if_missing(target: LaunchTarget) -> None:
     """Refuse with ``LAUNCH_IMAGE_BUILDING`` while the shared image is missing (D4).
 
-    The first launch spawns one detached ``compose build`` and records its pid in
-    ``<runtime_dir>/build.pid``; a launch while that pid is alive spawns nothing.
+    The first launch spawns one detached ``compose build`` of this service and
+    records its pid in ``<runtime_dir>/build-<service>.pid``; a launch of the same
+    service while that pid is alive spawns nothing. The other service's build is
+    independent: conport and dope-memory may build at once.
     """
     if target.spec.get("management_model") != "compose-service":
         return
@@ -385,7 +394,7 @@ def _build_image_if_missing(target: LaunchTarget) -> None:
         return
     remedy = "building image; retry with /mcp reconnect all in a few minutes"
     log_path = target.runtime_dir / "build.log"
-    pid_file = target.runtime_dir / BUILD_PID_FILENAME
+    pid_file = build_pid_path(target.runtime_dir, target.service)
     running = _live_build_pid(pid_file)
     if running is not None:
         print(
@@ -401,9 +410,8 @@ def _build_image_if_missing(target: LaunchTarget) -> None:
         project_name=target.compose_project,
         services=[target.service],
     )
-    with open(
-        log_path, "ab"
-    ) as log:  # append: conport and dope-memory may build at once
+    # Append: conport and dope-memory may build at once (separate pid files).
+    with open(log_path, "ab") as log:
         proc = subprocess.Popen(
             command,
             stdin=subprocess.DEVNULL,
@@ -639,11 +647,12 @@ def _load_catalog(root: Optional[Path] = None) -> Dict[str, Any]:
     return catalog
 
 
-# A launcher runs inside Claude's connect budget: one candidate, short docker timeouts.
+# A launcher runs inside Claude's connect budget: one candidate, short docker calls
+# (each also capped at the time left), all within 8 s.
 LAUNCH_REAP_LIMITS: Dict[str, Any] = {
     "max_candidates": 1,
-    "stop_time_s": 3,
-    "cmd_timeout_s": 10.0,
+    "stop_time_s": 2,
+    "cmd_timeout_s": 3.0,
     "deadline_s": 8.0,
 }
 
@@ -653,13 +662,21 @@ _SIGNAL_EXITS = {"SIGTERM": 143, "SIGHUP": 129}
 
 @contextlib.contextmanager
 def _signals_exit_through_finally() -> Iterator[None]:
-    """SIGTERM/SIGHUP raise ``SystemExit(143/129)`` so ``finally`` detaches; restored on exit.
+    """SIGTERM/SIGHUP end the launch with 143/129 through ``finally``; restored on exit.
 
-    Only the main thread can install handlers; elsewhere this does nothing.
+    Outside an event loop the handler raises ``SystemExit(128 + signum)``. Inside
+    one (a backend probe or the proxy) raising there is unsafe (an exception group,
+    or a loop shutdown that never finishes), so the handler defers: the loop is
+    cancelled at a safe point and ``run_proxy`` returns the code, or
+    ``probe_backend`` raises it once its loop has ended. Only the main thread can
+    install handlers; elsewhere this does nothing.
     """
     installed: Dict[int, Any] = {}
+    stdio_proxy.reset_deferred_exit()
 
     def _exit(signum: int, _frame: Any) -> None:
+        if stdio_proxy.defer_exit_in_event_loop(128 + signum):
+            return
         raise SystemExit(128 + signum)
 
     if threading.current_thread() is threading.main_thread():

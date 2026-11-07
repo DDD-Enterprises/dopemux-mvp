@@ -84,8 +84,10 @@ from mcp.shared.exceptions import McpError
 __all__ = [
     "BackendSpec",
     "ProxyRefused",
+    "defer_exit_in_event_loop",
     "probe_backend",
     "quiet_sdk_loggers",
+    "reset_deferred_exit",
     "run_proxy",
     "serve",
 ]
@@ -640,21 +642,72 @@ def _route_logging_to_stderr() -> None:
         logging.getLogger(name).setLevel(logging.WARNING)
 
 
+# --- termination signals inside an event loop ------------------------------------
+#
+# Raising SystemExit from a signal handler while an asyncio loop runs is unsafe:
+# anyio task groups wrap it in a BaseExceptionGroup (exit 1) or the loop's shutdown
+# waits forever on tasks it cancelled natively, and then no ``finally`` runs. The
+# launcher's handler therefore calls ``defer_exit_in_event_loop`` first: inside a
+# loop it records the exit code and cancels the loop's root scope at a safe point;
+# ``run_proxy`` then returns the code and ``probe_backend`` raises it as SystemExit
+# once its loop has ended.
+
+_deferred_exit: Dict[str, Any] = {}  # {"code": int, "cancel": <root scope cancel>}
+
+
+def reset_deferred_exit() -> None:
+    """Forget a deferred exit (each launch starts clean)."""
+    _deferred_exit.clear()
+
+
+def defer_exit_in_event_loop(code: int) -> bool:
+    """From a signal handler: end the running event loop with ``code``; False if none runs."""
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        return False
+    _deferred_exit["code"] = code
+    cancel = _deferred_exit.get("cancel")
+    if cancel is not None:
+        loop.call_soon_threadsafe(cancel)
+    return True
+
+
+def _deferred_exit_code() -> Optional[int]:
+    code = _deferred_exit.get("code")
+    return int(code) if code is not None else None
+
+
+@contextmanager
+def _cancel_on_deferred_exit(scope: anyio.CancelScope) -> Iterator[None]:
+    """Let a deferred exit cancel ``scope`` (the loop's root scope) while the block runs."""
+    _deferred_exit["cancel"] = scope.cancel
+    if _deferred_exit_code() is not None:
+        scope.cancel()  # the signal came before the loop was ready
+    try:
+        yield
+    finally:
+        _deferred_exit.pop("cancel", None)
+
+
 def run_proxy(
     backend: BackendSpec,
     *,
     session_factory: Optional[SessionFactory] = None,
     reconnect_guard: Optional[ReconnectGuard] = None,
 ) -> int:
-    """Serve the runner over this process's stdio until stdin closes."""
+    """Serve the runner over this process's stdio until stdin closes.
+
+    Returns the backend exit code (0 or 1), or ``128 + signum`` when a termination
+    signal was deferred into the loop (``defer_exit_in_event_loop``).
+    """
     _route_logging_to_stderr()
 
     async def _main() -> int:
         exit_code = 1
-        with anyio.CancelScope() as scope:
-            stdin: Any = (
-                _DaemonStdin()
-            )  # duck-types the anyio.AsyncFile it reads lines from
+        with anyio.CancelScope() as scope, _cancel_on_deferred_exit(scope):
+            # duck-types the anyio.AsyncFile it reads lines from
+            stdin: Any = _DaemonStdin()
             async with stdio_server(stdin=stdin) as (read_stream, write_stream):
                 exit_code = await serve(
                     backend,
@@ -666,21 +719,33 @@ def run_proxy(
                 scope.cancel()  # stop the stdio reader/writer tasks
         return exit_code
 
-    return anyio.run(_main)
+    exit_code = anyio.run(_main)
+    deferred = _deferred_exit_code()
+    return deferred if deferred is not None else exit_code
 
 
 def probe_backend(backend: BackendSpec, *, timeout_s: float = 1.0) -> bool:
-    """True when an SDK ``initialize`` against ``backend`` succeeds within ``timeout_s``."""
+    """True when an SDK ``initialize`` against ``backend`` succeeds within ``timeout_s``.
+
+    A termination signal deferred into the probe's loop is raised as SystemExit
+    once the loop has ended.
+    """
 
     async def _probe() -> bool:
-        with anyio.fail_after(timeout_s):
-            async with _sdk_session(backend) as session:
-                await session.initialize()
-        return True
+        with anyio.CancelScope() as scope, _cancel_on_deferred_exit(scope):
+            with anyio.fail_after(timeout_s):
+                async with _sdk_session(backend) as session:
+                    await session.initialize()
+            return True
+        return False  # cancelled by a deferred exit
 
     try:
-        return anyio.run(_probe)
+        ready = anyio.run(_probe)
     except (KeyboardInterrupt, SystemExit):
         raise
     except BaseException:  # noqa: BLE001 - refused, timeout, protocol: not ready
-        return False
+        ready = False
+    deferred = _deferred_exit_code()
+    if deferred is not None:
+        raise SystemExit(deferred)
+    return ready

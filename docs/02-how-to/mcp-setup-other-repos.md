@@ -119,13 +119,14 @@ connect. Two things are expected the first time:
   until the first interactive session approves them (observed). That is Claude Code's prompt,
   not a launcher failure.
 - **The first launch on a host builds the images once.** There is one image per service and
-  source version, `dopemux-<service>:<key>`, where `<key>` hashes the dopemux-mvp checkout
-  path and the service's Dockerfile; every worktree and project shares it. So the first
+  Dockerfile version, `dopemux-<service>:<key>`, where `<key>` hashes the dopemux-mvp checkout
+  path and the service's Dockerfile bytes; every worktree and project shares it. So the first
   launch on the host (and the first after that Dockerfile changes) prints
-  `LAUNCH_IMAGE_BUILDING` and exits while one detached build runs (about 2.5 minutes observed
-  on 2026-11-05; the build log path is printed); later worktrees reuse the image. When the
-  build finishes, run `/mcp reconnect all` in the session. Running
-  `dopemux mcp init --repo <checkout>` first pre-builds them instead.
+  `LAUNCH_IMAGE_BUILDING` and exits while one detached build per service runs (about 2.5
+  minutes observed on 2026-11-05; the build log path is printed); later worktrees reuse the
+  image. When the build finishes, run `/mcp reconnect all` in the session. Running
+  `dopemux mcp init --repo <checkout>` first pre-builds them instead. Sidecar source edits
+  that leave the Dockerfile unchanged need a [forced rebuild](#force-a-rebuild).
 
 The launcher waits up to 25 s for a starting sidecar (`DOPEMUX_LAUNCH_WAIT`, or
 `dopemux mcp launch --wait SECONDS`), inside Claude Code's 30 s MCP connect limit (`MCP_TIMEOUT` defaults to 30 s; Claude Code
@@ -155,7 +156,7 @@ log <path>` while a build runs).
 | `LAUNCH_SERVICE_UNKNOWN` | The name is not a launcher service in the catalog. Run `dopemux mcp doctor`. |
 | `LAUNCH_CATALOG_INVALID` | The MCP catalog failed to load; the message names the problem. |
 | `PROJECT_IDENTITY_UNKNOWN` | Git identity could not be resolved. Run `dopemux mcp doctor`. |
-| `LAUNCH_IMAGE_BUILDING` | Image missing; one detached build started (its pid is in `build.pid` in the worktree's runtime dir; a launch during that build starts no second one). Retry with `/mcp reconnect all` in a few minutes. |
+| `LAUNCH_IMAGE_BUILDING` | Image missing; one detached build of that service started (its pid is in `build-<service>.pid` in the worktree's runtime dir; a launch of the same service during that build starts no second one, and `conport` and `dope-memory` may build at the same time). Retry with `/mcp reconnect all` in a few minutes. |
 | `LAUNCH_WAIT_EXCEEDED` | Sidecar still starting after the wait. Run `/mcp reconnect all`. |
 | `LAUNCH_START_FAILED` | The lifecycle start failed; the line carries the tail of its stderr. Run `dopemux mcp doctor`. |
 | `LAUNCH_BACKEND_PORT_UNKNOWN` | The start reported no port for the server, so the launcher refuses rather than guess the default port. Run `dopemux mcp doctor`. |
@@ -220,7 +221,9 @@ Reaping also runs automatically, bounded and never as a daemon: at the `Stop` an
 `~/.dopemux/mcp/runtime/reap.last`, 60 s deadline), at `SessionEnd` (unthrottled, at most one
 instance, 45 s deadline), and at every launcher start (throttled the same way, at most one
 instance, 8 s deadline). Hook runs stop at most 3 candidates with
-`docker stop --time 5`; the launcher stops at most 1 with `--time 3`. Reaping never removes
+`docker stop --time 5`; the launcher stops at most 1 with `--time 2` and 3 s per docker call.
+Under a deadline every docker call is also cut to the time left, and a run that could start
+none of its candidates leaves the `reap.last` throttle as it was. Reaping never removes
 images (they are shared). `SessionEnd` hooks share a
 1.5 s budget unless the hook sets `timeout` (Claude Code hooks and environment-variable
 references, read 2026-11-05), so `.claude/settings.json` sets `"timeout": 60` on that hook entry
@@ -255,7 +258,9 @@ this order, and `init` prints which one applied:
 `legacy_shared` is reported by `dopemux mcp doctor` as the WARN `CONPORT_LEGACY_SHARED_STORE`:
 that project has no per-project wall yet, and moving its rows to a tenant is a later milestone
 (M2). Nothing needs doing now. If Postgres does not answer, `doctor` reports the INFO
-`CONPORT_TENANT_UNVERIFIED` and a start reports `CONPORT_TENANT_UNKNOWN_HISTORY`.
+`CONPORT_TENANT_UNVERIFIED` and a start reports `CONPORT_TENANT_UNKNOWN_HISTORY`. `init` stops
+with the same `FAIL CONPORT_TENANT_UNKNOWN_HISTORY` before building any image (the `.mcp.json`
+it already wrote stays); start Postgres and run `init` again.
 
 Provisioning never prints, logs or rotates a password. `CREATE ROLE` receives a SCRAM-SHA-256
 verifier, not the password, so the plaintext never reaches Postgres or its log; only the
@@ -374,7 +379,8 @@ dopemux mcp fleet doctor --repo ~/code/your-project \
 * **Cost: two sidecar containers per worktree** (`conport`, `dope-memory`) plus the one
   orchestrator, bounded by reap.
 * The first launch on a host (per Dockerfile version) is a full image build; later
-  worktrees and projects reuse the shared image.
+  worktrees and projects reuse the shared image. A change to sidecar source code that leaves
+  its Dockerfile alone is not picked up until you [force a rebuild](#force-a-rebuild).
 * **The Copilot proxy config (`mcp-proxy-config.copilot.yaml`) is rendered but NOT_RUN /
   unverified**: `dopemux mcp generate` writes the launcher entries into it, and no Copilot
   session has been run against them.
@@ -467,6 +473,29 @@ dopemux mcp launch conport
 The build is still running (the extra stderr line says `is still building (pid N)`), or it
 failed. Read `~/.dopemux/mcp/runtime/<slug>-<worktree-hash>/build.log`.
 `dopemux mcp init --repo <worktree>` builds synchronously and prints the failure.
+
+### Force a rebuild
+
+The image key covers the service's Dockerfile, not the rest of its source. After editing
+sidecar code (for example under `docker/mcp-servers/conport/` or
+`services/working-memory-assistant/`) without touching the Dockerfile, remove the image so
+the next launch builds it again:
+
+```bash
+docker images 'dopemux-*'                 # lists dopemux-conport:<key>, dopemux-dope-memory:<key>
+docker image rm dopemux-conport:<key>
+```
+
+The `<key>` is also printed by the launcher: `dopemux mcp launch conport` shows
+`building dopemux-conport:<key>` (or `... is still building`) in its `LAUNCH_IMAGE_BUILDING`
+output. Then run `/mcp reconnect all`: the launch prints `LAUNCH_IMAGE_BUILDING` while it
+rebuilds, and the next reconnect after the build connects. `dopemux mcp init --repo <checkout>`
+rebuilds synchronously instead.
+
+Docker refuses to remove an image that a container was created from (running or stopped)
+unless you add `--force`, which only removes the tag. Containers created from the old image
+keep running it until they are recreated, for example with
+`dopemux mcp restart --repo <checkout> --services conport` (not measured).
 
 ### Sidecar running but the tools are missing
 

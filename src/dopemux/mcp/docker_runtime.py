@@ -501,12 +501,14 @@ def image_source_key(service: str, product: Path) -> str:
 
 
 def compose_image_name(service: str, *, product: Optional[Path] = None) -> str:
-    """``dopemux-<service>:<key>``: one image per service and source version (design D4).
+    """``dopemux-<service>:<key>``: one image per service and Dockerfile version (design D4).
 
     Every worktree and project built from the same product checkout shares it, so
-    only the first launch on a host (per source version) builds; ``<key>`` is
-    :func:`image_source_key`. The compose override and the build override set it
-    as ``image:``, so ``compose build`` tags it and ``compose up`` runs it.
+    only the first launch on a host (per Dockerfile version) builds; ``<key>`` is
+    :func:`image_source_key`. Sidecar source edits that leave the Dockerfile
+    unchanged need a forced rebuild (``docker image rm`` the tag). The compose
+    override and the build override set it as ``image:``, so ``compose build`` tags
+    it and ``compose up`` runs it.
     """
     root = Path(product) if product is not None else product_root()
     svc = re.sub(r"[^a-z0-9_.-]+", "-", service.lower())
