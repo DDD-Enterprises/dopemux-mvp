@@ -11,7 +11,7 @@ import json
 import re
 import tomllib
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlparse
 
 import yaml
@@ -25,6 +25,27 @@ class MCPFleetCatalogError(ValueError):
 
 class DuplicateKeyError(MCPFleetCatalogError):
     """Raised when a YAML mapping repeats a key."""
+
+
+def catalog_client_shape(spec: dict[str, Any]) -> Literal["launcher", "direct"]:
+    """How a client connects to a catalog entry.
+
+    `client: launcher` means clients get a stdio `dopemux mcp launch <name>`
+    entry that resolves the sidecar at connect time; the entry's `transport`
+    and `url_template` then describe the sidecar, not the client. Absent (or
+    `direct`) means the client connects to `url`/`url_template` itself.
+    """
+    client = spec.get("client", "direct")
+    if client not in {"launcher", "direct"}:
+        raise MCPFleetCatalogError(f"unsupported catalog `client` value: {client!r}")
+    return "launcher" if client == "launcher" else "direct"
+
+
+def expected_client_type(spec: dict[str, Any]) -> str:
+    """The `type` a client config (.mcp.json) must carry for this entry."""
+    if catalog_client_shape(spec) == "launcher":
+        return "stdio"
+    return str(spec["transport"])
 
 
 _ENV_DEFAULT_RE = re.compile(r"\$\{[^:}]+:-([0-9]+)\}")
@@ -660,13 +681,16 @@ def render_copilot_proxy_config(catalog: dict[str, Any]) -> str:
                 deferred.append(name)
             continue
         transport = spec.get("transport", "http")
-        if transport == "stdio":
+        entry: dict[str, Any]
+        if catalog_client_shape(spec) == "launcher":
+            entry = mcp_commands._launcher_entry(name)
+        elif transport == "stdio":
             command = spec.get("command")
             if not command:
                 raise MCPFleetCatalogError(
                     f"`{name}` requires `command` for the Copilot proxy config."
                 )
-            entry: dict[str, Any] = {
+            entry = {
                 "type": "stdio",
                 "command": command,
                 "args": list(spec.get("args") or []),
@@ -1352,6 +1376,7 @@ _V2_PASSTHROUGH_FIELDS: tuple[str, ...] = (
     "requires_env",
     "optional_env",
     "doctor_args",
+    "client",
     "env_template",
     "description",
     "tool_aliases",
@@ -1609,7 +1634,7 @@ _ENDPOINT_FIELDS: tuple[str, ...] = (
     "extra_port_vars",
     "docker_compose_service",
 )
-_COMMAND_FIELDS: tuple[str, ...] = ("command", "args")
+_COMMAND_FIELDS: tuple[str, ...] = ("command", "args", "client")
 _TOOL_METADATA_FIELDS: tuple[str, ...] = ("tools", "admin_tools", "aux_surfaces", "tool_aliases", "agents")
 
 

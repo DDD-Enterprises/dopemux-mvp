@@ -1,8 +1,16 @@
 import json
 
+import pytest
+
 from dopemux.claude import native_hooks
 from dopemux.claude.native_hooks import handle_event
 from dopemux.workflow import WorkflowKernel, WorkflowStatus
+
+
+@pytest.fixture(autouse=True)
+def _reaping_off_by_default(monkeypatch):
+    """Stop/SessionEnd reap sidecars; these tests must never reach docker or a real registry."""
+    monkeypatch.setenv("DOPEMUX_MCP_REAP", "0")
 
 
 class FakeRedisClient:
@@ -272,3 +280,106 @@ def test_post_tool_failure_capture_exception_does_not_block_hook(tmp_path, monke
     )
 
     assert response.get("decision") != "block"
+
+
+# --- reap wiring (Task 5, D8/P-09) ---------------------------------------------------
+
+
+def _record_reap(monkeypatch):
+    from dopemux.mcp import reap
+
+    calls = []
+
+    def recorder(**kwargs):
+        calls.append(kwargs)
+        return None
+
+    monkeypatch.setattr(reap, "maybe_reap", recorder)
+    return calls
+
+
+def test_stop_hook_calls_maybe_reap_before_allow(tmp_path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
+    calls = _record_reap(monkeypatch)
+
+    # No active workflow: the early return must still be preceded by the reap.
+    response = handle_event("Stop", {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}})
+
+    assert calls == [{"deadline_s": 60}]  # bounded inside the Stop hook budget
+    assert response.get("decision") != "block"
+
+
+def test_stop_hook_reap_runs_before_a_block_decision_too(tmp_path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
+    kernel = WorkflowKernel(tmp_path)
+    kernel.create_or_resume(
+        workflow_id="wf-reap",
+        instance_id="main",
+        mode="internal",
+        max_iterations=5,
+        max_minutes=30,
+        completion_token="DONE",
+    )
+    calls = _record_reap(monkeypatch)
+
+    blocked = handle_event("Stop", {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}})
+
+    assert calls == [{"deadline_s": 60}]  # bounded inside the Stop hook budget
+    assert blocked["decision"] == "block"
+
+
+def test_session_end_calls_reap_unthrottled(tmp_path, monkeypatch):
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
+    calls = _record_reap(monkeypatch)
+
+    handle_event("SessionEnd", {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}})
+
+    # SessionEnd's hook budget is short: one candidate, docker bounds, a 45 s deadline
+    assert calls == [
+        {
+            "throttle_s": 0,
+            "max_candidates": 1,
+            "deadline_s": 45,
+            "stop_time_s": 3,
+            "cmd_timeout_s": 10.0,
+        }
+    ]
+
+
+def test_reap_failure_does_not_change_hook_decision(tmp_path, monkeypatch):
+    from dopemux.mcp import reap
+
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ROOT", str(tmp_path))
+    kernel = WorkflowKernel(tmp_path)
+    state = kernel.create_or_resume(
+        workflow_id="wf-reap-fail",
+        instance_id="main",
+        mode="internal",
+        max_iterations=5,
+        max_minutes=30,
+        completion_token="DONE",
+    )
+
+    def boom(**kwargs):
+        raise RuntimeError("docker exploded")
+
+    monkeypatch.setattr(reap, "maybe_reap", boom)
+    payload = {"cwd": str(tmp_path), "env": {"DOPEMUX_INSTANCE_ID": "main"}}
+
+    assert handle_event("Stop", payload)["decision"] == "block"
+    assert "decision" not in handle_event("SessionEnd", payload)
+
+    state.record_checkpoint("brief", True, message="brief approved")
+    kernel.save(state)
+    assert handle_event("Stop", payload).get("decision") != "block"
+
+
+def test_settings_gives_session_end_a_60_second_timeout():
+    from pathlib import Path
+
+    settings = json.loads(
+        (Path(__file__).resolve().parents[1] / ".claude" / "settings.json").read_text(encoding="utf-8")
+    )
+    handlers = [h for group in settings["hooks"]["SessionEnd"] for h in group["hooks"]]
+    assert [h.get("timeout") for h in handlers] == [60]
+    assert all(h["type"] == "command" for h in handlers)

@@ -60,7 +60,7 @@ def fixture_repo(tmp_path, monkeypatch):
     monkeypatch.setattr(
         mcp_commands,
         "get_repo_root",
-        lambda fallback_cwd=False: str(repo),
+        lambda fallback_cwd=False, **_kw: str(repo),
     )
     return repo
 

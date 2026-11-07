@@ -135,6 +135,13 @@ def _url_is_repairable(url: Optional[str]) -> bool:
     return True
 
 
+def _catalog_is_launcher(catalog: Mapping[str, Any], name: str) -> bool:
+    # Lazy: fleet_catalog imports the CLI module, which this planner avoids at import time.
+    from .fleet_catalog import catalog_client_shape
+
+    return catalog_client_shape((catalog.get("servers") or {}).get(name) or {}) == "launcher"
+
+
 def render_catalog_entry(
     name: str,
     catalog: Mapping[str, Any],
@@ -214,6 +221,18 @@ def plan_mcp_json_repairs(
         current_url = current.get("url")
         url_ok = _url_is_repairable(current_url if isinstance(current_url, str) else None)
 
+        is_launcher = _catalog_is_launcher(catalog, name)
+        if is_launcher and current_url and not url_ok:
+            # An operator-pointed remote/credential URL is not ours to replace with a launcher.
+            preserved.append(
+                {
+                    "path": mcp_json_path,
+                    "service": name,
+                    "reason": "non-localhost or credential URL preserved",
+                }
+            )
+            continue
+
         new_entry = dict(current)
         change_reasons: List[str] = []
 
@@ -241,6 +260,15 @@ def plan_mcp_json_repairs(
                 # Only patch if current is missing or clearly wrong for catalog-owned
                 if key not in current or current.get(key) != desired.get(key):
                     new_entry[key] = desired[key]
+                    if "CATALOG_FIELD_DRIFT" not in change_reasons:
+                        change_reasons.append("CATALOG_FIELD_DRIFT")
+
+        # A launcher entry carries no endpoint or env of its own: drop leftovers
+        # from the old URL shape instead of keeping them next to the command.
+        if is_launcher:
+            for stale in ("url", "env"):
+                if stale in new_entry and stale not in desired:
+                    del new_entry[stale]
                     if "CATALOG_FIELD_DRIFT" not in change_reasons:
                         change_reasons.append("CATALOG_FIELD_DRIFT")
 

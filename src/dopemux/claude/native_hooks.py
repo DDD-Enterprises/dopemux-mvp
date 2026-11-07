@@ -274,6 +274,20 @@ def _workflow_context_lines(state, *, include_gates: bool = False) -> str:
     return "\n".join(lines)
 
 
+def _best_effort_reap(**kwargs: Any) -> None:
+    """Reap sidecars of removed or idle worktrees (design D8); never affects the hook.
+
+    ``reap.maybe_reap`` is throttled and honours the kill switch (``reap.disabled``
+    file, ``DOPEMUX_MCP_REAP=0``). Any failure, including an import error, is swallowed.
+    """
+    try:
+        from dopemux.mcp import reap
+
+        reap.maybe_reap(**kwargs)
+    except Exception:  # noqa: BLE001 - a cleanup failure must never change a hook decision
+        pass
+
+
 class NativeHookAdapter:
     """Handle Claude Code command hooks for Dopemux workflow continuity."""
 
@@ -614,6 +628,7 @@ class NativeHookAdapter:
         return self._allow()
 
     def _on_stop(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        _best_effort_reap(deadline_s=60)  # Stop/SubagentStop: hook defaults, 60 s deadline
         state = self._active_state()
         if not state:
             return self._allow()
@@ -655,6 +670,15 @@ class NativeHookAdapter:
         )
 
     def _on_session_end(self, data: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+        # SessionEnd hooks share a short budget (settings.json raises ours to 60 s):
+        # one candidate, launcher-style docker bounds, 45 s deadline.
+        _best_effort_reap(
+            throttle_s=0,
+            max_candidates=1,
+            deadline_s=45,
+            stop_time_s=3,
+            cmd_timeout_s=10.0,
+        )
         state = self._active_state()
         if not state:
             return self._allow()
@@ -670,16 +694,21 @@ class NativeHookAdapter:
 
 def main() -> None:
     """CLI entry point for the hook script."""
-    raw_input = sys.stdin.read()
-    if not raw_input:
+    # Fail open: an unreadable or non-JSON payload must never block the session.
+    try:
+        raw_input = sys.stdin.read()
+        payload = json.loads(raw_input) if raw_input else None
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        sys.exit(EXIT_SUCCESS)
+    if not isinstance(payload, dict):
         sys.exit(EXIT_SUCCESS)
 
-    try:
-        payload = json.loads(raw_input)
-    except json.JSONDecodeError:
-        sys.exit(1)
-
-    adapter = NativeHookAdapter()
+    # Claude Code runs hooks with cwd set to the session checkout, which the
+    # payload's "cwd" also names; honour it so workflow state follows the checkout.
+    cwd = payload.get("cwd")
+    adapter = NativeHookAdapter(
+        project_root=Path(cwd) if isinstance(cwd, str) and cwd else None
+    )
     exit_code, response = adapter.handle_event(payload)
     if response:
         sys.stdout.write(json.dumps(response))

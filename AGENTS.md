@@ -264,6 +264,11 @@ Do not change transport types without reading the server source.  The mapping is
 | `pal`, `serena`, `dope-context` | `http` | Streamable HTTP | `POST /mcp` |
 | `desktop-commander` | `sse` | Server-Sent Events | `GET /sse` |
 
+In a dopemux-rendered `.mcp.json`, `conport`, `dope-memory` and `task-orchestrator` are
+stdio launcher entries (`${DOPEMUX_BIN:-dopemux} mcp launch <name>`); the table above gives
+the transport of the sidecar behind the launcher's proxy, which is unchanged. Other servers
+keep URL entries of the listed type.
+
 **Critical invariant**: A `406 Not Acceptable: Client must accept text/event-stream`
 response to a `GET /mcp` is **correct server behaviour** for a Streamable HTTP
 endpoint.  It is NOT evidence that the server is SSE.  The fix is to use `POST`
@@ -286,25 +291,43 @@ port = default_port_base + sha1(workspace_path)[:4] % 100
 ### 12.3 Setting Up MCP in a New Repo
 
 ```bash
-cd ~/code/target-repo    # must be a git repo
-dopemux mcp init         # generates .mcp.json + .envrc.dopemux-mcp
-source .envrc.dopemux-mcp
-dopemux mcp doctor       # verify env vars + port reachability
+# once per host (the dopemux on PATH must be an editable install of this checkout)
+uv tool install --editable <dopemux-mvp checkout>
+
+# once per new project (any cwd; --repo names the target)
+dopemux mcp init --repo ~/code/target-repo    # git repo; provisions the ConPort tenant,
+                                              # pre-builds images, writes .mcp.json
 ```
 
-For full guidance including manual (non-dopemux) setup and vanilla Claude Code:
-→ `docs/02-how-to/mcp-setup-other-repos.md`
+Nothing is typed per worktree and nothing is sourced: commit `.mcp.json`, and each session's
+launchers (`dopemux mcp launch <name>`) find or start that worktree's sidecars. Identity comes
+from git only; ambient `DOPEMUX_*` / `TASK_ORCHESTRATOR_*` variables are ignored unless a
+command is given `--trust-env`. `.envrc.dopemux-mcp` is still written but is informational
+only (do not commit it); ConPort credentials live in
+`~/.dopemux/mcp/projects/<project_id>/secrets.env`. `DOPEMUX_BIN` overrides the binary a
+launcher entry runs. `dopemux mcp switch-project` moves the single task-orchestrator
+(`:7890`) to the current project; `dopemux mcp reap` (dry run by default, `--apply` to act)
+removes sidecars of removed or idle worktrees. The first launch in a new worktree builds its
+images (`LAUNCH_IMAGE_BUILDING`; then `/mcp reconnect all`).
+
+M1 limits: mid-session `EnterWorktree` needs `/mcp reconnect all`; one orchestrator per host;
+branches that predate the launcher keep URL entries; Codex is not rendered.
+
+For full guidance including refusal codes, restarts, kill switches and manual (non-dopemux)
+setup: → `docs/02-how-to/mcp-setup-other-repos.md`
 
 ### 12.4 MCP Debug Sequence
 
 When MCP servers fail to connect, follow this sequence in order:
 
-1. **Source the envrc**: `source .envrc.dopemux-mcp` — unset vars fall back to
-   catalog defaults which may not match running containers.
+1. **Run the launcher by hand**: `cd <checkout> && dopemux mcp launch <name>` prints the
+   `CODE: remedy` line that `claude mcp list` hides behind `CONNECTION_CLOSED`.
 
-2. **Run doctor**: `dopemux mcp doctor` — checks env vars and port reachability.
+2. **Run doctor**: `dopemux mcp doctor [--repo <path>]` — checks the `dopemux` on PATH,
+   identity, ConPort tenant source, catalog transports and port ownership.
 
-3. **Probe with correct transport**:
+3. **Probe with correct transport** (read the sidecar ports from `dopemux mcp status --repo . --json`;
+   `$DOPE_MEMORY_PORT` and `$CONPORT_MCP_PORT` below stand for them, nothing exports them for you):
    ```bash
    # Streamable HTTP (dope-memory, task-orchestrator, pal, serena):
    curl -X POST http://localhost:$DOPE_MEMORY_PORT/mcp \
@@ -379,12 +402,12 @@ Canonical command surface (`dopemux mcp <verb>`):
 
 | Command | Status |
 |---|---|
-| `init`, `start`, `stop`, `doctor` | **IMPLEMENTED** — safe to invoke today |
-| `reconcile`, `adopt`, `migrate`, `switch-project` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
+| `init` (`--repo`), `start`, `stop`, `doctor`, `launch`, `switch-project`, `reap` | **IMPLEMENTED** — safe to invoke today. `launch <name>` is what `.mcp.json` entries run (MCP clients start it); `switch-project` is the transitional move of the single task-orchestrator (`:7890`); `reap` is dry-run by default (`--apply` acts, `--json` for machines) |
+| `reconcile`, `adopt`, `migrate` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
 
 Never start fleet services outside `dopemux mcp` (compose/docker-run/shell wrappers are being removed under
 design packet P-22). While ConPort/dope-memory/serena remain worktree-scoped, N worktrees cost 3N containers —
-this is expected, not a bug, until the gates above land.
+this is expected, not a bug, until the gates above land. Sidecars of removed or idle worktrees are reaped (`dopemux mcp reap`, §12.3).
 
 ### 12.7 Runner memory identity (Wave 2A)
 

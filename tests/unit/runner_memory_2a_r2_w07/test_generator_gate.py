@@ -281,7 +281,7 @@ def generate_env(tmp_path, monkeypatch, seams):
     (repo / ".envrc.dopemux-mcp").write_text(
         f"export DOPE_MEMORY_PORT={MEMORY_PORT}\nexport CONPORT_HTTP_PORT={CONPORT_PORT}\n"
     )
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo))
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(repo))
     out = tmp_path / "out"
     return repo, out
 
@@ -569,17 +569,18 @@ def test_should_not_render_a_bridge_entry_for_a_server_closed_to_codex():
     assert '[mcp_servers."conport"]' in lines
 
 
-def test_should_keep_the_default_claude_code_rendering_on_direct_http():
-    """AMENDMENT_02: Claude Code stays on direct HTTP/SSE in 2A; the tracked .mcp.json still matches."""
+def test_should_render_the_default_claude_code_entries_as_the_stdio_launcher():
+    """M1 D1/D2: Claude Code gets `dopemux mcp launch` entries (no URL, no env); the tracked .mcp.json matches."""
     catalog = _real_catalog()
     local = mcp_commands._build_local_mcp_json(["conport", "dope-memory"], catalog)["mcpServers"]
 
-    assert local["conport"]["type"] == "sse"
-    assert local["conport"]["url"] == "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"
-    assert local["dope-memory"]["type"] == "http"
-    assert local["dope-memory"]["url"] == "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp"
+    for name in ("conport", "dope-memory"):
+        assert local[name]["type"] == "stdio"
+        assert local[name]["command"] == "${DOPEMUX_BIN:-dopemux}"
+        assert local[name]["args"] == ["mcp", "launch", name]
+        assert "url" not in local[name]
+        assert "env" not in local[name]
     for entry in local.values():
-        assert "command" not in entry
         assert "runner:claude" not in json.dumps(entry)
 
     committed = json.loads((REPO_ROOT / ".mcp.json").read_text(encoding="utf-8"))
@@ -624,11 +625,12 @@ def test_should_not_wire_the_claude_code_bridge_function_into_any_default_path()
         assert "_render_claude_memory_bridge_entry" not in inspect.getsource(fn)
 
 
-def test_should_leave_the_task_orchestrator_entry_unchanged():
+def test_should_render_the_task_orchestrator_entry_as_the_stdio_launcher():
     local = mcp_commands._build_local_mcp_json(["task-orchestrator"], _real_catalog())["mcpServers"]
 
-    assert local["task-orchestrator"]["type"] == "http"
-    assert local["task-orchestrator"]["url"].startswith("http://127.0.0.1:")
+    assert local["task-orchestrator"]["type"] == "stdio"
+    assert local["task-orchestrator"]["args"] == ["mcp", "launch", "task-orchestrator"]
+    assert "url" not in local["task-orchestrator"]
 
 
 def test_should_render_entries_the_real_bridge_parser_accepts():

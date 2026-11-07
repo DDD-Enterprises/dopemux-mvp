@@ -539,6 +539,8 @@ servers:
   conport:
     scope: per-worktree
     transport: sse
+    # Clients get a stdio `dopemux mcp launch` entry; `transport`/`url_template` describe the sidecar.
+    client: launcher
     plane: memory
     authority_role: structured-context-authority
     lifecycle: active
@@ -558,7 +560,7 @@ servers:
       - var: CONPORT_INFO_PORT
         base: 4004
     docker_compose_service: conport
-    requires_env: ["DOPEMUX_WORKSPACE_ID"]
+    requires_env: []
     optional_env: ["GEMINI_API_KEY", "VOYAGEAI_API_KEY", "OPENAI_API_KEY"]
     agents:
       claude: full
@@ -581,6 +583,8 @@ servers:
   dope-memory:
     scope: per-worktree
     transport: http
+    # Clients get a stdio `dopemux mcp launch` entry; `transport`/`url_template` describe the sidecar.
+    client: launcher
     plane: memory
     authority_role: chronicle-authority
     lifecycle: active
@@ -591,7 +595,7 @@ servers:
     port_var: DOPE_MEMORY_PORT
     default_port_base: 3020
     docker_compose_service: dope-memory
-    requires_env: ["DOPE_MEMORY_WORKSPACE_ID", "DOPE_MEMORY_INSTANCE_ID"]
+    requires_env: []
     agents:
       claude: full
       codex: full
@@ -610,6 +614,8 @@ servers:
     scope: per-worktree
     state_scope: single_active_project
     transport: http
+    # Clients get a stdio `dopemux mcp launch` entry; `transport`/`url_template` describe the sidecar.
+    client: launcher
     plane: workflow
     authority_role: workflow-authority
     lifecycle: active
@@ -622,7 +628,7 @@ servers:
     port_var: TASK_ORCHESTRATOR_HTTP_PORT
     default_port_base: 7890
     doctor_args: ["--print-resolution"]
-    requires_env: ["TASK_ORCHESTRATOR_PROJECT_ROOT"]
+    requires_env: []
     env_template:
       DOPEMUX_WORKSPACE_ROOT: "${DOPEMUX_WORKSPACE_ROOT:-}"
       DOPEMUX_PROJECT_ROOT: "${DOPEMUX_PROJECT_ROOT:-}"

@@ -106,35 +106,16 @@ def resolve_identity_view(
     repo_path: Path,
     *,
     envrc_values: Optional[Mapping[str, str]] = None,
+    trust_env: bool = False,
 ) -> ProjectIdentityView:
-    """Resolve project identity for doctor; never raises — degrades to UNKNOWN."""
+    """Resolve project identity for doctor; never raises — degrades to UNKNOWN.
+
+    Identity comes from git for ``repo_path``. ``envrc_values`` (process env plus
+    the repo envrc) only participates when ``trust_env`` is true; otherwise an
+    ambient ``DOPEMUX_*`` export from another checkout cannot change the answer.
+    """
     evidence: List[str] = []
-    env_map = dict(envrc_values or {})
-    # --repo / explicit target path must win over ambient shell exports.
-    # setdefault would leave a foreign DOPEMUX_WORKSPACE_ROOT in place and
-    # resolve_project_identity would diagnose the previously sourced repo.
-    repo_str = str(Path(repo_path).expanduser().resolve())
-    prior_ws = env_map.get("DOPEMUX_WORKSPACE_ROOT")
-    env_map["DOPEMUX_WORKSPACE_ROOT"] = repo_str
-    if prior_ws:
-        try:
-            prior_ws_res = str(Path(prior_ws).expanduser().resolve())
-        except OSError:
-            prior_ws_res = str(prior_ws)
-        if prior_ws_res != repo_str:
-            # Foreign ambient workspace — scrub project roots that rode along with it.
-            env_map["DOPEMUX_PROJECT_ROOT"] = repo_str
-            prior_pr = env_map.get("TASK_ORCHESTRATOR_PROJECT_ROOT")
-            if prior_pr:
-                try:
-                    prior_pr_res = str(Path(prior_pr).expanduser().resolve())
-                except OSError:
-                    prior_pr_res = str(prior_pr)
-                if prior_pr_res == prior_ws_res:
-                    env_map["TASK_ORCHESTRATOR_PROJECT_ROOT"] = repo_str
-            evidence.append(
-                f"forced identity to target path (ambient DOPEMUX_WORKSPACE_ROOT={prior_ws})"
-            )
+    env_map = dict(envrc_values or {}) if trust_env else {}
 
     try:
         identity: ProjectIdentity = resolve_project_identity(cwd=repo_path, env=env_map)
@@ -299,6 +280,26 @@ def expand_url_template(template: str, env: Mapping[str, str]) -> str:
     return _ENV_PLACEHOLDER.sub(repl, template)
 
 
+def sidecar_url(spec: Mapping[str, Any], ports: Mapping[str, int]) -> Optional[str]:
+    """The sidecar endpoint a catalog entry resolves to, given its leased ports.
+
+    Expands `url_template`'s `${VAR:-default}` placeholders from `ports`. Returns
+    None when `ports` lacks the entry's `port_var` or any variable the template
+    names: the template default may be another worktree's port, so callers refuse
+    rather than guess. The catalog, not `.mcp.json`, is the source: a launcher
+    entry carries no URL.
+    """
+    template = spec.get("url_template") or spec.get("url")
+    if not template:
+        raise ValueError("catalog entry has no `url_template`/`url` to resolve a sidecar URL from")
+    needed = {m.group(1) for m in _ENV_PLACEHOLDER.finditer(str(template))}
+    if spec.get("port_var"):
+        needed.add(str(spec["port_var"]))
+    if any(name not in ports for name in needed):
+        return None
+    return expand_url_template(str(template), {k: str(v) for k, v in ports.items()})
+
+
 def extract_ports_from_url(url: str) -> List[int]:
     try:
         parsed = urlparse(url)
@@ -307,6 +308,13 @@ def extract_ports_from_url(url: str) -> List[int]:
     except Exception:  # noqa: BLE001
         pass
     return []
+
+
+def _is_launcher(spec: Mapping[str, Any]) -> bool:
+    # Lazy: fleet_catalog imports the CLI module, which this state module avoids at import time.
+    from .fleet_catalog import catalog_client_shape
+
+    return catalog_client_shape(dict(spec)) == "launcher"
 
 
 def build_desired_services(
@@ -363,12 +371,16 @@ def build_desired_services(
                     expected_ports[str(var)] = port
 
         urls: List[str] = []
-        template = catalog_spec.get("url_template") or catalog_spec.get("url") or local_entry.get("url")
-        if template:
-            expanded = expand_url_template(str(template), env_values)
-            # Only keep localhost-ish URLs in report
-            if "localhost" in expanded or "127.0.0.1" in expanded:
-                urls.append(expanded)
+        template = catalog_spec.get("url_template") or catalog_spec.get("url")
+        if catalog_spec and _is_launcher(catalog_spec):
+            # The launcher entry has no URL; the sidecar URL comes from the catalog and ports.
+            expanded = sidecar_url(catalog_spec, expected_ports) if template else None
+        else:
+            template = template or local_entry.get("url")
+            expanded = expand_url_template(str(template), env_values) if template else None
+        # Only keep localhost-ish URLs in report
+        if expanded and ("localhost" in expanded or "127.0.0.1" in expanded):
+            urls.append(expanded)
 
         env_keys = list(catalog_spec.get("requires_env") or []) + list(
             catalog_spec.get("optional_env") or []

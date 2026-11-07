@@ -7,16 +7,28 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import socket
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
+from . import conport_tenant as ct
 from . import docker_inspect as di
 from . import docker_runtime as dr
 from .doctor import DoctorReport, run_mcp_doctor
 from .envrc import load_envrc, merge_envrc_into_environ, safe_port_int
+from .locks import (
+    instance_lock,
+    locked_reload_and_save,
+    provision_lock,
+    registry_lock,
+    reserved_port_lock,
+    save_state_locked,
+)
 from .port_diagnostics import instance_id_for_path
+from .port_leases import PortLeaseRegistry, default_lease_registry_path
 from .runtime_registry import (
     RegistryError,
     RuntimeRegistry,
@@ -26,6 +38,7 @@ from .runtime_registry import (
 from .runtime_state import (
     ENVRC_FILENAME,
     PROJECT_MCP_FILENAME,
+    ProjectIdentityView,
     load_mcp_json,
     resolve_identity_view,
 )
@@ -42,7 +55,6 @@ BLOCKING_FINDING_CODES = frozenset(
         "PROJECT_ROOT_UNKNOWN",
         "MCP_JSON_PARSE_ERROR",
         "ENVRC_PARSE_ERROR",
-        "ENVRC_MISSING",
         "MCP_JSON_MISSING",
         "TRANSPORT_MISMATCH",
         "PORT_RESERVED_COLLISION",
@@ -135,11 +147,29 @@ class LifecycleResult:
         return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
 
-def resolve_target_repo(repo: Optional[str | Path]) -> Path:
+def resolve_target_repo(
+    repo: Optional[str | Path], *, cwd: Optional[Path] = None
+) -> Path:
+    """Explicit ``repo`` wins; otherwise the git top-level of ``cwd`` (default process cwd)."""
     if repo is not None:
         path = Path(repo).expanduser().resolve()
     else:
-        path = Path.cwd().resolve()
+        base = Path(cwd).expanduser().resolve() if cwd is not None else Path.cwd().resolve()
+        path = base
+        if base.is_dir():
+            try:
+                proc = subprocess.run(
+                    ["git", "rev-parse", "--show-toplevel"],
+                    cwd=base,
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                    check=False,
+                )
+            except (OSError, subprocess.SubprocessError):
+                proc = None
+            if proc is not None and proc.returncode == 0 and proc.stdout.strip():
+                path = Path(proc.stdout.strip()).resolve()
     if not path.is_dir():
         raise FileNotFoundError(f"Target path not found: {path}")
     return path
@@ -191,6 +221,10 @@ def _doctor_blocking_findings(
                 continue
             if svc and svc not in services and code.startswith("DOCKER_CONTAINER"):
                 continue
+            # Another project's orchestrator on :7890 blocks only a start that
+            # includes task-orchestrator; conport/dope-memory start regardless (T6).
+            if svc and svc not in services and code.startswith("TASK_ORCHESTRATOR_"):
+                continue
             blocking.append(f)
         elif f.get("severity") == "FAIL" and code not in NON_BLOCKING_EVEN_IF_IN_SET:
             # Extra hard FAILs
@@ -219,6 +253,209 @@ def _extract_ports(env: Mapping[str, str], services: Sequence[str], catalog: Map
             if p is not None:
                 ports[str(key)] = p
     return ports
+
+
+class PortAllocationBlocked(RuntimeError):
+    """Lease allocation refused; ``findings`` carries the allocator's reasons."""
+
+    def __init__(self, message: str, findings: Optional[List[Dict[str, Any]]] = None) -> None:
+        super().__init__(message)
+        self.findings: List[Dict[str, Any]] = list(findings or [])
+
+
+def _port_vars_for(name: str, catalog: Mapping[str, Any]) -> List[str]:
+    spec = (catalog.get("servers") or {}).get(name) or {}
+    if not isinstance(spec, dict):
+        return []
+    out = [spec.get("port_var")] + [
+        e.get("var") for e in (spec.get("extra_port_vars") or []) if isinstance(e, dict)
+    ]
+    return [str(v) for v in out if v]
+
+
+def _leased_ports(
+    lease_reg: PortLeaseRegistry,
+    identity: ProjectIdentityView,
+    wanted: Sequence[str],
+) -> Dict[str, int]:
+    """Active leases that belong to this project/worktree, keyed by port env var."""
+    found: Dict[str, int] = {}
+    for lease in lease_reg.active_leases():
+        var = lease.get("port_var")
+        if var not in wanted or not lease.get("port"):
+            continue
+        if lease_reg.identity_matches(
+            lease,
+            worktree_root=identity.worktree_root,
+            project_root=identity.project_root,
+            worktree_hash=identity.worktree_hash,
+            project_id=identity.project_id,
+        ):
+            found[str(var)] = int(lease["port"])
+    return found
+
+
+def _service_for_port_var(var: str, catalog: Mapping[str, Any]) -> Optional[str]:
+    for name in (catalog.get("servers") or {}):
+        if var in _port_vars_for(str(name), catalog):
+            return str(name)
+    return None
+
+
+def _leases_held_by_other_service(
+    leased: Mapping[str, int],
+    catalog: Mapping[str, Any],
+    docker: Optional[di.DockerInspectResult],
+    project_id: Optional[str],
+) -> Dict[str, str]:
+    """``{port_var: owner}`` for leased ports published by another service's container.
+
+    Same condition as the ``DOCKER_CONTAINER_PORT_COLLISION`` service-label check
+    in ``_collision_checks``: managed, this ``dopemux.project_id``, and a
+    ``dopemux.service`` that is not the service the port variable belongs to.
+    """
+    if docker is None or not docker.available or not project_id:
+        return {}
+    owners: Dict[int, di.DockerContainerInfo] = {}
+    for c in docker.containers:
+        for published in c.published_ports or []:
+            owners[int(published)] = c
+    held: Dict[str, str] = {}
+    for var, port in leased.items():
+        owner = owners.get(int(port))
+        if owner is None:
+            continue
+        labels = owner.labels or {}
+        service = _service_for_port_var(var, catalog)
+        owner_service = labels.get("dopemux.service") or ""
+        if (
+            labels.get(dr.LABEL_MANAGED) == "true"
+            and labels.get("dopemux.project_id") == project_id
+            and service
+            and owner_service
+            and owner_service != service
+        ):
+            held[var] = f"{owner.name} (service={owner_service})"
+    return held
+
+
+def _resolve_ports(
+    identity: ProjectIdentityView,
+    selected: Sequence[str],
+    catalog: Mapping[str, Any],
+    *,
+    lease_path: Path,
+    source: str = "dopemux mcp start",
+    env: Optional[Mapping[str, str]] = None,
+    allocate: bool = True,
+    is_free_fn: Optional[Callable[[int], bool]] = None,
+    docker: Optional[di.DockerInspectResult] = None,
+) -> Dict[str, int]:
+    """Port map ``{port_env_var: port}`` for ``selected`` services.
+
+    Order: ports an envrc/process env already names win; otherwise the active
+    leases bound to this project/worktree; otherwise (when ``allocate``)
+    allocate and persist new leases under ``registry_lock``. The lock is held
+    only for the release/allocate-and-save step. Task Orchestrator is a reserved
+    singleton port, never leased, and is left to the caller's default.
+
+    With ``docker`` and ``allocate``, a leased port that a same-project container
+    of another service publishes (a cross-service collision an older
+    one-service-at-a-time allocation could write) is released and re-allocated
+    instead of failing the start.
+    """
+    ports = _extract_ports(env or {}, selected, catalog)
+    lease_services = [
+        n
+        for n in selected
+        if n != "task-orchestrator" and any(v not in ports for v in _port_vars_for(n, catalog))
+    ]
+    if not lease_services or not identity.worktree_root or not identity.project_root:
+        return ports
+
+    wanted = [v for n in lease_services for v in _port_vars_for(n, catalog)]
+    current = _leased_ports(PortLeaseRegistry.load(lease_path), identity, wanted)
+    leased = {var: port for var, port in current.items() if var not in ports}
+    stale = _leases_held_by_other_service(leased, catalog, docker, identity.project_id)
+    if not allocate:
+        stale = {}
+    for var, port in leased.items():
+        if var not in stale:
+            ports.setdefault(var, port)
+    lease_services = [
+        n for n in lease_services if any(v not in ports for v in _port_vars_for(n, catalog))
+    ]
+    if not lease_services or not allocate:
+        return ports
+
+    from .port_allocator import allocate_ports
+
+    # Exactly the call `mcp_commands._allocate_ports` makes (allocate_ports_map):
+    # no `identity=`, so the allocator derives the same lease identity as `init`.
+    with registry_lock(lease_path):
+        if stale:
+            leases = PortLeaseRegistry.load(lease_path)
+            for lease in leases.active_leases():
+                var = str(lease.get("port_var") or "")
+                if (
+                    var in stale
+                    and int(lease.get("port") or 0) == leased[var]
+                    and leases.identity_matches(
+                        lease,
+                        worktree_root=identity.worktree_root,
+                        project_root=identity.project_root,
+                        worktree_hash=identity.worktree_hash,
+                        project_id=identity.project_id,
+                    )
+                ):
+                    leases.mark_released(lease_id=str(lease.get("lease_id")))
+            leases.save()
+        result = allocate_ports(
+            lease_services,
+            catalog,
+            worktree=identity.worktree_root,
+            project_root=identity.project_root,
+            existing_envrc=env,
+            registry_path=lease_path,
+            persist=True,
+            dry_run=False,
+            source=source,
+            is_free_fn=is_free_fn,
+        )
+    if result.status == "BLOCKED":
+        msgs = "; ".join(f["message"] for f in result.blocking_findings if f.get("message"))
+        raise PortAllocationBlocked(
+            msgs or "Port allocation blocked", result.blocking_findings
+        )
+    for var, port in result.ports.items():
+        ports.setdefault(str(var), int(port))
+    return ports
+
+
+def runtime_dir_for_paths(
+    *, project_root: str | Path, worktree_hash: str, registry_path: Optional[Path] = None
+) -> Path:
+    """The one rule for a worktree's runtime dir: ``<registry dir>/<slug>-<worktree_hash>``."""
+    slug = dr.project_slug(Path(project_root).name)
+    base = registry_path or default_registry_path()
+    return base.parent / f"{slug}-{worktree_hash}"
+
+
+def runtime_dir_for(
+    identity: ProjectIdentityView, *, registry_path: Optional[Path] = None
+) -> Path:
+    """Per-worktree runtime dir: ``<registry dir>/<slug>-<worktree_hash>``.
+
+    Shared by the start path, the launcher and reap so they agree on one path.
+    """
+    worktree_root = identity.worktree_root
+    project_root = identity.project_root or worktree_root
+    if not worktree_root or not project_root:
+        raise ValueError("identity has no worktree_root/project_root")
+    worktree_hash = identity.worktree_hash or instance_id_for_path(worktree_root)
+    return runtime_dir_for_paths(
+        project_root=project_root, worktree_hash=worktree_hash, registry_path=registry_path
+    )
 
 
 def _port_to_expected_service(
@@ -419,177 +656,30 @@ def _collision_checks(
     return findings
 
 
-def run_lifecycle(
-    operation: str,
+def _to_start_gate(
+    identity: ProjectIdentityView,
+    docker: di.DockerInspectResult,
     *,
-    repo: Optional[str | Path] = None,
-    services: Optional[Sequence[str]] = None,
     catalog: Mapping[str, Any],
-    dry_run: bool = False,
-    registry_path: Optional[Path] = None,
-    docker_runner: Optional[Callable[..., Any]] = None,
-    cmd_runner: Optional[Callable[..., Any]] = None,
-    skip_doctor: bool = False,
-    process_env: Optional[Mapping[str, str]] = None,
-    port_is_free_fn: Optional[Callable[[int], bool]] = None,
-    product_root: Optional[Path] = None,
-) -> LifecycleResult:
-    """Execute start|stop|restart|status for project-scoped MCP sidecars."""
-    op = operation.lower().strip()
-    if op not in {"start", "stop", "restart", "status"}:
-        raise ValueError(f"unsupported operation: {operation}")
+    ports: Mapping[str, int],
+    is_free: Callable[[int], bool],
+    prior_blocking: Sequence[Mapping[str, Any]] = (),
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Task Orchestrator fixed-port identity gate (Packet 005): ``(blocking, warnings)``.
 
-    target = resolve_target_repo(repo)
-    is_free = port_is_free_fn or _port_is_free
-    envrc = load_envrc(target / ENVRC_FILENAME)
-    doctor_env = merge_envrc_into_environ(dict(process_env or {}), envrc, override=True)
-    mcp_json = load_mcp_json(target / PROJECT_MCP_FILENAME)
-    mcp_servers = mcp_json.get("servers") or {}
-    identity = resolve_identity_view(target, envrc_values=doctor_env)
+    ``prior_blocking`` (findings the caller already holds) only suppresses a
+    duplicate ``start_block_code`` entry, as when this ran inline.
 
-    selected = select_services(services, mcp_servers, catalog)
-    reg_path = registry_path or default_registry_path()
-
-    # Doctor preflight (read-only; never creates registry)
-    doctor: Optional[DoctorReport] = None
-    if not skip_doctor and op != "status":
-        doctor = run_mcp_doctor(
-            target,
-            catalog=catalog,
-            skip_docker=False,
-            skip_port_probe=True,
-            process_env=doctor_env,
-            docker_runner=docker_runner,
-        )
-    elif op == "status":
-        doctor = run_mcp_doctor(
-            target,
-            catalog=catalog,
-            skip_docker=False,
-            skip_port_probe=False,
-            process_env=doctor_env,
-            docker_runner=docker_runner,
-            port_is_free_fn=is_free,
-        )
-
+    Start is allowed only when the fixed port is free or proven to serve this
+    project. Runs under ``reserved_port_lock(7890)`` (host-wide, serialized
+    with launchers and ``switch-project``, D7; re-entrant, so a caller already
+    holding it does not deadlock). Fail-closed: any error, including taking the
+    lock, is ``TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER``.
+    """
     blocking: List[Dict[str, Any]] = []
     warnings: List[Dict[str, Any]] = []
-
-    # Identity blockers
-    if not identity.project_id or identity.identity_confidence == "UNKNOWN":
-        blocking.append(
-            {
-                "code": "PROJECT_IDENTITY_UNKNOWN",
-                "severity": "FAIL",
-                "message": "project identity unknown",
-                "service": None,
-            }
-        )
-    if not identity.worktree_root:
-        blocking.append(
-            {
-                "code": "WORKTREE_ROOT_UNKNOWN",
-                "severity": "FAIL",
-                "message": "worktree root unknown",
-                "service": None,
-            }
-        )
-    if not identity.project_root:
-        blocking.append(
-            {
-                "code": "PROJECT_ROOT_UNKNOWN",
-                "severity": "FAIL",
-                "message": "project root unknown",
-                "service": None,
-            }
-        )
-    if not envrc.present or envrc.parse_status == "MISSING":
-        blocking.append(
-            {
-                "code": "ENVRC_MISSING",
-                "severity": "FAIL",
-                "message": f"Missing {ENVRC_FILENAME}",
-                "service": None,
-            }
-        )
-    elif envrc.parse_status == "ERROR":
-        blocking.append(
-            {
-                "code": "ENVRC_PARSE_ERROR",
-                "severity": "FAIL",
-                "message": "envrc parse error",
-                "service": None,
-            }
-        )
-    elif envrc.parse_status == "PARTIAL":
-        warnings.append(
-            {
-                "code": "ENVRC_PARTIAL_PARSE",
-                "severity": "WARN",
-                "message": (
-                    f"envrc partial parse: {len(envrc.values)} keys loaded, "
-                    f"{len(envrc.errors)} malformed line(s)"
-                ),
-                "service": None,
-            }
-        )
-    if not mcp_json.get("present"):
-        blocking.append(
-            {
-                "code": "MCP_JSON_MISSING",
-                "severity": "FAIL",
-                "message": f"Missing {PROJECT_MCP_FILENAME}",
-                "service": None,
-            }
-        )
-    elif mcp_json.get("parse_status") == "ERROR":
-        blocking.append(
-            {
-                "code": "MCP_JSON_PARSE_ERROR",
-                "severity": "FAIL",
-                "message": "mcp.json parse error",
-                "service": None,
-            }
-        )
-
-    if doctor:
-        blocking.extend(
-            _doctor_blocking_findings(doctor, services=selected, strategy_neutralizes_compose=True)
-        )
-        for f in doctor.findings:
-            if f.get("severity") == "WARN":
-                warnings.append(f)
-
-    # Load registry
-    if op == "status":
-        registry = RuntimeRegistry.load(reg_path, create_missing=False)
-    else:
-        registry = RuntimeRegistry.load(reg_path, create_missing=False)
-        if registry.parse_status == "ERROR" and op in {"start", "stop", "restart"}:
-            blocking.append(
-                {
-                    "code": "REGISTRY_PARSE_ERROR",
-                    "severity": "FAIL",
-                    "message": f"Registry unreadable: {registry.error}",
-                    "service": None,
-                }
-            )
-
-    docker = di.inspect_running_containers(runner=docker_runner)
-
-    worktree_root = identity.worktree_root or str(target)
-    project_root = identity.project_root or str(target)
-    project_id = identity.project_id or Path(project_root).name
-    worktree_hash = identity.worktree_hash or instance_id_for_path(worktree_root)
-    project_hash = identity.project_hash or ""
-    slug = dr.project_slug(Path(project_root).name)
-    compose_proj = dr.compose_project_name(slug, worktree_hash)
-
-    ports = _extract_ports(doctor_env, selected, catalog)
-
-    # Task Orchestrator fixed-port identity gate (Packet 005)
-    if op in {"start", "restart"} and "task-orchestrator" in selected:
-        try:
+    try:
+        with reserved_port_lock(7890):
             from .task_orchestrator_identity import (
                 evaluate_fixed_port_state,
                 identity_from_docker_labels,
@@ -676,7 +766,8 @@ def run_lifecycle(
                     )
             if not to_eval.start_allowed and to_eval.start_block_code:
                 if not any(
-                    b.get("code") == to_eval.start_block_code for b in blocking
+                    b.get("code") == to_eval.start_block_code
+                    for b in [*prior_blocking, *blocking]
                 ):
                     blocking.append(
                         {
@@ -707,15 +798,225 @@ def run_lifecycle(
                         "service": "task-orchestrator",
                     }
                 )
-        except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001
+        blocking.append(
+            {
+                "code": "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
+                "severity": "FAIL",
+                "message": f"TO identity preflight failed: {exc}",
+                "service": "task-orchestrator",
+            }
+        )
+
+    return blocking, warnings
+
+
+def run_lifecycle(
+    operation: str,
+    *,
+    repo: Optional[str | Path] = None,
+    services: Optional[Sequence[str]] = None,
+    catalog: Mapping[str, Any],
+    dry_run: bool = False,
+    registry_path: Optional[Path] = None,
+    docker_runner: Optional[Callable[..., Any]] = None,
+    cmd_runner: Optional[Callable[..., Any]] = None,
+    skip_doctor: bool = False,
+    process_env: Optional[Mapping[str, str]] = None,
+    port_is_free_fn: Optional[Callable[[int], bool]] = None,
+    product_root: Optional[Path] = None,
+    trust_env: bool = False,
+) -> LifecycleResult:
+    """Execute start|stop|restart|status for project-scoped MCP sidecars."""
+    op = operation.lower().strip()
+    if op not in {"start", "stop", "restart", "status"}:
+        raise ValueError(f"unsupported operation: {operation}")
+
+    target = resolve_target_repo(repo)
+    is_free = port_is_free_fn or _port_is_free
+    envrc = load_envrc(target / ENVRC_FILENAME)
+    doctor_env = merge_envrc_into_environ(dict(process_env or {}), envrc, override=True)
+    mcp_json = load_mcp_json(target / PROJECT_MCP_FILENAME)
+    mcp_servers = mcp_json.get("servers") or {}
+    identity = resolve_identity_view(target, envrc_values=doctor_env, trust_env=trust_env)
+
+    selected = select_services(services, mcp_servers, catalog)
+    reg_path = registry_path or default_registry_path()
+
+    # Doctor preflight (read-only; never creates registry)
+    doctor: Optional[DoctorReport] = None
+    if not skip_doctor and op != "status":
+        doctor = run_mcp_doctor(
+            target,
+            catalog=catalog,
+            skip_docker=False,
+            skip_port_probe=True,
+            process_env=doctor_env,
+            trust_env=trust_env,
+            docker_runner=docker_runner,
+        )
+    elif op == "status":
+        doctor = run_mcp_doctor(
+            target,
+            catalog=catalog,
+            skip_docker=False,
+            skip_port_probe=False,
+            process_env=doctor_env,
+            trust_env=trust_env,
+            docker_runner=docker_runner,
+            port_is_free_fn=is_free,
+        )
+
+    blocking: List[Dict[str, Any]] = []
+    warnings: List[Dict[str, Any]] = []
+
+    # Identity blockers
+    if not identity.project_id or identity.identity_confidence == "UNKNOWN":
+        blocking.append(
+            {
+                "code": "PROJECT_IDENTITY_UNKNOWN",
+                "severity": "FAIL",
+                "message": "project identity unknown",
+                "service": None,
+            }
+        )
+    if not identity.worktree_root:
+        blocking.append(
+            {
+                "code": "WORKTREE_ROOT_UNKNOWN",
+                "severity": "FAIL",
+                "message": "worktree root unknown",
+                "service": None,
+            }
+        )
+    if not identity.project_root:
+        blocking.append(
+            {
+                "code": "PROJECT_ROOT_UNKNOWN",
+                "severity": "FAIL",
+                "message": "project root unknown",
+                "service": None,
+            }
+        )
+    if not envrc.present or envrc.parse_status == "MISSING":
+        # Ports come from the lease registry now; the envrc is optional.
+        warnings.append(
+            {
+                "code": "ENVRC_MISSING",
+                "severity": "INFO",
+                "message": f"No {ENVRC_FILENAME}; ports resolved from the lease registry",
+                "service": None,
+            }
+        )
+    elif envrc.parse_status == "ERROR":
+        blocking.append(
+            {
+                "code": "ENVRC_PARSE_ERROR",
+                "severity": "FAIL",
+                "message": "envrc parse error",
+                "service": None,
+            }
+        )
+    elif envrc.parse_status == "PARTIAL":
+        warnings.append(
+            {
+                "code": "ENVRC_PARTIAL_PARSE",
+                "severity": "WARN",
+                "message": (
+                    f"envrc partial parse: {len(envrc.values)} keys loaded, "
+                    f"{len(envrc.errors)} malformed line(s)"
+                ),
+                "service": None,
+            }
+        )
+    if not mcp_json.get("present"):
+        blocking.append(
+            {
+                "code": "MCP_JSON_MISSING",
+                "severity": "FAIL",
+                "message": f"Missing {PROJECT_MCP_FILENAME}",
+                "service": None,
+            }
+        )
+    elif mcp_json.get("parse_status") == "ERROR":
+        blocking.append(
+            {
+                "code": "MCP_JSON_PARSE_ERROR",
+                "severity": "FAIL",
+                "message": "mcp.json parse error",
+                "service": None,
+            }
+        )
+
+    if doctor:
+        blocking.extend(
+            _doctor_blocking_findings(doctor, services=selected, strategy_neutralizes_compose=True)
+        )
+        for f in doctor.findings:
+            if f.get("severity") == "WARN":
+                warnings.append(f)
+
+    # Load registry
+    if op == "status":
+        registry = RuntimeRegistry.load(reg_path, create_missing=False)
+    else:
+        registry = RuntimeRegistry.load(reg_path, create_missing=False)
+        if registry.parse_status == "ERROR" and op in {"start", "stop", "restart"}:
             blocking.append(
                 {
-                    "code": "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
+                    "code": "REGISTRY_PARSE_ERROR",
                     "severity": "FAIL",
-                    "message": f"TO identity preflight failed: {exc}",
-                    "service": "task-orchestrator",
+                    "message": f"Registry unreadable: {registry.error}",
+                    "service": None,
                 }
             )
+
+    docker = di.inspect_running_containers(runner=docker_runner)
+
+    worktree_root = identity.worktree_root or str(target)
+    project_root = identity.project_root or str(target)
+    project_id = identity.project_id or Path(project_root).name
+    worktree_hash = identity.worktree_hash or instance_id_for_path(worktree_root)
+    project_hash = identity.project_hash or ""
+    slug = dr.project_slug(Path(project_root).name)
+    compose_proj = dr.compose_project_name(slug, worktree_hash)
+
+    try:
+        ports = _resolve_ports(
+            identity,
+            selected,
+            catalog,
+            lease_path=default_lease_registry_path(),
+            env=doctor_env,
+            allocate=op in {"start", "restart"},
+            is_free_fn=is_free,
+            docker=docker,
+        )
+    except PortAllocationBlocked as exc:
+        blocking.append(
+            {
+                "code": "PORT_ALLOCATION_BLOCKED",
+                "severity": "FAIL",
+                "message": str(exc),
+                "service": None,
+            }
+        )
+        blocking.extend(exc.findings)
+        ports = _extract_ports(doctor_env, selected, catalog)
+
+    # Task Orchestrator fixed-port identity gate (Packet 005). `_start_services`
+    # repeats it under the reserved lock right before the TO start.
+    if op in {"start", "restart"} and "task-orchestrator" in selected:
+        to_blocking, to_warnings = _to_start_gate(
+            identity,
+            docker,
+            catalog=catalog,
+            ports=ports,
+            is_free=is_free,
+            prior_blocking=blocking,
+        )
+        blocking.extend(to_blocking)
+        warnings.extend(to_warnings)
 
     # Lease registry consistency (start only — recommend repair-config on mismatch)
     if op == "start":
@@ -1000,7 +1301,9 @@ def run_lifecycle(
         )
 
     if op == "stop":
-        return _stop_services(
+        stop_kw: Dict[str, Any] = dict(
+            release_state=True,
+            full_stop=not services,
             selected=selected,
             identity_dict=identity_dict,
             project_id=project_id,
@@ -1018,7 +1321,17 @@ def run_lifecycle(
             catalog=catalog,
             slug=slug,
             worktree_hash=worktree_hash,
+            runtime_dir=runtime_dir_for_paths(
+                project_root=project_root, worktree_hash=worktree_hash, registry_path=reg_path
+            ),
         )
+        if dry_run:
+            return _stop_services(**stop_kw)
+        # D8/D7: stop, lease release and runtime-dir removal are one step under the
+        # instance lock (instance outside, registry inside), so a launcher mid-start
+        # (it attaches under the same lock) is never cut off.
+        with instance_lock(stop_kw["runtime_dir"]):
+            return _stop_services(**stop_kw)
 
     if op == "restart":
         stop_res = _stop_services(
@@ -1067,6 +1380,8 @@ def run_lifecycle(
             cmd_runner=cmd_runner,
             is_free=is_free,
             target=target,
+            docker_runner=docker_runner,
+            envrc_values=dict(envrc.values),
         )
         start_res.operation = "restart"
         if dry_run:
@@ -1110,6 +1425,8 @@ def run_lifecycle(
         cmd_runner=cmd_runner,
         is_free=is_free,
         target=target,
+        docker_runner=docker_runner,
+        envrc_values=dict(envrc.values),
     )
 
 
@@ -1176,6 +1493,116 @@ def _already_running_managed(
     return None
 
 
+def _resolve_conport_tenant(
+    identity: ProjectIdentityView,
+    envrc_values: Mapping[str, str],
+    cmd_runner: Optional[Callable[..., Any]],
+) -> Tuple[Optional[ct.TenantCredentials], List[Dict[str, Any]]]:
+    """D5 database phase for this start; ``(None, [FAIL])`` when conport must not start."""
+    try:
+        creds = ct.resolve_tenant(
+            identity,
+            envrc_values=envrc_values,
+            psql=ct.default_psql_runner(runner=cmd_runner),
+        )
+    except ct.TenantError as exc:
+        return None, [{"code": exc.code, "severity": "FAIL", "message": exc.detail or exc.code}]
+    except (OSError, ValueError) as exc:
+        return None, [
+            {
+                "code": "CONPORT_TENANT_PROVISION_FAILED",
+                "severity": "FAIL",
+                "message": f"tenant resolution failed ({ct.os_error_detail(exc)})",
+            }
+        ]
+    if creds is None:  # only with provision=False, which a start never passes
+        return None, []
+    if creds.source == "legacy_shared":
+        finding = {
+            "code": "CONPORT_LEGACY_SHARED_STORE",
+            "severity": "WARN",
+            "message": (
+                f"conport uses the shared {ct.SHARED_DB} store ({creds.evidence}); "
+                "migration to a project tenant is M2"
+            ),
+        }
+    else:
+        finding = {
+            "code": "CONPORT_TENANT_SOURCE",
+            "severity": "INFO",
+            "message": f"conport tenant source: {creds.source}",
+        }
+    return creds, [finding]
+
+
+def _run_tenant_gate(
+    identity: ProjectIdentityView,
+    container_name: str,
+    cmd_runner: Optional[Callable[..., Any]],
+    *,
+    expected: bool,
+) -> List[Dict[str, Any]]:
+    """D5 gate phase in this instance's conport container, under ``provision_lock``.
+
+    The owed gate is re-read under the lock, so two starts never adopt at
+    once and a start whose gate another start finished skips it. FAIL keeps
+    the gate owed for the next start (never re-provisions). ``expected`` is
+    False for the already-running retry, which stays silent when nothing is
+    owed. Lock order: instance/reserved locks outside, ``provision_lock``
+    inside; no registry lock is taken while it is held.
+    """
+    project_id = str(identity.project_id or "")
+    if not project_id:
+        return []
+    try:
+        path = ct.secrets_path(project_id)
+    except ValueError:
+        return []
+    failed = False  # explicit: an empty detail must never read as success
+    detail = ""
+    try:
+        if not expected and ct.pending_gate_credentials(project_id) is None:
+            return []
+        with provision_lock(project_id):
+            pending = ct.pending_gate_credentials(project_id)
+            if pending is None:
+                return [
+                    {
+                        "code": "CONPORT_TENANT_GATE_ADOPTED",
+                        "severity": "INFO",
+                        "message": "migration gate already completed by another start",
+                    }
+                ]
+            ct.adopt_with_gate(container_name, pending, runner=cmd_runner)
+            ct.mark_gate_done(project_id)
+    except ct.TenantError as exc:
+        if exc.code != "CONPORT_TENANT_GATE_FAILED":
+            return [{"code": exc.code, "severity": "FAIL", "message": exc.detail or exc.code}]
+        failed = True
+        detail = exc.detail or "migration gate failed"
+    except (OSError, ValueError) as exc:
+        failed = True
+        detail = f"migration gate could not run ({ct.os_error_detail(exc)})"
+    if failed:
+        return [
+            {
+                "code": "CONPORT_TENANT_GATE_FAILED",
+                "severity": "FAIL",
+                "message": (
+                    f"{detail}; the tenant database stays and the next start retries "
+                    f"the gate (never re-provisions); secrets file {path}"
+                ),
+            }
+        ]
+    return [
+        {
+            "code": "CONPORT_TENANT_GATE_ADOPTED",
+            "severity": "INFO",
+            "message": f"migration gate adopted and verified the tenant schema in {container_name}",
+        }
+    ]
+
+
 def _start_services(**kw: Any) -> LifecycleResult:
     selected: List[str] = kw["selected"]
     identity = kw["identity"]
@@ -1200,11 +1627,13 @@ def _start_services(**kw: Any) -> LifecycleResult:
     cmd_runner = kw["cmd_runner"]
     is_free = kw["is_free"]
     target: Path = kw["target"]
+    docker_runner = kw.get("docker_runner")
+    envrc_values: Mapping[str, str] = kw.get("envrc_values") or {}
 
     compose_services = [s for s in selected if s in {"conport", "dope-memory"}]
     to_selected = "task-orchestrator" in selected
 
-    runtime_base = reg_path.parent / f"{slug}-{worktree_hash}"
+    runtime_base = runtime_dir_for(identity, registry_path=reg_path)
     memory_data = Path(worktree_root) / ".dopemux"
     # Project identity used for TO container naming (must match wrapper).
     to_state_id = ""
@@ -1222,10 +1651,8 @@ def _start_services(**kw: Any) -> LifecycleResult:
         "DOPEMUX_PROJECT_ROOT": project_root,
         "DOPEMUX_WORKTREE_ROOT": worktree_root,
         "DOPEMUX_WORKSPACE_ROOT": worktree_root,
-        "DOPE_MEMORY_WORKSPACE_ID": doctor_env.get("DOPE_MEMORY_WORKSPACE_ID")
-        or Path(worktree_root).name,
-        "DOPE_MEMORY_INSTANCE_ID": doctor_env.get("DOPE_MEMORY_INSTANCE_ID")
-        or (identity.instance_id or worktree_hash),
+        "DOPE_MEMORY_WORKSPACE_ID": Path(worktree_root).name,
+        "DOPE_MEMORY_INSTANCE_ID": identity.instance_id or worktree_hash,
         "TASK_ORCHESTRATOR_PROJECT_ROOT": project_root,
         "CONPORT_CONTAINER_NAME": container_names.get("conport", ""),
         **{k: str(v) for k, v in ports.items()},
@@ -1245,6 +1672,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
             container_names=container_names,
             labels_by_service=labels_by_service,
             memory_data_path=memory_data,
+            images={svc: dr.compose_image_name(svc, product=product) for svc in compose_services},
         )
 
     plan_doc = {
@@ -1267,6 +1695,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
     )
 
     service_results: List[Dict[str, Any]] = []
+    # Instance records this run produced; replayed onto a fresh, locked reload
+    # of the registry so a concurrent start's records are not clobbered.
+    pending: List[Dict[str, Any]] = []
     overall_fail = False
     overall_unknown = False
 
@@ -1284,6 +1715,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
             # unlabeled TO on fixed port is already blocked in collision
 
         if existing:
+            existing_findings: List[Dict[str, Any]] = []
+            if svc == "conport" and not dry_run:
+                existing_findings = _run_tenant_gate(
+                    identity, existing.name, cmd_runner, expected=False
+                )
+            gate_failed = any(f.get("severity") == "FAIL" for f in existing_findings)
+            if gate_failed:
+                overall_fail = True
             service_results.append(
                 {
                     "service": svc,
@@ -1296,12 +1735,13 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     "commands": [],
                     "probe_status": "UNKNOWN",
                     "registry_updated": False,
-                    "findings": [],
+                    "findings": existing_findings,
                 }
             )
             if not dry_run:
                 _registry_upsert(
                     registry,
+                    pending=pending,
                     svc=svc,
                     project_id=project_id,
                     identity=identity,
@@ -1314,22 +1754,71 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     container_names=[existing.name],
                     ports=svc_ports,
                     labels=labels,
-                    status="running",
+                    status="unhealthy" if gate_failed else "running",
                     last_start={"command": ["already_running"], "exit_code": 0},
                 )
             continue
 
         commands: List[List[str]] = []
+        image_name = ""
+        image_findings: List[Dict[str, Any]] = []
+        will_build = False
         if svc in {"conport", "dope-memory"}:
-            cmd = dr.compose_up_command(
-                product=product,
-                override_path=Path(artifact_paths["compose.override.yml"]),
-                env_file=Path(artifact_paths["mcp.env"]),
-                project_name=compose_proj,
-                services=[svc],
-                no_deps=True,
+            # R3: ambient identity/port/tenant exports never reach compose.
+            interp_env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
+            override_file = Path(artifact_paths["compose.override.yml"])
+            env_file = Path(artifact_paths["mcp.env"])
+            # The override names one shared image per service and Dockerfile version
+            # (D4); missing on this host, `up` would build inline and blow the up
+            # budget. Probe (read-only) and build first.
+            image_name = dr.compose_image_name(svc, product=product)
+            present = dr.docker_image_exists(
+                image_name, runner=cmd_runner, env=interp_env
             )
-            commands.append(cmd)
+            will_build = present is False
+            if will_build:
+                commands.append(
+                    dr.compose_build_command(
+                        product=product,
+                        override_path=override_file,
+                        env_file=env_file,
+                        project_name=compose_proj,
+                        services=[svc],
+                    )
+                )
+                image_findings.append(
+                    {
+                        "code": "IMAGE_MISSING_WILL_BUILD",
+                        "severity": "INFO",
+                        "message": (
+                            f"image {image_name} not found; `compose build {svc}` "
+                            f"will run first with a {dr.build_timeout_secs():.0f}s "
+                            f"budget ({dr.BUILD_TIMEOUT_ENV})"
+                        ),
+                    }
+                )
+            elif present is None:
+                image_findings.append(
+                    {
+                        "code": "IMAGE_PRESENCE_UNKNOWN",
+                        "severity": "WARN",
+                        "message": (
+                            f"could not determine whether image {image_name} exists "
+                            "(docker image inspect was inconclusive); running `up` "
+                            "without a pre-build"
+                        ),
+                    }
+                )
+            commands.append(
+                dr.compose_up_command(
+                    product=product,
+                    override_path=override_file,
+                    env_file=env_file,
+                    project_name=compose_proj,
+                    services=[svc],
+                    no_deps=True,
+                )
+            )
         elif svc == "task-orchestrator":
             # Wrapper uses project resolution from env; set identity env
             cmd = dr.task_orchestrator_start_command(product, dry_run=False)
@@ -1361,7 +1850,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     "labels": labels,
                     "runtime_files": list(artifact_paths.values()),
                     "commands": [dr.redact_command(c) for c in commands],
-                    "preflight_findings": [],
+                    "preflight_findings": list(image_findings),
                 }
             )
             continue
@@ -1371,20 +1860,122 @@ def _start_services(**kw: Any) -> LifecycleResult:
             # Ensure data dir for memory
             if svc == "dope-memory":
                 memory_data.mkdir(parents=True, exist_ok=True)
+            build_result = None
+            findings = list(image_findings)
+            up_cmd = commands[-1]
+            up_env = interp_env
+            tenant: Optional[ct.TenantCredentials] = None
+            if svc == "conport":
+                # D5 database phase before the sidecar starts. The credentials
+                # reach this compose `up` only, never mcp.env or the plan.
+                tenant, tenant_findings = _resolve_conport_tenant(
+                    identity, envrc_values, cmd_runner
+                )
+                findings.extend(tenant_findings)
+                if tenant is None:
+                    overall_fail = True
+                    service_results.append(
+                        {
+                            "service": svc,
+                            "action": "failed",
+                            "reason": "conport tenant unresolved",
+                            "container_names": [cname],
+                            "ports": svc_ports,
+                            "probe_status": "UNKNOWN",
+                            "registry_updated": False,
+                            "findings": findings,
+                            "commands": [dr.redact_command(c) for c in commands],
+                            "image": image_name,
+                        }
+                    )
+                    continue
+                up_env = dr.env_with_compose_interpolation(
+                    product=product,
+                    extra=ct.tenant_compose_env(tenant),
+                    scrub_ambient=True,
+                )
+            if will_build:
+                build_result = dr.run_cmd(
+                    commands[0],
+                    runner=cmd_runner,
+                    cwd=product,
+                    env=interp_env,
+                    dry_run=False,
+                    timeout=dr.build_timeout_secs(),
+                )
+            if build_result is not None and build_result.exit_code != 0:
+                overall_fail = True
+                tail = (build_result.stderr or build_result.stdout or "").strip()[-300:]
+                findings.append(
+                    {
+                        "code": "IMAGE_BUILD_FAILED",
+                        "severity": "ERROR",
+                        "message": (
+                            f"compose build {svc} exited "
+                            f"{build_result.exit_code}: {tail}"
+                        ),
+                    }
+                )
+                service_results.append(
+                    {
+                        "service": svc,
+                        "action": "failed",
+                        "container_names": [cname],
+                        "ports": svc_ports,
+                        "probe_status": "UNKNOWN",
+                        "registry_updated": False,
+                        "findings": findings,
+                        "commands": [dr.redact_command(c) for c in commands],
+                        "result": build_result.to_dict(),
+                        "build_result": build_result.to_dict(),
+                        "image": image_name,
+                    }
+                )
+                continue
+            if build_result is not None:
+                findings.append(
+                    {
+                        "code": "IMAGE_BUILT",
+                        "severity": "INFO",
+                        "message": f"built image {image_name}",
+                    }
+                )
             result = dr.run_cmd(
-                commands[0],
+                up_cmd,
                 runner=cmd_runner,
                 cwd=product,
-                env=dr.env_with_compose_interpolation(),
+                env=up_env,
                 dry_run=False,
+                timeout=dr.up_timeout_secs(),
             )
             action = "started" if result.exit_code == 0 else "failed"
             if result.exit_code != 0:
                 overall_fail = True
             probe = _probe_service(svc, ports, is_free)
+            gate_failed = False
+            if tenant is not None and tenant.gate_pending and result.exit_code == 0:
+                # D5 gate phase: only once this instance's container answers.
+                if probe == "OK":
+                    gate = _run_tenant_gate(identity, cname, cmd_runner, expected=True)
+                    findings.extend(gate)
+                    gate_failed = any(f.get("severity") == "FAIL" for f in gate)
+                else:
+                    findings.append(
+                        {
+                            "code": "CONPORT_TENANT_GATE_PENDING",
+                            "severity": "INFO",
+                            "message": (
+                                f"conport probe {probe}; the migration gate runs on the next start"
+                            ),
+                        }
+                    )
+            if gate_failed:
+                overall_fail = True
+                action = "failed"
             if not dry_run and result.exit_code == 0:
                 _registry_upsert(
                     registry,
+                    pending=pending,
                     svc=svc,
                     project_id=project_id,
                     identity=identity,
@@ -1397,9 +1988,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     container_names=[cname],
                     ports=svc_ports,
                     labels=labels,
-                    status="running" if probe != "FAIL" else "unhealthy",
+                    status="running" if probe != "FAIL" and not gate_failed else "unhealthy",
                     last_start={
-                        "command": [dr.redact_command(commands[0])],
+                        "command": [dr.redact_command(up_cmd)],
                         "exit_code": result.exit_code,
                     },
                     last_probe={"status": probe},
@@ -1412,9 +2003,11 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     "ports": svc_ports,
                     "probe_status": probe,
                     "registry_updated": result.exit_code == 0,
-                    "findings": [],
-                    "commands": [dr.redact_command(commands[0])],
+                    "findings": findings,
+                    "commands": [dr.redact_command(c) for c in commands],
                     "result": result.to_dict(),
+                    "build_result": build_result.to_dict() if build_result else None,
+                    "image": image_name,
                 }
             )
         elif svc == "task-orchestrator":
@@ -1435,13 +2028,39 @@ def _start_services(**kw: Any) -> LifecycleResult:
             env["TASK_ORCHESTRATOR_HTTP_PORT"] = str(
                 ports.get("TASK_ORCHESTRATOR_HTTP_PORT", 7890)
             )
-            result = dr.run_cmd(
-                commands[0],
-                runner=cmd_runner,
-                env=env,
-                cwd=Path(worktree_root),
-                dry_run=False,
-            )
+            # D7: the gate ran on an earlier docker snapshot and released the
+            # lock. Re-inspect and re-check under the lock, and keep holding it
+            # through the start, so no other launcher, switch-project or start
+            # takes :7890 in between. (The wrapper is idempotent when this
+            # project's TO already serves the port.)
+            with reserved_port_lock(7890):
+                fresh = di.inspect_running_containers(runner=docker_runner)
+                recheck, _ = _to_start_gate(
+                    identity, fresh, catalog=catalog, ports=ports, is_free=is_free
+                )
+                if recheck:
+                    overall_fail = True
+                    service_results.append(
+                        {
+                            "service": svc,
+                            "action": "blocked",
+                            "reason": ":7890 owner re-checked under the reserved lock",
+                            "container_names": [cname],
+                            "ports": svc_ports,
+                            "probe_status": "UNKNOWN",
+                            "registry_updated": False,
+                            "findings": recheck,
+                            "commands": [],
+                        }
+                    )
+                    continue
+                result = dr.run_cmd(
+                    commands[0],
+                    runner=cmd_runner,
+                    env=env,
+                    cwd=Path(worktree_root),
+                    dry_run=False,
+                )
             action = "started" if result.exit_code == 0 else "failed"
             if result.exit_code != 0:
                 overall_fail = True
@@ -1453,6 +2072,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
             if result.exit_code == 0:
                 _registry_upsert(
                     registry,
+                    pending=pending,
                     svc=svc,
                     project_id=project_id,
                     identity=identity,
@@ -1499,17 +2119,15 @@ def _start_services(**kw: Any) -> LifecycleResult:
             )
 
     if not dry_run and registry.parse_status != "ERROR":
-        try:
-            registry.path = reg_path
-            if not registry.present and registry.parse_status == "MISSING":
-                registry.data = registry.data or {}
-                from .runtime_registry import empty_registry
+        # Final write of the start path: reload under the registry lock, apply
+        # only this run's records, save. No docker call happens under the lock.
+        def _apply_pending(fresh: RuntimeRegistry) -> None:
+            for rec in pending:
+                fresh.upsert_instance(rec)
 
-                if not registry.data.get("instances"):
-                    registry.data = empty_registry()
-                registry.parse_status = "OK"
-            registry.save()
-        except RegistryError:
+        try:
+            locked_reload_and_save(RuntimeRegistry, reg_path, _apply_pending)
+        except (RegistryError, OSError):
             overall_fail = True
 
     if dry_run:
@@ -1538,7 +2156,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
         runtime_artifacts=list(artifact_paths.values()),
         exit_code=exit_code,
         recommended_next_actions=[
-            "source .envrc.dopemux-mcp && claude",
+            "claude  # open a session here, or /mcp reconnect all in a running one",
             "dopemux mcp doctor --repo " + str(target),
         ],
     )
@@ -1608,6 +2226,9 @@ def _registry_upsert(registry: RuntimeRegistry, **kw: Any) -> None:
         registry.data = empty_registry()
         registry.parse_status = "OK"
     registry.upsert_instance(rec)
+    sink = kw.get("pending")
+    if sink is not None:
+        sink.append(rec)
 
 
 def _probe_service(service: str, ports: Mapping[str, int], is_free: Callable[[int], bool]) -> str:
@@ -1648,6 +2269,7 @@ def _stop_services(**kw: Any) -> LifecycleResult:
 
     results = []
     fail = False
+    stopped: List[str] = []  # services this run stopped; replayed on a locked reload
 
     for svc in selected:
         cname = container_names[svc]
@@ -1735,18 +2357,27 @@ def _stop_services(**kw: Any) -> LifecycleResult:
                         "result": res.to_dict(),
                     }
                 )
-                if res.exit_code == 0:
-                    registry.mark_stopped(
-                        project_id=project_id,
-                        service=svc,
-                        worktree_root=worktree_root,
-                    )
+                if res.exit_code == 0 and svc not in stopped:
+                    stopped.append(svc)
 
-    if not dry_run and registry.parse_status == "OK":
-        try:
-            registry.save()
-        except RegistryError:
+    if not dry_run and registry.parse_status == "OK" and stopped:
+        # Reload under the registry lock and apply only this run's changes, so a
+        # record another start saved meanwhile survives (never save the pre-lock read).
+        def _mark_stopped(fresh: RuntimeRegistry) -> None:
+            for svc in stopped:
+                fresh.mark_stopped(project_id=project_id, service=svc, worktree_root=worktree_root)
+
+        if save_state_locked(RuntimeRegistry, reg_path, _mark_stopped):
             fail = True
+
+    warnings: List[Dict[str, Any]] = []
+    if not dry_run and not fail and kw.get("release_state", False):
+        warnings = _release_stopped_state(
+            selected=selected,
+            worktree_root=worktree_root,
+            full_stop=bool(kw.get("full_stop")),
+            runtime_dir=Path(kw["runtime_dir"]),
+        )
 
     return LifecycleResult(
         schema_version=SCHEMA_VERSION,
@@ -1755,9 +2386,58 @@ def _stop_services(**kw: Any) -> LifecycleResult:
         status="PLANNED" if dry_run else ("FAIL" if fail else "PASS"),
         project_identity=identity_dict,
         services=results,
+        warnings=warnings,
         registry_path=str(reg_path),
         exit_code=1 if fail and not dry_run else 0,
     )
+
+
+def _release_stopped_state(
+    *,
+    selected: Sequence[str],
+    worktree_root: str,
+    full_stop: bool,
+    runtime_dir: Path,
+) -> List[Dict[str, Any]]:
+    """After a successful ``stop`` (called under the instance lock): release leases.
+
+    A full stop (no ``--services``) also removes the worktree's runtime dir unless
+    launchers are still attached to it; a partial one keeps it. Problems become
+    warnings: the containers are already stopped, so this bookkeeping never fails
+    the stop.
+    """
+    from .reap import live_attachments  # reap imports this module
+
+    warnings: List[Dict[str, Any]] = []
+
+    def warn(code: str, message: str) -> None:
+        warnings.append({"code": code, "severity": "WARN", "message": message, "service": None})
+
+    def release(leases: PortLeaseRegistry) -> None:
+        for svc in selected:
+            leases.mark_released(service=svc, worktree_root=worktree_root)
+
+    error = save_state_locked(PortLeaseRegistry, default_lease_registry_path(), release)
+    if error:
+        warn("STOP_STATE_RELEASE_INCOMPLETE", f"port leases not released: {error}")
+    if full_stop:
+        live = live_attachments(runtime_dir)
+        if live > 0:
+            warn(
+                "RUNTIME_DIR_KEPT_LIVE_LAUNCHERS",
+                f"{live} launcher(s) still attached; kept runtime dir {runtime_dir}",
+            )
+            return warnings
+        try:
+            shutil.rmtree(runtime_dir)
+        except FileNotFoundError:
+            pass
+        except OSError as exc:
+            warn(
+                "STOP_STATE_RELEASE_INCOMPLETE",
+                f"runtime dir {runtime_dir} not removed: {exc}",
+            )
+    return warnings
 
 
 def _status_result(**kw: Any) -> LifecycleResult:

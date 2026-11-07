@@ -244,6 +244,7 @@ def plan_repair(
     project_env_exports_fn: Optional[Callable[[str, str], Dict[str, str]]] = None,
     render_local_fn: Any = None,
     global_claude_path: Optional[Path] = None,
+    trust_env: bool = False,
 ) -> RepairPlan:
     """Build a deterministic repair plan for the target repo/worktree."""
     repo_path = Path(repo).expanduser().resolve()
@@ -263,8 +264,7 @@ def plan_repair(
         },
         next_actions=[
             "dopemux mcp start",
-            "source .envrc.dopemux-mcp",
-            "dopemux mcp doctor",
+            f"dopemux mcp doctor --repo {repo_path}",
         ],
     )
 
@@ -290,7 +290,9 @@ def plan_repair(
 
     # Identity
     envrc_parsed = load_envrc(envrc_path)
-    identity = resolve_identity_view(repo_path, envrc_values=envrc_parsed.values)
+    identity = resolve_identity_view(
+        repo_path, envrc_values=envrc_parsed.values, trust_env=trust_env
+    )
     plan.project_identity = {
         "project_id": identity.project_id,
         "workspace_id": identity.workspace_id,

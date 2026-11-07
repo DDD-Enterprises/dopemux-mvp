@@ -190,7 +190,7 @@ All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
 
 ## 🪝 Lifecycle Hooks
 
-The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStart`, `SubagentStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `.claude/hooks/run_native_hooks.sh`, which runs `src/dopemux/claude/native_hooks.py` with the repo `.venv` interpreter (falling back to `python3`). A bare `python3` can resolve to an interpreter without the repo's dependencies (e.g. no `pydantic`), making every hook fail. Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
+The project's `.claude/settings.json` registers 11 lifecycle hooks (`SessionStart`, `SubagentStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Stop`, `SubagentStop`, `PreCompact`, `SessionEnd`), all dispatched through one entry point: `.claude/hooks/run_native_hooks.sh`, which resolves the checkout from the current directory (the hook's cwd) and runs that checkout's `src/dopemux/claude/native_hooks.py` with `<checkout>/.venv/bin/python`, else the main checkout's `.venv/bin/python`; otherwise it runs `dopemux native-hooks run` from PATH (or `~/.local/bin`), and if neither exists it prints one line to stderr and exits 0 (fails open). It never falls back to a bare `python3`, which can lack the repo's dependencies (e.g. `pydantic`). The `Stop`/`SubagentStop` and `SessionEnd` events also run a bounded, kill-switchable `dopemux mcp reap`; `SessionEnd` gets `"timeout": 60` in `.claude/settings.json` because SessionEnd hooks otherwise share a 1.5 s budget (Claude Code docs, read 2026-11-05). Individual hook scripts live under `.claude/hooks/` (e.g., `check_energy.sh`, `log_progress.sh`, `save_context.sh`, `track_file_edit.sh`, `prompt_analyzer.py`, `session_lifecycle.py`).
 
 **Orchestrator-coordination hooks** (ported from upstream `claude-plugins/task-orchestrator`, TP-CS-101 / Path B — see [docs/03-reference/orchestrator-integration/plugin-hooks-port.md](../docs/03-reference/orchestrator-integration/plugin-hooks-port.md)): available as `.claude/hooks/orchestrator_session_start.py` (SessionStart context inject), `orchestrator_post_edit_nudge.py` (PostToolUse edit nudge), `orchestrator_subagent_protocol.py` (SubagentStart agent-owned-phase protocol for implementation subagents), and `orchestrator_enforcement.py` (PreToolUse actor-attribution enforcement [dormant until `actor_authentication.enabled`], skill-invocation enforcement, and EnterPlanMode/ExitPlanMode guidance). These route through `native_hooks.py` when invoked and fail open (no-op) when their helpers or config are absent.
 
@@ -250,17 +250,32 @@ When you need comprehensive details, refer to:
 | `dope-memory`, `task-orchestrator` | `http` | Streamable HTTP — `POST /mcp` |
 | `pal`, `serena`, `dope-context` | `http` | Streamable HTTP — `POST /mcp` |
 
+In a dopemux-rendered `.mcp.json`, `conport`, `dope-memory` and `task-orchestrator` are stdio
+launcher entries (`${DOPEMUX_BIN:-dopemux} mcp launch <name>`); the transports above are the
+backends behind the launcher's proxy and are unchanged.
+
 A `406 Not Acceptable: Client must accept text/event-stream` on `GET /mcp` is
 **correct Streamable HTTP behaviour** — not evidence the server is SSE. Fix: POST with JSON-RPC.
 
-**Setting up MCP in a new repo**:
+**Setting up MCP in a new repo** (once per project; nothing per worktree, nothing to source):
 ```bash
-cd ~/code/target-repo && dopemux mcp init
-source .envrc.dopemux-mcp && dopemux mcp doctor
+dopemux mcp init --repo ~/code/target-repo   # tenant + image pre-build + .mcp.json; commit .mcp.json
+dopemux mcp doctor --repo ~/code/target-repo
 ```
+Identity is git-only (ambient `DOPEMUX_*` is ignored unless `--trust-env`); `.envrc.dopemux-mcp`
+needs no sourcing (dopemux reads its ports itself). `dopemux mcp switch-project` moves the single task-orchestrator;
+`dopemux mcp reap` (dry run by default) cleans up removed or idle worktrees; automatic reaping
+is disabled by the file `~/.dopemux/mcp/runtime/reap.disabled` or `DOPEMUX_MCP_REAP=0`. Images are
+one per service and Dockerfile version (`dopemux-<service>:<key>`), shared by every worktree and
+project: only the first launch on a host per Dockerfile version builds (`LAUNCH_IMAGE_BUILDING`,
+then `/mcp reconnect all`); later worktrees reuse them and reap never removes them. Sidecar
+source edits that leave the Dockerfile unchanged need a forced rebuild (`docker image rm
+dopemux-<service>:<key>`, see the how-to).
+Guide: `docs/02-how-to/mcp-setup-other-repos.md`.
 
-**Debug sequence**: source envrc → `dopemux mcp doctor` → curl probe → tail docker logs
-→ `./mcp_server_health_report.sh`
+**Debug sequence**: run `dopemux mcp launch <name>` by hand in the checkout (prints the
+`CODE: remedy` that `claude mcp list` hides) → `dopemux mcp doctor` → curl probe → tail docker
+logs → `./mcp_server_health_report.sh`
 
 **Sharing classes today**: `postgres-age`, `redis-primary`, `qdrant`, `dope-context`, `litellm`,
 `gpt-researcher`, `exa`, `desktop-commander`, bridges are host singletons (one process, shared).
@@ -268,10 +283,10 @@ source .envrc.dopemux-mcp && dopemux mcp doctor
 no stream isolation; its events get promoted into canonical work_log) — the REQUIRED target is project-scoped
 (design §10.4, gate P-21, not yet implemented). `conport`, `dope-memory`, `serena`
 are still **worktree-scoped** (one container per worktree) pending identity gates — expect N worktrees to
-cost 3N containers until those land; ConPort's ruled end-state is **project-scoped**, never host-singleton
+cost 3N containers until those land (the launcher entries reap idle or removed worktrees); ConPort's ruled end-state is **project-scoped**, never host-singleton
 (§10.3). Never start fleet services outside `dopemux mcp` (no raw `docker compose up` / `docker run`). Full
-sharing-class table + command surface (`init`/`start`/`stop`/`doctor` implemented;
-`reconcile`/`adopt`/`migrate`/`switch-project` PLANNED — `switch-project` transitional only): AGENTS.md §12.6
+sharing-class table + command surface (`init`/`start`/`stop`/`doctor`/`launch`/`switch-project`/`reap`
+implemented — `switch-project` transitional; `reconcile`/`adopt`/`migrate` PLANNED): AGENTS.md §12.6
 and `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (ACCEPTED with supervisor rulings 2026-07-28).
 
 **Runner memory identity (Wave 2A, AGENTS.md §12.7)**: dope-memory and ConPort take an auth

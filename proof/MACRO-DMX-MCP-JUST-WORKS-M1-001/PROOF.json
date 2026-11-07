@@ -1,0 +1,360 @@
+{
+  "tp_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
+  "tp_path": ".superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/MACRO_PACKET.md (git-ignored workspace; plan claudedocs/mcp-just-works-m1-plan-2026-11-05.md)",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1",
+  "branch": "feat/mcp-just-works-m1",
+  "repo_identity": "DDD-Enterprises/dopemux-mvp",
+  "head_sha": "30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
+  "commit_sha": "30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
+  "routes": [
+    {
+      "workstream": "supervisor/controller",
+      "runner": "claude-code",
+      "model_requested": "claude-fable-5-1",
+      "model_observed": "claude-fable-5-1 (session)",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:subagent-driven-development",
+        "task-packet"
+      ]
+    },
+    {
+      "workstream": "implementers T1/T2/T3a/T3b/T5/T6",
+      "runner": "claude-code Agent",
+      "model_requested": "sonnet",
+      "model_observed": "claude-sonnet-5-5 (harness receipt on rate-limit errors)",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:test-driven-development"
+      ]
+    },
+    {
+      "workstream": "implementers T3c/T4/final fix rounds",
+      "runner": "claude-code Agent",
+      "model_requested": "opus",
+      "model_observed": "claude-opus-5-5 (harness receipt)",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:test-driven-development"
+      ]
+    },
+    {
+      "workstream": "task reviews / re-reviews / final whole-branch review",
+      "runner": "claude-code Agent",
+      "model_requested": "sonnet (T1/T2/T3a/T3b/T6, small re-reviews) / opus (T3c/T4/T5, concurrency re-reviews, final)",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:requesting-code-review"
+      ]
+    },
+    {
+      "workstream": "deterministic validation",
+      "runner": "local-shell",
+      "model_requested": "NONE",
+      "model_observed": "NONE",
+      "effort": "UNKNOWN",
+      "skills": []
+    },
+    {
+      "workstream": "independent L3 audit route \u2014 codex",
+      "runner": "codex",
+      "model_requested": "gpt-6-astra",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "independent-audit"
+      ],
+      "status": "FAIL",
+      "exit_code": 0,
+      "marker_echoed": true,
+      "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDIT_CODEX_REPORT.md",
+      "raw_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/ (raw-* files)",
+      "findings": [
+        {
+          "id": "F1",
+          "severity": "medium",
+          "location": "src/dopemux/mcp/reap.py:736",
+          "summary": "Registry persistence failure does not prevent runtime deletion or a reaped result."
+        },
+        {
+          "id": "F2",
+          "severity": "medium",
+          "location": "src/dopemux/mcp/lifecycle.py:1336",
+          "summary": "Direct start/restart operations are not serialized against the new automatic reaper."
+        }
+      ]
+    },
+    {
+      "workstream": "independent L3 audit route \u2014 agy",
+      "runner": "agy",
+      "model_requested": "gemini-4-argon-high",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "independent-audit"
+      ],
+      "status": "PASS_WITH_RISKS",
+      "exit_code": 0,
+      "marker_echoed": true,
+      "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDIT_AGY_REPORT.md",
+      "raw_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/ (raw-* files)",
+      "findings": [
+        {
+          "id": "F1",
+          "severity": "low",
+          "location": "AGENTS.md:309",
+          "summary": "AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared per service and Dockerfile version across all worktrees and projects on the host."
+        }
+      ]
+    },
+    {
+      "workstream": "independent L3 audit route \u2014 grok",
+      "runner": "grok",
+      "model_requested": "grok-4.7",
+      "model_observed": "UNKNOWN",
+      "effort": "high",
+      "skills": [
+        "independent-audit"
+      ],
+      "status": "PASS_WITH_RISKS",
+      "exit_code": 0,
+      "marker_echoed": true,
+      "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDIT_GROK_REPORT.md",
+      "raw_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/ (raw-* files)",
+      "findings": []
+    }
+  ],
+  "slices": [
+    "T1 hooks a274a066f",
+    "T2 identity a728a6aaa+4d90b51fb",
+    "T3a catalog fb8717368",
+    "T3b locks/ports 40ea89c24+05e5e50a0",
+    "T3c launcher 33959c081+5d04d8caa+7f5cb621a+baf8b1151",
+    "T4 tenants 09606798b+8f12edee4",
+    "T5 reap 859fd844d+016a9f3b8",
+    "T6 docs b2c6e3efa+94a2a6f6a",
+    "final review fix 7ae26f045",
+    "residual fix eb3f0624b",
+    "audit fix 3bf5d4f26"
+  ],
+  "files_changed": [
+    ".claude/WORKTREE_MCP_SETUP.md",
+    ".claude/claude.md",
+    ".claude/hooks/run_native_hooks.sh",
+    ".claude/modules/shared/governance-principles.md",
+    ".claude/settings.json",
+    ".mcp.json",
+    "AGENTS.md",
+    "claudedocs/mcp-just-works-design-2026-11-05.md",
+    "claudedocs/mcp-just-works-m1-plan-2026-11-05.md",
+    "claudedocs/mcp-launch-root-probe-2026-11-05.md",
+    "docs/02-how-to/mcp-setup-other-repos.md",
+    "docs/05-audit-reports/dopemux-multi-project-multi-worktree-readiness-2026-11-04.md",
+    "mcp-proxy-config.copilot.yaml",
+    "mcp_catalog.yaml",
+    "pyproject.toml",
+    "schemas/mcp/fleet-catalog-v2.schema.json",
+    "schemas/mcp/fleet-catalog.schema.json",
+    "scripts/doc_mine.py",
+    "scripts/proofs/run_dnh_mcp_e2e.py",
+    "src/dopemux/adhd_error_messages.py",
+    "src/dopemux/claude/native_hooks.py",
+    "src/dopemux/cli.py",
+    "src/dopemux/commands/mcp_commands.py",
+    "src/dopemux/mcp/agent_bootstrap.py",
+    "src/dopemux/mcp/config_repair.py",
+    "src/dopemux/mcp/conport_tenant.py",
+    "src/dopemux/mcp/default_catalog.yaml",
+    "src/dopemux/mcp/docker_inspect.py",
+    "src/dopemux/mcp/docker_runtime.py",
+    "src/dopemux/mcp/doctor.py",
+    "src/dopemux/mcp/fleet_catalog.py",
+    "src/dopemux/mcp/launcher.py",
+    "src/dopemux/mcp/lifecycle.py",
+    "src/dopemux/mcp/locks.py",
+    "src/dopemux/mcp/mcp_json.py",
+    "src/dopemux/mcp/port_allocator.py",
+    "src/dopemux/mcp/project_identity.py",
+    "src/dopemux/mcp/reap.py",
+    "src/dopemux/mcp/runtime_state.py",
+    "src/dopemux/mcp/stdio_proxy.py",
+    "src/dopemux/worktree_commands.py",
+    "tests/arch/test_compose_required_vars.py",
+    "tests/arch/test_mcp_fleet_catalog_contract.py",
+    "tests/test_native_hooks_workflow.py",
+    "tests/unit/runner_memory_2a_r2_w07/test_generator_gate.py",
+    "tests/unit/test_docs_no_envrc_recipe.py",
+    "tests/unit/test_mcp_commands_catalog.py",
+    "tests/unit/test_mcp_commands_lifecycle.py",
+    "tests/unit/test_mcp_commands_repair.py",
+    "tests/unit/test_mcp_commands_snapshot.py",
+    "tests/unit/test_mcp_conport_tenant.py",
+    "tests/unit/test_mcp_doctor_repo_aware.py",
+    "tests/unit/test_mcp_fleet_catalog.py",
+    "tests/unit/test_mcp_identity_git_only.py",
+    "tests/unit/test_mcp_launcher.py",
+    "tests/unit/test_mcp_launcher_render.py",
+    "tests/unit/test_mcp_lifecycle.py",
+    "tests/unit/test_mcp_lifecycle_ports_from_leases.py",
+    "tests/unit/test_mcp_locks.py",
+    "tests/unit/test_mcp_port_allocator.py",
+    "tests/unit/test_mcp_profile_doctor.py",
+    "tests/unit/test_mcp_reap.py",
+    "tests/unit/test_mcp_runtime_launcher.py",
+    "tests/unit/test_mcp_stdio_proxy.py",
+    "tests/unit/test_mcp_switch_project.py",
+    "tests/unit/test_native_hooks_dispatcher.py",
+    "tests/unit/test_native_hooks_register.py",
+    "uv.lock"
+  ],
+  "validations": [
+    {
+      "command": "make test-fast",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "4229 passed, 2 skipped, 2 warnings in 496.08s (0:08:16) at 30b0fdec996fcd782bf2f816900f9ff4dabd4c01 (implementer-run, controller-verified from the log)"
+    },
+    {
+      "command": ".venv/bin/python -m pytest tests/test_native_hooks_workflow.py -v",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "12 passed at 7ae26f045; file unchanged since"
+    },
+    {
+      "command": "scripts/docs_validator.py + scripts/docs_frontmatter_guard.py (file-scoped on touched docs)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "rc=0 on the how-to and both claudedocs files"
+    },
+    {
+      "command": "ruff check --select F,E9 / flake8 --select F,E7,E9,W6 per-file diff vs base 583720375",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "0 new entries over the changed .py files"
+    },
+    {
+      "command": "black --check / isort --check-only (five new modules, repo config)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "clean"
+    },
+    {
+      "command": "mypy --explicit-package-bases --ignore-missing-imports (five new modules)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "0 errors in the new modules; repo-wide mypy aborts on main (pre-existing)"
+    },
+    {
+      "command": "make lint / make type-check (repo-wide)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "not clean/functional on main (21828 flake8 findings; mypy duplicate-module abort); per-file diffs recorded instead"
+    },
+    {
+      "command": "live: dopemux mcp launch conport/dope-memory + claude mcp list (worktree)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "at 7f5cb621a: both Connected; sibling-lease collision healed (live-check-3c-fix1.log)"
+    },
+    {
+      "command": "live: dopemux mcp init --repo <fresh repo>; dopemux mcp launch conport (gate)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "at 8f12edee4/baf8b1151: tenant provisioned, images built, conport connected, gate cleared (live-check-4-tenant-probe.log)"
+    },
+    {
+      "command": "live: dopemux mcp reap --dry-run --json",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "at 859fd844d: empty plan with the kill-switch (live-check-5-reap-dryrun.log)"
+    },
+    {
+      "command": "live: reap --apply, switch-project, Codex/EnterWorktree probes, legacy-envrc adoption, acceptance T1\u2013T11",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "owner-run; reap --apply denied to the controller by the permission classifier"
+    }
+  ],
+  "codereview_status": "PASS (final whole-branch opus review 'with fixes' \u2192 fixes applied and re-reviewed; residual + audit rounds verified)",
+  "precommit_status": "NOT_RUN",
+  "audit": {
+    "required": true,
+    "status": {
+      "codex": "FAIL",
+      "agy": "PASS_WITH_RISKS",
+      "grok": "PASS_WITH_RISKS"
+    },
+    "route": "three routes at the frozen head (codex gpt-6-astra, agy gemini-4-argon-high, grok grok-4.7); operator picks the governing verdict; embedded_audit below carries the agy record (schema-valid)"
+  },
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1503 (open; merge owner-gated; embedded-audit signature = owner step)",
+  "residual_risks": [
+    "flaky tests/unit/test_mcp_port_allocator.py::test_sequential_single_service_allocations_never_share_a_port (~1/30 isolated runs)",
+    "SIGKILLed-only launcher leaves its instance to the worktree-missing rule",
+    "second restart of the same backend within one proxy window needs /mcp reconnect",
+    "per-worktree mcp.env/compose.override reflect the last launched service",
+    "legacy projects stay on the shared ConPort store (D5 Option A)"
+  ],
+  "unknowns": [
+    "observed model identity of every delegated agent and external auditor (no runtime receipts except harness error messages)",
+    "owner-run acceptance T1\u2013T11",
+    "Codex/EnterWorktree launcher behaviour (NOT_RUN probes)"
+  ],
+  "cleanup_status": "probe fixture (~/code/.tenant-probe-m1, tenant conport_tenant_probe_m1_84fc294a, its project dir and runtime dir, container) and ~/.dopemux/mcp/runtime/reap.disabled intentionally left for owner acceptance T8; lint-base worktree .worktrees/lint-base-583720375 to be removed after the PR",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --output-format json --print-timeout 25m --add-dir <sealed subject> --print=<AUDIT_PROMPT.agy.full.txt> (exact requested model gemini-4-argon-high; the schema enum lacks it, hence 'gemini')",
+    "exit_code": 0,
+    "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "LOW",
+        "title": "AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared ",
+        "status": "ACCEPTED_RISK",
+        "body": "AGENTS.md:309: AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared per service and Dockerfile version across all worktrees and projects on the host. \u2014 evidence: AGENTS.md:309-310 says 'The first launch in a new worktree builds its images (LAUNCH_IMAGE_BUILDING; then /mcp reconnect all).' Commit 02658fcbe changed docker_runtime.compose_image_name (src/dopemux/mcp/docker_runtime.py:487-516) to tag dopemux-<service>:<12-hex-sha256> per service and Dockerfile content, and updated docs/02-how-to/mcp-setup-other-repos.md:122-128 and .claude/claude.md:270-273 accordingly, leaving AGENTS.md:309 with the pre-I4 wording."
+      }
+    ],
+    "fixes_applied": [
+      "eb3f0624b audit (codex FAIL: F1 high first-session guard gap, F3 medium unbounded reap locks/inspection) \u2192 fixed in 3bf5d4f26",
+      "3bf5d4f26 audit (codex FAIL: 2 medium \u2014 stale reap eligibility under the lock; unbounded registry lock on automatic reaps) \u2192 fixed in 30b0fdec9",
+      "superseded returns kept under proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/superseded-*/"
+    ],
+    "remaining_risks": [
+      "AGENTS.md:309 contains stale wording implying image builds happen per new worktree rather than once per service/Dockerfile version on the host (Finding F1, low).",
+      "In stdio_proxy.py:316-329, an initial connect failure consumes the 60-second reconnect window budget via the immediate startup retry, so if the backend subsequently restarts within 60 seconds of that retry, the proxy will exit 1 and require '/mcp reconnect' rather than auto-healing a second time inside the same 60-second window.",
+      "Deferred M1 items documented in LEDGER_SUMMARY.md \u00a7Deferred (e.g., M2 legacy shared-store row migration, M2 ~/.claude.json global audit, and in-flight tool calls during a task-orchestrator restart returning CONNECTION_CLOSED without replay) remain open by design.",
+      "codex route at 30b0fdec9 = FAIL with two medium reap/serialization findings (F1 reap persistence failure still deletes the runtime dir; F2 CLI start/restart not serialized against the automatic reaper) \u2014 OPEN, governing pick owner-gated",
+      "grok route at 30b0fdec9 = PASS_WITH_RISKS (0 findings, tool-less containment verified)"
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "generated_at": "2026-11-07T05:13:34.470077+00:00",
+  "packet_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli (controller); claude-code-agent (subagents)",
+      "model": "claude-fable-5-1 (controller, self-reported); claude-opus-5-5 / claude-sonnet-5-5 / claude-haiku-5-5 (subagents, requested; observed UNKNOWN)",
+      "model_family": "anthropic-claude",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "google-antigravity-cli",
+      "effort": "UNKNOWN"
+    },
+    "independence": "PROVEN"
+  },
+  "review_bundle": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/"
+}

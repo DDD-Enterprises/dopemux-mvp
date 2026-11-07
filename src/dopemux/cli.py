@@ -4153,6 +4153,20 @@ def native_hooks():
     """
     pass
 
+@native_hooks.command("run")
+def native_hooks_run() -> None:
+    """
+    Run one native hook: read a Claude Code hook payload (JSON) on stdin,
+    write the response JSON to stdout, and exit with the adapter's code.
+
+    This is the installed-package fallback used by the hook dispatcher when
+    a checkout carries no native_hooks.py or no usable virtualenv.
+    """
+    from dopemux.claude import native_hooks as native_hooks_module
+
+    native_hooks_module.main()
+
+
 @native_hooks.command("register")
 @click.option("--global", "is_global", is_flag=True, help="🌐 Global Calibration: Register ritual hooks in the global configuration ledger.")
 def native_hooks_register(is_global: bool):
@@ -4166,44 +4180,47 @@ def native_hooks_register(is_global: bool):
     import shutil
     from pathlib import Path
     
-    # Path to this script's native hook entry point
-    if not is_global:
+    # run_native_hooks.sh exists only in the dopemux-mvp checkout; in any other
+    # repo the repo-relative dispatcher would not resolve, so pin the interpreter
+    # running dopemux plus the absolute native_hooks.py (a bare `python3` can
+    # resolve to one without dopemux's dependencies, e.g. pydantic).
+    # Project mode targets the git toplevel (cwd outside a repository), so running
+    # from a subdirectory registers the checkout rather than a stray nested .claude/.
+    try:
+        toplevel = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, check=True, timeout=10,
+        ).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        toplevel = ""
+    project_root = Path(toplevel) if toplevel else Path.cwd()
+    repo_dispatcher = project_root / ".claude" / "hooks" / "run_native_hooks.sh"
+    if not is_global and repo_dispatcher.is_file():
         cmd = 'sh "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh"'
     else:
-        # Pin the interpreter running dopemux: a bare `python3` can resolve to
-        # one without dopemux's dependencies (e.g. pydantic) and fail every hook.
-        # The repo wrapper can't be used here: global hooks run in other repos.
         hook_script = Path(__file__).resolve().parent / "claude" / "native_hooks.py"
         cmd = f"{shlex.quote(sys.executable)} {shlex.quote(str(hook_script))}"
-    
-    # Define hook configuration
-    hooks_config = {
-        "hooks": {
-            "command": [
-                {
-                    "events": [
-                        "SessionStart", 
-                        "UserPromptSubmit", 
-                        "PreToolUse", 
-                        "PermissionRequest", 
-                        "PostToolUse", 
-                        "PostToolUseFailure", 
-                        "Stop", 
-                        "SubagentStop", 
-                        "PreCompact", 
-                        "SessionEnd"
-                    ],
-                    "command": cmd
-                }
-            ]
-        }
-    }
-    
+
+    # Claude Code's schema is event-keyed: hooks.<Event>: [{hooks: [{type, command}]}]
+    events = [
+        "SessionStart",
+        "SubagentStart",
+        "UserPromptSubmit",
+        "PreToolUse",
+        "PermissionRequest",
+        "PostToolUse",
+        "PostToolUseFailure",
+        "Stop",
+        "SubagentStop",
+        "PreCompact",
+        "SessionEnd",
+    ]
+
     # Target settings file
     if is_global:
         settings_path = Path.home() / ".claude" / "settings.json"
     else:
-        settings_path = Path.cwd() / ".claude" / "settings.json"
+        settings_path = project_root / ".claude" / "settings.json"
         
     # Read existing settings. Invalid JSON must fail closed so a registration
     # attempt cannot silently discard the operator's existing settings.
@@ -4220,28 +4237,34 @@ def native_hooks_register(is_global: bool):
                 f"Invalid settings in {settings_path}; expected a JSON object"
             )
             
-    # Simple merge (Dopemux hooks first)
+    # Merge per event (Dopemux hooks first, everything else untouched).
     if "hooks" not in existing:
         existing["hooks"] = {}
     if not isinstance(existing["hooks"], dict):
         raise click.ClickException(
             f"Invalid settings in {settings_path}; hooks must be a JSON object"
         )
-    if "command" not in existing["hooks"]:
-        existing["hooks"]["command"] = []
-    if not isinstance(existing["hooks"]["command"], list):
-        raise click.ClickException(
-            f"Invalid settings in {settings_path}; hooks.command must be a JSON array"
+
+    def _has_cmd(group: object) -> bool:
+        # A group under a restrictive matcher (e.g. "Bash") is not a full
+        # registration; only omitted, "" and "*" match every input.
+        return isinstance(group, dict) and group.get("matcher", "") in ("", "*") and any(
+            isinstance(h, dict) and h.get("command") == cmd
+            for h in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
         )
-        
-    # Check if already registered
-    already_registered = any(
-        isinstance(h, dict) and h.get("command") == cmd
-        for h in existing["hooks"]["command"]
-    )
-    
-    if not already_registered:
-        existing["hooks"]["command"].insert(0, hooks_config["hooks"]["command"][0])
+
+    changed = False
+    for event in events:
+        groups = existing["hooks"].setdefault(event, [])
+        if not isinstance(groups, list):
+            raise click.ClickException(
+                f"Invalid settings in {settings_path}; hooks.{event} must be a JSON array"
+            )
+        if not any(_has_cmd(g) for g in groups):
+            groups.insert(0, {"hooks": [{"type": "command", "command": cmd}]})
+            changed = True
+
+    if changed:
         settings_path.parent.mkdir(parents=True, exist_ok=True)
         if settings_path.exists():
             backup_path = settings_path.with_suffix(settings_path.suffix + ".bak")
