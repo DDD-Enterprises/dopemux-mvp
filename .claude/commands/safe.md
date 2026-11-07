@@ -58,7 +58,4 @@ To return to dangerous mode (development only):
 /dangerous
 ```
 
-Or use the profile management script:
-```bash
-./scripts/set-profile.sh set dangerous
-```
+A profile-switching script for safe/dangerous mode is unavailable (`dopemux profile use` manages MCP profiles, not safe/dangerous mode).

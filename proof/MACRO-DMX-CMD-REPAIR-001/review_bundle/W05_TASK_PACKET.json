@@ -1,0 +1,128 @@
+{
+  "id": "TP-DMX-CMD-REPAIR-W05-FLEET-SNAPSHOT-001",
+  "project": "dopemux-mvp",
+  "target": "AMENDMENT-01: replace _CONPORT_TOOL_SNAPSHOT in src/dopemux/mcp/fleet_catalog.py (lines ~33-57) with the 17 live ConPort SSE tool names (mcp_tool_surfaces.json servers.conport.tools == docker/mcp-servers-source/conport/server.py) and correct its comment to name the :3005 SSE surface that .mcp.json connects Claude to, so tests/arch/test_mcp_fleet_catalog_contract.py goes green after W01.",
+  "invariants": [
+    "AMENDMENT-01 to MACRO-DMX-CMD-REPAIR-001, authorized by operator chat 2026-10-16: 'I authorize W05 ... update _CONPORT_TOOL_SNAPSHOT in src/dopemux/mcp/fleet_catalog.py (only that file) to the 17 SSE tool names and fix its comment'. The six pinned package members are unchanged and not re-issued.",
+    "Edit ONLY src/dopemux/mcp/fleet_catalog.py, and only the _CONPORT_TOOL_SNAPSHOT frozenset and the comment immediately above it. No other line.",
+    "New snapshot = exactly the 17 names: delete_custom_data, fork_instance, get_active_work, get_context, get_custom_data, get_decisions, get_progress, get_recent_activity, log_decision, log_progress, promote, promote_all, save_custom_data, search_content, update_context, update_progress, workspace_summary. Recompute from mcp_tool_surfaces.json and server.py and STOP if they differ from this list.",
+    "Comment must say: snapshot of the ConPort MCP SSE surface served by docker/mcp-servers-source/conport/server.py on :3005 (the surface .mcp.json connects Claude to; mirrored by mcp_tool_surfaces.json), and that updating the runtime surface requires updating the snapshot deliberately in the same change.",
+    "Do not edit tests, docs, the other packets, or any .claude/commands file. Do not run git commit/push/stash/checkout/reset/clean. Do not call the advisor tool. No agents.",
+    "Verify: pytest tests/arch -q -> all pass; the existing missing_tool negative test still passes; black --check and flake8 on the file report no NEW findings vs the base file."
+  ],
+  "depends_on": [
+    "TP-DMX-CMD-REPAIR-W01-CONPORT-NAMES-001",
+    "TP-DMX-CMD-REPAIR-W04-DRIFT-GATE-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-CMD-REPAIR-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-CMD-REPAIR-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "fix/cmd-repair-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(mcp): point ConPort fleet snapshot at the live SSE tool surface",
+    "allowlist": [
+      "src/dopemux/mcp/fleet_catalog.py"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest tests/arch -q"
+    ]
+  },
+  "pr": {
+    "title": "fix(commands): repair dead ConPort tool names, stale model pins and dead targets; add reference drift gate",
+    "body": "Implements MACRO-DMX-CMD-REPAIR-001 (W01-W04). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W05-S1",
+      "task": "Recompute the 17 names from both authorities and compare",
+      "requirements": [
+        "STOP on mismatch"
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "both sources agree with the list"
+      ],
+      "context_files": [
+        "mcp_tool_surfaces.json",
+        "docker/mcp-servers-source/conport/server.py"
+      ]
+    },
+    {
+      "id": "W05-S2",
+      "task": "Replace the frozenset and comment",
+      "requirements": [
+        "only that block"
+      ],
+      "commands": [],
+      "expected_files": [
+        "src/dopemux/mcp/fleet_catalog.py"
+      ],
+      "validation": [
+        "git diff touches only that block"
+      ],
+      "context_files": [
+        "src/dopemux/mcp/fleet_catalog.py"
+      ]
+    },
+    {
+      "id": "W05-S3",
+      "task": "Run verification and return",
+      "requirements": [
+        "report exit codes, advisor_calls, files_written"
+      ],
+      "commands": [
+        "pytest tests/arch -q"
+      ],
+      "expected_files": [],
+      "validation": [
+        "tests/arch green"
+      ],
+      "context_files": [
+        "tests/arch/test_mcp_fleet_catalog_contract.py"
+      ]
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-CMD-REPAIR-001",
+  "workstream_id": "W05",
+  "risk_lane": "L2",
+  "audit_group": "AGY-CMD-REPAIR-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "src/dopemux/mcp/fleet_catalog.py"
+  ],
+  "canonical_writers": [
+    "W05-implementer"
+  ],
+  "semantic_scope": [
+    "conport-fleet-snapshot"
+  ],
+  "rollback_boundary": "git revert <W05 commit> on fix/cmd-repair-001 (REVERT_COMMITS)",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

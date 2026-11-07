@@ -1,0 +1,208 @@
+{
+  "id": "TP-DMX-CMD-REPAIR-W02-MODEL-PINS-001",
+  "project": "dopemux-mvp",
+  "target": "Refresh the 26 stale `model:` frontmatter pins in .claude/commands to the current model IDs, preserving each command's tier.",
+  "invariants": [
+    "MACRO I01-I10 apply (MACRO_PACKET.json objective + this package).",
+    "Pin map (exact): claude-sonnet-4-5 -> claude-sonnet-5-5; claude-sonnet-4-5-20250929 -> claude-sonnet-5-5; claude-haiku-4-5-20251001 -> claude-haiku-5-5. Tier is preserved: Haiku stays Haiku, Sonnet stays Sonnet. No pin is added, removed or upgraded.",
+    "Only the single `model:` frontmatter line changes in each file.",
+    "Serialized after W01 because these files are edited by both: .claude/commands/dx/context.md, .claude/commands/dx/implement.md, .claude/commands/dx/next.md. Start from the W01 commit."
+  ],
+  "depends_on": [
+    "TP-DMX-CMD-REPAIR-W01-CONPORT-NAMES-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-CMD-REPAIR-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-CMD-REPAIR-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "fix/cmd-repair-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "chore(commands): refresh stale model pins to current Claude 5.5 IDs",
+    "allowlist": [
+      ".claude/commands/ctx/index-search.md",
+      ".claude/commands/ctx/search-here.md",
+      ".claude/commands/dcp/denylist-check.md",
+      ".claude/commands/dcp/doctor.md",
+      ".claude/commands/dx/backlinks.md",
+      ".claude/commands/dx/block.md",
+      ".claude/commands/dx/blocked.md",
+      ".claude/commands/dx/cancel.md",
+      ".claude/commands/dx/complete-tree.md",
+      ".claude/commands/dx/complete.md",
+      ".claude/commands/dx/context.md",
+      ".claude/commands/dx/depends.md",
+      ".claude/commands/dx/implement.md",
+      ".claude/commands/dx/next.md",
+      ".claude/commands/dx/note.md",
+      ".claude/commands/dx/notes.md",
+      ".claude/commands/dx/preview.md",
+      ".claude/commands/dx/reopen.md",
+      ".claude/commands/dx/resume.md",
+      ".claude/commands/dx/search.md",
+      ".claude/commands/dx/start.md",
+      ".claude/commands/dx/tree.md",
+      ".claude/commands/mcp/doctor.md",
+      ".claude/commands/mem/recap.md",
+      ".claude/commands/proof/bundle.md",
+      ".claude/commands/tp/validate.md"
+    ],
+    "verify": [
+      "rg -n '^model:' .claude/commands | rg -v 'claude-(sonnet|haiku)-5-5' ; test $? -eq 1",
+      "git diff --numstat | awk '$1!=1||$2!=1{exit 1}'  # exactly one line replaced per file"
+    ]
+  },
+  "pr": {
+    "title": "fix(commands): repair dead ConPort tool names, stale model pins and dead targets; add reference drift gate",
+    "body": "Implements MACRO-DMX-CMD-REPAIR-001 (W01-W04). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Replace pins",
+      "requirements": [
+        "Start from W01 commit on fix/cmd-repair-001."
+      ],
+      "commands": [],
+      "expected_files": [
+        ".claude/commands/ctx/index-search.md",
+        ".claude/commands/ctx/search-here.md",
+        ".claude/commands/dcp/denylist-check.md",
+        ".claude/commands/dcp/doctor.md",
+        ".claude/commands/dx/backlinks.md",
+        ".claude/commands/dx/block.md",
+        ".claude/commands/dx/blocked.md",
+        ".claude/commands/dx/cancel.md",
+        ".claude/commands/dx/complete-tree.md",
+        ".claude/commands/dx/complete.md",
+        ".claude/commands/dx/context.md",
+        ".claude/commands/dx/depends.md",
+        ".claude/commands/dx/implement.md",
+        ".claude/commands/dx/next.md",
+        ".claude/commands/dx/note.md",
+        ".claude/commands/dx/notes.md",
+        ".claude/commands/dx/preview.md",
+        ".claude/commands/dx/reopen.md",
+        ".claude/commands/dx/resume.md",
+        ".claude/commands/dx/search.md",
+        ".claude/commands/dx/start.md",
+        ".claude/commands/dx/tree.md",
+        ".claude/commands/mcp/doctor.md",
+        ".claude/commands/mem/recap.md",
+        ".claude/commands/proof/bundle.md",
+        ".claude/commands/tp/validate.md"
+      ],
+      "validation": [
+        "verify commands exit 0"
+      ],
+      "context_files": [
+        ".claude/commands/ctx/index-search.md",
+        ".claude/commands/ctx/search-here.md",
+        ".claude/commands/dcp/denylist-check.md",
+        ".claude/commands/dcp/doctor.md",
+        ".claude/commands/dx/backlinks.md",
+        ".claude/commands/dx/block.md",
+        ".claude/commands/dx/blocked.md",
+        ".claude/commands/dx/cancel.md",
+        ".claude/commands/dx/complete-tree.md",
+        ".claude/commands/dx/complete.md",
+        ".claude/commands/dx/context.md",
+        ".claude/commands/dx/depends.md",
+        ".claude/commands/dx/implement.md",
+        ".claude/commands/dx/next.md",
+        ".claude/commands/dx/note.md",
+        ".claude/commands/dx/notes.md",
+        ".claude/commands/dx/preview.md",
+        ".claude/commands/dx/reopen.md",
+        ".claude/commands/dx/resume.md",
+        ".claude/commands/dx/search.md",
+        ".claude/commands/dx/start.md",
+        ".claude/commands/dx/tree.md",
+        ".claude/commands/mcp/doctor.md",
+        ".claude/commands/mem/recap.md",
+        ".claude/commands/proof/bundle.md",
+        ".claude/commands/tp/validate.md"
+      ]
+    },
+    {
+      "id": "W02-S2",
+      "task": "Return",
+      "requirements": [
+        "Report files changed, old -> new pin, advisor_calls, files_written."
+      ],
+      "commands": [
+        "git diff --numstat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "26 files, 1 line each"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-CMD-REPAIR-001",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "AGY-CMD-REPAIR-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-haiku-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    ".claude/commands/ctx/index-search.md",
+    ".claude/commands/ctx/search-here.md",
+    ".claude/commands/dcp/denylist-check.md",
+    ".claude/commands/dcp/doctor.md",
+    ".claude/commands/dx/backlinks.md",
+    ".claude/commands/dx/block.md",
+    ".claude/commands/dx/blocked.md",
+    ".claude/commands/dx/cancel.md",
+    ".claude/commands/dx/complete-tree.md",
+    ".claude/commands/dx/complete.md",
+    ".claude/commands/dx/context.md",
+    ".claude/commands/dx/depends.md",
+    ".claude/commands/dx/implement.md",
+    ".claude/commands/dx/next.md",
+    ".claude/commands/dx/note.md",
+    ".claude/commands/dx/notes.md",
+    ".claude/commands/dx/preview.md",
+    ".claude/commands/dx/reopen.md",
+    ".claude/commands/dx/resume.md",
+    ".claude/commands/dx/search.md",
+    ".claude/commands/dx/start.md",
+    ".claude/commands/dx/tree.md",
+    ".claude/commands/mcp/doctor.md",
+    ".claude/commands/mem/recap.md",
+    ".claude/commands/proof/bundle.md",
+    ".claude/commands/tp/validate.md"
+  ],
+  "canonical_writers": [
+    "W02-implementer"
+  ],
+  "semantic_scope": [
+    "command-model-pins"
+  ],
+  "rollback_boundary": "git revert <W02 commit> on fix/cmd-repair-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

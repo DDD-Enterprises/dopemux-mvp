@@ -1,0 +1,438 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-CMD-REPAIR-001",
+  "objective": "Repair the dopemux slash-command surface (P-A, phase 1): live ConPort tool names, current model pins, no dead targets, plus a CI drift gate so it stays repaired. Source: claudedocs/dopemux-mods-plugins-opportunity-map-2026-10-16.md section 4.2.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants I01-I10 in each child",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator chat 2026-10-16: 'Issue the next packet for the dopemux-commands plugin repair first.'"
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit",
+      "push_branch",
+      "open_draft_pr"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_CMD_REPAIR_001_EXECUTION=YES absent",
+      "worktree HEAD != fresh origin/main at start",
+      "live ConPort tool list disagrees with rename map",
+      "any write outside a child allowlist",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "10dca84695fe6dd8207bf9b1388ae10721cc3ed13f0887cfa838a48a4ae067d9"
+    },
+    "authority_ceiling": "Child-specific intersection only; team lead alone commits (one commit per workstream, explicit pathspec) and may push the branch / open a DRAFT PR after the final audit returns and the operator confirms",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "9ca0fc3ce33fc4a8bcdf488f7031d282b2ab90fa2960549d4bc7db5e4110282b"
+      },
+      "objective": "Replace the 8 non-existent `mcp__conport__conport_*` tool names and the 2 non-existent FTS tools (search_decisions_fts, search_custom_data_value_fts) in .claude/commands with live ConPort SSE tool names, aligning every documented argument with server.py signatures.",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        ".claude/commands/bootstrap.md",
+        ".claude/commands/caveat.md",
+        ".claude/commands/decision.md",
+        ".claude/commands/doc-pull.md",
+        ".claude/commands/dx/context.md",
+        ".claude/commands/dx/implement.md",
+        ".claude/commands/dx/next.md",
+        ".claude/commands/followup.md",
+        ".claude/commands/mem-query.md",
+        ".claude/commands/mem-search.md",
+        ".claude/commands/mem/save.md",
+        ".claude/commands/mem/summarize.md",
+        ".claude/commands/pattern.md",
+        ".claude/commands/research-deep.md",
+        ".claude/commands/research-report.md",
+        ".claude/commands/runbook-update.md",
+        ".claude/commands/scratch.md",
+        ".claude/commands/search-decisions.md"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "conport-command-tool-names"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W01 commit> on fix/cmd-repair-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-haiku-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": [
+          {
+            "runner": "claude-code-agent",
+            "model": "claude-sonnet-5-5",
+            "effort": "UNKNOWN"
+          }
+        ]
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-CMD-REPAIR-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "1d9581f17a5aa7486d135a5e7446c2fa898bbd73a2df8544d8aea64fc4db2a5e"
+      },
+      "objective": "Repoint or remove the 5 dead targets referenced by slash commands: scripts/adr_new.py and scripts/docs_manifest.py (adr-new.md), scripts/docs_manifest.py (doc-new.md), scripts/set-profile.sh (safe.md), the `sequential_thinking` tool (plan.md) and the `task-master-ai` MCP server (plan-tasks.md).",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        ".claude/commands/adr-new.md",
+        ".claude/commands/doc-new.md",
+        ".claude/commands/plan-tasks.md",
+        ".claude/commands/plan.md",
+        ".claude/commands/safe.md"
+      ],
+      "canonical_writers": [
+        "W03-implementer"
+      ],
+      "semantic_scope": [
+        "command-dead-targets"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W03 commit> on fix/cmd-repair-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-CMD-REPAIR-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "7f12e520b153facf582ead911532b026f6b921a981e7cf5a4d7f35c69d13d42e"
+      },
+      "objective": "Refresh the 26 stale `model:` frontmatter pins in .claude/commands to the current model IDs, preserving each command's tier.",
+      "dependencies": [
+        "W01"
+      ],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        ".claude/commands/ctx/index-search.md",
+        ".claude/commands/ctx/search-here.md",
+        ".claude/commands/dcp/denylist-check.md",
+        ".claude/commands/dcp/doctor.md",
+        ".claude/commands/dx/backlinks.md",
+        ".claude/commands/dx/block.md",
+        ".claude/commands/dx/blocked.md",
+        ".claude/commands/dx/cancel.md",
+        ".claude/commands/dx/complete-tree.md",
+        ".claude/commands/dx/complete.md",
+        ".claude/commands/dx/context.md",
+        ".claude/commands/dx/depends.md",
+        ".claude/commands/dx/implement.md",
+        ".claude/commands/dx/next.md",
+        ".claude/commands/dx/note.md",
+        ".claude/commands/dx/notes.md",
+        ".claude/commands/dx/preview.md",
+        ".claude/commands/dx/reopen.md",
+        ".claude/commands/dx/resume.md",
+        ".claude/commands/dx/search.md",
+        ".claude/commands/dx/start.md",
+        ".claude/commands/dx/tree.md",
+        ".claude/commands/mcp/doctor.md",
+        ".claude/commands/mem/recap.md",
+        ".claude/commands/proof/bundle.md",
+        ".claude/commands/tp/validate.md"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "command-model-pins"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W02 commit> on fix/cmd-repair-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-haiku-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-CMD-REPAIR-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W04",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W04/TASK_PACKET.json",
+        "sha256": "236af3f2e1b8b276e732d1bc51ec9e47f28301e616d57c7496c1896ac866d113"
+      },
+      "objective": "Add tests/arch/test_claude_command_references.py: a pure-file pytest gate that fails when a slash command references an MCP tool, MCP server, model pin or repo script that does not exist.",
+      "dependencies": [
+        "W01",
+        "W02",
+        "W03"
+      ],
+      "parallel_group": "P3",
+      "mutating": true,
+      "write_surface": [
+        "tests/arch/test_claude_command_references.py"
+      ],
+      "canonical_writers": [
+        "W04-implementer"
+      ],
+      "semantic_scope": [
+        "command-reference-drift-gate"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "mark_ready",
+        "commit",
+        "push"
+      ],
+      "rollback_boundary": "git revert <W04 commit> on fix/cmd-repair-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AGY-CMD-REPAIR-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-REPAIRS",
+      "requires": [
+        "W01",
+        "W02",
+        "W03"
+      ],
+      "condition": "all three repair children return PASS with diffs inside allowlists",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J02-FREEZE",
+      "requires": [
+        "W01",
+        "W02",
+        "W03",
+        "W04"
+      ],
+      "condition": "drift gate PASS on integration head; freeze subject for the single final L2 audit",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 2,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit per frozen L2/L3 subject",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}

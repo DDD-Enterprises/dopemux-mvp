@@ -2,7 +2,7 @@
 description: "Validate a Task Packet against dopetask-canonical-spec.json + AGENTS.md §5 constraints; emit pass/fail table and proof-bundle status"
 arguments: "<TP-ID-or-path> [--strict] [--proof]"
 allowed-tools: ["Bash", "Read", "Glob", "Grep"]
-model: "claude-haiku-4-5-20251001"
+model: "claude-haiku-5-5"
 ---
 
 # /tp:validate — Task Packet Validator

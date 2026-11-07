@@ -5,10 +5,10 @@ allowed-tools: [
   "Bash", "Read", "Write", "Edit", "Grep", "Glob", "TodoWrite",
   "mcp__conport__*",
   "mcp__serena__*",
-  "mcp__pal__apilookup",
-  "mcp__pal__thinkdeep", "mcp__pal__debug", "mcp__pal__codereview"
+  "mcp__pal-stdio__apilookup",
+  "mcp__pal-stdio__thinkdeep", "mcp__pal-stdio__debug", "mcp__pal-stdio__codereview"
 ]
-model: "claude-sonnet-4-5-20250929"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:implement - ADHD Implementation Session
@@ -30,19 +30,19 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 - Query ConPort for specific task:
 
   ```bash
-  Use mcp__conport__conport_get_progress with workspace_id "/Users/hue/code/dopemux-mvp" and limit 100
+  Use mcp__conport__get_progress with workspace_id "/Users/hue/code/dopemux-mvp" and limit 100
   ```
 
 - Find task matching provided ID or description substring
 
 **If no task_id provided**:
 
-- Query ConPort for TODO tasks:
+- Query ConPort for PLANNED tasks:
 
   ```bash
-  Use mcp__conport__conport_get_progress with:
+  Use mcp__conport__get_progress with:
     workspace_id: "/Users/hue/code/dopemux-mvp"
-    status_filter: "TODO"
+    status: "PLANNED"
     limit: 10
   ```
 
@@ -115,23 +115,27 @@ For the selected task:
 ### Step 2.1: Update ConPort Task Status
 
 ```bash
-Use mcp__conport__conport_update_progress with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
+Use mcp__conport__update_progress with:
   progress_id: TASK_ID
-  status: "IN_PROGRESS"
-  description: "ORIGINAL_DESCRIPTION (session started)"
+  updates: {
+    "status": "IN_PROGRESS",
+    "description": "ORIGINAL_DESCRIPTION (session started)"
+  }
 ```
 
-### Step 2.2: Update Active Context
+### Step 2.2: Save Session Record
 
 ```bash
-Use mcp__conport__conport_update_context with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
-  patch_content: {
+Use mcp__conport__save_custom_data with:
+  workspace_id: "$(git rev-parse --show-toplevel)"
+  category: "dx_session"
+  key: "last_session"
+  value: {
     "current_task": "TASK_ID",
     "session_start": "CURRENT_TIMESTAMP",
     "session_type": "implement",
-    "target_duration": 25
+    "target_duration": 25,
+    "session_completed": false
   }
 ```
 
@@ -223,12 +227,22 @@ What's the status?
 
 ### Step 4.2: Update ConPort
 
+ConPort stores only `PLANNED`, `IN_PROGRESS`, `COMPLETED`, `BLOCKED` and `CANCELLED`, so map the answer first:
+
+| Answer | `STORED_STATUS` |
+|---|---|
+| DONE | `COMPLETED` |
+| IN_PROGRESS | `IN_PROGRESS` |
+| BLOCKED | `BLOCKED` |
+| CONTEXT_SWITCH | `PLANNED` (back in the queue for a later session) |
+
 ```bash
-Use mcp__conport__conport_update_progress with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
+Use mcp__conport__update_progress with:
   progress_id: TASK_ID
-  status: USER_SELECTED_STATUS
-  description: "DESCRIPTION (+ brief progress note)"
+  updates: {
+    "status": STORED_STATUS,
+    "description": "DESCRIPTION (+ brief progress note)"
+  }
 ```
 
 ### Step 4.3: Break Reminder
@@ -273,14 +287,22 @@ Next steps:
 Keep up the great work!
 ```
 
-### Step 4.5: Update Active Context
+### Step 4.5: Save Session Record
+
+`save_custom_data` replaces the whole value, so send the Step 2.2 fields again.
 
 ```bash
-Use mcp__conport__conport_update_context with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
-  patch_content: {
+Use mcp__conport__save_custom_data with:
+  workspace_id: "$(git rev-parse --show-toplevel)"
+  category: "dx_session"
+  key: "last_session"
+  value: {
+    "current_task": "TASK_ID",
+    "session_start": "SESSION_START_TIMESTAMP",
+    "session_type": "implement",
+    "target_duration": 25,
     "last_session_end": "CURRENT_TIMESTAMP",
-    "last_task_status": "USER_STATUS",
+    "last_task_status": "STORED_STATUS",
     "session_completed": true
   }
 ```

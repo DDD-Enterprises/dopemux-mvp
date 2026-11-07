@@ -1,0 +1,157 @@
+{
+  "findings": [],
+  "max_lane": "L0",
+  "model_audit_required": false,
+  "model_call_budget": {
+    "auditor": 0,
+    "implementer": 0
+  },
+  "notes": [
+    "All changed paths are within proof-only allowlist",
+    "Proof-only successor: model re-audit of content NOT_REQUIRED"
+  ],
+  "paths": [
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/AUDITOR_REPORT.md"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/PROOF.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/PROOF.json.sig"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT01_ADJUDICATION.md"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT01_AUDIT_PROMPT.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT01_AUDIT_RESPONSE.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT01_INVOCATION.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT01_SHA256SUMS.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT01_agy_err.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT01_agy_out.ndjson.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT01_launched_at.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_ADJUDICATION.md"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_AUDIT_PROMPT.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_AUDIT_RESPONSE.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_INVOCATION.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_SHA256SUMS.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_agy_err.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_agy_out.ndjson.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_launched_at.txt"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/EXECUTION_BINDING.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/ISSUANCE.md"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/ISSUANCE_README.md"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/MACRO_PACKET.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/RETURN-01.md"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/RETURN-02.md"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/RETURN-03.md"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/SUMMARY.md"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/W01_TASK_PACKET.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/W02_TASK_PACKET.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/W03_TASK_PACKET.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/W04_TASK_PACKET.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/W05_TASK_PACKET.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/W06_TASK_PACKET.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/pr_merge/embedded-audit/pr-1445/PROOF.json"
+    },
+    {
+      "lane": "L0",
+      "path": "proof/pr_merge/embedded-audit/pr-1445/PROOF.json.sig"
+    }
+  ],
+  "proof_only": true,
+  "status": "PASS"
+}

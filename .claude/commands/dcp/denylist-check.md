@@ -2,7 +2,7 @@
 description: "DCP regression gate: red-lane scanner + denied-route token sweep + denylist tests; output paste-ready for COMMAND_LOG.md"
 arguments: "[--files <paths>] [--base <ref>]"
 allowed-tools: ["Bash", "Read", "Grep", "Glob"]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dcp:denylist-check — DCP Regression Gate

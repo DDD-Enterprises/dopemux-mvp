@@ -1,0 +1,131 @@
+{
+  "id": "TP-DMX-CMD-REPAIR-W04-DRIFT-GATE-001",
+  "project": "dopemux-mvp",
+  "target": "Add tests/arch/test_claude_command_references.py: a pure-file pytest gate that fails when a slash command references an MCP tool, MCP server, model pin or repo script that does not exist.",
+  "invariants": [
+    "MACRO I01-I10 apply (MACRO_PACKET.json objective + this package).",
+    "Check 1: every `mcp__<server>__<tool>` in .claude/commands/**/*.md, where the server has a captured tool list in mcp_tool_surfaces.json (source in {live, seed} and non-empty tools), names a tool in that list.",
+    "Check 2: every referenced server exists in mcp_tool_surfaces.json servers, mcp_catalog.yaml, or .mcp.json mcpServers. Referenced servers without a captured tool list must equal an explicit UNVERIFIED_SERVERS constant in the test (currently expected {pal, gpt-researcher}; confirm), so a new unverifiable server fails until deliberately added.",
+    "Check 3: every `model:` frontmatter value is in ALLOWED_COMMAND_MODELS = {claude-opus-5-5, claude-sonnet-5-5, claude-haiku-5-5, opus, sonnet, haiku, inherit}.",
+    "Check 4: every `scripts/<path>.(py|sh)` mentioned in a command exists in the repo.",
+    "Negative control (required evidence): a synthetic-fixture test proves each check fails on known-bad input. The return also records each check's FAIL count when pointed at the base-tree commands (`git archive 95e95bee88cae5e6c95e6e34f7c28bb423ad9496 .claude/commands | tar -x -C <tmp>`), proving the gate would have caught today's defects.",
+    "Pure file reads only: no network, no services, no new pytest markers (pytest.ini markers are strict). Runtime < 1 s. Follows tests/.claude/CLAUDE.md naming (test_should_..._when_...)."
+  ],
+  "depends_on": [
+    "TP-DMX-CMD-REPAIR-W01-CONPORT-NAMES-001",
+    "TP-DMX-CMD-REPAIR-W02-MODEL-PINS-001",
+    "TP-DMX-CMD-REPAIR-W03-DEAD-TARGETS-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-CMD-REPAIR-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-CMD-REPAIR-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "fix/cmd-repair-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "test(arch): gate slash-command MCP tool, model pin and script references",
+    "allowlist": [
+      "tests/arch/test_claude_command_references.py"
+    ],
+    "verify": [
+      ".venv/bin/python -m pytest tests/arch/test_claude_command_references.py -q",
+      ".venv/bin/python -m pytest tests/arch -q",
+      ".venv/bin/black --check tests/arch/test_claude_command_references.py",
+      ".venv/bin/flake8 tests/arch/test_claude_command_references.py"
+    ]
+  },
+  "pr": {
+    "title": "fix(commands): repair dead ConPort tool names, stale model pins and dead targets; add reference drift gate",
+    "body": "Implements MACRO-DMX-CMD-REPAIR-001 (W01-W04). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W04-S1",
+      "task": "TDD: write checks + negative controls first",
+      "requirements": [
+        "Run against the base-tree export: record per-check FAIL counts (expected > 0 for checks 1, 3 and 4)."
+      ],
+      "commands": [],
+      "expected_files": [
+        "tests/arch/test_claude_command_references.py"
+      ],
+      "validation": [
+        "negative-control tests pass (bad input detected)"
+      ],
+      "context_files": [
+        "mcp_tool_surfaces.json",
+        "mcp_catalog.yaml",
+        ".mcp.json",
+        "pytest.ini"
+      ]
+    },
+    {
+      "id": "W04-S2",
+      "task": "Run on integration head (W01-W03 applied)",
+      "requirements": [
+        "All four checks PASS on the repaired tree."
+      ],
+      "commands": [
+        ".venv/bin/python -m pytest tests/arch/test_claude_command_references.py -q"
+      ],
+      "expected_files": [],
+      "validation": [
+        "exit 0"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "W04-S3",
+      "task": "Return",
+      "requirements": [
+        "Test output, negative-control evidence, advisor_calls, files_written."
+      ],
+      "commands": [],
+      "expected_files": [],
+      "validation": [
+        "return includes base-tree per-check FAIL counts and integration-head PASS output"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-CMD-REPAIR-001",
+  "workstream_id": "W04",
+  "risk_lane": "L2",
+  "audit_group": "AGY-CMD-REPAIR-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "tests/arch/test_claude_command_references.py"
+  ],
+  "canonical_writers": [
+    "W04-implementer"
+  ],
+  "semantic_scope": [
+    "command-reference-drift-gate"
+  ],
+  "rollback_boundary": "git revert <W04 commit> on fix/cmd-repair-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
