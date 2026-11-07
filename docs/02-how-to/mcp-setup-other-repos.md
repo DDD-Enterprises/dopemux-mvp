@@ -217,17 +217,33 @@ Safety rules: containers are matched by `dopemux.managed`, `dopemux.project_id` 
 scope containers (the task-orchestrator, host singletons) are never touched.
 A full `dopemux mcp stop` for a worktree also releases its leases and removes its runtime dir.
 
-Reaping also runs automatically, bounded and never as a daemon: at the `Stop` and
-`SubagentStop` hooks (throttled to once per 600 s through
-`~/.dopemux/mcp/runtime/reap.last`, 60 s deadline), at `SessionEnd` (unthrottled, at most one
-instance, 45 s deadline), and at every launcher start (throttled the same way, at most one
-instance, 8 s deadline). Hook runs stop at most 3 candidates with
-`docker stop --time 5`; the launcher stops at most 1 with `--time 2` and 3 s per docker call.
-Under a deadline every docker call is also cut to the time left, and a run that could start
-none of its candidates leaves the `reap.last` throttle as it was. Automatic runs never wait:
-an instance whose lock is busy (a launcher is starting it) is skipped as `locked`, and the
-initial `docker ps -a` gets at most the time left (a timed-out inspection skips the run and
-leaves the throttle as it was); `dopemux mcp reap --apply` still waits for locks. Reaping never removes
+Reaping also runs automatically, bounded and never as a daemon. "Throttled" means at most
+once per 600 s, through `~/.dopemux/mcp/runtime/reap.last`:
+
+| Trigger | Throttle | Candidates per run | `docker stop` grace | Per docker call | Deadline |
+|---|---|---|---|---|---|
+| `Stop` and `SubagentStop` hooks | throttled | at most 3 | `--time 5` | 20 s | 60 s |
+| `SessionEnd` hook | none | 1 | `--time 3` | 10 s | 45 s |
+| every launcher start | throttled | 1 | `--time 2` | 3 s | 8 s |
+
+Automatic runs never wait on a lock and cap every docker call:
+
+- Every docker call, the initial `docker ps -a` included, gets at most its per-call timeout
+  and never more than the time left before the deadline. A timed-out `docker ps -a` skips
+  the run.
+- An instance whose lock is held (a launcher is starting it) is skipped as `locked`.
+- The final registry and lease update waits at most 2 s (or the time left) for the
+  registry lock. If it stays busy, the instance is skipped as `registry_busy`: its
+  containers are already removed, its registry entries, leases and runtime dir are left
+  as they were, and a later run finishes it (once the worktree is gone, as a state-only
+  candidate; while it still exists, the worktree's next start rewrites them).
+- Under its lock each candidate is checked again: if a launcher attached or left since
+  the plan, or the worktree is back, it is skipped as `stale`, with no docker call and no
+  change.
+
+Skipped instances are retried at the next run. A run that could start none of its
+candidates, or whose `docker ps -a` timed out, leaves the `reap.last` throttle as it was.
+Only the explicit `dopemux mcp reap --apply` waits for locks. Reaping never removes
 images (they are shared). `SessionEnd` hooks share a
 1.5 s budget unless the hook sets `timeout` (Claude Code hooks and environment-variable
 references, read 2026-11-05), so `.claude/settings.json` sets `"timeout": 60` on that hook entry

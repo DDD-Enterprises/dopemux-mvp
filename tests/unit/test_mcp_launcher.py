@@ -1345,3 +1345,48 @@ def test_owner_switch_before_the_first_session_is_refused(
     assert served == [] and connects == []  # refused before the first connect
     assert len(docker.calls) == 2  # the launch-time check, then the first-session guard
     assert "TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT: " in capsys.readouterr().err
+
+
+# --- audit 2 addendum: a start failure's stderr tail is redacted ---------------------
+
+
+def test_start_failure_tail_never_carries_secrets(
+    tmp_path: Path, monkeypatch, registry, capsys
+):
+    from dopemux.mcp import conport_tenant as ct
+
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+    target = launcher.build_target(repo, "conport", catalog=CATALOG)
+    tenant_pw = "fake" + "tenantpw" * 5  # a provisioned tenant's secret on disk
+    ct.write_secrets(
+        ct.secrets_path(target.identity.project_id),
+        ct.TenantCredentials("conport_x", "conport_x", tenant_pw, "provisioned"),
+    )
+    env_pw = "fake-env-secret-value-42"
+    stderr = (
+        f"psql: FATAL password authentication failed; PGPASSWORD={tenant_pw} "
+        f"AGE_PASSWORD={env_pw} url=postgresql://conport_x:hunter2-fake@dopemux-postgres-age:5432/db"
+    )
+    failed = SimpleNamespace(
+        exit_code=1,
+        blocking_findings=[],
+        services=[{"service": "conport", "findings": [], "result": {"stderr": stderr}}],
+    )
+    real_ensure = launcher.ensure_backend
+    monkeypatch.setattr(
+        launcher,
+        "ensure_backend",
+        lambda target, **kw: real_ensure(
+            target, lifecycle=FakeLifecycle(failed), probe=lambda b: False, **kw
+        ),
+    )
+    monkeypatch.setattr(dr, "docker_image_exists", lambda *a, **k: True)
+
+    assert launcher.launch("conport", env={"AGE_PASSWORD": env_pw}) == 3
+    err = capsys.readouterr().err
+    assert err.startswith("LAUNCH_START_FAILED: ")
+    for secret in (tenant_pw, env_pw, "hunter2-fake"):
+        assert secret not in err
+    assert "postgresql://conport_x:***@" in err

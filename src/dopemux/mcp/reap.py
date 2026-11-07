@@ -15,6 +15,11 @@ Safety rules (all fail closed):
   plus a runtime-registry entry for that pair. Anything else is never touched;
   ``project`` and ``singleton`` scope (the task-orchestrator, host singletons)
   are never reaped.
+* Eligibility is decided twice: by ``plan_reap`` and again under the instance lock,
+  after pruning dead attach records (which can stamp a newer ``last_detach``). A
+  candidate that no longer has zero live attachments AND (a missing worktree OR
+  ``idle_s`` since ``last_detach``) is skipped as ``stale``: no docker call, no
+  state change.
 * "Idle" needs a ``last_detach`` file. A runtime dir without one has an unknown
   idle time and only the ``worktree_missing`` reason can select it. A launcher
   ended by SIGTERM/SIGHUP detaches through ``finally``; one killed outright leaves
@@ -37,9 +42,14 @@ Safety rules (all fail closed):
   a candidate is skipped (``deadline``) only once no time is left. They never wait:
   each instance lock is taken non-blocking (a busy instance is skipped, ``locked``)
   and the initial ``docker ps -a`` is bounded by ``min(cmd_timeout_s, time left)``;
-  a timed-out inspection skips the whole run. A run that attempted no candidate
-  (``deadline``/``cap``/``locked``), or whose inspection timed out, leaves the
-  ``reap.last`` throttle as it was. The explicit CLI ``--apply`` waits for locks.
+  a timed-out inspection skips the whole run. The final registry/lease update
+  waits for the registry lock at most ``min(time left, 2 s)``; when it stays busy
+  the candidate is skipped as ``registry_busy`` with its containers already gone,
+  registry, leases and runtime dir untouched, and a later run finishes it (a
+  state-only candidate once the worktree is gone). A run that attempted no
+  candidate (``deadline``/``cap``/``locked``/``stale``), or whose inspection timed
+  out, leaves the ``reap.last`` throttle as it was. The explicit CLI ``--apply``
+  waits for every lock.
 * Automatic reaping (:func:`maybe_reap`: hooks and launcher) honours a kill switch:
   the file ``<runtime root>/reap.disabled`` or ``DOPEMUX_MCP_REAP`` set to
   ``0``/``off``/``false``. The explicit CLI ``dopemux mcp reap --apply`` ignores it.
@@ -70,6 +80,7 @@ from .locks import (
     _runtime_dir,
     instance_lock,
     save_state_locked,
+    save_states_locked,
 )
 from .port_leases import PortLeaseRegistry, default_lease_registry_path
 from .runtime_registry import REGISTRY_ENV, RuntimeRegistry, default_registry_path
@@ -97,6 +108,7 @@ STATE_FILENAME = "reap.last"
 _OFF_VALUES = {"0", "off", "false"}
 _REAPABLE_SCOPE = "worktree"
 _HOOK_DOCKER_TIMEOUT_S = 10.0  # hooks must not stall a turn on a hung docker
+_REGISTRY_WAIT_S = 2.0  # automatic runs wait at most this long for the registry lock
 _SAFE_HASH = re.compile(r"[A-Za-z0-9_-]{1,64}")
 
 Reason = Literal["worktree_missing", "idle"]
@@ -278,8 +290,10 @@ class ReapReport:
     skip_reasons: List[str] = field(default_factory=list)  # parallel to ``skipped``
 
     def skip(self, cand: ReapCandidate, reason: str) -> None:
-        """``reason``: ``attached`` (a launcher attached first), ``cap``, ``deadline``
-        or ``locked`` (an automatic run found the instance lock busy)."""
+        """``reason``: ``attached`` (a launcher attached first), ``cap``, ``deadline``,
+        ``locked`` (an automatic run found the instance lock busy), ``stale`` (no
+        longer eligible under the lock) or ``registry_busy`` (containers removed, the
+        registry lock stayed busy: a later run finishes the state)."""
         self.skipped.append(cand)
         self.skip_reasons.append(reason)
 
@@ -324,6 +338,16 @@ def _entry_for(
     if len(roots) != 1:
         return None
     return next(iter(roots)), project_root, entries
+
+
+def _still_eligible(
+    cand: "ReapCandidate", *, now: float, idle_s: float, exists: Callable[[Path], bool]
+) -> bool:
+    """The plan's predicate on current state (live attachments checked by the caller)."""
+    if _worktree_gone(cand.worktree_root, exists):
+        return True
+    age = _last_detach_age(cand.runtime_dir, now)
+    return age is not None and age >= idle_s
 
 
 def _last_detach_age(runtime_dir: Path, now: float) -> Optional[float]:
@@ -616,19 +640,32 @@ def _release_state(
     registry_path: Path,
     report: ReapReport,
     label: str,
+    *,
+    wait_s: Optional[float] = None,
 ) -> None:
-    """Release ``cand``'s leases and mark its registry entries stopped (registry lock inside)."""
-    for cls, path, mutate in (
+    """Release ``cand``'s leases and mark its registry entries stopped (registry lock inside).
+
+    Both registries in one directory share one ``registry.lock`` and are updated
+    under one acquisition, so a lock that stays busy past ``wait_s`` raises
+    ``LockBusy`` with neither changed. ``wait_s=None`` blocks (the CLI).
+    """
+    updates: List[Tuple[Any, Path, Callable[[Any], Any]]] = [
         (PortLeaseRegistry, lease_path, lambda reg: _release_leases(reg, cand)),
         (
             RuntimeRegistry,
             registry_path,
             lambda reg: _mark_instances_stopped(reg, cand),
         ),
-    ):
-        error = save_state_locked(cls, path, mutate)
-        if error:
-            report.errors.append(f"{label}: {error}")
+    ]
+    if Path(lease_path).parent.resolve() == Path(registry_path).parent.resolve():
+        errors = save_states_locked(updates, wait_s=wait_s)
+    else:  # separate directories (overridden paths): one lock each
+        errors = [
+            e
+            for e in (save_state_locked(c, p, m, wait_s=wait_s) for c, p, m in updates)
+            if e
+        ]
+    report.errors.extend(f"{label}: {error}" for error in errors)
 
 
 def _reap_one(
@@ -642,6 +679,10 @@ def _reap_one(
     call_timeout: Callable[[], Optional[float]] = lambda: None,
     out_of_time: Callable[[], bool] = lambda: False,
     blocking_lock: bool = True,
+    now: Callable[[], float] = time.time,
+    idle_s: float = 1200,
+    exists: Callable[[Path], bool] = Path.exists,
+    registry_wait: Optional[Callable[[], float]] = None,
 ) -> None:
     label = f"{cand.project_id}/{cand.worktree_hash}"
     if not _runtime_dir_is_ours(cand, registry_path):
@@ -658,6 +699,11 @@ def _reap_one(
         if live_attachments(cand.runtime_dir) > 0:
             report.skip(cand, "attached")
             return
+        if not _still_eligible(cand, now=now(), idle_s=idle_s, exists=exists):
+            report.skip(
+                cand, "stale"
+            )  # a launcher came and went, or the worktree is back
+            return
         docker_errors, gone = _stop_and_remove(
             cand,
             runner,
@@ -671,15 +717,35 @@ def _reap_one(
             # but release every service whose containers are all gone now.
             done = _services_gone(cand, gone)
             if done:
-                _release_state(
-                    replace(cand, services=done),
-                    lease_path,
-                    registry_path,
-                    report,
-                    label,
-                )
+                try:
+                    _release_state(
+                        replace(cand, services=done),
+                        lease_path,
+                        registry_path,
+                        report,
+                        label,
+                        wait_s=None if registry_wait is None else registry_wait(),
+                    )
+                except LockBusy:
+                    report.errors.append(
+                        f"{label}: registry busy; the state of {', '.join(done)} "
+                        "is released by a later run"
+                    )
             return
-        _release_state(cand, lease_path, registry_path, report, label)
+        try:
+            _release_state(
+                cand,
+                lease_path,
+                registry_path,
+                report,
+                label,
+                wait_s=None if registry_wait is None else registry_wait(),
+            )
+        except LockBusy:
+            # Containers are gone; registry, leases and the runtime dir stay for a
+            # later run (a state-only candidate once the worktree is gone).
+            report.skip(cand, "registry_busy")
+            return
         try:
             shutil.rmtree(cand.runtime_dir)
         except FileNotFoundError:
@@ -702,11 +768,17 @@ def apply_reap(
     deadline: Optional[float] = None,
     clock: Callable[[], float] = time.monotonic,
     blocking_locks: bool = True,
+    now: Callable[[], float] = time.time,
+    idle_s: float = 1200,
+    exists: Callable[[Path], bool] = Path.exists,
 ) -> ReapReport:
     """Reap each candidate under its instance lock; failures are recorded, never raised.
 
-    ``blocking_locks=False`` (automatic runs) skips a candidate whose instance lock
-    is busy (reason ``locked``) instead of waiting for it.
+    Under the lock the plan's predicate is evaluated again on current state
+    (``now``, ``idle_s``, ``exists`` as for ``plan_reap``); a candidate that no
+    longer qualifies is skipped as ``stale``. ``blocking_locks=False`` (automatic
+    runs) skips a candidate whose instance lock is busy (``locked``) and waits for
+    the registry lock at most ``min(time left, 2 s)`` (``registry_busy``).
 
     ``max_candidates`` caps the work of one call, ``stop_time_s`` becomes
     ``docker stop --time N``, ``cmd_timeout_s`` is the per-command timeout and
@@ -739,6 +811,12 @@ def apply_reap(
             return cmd_timeout_s
         return left if cmd_timeout_s is None else min(cmd_timeout_s, left)
 
+    def registry_wait() -> float:
+        left = time_left()
+        return (
+            _REGISTRY_WAIT_S if left is None else max(0.0, min(_REGISTRY_WAIT_S, left))
+        )
+
     for index, cand in enumerate(candidates):
         if index >= limit:
             report.skip(cand, "cap")
@@ -757,6 +835,10 @@ def apply_reap(
                 call_timeout=call_timeout,
                 out_of_time=out_of_time,
                 blocking_lock=blocking_locks,
+                now=now,
+                idle_s=idle_s,
+                exists=exists,
+                registry_wait=None if blocking_locks else registry_wait,
             )
         except Exception as exc:  # noqa: BLE001 - one bad candidate stops no other
             report.errors.append(f"{cand.project_id}/{cand.worktree_hash}: {exc}")
@@ -868,9 +950,11 @@ def maybe_reap(
         deadline=deadline,
         clock=monotonic,
         blocking_locks=False,
+        now=now,
+        idle_s=idle_s,
     )
     not_attempted = sum(
-        1 for r in report.skip_reasons if r in {"cap", "deadline", "locked"}
+        1 for r in report.skip_reasons if r in {"cap", "deadline", "locked", "stale"}
     )
     if not_attempted == len(candidates):
         _restore_throttle(state, previous)

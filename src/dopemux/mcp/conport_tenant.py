@@ -80,6 +80,7 @@ __all__ = [
     "pending_gate_credentials",
     "provision_database",
     "psql_command",
+    "redacted_tail",
     "resolve_tenant",
     "schema_path",
     "scram_sha256_verifier",
@@ -428,15 +429,28 @@ def _redact(text: str, secret: str) -> str:
     return text
 
 
-def _redacted_tail(text: str, secrets_: Sequence[str], limit: int = 300) -> str:
+#: ``scheme://user:password@``: the password of any URL is masked.
+_URL_PASSWORD_RE = re.compile(r"([A-Za-z][A-Za-z0-9+.-]*://[^\s:/@]+:)([^\s@/]+)(@)")
+
+
+def _redacted_tail(
+    text: str, secrets_: Sequence[str], limit: Optional[int] = 300
+) -> str:
     """The last ``limit`` characters of ``text`` with every secret replaced first.
 
-    Redacting after the cut would miss a secret the cut split, leaving a fragment.
+    Each value in ``secrets_`` (and its URL-quoted form) and the password of any
+    ``scheme://user:password@`` URL become ``***``. Redacting after the cut would
+    miss a secret the cut split, leaving a fragment. ``limit=None`` keeps it all.
     """
     clean = str(text or "").strip()
     for secret in secrets_:
         clean = _redact(clean, secret)
-    return clean[-limit:]
+    clean = _URL_PASSWORD_RE.sub(r"\1***\3", clean)
+    return clean if limit is None else clean[-limit:]
+
+
+#: Shared with the launcher's start-failure text.
+redacted_tail = _redacted_tail
 
 
 # --- legacy history in the shared store ---------------------------------------------

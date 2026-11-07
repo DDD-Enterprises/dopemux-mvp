@@ -1227,3 +1227,172 @@ def test_a_docker_inspection_past_the_deadline_skips_the_run(
     assert got is not None and got.reaped == [] and got.skipped == []
     assert runner.calls == []
     assert not state.exists()  # the run was skipped: nothing touched
+
+
+# --- audit 2 F1: eligibility is re-evaluated under the instance lock ------------------
+
+
+def _idle_candidate(tmp_path: Path, runtime: Path):
+    """An idle pair: its worktree exists and its last launcher left 5000 s ago."""
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    reg = _registry(runtime, wt)
+    _detached(_rt_dir(runtime), ago=5000)
+    cands = _plan(reg, [_container("a1")])
+    assert [c.reason for c in cands] == ["idle"]
+    return wt, cands
+
+
+def _registry_statuses(runtime: Path) -> List[str]:
+    return [
+        i["status"]
+        for i in RuntimeRegistry.load(runtime / "instances.json").instances()
+    ]
+
+
+def test_a_detach_refreshed_after_planning_makes_the_candidate_stale(
+    tmp_path: Path, runtime: Path
+):
+    _wt, cands = _idle_candidate(tmp_path, runtime)
+    _detached(_rt_dir(runtime), ago=1)  # a launcher attached and left 1 s ago
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == [] and report.skip_reasons == ["stale"]
+    assert runner.calls == []  # no docker call
+    assert _registry_statuses(runtime) == ["running"]  # no state change
+    assert _rt_dir(runtime).is_dir()
+
+
+def test_a_recently_dead_attach_record_makes_the_candidate_stale(
+    tmp_path: Path, runtime: Path
+):
+    _wt, cands = _idle_candidate(tmp_path, runtime)
+    _dead_record(_rt_dir(runtime), mtime=NOW - 1)  # pruning stamps last_detach NOW - 1
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.skip_reasons == ["stale"] and runner.calls == []
+    assert (_rt_dir(runtime) / "last_detach").stat().st_mtime == NOW - 1
+
+
+def test_a_worktree_recreated_after_planning_makes_the_candidate_stale(
+    tmp_path: Path, runtime: Path
+):
+    missing, cands = _setup_apply(tmp_path, runtime)
+    assert [c.reason for c in cands] == ["worktree_missing"]
+    missing.mkdir(parents=True)  # git worktree add at the same path, no launcher yet
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.skip_reasons == ["stale"] and runner.calls == []
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert {L["status"] for L in leases.leases()} == {"active"}
+
+
+def test_a_genuinely_idle_candidate_is_still_reaped(tmp_path: Path, runtime: Path):
+    _wt, cands = _idle_candidate(tmp_path, runtime)
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == cands and report.skipped == []
+    assert ["docker", "stop", "a1"] in runner.calls
+    assert _registry_statuses(runtime) == ["stopped"]
+
+
+def test_a_stale_only_run_leaves_reap_last_untouched(tmp_path: Path, runtime: Path):
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    _registry(runtime, wt)
+    _detached(_rt_dir(runtime), ago=5000)
+    # A launcher killed 1 s ago: planning (read-only) does not see its record, the
+    # prune under the lock stamps last_detach NOW - 1.
+    _dead_record(_rt_dir(runtime), mtime=NOW - 1)
+    state = tmp_path / "s"
+    got = reap.maybe_reap(
+        throttle_s=600,
+        state_file=state,
+        now=lambda: NOW,
+        idle_s=IDLE,
+        inspector=FakeInspect([_container("a1")]),
+        runner=Recorder(),
+    )
+    assert got is not None and got.skip_reasons == ["stale"]
+    assert not state.exists()
+
+
+# --- audit 2 F2: a busy registry lock never stalls an automatic reap -------------------
+
+
+def test_automatic_reap_with_a_held_registry_lock_skips_finalization(
+    tmp_path: Path, runtime: Path
+):
+    import time
+
+    from dopemux.mcp.locks import registry_lock
+
+    missing, _cands = _setup_apply(tmp_path, runtime)
+    leases_before = (runtime / "port-leases.json").read_text()
+    registry_before = (runtime / "instances.json").read_text()
+    runner = Recorder()
+    state = tmp_path / "s"
+    with registry_lock(runtime / "instances.json"):  # e.g. a long lifecycle save
+        started = time.monotonic()
+        got = reap.maybe_reap(
+            throttle_s=600,
+            state_file=state,
+            now=lambda: NOW,
+            inspector=FakeInspect(
+                [_container("a1"), _container("a2", service="dope-memory")]
+            ),
+            runner=runner,
+            deadline_s=8.0,
+        )
+        elapsed = time.monotonic() - started
+    assert elapsed < 4.0  # bounded wait (<= 2 s), never the whole deadline or forever
+    assert (
+        got is not None and got.reaped == [] and got.skip_reasons == ["registry_busy"]
+    )
+    stopped = {c[-1] for c in runner.calls if c[1] == "stop"}
+    removed = {c[-1] for c in runner.calls if c[1] == "rm"}
+    assert stopped == removed == {"a1", "a2"}  # containers handled as before
+    assert (runtime / "port-leases.json").read_text() == leases_before
+    assert (runtime / "instances.json").read_text() == registry_before
+    assert _rt_dir(runtime).is_dir()  # kept: the next run finishes from state
+    assert state.exists()  # docker calls were made: the throttle is consumed
+
+    # the next run: no containers left, so a state-only candidate cleans the pair
+    again = _plan(
+        RuntimeRegistry.load(runtime / "instances.json"),
+        [],
+        lease_registry=PortLeaseRegistry.load(runtime / "port-leases.json"),
+    )
+    assert [c.state_only for c in again] == [True]
+    report = reap.apply_reap(again, runner=Recorder(), blocking_locks=False)
+    assert report.reaped == again and report.errors == []
+    assert _registry_statuses(runtime) == ["stopped"]
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert {L["service"]: L["status"] for L in leases.leases()}["conport"] == "released"
+    assert not _rt_dir(runtime).exists()
+
+
+def test_explicit_apply_still_waits_for_the_registry_lock(
+    tmp_path: Path, runtime: Path
+):
+    import threading
+
+    from dopemux.mcp.locks import registry_lock
+
+    _missing, cands = _setup_apply(tmp_path, runtime)
+    held = threading.Event()
+    release = threading.Event()
+
+    def holder() -> None:
+        with registry_lock(runtime / "instances.json"):
+            held.set()
+            release.wait(5)
+
+    thread = threading.Thread(target=holder)
+    thread.start()
+    held.wait(5)
+    threading.Timer(0.3, release.set).start()
+    report = reap.apply_reap(cands, runner=Recorder())  # the CLI path: blocking
+    thread.join(5)
+    assert report.reaped == cands and report.skipped == [] and report.errors == []
+    assert _registry_statuses(runtime) == ["stopped"]

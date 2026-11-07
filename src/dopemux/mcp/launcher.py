@@ -38,9 +38,10 @@ import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Sequence
 from urllib.parse import urlparse
 
+from . import conport_tenant as ct
 from . import docker_runtime as dr
 from . import stdio_proxy
 from .docker_inspect import DockerContainerInfo, inspect_running_containers
@@ -293,10 +294,40 @@ def _lifecycle_env(
     return {k: v for k, v in source.items() if k not in drop}
 
 
-def _lifecycle_error(result: Any, service: str) -> LaunchError:
+#: Env keys whose values are secrets (same markers as the generated mcp.env filter).
+_SECRET_KEY_MARKERS = ("PASSWORD", "SECRET", "TOKEN", "API_KEY", "CREDENTIAL")
+
+
+def _known_secrets(target: LaunchTarget, env: Optional[Mapping[str, str]]) -> List[str]:
+    """Secret values a start failure could echo: the tenant password and secret env."""
+    found: List[str] = []
+    try:
+        creds = ct.load_secrets(ct.secrets_path(str(target.identity.project_id or "")))
+    except Exception:  # noqa: BLE001 - no or unreadable secrets file: nothing to add
+        creds = None
+    if creds is not None and creds.db_password:
+        found.append(creds.db_password)
+    for key, value in (os.environ if env is None else env).items():
+        if (
+            value
+            and len(value) >= 4
+            and any(m in key.upper() for m in _SECRET_KEY_MARKERS)
+        ):
+            found.append(value)
+    return found
+
+
+def _lifecycle_error(
+    result: Any, service: str, secrets: Sequence[str] = ()
+) -> LaunchError:
+    """The refusal for a failed lifecycle start; every echoed text is redacted first."""
+
+    def scrub(text: str, limit: Optional[int] = None) -> str:
+        return ct.redacted_tail(text, secrets, limit=limit)
+
     for finding in getattr(result, "blocking_findings", None) or []:
         if finding.get("code"):
-            message = finding.get("message") or "start blocked"
+            message = scrub(finding.get("message") or "start blocked")
             return LaunchError(
                 str(finding["code"]), f"{message}; run dopemux mcp doctor"
             )
@@ -304,13 +335,13 @@ def _lifecycle_error(result: Any, service: str) -> LaunchError:
         for finding in svc.get("findings") or []:
             if finding.get("severity") in {"ERROR", "FAIL"} and finding.get("code"):
                 return LaunchError(
-                    str(finding["code"]), str(finding.get("message") or "")
+                    str(finding["code"]), scrub(str(finding.get("message") or ""))
                 )
     tail = ""
     for svc in getattr(result, "services", None) or []:
         stderr = ((svc.get("result") or {}).get("stderr") or "").strip()
         if stderr:
-            tail = f" ({stderr[-200:]})"
+            tail = f" ({scrub(stderr, limit=200)})"
     return LaunchError(
         "LAUNCH_START_FAILED",
         f"dopemux mcp start --services {service} exited {getattr(result, 'exit_code', '?')}"
@@ -461,7 +492,7 @@ def ensure_backend(
             trust_env=False,
         )
         if result.exit_code != 0:
-            raise _lifecycle_error(result, target.service)
+            raise _lifecycle_error(result, target.service, _known_secrets(target, env))
         backend = _backend_from_result(target, result) or find_backend(target)
         if backend is None:
             raise LaunchError(
@@ -546,7 +577,7 @@ def ensure_orchestrator(
             trust_env=False,
         )
         if result.exit_code != 0:
-            raise _lifecycle_error(result, TO_SERVICE)
+            raise _lifecycle_error(result, TO_SERVICE, _known_secrets(target, env))
         if probe(TO_BACKEND):
             return TO_BACKEND
     return _wait_for(

@@ -19,7 +19,10 @@ the same process while already holding it deadlocks. Never nest it with
 
 ``instance_lock(runtime_dir, blocking=False)`` never waits: it raises
 ``LockBusy`` when another holder has the lock (automatic reaps skip that
-instance instead of stalling past their deadline).
+instance instead of stalling past their deadline). ``registry_lock(path,
+wait_s=N)`` retries a non-blocking attempt every 50 ms for at most ``N``
+seconds, then raises ``LockBusy``; ``save_state_locked``/``save_states_locked``
+pass that through (only automatic reaps use it; every other caller blocks).
 
 ``reserved_port_lock`` is the one exception: it is re-entrant within a thread,
 because the launcher and ``switch-project`` hold it around a lifecycle start
@@ -39,7 +42,18 @@ import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Callable, ContextManager, Iterator, Optional, Type, TypeVar
+from typing import (
+    Any,
+    Callable,
+    ContextManager,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
 from .runtime_registry import REGISTRY_ENV, default_registry_path
 
@@ -68,6 +82,8 @@ def _mkdir_private(directory: Path) -> None:
 
 _LOCK_ATTEMPTS = 50
 _LOCK_RETRY_SLEEP_S = 0.005
+#: Retry step of a bounded non-blocking wait (``wait_s``).
+_BUSY_RETRY_S = 0.05
 
 
 class LockBusy(RuntimeError):
@@ -75,7 +91,7 @@ class LockBusy(RuntimeError):
 
 
 @contextmanager
-def _flock(path: Path, *, blocking: bool = True) -> Iterator[None]:
+def _flock(path: Path, *, blocking: bool = True, wait_s: float = 0.0) -> Iterator[None]:
     """Exclusive ``flock`` on ``path`` that never holds an orphaned inode.
 
     A holder may delete the lock file (reap removes a whole runtime dir while
@@ -83,9 +99,11 @@ def _flock(path: Path, *, blocking: bool = True) -> Iterator[None]:
     run alongside a newer holder of a freshly created file, so after acquiring the
     lock the path is re-checked against the open descriptor and the attempt is
     retried when the file is gone or replaced. With ``blocking=False`` a held
-    lock raises ``LockBusy`` at once (``LOCK_NB``).
+    lock is retried (``LOCK_NB``) every 50 ms for at most ``wait_s`` seconds
+    (``0``: one attempt), then raises ``LockBusy``.
     """
     mode = fcntl.LOCK_EX if blocking else fcntl.LOCK_EX | fcntl.LOCK_NB
+    give_up = time.monotonic() + max(0.0, wait_s)
     for _ in range(_LOCK_ATTEMPTS):
         try:
             _mkdir_private(path.parent)
@@ -95,10 +113,14 @@ def _flock(path: Path, *, blocking: bool = True) -> Iterator[None]:
             continue
         acquired = False
         try:
-            try:
-                fcntl.flock(fd, mode)
-            except BlockingIOError:
-                raise LockBusy(f"{path} is held by another process") from None
+            while True:
+                try:
+                    fcntl.flock(fd, mode)
+                    break
+                except BlockingIOError:
+                    if time.monotonic() + _BUSY_RETRY_S > give_up:
+                        raise LockBusy(f"{path} is held by another process") from None
+                    time.sleep(_BUSY_RETRY_S)
             try:
                 held = os.fstat(fd)
                 current = os.stat(path)
@@ -155,14 +177,19 @@ def _runtime_dir() -> Path:
     return default_registry_path().parent
 
 
-def registry_lock(registry_path: Optional[Path] = None) -> ContextManager[None]:
+def registry_lock(
+    registry_path: Optional[Path] = None, *, wait_s: Optional[float] = None
+) -> ContextManager[None]:
     """Guard read-modify-write of a runtime or lease registry.
 
     The lock file sits next to ``registry_path`` (the file actually being
-    written); without it, next to the default runtime registry.
+    written); without it, next to the default runtime registry. ``wait_s=None``
+    blocks; a number waits at most that long and then raises ``LockBusy``.
     """
     base = Path(registry_path).parent if registry_path is not None else _runtime_dir()
-    return _flock(base / "registry.lock")
+    if wait_s is None:
+        return _flock(base / "registry.lock")
+    return _flock(base / "registry.lock", blocking=False, wait_s=wait_s)
 
 
 _held = threading.local()
@@ -230,50 +257,53 @@ def _empty_registry_for(registry_cls: Type[R], path: Path) -> R:
     )
 
 
+def _reload_and_save(
+    registry_cls: Type[R], reg_path: Path, mutate: Callable[[R], Any]
+) -> R:
+    """Fresh load, ``mutate``, save; the caller holds ``registry_lock(reg_path)``."""
+    recovered = False
+    fresh: R
+    try:
+        fresh = registry_cls.load(reg_path, create_missing=True)  # type: ignore[attr-defined]
+        if getattr(fresh, "parse_status", "OK") == "ERROR":
+            recovered = True
+    except Exception:  # noqa: BLE001 - any load failure means start from empty
+        recovered = True
+    if recovered:
+        fresh = _empty_registry_for(registry_cls, reg_path)
+    fresh.recovered_from_corrupt = recovered  # type: ignore[attr-defined]
+    mutate(fresh)
+    fresh.save()  # type: ignore[attr-defined]
+    return fresh
+
+
 def locked_reload_and_save(
     registry_cls: Type[R],
     path: Path,
     mutate: Callable[[R], Any],
+    *,
+    wait_s: Optional[float] = None,
 ) -> R:
     """Under ``registry_lock``: fresh load, ``mutate``, save; return the registry.
 
     A corrupt or unreadable file is replaced by an empty document and the
     returned registry carries ``recovered_from_corrupt = True``. Works for
-    ``RuntimeRegistry`` and ``PortLeaseRegistry``.
+    ``RuntimeRegistry`` and ``PortLeaseRegistry``. ``wait_s`` bounds the lock
+    wait (``LockBusy``); ``None`` blocks.
     """
     reg_path = Path(path)
-    with registry_lock(reg_path):
-        recovered = False
-        fresh: R
-        try:
-            fresh = registry_cls.load(reg_path, create_missing=True)  # type: ignore[attr-defined]
-            if getattr(fresh, "parse_status", "OK") == "ERROR":
-                recovered = True
-        except Exception:  # noqa: BLE001 - any load failure means start from empty
-            recovered = True
-        if recovered:
-            fresh = _empty_registry_for(registry_cls, reg_path)
-        fresh.recovered_from_corrupt = recovered  # type: ignore[attr-defined]
-        mutate(fresh)
-        fresh.save()  # type: ignore[attr-defined]
-        return fresh
+    with registry_lock(reg_path, wait_s=wait_s):
+        return _reload_and_save(registry_cls, reg_path, mutate)
 
 
 class _CorruptState(Exception):
     pass
 
 
-def save_state_locked(
-    registry_cls: Type[R], path: Path, mutate: Callable[[R], Any]
+def _save_state(
+    registry_cls: Type[R], reg_path: Path, mutate: Callable[[R], Any]
 ) -> Optional[str]:
-    """``locked_reload_and_save`` that never replaces a corrupt file.
-
-    Returns ``None`` on success (or when ``path`` does not exist: nothing to
-    update) and an error string otherwise. When the fresh load is corrupt,
-    ``mutate`` is not run and nothing is saved, so the unreadable file stays for a
-    person to inspect.
-    """
-    reg_path = Path(path)
+    """``save_state_locked`` without taking the lock (the caller holds it)."""
     if not reg_path.exists():
         return None
 
@@ -283,9 +313,64 @@ def save_state_locked(
         mutate(reg)
 
     try:
-        locked_reload_and_save(registry_cls, reg_path, guarded)
+        _reload_and_save(registry_cls, reg_path, guarded)
     except _CorruptState:
         return f"{reg_path} is unreadable; left as is"
     except Exception as exc:  # noqa: BLE001
         return f"{reg_path}: {exc}"
     return None
+
+
+def save_state_locked(
+    registry_cls: Type[R],
+    path: Path,
+    mutate: Callable[[R], Any],
+    *,
+    wait_s: Optional[float] = None,
+) -> Optional[str]:
+    """``locked_reload_and_save`` that never replaces a corrupt file.
+
+    Returns ``None`` on success (or when ``path`` does not exist: nothing to
+    update) and an error string otherwise. When the fresh load is corrupt,
+    ``mutate`` is not run and nothing is saved, so the unreadable file stays for a
+    person to inspect. With ``wait_s`` a lock that stays busy raises ``LockBusy``
+    (nothing changed); ``None`` blocks.
+    """
+    reg_path = Path(path)
+    if not reg_path.exists():
+        return None
+    try:
+        with registry_lock(reg_path, wait_s=wait_s):
+            return _save_state(registry_cls, reg_path, mutate)
+    except LockBusy:
+        raise
+    except Exception as exc:  # noqa: BLE001 - a lock that never settled, etc.
+        return f"{reg_path}: {exc}"
+
+
+def save_states_locked(
+    updates: Sequence[Tuple[Any, Path, Callable[[Any], Any]]],
+    *,
+    wait_s: Optional[float] = None,
+) -> List[str]:
+    """``save_state_locked`` for several registries under ONE acquisition of their lock.
+
+    All paths must sit in one directory (one ``registry.lock``), so either every
+    registry is updated or, when the lock stays busy past ``wait_s``, none is
+    (``LockBusy``). Returns the per-registry error strings.
+    """
+    paths = [Path(path) for _cls, path, _mutate in updates]
+    if not paths:
+        return []
+    if len({p.parent.resolve() for p in paths}) != 1:
+        raise ValueError("save_states_locked needs registries in one directory")
+    try:
+        with registry_lock(paths[0], wait_s=wait_s):
+            errors = [
+                _save_state(cls, Path(path), mutate) for cls, path, mutate in updates
+            ]
+    except LockBusy:
+        raise
+    except Exception as exc:  # noqa: BLE001 - a lock that never settled, etc.
+        return [f"{paths[0].parent}: {exc}"]
+    return [e for e in errors if e]
