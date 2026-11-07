@@ -191,3 +191,10 @@ def test_should_keep_creation_date_across_rotation(env):
     assert data["runner:codex"]["created"] == created
     assert data["runner:codex"]["rotated"]
     assert not HEX64.search(meta.read_text()), "metadata sidecar must carry no hashes"
+
+
+def test_should_refuse_to_issue_for_a_principal_with_a_trailing_newline(env):
+    result = run("issue", "runner:codex\n", "--apply")
+    assert result.exit_code != 0
+    assert env.argv_calls() == []
+    assert not env.auth_dir.exists()

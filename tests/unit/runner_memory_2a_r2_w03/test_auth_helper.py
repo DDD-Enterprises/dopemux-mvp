@@ -175,3 +175,22 @@ def test_should_refuse_to_overwrite_unreadable_hash_file(env):
 
 def test_should_load_missing_hash_file_as_empty(env):
     assert hashfile.load_hashes() == {}
+
+
+@pytest.mark.parametrize("bad", ["runner:codex\n", "internal:cli\n", "runner:codex\r\n", "runner:codex\n\n"])
+def test_should_reject_a_principal_with_a_trailing_line_ending(bad):
+    with pytest.raises(InvalidPrincipalError):
+        validate_principal(bad)
+
+
+def test_should_refuse_to_write_a_token_with_a_trailing_newline(env):
+    with pytest.raises(ValueError):
+        keychain.store_token("runner:codex", "a" * 43 + "\n")
+    assert env.argv_calls() == []
+
+
+def test_should_refuse_a_hash_file_principal_with_a_trailing_newline(env):
+    env.auth_dir.mkdir(parents=True)
+    env.hash_file.write_text('{"' + "a" * 64 + '": "runner:codex\\n"}', encoding="utf-8")
+    with pytest.raises(hashfile.HashFileError):
+        hashfile.load_hashes()

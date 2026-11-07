@@ -1,0 +1,2 @@
+result event seen at 2026-11-05T06:26:38Z
+stopping pid 26898 after waited=320s seen=290 at 2026-11-05T06:27:08Z

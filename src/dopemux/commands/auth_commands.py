@@ -58,6 +58,20 @@ def _show_plan(title: str, principal: str, steps: list[str]) -> None:
         click.echo(f"  - {step}")
 
 
+def _require_unissued(principal: str, hashes: dict[str, str]) -> None:
+    if principal in hashes.values():
+        raise click.ClickException(
+            f"{principal} already has a token; use `dopemux auth rotate {principal}`"
+        )
+
+
+def _require_issued(principal: str, hashes: dict[str, str]) -> None:
+    if principal not in hashes.values():
+        raise click.ClickException(
+            f"{principal} has no token; use `dopemux auth issue {principal}`"
+        )
+
+
 _HASH_STEP = f"write {hashfile.HASH_FILE_NAME} atomically in ~/.config/dopemux/auth (dir 0700, file 0600)"
 
 
@@ -76,12 +90,8 @@ apply_option = click.option(
 @apply_option
 def issue(principal: str, apply_: bool) -> None:
     """Create a token for PRINCIPAL (for example runner:codex)."""
-    hashes = _load_hashes()
-    if principal in hashes.values():
-        raise click.ClickException(
-            f"{principal} already has a token; use `dopemux auth rotate {principal}`"
-        )
     if not apply_:
+        _require_unissued(principal, _load_hashes())
         _show_plan(
             "issue",
             principal,
@@ -93,14 +103,17 @@ def issue(principal: str, apply_: bool) -> None:
             ],
         )
         return
-    token = generate_token()
     try:
-        store_token(principal, token)
-        hashes[hash_token(token)] = principal
-        hashfile.write_hashes(hashes)
-        meta = hashfile.load_meta()
-        meta[principal] = {"created": _now(), "rotated": None}
-        hashfile.write_meta(meta)
+        with hashfile.exclusive_lock():
+            hashes = hashfile.load_hashes()
+            _require_unissued(principal, hashes)
+            token = generate_token()
+            store_token(principal, token)
+            hashes[hash_token(token)] = principal
+            hashfile.write_hashes(hashes)
+            meta = hashfile.load_meta()
+            meta[principal] = {"created": _now(), "rotated": None}
+            hashfile.write_meta(meta)
     except (AuthError, OSError) as exc:
         raise _fail(exc) from None
     click.echo(f"issued {principal}: token stored in keychain, hash recorded")
@@ -111,12 +124,8 @@ def issue(principal: str, apply_: bool) -> None:
 @apply_option
 def rotate(principal: str, apply_: bool) -> None:
     """Replace the token for PRINCIPAL; the old hash stops verifying."""
-    hashes = _load_hashes()
-    if principal not in hashes.values():
-        raise click.ClickException(
-            f"{principal} has no token; use `dopemux auth issue {principal}`"
-        )
     if not apply_:
+        _require_issued(principal, _load_hashes())
         _show_plan(
             "rotate",
             principal,
@@ -128,18 +137,21 @@ def rotate(principal: str, apply_: bool) -> None:
             ],
         )
         return
-    token = generate_token()
     try:
-        store_token(principal, token)
-        kept = {h: p for h, p in hashes.items() if p != principal}
-        kept[hash_token(token)] = principal
-        hashfile.write_hashes(kept)
-        meta = hashfile.load_meta()
-        entry: dict[str, Any] = dict(meta.get(principal) or {})
-        entry.setdefault("created", _now())
-        entry["rotated"] = _now()
-        meta[principal] = entry
-        hashfile.write_meta(meta)
+        with hashfile.exclusive_lock():
+            hashes = hashfile.load_hashes()
+            _require_issued(principal, hashes)
+            token = generate_token()
+            store_token(principal, token)
+            kept = {h: p for h, p in hashes.items() if p != principal}
+            kept[hash_token(token)] = principal
+            hashfile.write_hashes(kept)
+            meta = hashfile.load_meta()
+            entry: dict[str, Any] = dict(meta.get(principal) or {})
+            entry.setdefault("created", _now())
+            entry["rotated"] = _now()
+            meta[principal] = entry
+            hashfile.write_meta(meta)
     except (AuthError, OSError) as exc:
         raise _fail(exc) from None
     click.echo(f"rotated {principal}: new token in keychain, old hash removed")
@@ -150,8 +162,8 @@ def rotate(principal: str, apply_: bool) -> None:
 @apply_option
 def revoke(principal: str, apply_: bool) -> None:
     """Remove PRINCIPAL's hash, metadata and keychain item."""
-    hashes = _load_hashes()
     if not apply_:
+        _load_hashes()
         _show_plan(
             "revoke",
             principal,
@@ -163,11 +175,13 @@ def revoke(principal: str, apply_: bool) -> None:
         )
         return
     try:
-        hashfile.write_hashes({h: p for h, p in hashes.items() if p != principal})
-        meta = hashfile.load_meta()
-        meta.pop(principal, None)
-        hashfile.write_meta(meta)
-        deleted = delete_token(principal)
+        with hashfile.exclusive_lock():
+            hashes = hashfile.load_hashes()
+            hashfile.write_hashes({h: p for h, p in hashes.items() if p != principal})
+            meta = hashfile.load_meta()
+            meta.pop(principal, None)
+            hashfile.write_meta(meta)
+            deleted = delete_token(principal)
     except (AuthError, OSError) as exc:
         raise _fail(exc) from None
     suffix = "keychain item deleted" if deleted else "keychain item was already absent"

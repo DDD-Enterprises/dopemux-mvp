@@ -1,0 +1,24 @@
+{
+  "conversation_id": "31781a42-2f36-4a6e-8bdb-2c470b3c18f3",
+  "result_status": "SUCCESS",
+  "duration_seconds": 283.40456,
+  "prompt_bytes": 162933,
+  "prompt_sha256": "91d3a072e4a8f8a8a96aba8f2815bd035d4f19a48fd9d89f2d3f6aa3e5e14126",
+  "input_tokens": 61987,
+  "marker_absent": true,
+  "token_echoed": true,
+  "tail_section_in_gen_metadata": true,
+  "sampled_prompt_lines": 6,
+  "sampled_prompt_lines_in_gen_metadata": 6,
+  "steps_tool_free": true,
+  "step_types": [
+    "agent_response",
+    "user_input"
+  ],
+  "db_step_rows": 2,
+  "init_tools_offered": 60,
+  "permission_mode": "always-proceed",
+  "model_self_reported": "Gemini 4 Argon (High)",
+  "wrapper_exit": "agy exit=137 2026-11-05T06:27:18Z",
+  "watchdog": "result event seen at 2026-11-05T06:26:38Z\nstopping pid 26898 after waited=320s seen=290 at 2026-11-05T06:27:08Z"
+}

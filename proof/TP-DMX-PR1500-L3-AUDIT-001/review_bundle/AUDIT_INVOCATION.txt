@@ -1,0 +1,22 @@
+PR #1500 final L3 audit (packet TP-DMX-PR1500-L3-AUDIT-001), head 9fbd5fe27da6b21b58c59df34a34c14671ab5007, base 583720375df69fbe50f7b8a6b199eaf026f46fb5 (main = merge-base)
+
+Both runs were one attempt from a sealed dir holding only the prompt, under ~/.local/share/dopemux/evidence/pr1500/r1/.
+Both read byte-identical input: prompt sha256 91d3a072e4a8f8a8a96aba8f2815bd035d4f19a48fd9d89f2d3f6aa3e5e14126, 162,933 bytes, all 13 changed files with each file's full text as diff context.
+Each wrapper recorded `<runner> exit=$?` and the UTC end time.
+
+GOVERNING: grok grok 1.0.70 (f50904eaee6c) [stable] -m grok-4.5 --effort high contained ; prompt=grok/AUDIT_PROMPT.txt ; started=2026-11-05T06:21:46Z
+  cd <sealed grok dir>
+  grok -m grok-4.5 --effort high --sandbox workspace --cwd <sealed grok dir> --system-prompt-override "$(cat GROK_SYSTEM_PROMPT.txt)"
+    --disallowed-tools "$(cat GROK_DISALLOWED_TOOLS.txt)" --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources"
+    --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim
+    --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt > GROK_RAW.jsonl 2> GROK_STDERR.txt
+  wrapper: grok exit=0 2026-11-05T06:24:02Z   session_id=01a1aa5e-dfbd-7e63-b3d9-04b54a3b780c
+
+CORROBORATING: agy 1.5.0 --model gemini-4-argon-high ; prompt=agy/AUDIT_PROMPT.txt ; started=2026-11-05T06:21:47Z
+  cd <sealed agy dir>; see AGY_WRAPPER.txt
+  agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 25m
+    --print="$(cat AUDIT_PROMPT.txt)" > AGY_RAW.jsonl 2> AGY_STDERR.txt
+  wrapper: agy exit=137 2026-11-05T06:27:18Z   conversation_id=31781a42-2f36-4a6e-8bdb-2c470b3c18f3
+  The stream ended with status SUCCESS, but the agy process did not exit, the same hang seen on PR 1498. The wrapper's watchdog saw the result event, waited 30 s, copied the conversation database, sent SIGTERM (which agy ignored), then SIGKILL 10 s later. Exit 137 records that kill, not the audit.
+
+Content-free probes ran first (no repository content, not audit attempts): eb93abe1ae0f77837c66ec65246142d53ec72c4602f7feeefb995a5b3501a7d4 is the probe text's sha256.

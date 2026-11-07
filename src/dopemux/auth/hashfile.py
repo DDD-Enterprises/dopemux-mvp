@@ -7,6 +7,10 @@ atomically (temp file in the same directory, fsync, rename).
 
 ``memory-token-meta.json`` beside it maps principal -> ``{"created", "rotated"}``
 (UTC timestamps). It holds no tokens and no hashes; ``dopemux auth list`` reads it.
+
+Atomic writes keep readers safe. Writers also need ``exclusive_lock``: each one
+reads, changes and rewrites the whole file, so an overlapping run would otherwise
+put back what the other removed.
 """
 
 from __future__ import annotations
@@ -14,6 +18,8 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -22,9 +28,12 @@ from .tokens import PRINCIPAL_RE
 
 __all__ = [
     "HASH_FILE_NAME",
+    "LOCK_FILE_NAME",
+    "LOCK_TIMEOUT_SECONDS",
     "META_FILE_NAME",
     "HashFileError",
     "auth_dir",
+    "exclusive_lock",
     "hash_file_path",
     "meta_file_path",
     "load_hashes",
@@ -34,7 +43,11 @@ __all__ = [
 ]
 
 HASH_FILE_NAME = "memory-token-hashes.json"
+LOCK_FILE_NAME = "memory-token-hashes.lock"
 META_FILE_NAME = "memory-token-meta.json"
+
+# Longer than the slowest holder: a keychain write plus its read-back, 10 s each.
+LOCK_TIMEOUT_SECONDS = 30.0
 
 
 def auth_dir() -> Path:
@@ -49,10 +62,41 @@ def meta_file_path() -> Path:
     return auth_dir() / META_FILE_NAME
 
 
-def _write_json_atomic(path: Path, payload: Any) -> None:
-    directory = path.parent
+def _ensure_private_dir(directory: Path) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     os.chmod(directory, 0o700)
+
+
+@contextmanager
+def exclusive_lock() -> Generator[None, None, None]:
+    """Hold the writers' lock; load, change and write only inside this block.
+
+    Covers the hash file, the sidecar and the keychain item, so a command's
+    keychain call cannot let another command's change be overwritten. Raises
+    ``HashFileError`` rather than proceed unlocked. Readers do not take it.
+    """
+    # Imported here so token reads, which the stdio bridge uses, stay stdlib-only.
+    from filelock import FileLock, Timeout
+
+    directory = auth_dir()
+    _ensure_private_dir(directory)
+    lock = FileLock(directory / LOCK_FILE_NAME, mode=0o600)
+    try:
+        lock.acquire(timeout=LOCK_TIMEOUT_SECONDS)
+    except Timeout:
+        raise HashFileError(
+            "another `dopemux auth` command is still running; nothing changed, "
+            "retry when it finishes"
+        ) from None
+    try:
+        yield
+    finally:
+        lock.release()
+
+
+def _write_json_atomic(path: Path, payload: Any) -> None:
+    directory = path.parent
+    _ensure_private_dir(directory)
     fd, tmp_name = tempfile.mkstemp(dir=directory, prefix=".tmp-", suffix=".json")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
