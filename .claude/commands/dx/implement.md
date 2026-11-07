@@ -123,16 +123,19 @@ Use mcp__conport__update_progress with:
   }
 ```
 
-### Step 2.2: Update Active Context
+### Step 2.2: Save Session Record
 
 ```bash
-Use mcp__conport__update_context with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
-  context_data: {
+Use mcp__conport__save_custom_data with:
+  workspace_id: "$(git rev-parse --show-toplevel)"
+  category: "dx_session"
+  key: "last_session"
+  value: {
     "current_task": "TASK_ID",
     "session_start": "CURRENT_TIMESTAMP",
     "session_type": "implement",
-    "target_duration": 25
+    "target_duration": 25,
+    "session_completed": false
   }
 ```
 
@@ -275,12 +278,20 @@ Next steps:
 Keep up the great work!
 ```
 
-### Step 4.5: Update Active Context
+### Step 4.5: Save Session Record
+
+`save_custom_data` replaces the whole value, so send the Step 2.2 fields again.
 
 ```bash
-Use mcp__conport__update_context with:
-  workspace_id: "/Users/hue/code/dopemux-mvp"
-  context_data: {
+Use mcp__conport__save_custom_data with:
+  workspace_id: "$(git rev-parse --show-toplevel)"
+  category: "dx_session"
+  key: "last_session"
+  value: {
+    "current_task": "TASK_ID",
+    "session_start": "SESSION_START_TIMESTAMP",
+    "session_type": "implement",
+    "target_duration": 25,
     "last_session_end": "CURRENT_TIMESTAMP",
     "last_task_status": "USER_STATUS",
     "session_completed": true

@@ -181,6 +181,62 @@ def check_script_refs(commands_dir: Path, repo_root: Path) -> list[str]:
     return violations
 
 
+# ConPort's `update_context` stores named fields only. A `context_data` payload
+# is dropped and the call still reports success
+# (enhanced_server.py:_update_context).
+_DROPPED_PAYLOAD = re.compile(r"\bcontext_data\b")
+_WORKSPACE_ROOT = "$(git rev-parse --show-toplevel)"
+
+# Custom-data records one command saves and others read: (category, key,
+# {command file: calls}). A save and a read that disagree on workspace,
+# category or key fail silently, so both sides are pinned to one call shape.
+_SHARED_RECORDS = (
+    (
+        "research",
+        "last_research",
+        {"research-deep.md": 1, "research-report.md": 1},
+    ),
+    (
+        "dx_session",
+        "last_session",
+        {"dx/implement.md": 2, "dx/context.md": 1, "dx/next.md": 1},
+    ),
+)
+
+
+def check_context_payloads(commands_dir: Path) -> list[str]:
+    violations = []
+    for path in _command_files(commands_dir):
+        rel = path.relative_to(commands_dir)
+        text = path.read_text(encoding="utf-8")
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            if _DROPPED_PAYLOAD.search(line):
+                violations.append(
+                    f"{rel}:{lineno}: update_context drops context_data"
+                )
+    return violations
+
+
+def check_shared_records(
+    commands_dir: Path, records=_SHARED_RECORDS
+) -> list[str]:
+    violations = []
+    for category, key, files in records:
+        call = re.compile(
+            rf'workspace_id[:=]\s*"{re.escape(_WORKSPACE_ROOT)}",?\s*'
+            rf'category[:=]\s*"{category}",?\s*key[:=]\s*"{key}"'
+        )
+        for name, expected in files.items():
+            text = (Path(commands_dir) / name).read_text(encoding="utf-8")
+            found = len(call.findall(text))
+            if found != expected:
+                violations.append(
+                    f"{name}: expected {expected} {category}/{key} "
+                    f"call(s), found {found}"
+                )
+    return violations
+
+
 def _write_command(
     commands_dir: Path,
     body: str,
@@ -211,7 +267,67 @@ def test_should_reference_existing_scripts_when_commands_mention_scripts():
     assert check_script_refs(COMMANDS_DIR, REPO_ROOT) == []
 
 
+def test_should_not_send_dropped_payload_when_commands_update_context():
+    assert check_context_payloads(COMMANDS_DIR) == []
+
+
+def test_should_share_one_record_when_commands_save_and_read_session_data():
+    assert check_shared_records(COMMANDS_DIR) == []
+
+
 # --- Negative controls ----------------------------------------------------
+
+
+def test_should_report_violation_when_command_sends_context_data(tmp_path):
+    commands = tmp_path / "commands"
+    _write_command(
+        commands, 'mcp__conport__update_context(context_data={"a": 1})'
+    )
+
+    violations = check_context_payloads(commands)
+
+    assert violations == ["sample.md:4: update_context drops context_data"]
+
+
+def test_should_report_violation_when_reader_uses_another_key(tmp_path):
+    commands = tmp_path / "commands"
+    commands.mkdir()
+    workspace = f'workspace_id="{_WORKSPACE_ROOT}"'
+    (commands / "writer.md").write_text(
+        f'{workspace},\n  category="research",\n  key="last_research"\n',
+        encoding="utf-8",
+    )
+    (commands / "reader.md").write_text(
+        f'{workspace},\n  category="research",\n  key="latest_research"\n',
+        encoding="utf-8",
+    )
+    records = (
+        ("research", "last_research", {"writer.md": 1, "reader.md": 1}),
+    )
+
+    violations = check_shared_records(commands, records)
+
+    assert violations == [
+        "reader.md: expected 1 research/last_research call(s), found 0"
+    ]
+
+
+def test_should_report_violation_when_writer_uses_a_fixed_workspace(tmp_path):
+    commands = tmp_path / "commands"
+    commands.mkdir()
+    (commands / "writer.md").write_text(
+        'workspace_id: "/fixed/path"\n'
+        '  category: "dx_session"\n'
+        '  key: "last_session"\n',
+        encoding="utf-8",
+    )
+    records = (("dx_session", "last_session", {"writer.md": 1}),)
+
+    violations = check_shared_records(commands, records)
+
+    assert violations == [
+        "writer.md: expected 1 dx_session/last_session call(s), found 0"
+    ]
 
 
 def test_should_report_violation_when_tool_name_is_not_captured(tmp_path):

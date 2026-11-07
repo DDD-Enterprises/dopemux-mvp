@@ -5,7 +5,7 @@ allowed-tools: [
   "Read", "Bash(git rev-parse:*)",
   "mcp__task-orchestrator__get_context",
   "mcp__task-orchestrator__query_notes",
-  "mcp__conport__get_context"
+  "mcp__conport__get_custom_data"
 ]
 model: "claude-sonnet-5-5"
 ---
@@ -154,10 +154,20 @@ Default: only show note headers in Item mode. User can ask explicitly for bodies
 
 ## Phase 4: ConPort Cross-Check (Optional, Item Mode)
 
-If `mcp__conport__get_context` is available, fetch it and compare:
+If `mcp__conport__get_custom_data` is available, read the session record `/dx:implement` saves:
 
-- If `current_focus` mentions this item ID or title → annotate as "(this is your current focus per ConPort)"
-- If `last_task_status` differs from the orchestrator's role → flag potential drift
+```
+record = mcp__conport__get_custom_data(
+  workspace_id="$(git rev-parse --show-toplevel)",
+  category="dx_session",
+  key="last_session"
+)
+```
+
+Skip this phase if the read returns `Not found`. Otherwise compare `record.value`:
+
+- If `current_task` mentions this item ID or title and `session_completed` is false → annotate as "(this is your current focus per ConPort)"
+- If `current_task` mentions this item and `last_task_status` differs from the orchestrator's role → flag potential drift
 
 ---
 
