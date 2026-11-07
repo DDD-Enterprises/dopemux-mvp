@@ -2152,7 +2152,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
         runtime_artifacts=list(artifact_paths.values()),
         exit_code=exit_code,
         recommended_next_actions=[
-            "source .envrc.dopemux-mcp && claude",
+            "claude  # open a session here, or /mcp reconnect all in a running one",
             "dopemux mcp doctor --repo " + str(target),
         ],
     )

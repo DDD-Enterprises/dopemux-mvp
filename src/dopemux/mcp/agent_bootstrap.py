@@ -32,7 +32,6 @@ bridge, PM, or chronicle authority.
 ## Session Start
 
 ```bash
-source .envrc.dopemux-mcp
 dopemux mcp doctor
 ```
 
@@ -50,7 +49,6 @@ dopemux mcp init                 # once per worktree (scaffolds config)
 dopemux mcp repair-config --dry-run
 dopemux mcp repair-config --apply
 dopemux mcp start
-source .envrc.dopemux-mcp
 dopemux mcp doctor
 ```
 
