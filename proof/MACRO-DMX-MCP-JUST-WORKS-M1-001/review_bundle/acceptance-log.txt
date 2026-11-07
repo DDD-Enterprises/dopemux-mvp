@@ -37,7 +37,7 @@ launch.lock
 mcp.env
 == T7 2026-11-07T08:28:50Z hooks in /Users/hue/code/dopemux-mvp/.worktrees/accept-m1-t1 (no .venv here; dispatcher must resolve an interpreter)
 T7 PreToolUse red-lane edit exit=2 (expect 2)
-stdout: {"systemMessage": "í ½íº« `scripts/batch_resolve_and_merge.py` is protected by red lane DCP-RED-MERGE-SEAM-0001 (merge-seam, execute=True). Edits are hard-blocked. If this change is genuinely required, the seam must be lifted via its own ADR + task packet â€” not an inline edit. See docs/03
+stdout: {"systemMessage": "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ `scripts/batch_resolve_and_merge.py` is protected by red lane DCP-RED-MERGE-SEAM-0001 (merge-seam, execute=True). Edits are hard-blocked. If this change is genuinely required, the seam must be lifted via its own ADR + task packet â€” not an inline edit. See docs/03
 stderr: /Users/hue/code/dopemux-mvp/.worktrees/accept-m1-t1/src/dopemux/claude/native_hooks.py:174: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).   "ti
 T7 SessionStart exit=0 stderr: 
 T7 Stop exit=0 stderr: 
