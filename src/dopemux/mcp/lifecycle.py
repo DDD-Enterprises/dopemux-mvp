@@ -1578,28 +1578,66 @@ def run_lifecycle(
             slug=slug,
             worktree_hash=worktree_hash,
         )
+
+        def docker_after_stop() -> Dict[str, Any]:
+            """N1 (fix round 2): the start half reads docker as it is after the stops.
+
+            The pre-stop snapshot still lists the sidecars just stopped, so the start
+            would report them ``already_running`` and run no ``compose up``. Only docker
+            is read again: a restart's stop releases no leases (no ``release_state``),
+            so the ports stand, and the start's registry save reloads the file itself.
+            """
+            if dry_run:
+                return {}
+            return {"docker": di.inspect_running_containers(runner=docker_runner)}
+
         # As in one call: every stop before any start, and a failed stop starts
         # nothing. The worktree stop and start share ONE lock acquisition.
         stops = [_stop_services(selected=outside, **restart_stop_kw)] if outside else []
         with worktree_lock:
             blocked, fresh = facts_under_lock()
-            if blocked is not None:
-                return blocked
-            stops.append(
-                _stop_services(selected=inside, **{**restart_stop_kw, **fresh})
-            )
-            stop_res = _merge_parts(stops, selected)
-            if stop_res.status == "FAIL" and not dry_run:
-                stop_res.operation = "restart"
-                return stop_res
-            starts = [
-                _start_services(
-                    selected=inside, prebuilt=prebuilt, **{**start_kw, **fresh}
+            if blocked is None:
+                stops.append(
+                    _stop_services(selected=inside, **{**restart_stop_kw, **fresh})
                 )
+                stop_res = _merge_parts(stops, selected)
+                if stop_res.status == "FAIL" and not dry_run:
+                    stop_res.operation = "restart"
+                    return stop_res
+                starts = [
+                    _start_services(
+                        selected=inside,
+                        prebuilt=prebuilt,
+                        **{**start_kw, **fresh, **docker_after_stop()},
+                    )
+                ]
+        if blocked is not None:
+            # Only a re-check under the lock can block here, after the orchestrator
+            # half (outside the lock) was stopped. One call would have blocked before
+            # stopping anything, so an orchestrator this run stopped is started again
+            # (outside launch.lock) and the worktree part is reported blocked.
+            if not any(
+                entry.get("action") == "stopped"
+                for part in stops
+                for entry in part.services
+            ):
+                return blocked
+            blocked.services = [
+                e for e in blocked.services if e.get("service") in inside
             ]
+            restored = _start_services(
+                selected=outside,
+                write_artifacts=False,
+                **{**start_kw, **docker_after_stop()},
+            )
+            return _merge_parts([blocked, restored], selected)
         if outside:
             starts.append(
-                _start_services(selected=outside, write_artifacts=False, **start_kw)
+                _start_services(
+                    selected=outside,
+                    write_artifacts=False,
+                    **{**start_kw, **docker_after_stop()},
+                )
             )
         start_res = _merge_parts(starts, selected)
         start_res.operation = "restart"

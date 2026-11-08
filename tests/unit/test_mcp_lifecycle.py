@@ -1612,3 +1612,192 @@ def test_an_unlocked_start_keeps_building_inline(tmp_path: Path, monkeypatch):
     )
     assert result.exit_code == 0, result.to_dict()
     assert events == ["start_services", "build", "build"]
+
+
+# --- cycle 2 fix round 2, N1: a restart starts what it just stopped ---------------------
+
+# Host ports the fixture envrc names, by service (what a probe sees as busy).
+_ENVRC_PORTS = {"conport": {3040, 3041, 4040}, "dope-memory": {3060}}
+
+
+def _running_world(tmp_path: Path):
+    """`_stop_world` whose docker follows `docker stop` and `compose up`, both sidecars up."""
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    rows = {
+        json.loads(line)["Names"]: line
+        for line in docker_ps().stdout.splitlines()
+        if line.strip()
+    }
+    names = {
+        svc: next(n for n in rows if n.endswith(f"-{svc}")) for svc in WORKTREE_SERVICES
+    }
+    assert set(names.values()) == set(rows)
+    alive = set(rows)
+    busy = set().union(*_ENVRC_PORTS.values())
+    calls: list = []
+
+    def docker(*args, **kwargs):
+        out = "".join(rows[n] + "\n" for n in sorted(alive))
+        return SimpleNamespace(returncode=0, stdout=out, stderr="")
+
+    def runner(cmd, **kwargs):
+        cmd = list(cmd)
+        calls.append(cmd)
+        sql = kwargs.get("input") or ""
+        if "DPMX_TABLES=" in sql:
+            return SimpleNamespace(
+                returncode=0, stdout="DPMX_TABLES=decisions\n", stderr=""
+            )
+        if "DPMX_COUNT=" in sql:
+            return SimpleNamespace(returncode=0, stdout="DPMX_COUNT=3\n", stderr="")
+        if cmd[:2] == ["docker", "stop"]:
+            alive.discard(cmd[-1])
+            for svc, name in names.items():
+                if name == cmd[-1]:
+                    busy.difference_update(_ENVRC_PORTS[svc])
+        elif "compose" in cmd and "up" in cmd:
+            alive.add(names[cmd[-1]])
+            busy.update(_ENVRC_PORTS[cmd[-1]])
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    return repo, reg, docker, runner, calls, alive, busy, names
+
+
+@pytest.mark.parametrize("hold", [True, False])
+def test_a_restart_of_running_sidecars_starts_them_again(tmp_path: Path, hold):
+    from dopemux.mcp.runtime_registry import RuntimeRegistry
+
+    repo, reg, docker, runner, calls, alive, busy, names = _running_world(tmp_path)
+    result = run_lifecycle(
+        "restart",
+        repo=repo,
+        services=WORKTREE_SERVICES,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker,
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: p not in busy,
+        hold_instance_lock=hold,
+    )
+    stops = [c[-1] for c in calls if c[:2] == ["docker", "stop"]]
+    ups = [c[-1] for c in calls if "compose" in c and "up" in c]
+    assert sorted(stops) == sorted(names.values())  # the stop half really stopped them
+    assert ups == WORKTREE_SERVICES  # ...and the start half started each one again
+    actions = [(s["service"], s.get("action")) for s in result.services]
+    assert actions == [("conport", "started"), ("dope-memory", "started")]
+    assert result.status == "PASS" and result.exit_code == 0, result.to_dict()
+    assert alive == set(names.values())
+    status = {i["service"]: i["status"] for i in RuntimeRegistry.load(reg).instances()}
+    assert status == {"conport": "running", "dope-memory": "running"}
+
+
+def test_every_restart_start_reads_docker_after_the_stops(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import docker_inspect as di
+    from dopemux.mcp import lifecycle as lc
+
+    events: list = []
+    real_inspect = di.inspect_running_containers
+
+    def numbered_inspect(*args, **kwargs):
+        result = real_inspect(*args, **kwargs)
+        result.seq = len([e for e in events if e[0] == "ps"])  # type: ignore[attr-defined]
+        events.append(("ps", result.seq))  # type: ignore[attr-defined]
+        return result
+
+    real_stop, real_start = lc._stop_services, lc._start_services
+
+    def stop_spy(**kw):
+        out = real_stop(**kw)
+        events.append(("stopped", list(kw["selected"])))
+        return out
+
+    def start_spy(**kw):
+        events.append(
+            ("start", list(kw["selected"]), getattr(kw["docker"], "seq", None))
+        )
+        return real_start(**kw)
+
+    monkeypatch.setattr(di, "inspect_running_containers", numbered_inspect)
+    monkeypatch.setattr(lc, "_stop_services", stop_spy)
+    monkeypatch.setattr(lc, "_start_services", start_spy)
+    result, _repo, _reg = _run(tmp_path, "restart", [*WORKTREE_SERVICES, TO])
+    assert result.exit_code == 0, result.to_dict()
+    last_stop = max(i for i, e in enumerate(events) if e[0] == "stopped")
+    starts = [e for e in events if e[0] == "start"]
+    assert [e[1] for e in starts] == [WORKTREE_SERVICES, [TO]]
+    for _, selected, seq in starts:
+        assert seq is not None, selected
+        assert events.index(("ps", seq)) > last_stop, (selected, events)
+
+
+def _blocked_after_the_wait(monkeypatch):
+    """The re-check under launch.lock finds a blocking finding the preflight did not."""
+    from dopemux.mcp import lifecycle as lc
+
+    real = lc._mutable_facts
+
+    def facts(op, *, orchestrator_gate, **kw):
+        out = real(op, orchestrator_gate=orchestrator_gate, **kw)
+        if not orchestrator_gate:
+            out.blocking.append(
+                {
+                    "code": "DOCKER_CONTAINER_PORT_COLLISION",
+                    "severity": "FAIL",
+                    "service": "conport",
+                    "message": "test: :3041 taken while waiting for launch.lock",
+                }
+            )
+        return out
+
+    monkeypatch.setattr(lc, "_mutable_facts", facts)
+
+
+@pytest.mark.parametrize("was_running", [True, False])
+def test_a_split_restart_blocked_under_the_lock_restores_the_orchestrator(
+    tmp_path: Path, monkeypatch, was_running
+):
+    from dopemux.mcp import lifecycle as lc
+
+    events = _lock_spies(monkeypatch)
+    spy_stop = lc._stop_services
+
+    def to_stop(**kw):
+        if kw["selected"] != [TO]:
+            return spy_stop(**kw)
+        events.append(("stop", [TO], 0))
+        return lc.LifecycleResult(
+            schema_version=lc.SCHEMA_VERSION,
+            operation="stop",
+            dry_run=False,
+            status="PASS",
+            project_identity={},
+            services=[
+                {
+                    "service": TO,
+                    "action": "stopped" if was_running else "already_stopped",
+                    "container_name": "task-orchestrator-x",
+                    "commands": [],
+                }
+            ],
+        )
+
+    monkeypatch.setattr(lc, "_stop_services", to_stop)
+    _blocked_after_the_wait(monkeypatch)
+    result, _repo, _reg = _run(tmp_path, "restart", [*WORKTREE_SERVICES, TO])
+    assert result.status == "FAIL" and result.exit_code == 1
+    assert any(
+        f["code"] == "DOCKER_CONTAINER_PORT_COLLISION" for f in result.blocking_findings
+    )
+    actions = {s["service"]: s.get("action") for s in result.services}
+    assert actions["conport"] == actions["dope-memory"] == "blocked"
+    parts = [e for e in events if e[0] in {"stop", "start"}]
+    if was_running:  # started again, outside launch.lock, after it was released
+        assert parts == [("stop", [TO], 0), ("start", [TO], 0)]
+        assert actions[TO] == "started"
+        assert events.index(("instance-released",)) < events.index(("start", [TO], 0))
+    else:  # it was not running: left as it was
+        assert parts == [("stop", [TO], 0)]
+        assert actions[TO] == "blocked"
