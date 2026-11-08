@@ -249,9 +249,10 @@ Automatic runs never wait on a lock and cap every docker call:
   skipped as `stale` when its worktree is present and it has not been idle for 20 minutes (a
   launcher that attached and left since the plan restarts that clock). Any candidate is also
   skipped as `stale` while a detached image build is running in its runtime dir, and a
-  build-only runtime dir (below) when its worktree is back. A candidate with no container
-  left (a state-only or build-only one) is skipped as `stale` when `docker ps -a` lists a
-  container for it again (a start since the plan) or does not answer.
+  build-only runtime dir (below) when its worktree is back. Before anything is stopped, one
+  read-only `docker ps -a` lists the pair's containers: any candidate whose pair shows a
+  container the plan did not list (a start or restart since the plan) is skipped as `stale`,
+  and so is one whose `docker ps -a` does not answer.
 
 Skipped instances are retried at the next run. A run that could start none of its
 candidates, or whose `docker ps -a` timed out, leaves the `reap.last` throttle as it was.

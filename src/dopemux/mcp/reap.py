@@ -24,6 +24,13 @@ Safety rules (all fail closed):
   runtime dir (a ``build-<service>.pid`` whose pid is alive and that is at most
   ``build_timeout_secs()`` old), whatever its reason; under the lock a build that
   started after the plan makes the candidate ``stale`` (Task B5 round 1).
+* Under the lock, before anything is stopped or released, one read-only
+  ``docker ps -a`` for the pair (``dopemux.managed=true``, its project id and
+  worktree hash) must list no container the plan did not list. A container the plan
+  did not list (a start or restart since the plan created it), or no answer from
+  docker, makes the plan outdated: the candidate is ``stale``, with no stop and no
+  state change, and the next run plans it afresh. Planned containers that are gone
+  are fine (Task B5 round 2 for candidates without containers, Task B6 for all).
 * "Idle" is measured from the newer of ``last_detach`` and the newest dead attach
   record (``_effective_last_detach``). A launcher ended by SIGTERM/SIGHUP detaches
   through ``finally``; one killed outright leaves a dead attach record, which
@@ -46,11 +53,9 @@ Safety rules (all fail closed):
   state-only candidate (no container ids) on the same predicate as a container
   candidate: its worktree is gone, or it has been idle ``idle_s`` (Task B5); on
   idle only while a running entry or an active lease is left, never for a runtime
-  dir alone (round 2). Under the lock, before anything is released, one
-  ``docker ps -a`` for the pair must list no container (a start may have created
-  some since the plan); a listed container or an unanswered call skips it as
-  ``stale``. That candidate also clears entries and leases with an empty service
-  (owned by nobody).
+  dir alone (round 2). The pair check under the lock (above) skips it as ``stale``
+  when any container is listed for it again. That candidate also clears entries and
+  leases with an empty service (owned by nobody).
 * A runtime dir that never got a registry entry (a launch refused with
   ``LAUNCH_IMAGE_BUILDING`` before any start) is found through the launcher's
   ``instance.json`` marker: a dir-only candidate (``dir_only``, no container ids)
@@ -871,26 +876,27 @@ def _stop_and_remove(
     return errors, gone
 
 
-def _pair_may_have_containers(
+def _pair_container_ids(
     cand: ReapCandidate,
     runner: Callable[..., Any],
     *,
     call_timeout: Callable[[], Optional[float]] = lambda: None,
     out_of_time: Callable[[], bool] = lambda: False,
-) -> bool:
-    """Whether docker lists any container (any state) for the candidate's pair.
+) -> Optional[Set[str]]:
+    """Ids of the containers (any state) docker lists now for the candidate's pair.
 
-    Task B5 round 2: one ``docker ps -a`` filtered by ``dopemux.managed=true`` (the
-    planner's own filter, so an unmanaged container carrying the pair's labels cannot
-    keep the candidate ``stale`` forever), ``dopemux.project_id`` and
-    ``dopemux.worktree_hash``, called under the instance lock before a state-only or
-    dir-only candidate releases anything, bounded like every docker call of the run.
-    True (fail closed) when the call fails, times out or no time is left. The
+    One ``docker ps -a`` filtered by ``dopemux.managed=true`` (the planner's own
+    filter, so an unmanaged container carrying the pair's labels cannot keep the
+    candidate ``stale`` forever), ``dopemux.project_id`` and ``dopemux.worktree_hash``,
+    called under the instance lock before any candidate stops or releases anything
+    (Task B5 round 2 for state-only and dir-only candidates, Task B6 for every
+    candidate), bounded like every docker call of the run. ``None`` (unknown: fail
+    closed) when the call fails, times out, raises or no time is left. The
     task-orchestrator's wrapper labels carry no ``dopemux.worktree_hash``, so a
     running orchestrator never matches.
     """
     if out_of_time():
-        return True
+        return None
     cmd = [
         "docker",
         "ps",
@@ -908,11 +914,22 @@ def _pair_may_have_containers(
     try:
         result = runner(cmd, **({} if timeout is None else {"timeout": timeout}))
     except Exception:  # noqa: BLE001 - unknown means "maybe": never release then
-        return True
+        return None
     if getattr(result, "exit_code", 1) != 0:
-        return True
-    return any(
-        line.strip() for line in (getattr(result, "stdout", "") or "").splitlines()
+        return None
+    return {
+        line.strip()
+        for line in (getattr(result, "stdout", "") or "").splitlines()
+        if line.strip()
+    }
+
+
+def _unplanned_ids(listed: Set[str], planned: Sequence[str]) -> List[str]:
+    """Listed ids that match no planned id (short and full ids of one container match)."""
+    return sorted(
+        cid
+        for cid in listed
+        if not any(p.startswith(cid) or cid.startswith(p) for p in planned if p)
     )
 
 
@@ -1006,11 +1023,14 @@ def _reap_one(
                 cand, "stale"
             )  # a launcher came and went, or the worktree is back
             return
-        if cand.state_only and _pair_may_have_containers(
+        # Task B5 round 2 / B6: a container the plan did not list (a start or a
+        # restart since the plan created it), or no answer from docker, makes the
+        # plan outdated: stopping and releasing now would orphan a live instance.
+        # Planned ids that are gone are fine (nothing else is alive).
+        listed = _pair_container_ids(
             cand, runner, call_timeout=call_timeout, out_of_time=out_of_time
-        ):
-            # A start created containers for the pair after the plan (or docker
-            # could not say): releasing now would orphan them. Fail closed.
+        )
+        if listed is None or _unplanned_ids(listed, cand.container_ids):
             report.skip(cand, "stale")
             return
         docker_errors, gone = _stop_and_remove(

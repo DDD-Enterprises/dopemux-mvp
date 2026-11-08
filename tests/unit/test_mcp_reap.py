@@ -687,7 +687,9 @@ def test_apply_reap_never_marks_the_reserved_orchestrator_stopped(
     runner = Recorder()
     report = reap.apply_reap(cands, runner=runner)
     assert report.errors == []
-    assert [c[:2] for c in runner.calls] == [["docker", "stop"], ["docker", "rm"]]
+    # B6: the read-only pair check under the lock comes first
+    assert _pair_inspection(runner.calls[0])
+    assert [c[:2] for c in runner.calls[1:]] == [["docker", "stop"], ["docker", "rm"]]
     assert all("to1" not in c for c in runner.calls)
     status = {
         i["service"]: i["status"]
@@ -823,7 +825,8 @@ def test_apply_reap_bounds_stop_time_timeout_and_candidate_cap(
         (cands[1].container_ids, "cap"),
         (cands[2].container_ids, "cap"),
     ]
-    assert runner.calls == [
+    assert runner.calls[0][:3] == ["docker", "ps", "-a"]  # B6: pair check first
+    assert runner.calls[1:] == [
         ["docker", "stop", "--time", "3", cands[0].container_ids[0]],
         ["docker", "rm", cands[0].container_ids[0]],
     ]
@@ -857,7 +860,7 @@ def test_deadline_skips_remaining_candidates(tmp_path: Path, runtime: Path):
 
     class SlowRunner(Recorder):
         def __call__(self, cmd, **kwargs):
-            clock["t"] += 60  # every docker call burns 60 s
+            clock["t"] += 40  # every docker call burns 40 s
             return super().__call__(cmd, **kwargs)
 
     runner = SlowRunner()
@@ -868,8 +871,9 @@ def test_deadline_skips_remaining_candidates(tmp_path: Path, runtime: Path):
         deadline=100.0,
         clock=lambda: clock["t"],
     )
-    # stop ends at 60 (60+10 <= 100) so rm runs; at 120 the second candidate is out of time
-    assert [c[1] for c in runner.calls] == ["stop", "rm"]
+    # the pair check (B6) ends at 40, stop at 80, so rm runs; at 120 the second
+    # candidate is out of time
+    assert [c[1] for c in runner.calls] == ["ps", "stop", "rm"]
     assert len(report.reaped) == 1
     assert report.skip_reasons == ["deadline"] and report.skipped == [cands[1]]
     assert report.to_dict()["skipped"][0]["skip_reason"] == "deadline"
@@ -903,7 +907,9 @@ def test_maybe_reap_deadline_s_is_measured_from_the_call(tmp_path: Path, runtime
 
     class SlowRunner(Recorder):
         def __call__(self, cmd, **kwargs):
-            clock["t"] += 30
+            clock[
+                "t"
+            ] += 20  # pair check (B6), stop, rm: the first candidate ends at 1060
             return super().__call__(cmd, **kwargs)
 
     got = reap.maybe_reap(
@@ -1093,9 +1099,10 @@ def test_a_call_timeout_is_capped_at_the_time_left(tmp_path: Path, runtime: Path
     report = reap.apply_reap(
         cands, runner=runner, cmd_timeout_s=10.0, deadline=4.0, clock=lambda: 0.0
     )
-    # 4 s are left: the candidate runs, each docker call gets at most those 4 s
+    # 4 s are left: the candidate runs, each docker call (the B6 pair check, stop,
+    # rm) gets at most those 4 s
     assert len(report.reaped) == 1 and report.skipped == []
-    assert [k["timeout"] for k in runner.kwargs] == [4.0, 4.0]
+    assert [k["timeout"] for k in runner.kwargs] == [4.0, 4.0, 4.0]
 
 
 class _Ticks:
@@ -2141,5 +2148,84 @@ def test_a_state_only_candidate_whose_pair_check_raises_is_stale(
     assert report.errors == []
     assert len(calls) == 1 and _pair_inspection(calls[0])
     assert (runtime / "port-leases.json").read_text() == leases_before
+    assert (runtime / "instances.json").read_text() == registry_before
+    assert _rt_dir(runtime).is_dir()
+
+
+# --- Task B6: container-backed candidates re-inspect the pair under the lock ----------
+
+
+def _idle_container_world(tmp_path: Path, runtime: Path):
+    """An idle pair with conport (a1) and dope-memory (a2), leases and a runtime dir."""
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    reg = _registry(runtime, wt)
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json", create_missing=True)
+    leases.upsert_lease(_lease(wt, "conport", 3100))
+    leases.upsert_lease(_lease(wt, "dope-memory", 3101))
+    leases.save()
+    _detached(_rt_dir(runtime), ago=IDLE + 60)
+    cands = _plan(reg, [_container("a1"), _container("a2", service="dope-memory")])
+    assert [(c.reason, c.container_ids) for c in cands] == [("idle", ["a1", "a2"])]
+    return wt, cands
+
+
+def test_a_replacement_container_since_the_plan_makes_the_candidate_stale(
+    tmp_path: Path, runtime: Path
+):
+    """(a) a CLI restart recreated the sidecar between plan and lock: the old ids are
+    gone, a new one runs. Releasing now would orphan the replacement."""
+    _wt, cands = _idle_container_world(tmp_path, runtime)
+    leases_before = (runtime / "port-leases.json").read_text()
+    registry_before = (runtime / "instances.json").read_text()
+    runner = PairRunner(ids=["b1"])
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == [] and report.skip_reasons == ["stale"]
+    assert len(runner.calls) == 1 and _pair_inspection(runner.calls[0])  # no stop/rm
+    assert (runtime / "port-leases.json").read_text() == leases_before
+    assert (runtime / "instances.json").read_text() == registry_before
+    assert _rt_dir(runtime).is_dir()
+
+
+@pytest.mark.parametrize("still_listed", [["a1"], ["a1", "a2"], []])
+def test_planned_containers_partly_or_all_gone_are_still_reaped(
+    tmp_path: Path, runtime: Path, still_listed
+):
+    """(b) no container the plan did not list: proceed as before."""
+    _wt, cands = _idle_container_world(tmp_path, runtime)
+    runner = PairRunner(ids=still_listed)
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == cands and report.skipped == [] and report.errors == []
+    assert _pair_inspection(runner.calls[0])  # the read-only check comes first
+    assert ["docker", "stop", "a1"] in runner.calls and [
+        "docker",
+        "rm",
+        "a2",
+    ] in runner.calls
+    assert _registry_statuses(runtime) == ["stopped"]
+    assert not _rt_dir(runtime).exists()
+
+
+def test_a_planned_id_listed_in_full_length_still_matches(
+    tmp_path: Path, runtime: Path
+):
+    """Short (plan) and full (docker) ids of the same container are the same container."""
+    _wt, cands = _idle_container_world(tmp_path, runtime)
+    runner = PairRunner(ids=["a1" + "0" * 62])
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == cands
+
+
+@pytest.mark.parametrize("ps_rc", [1, 124])
+def test_a_container_candidate_whose_pair_check_fails_is_stale(
+    tmp_path: Path, runtime: Path, ps_rc: int
+):
+    """(c) unavailable docker, or `run_cmd`'s timeout exit code: fail closed."""
+    _wt, cands = _idle_container_world(tmp_path, runtime)
+    registry_before = (runtime / "instances.json").read_text()
+    runner = PairRunner(ps_rc=ps_rc)
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == [] and report.skip_reasons == ["stale"]
+    assert len(runner.calls) == 1 and _pair_inspection(runner.calls[0])
     assert (runtime / "instances.json").read_text() == registry_before
     assert _rt_dir(runtime).is_dir()
