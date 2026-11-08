@@ -142,6 +142,7 @@ def test_run_lifecycle_cli_loads_the_resolved_repo_catalog(
 
     assert loaded == [target.resolve()]
     assert seen["catalog"] is sentinel
+    assert seen["repo"] == target.resolve()
 
 
 def test_run_lifecycle_cli_without_repo_keeps_the_default_catalog_lookup(
@@ -230,6 +231,7 @@ def test_init_repo_outside_git_keeps_the_identity_error(
     result = CliRunner().invoke(mcp_commands.mcp, ["init", "--repo", str(plain)])
 
     assert result.exit_code != 0
+    assert "Could not resolve project identity" in result.output
     assert not (plain / ".mcp.json").exists()
 
 
@@ -272,6 +274,67 @@ def test_run_lifecycle_cli_loads_the_toplevel_catalog_for_a_subdirectory(
     )
 
     assert loaded == [repos.target]
+
+
+def test_status_repo_subdirectory_reads_mcp_json_from_the_checkout_root(
+    repos: SimpleNamespace,
+    target_subdir: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Real run_lifecycle (not faked): .mcp.json / envrc must come from the root,
+    # not from the --repo subdirectory where they do not exist.
+    import dopemux.mcp.docker_inspect as di
+
+    product = tmp_path / "product"
+    product.mkdir()
+    (product / "compose.yml").write_text("services: {}\n")
+    monkeypatch.setenv("DOPEMUX_MVP_ROOT", str(product))
+    monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "instances.json"))
+    monkeypatch.setattr(
+        di,
+        "inspect_running_containers",
+        lambda **kw: di.DockerInspectResult(available=True, containers=[]),
+    )
+    (repos.target / ".mcp.json").write_text(
+        json.dumps(
+            {"mcpServers": {"target-only-svc": {"type": "http", "url": "http://localhost:4200/mcp"}}}
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["status", "--repo", str(target_subdir), "--json"]
+    )
+
+    assert result.exit_code in {0, 1, 2}, result.output
+    payload = json.loads(result.output)
+    assert payload["project_identity"]["worktree_root"] == str(repos.target)
+    assert "target-only-svc" in json.dumps(payload["services"])
+
+
+def test_git_toplevel_returns_the_resolved_path_for_a_nonexistent_dir(
+    tmp_path: Path,
+) -> None:
+    missing = tmp_path / "does" / "not" / "exist"
+
+    assert mcp_commands._git_toplevel(missing) == missing.resolve()
+
+
+@pytest.mark.parametrize(
+    "error",
+    [OSError("no git"), subprocess.TimeoutExpired(cmd="git", timeout=5)],
+    ids=["oserror", "timeout"],
+)
+def test_git_toplevel_returns_the_resolved_path_when_git_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, error: Exception
+) -> None:
+    def boom(*_a: Any, **_k: Any) -> Any:
+        raise error
+
+    monkeypatch.setattr(mcp_commands.subprocess, "run", boom)
+
+    assert mcp_commands._git_toplevel(tmp_path) == tmp_path.resolve()
 
 
 def test_repair_config_repo_subdirectory_repairs_the_checkout_root(

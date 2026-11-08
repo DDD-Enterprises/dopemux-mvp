@@ -191,16 +191,15 @@ def _run_lifecycle_cli(
     """Shared entry for start/stop/restart/status reconciler."""
     from dopemux.mcp.lifecycle import format_lifecycle_human, run_lifecycle
 
-    # The target checkout's repo-local catalog governs --repo (as the launcher does).
-    catalog = (
-        _load_catalog(_git_toplevel(repo_arg))
-        if repo_arg is not None
-        else _load_catalog()
-    )
+    # An explicit --repo may be a subdirectory: the checkout root owns .mcp.json,
+    # the envrc and the repo-local catalog (as for the launcher), so both the
+    # catalog and the lifecycle run use it.
+    target_root = _git_toplevel(repo_arg) if repo_arg is not None else None
+    catalog = _load_catalog(target_root) if target_root is not None else _load_catalog()
     svc_list = [s.strip() for s in (services or "").split(",") if s.strip()] or None
     result = run_lifecycle(
         operation,
-        repo=repo_arg,
+        repo=target_root,
         services=svc_list,
         catalog=catalog,
         dry_run=dry_run,
