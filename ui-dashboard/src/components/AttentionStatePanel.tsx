@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Paper, Typography } from '@mui/material';
+import { Box, Paper, Tooltip, Typography } from '@mui/material';
 
 import { AttentionState, ENERGY_LEVELS, EnergyLevel } from '../cognitiveReading';
 import { brandTokens } from '../theme';
@@ -72,45 +72,38 @@ const AttentionStatePanel: React.FC<AttentionStatePanelProps> = ({ energyLevel, 
       >
         <dt>Energy</dt>
         <dd data-testid="energy-value">
-          {energyStep >= 0 && (
-            <Box aria-hidden="true" sx={{ display: 'flex', gap: '3px' }}>
-              {ENERGY_LEVELS.map((level, index) => (
-                <Box
-                  key={level}
-                  sx={{
-                    width: 14,
-                    height: 8,
-                    borderRadius: '2px',
-                    bgcolor: index <= energyStep ? brandTokens.colors.serumMint : brandTokens.borders.subtle,
-                  }}
-                />
-              ))}
+          <Tooltip title={energyLevel ? `Energy level: ${humanize(energyLevel)} (${energyStep + 1}/${ENERGY_LEVELS.length})` : 'Energy level: unknown'} arrow>
+            <Box
+              tabIndex={0}
+              aria-label={energyLevel ? `Energy level: ${humanize(energyLevel)}, step ${energyStep + 1} of ${ENERGY_LEVELS.length}` : 'Energy level: unknown'}
+              sx={{ display: 'inline-flex', alignItems: 'center', gap: 1.5, cursor: 'help', outline: 'none', borderRadius: 1, '&:focus-visible': { boxShadow: `0 0 0 2px ${brandTokens.colors.serumMint}` } }}
+            >
+              {energyStep >= 0 && (
+                <Box aria-hidden="true" sx={{ display: 'flex', gap: '3px' }}>
+                  {ENERGY_LEVELS.map((level, index) => (
+                    <Box key={level} sx={{ width: 14, height: 8, borderRadius: '2px', bgcolor: index <= energyStep ? brandTokens.colors.serumMint : brandTokens.borders.subtle }} />
+                  ))}
+                </Box>
+              )}
+              <Typography component="span" sx={energyLevel ? valueSx : unknownSx}>
+                {energyLevel ? humanize(energyLevel) : 'unknown'}
+              </Typography>
             </Box>
-          )}
-          {energyLevel ? (
-            <Typography component="span" sx={valueSx}>
-              {humanize(energyLevel)}
-            </Typography>
-          ) : (
-            <Typography component="span" sx={unknownSx}>
-              unknown
-            </Typography>
-          )}
+          </Tooltip>
         </dd>
         <dt>Attention</dt>
         <dd data-testid="attention-value">
-          {attentionState ? (
-            <Typography
-              component="span"
-              sx={{ ...valueSx, color: ATTENTION_COLORS[attentionState] }}
+          <Tooltip title={attentionState ? `Attention state: ${humanize(attentionState)}` : 'Attention state: unknown'} arrow>
+            <Box
+              tabIndex={0}
+              aria-label={attentionState ? `Attention state: ${humanize(attentionState)}` : 'Attention state: unknown'}
+              sx={{ display: 'inline-flex', alignItems: 'center', cursor: 'help', outline: 'none', borderRadius: 1, '&:focus-visible': { boxShadow: `0 0 0 2px ${attentionState ? ATTENTION_COLORS[attentionState] : brandTokens.colors.ritualCyan}` } }}
             >
-              {humanize(attentionState)}
-            </Typography>
-          ) : (
-            <Typography component="span" sx={unknownSx}>
-              unknown
-            </Typography>
-          )}
+              <Typography component="span" sx={attentionState ? { ...valueSx, color: ATTENTION_COLORS[attentionState] } : unknownSx}>
+                {attentionState ? humanize(attentionState) : 'unknown'}
+              </Typography>
+            </Box>
+          </Tooltip>
         </dd>
       </Box>
     </Paper>
