@@ -1867,3 +1867,93 @@ def test_a_symlinked_runtime_dir_is_never_a_dir_only_candidate(
     (runtime / real.name).unlink()
     _marked_dir(runtime, missing)
     assert [c.dir_only for c in _plan(reg, [])] == [True]
+
+
+# --- Task B5 (Codex connector on 357f6ab99): state-only pairs also qualify on idle -----
+
+
+def _idle_state_leftover(tmp_path: Path, runtime: Path, *, detached_ago: float):
+    """A present worktree whose containers are gone but whose state is not:
+    a running entry, an active lease and a runtime dir."""
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    reg = _registry(runtime, wt)
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json", create_missing=True)
+    leases.upsert_lease(_lease(wt, "conport", 3100))
+    leases.save()
+    _detached(_rt_dir(runtime), ago=detached_ago)
+    return wt, reg
+
+
+def test_an_idle_state_only_pair_is_planned_and_finished_while_the_worktree_exists(
+    tmp_path: Path, runtime: Path
+):
+    """(a)"""
+    _wt, reg = _idle_state_leftover(tmp_path, runtime, detached_ago=IDLE + 60)
+    lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
+    cands = _plan(reg, [], lease_registry=lease_registry)
+    assert [(c.state_only, c.reason, c.dir_only) for c in cands] == [
+        (True, "idle", False)
+    ]
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == cands and report.errors == [] and report.skipped == []
+    assert runner.calls == []  # no container: no docker call
+    assert _registry_statuses(runtime) == ["stopped"]
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert {L["service"]: L["status"] for L in leases.leases()} == {
+        "conport": "released"
+    }
+    assert not _rt_dir(runtime).exists()
+
+
+def test_a_recently_detached_state_only_pair_is_not_a_candidate(
+    tmp_path: Path, runtime: Path
+):
+    """(b)"""
+    _wt, reg = _idle_state_leftover(tmp_path, runtime, detached_ago=IDLE - 60)
+    lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert _plan(reg, [], lease_registry=lease_registry) == []
+
+
+def test_an_attached_state_only_pair_is_not_a_candidate(tmp_path: Path, runtime: Path):
+    """(c)"""
+    _wt, reg = _idle_state_leftover(tmp_path, runtime, detached_ago=IDLE + 60)
+    reap.attach(_rt_dir(runtime))  # this live process
+    lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert _plan(reg, [], lease_registry=lease_registry) == []
+
+
+def test_a_state_error_leftover_of_an_idle_reap_is_finished_while_the_worktree_exists(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
+    """(d) the reported scenario: the idle reap removed the containers, its state save
+    failed, and the checkout still exists."""
+    wt, cands = _idle_candidate(tmp_path, runtime)
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json", create_missing=True)
+    leases.upsert_lease(_lease(wt, "conport", 3100))
+    leases.save()
+    real_save = reap.save_states_locked
+    monkeypatch.setattr(
+        reap, "save_states_locked", lambda updates, wait_s=None: ["boom"]
+    )
+    first = reap.apply_reap(cands, runner=Recorder(), now=lambda: NOW, idle_s=IDLE)
+    assert first.skip_reasons == ["state_error"] and _rt_dir(runtime).is_dir()
+    assert _registry_statuses(runtime) == ["running"]  # state kept
+    monkeypatch.setattr(reap, "save_states_locked", real_save)
+    # the next run: docker lists no container for the pair any more
+    again = _plan(
+        RuntimeRegistry.load(runtime / "instances.json"),
+        [],
+        lease_registry=PortLeaseRegistry.load(runtime / "port-leases.json"),
+    )
+    assert [(c.state_only, c.reason) for c in again] == [(True, "idle")]
+    runner = Recorder()
+    second = reap.apply_reap(again, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert second.reaped == again and second.errors == [] and runner.calls == []
+    assert _registry_statuses(runtime) == ["stopped"]
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert {L["service"]: L["status"] for L in leases.leases()} == {
+        "conport": "released"
+    }
+    assert not _rt_dir(runtime).exists()

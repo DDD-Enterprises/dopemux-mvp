@@ -37,8 +37,10 @@ Safety rules (all fail closed):
   when one service's container fails, the services whose containers are all gone
   are still released and the runtime dir stays. The task-orchestrator
   is a ``project``-scope container, never a candidate, so it is never marked stopped.
-  A pair whose worktree is gone and whose containers are already gone (a reap killed
-  after ``docker rm``) is cleaned by a state-only candidate (no container ids); that
+  A pair whose containers are already gone but whose state is not (a reap killed
+  after ``docker rm``, ``registry_busy``, ``state_error``) is cleaned by a
+  state-only candidate (no container ids) on the same predicate as a container
+  candidate: its worktree is gone, or it has been idle ``idle_s`` (Task B5). That
   candidate also clears entries and leases with an empty service (owned by nobody).
 * A runtime dir that never got a registry entry (a launch refused with
   ``LAUNCH_IMAGE_BUILDING`` before any start) is found through the launcher's
@@ -55,13 +57,13 @@ Safety rules (all fail closed):
   waits for the registry lock at most ``min(time left, 2 s)``; when it stays busy
   the candidate is skipped as ``registry_busy`` with its containers already gone,
   registry, leases and runtime dir untouched, and a later run finishes it (a
-  state-only candidate once the worktree is gone). A registry or lease save that
-  fails (a corrupt file left as is, an ``OSError``) is skipped as ``state_error``
-  the same way, on every run: the runtime dir is removed, and the candidate
-  counted as reaped, only after both saves succeeded. A run that attempted no
-  candidate (``deadline``/``cap``/``locked``/``attached``/``stale``), or whose
-  inspection timed out, leaves the ``reap.last`` throttle as it was. The explicit CLI ``--apply``
-  waits for every lock.
+  state-only candidate once it is idle or its worktree is gone). A registry or
+  lease save that fails (a corrupt file left as is, an ``OSError``) is skipped as
+  ``state_error`` the same way, on every run: the runtime dir is removed, and the
+  candidate counted as reaped, only after both saves succeeded. A run that
+  attempted no candidate (``deadline``/``cap``/``locked``/``attached``/``stale``),
+  or whose inspection timed out, leaves the ``reap.last`` throttle as it was. The
+  explicit CLI ``--apply`` waits for every lock.
 * Automatic reaping (:func:`maybe_reap`: hooks and launcher) honours a kill switch:
   the file ``<runtime root>/reap.disabled`` or ``DOPEMUX_MCP_REAP`` set to
   ``0``/``off``/``false``. The explicit CLI ``dopemux mcp reap --apply`` ignores it.
@@ -409,6 +411,26 @@ def _last_detach_age(runtime_dir: Path, now: float) -> Optional[float]:
     return None if detached is None else now - detached
 
 
+def _plan_reason(
+    worktree_root: str,
+    runtime_dir: Path,
+    *,
+    now: float,
+    idle_s: float,
+    exists: Callable[[Path], bool],
+) -> Optional[Reason]:
+    """The plan's reason for a registry-joined pair (live attachments checked by the
+    caller): ``worktree_missing``, else ``idle`` once ``idle_s`` passed since the
+    effective last detach, else ``None``. Container and state-only candidates share it.
+    """
+    if _worktree_gone(worktree_root, exists):
+        return "worktree_missing"
+    age = _last_detach_age(runtime_dir, now)
+    if age is not None and age >= idle_s:
+        return "idle"
+    return None
+
+
 def _effective_last_detach(runtime_dir: Path) -> Optional[float]:
     """When the last launcher left, read-only: ``None`` when unknown.
 
@@ -584,10 +606,12 @@ def plan_reap(
 ) -> List[ReapCandidate]:
     """Instances to reap. Read-only; an unreadable registry yields ``[]``.
 
-    Besides container candidates, a registry pair whose worktree is gone and which
-    has no container at all but still has unfinished state (a running entry, active
-    leases or a runtime dir) yields a state-only candidate, so a reap that died
-    after ``docker rm`` is finished by the next run. A launcher-marked runtime dir
+    Besides container candidates, a registry pair that has no container at all but
+    still has unfinished state (a running entry, active leases or a runtime dir)
+    yields a state-only candidate when no launcher is attached and its worktree is
+    gone or it has been idle ``idle_s`` (the container candidates' predicate), so a
+    reap that died after ``docker rm``, or was skipped as ``registry_busy`` or
+    ``state_error``, is finished by a later run. A launcher-marked runtime dir
     with no registry entry and no container yields a dir-only candidate
     (``_dir_only_candidates``). Idle time includes dead attach records
     (``_effective_last_detach``); nothing is pruned or stamped here.
@@ -626,13 +650,9 @@ def plan_reap(
         )
         if live_attachments(runtime_dir, prune=False) > 0:
             continue
-        reason: Optional[Reason] = None
-        if _worktree_gone(worktree_root, exists):
-            reason = "worktree_missing"
-        else:
-            age = _last_detach_age(runtime_dir, now)
-            if age is not None and age >= idle_s:
-                reason = "idle"
+        reason = _plan_reason(
+            worktree_root, runtime_dir, now=now, idle_s=idle_s, exists=exists
+        )
         if reason is None:
             continue
         candidates.append(
@@ -669,14 +689,20 @@ def plan_reap(
         if entry is None:
             continue
         worktree_root, project_root, entries = entry
-        if not _worktree_gone(worktree_root, exists):
-            continue
         runtime_dir = runtime_dir_for_paths(
             project_root=project_root,
             worktree_hash=worktree_hash,
             registry_path=registry.path,
         )
         if live_attachments(runtime_dir, prune=False) > 0:
+            continue
+        # Task B5: the same predicate as a container candidate. A pair whose state an
+        # idle reap left behind (registry_busy, state_error, a reap killed after
+        # `docker rm`) is finished while its checkout still exists.
+        state_reason = _plan_reason(
+            worktree_root, runtime_dir, now=now, idle_s=idle_s, exists=exists
+        )
+        if state_reason is None:
             continue
         unfinished = (
             any(
@@ -694,7 +720,7 @@ def plan_reap(
                     worktree_root=worktree_root,
                     runtime_dir=runtime_dir,
                     container_ids=[],
-                    reason="worktree_missing",
+                    reason=state_reason,
                     services=[],
                 )
             )
@@ -710,8 +736,9 @@ def plan_reap(
 def _owned_by(service: Optional[str], cand: ReapCandidate) -> bool:
     """Whether this reap is responsible for ``service`` of the candidate's pair.
 
-    An empty service belongs to nobody: only a state-only candidate (worktree
-    gone, no container left) clears it, so it cannot keep the pair alive forever.
+    An empty service belongs to nobody: only a state-only candidate (no container
+    left; its worktree gone or idle) clears it, so it cannot keep the pair alive
+    forever.
     """
     if not service:
         return cand.state_only
@@ -957,7 +984,7 @@ def _reap_one(
             )
         except LockBusy:
             # Containers are gone; registry, leases and the runtime dir stay for a
-            # later run (a state-only candidate once the worktree is gone).
+            # later run (a state-only candidate once idle or the worktree is gone).
             report.skip(cand, "registry_busy")
             return
         if state_errors:

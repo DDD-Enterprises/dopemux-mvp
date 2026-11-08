@@ -238,8 +238,9 @@ Automatic runs never wait on a lock and cap every docker call:
 - The final registry and lease update waits at most 2 s (or the time left) for the
   registry lock. If it stays busy, the instance is skipped as `registry_busy`: its
   containers are already removed, its registry entries, leases and runtime dir are left
-  as they were, and a later run finishes it (once the worktree is gone, as a state-only
-  candidate; while it still exists, the worktree's next start rewrites them).
+  as they were, and a later run finishes it as a state-only candidate (once it has been
+  idle 20 minutes, or when the worktree is gone; a start of the worktree before that
+  rewrites them).
 - Under its lock each candidate is checked again, first pruning dead attach records (which
   can stamp `last_detach` from them); when it no longer qualifies there is no docker call and
   no other change: a launcher attached by then skips it as `attached`; otherwise it is
@@ -259,9 +260,9 @@ references, read 2026-11-05), so `.claude/settings.json` sets `"timeout": 60` on
 corrupt file is left as is) skips the instance as `state_error`: its containers are already
 removed and its runtime dir stays. The runtime registry and the lease file are saved one after
 the other with no rollback, so the one that saved is updated (with a corrupt lease file the
-entries are still marked stopped) and the failing one stays as it was. Once the worktree is
-gone, a later run finishes it as a state-only candidate (after a person fixes a corrupt file);
-while it still exists, the worktree's next start rewrites the state.
+entries are still marked stopped) and the failing one stays as it was. A later run finishes
+it as a state-only candidate (once it has been idle 20 minutes, or when the worktree is gone;
+a corrupt file needs a person first); a start of the worktree before that rewrites the state.
 
 **Kill switch for automatic reaping:** create the file
 `~/.dopemux/mcp/runtime/reap.disabled`, or set `DOPEMUX_MCP_REAP=0` (also `off`/`false`).
