@@ -44,8 +44,13 @@ Safety rules (all fail closed):
   A pair whose containers are already gone but whose state is not (a reap killed
   after ``docker rm``, ``registry_busy``, ``state_error``) is cleaned by a
   state-only candidate (no container ids) on the same predicate as a container
-  candidate: its worktree is gone, or it has been idle ``idle_s`` (Task B5). That
-  candidate also clears entries and leases with an empty service (owned by nobody).
+  candidate: its worktree is gone, or it has been idle ``idle_s`` (Task B5); on
+  idle only while a running entry or an active lease is left, never for a runtime
+  dir alone (round 2). Under the lock, before anything is released, one
+  ``docker ps -a`` for the pair must list no container (a start may have created
+  some since the plan); a listed container or an unanswered call skips it as
+  ``stale``. That candidate also clears entries and leases with an empty service
+  (owned by nobody).
 * A runtime dir that never got a registry entry (a launch refused with
   ``LAUNCH_IMAGE_BUILDING`` before any start) is found through the launcher's
   ``instance.json`` marker: a dir-only candidate (``dir_only``, no container ids)
@@ -612,10 +617,11 @@ def plan_reap(
     """Instances to reap. Read-only; an unreadable registry yields ``[]``.
 
     Besides container candidates, a registry pair that has no container at all but
-    still has unfinished state (a running entry, active leases or a runtime dir)
-    yields a state-only candidate when no launcher is attached and its worktree is
-    gone or it has been idle ``idle_s`` (the container candidates' predicate), so a
-    reap that died after ``docker rm``, or was skipped as ``registry_busy`` or
+    still has unfinished state yields a state-only candidate when no launcher is
+    attached and no detached build is live: on ``worktree_missing`` with a running
+    entry, active leases or a runtime dir; on ``idle`` (``idle_s``, the container
+    candidates' predicate) only with a running entry or active leases. So a reap
+    that died after ``docker rm``, or was skipped as ``registry_busy`` or
     ``state_error``, is finished by a later run. A launcher-marked runtime dir
     with no registry entry and no container yields a dir-only candidate
     (``_dir_only_candidates``). Idle time includes dead attach records
@@ -713,13 +719,16 @@ def plan_reap(
         )
         if state_reason is None:
             continue
+        # A runtime dir alone qualifies only a missing worktree (as for dir-only
+        # candidates); an idle pair needs a running entry or an active lease
+        # (Task B5 round 2).
         unfinished = (
             any(
                 e.get("status") != "stopped" and e.get("service") != _ORCHESTRATOR
                 for e in entries
             )
             or _has_active_leases(lease_registry, worktree_root, project_id)
-            or runtime_dir.exists()
+            or (state_reason == "worktree_missing" and runtime_dir.exists())
         )
         if unfinished:
             candidates.append(
@@ -862,6 +871,47 @@ def _stop_and_remove(
     return errors, gone
 
 
+def _pair_may_have_containers(
+    cand: ReapCandidate,
+    runner: Callable[..., Any],
+    *,
+    call_timeout: Callable[[], Optional[float]] = lambda: None,
+    out_of_time: Callable[[], bool] = lambda: False,
+) -> bool:
+    """Whether docker lists any container (any state) for the candidate's pair.
+
+    Task B5 round 2: one ``docker ps -a`` filtered by ``dopemux.project_id`` and
+    ``dopemux.worktree_hash``, called under the instance lock before a state-only or
+    dir-only candidate releases anything, bounded like every docker call of the run.
+    True (fail closed) when the call fails, times out or no time is left. The
+    task-orchestrator's wrapper labels carry no ``dopemux.worktree_hash``, so a
+    running orchestrator never matches.
+    """
+    if out_of_time():
+        return True
+    cmd = [
+        "docker",
+        "ps",
+        "-a",
+        "--filter",
+        f"label=dopemux.project_id={cand.project_id}",
+        "--filter",
+        f"label=dopemux.worktree_hash={cand.worktree_hash}",
+        "--format",
+        "{{.ID}}",
+    ]
+    timeout = call_timeout()
+    try:
+        result = runner(cmd, **({} if timeout is None else {"timeout": timeout}))
+    except Exception:  # noqa: BLE001 - unknown means "maybe": never release then
+        return True
+    if getattr(result, "exit_code", 1) != 0:
+        return True
+    return any(
+        line.strip() for line in (getattr(result, "stdout", "") or "").splitlines()
+    )
+
+
 def _services_gone(cand: ReapCandidate, gone: Sequence[str]) -> List[str]:
     """Services of ``cand`` all of whose containers are in ``gone``."""
     removed = set(gone)
@@ -951,6 +1001,13 @@ def _reap_one(
             report.skip(
                 cand, "stale"
             )  # a launcher came and went, or the worktree is back
+            return
+        if cand.state_only and _pair_may_have_containers(
+            cand, runner, call_timeout=call_timeout, out_of_time=out_of_time
+        ):
+            # A start created containers for the pair after the plan (or docker
+            # could not say): releasing now would orphan them. Fail closed.
+            report.skip(cand, "stale")
             return
         docker_errors, gone = _stop_and_remove(
             cand,

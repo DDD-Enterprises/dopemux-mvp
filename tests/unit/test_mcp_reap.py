@@ -743,7 +743,8 @@ def test_state_only_candidate_finishes_a_reap_killed_after_docker_rm(
     )
     runner = Recorder()
     report = reap.apply_reap(cands, runner=runner)
-    assert runner.calls == []  # no container is touched
+    # no container is touched: the only docker call is the read-only pair check
+    assert [_pair_inspection(c) for c in runner.calls] == [True]
     assert report.errors == [] and report.reaped == cands
     status = {
         i["service"]: i["status"]
@@ -1649,7 +1650,8 @@ def test_a_marked_dir_of_a_removed_worktree_is_a_dir_only_candidate(
 
     runner = Recorder()
     report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
-    assert runner.calls == []  # no container: no docker call at all
+    # no container: the only docker call is the read-only pair check under the lock
+    assert len(runner.calls) == 1 and runner.calls[0][:3] == ["docker", "ps", "-a"]
     assert report.reaped == cands and report.errors == [] and report.skipped == []
     assert not rt.exists()
     assert _plan(RuntimeRegistry.load(runtime / "instances.json"), []) == []
@@ -1898,7 +1900,8 @@ def test_an_idle_state_only_pair_is_planned_and_finished_while_the_worktree_exis
     runner = Recorder()
     report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
     assert report.reaped == cands and report.errors == [] and report.skipped == []
-    assert runner.calls == []  # no container: no docker call
+    # no container: the only docker call is the read-only pair check under the lock
+    assert [_pair_inspection(c) for c in runner.calls] == [True]
     assert _registry_statuses(runtime) == ["stopped"]
     leases = PortLeaseRegistry.load(runtime / "port-leases.json")
     assert {L["service"]: L["status"] for L in leases.leases()} == {
@@ -1950,7 +1953,8 @@ def test_a_state_error_leftover_of_an_idle_reap_is_finished_while_the_worktree_e
     assert [(c.state_only, c.reason) for c in again] == [(True, "idle")]
     runner = Recorder()
     second = reap.apply_reap(again, runner=runner, now=lambda: NOW, idle_s=IDLE)
-    assert second.reaped == again and second.errors == [] and runner.calls == []
+    assert second.reaped == again and second.errors == []
+    assert [_pair_inspection(c) for c in runner.calls] == [True]  # read-only
     assert _registry_statuses(runtime) == ["stopped"]
     leases = PortLeaseRegistry.load(runtime / "port-leases.json")
     assert {L["service"]: L["status"] for L in leases.leases()} == {
@@ -2014,3 +2018,102 @@ def test_a_build_that_started_after_planning_makes_the_candidate_stale(
     assert runner.calls == []  # no docker call
     assert _registry_statuses(runtime) == ["running"]  # no state change
     assert (_rt_dir(runtime) / "build-conport.pid").exists()
+
+
+# --- Task B5 round 2 ------------------------------------------------------------------
+
+
+class PairRunner(Recorder):
+    """Recorder whose `docker ps -a` (the pair check under the lock) lists ``ids``,
+    or fails with ``ps_rc``."""
+
+    def __init__(self, ids=(), ps_rc: int = 0) -> None:
+        super().__init__()
+        self.ids = list(ids)
+        self.ps_rc = ps_rc
+
+    def __call__(self, cmd, **kwargs):
+        cmd = list(cmd)
+        if cmd[:3] == ["docker", "ps", "-a"]:
+            self.calls.append(cmd)
+            self.kwargs.append(kwargs)
+            return dr.RuntimeCommandResult(
+                command=cmd,
+                exit_code=self.ps_rc,
+                stdout="".join(f"{i}\n" for i in self.ids) if self.ps_rc == 0 else "",
+                stderr="Cannot connect to the Docker daemon" if self.ps_rc else "",
+            )
+        return super().__call__(cmd, **kwargs)
+
+
+def _pair_inspection(cmd) -> bool:
+    return cmd[:3] == ["docker", "ps", "-a"] and (
+        f"label=dopemux.project_id={PROJECT_ID}" in cmd
+        and f"label=dopemux.worktree_hash={HASH}" in cmd
+    )
+
+
+@pytest.mark.parametrize("case", ["containers_appeared", "inspection_failed"])
+def test_a_state_only_candidate_whose_pair_got_containers_is_stale(
+    tmp_path: Path, runtime: Path, case: str
+):
+    """(1) a CLI start created containers between plan and lock, or docker could not
+    say: fail closed, nothing released."""
+    _wt, reg = _idle_state_leftover(tmp_path, runtime, detached_ago=IDLE + 60)
+    lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
+    cands = _plan(reg, [], lease_registry=lease_registry)
+    assert [(c.state_only, c.reason) for c in cands] == [(True, "idle")]
+    leases_before = (runtime / "port-leases.json").read_text()
+    registry_before = (runtime / "instances.json").read_text()
+    runner = (
+        PairRunner(ids=["c0ffee"])
+        if case == "containers_appeared"
+        else PairRunner(ps_rc=1)
+    )
+    report = reap.apply_reap(
+        cands, runner=runner, now=lambda: NOW, idle_s=IDLE, cmd_timeout_s=3.0
+    )
+    assert report.reaped == [] and report.skip_reasons == ["stale"]
+    assert len(runner.calls) == 1 and _pair_inspection(runner.calls[0])
+    assert runner.kwargs[0].get("timeout") == 3.0  # bounded like every docker call
+    assert (runtime / "port-leases.json").read_text() == leases_before
+    assert (runtime / "instances.json").read_text() == registry_before
+    assert _rt_dir(runtime).is_dir()
+
+
+def test_a_dir_only_candidate_whose_pair_got_containers_is_stale(
+    tmp_path: Path, runtime: Path
+):
+    reg = _empty_runtime_registry(runtime)
+    rt = _marked_dir(runtime, tmp_path / "removed" / "proj")
+    cands = _plan(reg, [])
+    assert [c.dir_only for c in cands] == [True]
+    runner = PairRunner(ids=["c0ffee"])
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.skip_reasons == ["stale"] and rt.is_dir()
+    assert len(runner.calls) == 1 and _pair_inspection(runner.calls[0])
+
+
+def test_an_idle_state_only_pair_needs_more_than_a_runtime_dir(
+    tmp_path: Path, runtime: Path
+):
+    """(2) stopped entries + released leases + a runtime dir: idle does not qualify;
+    a missing worktree still does."""
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    reg = RuntimeRegistry.load(runtime / "instances.json", create_missing=True)
+    record = _record(wt)
+    record["status"] = "stopped"
+    reg.upsert_instance(record)
+    reg.save()
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json", create_missing=True)
+    lease = _lease(wt, "conport", 3100)
+    lease["status"] = "released"
+    leases.upsert_lease(lease)
+    leases.save()
+    _detached(_rt_dir(runtime), ago=IDLE * 10)
+    kw = {"lease_registry": PortLeaseRegistry.load(runtime / "port-leases.json")}
+    assert _plan(RuntimeRegistry.load(runtime / "instances.json"), [], **kw) == []
+    wt.rmdir()  # the worktree is gone: the runtime dir alone qualifies again
+    cands = _plan(RuntimeRegistry.load(runtime / "instances.json"), [], **kw)
+    assert [(c.state_only, c.reason) for c in cands] == [(True, "worktree_missing")]
