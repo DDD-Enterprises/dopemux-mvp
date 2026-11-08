@@ -243,8 +243,9 @@ Automatic runs never wait on a lock and cap every docker call:
   idle 20 minutes, or when the worktree is gone; a start of the worktree before that
   rewrites them).
 - Under its lock each candidate is checked again, first pruning dead attach records (which
-  can stamp `last_detach` from them); when it no longer qualifies there is no docker call and
-  no other change: a launcher attached by then skips it as `attached`; otherwise it is
+  can stamp `last_detach` from them); when it no longer qualifies there is no docker call
+  that changes anything and no other change: a launcher attached by then skips it as
+  `attached`; otherwise it is
   skipped as `stale` when its worktree is present and it has not been idle for 20 minutes (a
   launcher that attached and left since the plan restarts that clock). Any candidate is also
   skipped as `stale` while a detached image build is running in its runtime dir, and a

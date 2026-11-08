@@ -2048,7 +2048,8 @@ class PairRunner(Recorder):
 
 def _pair_inspection(cmd) -> bool:
     return cmd[:3] == ["docker", "ps", "-a"] and (
-        f"label=dopemux.project_id={PROJECT_ID}" in cmd
+        "label=dopemux.managed=true" in cmd  # the planner's own filter (micro round)
+        and f"label=dopemux.project_id={PROJECT_ID}" in cmd
         and f"label=dopemux.worktree_hash={HASH}" in cmd
     )
 
@@ -2117,3 +2118,28 @@ def test_an_idle_state_only_pair_needs_more_than_a_runtime_dir(
     wt.rmdir()  # the worktree is gone: the runtime dir alone qualifies again
     cands = _plan(RuntimeRegistry.load(runtime / "instances.json"), [], **kw)
     assert [(c.state_only, c.reason) for c in cands] == [(True, "worktree_missing")]
+
+
+def test_a_state_only_candidate_whose_pair_check_raises_is_stale(
+    tmp_path: Path, runtime: Path
+):
+    """Task B5 micro round: a runner that raises on the pair check fails closed."""
+    _wt, reg = _idle_state_leftover(tmp_path, runtime, detached_ago=IDLE + 60)
+    lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
+    cands = _plan(reg, [], lease_registry=lease_registry)
+    assert [(c.state_only, c.reason) for c in cands] == [(True, "idle")]
+    leases_before = (runtime / "port-leases.json").read_text()
+    registry_before = (runtime / "instances.json").read_text()
+    calls: list = []
+
+    def raising(cmd, **kwargs):
+        calls.append(list(cmd))
+        raise OSError("docker binary vanished")
+
+    report = reap.apply_reap(cands, runner=raising, now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == [] and report.skip_reasons == ["stale"]
+    assert report.errors == []
+    assert len(calls) == 1 and _pair_inspection(calls[0])
+    assert (runtime / "port-leases.json").read_text() == leases_before
+    assert (runtime / "instances.json").read_text() == registry_before
+    assert _rt_dir(runtime).is_dir()

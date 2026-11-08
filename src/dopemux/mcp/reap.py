@@ -880,7 +880,9 @@ def _pair_may_have_containers(
 ) -> bool:
     """Whether docker lists any container (any state) for the candidate's pair.
 
-    Task B5 round 2: one ``docker ps -a`` filtered by ``dopemux.project_id`` and
+    Task B5 round 2: one ``docker ps -a`` filtered by ``dopemux.managed=true`` (the
+    planner's own filter, so an unmanaged container carrying the pair's labels cannot
+    keep the candidate ``stale`` forever), ``dopemux.project_id`` and
     ``dopemux.worktree_hash``, called under the instance lock before a state-only or
     dir-only candidate releases anything, bounded like every docker call of the run.
     True (fail closed) when the call fails, times out or no time is left. The
@@ -893,6 +895,8 @@ def _pair_may_have_containers(
         "docker",
         "ps",
         "-a",
+        "--filter",
+        f"label={dr.LABEL_MANAGED}=true",
         "--filter",
         f"label=dopemux.project_id={cand.project_id}",
         "--filter",
