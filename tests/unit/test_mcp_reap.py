@@ -2230,3 +2230,104 @@ def test_a_container_candidate_whose_pair_check_fails_is_stale(
     assert len(runner.calls) == 1 and _pair_inspection(runner.calls[0])
     assert (runtime / "instances.json").read_text() == registry_before
     assert _rt_dir(runtime).is_dir()
+
+
+# --- Task B7-1: leases are matched by the lease registry's identity rule ---------------
+
+#: `allocate_ports()` (init, the launcher) writes the project directory's name as the
+#: lease's project_id; reap candidates carry the hashed ProjectIdentity id.
+DIR_NAME_PROJECT_ID = "proj"
+
+
+def _allocator_lease(
+    worktree_root: Path, service: str, port: int, *, worktree_hash: str = HASH
+):
+    lease = _lease(worktree_root, service, port)
+    lease["project_id"] = DIR_NAME_PROJECT_ID
+    lease["worktree_hash"] = worktree_hash
+    lease["project_root"] = str(worktree_root)
+    return lease
+
+
+def _allocator_lease_world(tmp_path: Path, runtime: Path):
+    """A removed worktree whose entries are stopped and whose runtime dir is gone, but
+    whose allocator-written lease is still active; plus another worktree's lease that
+    carries the same directory-name project_id."""
+    missing = tmp_path / "removed" / "proj"
+    reg = RuntimeRegistry.load(runtime / "instances.json", create_missing=True)
+    record = _record(missing)
+    record["status"] = "stopped"
+    reg.upsert_instance(record)
+    reg.save()
+    other = tmp_path / "other" / "proj"
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json", create_missing=True)
+    leases.upsert_lease(_allocator_lease(missing, "conport", 3100))
+    leases.upsert_lease(
+        _allocator_lease(other, "conport", 3200, worktree_hash="beef0001")
+    )
+    leases.save()
+    return missing, other
+
+
+def _lease_statuses(runtime: Path) -> Dict[str, str]:
+    return {
+        str(L["worktree_root"]): L["status"]
+        for L in PortLeaseRegistry.load(runtime / "port-leases.json").leases()
+    }
+
+
+def test_an_allocator_lease_counts_and_is_released_by_identity(
+    tmp_path: Path, runtime: Path
+):
+    missing, other = _allocator_lease_world(tmp_path, runtime)
+    lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
+    # _has_active_leases counts the lease although its project_id is the dir name
+    cands = _plan(
+        RuntimeRegistry.load(runtime / "instances.json"),
+        [],
+        lease_registry=lease_registry,
+    )
+    assert [(c.state_only, c.reason, c.worktree_root) for c in cands] == [
+        (True, "worktree_missing", str(missing))
+    ]
+    assert cands[0].project_root == str(missing)
+    report = reap.apply_reap(cands, runner=PairRunner(), now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == cands and report.errors == []
+    # _release_leases releases it; the other worktree's lease (same dir-name id) stays
+    assert _lease_statuses(runtime) == {str(missing): "released", str(other): "active"}
+
+
+def test_releasing_an_allocator_lease_through_a_container_reap(
+    tmp_path: Path, runtime: Path
+):
+    missing = tmp_path / "removed" / "proj"
+    reg = _registry(runtime, missing)
+    other = tmp_path / "other" / "proj"
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json", create_missing=True)
+    leases.upsert_lease(_allocator_lease(missing, "conport", 3100))
+    leases.upsert_lease(
+        _allocator_lease(other, "conport", 3200, worktree_hash="beef0001")
+    )
+    leases.save()
+    cands = _plan(reg, [_container("a1")])
+    report = reap.apply_reap(cands, runner=PairRunner(ids=["a1"]))
+    assert report.reaped == cands
+    assert _lease_statuses(runtime) == {str(missing): "released", str(other): "active"}
+
+
+def test_the_dry_run_json_lists_a_pair_kept_alive_only_by_an_allocator_lease(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
+    missing, _other = _allocator_lease_world(tmp_path, runtime)
+    monkeypatch.setattr(reap, "inspect_all_managed_containers", FakeInspect([]))
+    monkeypatch.setattr(reap, "run_cmd", Recorder())
+    result = CliRunner().invoke(_cli(), ["reap", "--json"])
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.stdout)
+    assert [
+        (c["worktree_root"], c["reason"], c["state_only"])
+        for c in payload["candidates"]
+    ] == [(str(missing), "worktree_missing", True)]
+    assert (
+        _lease_statuses(runtime)[str(missing)] == "active"
+    )  # a dry run changes nothing

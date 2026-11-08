@@ -218,7 +218,9 @@ Safety rules: containers are matched by `dopemux.managed`, `dopemux.project_id` 
 `dopemux.worktree_hash` labels plus a runtime-registry entry; `project` and `singleton`
 scope containers (the task-orchestrator, host singletons) are never touched.
 A full `dopemux mcp stop` for a worktree also releases its leases and removes its runtime dir,
-unless a launcher is still attached (then the dir stays and the stop warns).
+unless a launcher is still attached (then the dir stays and the stop warns). Reap matches a
+worktree's port leases by its worktree root, so a lease `init` or a launcher wrote (project id =
+the project directory's name) is released just like one carrying the hashed project id.
 
 Reaping also runs automatically, bounded and never as a daemon. "Throttled" means at most
 once per 600 s, through `~/.dopemux/mcp/runtime/reap.last`:
@@ -327,7 +329,11 @@ kill left half applied.
 start (including the one a launcher runs) take its ports, and the first ConPort tenant
 resolution adopts legacy `CONPORT_DB_*` from it once (`legacy_envrc`). Identity never comes
 from it. Credentials live in `~/.dopemux/mcp/projects/<project_id>/secrets.env`, not in the
-repo (`git grep CONPORT_DB_` in a project set up this way finds nothing).
+repo (`git grep CONPORT_DB_` in a project set up this way finds nothing). On a start (CLI or
+launcher), a port the file names counts only when this worktree holds the active lease for that
+port. Otherwise this worktree's existing lease for that variable wins; with none (for example
+after a `stop` released the leases) the port is re-leased if no other lease holds it and it is
+free, or replaced by a newly leased port when it is taken.
 
 Ambient `DOPEMUX_WORKSPACE_ROOT`, `DOPEMUX_PROJECT_ROOT`, `DOPEMUX_INSTANCE_ID`,
 `DOPEMUX_WORKSPACE_ID` and `TASK_ORCHESTRATOR_PROJECT_ROOT` are always ignored by `launch`,

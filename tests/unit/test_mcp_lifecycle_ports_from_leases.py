@@ -477,3 +477,174 @@ def test_start_heals_colliding_lease_instead_of_port_collision(
     assert result.status == "PLANNED", result.blocking_findings
     dm = next(s for s in result.services if s["service"] == "dope-memory")
     assert dm["ports"]["DOPE_MEMORY_PORT"] != collided
+
+
+# --- Task B7-2: envrc ports with no lease behind them are re-leased on start ----------
+
+_LEASE_VARS = (
+    "CONPORT_MCP_PORT",
+    "CONPORT_HTTP_PORT",
+    "CONPORT_INFO_PORT",
+    "DOPE_MEMORY_PORT",
+)
+
+
+def _init_then_stop(tmp_path, paths):
+    """`init` (allocator leases + an envrc naming them), then `stop` (leases released)."""
+    from dopemux.commands import mcp_commands
+
+    repo = _repo(tmp_path)
+    identity = resolve_identity_view(repo)
+    init_ports = mcp_commands._allocate_ports(
+        identity.worktree_root,
+        ["conport", "dope-memory"],
+        _catalog(),
+        project_root=identity.project_root,
+        is_free_fn=lambda p: True,
+    )
+    (repo / ".envrc.dopemux-mcp").write_text(
+        "".join(f"export {var}={init_ports[var]}\n" for var in _LEASE_VARS)
+    )
+    reg = PortLeaseRegistry.load(paths.leases)
+    for lease in reg.active_leases():  # what a full `dopemux mcp stop` releases
+        reg.mark_released(lease_id=str(lease["lease_id"]))
+    reg.save()
+    assert _active(paths) == []
+    return repo, identity, {var: int(init_ports[var]) for var in _LEASE_VARS}
+
+
+def _active_by_var(paths, worktree_root: str) -> Dict[str, int]:
+    return {
+        L["port_var"]: int(L["port"])
+        for L in _active(paths)
+        if L.get("worktree_root") == worktree_root
+    }
+
+
+def test_a_start_after_init_and_stop_re_leases_the_envrc_ports(tmp_path, paths):
+    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+    result = _start(tmp_path, repo, paths)
+    assert not result.blocking_findings, result.blocking_findings
+    assert _active_by_var(paths, identity.worktree_root) == envrc_ports
+    planned = {v: p for s in result.services for v, p in s["ports"].items()}
+    assert {v: planned[v] for v in _LEASE_VARS} == envrc_ports
+
+
+def test_an_envrc_port_another_worktree_leased_is_replaced(tmp_path, paths):
+    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+    taken = envrc_ports["CONPORT_MCP_PORT"]
+    reg = PortLeaseRegistry.load(paths.leases)
+    reg.upsert_lease(
+        {
+            "lease_id": "lease_other_worktree",
+            "service": "conport",
+            "port": taken,
+            "port_role": "sse",
+            "port_var": "CONPORT_MCP_PORT",
+            "worktree_root": str(tmp_path / "elsewhere"),
+            "project_root": str(tmp_path / "elsewhere"),
+            "project_id": "elsewhere",
+            "worktree_hash": "ffff",
+            "scope": "worktree",
+            "status": "active",
+        }
+    )
+    reg.save()
+    result = _start(tmp_path, repo, paths)
+    assert not result.blocking_findings, result.blocking_findings
+    ours = _active_by_var(paths, identity.worktree_root)
+    assert ours["CONPORT_MCP_PORT"] != taken
+    conport = next(s for s in result.services if s["service"] == "conport")
+    assert conport["ports"]["CONPORT_MCP_PORT"] == ours["CONPORT_MCP_PORT"]
+    # the other ports were free and are leased exactly as the envrc names them
+    assert {v: ours[v] for v in _LEASE_VARS if v != "CONPORT_MCP_PORT"} == {
+        v: envrc_ports[v] for v in _LEASE_VARS if v != "CONPORT_MCP_PORT"
+    }
+
+
+def test_allocate_false_still_returns_the_envrc_ports_unleased(tmp_path, paths):
+    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+    ports = lc._resolve_ports(
+        identity,
+        ["conport", "dope-memory"],
+        _catalog(),
+        lease_path=paths.leases,
+        env={var: str(port) for var, port in envrc_ports.items()},
+        allocate=False,
+        is_free_fn=lambda p: True,
+    )
+    assert {v: ports[v] for v in _LEASE_VARS} == envrc_ports
+    assert _active(paths) == []  # status/doctor/stop never lease
+
+
+def test_the_launcher_cold_start_shape_re_leases_too(tmp_path, paths):
+    """ensure_backend calls run_lifecycle("start", services=[svc],
+    hold_instance_lock=False) with port vars scrubbed from the process env."""
+    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+    result = run_lifecycle(
+        "start",
+        repo=repo,
+        services=["conport"],
+        catalog=_catalog(),
+        dry_run=False,
+        registry_path=paths.reg,
+        docker_runner=_docker_empty(),
+        cmd_runner=lambda cmd, **kw: SimpleNamespace(
+            returncode=0,
+            stdout="DPMX_TABLES=decisions\nDPMX_COUNT=3\n" if kw.get("input") else "",
+            stderr="",
+        ),
+        product_root=_product(tmp_path),
+        process_env={},
+        port_is_free_fn=lambda p: True,
+        trust_env=False,
+        hold_instance_lock=False,
+    )
+    assert result.exit_code == 0, result.to_dict()
+    conport_vars = ("CONPORT_MCP_PORT", "CONPORT_HTTP_PORT", "CONPORT_INFO_PORT")
+    assert _active_by_var(paths, identity.worktree_root) == {
+        v: envrc_ports[v] for v in conport_vars
+    }
+
+
+def test_an_envrc_port_this_instances_own_container_publishes_is_adopted(
+    tmp_path, paths
+):
+    """The leases are gone (a recovered lease file) but this worktree's own sidecar
+    still publishes the envrc ports: they are leased as they are, not replaced."""
+    from dopemux.mcp import docker_inspect as di
+
+    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+    conport_ports = [
+        envrc_ports[v]
+        for v in ("CONPORT_MCP_PORT", "CONPORT_HTTP_PORT", "CONPORT_INFO_PORT")
+    ]
+    own = di.DockerContainerInfo(
+        id="c0ffee000002",
+        name="dopemux-dnh-crm-own-conport",
+        ports=[f"127.0.0.1:{p}->{p}/tcp" for p in conport_ports],
+        labels={
+            "dopemux.managed": "true",
+            "dopemux.service": "conport",
+            "dopemux.project_id": identity.project_id,
+            "dopemux.worktree_hash": identity.worktree_hash,
+        },
+        published_ports=conport_ports,
+    )
+    busy = set(conport_ports)
+    ports = lc._resolve_ports(
+        identity,
+        ["conport"],
+        _catalog(),
+        lease_path=paths.leases,
+        env={var: str(port) for var, port in envrc_ports.items()},
+        is_free_fn=lambda p: p not in busy,
+        docker=di.DockerInspectResult(available=True, containers=[own]),
+    )
+    conport_vars = ("CONPORT_MCP_PORT", "CONPORT_HTTP_PORT", "CONPORT_INFO_PORT")
+    assert {v: ports[v] for v in conport_vars} == {
+        v: envrc_ports[v] for v in conport_vars
+    }
+    assert _active_by_var(paths, identity.worktree_root) == {
+        v: envrc_ports[v] for v in conport_vars
+    }

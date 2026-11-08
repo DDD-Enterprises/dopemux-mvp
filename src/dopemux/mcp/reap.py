@@ -320,6 +320,9 @@ class ReapCandidate:
     #: Found through the launcher's ``instance.json`` marker alone: no registry entry
     #: and no container (a build-only launch). Reaped on ``worktree_missing`` only.
     dir_only: bool = False
+    #: The project root of the pair (registry entry or marker); leases are matched
+    #: with it by the lease registry's identity rule (Task B7-1).
+    project_root: str = ""
 
     @property
     def state_only(self) -> bool:
@@ -585,6 +588,7 @@ def _dir_only_candidates(
                 project_id=project_id,
                 worktree_hash=worktree_hash,
                 worktree_root=marker["worktree_root"],
+                project_root=marker["project_root"],
                 runtime_dir=runtime_dir,
                 container_ids=[],
                 reason="worktree_missing",
@@ -595,17 +599,56 @@ def _dir_only_candidates(
     return found
 
 
+def _lease_is_the_pairs(
+    leases: PortLeaseRegistry,
+    lease: Dict[str, Any],
+    *,
+    worktree_root: str,
+    project_root: str,
+    worktree_hash: str,
+    project_id: str,
+) -> bool:
+    """Whether a worktree-scope ``lease`` belongs to the pair (Task B7-1).
+
+    Same worktree root (trailing ``/`` ignored), then the lease registry's own rule,
+    ``PortLeaseRegistry.identity_matches``, as the allocator and the lifecycle use it:
+    a lease written by ``allocate_ports()`` (``init``, the launcher) carries the
+    project directory's name as ``project_id`` while a reap candidate carries the
+    hashed ``ProjectIdentity.project_id``; the same worktree root decides, and a
+    lease whose ``worktree_hash`` differs is not the pair's.
+    """
+    if str(lease.get("worktree_root") or "").rstrip("/") != worktree_root.rstrip("/"):
+        return False
+    return leases.identity_matches(
+        lease,
+        worktree_root=worktree_root,
+        project_root=project_root or None,
+        worktree_hash=worktree_hash or None,
+        project_id=project_id or None,
+    )
+
+
 def _has_active_leases(
-    leases: Optional[PortLeaseRegistry], worktree_root: str, project_id: str
+    leases: Optional[PortLeaseRegistry],
+    worktree_root: str,
+    project_id: str,
+    *,
+    project_root: str = "",
+    worktree_hash: str = "",
 ) -> bool:
     if leases is None or leases.parse_status != "OK":
         return False
-    root = worktree_root.rstrip("/")
     return any(
-        str(lease.get("worktree_root") or "").rstrip("/") == root
-        and (lease.get("scope") or _REAPABLE_SCOPE) == _REAPABLE_SCOPE
+        (lease.get("scope") or _REAPABLE_SCOPE) == _REAPABLE_SCOPE
         and lease.get("service") != _ORCHESTRATOR
-        and (not lease.get("project_id") or lease["project_id"] == project_id)
+        and _lease_is_the_pairs(
+            leases,
+            lease,
+            worktree_root=worktree_root,
+            project_root=project_root,
+            worktree_hash=worktree_hash,
+            project_id=project_id,
+        )
         for lease in leases.active_leases()
     )
 
@@ -678,6 +721,7 @@ def plan_reap(
                 project_id=project_id,
                 worktree_hash=worktree_hash,
                 worktree_root=worktree_root,
+                project_root=project_root,
                 runtime_dir=runtime_dir,
                 container_ids=sorted(c.id for c in members),
                 reason=reason,
@@ -732,7 +776,13 @@ def plan_reap(
                 e.get("status") != "stopped" and e.get("service") != _ORCHESTRATOR
                 for e in entries
             )
-            or _has_active_leases(lease_registry, worktree_root, project_id)
+            or _has_active_leases(
+                lease_registry,
+                worktree_root,
+                project_id,
+                project_root=project_root,
+                worktree_hash=worktree_hash,
+            )
             or (state_reason == "worktree_missing" and runtime_dir.exists())
         )
         if unfinished:
@@ -741,6 +791,7 @@ def plan_reap(
                     project_id=project_id,
                     worktree_hash=worktree_hash,
                     worktree_root=worktree_root,
+                    project_root=project_root,
                     runtime_dir=runtime_dir,
                     container_ids=[],
                     reason=state_reason,
@@ -771,15 +822,19 @@ def _owned_by(service: Optional[str], cand: ReapCandidate) -> bool:
 
 
 def _release_leases(reg: PortLeaseRegistry, cand: ReapCandidate) -> None:
-    root = cand.worktree_root.rstrip("/")
     for lease in reg.leases():
         if lease.get("status") != "active":
             continue
-        if str(lease.get("worktree_root") or "").rstrip("/") != root:
-            continue
         if (lease.get("scope") or _REAPABLE_SCOPE) != _REAPABLE_SCOPE:
             continue
-        if lease.get("project_id") and lease["project_id"] != cand.project_id:
+        if not _lease_is_the_pairs(
+            reg,
+            lease,
+            worktree_root=cand.worktree_root,
+            project_root=cand.project_root,
+            worktree_hash=cand.worktree_hash,
+            project_id=cand.project_id,
+        ):
             continue
         if not _owned_by(lease.get("service"), cand):
             continue

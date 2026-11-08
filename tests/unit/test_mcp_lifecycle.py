@@ -1632,6 +1632,36 @@ def _running_world(tmp_path: Path):
         svc: next(n for n in rows if n.endswith(f"-{svc}")) for svc in WORKTREE_SERVICES
     }
     assert set(names.values()) == set(rows)
+    # Running sidecars hold active leases for the envrc ports, as a start leaves them
+    # (B7-2: an envrc port with no lease behind it would be re-leased).
+    from dopemux.mcp.port_leases import PortLeaseRegistry
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    identity = resolve_identity_view(repo, trust_env=False)
+    leases = PortLeaseRegistry.load(lease_path)
+    envrc_leases = {
+        ("conport", "CONPORT_HTTP_PORT"): 3040,
+        ("conport", "CONPORT_MCP_PORT"): 3041,
+        ("conport", "CONPORT_INFO_PORT"): 4040,
+        ("dope-memory", "DOPE_MEMORY_PORT"): 3060,
+    }
+    for (svc, var), port in envrc_leases.items():
+        leases.upsert_lease(
+            {
+                "lease_id": f"lease-{var.lower()}",
+                "service": svc,
+                "port": port,
+                "port_role": var.lower(),
+                "port_var": var,
+                "worktree_root": identity.worktree_root,
+                "project_root": identity.project_root,
+                "worktree_hash": identity.worktree_hash,
+                "project_id": identity.project_id,
+                "scope": "worktree",
+                "status": "active",
+            }
+        )
+    leases.save()
     alive = set(rows)
     busy = set().union(*_ENVRC_PORTS.values())
     calls: list = []

@@ -22,6 +22,7 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
+    Set,
     Tuple,
 )
 
@@ -350,6 +351,24 @@ def _leases_held_by_other_service(
     return held
 
 
+def _ports_published_by_this_instance(
+    docker: Optional[di.DockerInspectResult], identity: ProjectIdentityView
+) -> Set[int]:
+    """Host ports the running, managed containers of this worktree instance publish."""
+    if docker is None or not docker.available:
+        return set()
+    out: Set[int] = set()
+    for c in docker.containers:
+        labels = c.labels or {}
+        if (
+            labels.get(dr.LABEL_MANAGED) == "true"
+            and labels.get("dopemux.project_id") == identity.project_id
+            and labels.get("dopemux.worktree_hash") == identity.worktree_hash
+        ):
+            out.update(int(p) for p in (c.published_ports or []))
+    return out
+
+
 def _resolve_ports(
     identity: ProjectIdentityView,
     selected: Sequence[str],
@@ -370,12 +389,37 @@ def _resolve_ports(
     only for the release/allocate-and-save step. Task Orchestrator is a reserved
     singleton port, never leased, and is left to the caller's default.
 
+    With ``allocate`` (Task B7-2), an env/envrc port of a leased service counts only
+    when this identity holds an active lease for that variable on that very port
+    (``_leased_ports``). Otherwise it is a preferred value for the locked
+    allocation: an existing lease of this identity for the variable wins; with none
+    (``init`` wrote the envrc, then a ``stop`` released the leases) the preferred
+    port is leased when no other lease holds it and the socket is free (a port this
+    worktree's own running sidecar publishes counts as free), else a fresh one, and
+    the returned port replaces the envrc's (the envrc is informational). Without
+    ``allocate`` (status, doctor, stop) env ports are returned as before.
+
     With ``docker`` and ``allocate``, a leased port that a same-project container
     of another service publishes (a cross-service collision an older
     one-service-at-a-time allocation could write) is released and re-allocated
     instead of failing the start.
     """
     ports = _extract_ports(env or {}, selected, catalog)
+    if allocate and identity.worktree_root and identity.project_root:
+        lease_vars = [
+            v
+            for n in selected
+            if n != "task-orchestrator"
+            for v in _port_vars_for(n, catalog)
+        ]
+        held = _leased_ports(PortLeaseRegistry.load(lease_path), identity, lease_vars)
+        for var in lease_vars:
+            if var in ports and held.get(var) != ports[var]:
+                # Not backed by this identity's lease for that port: a preference
+                # only. `existing_envrc=env` below still offers it to the allocator,
+                # which reuses this identity's lease for the variable if it has one,
+                # else leases the preferred port if it is free and unclaimed.
+                del ports[var]
     lease_services = [
         n
         for n in selected
@@ -399,7 +443,17 @@ def _resolve_ports(
     if not lease_services or not allocate:
         return ports
 
-    from .port_allocator import allocate_ports
+    from .port_allocator import allocate_ports, port_is_free
+
+    # B7-2: a port this worktree's own running sidecar publishes is not "taken": a
+    # preferred envrc port it holds (its lease was lost) is leased as it is.
+    own_ports = _ports_published_by_this_instance(docker, identity)
+    alloc_is_free = is_free_fn
+    if own_ports:
+        base_is_free = is_free_fn or port_is_free
+
+        def alloc_is_free(port: int) -> bool:
+            return int(port) in own_ports or base_is_free(port)
 
     # Exactly the call `mcp_commands._allocate_ports` makes (allocate_ports_map):
     # no `identity=`, so the allocator derives the same lease identity as `init`.
@@ -431,7 +485,7 @@ def _resolve_ports(
             persist=True,
             dry_run=False,
             source=source,
-            is_free_fn=is_free_fn,
+            is_free_fn=alloc_is_free,
         )
     if result.status == "BLOCKED":
         msgs = "; ".join(f["message"] for f in result.blocking_findings if f.get("message"))
