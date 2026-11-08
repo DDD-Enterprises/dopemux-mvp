@@ -7,6 +7,7 @@ docker or Postgres. Passwords here are obviously fake values.
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 import stat
@@ -63,9 +64,19 @@ class FakePsql:
         rc: int = 0,
         raises: Optional[BaseException] = None,
         fail_on: Optional[str] = None,
+        existing: Sequence[str] = (),
+        already_applied: Sequence[str] = (),
+        probe_rc: int = 0,
+        probe_answer: Optional[str] = None,
     ) -> None:
         self.calls: List[Tuple[str, str]] = []
         self.fail_on = fail_on
+        # Gate-style objects (``view:pattern_statistics``) a DPMX_APPLIED probe finds.
+        self.existing = set(existing)
+        # Migrations already committed: resending one fails like 001/002's CREATE VIEW.
+        self.already_applied = set(already_applied)
+        self.probe_rc = probe_rc
+        self.probe_answer = probe_answer
         self.legacy_count = legacy_count
         self.tables = tables
         self.role_exists = role_exists
@@ -82,6 +93,13 @@ class FakePsql:
             return _out("", self.rc, "psql: error: connection refused")
         if self.fail_on and self.fail_on in sql:
             return _out("", 3, "ERROR:  simulated failure (killed mid-provisioning)")
+        if "DPMX_APPLIED=" in sql:
+            return self._applied(sql)
+        if (
+            self.already_applied
+            and (_label(sql) or "").removeprefix("migration:") in self.already_applied
+        ):
+            return _out("", 3, 'ERROR:  relation "replayed_object" already exists')
         if "DPMX_TABLES=" in sql:
             return _out(_aligned("DPMX_TABLES=" + ",".join(self.tables)))
         if "DPMX_COUNT=" in sql:
@@ -97,6 +115,51 @@ class FakePsql:
         if "DPMX_VERIFY=" in sql:
             return _out(_aligned("DPMX_VERIFY=12,0,0,1"))
         return _out("")
+
+    def _applied(self, sql: str) -> subprocess.CompletedProcess:
+        if self.probe_rc:
+            return _out("", self.probe_rc, "ERROR:  simulated probe failure")
+        if self.probe_answer is not None:
+            return _out(self.probe_answer)
+        asked = _probed_object(sql)
+        if asked is None:
+            return _out("")  # an unrecognised probe gets no marker
+        known = {  # view:x -> x, column:t:c -> t.c
+            obj.split(":", 1)[1].replace(":", ".") for obj in self.existing
+        }
+        found = asked in known
+        return _out(_aligned(f"DPMX_APPLIED={'true' if found else 'false'}"))
+
+    def steps(self) -> List[str]:
+        """Applied probes (``probe:<object>``) and migration runs, in issue order."""
+        out: List[str] = []
+        for _db, sql in self.calls:
+            if "DPMX_APPLIED=" in sql:
+                out.append(f"probe:{_probed_object(sql)}")
+            elif (_label(sql) or "").startswith("migration:"):
+                out.append(str(_label(sql)))
+        return out
+
+    def migrations(self) -> List[str]:
+        """Migration files whose SQL was sent, in issue order."""
+        return [
+            step.removeprefix("migration:")
+            for step in self.steps()
+            if step.startswith("migration:")
+        ]
+
+
+def _probed_object(sql: str) -> Optional[str]:
+    """The relation (``pattern_statistics``) or column (``custom_data.write_principal``) asked about."""
+    column = re.search(
+        r"table_schema\s*=\s*'public'\s+AND\s+table_name\s*=\s*'(\w+)'"
+        r"\s+AND\s+column_name\s*=\s*'(\w+)'",
+        sql,
+    )
+    if column:
+        return f"{column.group(1)}.{column.group(2)}"
+    relation = re.search(r"to_regclass\('public\.(\w+)'\)", sql)
+    return relation.group(1) if relation else None
 
 
 def _label(sql: str) -> Optional[str]:
@@ -305,6 +368,140 @@ def test_provision_migrations_match_the_sealed_gate_required_set():
     block = re.search(r"REQUIRED_MIGRATIONS = \{(.*?)\}", gate, re.S).group(1)
     required = sorted(Path(name).stem for name in re.findall(r'"([^"]+\.sql)"', block))
     assert sorted(ct.PROVISION_MIGRATIONS) == required
+
+
+def _gate_schema_checks() -> Dict[int, Tuple[str, ...]]:
+    """``migration_schema_errors``' per-version objects, read from the sealed gate's source."""
+    tree = ast.parse((ct.migrations_dir() / "conport_migration_gate.py").read_text())
+    func = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef) and node.name == "migration_schema_errors"
+    )
+    checks = next(
+        node
+        for node in ast.walk(func)
+        if isinstance(node, ast.AnnAssign)
+        and getattr(node.target, "id", "") == "checks"
+    )
+    return ast.literal_eval(checks.value)
+
+
+#: Where a migration creates a gate-style object (first match in its SQL).
+_CREATES = {
+    "table": r"CREATE TABLE (?:IF NOT EXISTS )?{0}\b",
+    "view": r"CREATE (?:OR REPLACE )?VIEW {0}\b",
+    "index": r"INDEX (?:IF NOT EXISTS )?{0}\b",
+    "column": r"ALTER TABLE {0}\s+ADD COLUMN IF NOT EXISTS {1}\b",
+}
+
+
+def _created_at(sql: str, obj: str) -> int:
+    kind, *parts = obj.split(":")
+    match = re.search(_CREATES[kind].format(*map(re.escape, parts)), sql)
+    assert match, f"{obj} is not created by this migration"
+    return match.start()
+
+
+def test_applied_probes_are_the_gates_evidence_and_each_migrations_last_object():
+    """Each probe is a gate-checked object, the last object its single transaction creates."""
+    checks = _gate_schema_checks()
+    assert set(ct.MIGRATION_APPLIED_PROBES) <= set(ct.PROVISION_MIGRATIONS)
+    for name, probe in ct.MIGRATION_APPLIED_PROBES.items():
+        gate_objects = checks[int(name[:3])]
+        assert ":".join(probe) in gate_objects, name
+        sql = (ct.migrations_dir() / f"{name}.sql").read_text()
+        order = sorted(gate_objects, key=lambda obj: _created_at(sql, obj))
+        assert order[-1] == ":".join(probe), (name, order)
+        # One BEGIN/COMMIT holds it, and nothing is created or altered after it.
+        begins = [m.start() for m in re.finditer(r"^BEGIN;", sql, re.M)]
+        commits = [m.start() for m in re.finditer(r"^COMMIT;", sql, re.M)]
+        assert len(begins) == len(commits) == 1, name
+        at = _created_at(sql, ":".join(probe))
+        assert begins[0] < at < commits[0], name
+        after = sql[at + 1 : commits[0]]
+        assert not re.search(r"^\s*(?:CREATE|ALTER|DROP)\b", after, re.M | re.I), name
+
+
+#: Statements a replay leaves as they were, matched on the statement with
+#: comments and DO blocks removed, parenthesised parts collapsed to "_" and
+#: whitespace collapsed. Anything else makes a migration not re-runnable.
+_RERUNNABLE = tuple(
+    re.compile(pattern, re.I)
+    for pattern in (
+        r"BEGIN|COMMIT",
+        r"CREATE TABLE IF NOT EXISTS .*",
+        r"CREATE (?:UNIQUE )?INDEX IF NOT EXISTS .*",
+        r"CREATE OR REPLACE (?:VIEW|FUNCTION|TRIGGER) .*",
+        r"DROP (?:INDEX|VIEW|TABLE|TRIGGER|FUNCTION) IF EXISTS [^,]*",
+        r"ALTER TABLE \S+ (?:ADD COLUMN IF NOT EXISTS|ALTER COLUMN \w+ SET NOT NULL)[^,]*",
+        r"INSERT INTO .* ON CONFLICT .* DO (?:NOTHING|UPDATE .*)",
+        r"UPDATE (\w+) SET (\w+) = NULL WHERE \2 IS NULL",
+        r"ANALYZE [^,]*",
+        r"COMMENT ON .*",
+    )
+)
+_DO_BLOCK = re.compile(r"\bDO\s+(\$\w*\$)(.*?)\1\s*;", re.S | re.I)
+_SIDE_EFFECT = re.compile(
+    r"^\s*(?:CREATE|ALTER|DROP|INSERT|UPDATE|DELETE|TRUNCATE|GRANT|REVOKE|EXECUTE)\b",
+    re.M | re.I,
+)
+
+
+def _not_rerunnable(sql: str) -> List[str]:
+    """Statements of a migration a replay could fail on or change; empty when re-runnable.
+
+    A DO block counts as guarded only while it has no side effect (checks and
+    RAISE only); one that writes anything is reported for a human to classify.
+    """
+    sql = re.sub(r"--[^\n]*", "", sql)
+    bad = [
+        "DO block: " + " ".join(block.group(2).split())[:60]
+        for block in _DO_BLOCK.finditer(sql)
+        if _SIDE_EFFECT.search(block.group(2))
+    ]
+    for statement in _DO_BLOCK.sub("", sql).split(";"):
+        flat = " ".join(statement.split())
+        while re.search(r"\([^()]*\)", flat):
+            flat = re.sub(r"\([^()]*\)", " _ ", flat)
+        flat = " ".join(flat.split())
+        if flat and not any(p.fullmatch(flat) for p in _RERUNNABLE):
+            bad.append(flat[:80])
+    return bad
+
+
+@pytest.mark.parametrize(
+    "probe, asked",
+    [
+        (("view", "pattern_statistics"), "pattern_statistics"),
+        (("index", "idx_progress_instance"), "idx_progress_instance"),
+        (("table", "users"), "users"),
+        (("column", "custom_data", "write_principal"), "custom_data.write_principal"),
+        (("trigger", "update_patterns_modtime"), None),
+    ],
+)
+def test_applied_probe_sql_covers_the_gate_kinds(probe, asked):
+    sql = ct._applied_probe_sql(probe)
+    if asked is None:  # a kind the gate does not check: no SQL, so the probe refuses
+        assert sql is None
+        return
+    assert sql.startswith("SELECT 'DPMX_APPLIED=' || (") and sql.endswith(")::text;\n")
+    assert _probed_object(sql) == asked
+
+
+def test_only_migrations_that_cannot_be_rerun_are_probed():
+    """A migration made only of idempotent statements is replayed; any other one is probed.
+
+    A static scan of the sealed SQL: an edit that adds, say, a bare CREATE VIEW
+    to 003 trips this until that migration gets a probe.
+    """
+    for name in ct.PROVISION_MIGRATIONS:
+        bad = _not_rerunnable((ct.migrations_dir() / f"{name}.sql").read_text())
+        assert bool(bad) == (name in ct.MIGRATION_APPLIED_PROBES), (name, bad)
+    assert set(ct.MIGRATION_APPLIED_PROBES) == {
+        "001_enhanced_decision_model",
+        "002_decision_patterns_table",
+    }
 
 
 def test_provision_refuses_existing_role_without_secrets(tmp_path: Path):
@@ -1135,6 +1332,166 @@ def test_resume_after_migration_003_failure_applies_exactly_the_rest(
         "workspace_rows",
     ]
     assert _state(identity, root) == "gate"
+
+
+# --- PR #1503 review (Codex P2): a committed migration is never replayed ------------
+
+COMMITTED_001_002 = ("view:decisions_needing_review", "view:pattern_statistics")
+
+
+def _provision_resumed(psql: FakePsql, checkpoints: List[str], applied_through: str):
+    ct.provision_database(
+        slug="fake_tenant",
+        workspace_id="/tmp/fake",
+        password=FAKE_PROVISIONED_PASSWORD,
+        psql=psql,
+        schema_path=ct.schema_path(),
+        migrations_dir=ct.migrations_dir(),
+        resume=True,
+        applied_through=applied_through,
+        on_migration=checkpoints.append,
+    )
+
+
+def test_resume_after_a_lost_002_checkpoint_does_not_replay_002(tmp_path, monkeypatch):
+    """002 committed, then its checkpoint write failed: the next start must not resend it."""
+    identity = _identity(_repo(tmp_path))
+    root = tmp_path / "secrets"
+    _passwords(monkeypatch, FAKE_PROVISIONED_PASSWORD, SECOND_FAKE_PASSWORD)
+    real_write_state = ct._write_state
+
+    def lose_the_002_checkpoint(path: Path, state: str) -> None:
+        if state == "database:002_decision_patterns_table":
+            raise OSError(28, "No space left on device")
+        real_write_state(path, state)
+
+    monkeypatch.setattr(ct, "_write_state", lose_the_002_checkpoint)
+    first = FakePsql(legacy_count=0)
+    with pytest.raises(OSError):
+        ct.resolve_tenant(identity, envrc_values={}, psql=first, secrets_root=root)
+    assert first.migrations() == [
+        "001_enhanced_decision_model",
+        "002_decision_patterns_table",  # committed; its checkpoint was lost
+    ]
+    assert _state(identity, root) == "database:001_enhanced_decision_model"
+
+    written: List[str] = []
+
+    def record(path: Path, state: str) -> None:
+        written.append(state)
+        real_write_state(path, state)
+
+    monkeypatch.setattr(ct, "_write_state", record)
+    second = FakePsql(
+        role_exists=True,
+        db_exists=True,
+        schema_present=True,
+        existing=COMMITTED_001_002,
+        already_applied=("001_enhanced_decision_model", "002_decision_patterns_table"),
+    )
+    creds = ct.resolve_tenant(identity, envrc_values={}, psql=second, secrets_root=root)
+
+    assert creds.source == "provisioned" and creds.gate_pending
+    assert creds.db_password == FAKE_PROVISIONED_PASSWORD
+    assert second.steps() == [
+        "probe:pattern_statistics",
+        "migration:003_multi_tenancy_foundation",
+        "migration:004_unified_query_indexes",
+        "migration:007_worktree_support_simple",
+        "migration:008_write_principal",
+    ]
+    # 002 is checkpointed without being resent; the rest as each one applies.
+    assert written == [f"database:{m}" for m in ct.PROVISION_MIGRATIONS[1:]] + ["gate"]
+    assert _state(identity, root) == "gate"
+    assert _labels(second.calls)[-1] == "workspace_rows"
+
+
+def test_schema_present_without_a_checkpoint_runs_only_the_uncommitted_migrations():
+    psql = FakePsql(
+        role_exists=True,
+        db_exists=True,
+        schema_present=True,
+        existing=COMMITTED_001_002,
+        already_applied=("001_enhanced_decision_model", "002_decision_patterns_table"),
+    )
+    checkpoints: List[str] = []
+
+    _provision_resumed(psql, checkpoints, applied_through="")
+
+    assert psql.steps() == [
+        "probe:decisions_needing_review",
+        "probe:pattern_statistics",
+        *(f"migration:{m}" for m in ct.PROVISION_MIGRATIONS[2:]),
+    ]
+    assert checkpoints == list(ct.PROVISION_MIGRATIONS)
+    assert "schema" not in _labels(psql.calls)
+    probes = [sql for _db, sql in psql.calls if "DPMX_APPLIED=" in sql]
+    assert len(probes) == 2
+    for sql in probes:  # read-only, as the tenant role, no secret
+        assert sql.startswith("SET ROLE conport_fake_tenant;\nSELECT 'DPMX_APPLIED='")
+        assert FAKE_PROVISIONED_PASSWORD not in sql
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        {"probe_rc": 1},
+        {"probe_answer": ""},
+        {"probe_answer": _aligned("DPMX_APPLIED=maybe")},
+    ],
+    ids=["psql-exit-1", "no-marker", "unexpected-answer"],
+)
+def test_a_failing_applied_probe_refuses_and_runs_no_migration(failure):
+    psql = FakePsql(role_exists=True, db_exists=True, schema_present=True, **failure)
+    checkpoints: List[str] = []
+
+    with pytest.raises(ct.TenantError) as excinfo:
+        _provision_resumed(psql, checkpoints, applied_through="")
+
+    assert excinfo.value.code == "CONPORT_TENANT_PROVISION_FAILED"
+    assert "applied probe" in excinfo.value.detail
+    assert psql.migrations() == [] and checkpoints == []
+    assert "workspace_rows" not in _labels(psql.calls)
+    assert FAKE_PROVISIONED_PASSWORD not in str(excinfo.value)
+
+
+def test_a_partly_applied_rerunnable_migration_is_replayed_not_skipped():
+    """003 is not one transaction: a kill can leave its table without its indexes."""
+    psql = FakePsql(
+        role_exists=True,
+        db_exists=True,
+        schema_present=True,
+        existing=(*COMMITTED_001_002, "table:user_workspace_access"),
+        already_applied=("001_enhanced_decision_model", "002_decision_patterns_table"),
+    )  # index:idx_access_workspace (003 L66) is missing
+    checkpoints: List[str] = []
+
+    _provision_resumed(psql, checkpoints, applied_through="002_decision_patterns_table")
+
+    assert psql.steps() == [f"migration:{m}" for m in ct.PROVISION_MIGRATIONS[2:]]
+    assert checkpoints == list(ct.PROVISION_MIGRATIONS[2:])
+
+
+def test_fresh_database_runs_every_migration_without_probes():
+    every_probe_object = [
+        obj for objs in _gate_schema_checks().values() for obj in objs
+    ]  # a probe, if one were sent, would report each migration applied
+    psql = FakePsql(existing=every_probe_object)
+    checkpoints: List[str] = []
+
+    ct.provision_database(
+        slug="fake_tenant",
+        workspace_id="/tmp/fake",
+        password=FAKE_PROVISIONED_PASSWORD,
+        psql=psql,
+        schema_path=ct.schema_path(),
+        migrations_dir=ct.migrations_dir(),
+        on_migration=checkpoints.append,
+    )
+
+    assert psql.steps() == [f"migration:{m}" for m in ct.PROVISION_MIGRATIONS]
+    assert not any("DPMX_APPLIED=" in sql for _db, sql in psql.calls)
+    assert checkpoints == list(ct.PROVISION_MIGRATIONS)
 
 
 def test_unreadable_state_file_fails_closed(tmp_path):

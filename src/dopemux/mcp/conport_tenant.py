@@ -64,6 +64,7 @@ from .envrc import load_envrc
 from .locks import _mkdir_private, project_dir, provision_lock
 
 __all__ = [
+    "MIGRATION_APPLIED_PROBES",
     "PROVISION_MIGRATIONS",
     "PsqlRunner",
     "TenantCredentials",
@@ -127,6 +128,18 @@ PROVISION_MIGRATIONS = (
     "007_worktree_support_simple",
     "008_write_principal",
 )
+
+# The migrations that cannot be re-run (001 and 002: one BEGIN/COMMIT each,
+# with a bare CREATE VIEW/TRIGGER), each with the last object its transaction
+# creates, as the sealed gate's ``kind:name`` (``migration_schema_errors``)
+# split on ":"; that object existing means the migration committed. A resume
+# probes these before replaying them. Every other migration is made only of
+# idempotent statements and is simply replayed, which also completes one a
+# kill left half applied (003 and 004 are not transactions).
+MIGRATION_APPLIED_PROBES: Dict[str, Tuple[str, ...]] = {
+    "001_enhanced_decision_model": ("view", "decisions_needing_review"),
+    "002_decision_patterns_table": ("view", "pattern_statistics"),
+}
 
 Source = Literal["secrets", "legacy_envrc", "provisioned", "legacy_shared"]
 PsqlRunner = Callable[[str, str], subprocess.CompletedProcess]
@@ -597,6 +610,47 @@ _VERIFY_SQL = (
 )
 
 
+def _applied_probe_sql(probe: Tuple[str, ...]) -> Optional[str]:
+    """Read-only ``DPMX_APPLIED=true|false`` for one gate-style object; None for an unknown kind."""
+    kind, parts = probe[0], probe[1:]
+    if kind in ("table", "view", "index") and len(parts) == 1:
+        exists = f"to_regclass({_literal('public.' + parts[0])}) IS NOT NULL"
+    elif kind == "column" and len(parts) == 2:
+        exists = (
+            "EXISTS (SELECT 1 FROM information_schema.columns"
+            " WHERE table_schema = 'public'"
+            f" AND table_name = {_literal(parts[0])}"
+            f" AND column_name = {_literal(parts[1])})"
+        )
+    else:
+        return None
+    return f"SELECT 'DPMX_APPLIED=' || ({exists})::text;\n"
+
+
+def _migration_applied(
+    db: str,
+    name: str,
+    scalar: Callable[[str, str, str, str], str],
+    as_role: str,
+) -> bool:
+    """Whether migration ``name`` already committed, judged from the object it creates.
+
+    Fail closed: a psql error, a missing marker or any answer but true/false
+    raises ``CONPORT_TENANT_PROVISION_FAILED``; doubt never replays SQL.
+    """
+    what = f"applied probe for migration {name}"
+    probe = MIGRATION_APPLIED_PROBES.get(name, ())
+    sql = _applied_probe_sql(probe) if probe else None
+    if sql is None:
+        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", f"{what}: no usable probe")
+    answer = scalar(db, as_role + sql, "DPMX_APPLIED", what)
+    if answer not in ("true", "false"):
+        raise TenantError(
+            "CONPORT_TENANT_PROVISION_FAILED", f"{what}: unexpected psql output"
+        )
+    return answer == "true"
+
+
 def provision_database(
     *,
     slug: str,
@@ -617,8 +671,12 @@ def provision_database(
     file already holds its password. ``persist`` runs after that check and
     before ``CREATE ROLE``, so the password is on disk before Postgres has it.
     When the schema already exists, only the migrations after
-    ``applied_through`` run (001/002 are not re-runnable); ``on_migration`` is
-    told each one as soon as it has applied, so progress survives a kill.
+    ``applied_through`` run. The ones that cannot be re-run (001/002, listed in
+    ``MIGRATION_APPLIED_PROBES``) are first probed for the object they create,
+    the gate's own evidence: one that committed before its checkpoint was
+    written is checkpointed, not replayed, and a failing probe refuses. The
+    idempotent rest are replayed. ``on_migration`` is told each one as soon as
+    it has applied, so progress survives a kill.
     """
     if not _SLUG_RE.match(slug):
         raise TenantError(
@@ -710,6 +768,16 @@ def provision_database(
     else:
         todo = _remaining_migrations(applied_through)
     for name in todo:
+        if (
+            present
+            and name in MIGRATION_APPLIED_PROBES
+            and _migration_applied(db, name, scalar, as_role)
+        ):
+            # Committed, but its checkpoint was never written (a kill, a failed
+            # state write): replaying 001/002 fails on CREATE VIEW/TRIGGER.
+            if on_migration is not None:
+                on_migration(name)
+            continue
         sql = (Path(migrations_dir) / f"{name}.sql").read_text(encoding="utf-8")
         run(db, as_role + sql, f"migration {name}")
         if on_migration is not None:

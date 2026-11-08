@@ -307,6 +307,10 @@ secrets file holds it, for the client. If a login role already exists but the
 project has no secrets file, `init` fails closed with `ROLE_EXISTS_WITHOUT_SECRETS` and names
 the secrets path to restore from backup. `CONPORT_TENANT_GATE_FAILED` also names the secrets
 file. An interrupted provisioning resumes where it stopped on the next `init` or start.
+A migration whose statements cannot be re-run (001, 002) and that committed before its
+checkpoint was written (a kill, a failed state-file write) is detected from the object it
+created and skipped; the re-runnable ones are simply replayed, which also completes one a
+kill left half applied.
 
 ---
 
