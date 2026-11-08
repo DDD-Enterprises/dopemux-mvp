@@ -1620,14 +1620,24 @@ def test_an_unlocked_start_keeps_building_inline(tmp_path: Path, monkeypatch):
 _ENVRC_PORTS = {"conport": {3040, 3041, 4040}, "dope-memory": {3060}}
 
 
-def _running_world(tmp_path: Path):
-    """`_stop_world` whose docker follows `docker stop` and `compose up`, both sidecars up."""
+def _running_world(tmp_path: Path, *, leased: bool = True, publish_ports: bool = False):
+    """`_stop_world` whose docker follows `docker stop` and `compose up`, both sidecars up.
+
+    ``leased=False``: legacy sidecars with no lease for their envrc ports;
+    ``publish_ports``: the docker rows publish each sidecar's envrc ports.
+    """
     repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
-    rows = {
-        json.loads(line)["Names"]: line
-        for line in docker_ps().stdout.splitlines()
-        if line.strip()
-    }
+    rows = {}
+    for line in docker_ps().stdout.splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if publish_ports:
+            svc = next(s for s in WORKTREE_SERVICES if row["Names"].endswith(f"-{s}"))
+            row["Ports"] = ", ".join(
+                f"127.0.0.1:{p}->{p}/tcp" for p in sorted(_ENVRC_PORTS[svc])
+            )
+        rows[row["Names"]] = json.dumps(row)
     names = {
         svc: next(n for n in rows if n.endswith(f"-{svc}")) for svc in WORKTREE_SERVICES
     }
@@ -1645,7 +1655,7 @@ def _running_world(tmp_path: Path):
         ("conport", "CONPORT_INFO_PORT"): 4040,
         ("dope-memory", "DOPE_MEMORY_PORT"): 3060,
     }
-    for (svc, var), port in envrc_leases.items():
+    for (svc, var), port in envrc_leases.items() if leased else ():
         leases.upsert_lease(
             {
                 "lease_id": f"lease-{var.lower()}",
@@ -2397,3 +2407,51 @@ def test_no_deadlock_with_a_reserved_lock_holder_that_wants_launch_lock(
     # the orchestrator start got :7890 only once the helper had let go of it
     last_got = max(i for i, e in enumerate(events) if e == "main: got :7890")
     assert last_got > events.index("helper: instance acquired"), events
+
+
+@pytest.mark.parametrize("hold", [True, False])
+def test_a_restart_of_legacy_unleased_sidecars_keeps_their_published_ports(
+    tmp_path: Path, hold
+):
+    """B7 micro round (c): sidecars running with no lease behind their envrc ports
+    publish them; the restart leases those ports as they are (own-container guard)
+    instead of moving the sidecars to fresh ports."""
+    from dopemux.mcp.port_leases import PortLeaseRegistry
+    from dopemux.mcp.runtime_registry import RuntimeRegistry
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    repo, reg, docker, runner, calls, alive, busy, names = _running_world(
+        tmp_path, leased=False, publish_ports=True
+    )
+    identity = resolve_identity_view(repo, trust_env=False)
+    result = run_lifecycle(
+        "restart",
+        repo=repo,
+        services=WORKTREE_SERVICES,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker,
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: p not in busy,
+        hold_instance_lock=hold,
+    )
+    assert result.status == "PASS" and result.exit_code == 0, result.to_dict()
+    assert [c[-1] for c in calls if "compose" in c and "up" in c] == WORKTREE_SERVICES
+    leased_now = {
+        L["port_var"]: int(L["port"])
+        for L in PortLeaseRegistry.load(
+            tmp_path / "env-reg" / "port-leases.json"
+        ).active_leases()
+        if L.get("worktree_root") == identity.worktree_root and L.get("port_var")
+    }
+    assert leased_now == {
+        "CONPORT_HTTP_PORT": 3040,
+        "CONPORT_MCP_PORT": 3041,
+        "CONPORT_INFO_PORT": 4040,
+        "DOPE_MEMORY_PORT": 3060,
+    }
+    status = {i["service"]: i["status"] for i in RuntimeRegistry.load(reg).instances()}
+    assert status == {"conport": "running", "dope-memory": "running"}

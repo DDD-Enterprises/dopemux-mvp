@@ -383,9 +383,10 @@ def _resolve_ports(
 ) -> Dict[str, int]:
     """Port map ``{port_env_var: port}`` for ``selected`` services.
 
-    Order: ports an envrc/process env already names win; otherwise the active
-    leases bound to this project/worktree; otherwise (when ``allocate``)
-    allocate and persist new leases under ``registry_lock``. The lock is held
+    Order without ``allocate``: ports an envrc/process env already names win;
+    otherwise the active leases bound to this project/worktree. With ``allocate``
+    the next paragraph decides which env ports count, and the rest are allocated
+    and persisted as new leases under ``registry_lock``. The lock is held
     only for the release/allocate-and-save step. Task Orchestrator is a reserved
     singleton port, never leased, and is left to the caller's default.
 
@@ -448,12 +449,14 @@ def _resolve_ports(
     # B7-2: a port this worktree's own running sidecar publishes is not "taken": a
     # preferred envrc port it holds (its lease was lost) is leased as it is.
     own_ports = _ports_published_by_this_instance(docker, identity)
-    alloc_is_free = is_free_fn
-    if own_ports:
-        base_is_free = is_free_fn or port_is_free
+    base_is_free = is_free_fn or port_is_free
 
-        def alloc_is_free(port: int) -> bool:
-            return int(port) in own_ports or base_is_free(port)
+    def own_or_free(port: int) -> bool:
+        return int(port) in own_ports or base_is_free(port)
+
+    alloc_is_free: Optional[Callable[[int], bool]] = (
+        own_or_free if own_ports else is_free_fn
+    )
 
     # Exactly the call `mcp_commands._allocate_ports` makes (allocate_ports_map):
     # no `identity=`, so the allocator derives the same lease identity as `init`.

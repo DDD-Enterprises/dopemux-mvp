@@ -648,3 +648,37 @@ def test_an_envrc_port_this_instances_own_container_publishes_is_adopted(
     assert _active_by_var(paths, identity.worktree_root) == {
         v: envrc_ports[v] for v in conport_vars
     }
+
+
+def test_a_port_another_worktrees_container_publishes_is_not_adopted(tmp_path, paths):
+    """B7 micro round (a): only this worktree's own sidecar counts as free; another
+    worktree's container publishing the preferred envrc port forces a fresh port."""
+    from dopemux.mcp import docker_inspect as di
+
+    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+    taken = envrc_ports["CONPORT_MCP_PORT"]
+    foreign = di.DockerContainerInfo(
+        id="c0ffee000003",
+        name="dopemux-dnh-crm-other-conport",
+        ports=[f"127.0.0.1:{taken}->{taken}/tcp"],
+        labels={
+            "dopemux.managed": "true",
+            "dopemux.service": "conport",
+            "dopemux.project_id": identity.project_id,
+            "dopemux.worktree_hash": "ffff",  # another worktree of the same project
+        },
+        published_ports=[taken],
+    )
+    ports = lc._resolve_ports(
+        identity,
+        ["conport"],
+        _catalog(),
+        lease_path=paths.leases,
+        env={var: str(port) for var, port in envrc_ports.items()},
+        is_free_fn=lambda p: p != taken,
+        docker=di.DockerInspectResult(available=True, containers=[foreign]),
+    )
+    assert ports["CONPORT_MCP_PORT"] != taken
+    ours = _active_by_var(paths, identity.worktree_root)
+    assert ours["CONPORT_MCP_PORT"] == ports["CONPORT_MCP_PORT"]
+    assert ours["CONPORT_HTTP_PORT"] == envrc_ports["CONPORT_HTTP_PORT"]

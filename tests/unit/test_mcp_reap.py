@@ -2331,3 +2331,37 @@ def test_the_dry_run_json_lists_a_pair_kept_alive_only_by_an_allocator_lease(
     assert (
         _lease_statuses(runtime)[str(missing)] == "active"
     )  # a dry run changes nothing
+
+
+def test_a_same_root_lease_with_another_worktree_hash_is_not_the_pairs(
+    tmp_path: Path, runtime: Path
+):
+    """B7 micro round (b): `_lease_is_the_pairs` excludes a same-root lease whose
+    worktree_hash differs, in planning and in the release."""
+    missing, _other = _allocator_lease_world(tmp_path, runtime)
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json")
+    foreign = _allocator_lease(missing, "dope-memory", 3300, worktree_hash="ffff")
+    foreign["lease_id"] = "lease-foreign-hash"
+    leases.upsert_lease(foreign)
+    leases.save()
+    leases = PortLeaseRegistry.load(runtime / "port-leases.json")
+    kw = dict(
+        worktree_root=str(missing),
+        project_root=str(missing),
+        worktree_hash=HASH,
+        project_id=PROJECT_ID,
+    )
+    by_id = {L["lease_id"]: L for L in leases.leases()}
+    assert reap._lease_is_the_pairs(leases, by_id["lease-foreign-hash"], **kw) is False
+    assert reap._lease_is_the_pairs(leases, by_id["lease-conport-3100"], **kw) is True
+    cands = _plan(
+        RuntimeRegistry.load(runtime / "instances.json"), [], lease_registry=leases
+    )
+    report = reap.apply_reap(cands, runner=PairRunner())
+    assert report.reaped == cands
+    status = {
+        L["lease_id"]: L["status"]
+        for L in PortLeaseRegistry.load(runtime / "port-leases.json").leases()
+    }
+    assert status["lease-conport-3100"] == "released"
+    assert status["lease-foreign-hash"] == "active"
