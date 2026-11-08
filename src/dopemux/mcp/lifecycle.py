@@ -1077,6 +1077,62 @@ def _mutable_facts(
     )
 
 
+def _docker_unavailable_finding(
+    snapshot: di.DockerInspectResult, service: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """``[DOCKER_UNAVAILABLE]`` when ``snapshot`` could not be read, else ``[]``.
+
+    Fix round 4: a snapshot re-read under or after the instance lock must fail
+    closed. An unreadable docker lists no container, which would read as "already
+    stopped" or "not running" and release state or start blindly.
+    """
+    if snapshot.available:
+        return []
+    return [
+        {
+            "code": "DOCKER_UNAVAILABLE",
+            "severity": "FAIL",
+            "message": snapshot.error or "Docker unavailable",
+            "service": service,
+        }
+    ]
+
+
+def _docker_failed_part(
+    op: str,
+    services: Sequence[str],
+    findings: List[Dict[str, Any]],
+    *,
+    not_done: str,
+    identity_dict: Dict[str, Any],
+    reg_path: Path,
+) -> LifecycleResult:
+    """FAIL for ``services`` whose docker snapshot could not be read (nothing was run)."""
+    return LifecycleResult(
+        schema_version=SCHEMA_VERSION,
+        operation=op,
+        dry_run=False,
+        status="FAIL",
+        project_identity=identity_dict,
+        services=[
+            {
+                "service": svc,
+                "action": "failed",
+                "reason": f"docker could not be read; not {not_done}",
+                "findings": list(findings),
+                "commands": [],
+            }
+            for svc in services
+        ],
+        blocking_findings=list(findings),
+        registry_path=str(reg_path),
+        exit_code=1,
+        recommended_next_actions=[
+            "Check that Docker answers (dopemux mcp doctor), then retry.",
+        ],
+    )
+
+
 #: Findings that still block a ``stop`` (it needs no envrc, ports or free ports).
 _STOP_HARD_CODES = frozenset(
     {"REGISTRY_PARSE_ERROR", "PROJECT_IDENTITY_UNKNOWN", "DOCKER_UNAVAILABLE"}
@@ -1472,7 +1528,11 @@ def run_lifecycle(
             # meanwhile removed the containers. Re-take them, as start/restart do, so
             # no `docker stop` targets a name that is already gone.
             now = _mutable_facts(op, orchestrator_gate=False, **facts_kw)
-            now_blocking = _stop_blocking(now.blocking)
+            # Fix round 4: an unreadable docker blocks (DOCKER_UNAVAILABLE is hard);
+            # it would otherwise read as "already stopped" and release the state.
+            now_blocking = _stop_blocking(
+                now.blocking + _docker_unavailable_finding(now.docker)
+            )
             if now_blocking:
                 return _blocked_result(
                     op,
@@ -1610,19 +1670,35 @@ def run_lifecycle(
             worktree_hash=worktree_hash,
         )
 
-        def docker_now() -> Dict[str, Any]:
-            """A docker snapshot read now (N1, fix rounds 2 and 3); ``{}`` in a dry run.
+        def docker_now(
+            part: Sequence[str], not_done: str
+        ) -> Tuple[Dict[str, Any], Optional[LifecycleResult]]:
+            """A docker snapshot read now for ``part`` (N1, fix rounds 2 to 4).
 
             The start half reads docker after the stops: the pre-stop snapshot still
             lists the sidecars just stopped, so the start would report them
             ``already_running`` and run no ``compose up``. The orchestrator stop reads
             it after the (possibly long) pre-build. Only docker is read again: a
             restart's stop releases no leases (no ``release_state``), so the ports
-            stand, and the start's registry save reloads the file itself.
+            stand, and the start's registry save reloads the file itself. Fails
+            closed: an unreadable docker yields ``({}, FAIL for part)`` and nothing
+            runs for that part (never the preflight snapshot instead). ``({}, None)``
+            in a dry run.
             """
             if dry_run:
-                return {}
-            return {"docker": di.inspect_running_containers(runner=docker_runner)}
+                return {}, None
+            snapshot = di.inspect_running_containers(runner=docker_runner)
+            unavailable = _docker_unavailable_finding(snapshot)
+            if unavailable:
+                return {}, _docker_failed_part(
+                    op,
+                    part,
+                    unavailable,
+                    not_done=not_done,
+                    identity_dict=identity_dict,
+                    reg_path=reg_path,
+                )
+            return {"docker": snapshot}, None
 
         # As in one call: every stop before any start, and a failed stop starts
         # nothing. The worktree stop and start share ONE lock acquisition.
@@ -1630,8 +1706,25 @@ def run_lifecycle(
         starts: List[LifecycleResult] = []
         stop_res: Optional[LifecycleResult] = None
         if outside:
+            now_kw, unread = docker_now(outside, "stopped")
+            if unread is not None:
+                # Nothing has been stopped yet: block the whole run, as a preflight
+                # finding would (the worktree half is left untouched).
+                return _blocked_result(
+                    op,
+                    dry_run=dry_run,
+                    selected=selected,
+                    blocking=unread.blocking_findings,
+                    warnings=warnings,
+                    container_names=container_names,
+                    labels_by_service=labels_by_service,
+                    ports=ports,
+                    catalog=catalog,
+                    identity_dict=identity_dict,
+                    reg_path=reg_path,
+                )
             stops.append(
-                _stop_services(selected=outside, **{**restart_stop_kw, **docker_now()})
+                _stop_services(selected=outside, **{**restart_stop_kw, **now_kw})
             )
         with worktree_lock:
             blocked, fresh = facts_under_lock()
@@ -1643,13 +1736,17 @@ def run_lifecycle(
                 if stop_res.status == "FAIL" and not dry_run:
                     stop_res.operation = "restart"
                     return stop_res
-                starts = [
-                    _start_services(
-                        selected=inside,
-                        prebuilt=prebuilt,
-                        **{**start_kw, **fresh, **docker_now()},
-                    )
-                ]
+                now_kw, unread = docker_now(inside, "started")
+                if unread is not None:
+                    starts = [unread]
+                else:
+                    starts = [
+                        _start_services(
+                            selected=inside,
+                            prebuilt=prebuilt,
+                            **{**start_kw, **fresh, **now_kw},
+                        )
+                    ]
         if blocked is not None:
             # Only a re-check under the lock can block here, after the orchestrator
             # half (outside the lock) was stopped. One call would have blocked before
@@ -1665,18 +1762,22 @@ def run_lifecycle(
             blocked.services = [
                 e for e in blocked.services if e.get("service") in inside
             ]
-            restored = _start_services(
-                selected=outside,
-                write_artifacts=False,
-                **{**start_kw, **docker_now()},
+            now_kw, unread = docker_now(outside, "started")
+            restored = (
+                unread
+                if unread is not None
+                else _start_services(
+                    selected=outside, write_artifacts=False, **{**start_kw, **now_kw}
+                )
             )
             return _merge_parts([blocked, restored], selected)
         if outside:
+            now_kw, unread = docker_now(outside, "started")
             starts.append(
-                _start_services(
-                    selected=outside,
-                    write_artifacts=False,
-                    **{**start_kw, **docker_now()},
+                unread
+                if unread is not None
+                else _start_services(
+                    selected=outside, write_artifacts=False, **{**start_kw, **now_kw}
                 )
             )
         start_res = _merge_parts(starts, selected)
@@ -1949,9 +2050,10 @@ def _plan_image(
     cmd_runner: Optional[Callable[..., Any]],
     env: Mapping[str, str],
     build_command: Callable[[], List[str]],
+    image: Optional[str] = None,
 ) -> _ImageStep:
     """Probe the shared image of ``svc`` (read-only); name the build when it is missing."""
-    image_name = dr.compose_image_name(svc, product=product)
+    image_name = image or dr.compose_image_name(svc, product=product)
     present = dr.docker_image_exists(image_name, runner=cmd_runner, env=env)
     step = _ImageStep(image=image_name, findings=[])
     if present is False:
@@ -2014,36 +2116,35 @@ def _prebuild_images(
         ):
             continue
         env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
-
-        def build_command(svc: str = svc) -> List[str]:
-            override, env_file = dr.compose_build_inputs(runtime_dir, product=product)
-            return dr.compose_build_command(
-                product=product,
-                override_path=override,
-                env_file=env_file,
-                project_name=compose_proj,
-                services=[svc],
-            )
-
+        image = dr.compose_image_name(svc, product=product)
+        # The paths `compose_build_inputs` writes; naming them writes nothing.
+        planned = dr.compose_build_command(
+            product=product,
+            override_path=runtime_dir / dr.BUILD_OVERRIDE_FILENAME,
+            env_file=runtime_dir / "mcp.env",
+            project_name=compose_proj,
+            services=[svc],
+        )
+        step = _plan_image(
+            svc,
+            image=image,
+            product=product,
+            cmd_runner=cmd_runner,
+            env=env,
+            build_command=lambda: list(planned),
+        )
+        if step.build_command is None:
+            steps[svc] = step
+            continue
         try:
-            step = _plan_image(
-                svc,
-                product=product,
-                cmd_runner=cmd_runner,
-                env=env,
-                build_command=build_command,
+            dr.compose_build_inputs(runtime_dir, product=product)
+        except OSError as exc:  # fail closed: a failed build of this service, no crash
+            step.build_result = dr.RuntimeCommandResult(
+                command=list(step.build_command),
+                exit_code=1,
+                stderr=f"build inputs in {runtime_dir} could not be written: {exc}",
             )
-        except OSError as exc:  # the build inputs could not be written: fail closed
-            step = _ImageStep(
-                image=dr.compose_image_name(svc, product=product),
-                findings=[],
-                build_result=dr.RuntimeCommandResult(
-                    command=["docker", "compose", "build", svc],
-                    exit_code=1,
-                    stderr=f"build inputs in {runtime_dir} could not be written: {exc}",
-                ),
-            )
-        if step.build_command is not None:
+        else:
             step.build_result = dr.run_cmd(
                 step.build_command,
                 runner=cmd_runner,

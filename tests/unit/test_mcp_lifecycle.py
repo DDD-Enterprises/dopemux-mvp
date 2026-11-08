@@ -2008,6 +2008,153 @@ def test_a_build_input_write_failure_is_a_build_failure_not_a_crash(
     for svc in WORKTREE_SERVICES:
         entry = _svc(result, svc)
         assert entry["action"] == "failed"
-        assert "IMAGE_BUILD_FAILED" in _codes(entry["findings"])
+        codes = _codes(entry["findings"])
+        # the probe's finding is kept, then the build failure (fix round 4, Minor 2)
+        assert (
+            codes[:1] == ["IMAGE_MISSING_WILL_BUILD"] and "IMAGE_BUILD_FAILED" in codes
+        )
         assert "Read-only file system" in str(entry["findings"])
+        assert "compose.build.yml" in entry["commands"][0]  # the planned build
+        assert entry["build_result"]["exit_code"] == 1
     assert not [c for c in runner.calls if c["kind"] in {"up", "build"}]
+
+
+# --- cycle 2 fix round 4: every re-read docker snapshot fails closed ------------------
+
+
+def _failing_on(docker, *calls_that_fail):
+    """Wrap a docker runner: the given `docker ps` calls (1-based) fail like a dead daemon."""
+    seen = {"n": 0}
+
+    def wrapped(*args, **kwargs):
+        seen["n"] += 1
+        if seen["n"] in calls_that_fail:
+            return SimpleNamespace(
+                returncode=1, stdout="", stderr="Cannot connect to the Docker daemon"
+            )
+        return docker(*args, **kwargs)
+
+    wrapped.seen = seen
+    return wrapped
+
+
+def _unavailable(result) -> bool:
+    return any(f.get("code") == "DOCKER_UNAVAILABLE" for f in result.blocking_findings)
+
+
+def test_a_stop_whose_locked_docker_read_fails_releases_nothing(tmp_path: Path):
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    stops: list = []
+
+    def runner(cmd, **kwargs):
+        stops.append(list(cmd))
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    docker = _failing_on(docker_ps, 2)  # 1: preflight; 2: the re-read under the lock
+    result = run_lifecycle(
+        "stop",
+        repo=repo,
+        services=None,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker,
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert docker.seen["n"] == 2
+    assert result.status == "FAIL" and result.exit_code == 1, result.to_dict()
+    assert _unavailable(result)
+    assert not [c for c in stops if c[:2] == ["docker", "stop"]]
+    assert _lease_status(lease_path) == {"conport": "active", "dope-memory": "active"}
+    assert runtime_dir.is_dir()
+
+
+def test_a_split_restart_whose_orchestrator_read_fails_touches_nothing(tmp_path: Path):
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    runner = _recording_runner()
+    docker = _failing_on(docker_ps, 2)  # 1: preflight; 2: before the orchestrator stop
+    result = run_lifecycle(
+        "restart",
+        repo=repo,
+        services=[*WORKTREE_SERVICES, TO],
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker,
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert result.status == "FAIL" and result.exit_code == 1, result.to_dict()
+    assert _unavailable(result)
+    # nothing was stopped or started: the worktree half is reported blocked, untouched
+    assert not [c for c in runner.calls if c["cmd"][:2] == ["docker", "stop"]]
+    assert not [
+        c for c in runner.calls if c["kind"] == "up" or c["cmd"][:1] == ["bash"]
+    ]
+    assert {s["service"]: s.get("action") for s in result.services} == {
+        "conport": "blocked",
+        "dope-memory": "blocked",
+        TO: "blocked",
+    }
+    assert docker.seen["n"] == 2
+
+
+def test_a_restart_whose_post_stop_read_fails_starts_nothing(tmp_path: Path):
+    repo, reg, docker, runner, calls, alive, busy, names = _running_world(tmp_path)
+    failing = _failing_on(docker, 3)  # 1: preflight; 2: re-check; 3: after the stops
+    result = run_lifecycle(
+        "restart",
+        repo=repo,
+        services=WORKTREE_SERVICES,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=failing,
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: p not in busy,
+    )
+    assert failing.seen["n"] == 3
+    assert result.status == "FAIL" and result.exit_code == 1, result.to_dict()
+    assert _unavailable(result)
+    assert len([c for c in calls if c[:2] == ["docker", "stop"]]) == 2  # stop half ran
+    assert not [c for c in calls if "compose" in c and "up" in c]  # no start from it
+    assert {s["service"]: s.get("action") for s in result.services} == {
+        "conport": "failed",
+        "dope-memory": "failed",
+    }
+
+
+def test_a_split_restart_whose_orchestrator_start_read_fails_fails_that_half(
+    tmp_path: Path,
+):
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    runner = _recording_runner()
+    # 1 preflight, 2 before the orchestrator stop, 3 re-check under the lock,
+    # 4 after the worktree stop, 5 before the orchestrator start
+    docker = _failing_on(docker_ps, 5)
+    result = run_lifecycle(
+        "restart",
+        repo=repo,
+        services=[*WORKTREE_SERVICES, TO],
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker,
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert docker.seen["n"] == 5
+    assert result.status == "FAIL" and result.exit_code == 1, result.to_dict()
+    assert _unavailable(result)
+    actions = {s["service"]: s.get("action") for s in result.services}
+    assert actions[TO] == "failed"  # never already_running from an unread snapshot
+    assert not [c for c in runner.calls if c["cmd"][:1] == ["bash"]]  # no wrapper
