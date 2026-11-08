@@ -2056,6 +2056,7 @@ class PairRunner(Recorder):
 def _pair_inspection(cmd) -> bool:
     return cmd[:3] == ["docker", "ps", "-a"] and (
         "label=dopemux.managed=true" in cmd  # the planner's own filter (micro round)
+        and "label=dopemux.scope=worktree" in cmd  # the planner's scope (B6 one-liner)
         and f"label=dopemux.project_id={PROJECT_ID}" in cmd
         and f"label=dopemux.worktree_hash={HASH}" in cmd
     )

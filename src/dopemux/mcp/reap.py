@@ -25,8 +25,8 @@ Safety rules (all fail closed):
   ``build_timeout_secs()`` old), whatever its reason; under the lock a build that
   started after the plan makes the candidate ``stale`` (Task B5 round 1).
 * Under the lock, before anything is stopped or released, one read-only
-  ``docker ps -a`` for the pair (``dopemux.managed=true``, its project id and
-  worktree hash) must list no container the plan did not list. A container the plan
+  ``docker ps -a`` for the pair (``dopemux.managed=true``, ``dopemux.scope=worktree``,
+  its project id and worktree hash) must list no container the plan did not list. A container the plan
   did not list (a start or restart since the plan created it), or no answer from
   docker, makes the plan outdated: the candidate is ``stale``, with no stop and no
   state change, and the next run plans it afresh. Planned containers that are gone
@@ -885,9 +885,10 @@ def _pair_container_ids(
 ) -> Optional[Set[str]]:
     """Ids of the containers (any state) docker lists now for the candidate's pair.
 
-    One ``docker ps -a`` filtered by ``dopemux.managed=true`` (the planner's own
-    filter, so an unmanaged container carrying the pair's labels cannot keep the
-    candidate ``stale`` forever), ``dopemux.project_id`` and ``dopemux.worktree_hash``,
+    One ``docker ps -a`` filtered by ``dopemux.managed=true`` and
+    ``dopemux.scope=worktree`` (the planner's own filters, so an unmanaged or
+    project-scoped container carrying the pair's labels cannot keep the candidate
+    ``stale`` forever), ``dopemux.project_id`` and ``dopemux.worktree_hash``,
     called under the instance lock before any candidate stops or releases anything
     (Task B5 round 2 for state-only and dir-only candidates, Task B6 for every
     candidate), bounded like every docker call of the run. ``None`` (unknown: fail
@@ -903,6 +904,8 @@ def _pair_container_ids(
         "-a",
         "--filter",
         f"label={dr.LABEL_MANAGED}=true",
+        "--filter",
+        f"label=dopemux.scope={_REAPABLE_SCOPE}",
         "--filter",
         f"label=dopemux.project_id={cand.project_id}",
         "--filter",
