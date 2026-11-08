@@ -29,8 +29,9 @@ Safety rules (all fail closed):
   ``worktree_missing`` reason can select it.
 * Containers are stopped and removed by id, never through ``docker compose`` and
   never with ``rm -f``. A container that fails to stop keeps its leases, registry
-  entries and runtime dir. Images are never removed: one image per service and
-  Dockerfile version is shared by every worktree and project.
+  entries and runtime dir. Images are never removed: one image per service is shared
+  by every worktree and project that runs the same dopemux checkout (one key per
+  checkout path and Dockerfile version).
 * Registry entries and leases are changed only for the services whose containers
   this reap stopped and removed (the ``dopemux.service`` label), service by service:
   when one service's container fails, the services whose containers are all gone

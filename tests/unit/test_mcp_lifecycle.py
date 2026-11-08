@@ -2189,6 +2189,7 @@ def test_an_orchestrator_only_start_leaves_the_worktree_artifacts_alone(tmp_path
     }
     for name, text in before.items():
         (rt / name).write_text(text, encoding="utf-8")
+    product = _product(tmp_path)
     result = run_lifecycle(
         "start",
         repo=repo,
@@ -2197,14 +2198,32 @@ def test_an_orchestrator_only_start_leaves_the_worktree_artifacts_alone(tmp_path
         registry_path=reg,
         docker_runner=_docker_empty(),
         cmd_runner=_recording_runner(),
-        product_root=_product(tmp_path),
+        product_root=product,
         process_env={},
         skip_doctor=True,
         port_is_free_fn=lambda p: True,
     )
     assert result.exit_code == 0, result.to_dict()
+    assert result.runtime_artifacts == []
     for name, text in before.items():
         assert (rt / name).read_text(encoding="utf-8") == text, name
+    # the dry-run plan says the same: nothing would be written (micro round)
+    plan = run_lifecycle(
+        "start",
+        repo=repo,
+        services=[TO],
+        catalog=_catalog(),
+        dry_run=True,
+        registry_path=reg,
+        docker_runner=_docker_empty(),
+        cmd_runner=_recording_runner(),
+        product_root=product,
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert plan.status == "PLANNED" and plan.runtime_artifacts == []
+    assert [s.get("runtime_files") for s in plan.services] == [[]]
 
 
 def test_a_blocked_split_restart_whose_restore_read_fails_starts_nothing(

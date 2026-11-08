@@ -2402,7 +2402,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
                     "container_name": cname,
                     "ports": svc_ports,
                     "labels": labels,
-                    "runtime_files": list(artifact_paths.values()),
+                    "runtime_files": (
+                        [] if skip_artifacts else list(artifact_paths.values())
+                    ),
                     "commands": [dr.redact_command(c) for c in commands],
                     "preflight_findings": list(image_findings),
                 }

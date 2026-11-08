@@ -240,8 +240,9 @@ Automatic runs never wait on a lock and cap every docker call:
   containers are already removed, its registry entries, leases and runtime dir are left
   as they were, and a later run finishes it (once the worktree is gone, as a state-only
   candidate; while it still exists, the worktree's next start rewrites them).
-- Under its lock each candidate is checked again, with no docker call and no change when it
-  no longer qualifies: a launcher attached by then skips it as `attached`; otherwise it is
+- Under its lock each candidate is checked again, first pruning dead attach records (which
+  can stamp `last_detach` from them); when it no longer qualifies there is no docker call and
+  no other change: a launcher attached by then skips it as `attached`; otherwise it is
   skipped as `stale` when its worktree is present and it has not been idle for 20 minutes (a
   launcher that attached and left since the plan restarts that clock). A build-only runtime
   dir (below) is also skipped as `stale` when its worktree is back or a detached image build
