@@ -31,7 +31,7 @@ def repo(tmp_path: Path, monkeypatch) -> Path:
     path.mkdir()
     subprocess.run(["git", "init", "-q", str(path)], check=True)
     monkeypatch.setattr(
-        mcp_commands, "_load_catalog", lambda: {"version": 1, "servers": {}}
+        mcp_commands, "_load_catalog", lambda *_a, **_k: {"version": 1, "servers": {}}
     )
     return path.resolve()
 
