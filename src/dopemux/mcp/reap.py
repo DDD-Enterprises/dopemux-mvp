@@ -186,6 +186,11 @@ def detach(path: Path) -> None:
             tmp.unlink()
 
 
+def _is_pid_text(text: str) -> bool:
+    """Whether ``text`` is a positive pid in ASCII digits (``"²".isdigit()`` is true)."""
+    return text.isascii() and text.isdigit() and int(text) > 0
+
+
 def _pid_alive(pid: int) -> bool:
     try:
         os.kill(pid, 0)
@@ -239,7 +244,7 @@ def live_attachments(runtime_dir: Path, *, prune: bool = True) -> int:
     newest_dead: Optional[float] = None
     for entry in entries:
         name = entry.name
-        if not name.isdigit() or int(name) <= 0:
+        if not _is_pid_text(name):
             continue
         if _pid_alive(int(name)):
             live += 1
@@ -425,7 +430,7 @@ def _effective_last_detach(runtime_dir: Path) -> Optional[float]:
         return None
     for entry in entries:
         name = entry.name
-        if not name.isdigit() or int(name) <= 0 or _pid_alive(int(name)):
+        if not _is_pid_text(name) or _pid_alive(int(name)):
             continue
         try:
             mtime = entry.stat().st_mtime
@@ -482,7 +487,7 @@ def _live_build(runtime_dir: Path, now: float) -> bool:
             return True
         except ValueError:  # not text: not a pid the launcher wrote
             continue
-        if not text.isdigit() or int(text) <= 0:
+        if not _is_pid_text(text):
             continue
         if age <= budget and _pid_alive(int(text)):
             return True
@@ -500,10 +505,11 @@ def _dir_only_candidates(
 
     A launch refused with ``LAUNCH_IMAGE_BUILDING`` writes its runtime dir before
     any lifecycle start creates a registry entry. Such a dir is a candidate only
-    when its ``instance.json`` is well-formed and names exactly this dir
-    (``runtime_dir_for_paths``), the pair has no registry entry and no managed
-    container, its worktree is gone, no launcher is attached and no detached build
-    is live. Never on idle (a container-less dir costs nothing). Read-only.
+    when its ``instance.json`` is well-formed (an absolute ``worktree_root``) and
+    names exactly this dir (``runtime_dir_for_paths``), the pair has no registry
+    entry and no managed container, its worktree is gone, no launcher is attached
+    and no detached build is live. Never on idle (a container-less dir costs
+    nothing). Read-only.
     """
     base = Path(registry.path).parent
     try:
@@ -518,6 +524,7 @@ def _dir_only_candidates(
         project_id, worktree_hash = marker["project_id"], marker["worktree_hash"]
         if (
             not _SAFE_HASH.fullmatch(worktree_hash)
+            or not os.path.isabs(marker["worktree_root"])  # relative: judged vs the cwd
             or (project_id, worktree_hash) in seen_pairs
             or _entry_for(registry, project_id, worktree_hash) is not None
         ):

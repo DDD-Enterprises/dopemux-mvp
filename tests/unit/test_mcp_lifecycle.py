@@ -1398,3 +1398,217 @@ def test_run_lifecycle_holds_the_instance_lock_by_default():
 
     param = inspect.signature(run_lifecycle).parameters["hold_instance_lock"]
     assert param.default is True and param.kind is inspect.Parameter.KEYWORD_ONLY
+
+
+# --- cycle 2 fix round 1, Important 1: facts are re-taken under the instance lock -----
+
+
+def _lease_world(tmp_path: Path):
+    """`_stop_world` with ports from leases (no envrc ports) and a docker that a reap empties."""
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    repo, reg, runtime_dir, docker_ps, lease_path = _stop_world(tmp_path)
+    envrc = repo / ".envrc.dopemux-mcp"
+    envrc.write_text(
+        "".join(
+            line + "\n"
+            for line in envrc.read_text().splitlines()
+            if "_PORT=" not in line
+        )
+    )
+    state = {"gone": False}
+
+    def docker(*args, **kwargs):
+        if state["gone"]:
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        return docker_ps(*args, **kwargs)
+
+    identity = resolve_identity_view(repo, trust_env=False)
+    return repo, reg, runtime_dir, docker, lease_path, state, identity
+
+
+def _reap_while_waiting(monkeypatch, *, runtime_dir, reg, lease_path, state, identity):
+    """Entering launch.lock replays an automatic reap that finished in the meantime."""
+    import contextlib
+
+    from dopemux.mcp import lifecycle as lc
+    from dopemux.mcp import reap
+
+    reaps: list = []
+
+    @contextlib.contextmanager
+    def lock_after_a_reap(rt, *, blocking=True):
+        cand = reap.ReapCandidate(
+            project_id=identity.project_id,
+            worktree_hash=identity.worktree_hash,
+            worktree_root=identity.worktree_root,
+            runtime_dir=Path(rt),
+            container_ids=["id-conport", "id-dope-memory"],
+            reason="idle",
+            services=["conport", "dope-memory"],
+            container_services={
+                "id-conport": "conport",
+                "id-dope-memory": "dope-memory",
+            },
+        )
+
+        def reap_docker(cmd, **kwargs):
+            state["gone"] = True
+            return dr.RuntimeCommandResult(command=list(cmd), exit_code=0, stderr="")
+
+        report = reap.apply_reap(
+            [cand],
+            runner=reap_docker,
+            lease_path=lease_path,
+            registry_path=reg,
+            exists=lambda p: False,
+        )
+        reaps.append(report)
+        assert report.reaped == [cand], report.to_dict()
+        assert not Path(rt).exists()
+        yield
+
+    monkeypatch.setattr(lc, "instance_lock", lock_after_a_reap)
+    return reaps
+
+
+def _worktree_leases(lease_path: Path, worktree_root: str):
+    from dopemux.mcp.port_leases import PortLeaseRegistry
+
+    return {
+        str(L.get("port_var")): int(L["port"])
+        for L in PortLeaseRegistry.load(lease_path).active_leases()
+        if L.get("worktree_root") == worktree_root and L.get("port_var")
+    }
+
+
+@pytest.mark.parametrize("op", ["start", "restart"])
+def test_a_reap_finishing_while_the_cli_waits_for_the_lock_never_leaves_stale_state(
+    tmp_path: Path, monkeypatch, op
+):
+    from dopemux.mcp.runtime_registry import RuntimeRegistry
+
+    repo, reg, runtime_dir, docker, lease_path, state, identity = _lease_world(tmp_path)
+    reaps = _reap_while_waiting(
+        monkeypatch,
+        runtime_dir=runtime_dir,
+        reg=reg,
+        lease_path=lease_path,
+        state=state,
+        identity=identity,
+    )
+    runner = _recording_runner()
+    result = run_lifecycle(
+        op,
+        repo=repo,
+        services=WORKTREE_SERVICES,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker,
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: not any(c["kind"] == "up" for c in runner.calls),
+    )
+    assert len(reaps) == 1  # the reap really ran in between
+    actions = [(s["service"], s.get("action")) for s in result.services]
+    assert ("conport", "already_running") not in actions
+    assert ("dope-memory", "already_running") not in actions
+    ups = [c for c in runner.calls if c["kind"] == "up"]
+    assert len(ups) == 2  # a real start of both sidecars
+    assert result.status == "PASS" and result.exit_code == 0, result.to_dict()
+    # no `docker stop` of names that are already gone (a restart's stop half saw
+    # them gone and reported them already stopped)
+    assert not [c for c in runner.calls if c["cmd"][:2] == ["docker", "stop"]]
+    # registry and leases agree with what was started
+    leases = _worktree_leases(lease_path, identity.worktree_root)
+    records = {
+        i["service"]: i
+        for i in RuntimeRegistry.load(reg).instances()
+        if i.get("worktree_root") == identity.worktree_root
+    }
+    assert {svc: rec["status"] for svc, rec in records.items()} == {
+        "conport": "running",
+        "dope-memory": "running",
+    }
+    for rec in records.values():
+        port_vars = {k: v for k, v in rec["ports"].items() if k.isupper()}
+        assert port_vars and all(leases.get(k) == v for k, v in port_vars.items())
+
+
+# --- cycle 2 fix round 1, Minor 1: images build before launch.lock is taken -----------
+
+
+@pytest.mark.parametrize("op", ["start", "restart"])
+def test_a_missing_image_is_built_before_the_instance_lock_is_taken(
+    tmp_path: Path, monkeypatch, op
+):
+    import contextlib
+
+    from dopemux.mcp import lifecycle as lc
+
+    events: list = []
+
+    @contextlib.contextmanager
+    def lock_spy(rt, *, blocking=True):
+        events.append("lock")
+        try:
+            yield
+        finally:
+            events.append("unlock")
+
+    monkeypatch.setattr(lc, "instance_lock", lock_spy)
+    runner = _recording_runner(inspect_rc=1)  # image missing
+
+    def recording(cmd, **kwargs):
+        result = runner(cmd, **kwargs)
+        kind = runner.calls[-1]["kind"]
+        if kind in {"build", "up"}:
+            events.append(f"{kind}:{list(cmd)[-1]}")
+        return result
+
+    result, _repo, reg = _run(tmp_path, op, WORKTREE_SERVICES, runner=recording)
+    assert result.exit_code == 0, result.to_dict()
+    assert events == [
+        "build:conport",
+        "build:dope-memory",
+        "lock",
+        "up:conport",
+        "up:dope-memory",
+        "unlock",
+    ]
+    conport = _svc(result, "conport")
+    assert "IMAGE_MISSING_WILL_BUILD" in _codes(conport["findings"])
+    assert "IMAGE_BUILT" in _codes(conport["findings"])
+    assert conport["build_result"]["exit_code"] == 0
+    builds = [c for c in runner.calls if c["kind"] == "build"]
+    assert builds and all(c["timeout"] == dr.build_timeout_secs() for c in builds)
+    rt = _runtime_dir_of(_repo, reg)
+    assert all(str(rt / "compose.build.yml") in c["cmd"] for c in builds)
+
+
+def test_an_unlocked_start_keeps_building_inline(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import lifecycle as lc
+
+    events: list = []
+    real_start = lc._start_services
+
+    def start_spy(**kw):
+        events.append("start_services")
+        return real_start(**kw)
+
+    monkeypatch.setattr(lc, "_start_services", start_spy)
+    runner = _recording_runner(inspect_rc=1)
+
+    def recording(cmd, **kwargs):
+        result = runner(cmd, **kwargs)
+        if runner.calls[-1]["kind"] == "build":
+            events.append("build")
+        return result
+
+    result, _repo, _reg = _run(
+        tmp_path, "start", WORKTREE_SERVICES, runner=recording, hold_instance_lock=False
+    )
+    assert result.exit_code == 0, result.to_dict()
+    assert events == ["start_services", "build", "build"]

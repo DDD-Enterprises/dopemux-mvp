@@ -249,8 +249,12 @@ images (they are shared). `SessionEnd` hooks share a
 references, read 2026-11-05), so `.claude/settings.json` sets `"timeout": 60` on that hook entry
 (`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` is the alternative). A reap interrupted after
 `docker rm` is finished by the next run. On any run, a registry or lease save that fails (a
-corrupt file is left as is) skips the instance as `state_error`: its containers are removed,
-its registry entries, leases and runtime dir stay, and a later run finishes it.
+corrupt file is left as is) skips the instance as `state_error`: its containers are already
+removed and its runtime dir stays. The runtime registry and the lease file are saved one after
+the other with no rollback, so the one that saved is updated (with a corrupt lease file the
+entries are still marked stopped) and the failing one stays as it was. Once the worktree is
+gone, a later run finishes it as a state-only candidate (after a person fixes a corrupt file);
+while it still exists, the worktree's next start rewrites the state.
 
 **Kill switch for automatic reaping:** create the file
 `~/.dopemux/mcp/runtime/reap.disabled`, or set `DOPEMUX_MCP_REAP=0` (also `off`/`false`).
@@ -258,13 +262,15 @@ The explicit `dopemux mcp reap --apply` ignores the kill switch and prints a not
 
 An instance with neither a `last_detach` file nor a dead attach record (one recorded by an
 older launcher) is reaped only when its worktree path is missing. A launcher killed outright
-(SIGKILL) leaves a dead attach record; its time counts as the last detach, so the instance
-still goes idle, and when a later reap or full `stop` prunes it, `last_detach` takes that
-record's time. A worktree
+(SIGKILL) leaves a dead attach record; the record's attach time (its mtime, which nothing
+refreshes) counts as the last detach, so the instance still goes idle, and when a later reap
+or full `stop` prunes it, `last_detach` takes that time. A worktree
 on an unmounted volume looks missing, so its sidecars get reaped; the next launch recreates
 them. A removed worktree's runtime dir that a launcher created is reaped even when no sidecar
 ever started (a launch that only built an image), because each launcher marks the dir with
-`instance.json`.
+`instance.json`. Such a dir is left while a detached image build may still be running, and
+automatic runs see it only while the runtime registry lists at least one instance (no run sees
+it while that registry file is missing or unreadable).
 
 ---
 

@@ -1761,3 +1761,58 @@ def test_a_dir_only_candidate_is_rechecked_under_the_lock(
     _detached(rt, ago=IDLE * 10)
     report = reap.apply_reap(cands, runner=Recorder(), now=lambda: NOW, idle_s=IDLE)
     assert report.skip_reasons == ["stale"] and rt.is_dir()
+
+
+# --- cycle 2 fix round 1 (review minors M3, M6, M7) -----------------------------------
+
+
+def test_a_corrupt_lease_file_is_a_state_error_with_the_registry_still_saved(
+    tmp_path: Path, runtime: Path
+):
+    """The real partial outcome: each registry is saved on its own, no rollback."""
+    missing, cands = _setup_apply(tmp_path, runtime)
+    lease_file = runtime / "port-leases.json"
+    lease_file.write_text("{not json", encoding="utf-8")
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner)
+    assert report.reaped == [] and report.skip_reasons == ["state_error"]
+    assert any("unreadable; left as is" in e for e in report.errors)
+    assert {c[-1] for c in runner.calls if c[1] == "rm"} == {"a1", "a2"}
+    assert _registry_statuses(runtime) == ["stopped"]  # this save succeeded
+    assert lease_file.read_text(encoding="utf-8") == "{not json"  # left for a person
+    assert _rt_dir(runtime).is_dir()  # kept
+    # the next run retries from state (worktree gone, dir left) and fails the same way
+    again = _plan(RuntimeRegistry.load(runtime / "instances.json"), [])
+    assert [c.state_only for c in again] == [True]
+    second = reap.apply_reap(again, runner=Recorder())
+    assert second.skip_reasons == ["state_error"] and _rt_dir(runtime).is_dir()
+    # once the lease file is readable again, a later run finishes it
+    lease_file.unlink()
+    fixed = PortLeaseRegistry.load(lease_file, create_missing=True)
+    fixed.save()
+    third = reap.apply_reap(again, runner=Recorder())
+    assert third.reaped == again and not _rt_dir(runtime).exists()
+
+
+def test_non_ascii_digits_are_never_parsed_as_pids(tmp_path: Path):
+    rt = tmp_path / "rt"
+    attached = rt / "attached"
+    attached.mkdir(parents=True)
+    (attached / "²").write_text("x", encoding="utf-8")  # "²".isdigit() is True
+    assert reap.live_attachments(rt, prune=False) == 0
+    assert reap.live_attachments(rt) == 0
+    assert reap._effective_last_detach(rt) is None
+    (rt / "build-conport.pid").write_text("²\n", encoding="utf-8")
+    assert reap._live_build(rt, NOW) is False
+
+
+def test_a_marker_with_a_relative_worktree_root_is_ignored(
+    tmp_path: Path, runtime: Path
+):
+    reg = _empty_runtime_registry(runtime)
+    _marked_dir(
+        runtime,
+        Path("removed/proj"),  # relative: would be judged against the cwd
+        project_root=tmp_path / "removed" / "proj",
+    )
+    assert _plan(reg, []) == []
