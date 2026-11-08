@@ -20,6 +20,10 @@ Safety rules (all fail closed):
   candidate that no longer has zero live attachments AND (a missing worktree OR
   ``idle_s`` since ``last_detach``) is skipped as ``stale``: no docker call, no
   state change.
+* No instance is planned or reaped while a detached image build is live in its
+  runtime dir (a ``build-<service>.pid`` whose pid is alive and that is at most
+  ``build_timeout_secs()`` old), whatever its reason; under the lock a build that
+  started after the plan makes the candidate ``stale`` (Task B5 round 1).
 * "Idle" is measured from the newer of ``last_detach`` and the newest dead attach
   record (``_effective_last_detach``). A launcher ended by SIGTERM/SIGHUP detaches
   through ``finally``; one killed outright leaves a dead attach record, which
@@ -393,13 +397,14 @@ def _still_eligible(
 
     Idle time comes from ``_effective_last_detach``, the helper planning uses; under
     the lock the prune has already turned dead records into ``last_detach``, so
-    both agree. A dir-only candidate qualifies only while its worktree is gone and
-    no detached build is live (never on idle).
+    both agree. No candidate qualifies while a detached image build is live in its
+    runtime dir (B5 round 1: a build that started after the plan is respected). A
+    dir-only candidate qualifies only while its worktree is gone (never on idle).
     """
+    if _live_build(cand.runtime_dir, now):
+        return False
     if cand.dir_only:
-        return _worktree_gone(cand.worktree_root, exists) and not _live_build(
-            cand.runtime_dir, now
-        )
+        return _worktree_gone(cand.worktree_root, exists)
     if _worktree_gone(cand.worktree_root, exists):
         return True
     age = _last_detach_age(cand.runtime_dir, now)
@@ -650,6 +655,8 @@ def plan_reap(
         )
         if live_attachments(runtime_dir, prune=False) > 0:
             continue
+        if _live_build(runtime_dir, now):  # B5 round 1: never under a running build
+            continue
         reason = _plan_reason(
             worktree_root, runtime_dir, now=now, idle_s=idle_s, exists=exists
         )
@@ -695,6 +702,8 @@ def plan_reap(
             registry_path=registry.path,
         )
         if live_attachments(runtime_dir, prune=False) > 0:
+            continue
+        if _live_build(runtime_dir, now):  # B5 round 1: never under a running build
             continue
         # Task B5: the same predicate as a container candidate. A pair whose state an
         # idle reap left behind (registry_busy, state_error, a reap killed after

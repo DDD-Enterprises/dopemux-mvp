@@ -1957,3 +1957,60 @@ def test_a_state_error_leftover_of_an_idle_reap_is_finished_while_the_worktree_e
         "conport": "released"
     }
     assert not _rt_dir(runtime).exists()
+
+
+# --- Task B5 round 1: a live detached build excludes every candidate kind ------------
+
+
+def test_an_idle_container_pair_with_a_live_build_is_not_planned(
+    tmp_path: Path, runtime: Path
+):
+    """(a)"""
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    reg = _registry(runtime, wt)
+    _detached(_rt_dir(runtime), ago=IDLE + 60)
+    assert [c.reason for c in _plan(reg, [_container("a1")])] == ["idle"]  # control
+    _build_pid(_rt_dir(runtime), os.getpid())  # alive and young
+    assert _plan(reg, [_container("a1")]) == []
+
+
+def test_an_idle_state_only_pair_with_a_live_build_is_not_planned(
+    tmp_path: Path, runtime: Path
+):
+    """(b)"""
+    _wt, reg = _idle_state_leftover(tmp_path, runtime, detached_ago=IDLE + 60)
+    lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert [c.reason for c in _plan(reg, [], lease_registry=lease_registry)] == ["idle"]
+    _build_pid(_rt_dir(runtime), os.getpid())
+    assert _plan(reg, [], lease_registry=lease_registry) == []
+
+
+@pytest.mark.parametrize("pid_state", ["dead", "past_the_build_budget"])
+def test_a_dead_or_stale_build_pid_does_not_block_a_reap(
+    tmp_path: Path, runtime: Path, pid_state: str
+):
+    """(c)"""
+    _wt, reg = _idle_state_leftover(tmp_path, runtime, detached_ago=IDLE + 60)
+    rt = _rt_dir(runtime)
+    if pid_state == "dead":
+        _build_pid(rt, _dead_pid())
+    else:
+        _build_pid(rt, os.getpid(), age=dr.build_timeout_secs() + 60)
+    lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
+    assert [c.reason for c in _plan(reg, [], lease_registry=lease_registry)] == ["idle"]
+    assert [c.reason for c in _plan(reg, [_container("a1")])] == ["idle"]
+
+
+def test_a_build_that_started_after_planning_makes_the_candidate_stale(
+    tmp_path: Path, runtime: Path
+):
+    """(d)"""
+    _wt, cands = _idle_candidate(tmp_path, runtime)
+    _build_pid(_rt_dir(runtime), os.getpid())  # a launcher started a build meanwhile
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert report.reaped == [] and report.skip_reasons == ["stale"]
+    assert runner.calls == []  # no docker call
+    assert _registry_statuses(runtime) == ["running"]  # no state change
+    assert (_rt_dir(runtime) / "build-conport.pid").exists()

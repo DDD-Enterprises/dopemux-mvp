@@ -205,7 +205,8 @@ the new owner.
 Each connected launcher leaves an attach record under
 `~/.dopemux/mcp/runtime/<slug>-<worktree-hash>/attached/`. A worktree's sidecars are reaped
 when no launcher is attached **and** either its directory no longer exists or it has been idle
-for 20 minutes since the last launcher detached.
+for 20 minutes since the last launcher detached, and never while a detached image build is
+running in its runtime dir.
 
 ```bash
 dopemux mcp reap                 # dry run (default): lists what would be reaped
@@ -245,9 +246,9 @@ Automatic runs never wait on a lock and cap every docker call:
   can stamp `last_detach` from them); when it no longer qualifies there is no docker call and
   no other change: a launcher attached by then skips it as `attached`; otherwise it is
   skipped as `stale` when its worktree is present and it has not been idle for 20 minutes (a
-  launcher that attached and left since the plan restarts that clock). A build-only runtime
-  dir (below) is also skipped as `stale` when its worktree is back or a detached image build
-  is running.
+  launcher that attached and left since the plan restarts that clock). Any candidate is also
+  skipped as `stale` while a detached image build is running in its runtime dir, and a
+  build-only runtime dir (below) when its worktree is back.
 
 Skipped instances are retried at the next run. A run that could start none of its
 candidates, or whose `docker ps -a` timed out, leaves the `reap.last` throttle as it was.
