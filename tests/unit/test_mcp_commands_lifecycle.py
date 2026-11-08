@@ -76,7 +76,7 @@ def test_cli_start_dry_run_json(tmp_path, monkeypatch):
     product.mkdir()
     (product / "compose.yml").write_text("services: {}\n")
 
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: _catalog())
     monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
     monkeypatch.setenv("DOPEMUX_MVP_ROOT", str(product))
 
@@ -108,7 +108,7 @@ def test_cli_status_json(tmp_path, monkeypatch):
     product = tmp_path / "product"
     product.mkdir()
     (product / "compose.yml").write_text("services: {}\n")
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: _catalog())
     monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
     monkeypatch.setenv("DOPEMUX_MVP_ROOT", str(product))
 
@@ -138,7 +138,7 @@ def test_cli_up_repo_aliases_start(tmp_path, monkeypatch):
     product = tmp_path / "product"
     product.mkdir()
     (product / "compose.yml").write_text("services: {}\n")
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: _catalog())
     monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
     monkeypatch.setenv("DOPEMUX_MVP_ROOT", str(product))
 
@@ -537,7 +537,7 @@ def _capture_lifecycle(monkeypatch):
 
     monkeypatch.setattr(lifecycle, "run_lifecycle", fake)
     monkeypatch.setattr(lifecycle, "format_lifecycle_human", lambda result: "ok")
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: _catalog())
     return seen
 
 
@@ -582,7 +582,7 @@ def test_cli_start_ambient_port_no_longer_beats_the_lease(tmp_path, monkeypatch)
     product = tmp_path / "product"
     product.mkdir()
     (product / "compose.yml").write_text("services: {}\n")
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: _catalog())
     monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(reg))
     monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "rt" / "leases.json"))
     monkeypatch.setenv("DOPEMUX_MVP_ROOT", str(product))

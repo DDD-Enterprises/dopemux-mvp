@@ -340,3 +340,57 @@ def test_json_schema_shape(tmp_path: Path):
     assert "planned_changes" in d
     assert "next_actions" in d
     assert "dopemux mcp start" in d["next_actions"]
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        (None, True),
+        ("", True),
+        ("http://localhost:3005/sse", True),
+        ("http://127.0.0.1:7890/mcp", True),
+        ("https://remote.example/sse", False),
+        ("http://user:secret@localhost:3005/sse", False),
+        # Templated URLs: neutralize the placeholders, then apply the host rules.
+        ("http://localhost:${CONPORT_PORT:-3005}/sse", True),
+        ("http://127.0.0.1:${PORT}/mcp", True),
+        ("http://${CONPORT_HOST:-localhost}:3005/sse", True),
+        ("https://remote.example:${REMOTE_PORT:-443}/sse", False),
+        ("http://user:${PASSWORD}@localhost:3005/sse", False),
+        ("http://${HOST}:3005/sse", False),
+        ("${CONPORT_URL}", False),
+        ("http://${REMOTE_HOST:-remote.example}:3005/sse", False),
+        ("http://${USER_INFO:-me@}localhost:3005/sse", False),
+        # A placeholder only in the port position cannot change the (local) host.
+        ("http://localhost:${PORT-3005}/sse", True),
+        ("http://${HOST-localhost}:3005/sse", False),
+        ("http://localhost:${A${B}}/sse", False),
+        ("http://localhost:${UNCLOSED/sse", False),
+        # Every URL the catalog itself renders must stay repairable.
+        ("http://localhost:${CONPORT_MCP_PORT:-3005}/sse", True),
+        ("http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp", True),
+        ("http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp", True),
+    ],
+)
+def test_url_is_repairable_templated_and_literal(url: Any, expected: bool) -> None:
+    assert mj._url_is_repairable(url) is expected
+
+
+def test_templated_remote_launcher_url_is_preserved_not_replaced(tmp_path: Path):
+    repo = tmp_path / "proj"
+    repo.mkdir()
+    remote = "https://remote.example:${REMOTE_PORT:-443}/sse"
+    mcp = {"mcpServers": {"conport": {"type": "sse", "url": remote}}}
+    (repo / ".mcp.json").write_text(json.dumps(mcp, indent=2) + "\n")
+
+    plan = _plan(repo, dry_run=True)
+
+    assert not any(
+        c.get("service") == "conport" and c.get("reason") == "URL_MISMATCH"
+        for c in plan.planned_changes
+    )
+    assert any(
+        p.get("service") == "conport"
+        and p.get("reason") == "non-localhost or credential URL preserved"
+        for p in plan.preserved_entries
+    )

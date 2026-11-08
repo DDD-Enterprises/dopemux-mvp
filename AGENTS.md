@@ -307,8 +307,10 @@ only (do not commit it); ConPort credentials live in
 `~/.dopemux/mcp/projects/<project_id>/secrets.env`. `DOPEMUX_BIN` overrides the binary a
 launcher entry runs. `dopemux mcp switch-project` moves the single task-orchestrator
 (`:7890`) to the current project; `dopemux mcp reap` (dry run by default, `--apply` to act)
-removes sidecars of removed or idle worktrees. The first launch in a new worktree builds its
-images (`LAUNCH_IMAGE_BUILDING`; then `/mcp reconnect all`).
+removes sidecars of removed or idle worktrees. Images are one per service and Dockerfile
+version (`dopemux-<service>:<key>`), shared by every worktree and project on the host: only
+the first launch on a host per Dockerfile version builds (`LAUNCH_IMAGE_BUILDING`, then
+`/mcp reconnect all`); later worktrees reuse them.
 
 M1 limits: mid-session `EnterWorktree` needs `/mcp reconnect all`; one orchestrator per host;
 branches that predate the launcher keep URL entries; Codex is not rendered.

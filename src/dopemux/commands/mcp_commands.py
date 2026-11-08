@@ -167,7 +167,12 @@ def _run_lifecycle_cli(
     """Shared entry for start/stop/restart/status reconciler."""
     from dopemux.mcp.lifecycle import format_lifecycle_human, run_lifecycle
 
-    catalog = _load_catalog()
+    # The target checkout's repo-local catalog governs --repo (as the launcher does).
+    catalog = (
+        _load_catalog(Path(repo_arg).expanduser().resolve())
+        if repo_arg is not None
+        else _load_catalog()
+    )
     svc_list = [s.strip() for s in (services or "").split(",") if s.strip()] or None
     result = run_lifecycle(
         operation,
@@ -413,7 +418,7 @@ def mcp_switch_project_cmd(repo_arg: Optional[Path], yes: bool):
     identity = resolve_identity_view(target)
     if not identity.project_id or not identity.project_root:
         refuse(f"Cannot resolve the project identity of {target}; run dopemux mcp doctor")
-    catalog = _load_catalog()
+    catalog = _load_catalog(target)
 
     def inspect_owner() -> Tuple[Any, Optional[str]]:
         """(owner container or None when :7890 is free, its project root when foreign)."""
@@ -2165,7 +2170,9 @@ def mcp_init_cmd(
     except ProjectIdentityError as exc:
         raise click.ClickException(f"Could not resolve project identity: {exc}") from exc
 
-    catalog = _load_catalog()
+    # The resolved target's catalog, not the caller's: `init --repo <target>` from
+    # another checkout must see the target's own servers and defaults.
+    catalog = _load_catalog(repo_path)
 
     if catalog.get("profiles") or profile_name is not None:
         try:
@@ -2927,8 +2934,8 @@ def mcp_repair_config_cmd(
     from dopemux.mcp.config_repair import apply_repair, format_repair_human, plan_repair
 
     repo_path = _resolve_repo_arg(repo_arg, trust_env=trust_env)
-    catalog = _load_catalog()
-    catalog_path = _catalog_path()
+    catalog = _load_catalog(repo_path)
+    catalog_path = _catalog_path(repo_path)
     catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
 
     plan = plan_repair(

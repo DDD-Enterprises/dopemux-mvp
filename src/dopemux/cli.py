@@ -4253,6 +4253,12 @@ def native_hooks_register(is_global: bool):
             for h in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
         )
 
+    # SessionEnd hooks otherwise share a 1.5 s budget, but the SessionEnd handler
+    # can spend up to 45 s reaping before it saves session history; mirror the
+    # `"timeout": 60` in the project's own .claude/settings.json. Only SessionEnd
+    # gets a timeout key; every other event is written exactly as before.
+    session_end_timeout_s = 60
+
     changed = False
     for event in events:
         groups = existing["hooks"].setdefault(event, [])
@@ -4261,8 +4267,25 @@ def native_hooks_register(is_global: bool):
                 f"Invalid settings in {settings_path}; hooks.{event} must be a JSON array"
             )
         if not any(_has_cmd(g) for g in groups):
-            groups.insert(0, {"hooks": [{"type": "command", "command": cmd}]})
+            new_hook: Dict[str, Any] = {"type": "command", "command": cmd}
+            if event == "SessionEnd":
+                new_hook["timeout"] = session_end_timeout_s
+            groups.insert(0, {"hooks": [new_hook]})
             changed = True
+        elif event == "SessionEnd":
+            # Heal registrations written before the timeout existed; a timeout
+            # the operator already set (any value) is left alone.
+            for group in groups:
+                if not _has_cmd(group):
+                    continue
+                for hook in group["hooks"]:
+                    if (
+                        isinstance(hook, dict)
+                        and hook.get("command") == cmd
+                        and "timeout" not in hook
+                    ):
+                        hook["timeout"] = session_end_timeout_s
+                        changed = True
 
     if changed:
         settings_path.parent.mkdir(parents=True, exist_ok=True)

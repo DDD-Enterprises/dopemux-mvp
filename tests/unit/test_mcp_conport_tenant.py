@@ -614,8 +614,8 @@ class FakeCmdRunner:
 def _invoke_init(repo: Path, monkeypatch, runner: FakeCmdRunner):
     from dopemux.commands import mcp_commands
 
-    monkeypatch.setattr(mcp_commands, "_load_catalog", _init_catalog)
-    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda: None)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: _init_catalog())
+    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda *_a, **_k: None)
     monkeypatch.setattr(mcp_commands, "_INIT_RUNNER", runner)
     return CliRunner().invoke(mcp_commands.mcp, ["init", "--repo", str(repo)])
 

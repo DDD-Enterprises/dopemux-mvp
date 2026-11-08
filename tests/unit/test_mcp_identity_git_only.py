@@ -197,8 +197,8 @@ def test_run_lifecycle_dry_run_identity_matches_clean_shell(
 def init_env(tmp_path, monkeypatch):
     monkeypatch.setenv("DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "leases.json"))
     monkeypatch.setenv("DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "runtime.json"))
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
-    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda: None)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: _catalog())
+    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda *_a, **_k: None)
 
 
 def test_init_repo_option_targets_given_checkout_not_env(repos, init_env, monkeypatch):

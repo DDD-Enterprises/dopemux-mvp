@@ -290,3 +290,115 @@ def test_register_treats_match_all_group_as_registered(
     assert result.exit_code == 0, result.output
     groups = json.loads(settings_path.read_text())["hooks"]["PreToolUse"]
     assert groups == [group]
+
+
+SESSION_END_TIMEOUT_S = 60
+
+
+def test_register_new_session_end_hook_carries_timeout(project_dir: Path) -> None:
+    # SessionEnd hooks otherwise share a 1.5 s budget; the handler can spend far
+    # longer reaping, so only that event gets an explicit timeout.
+    result = _register()
+
+    assert result.exit_code == 0, result.output
+    settings = json.loads((project_dir / ".claude" / "settings.json").read_text())
+    (session_end,) = settings["hooks"]["SessionEnd"][0]["hooks"]
+    assert session_end["timeout"] == SESSION_END_TIMEOUT_S
+    for event in EXPECTED_EVENTS:
+        if event == "SessionEnd":
+            continue
+        for group in settings["hooks"][event]:
+            for hook in group["hooks"]:
+                assert "timeout" not in hook, event
+
+
+def test_register_patches_existing_session_end_hook_without_timeout(
+    project_dir: Path,
+) -> None:
+    settings_path = project_dir / ".claude" / "settings.json"
+    settings_path.parent.mkdir()
+    old_hook = {"type": "command", "command": _pinned_command()}
+    settings_path.write_text(
+        json.dumps({"hooks": {"SessionEnd": [{"hooks": [dict(old_hook)]}]}}),
+        encoding="utf-8",
+    )
+    before = settings_path.read_text()
+
+    result = _register()
+
+    assert result.exit_code == 0, result.output
+    assert "Registered" in result.output
+    settings = json.loads(settings_path.read_text())
+    assert settings["hooks"]["SessionEnd"] == [
+        {"hooks": [{**old_hook, "timeout": SESSION_END_TIMEOUT_S}]}
+    ]
+    assert settings_path.with_suffix(".json.bak").read_text() == before
+
+
+def test_register_session_end_patch_only_when_registration_alone_is_stale(
+    project_dir: Path,
+) -> None:
+    # Every event already registered (SessionEnd without timeout): the only change
+    # is the timeout, which must still rewrite the file.
+    first = _register()
+    assert first.exit_code == 0, first.output
+    settings_path = project_dir / ".claude" / "settings.json"
+    settings = json.loads(settings_path.read_text())
+    del settings["hooks"]["SessionEnd"][0]["hooks"][0]["timeout"]
+    settings_path.write_text(json.dumps(settings), encoding="utf-8")
+
+    result = _register()
+
+    assert result.exit_code == 0, result.output
+    assert "already registered" not in result.output
+    patched = json.loads(settings_path.read_text())
+    assert patched["hooks"]["SessionEnd"][0]["hooks"][0]["timeout"] == (
+        SESSION_END_TIMEOUT_S
+    )
+
+
+def test_register_leaves_existing_session_end_timeout_alone(
+    project_dir: Path,
+) -> None:
+    first = _register()
+    assert first.exit_code == 0, first.output
+    settings_path = project_dir / ".claude" / "settings.json"
+    settings = json.loads(settings_path.read_text())
+    settings["hooks"]["SessionEnd"][0]["hooks"][0]["timeout"] = 120
+    settings_path.write_text(json.dumps(settings), encoding="utf-8")
+    before = settings_path.read_text()
+    backup = settings_path.with_suffix(".json.bak")
+    if backup.exists():
+        backup.unlink()
+
+    result = _register()
+
+    assert result.exit_code == 0, result.output
+    assert "already registered" in result.output
+    assert settings_path.read_text() == before
+    assert not backup.exists()
+
+
+def test_register_session_end_timeout_second_run_is_noop(project_dir: Path) -> None:
+    settings_path = project_dir / ".claude" / "settings.json"
+    settings_path.parent.mkdir()
+    settings_path.write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionEnd": [
+                        {"hooks": [{"type": "command", "command": _pinned_command()}]}
+                    ]
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    first = _register()
+    after_first = settings_path.read_text()
+
+    second = _register()
+
+    assert first.exit_code == 0 and second.exit_code == 0, second.output
+    assert "already registered" in second.output
+    assert settings_path.read_text() == after_first

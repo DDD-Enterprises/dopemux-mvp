@@ -7,6 +7,7 @@ entries are always preserved. Never mutates global (~/.claude.json) config.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 from urllib.parse import urlparse
@@ -113,24 +114,44 @@ def _functional_subset(entry: Mapping[str, Any]) -> Dict[str, Any]:
     return {k: entry[k] for k in _FUNCTIONAL_KEYS if k in entry}
 
 
+_LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1"})
+_PLACEHOLDER = re.compile(r"\$\{[^}:$]*(?::-([^}$]*))?\}")
+
+
+def _neutralize_placeholders(url: str) -> str:
+    """Replace ``${NAME:-default}`` with ``default`` and bare ``${NAME}`` with ``placeholder``.
+
+    The literal token is never a local host, so an unresolved placeholder can
+    never make a URL look provably local.
+    """
+    return _PLACEHOLDER.sub(
+        lambda m: m.group(1) if m.group(1) is not None else "placeholder", url
+    )
+
+
 def _url_is_repairable(url: Optional[str]) -> bool:
+    """True when the catalog may replace ``url``: missing, or provably local with no credentials.
+
+    Templated URLs get no special pass: placeholders are neutralized first and
+    the same host/userinfo rules as for literal URLs then apply.
+    """
     if not url or not isinstance(url, str):
         return True  # missing → can set template
-    if "${" in url:
-        # Template placeholders are always candidate for catalog template replace
-        # when host is local or still a placeholder.
-        return True
+    templated = "${" in url
+    candidate = _neutralize_placeholders(url) if templated else url
     try:
-        parsed = urlparse(url)
-    except Exception:  # noqa: BLE001
+        parsed = urlparse(candidate)
+        host = (parsed.hostname or "").lower()
+    except ValueError:
         return False
-    host = (parsed.hostname or "").lower()
-    if host and host not in {"localhost", "127.0.0.1"}:
+    if any(ch in parsed.netloc for ch in "${}"):
+        return False  # unresolved or malformed placeholder: not provably local
+    if host and host not in _LOCAL_HOSTS:
         return False
+    if templated and not host:
+        return False  # e.g. a fully templated URL: nothing proves it is local
     # userinfo credentials → never rewrite
-    if parsed.username or parsed.password:
-        return False
-    if "@" in url.split("://", 1)[-1].split("/", 1)[0]:
+    if parsed.username or parsed.password or "@" in parsed.netloc:
         return False
     return True
 

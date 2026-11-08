@@ -12,7 +12,7 @@ REPO = Path(__file__).resolve().parents[2]
 RETIRED = "source .envrc.dopemux-mcp"
 DOCS = (
     "AGENTS.md",
-    ".claude/CLAUDE.md",
+    ".claude/claude.md",
     "docs/02-how-to/mcp-setup-other-repos.md",
 )
 HINT_SOURCES = (
