@@ -1296,14 +1296,22 @@ def test_a_genuinely_idle_candidate_is_still_reaped(tmp_path: Path, runtime: Pat
     assert _registry_statuses(runtime) == ["stopped"]
 
 
-def test_a_stale_only_run_leaves_reap_last_untouched(tmp_path: Path, runtime: Path):
+def test_a_stale_only_run_leaves_reap_last_untouched(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
     wt = tmp_path / "wt" / "proj"
     wt.mkdir(parents=True)
     _registry(runtime, wt)
     _detached(_rt_dir(runtime), ago=5000)
-    # A launcher killed 1 s ago: planning (read-only) does not see its record, the
-    # prune under the lock stamps last_detach NOW - 1.
-    _dead_record(_rt_dir(runtime), mtime=NOW - 1)
+    # A launcher killed 1 s ago, after planning (planning reads dead records since
+    # cycle 2 B3): the prune under the lock stamps last_detach NOW - 1.
+    real_apply = reap.apply_reap
+
+    def killed_after_planning(candidates, **kwargs):
+        _dead_record(_rt_dir(runtime), mtime=NOW - 1)
+        return real_apply(candidates, **kwargs)
+
+    monkeypatch.setattr(reap, "apply_reap", killed_after_planning)
     state = tmp_path / "s"
     got = reap.maybe_reap(
         throttle_s=600,
@@ -1396,3 +1404,346 @@ def test_explicit_apply_still_waits_for_the_registry_lock(
     thread.join(5)
     assert report.reaped == cands and report.skipped == [] and report.errors == []
     assert _registry_statuses(runtime) == ["stopped"]
+
+
+# --- cycle 2 B1 (codex F1): a failed state save keeps the runtime dir -------------------
+
+
+def test_a_failed_state_save_keeps_the_runtime_dir_and_is_not_reaped(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
+    _missing, cands = _setup_apply(tmp_path, runtime)
+    leases_before = (runtime / "port-leases.json").read_text()
+    registry_before = (runtime / "instances.json").read_text()
+    real_save = reap.save_states_locked
+    monkeypatch.setattr(reap, "save_states_locked", lambda updates, wait_s=None: ["boom"])
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner)
+    assert report.reaped == []
+    assert report.skipped == cands and report.skip_reasons == ["state_error"]
+    assert any("boom" in e for e in report.errors)
+    assert {c[-1] for c in runner.calls if c[1] == "rm"} == {"a1", "a2"}  # containers gone
+    assert _rt_dir(runtime).is_dir()  # the recovery artifacts stay
+    assert (runtime / "port-leases.json").read_text() == leases_before
+    assert (runtime / "instances.json").read_text() == registry_before
+
+    # a later run finishes it from state alone (containers are gone, worktree too)
+    monkeypatch.setattr(reap, "save_states_locked", real_save)
+    again = _plan(
+        RuntimeRegistry.load(runtime / "instances.json"),
+        [],
+        lease_registry=PortLeaseRegistry.load(runtime / "port-leases.json"),
+    )
+    assert [c.state_only for c in again] == [True]
+    later = reap.apply_reap(again, runner=Recorder())
+    assert later.reaped == again and later.errors == []
+    assert _registry_statuses(runtime) == ["stopped"]
+    assert not _rt_dir(runtime).exists()
+
+
+def test_a_failed_state_save_in_separate_registry_dirs_keeps_the_runtime_dir(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
+    _missing, cands = _setup_apply(tmp_path, runtime)
+    other = tmp_path / "elsewhere"
+    other.mkdir()
+    (runtime / "port-leases.json").rename(other / "port-leases.json")
+    saves: List[str] = []
+
+    def failing(cls, path, mutate, *, wait_s=None):
+        saves.append(Path(path).name)
+        return "boom" if Path(path).name == "port-leases.json" else None
+
+    monkeypatch.setattr(reap, "save_state_locked", failing)
+    report = reap.apply_reap(
+        cands,
+        runner=Recorder(),
+        lease_path=other / "port-leases.json",
+        registry_path=runtime / "instances.json",
+    )
+    assert saves == ["port-leases.json", "instances.json"]  # one lock each
+    assert report.reaped == [] and report.skip_reasons == ["state_error"]
+    assert any("boom" in e for e in report.errors)
+    assert _rt_dir(runtime).is_dir()
+
+
+def test_a_failed_state_save_after_a_partial_docker_failure_is_never_reaped(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
+    _missing, cands = _setup_apply(tmp_path, runtime)
+    monkeypatch.setattr(reap, "save_states_locked", lambda updates, wait_s=None: ["boom"])
+    report = reap.apply_reap(cands, runner=Recorder(fail={("docker", "stop", "a1")}))
+    assert report.reaped == [] and report.skipped == []
+    assert any("a1" in e for e in report.errors) and any("boom" in e for e in report.errors)
+    assert _rt_dir(runtime).is_dir()
+
+
+# --- cycle 2 B3 (Codex P2): a crashed launcher still lets the instance go idle ---------
+
+
+def test_a_dead_attach_record_makes_an_idle_candidate_and_planning_writes_nothing(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    reg = _registry(runtime, wt)
+    rt = _rt_dir(runtime)
+    record = _dead_record(rt, mtime=NOW - IDLE - 60)  # SIGKILLed: never detached
+    assert not (rt / "last_detach").exists()
+    cands = _plan(reg, [_container("a1")])
+    assert [c.reason for c in cands] == ["idle"]
+    assert record.exists()  # the dry run prunes nothing
+    assert not (rt / "last_detach").exists()  # and stamps nothing
+    assert sorted(p.name for p in (rt / "attached").iterdir()) == [record.name]
+
+    seen: Dict[str, Any] = {}
+    real_still_eligible = reap._still_eligible
+
+    def spy(cand, **kw):
+        seen["record"] = record.exists()
+        seen["last_detach"] = (rt / "last_detach").stat().st_mtime
+        return real_still_eligible(cand, **kw)
+
+    monkeypatch.setattr(reap, "_still_eligible", spy)
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    # under the lock the record was pruned and stamped last_detach before the re-check
+    assert seen == {"record": False, "last_detach": NOW - IDLE - 60}
+    assert report.reaped == cands and report.skipped == [] and report.errors == []
+    assert ["docker", "stop", "a1"] in runner.calls
+    assert _registry_statuses(runtime) == ["stopped"]
+    assert not rt.exists()
+
+
+def test_a_young_dead_attach_record_is_not_idle(tmp_path: Path, runtime: Path):
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    reg = _registry(runtime, wt)
+    _dead_record(_rt_dir(runtime), mtime=NOW - IDLE + 60)
+    assert _plan(reg, [_container("a1")]) == []
+
+
+def test_a_last_detach_newer_than_the_dead_record_wins(tmp_path: Path, runtime: Path):
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    reg = _registry(runtime, wt)
+    rt = _rt_dir(runtime)
+    _dead_record(rt, mtime=NOW - IDLE - 60)
+    _detached(rt, ago=10)  # a later launcher attached and left cleanly
+    assert reap._effective_last_detach(rt) == NOW - 10
+    assert _plan(reg, [_container("a1")]) == []
+
+
+def test_effective_last_detach_reads_only_dead_numeric_records(tmp_path: Path):
+    rt = tmp_path / "rt"
+    assert reap._effective_last_detach(rt) is None  # nothing at all
+    attached = rt / "attached"
+    attached.mkdir(parents=True)
+    junk = attached / "not-a-pid"
+    junk.write_text("x", encoding="utf-8")
+    os.utime(junk, (NOW - 9000, NOW - 9000))
+    zero = attached / "0"
+    zero.write_text("x", encoding="utf-8")
+    os.utime(zero, (NOW - 8000, NOW - 8000))
+    live = attached / str(os.getpid())
+    live.write_text("x", encoding="utf-8")
+    os.utime(live, (NOW - 7000, NOW - 7000))
+    assert reap._effective_last_detach(rt) is None  # junk, zero and a live pid ignored
+    dead = _dead_record(rt, mtime=NOW - 6000)
+    assert reap._effective_last_detach(rt) == NOW - 6000
+    _detached(rt, ago=6500)  # an older last_detach loses to the dead record
+    assert reap._effective_last_detach(rt) == NOW - 6000
+    assert dead.exists() and junk.exists()  # read-only
+
+
+def test_effective_last_detach_of_an_unreadable_attached_dir_is_none(
+    tmp_path: Path, monkeypatch
+):
+    rt = tmp_path / "rt"
+    _detached(rt, ago=9000)
+    (rt / "attached").mkdir()
+    real_iterdir = Path.iterdir
+
+    def unreadable(self):
+        if self.name == "attached":
+            raise PermissionError("denied")
+        return real_iterdir(self)
+
+    monkeypatch.setattr(Path, "iterdir", unreadable)
+    assert reap._effective_last_detach(rt) is None
+
+
+# --- cycle 2 B4 (acceptance finding 2): a build-only launch's runtime dir -------------
+
+
+def _empty_runtime_registry(runtime: Path) -> RuntimeRegistry:
+    reg = RuntimeRegistry.load(runtime / "instances.json", create_missing=True)
+    reg.save()
+    loaded = RuntimeRegistry.load(runtime / "instances.json")
+    assert loaded.parse_status == "OK" and loaded.instances() == []
+    return loaded
+
+
+def _marked_dir(
+    runtime: Path,
+    worktree_root: Path,
+    *,
+    worktree_hash: str = HASH,
+    project_root: Optional[Path] = None,
+    dir_name: Optional[str] = None,
+    marker: Optional[Any] = None,
+) -> Path:
+    """A runtime dir as a refused build-only launch leaves it (no registry entry)."""
+    rt = runtime / (dir_name or f"proj-{worktree_hash}")
+    rt.mkdir(parents=True, exist_ok=True)
+    (rt / "build.log").write_text("building\n", encoding="utf-8")
+    (rt / "compose.build.yml").write_text("services: {}\n", encoding="utf-8")
+    if marker is None:
+        marker = {
+            "project_id": PROJECT_ID,
+            "worktree_hash": worktree_hash,
+            "worktree_root": str(worktree_root),
+            "project_root": str(project_root or worktree_root),
+            "written_at": "2026-11-07T00:00:00Z",
+        }
+    text = marker if isinstance(marker, str) else json.dumps(marker)
+    (rt / "instance.json").write_text(text, encoding="utf-8")
+    return rt
+
+
+def _build_pid(rt: Path, pid: int, *, age: float = 10.0) -> None:
+    pid_file = rt / "build-conport.pid"
+    pid_file.write_text(f"{pid}\n", encoding="utf-8")
+    os.utime(pid_file, (NOW - age, NOW - age))
+
+
+def _dead_pid() -> int:
+    dead = subprocess.Popen(["true"])
+    dead.wait()
+    return dead.pid
+
+
+def test_a_marked_dir_of_a_removed_worktree_is_a_dir_only_candidate(
+    tmp_path: Path, runtime: Path
+):
+    reg = _empty_runtime_registry(runtime)
+    missing = tmp_path / "removed" / "proj"
+    rt = _marked_dir(runtime, missing)
+    _build_pid(rt, _dead_pid())  # the build finished: no longer live
+    cands = _plan(reg, [])
+    assert len(cands) == 1
+    cand = cands[0]
+    assert cand.runtime_dir == rt and cand.reason == "worktree_missing"
+    assert cand.state_only and cand.dir_only
+    assert (cand.project_id, cand.worktree_hash) == (PROJECT_ID, HASH)
+    assert cand.worktree_root == str(missing)
+    assert cand.to_dict()["dir_only"] is True and cand.to_dict()["state_only"] is True
+    assert (rt / "instance.json").exists() and (rt / "build.log").exists()  # dry run
+
+    runner = Recorder()
+    report = reap.apply_reap(cands, runner=runner, now=lambda: NOW, idle_s=IDLE)
+    assert runner.calls == []  # no container: no docker call at all
+    assert report.reaped == cands and report.errors == [] and report.skipped == []
+    assert not rt.exists()
+    assert _plan(RuntimeRegistry.load(runtime / "instances.json"), []) == []
+
+
+def test_a_marked_dir_with_a_live_build_is_not_a_candidate(tmp_path: Path, runtime: Path):
+    reg = _empty_runtime_registry(runtime)
+    rt = _marked_dir(runtime, tmp_path / "removed" / "proj")
+    _build_pid(rt, os.getpid())  # alive and young: the build may still write here
+    assert _plan(reg, []) == []
+    # older than the build budget: stale, as the launcher treats it
+    _build_pid(rt, os.getpid(), age=dr.build_timeout_secs() + 60)
+    assert [c.dir_only for c in _plan(reg, [])] == [True]
+
+
+def test_a_marked_dir_that_is_not_ours_is_ignored(tmp_path: Path, runtime: Path):
+    reg = _empty_runtime_registry(runtime)
+    missing = tmp_path / "removed" / "proj"
+    # project_root names another slug: runtime_dir_for_paths would not be this dir
+    _marked_dir(runtime, missing, project_root=tmp_path / "removed" / "other")
+    # hash in the marker differs from the dir name
+    _marked_dir(runtime, missing, worktree_hash="beef0001", dir_name="proj-beef0002")
+    assert _plan(reg, []) == []
+
+
+def test_a_marked_dir_of_an_existing_worktree_is_never_reaped_as_idle(
+    tmp_path: Path, runtime: Path
+):
+    reg = _empty_runtime_registry(runtime)
+    live = tmp_path / "wt" / "proj"
+    live.mkdir(parents=True)
+    rt = _marked_dir(runtime, live)
+    _detached(rt, ago=IDLE * 10)  # idle for a long time: still not a candidate
+    assert _plan(reg, []) == []
+
+
+def test_runtime_dirs_without_a_good_marker_are_ignored(tmp_path: Path, runtime: Path):
+    reg = _empty_runtime_registry(runtime)
+    missing = tmp_path / "removed" / "proj"
+    legacy = runtime / "dopemux-mvp-2271"  # no marker at all
+    legacy.mkdir()
+    (legacy / "build.log").write_text("x\n", encoding="utf-8")
+    _marked_dir(runtime, missing, worktree_hash="beef0001", marker="{not json")
+    _marked_dir(
+        runtime,
+        missing,
+        worktree_hash="beef0002",
+        marker={"project_id": PROJECT_ID, "worktree_hash": "beef0002"},  # fields missing
+    )
+    _marked_dir(
+        runtime,
+        missing,
+        dir_name="proj-..",
+        marker={
+            "project_id": PROJECT_ID,
+            "worktree_hash": "..",  # unsafe hash
+            "worktree_root": str(missing),
+            "project_root": str(missing),
+        },
+    )
+    assert _plan(reg, []) == []
+    assert legacy.is_dir()
+
+
+def test_a_marked_dir_with_a_registry_entry_or_container_is_not_dir_only(
+    tmp_path: Path, runtime: Path
+):
+    missing = tmp_path / "removed" / "proj"
+    reg = _registry(runtime, missing)  # the registry knows the pair
+    _marked_dir(runtime, missing)
+    cands = _plan(reg, [])
+    assert [(c.state_only, c.dir_only) for c in cands] == [(True, False)]  # once
+    (runtime / "instances.json").unlink()
+    reg_empty = _empty_runtime_registry(runtime)
+    assert [c.dir_only for c in _plan(reg_empty, [])] == [True]
+    # a managed container of the pair (any scope) keeps it out of the dir-only source
+    assert _plan(reg_empty, [_container("p1", scope="project")]) == []
+
+
+def test_a_marked_dir_with_a_live_attachment_is_not_a_candidate(
+    tmp_path: Path, runtime: Path
+):
+    reg = _empty_runtime_registry(runtime)
+    rt = _marked_dir(runtime, tmp_path / "removed" / "proj")
+    reap.attach(rt)
+    assert _plan(reg, []) == []
+
+
+def test_a_dir_only_candidate_is_rechecked_under_the_lock(tmp_path: Path, runtime: Path):
+    reg = _empty_runtime_registry(runtime)
+    missing = tmp_path / "removed" / "proj"
+    rt = _marked_dir(runtime, missing)
+    cands = _plan(reg, [])
+    assert [c.dir_only for c in cands] == [True]
+    # a build started after planning: kept
+    _build_pid(rt, os.getpid())
+    report = reap.apply_reap(cands, runner=Recorder(), now=lambda: NOW, idle_s=IDLE)
+    assert report.skip_reasons == ["stale"] and rt.is_dir()
+    (rt / "build-conport.pid").unlink()
+    # the worktree is back and has been idle for long: never reaped on idle
+    missing.mkdir(parents=True)
+    _detached(rt, ago=IDLE * 10)
+    report = reap.apply_reap(cands, runner=Recorder(), now=lambda: NOW, idle_s=IDLE)
+    assert report.skip_reasons == ["stale"] and rt.is_dir()

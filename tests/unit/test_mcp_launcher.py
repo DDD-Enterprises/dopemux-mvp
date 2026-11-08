@@ -1390,3 +1390,98 @@ def test_start_failure_tail_never_carries_secrets(
     for secret in (tenant_pw, env_pw, "hunter2-fake"):
         assert secret not in err
     assert "postgresql://conport_x:***@" in err
+
+
+# --- cycle 2 B4 (acceptance finding 2): the instance.json marker ----------------------
+
+
+def _build_only_setup(tmp_path: Path, monkeypatch):
+    """A checkout whose conport image is missing: every launch refuses with a build."""
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+    monkeypatch.setattr(dr, "docker_image_exists", lambda *a, **k: False)
+    real_popen = subprocess.Popen
+    spawned: List[List[str]] = []
+
+    def fake_popen(cmd, *a, **kw):
+        argv = [str(x) for x in (cmd if isinstance(cmd, (list, tuple)) else [cmd])]
+        if argv and Path(argv[0]).name == "docker":
+            spawned.append(argv)
+            return SimpleNamespace(pid=os.getpid())  # alive: the build is "running"
+        return real_popen(cmd, *a, **kw)
+
+    monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    target = launcher.build_target(repo, "conport", catalog=CATALOG)
+    return target, spawned
+
+
+def test_a_build_only_launch_leaves_the_instance_marker(
+    tmp_path: Path, monkeypatch, registry, capsys
+):
+    import stat
+
+    target, spawned = _build_only_setup(tmp_path, monkeypatch)
+    assert launcher.launch("conport", env={}) == 3
+    assert "LAUNCH_IMAGE_BUILDING" in capsys.readouterr().err
+    assert len(spawned) == 1
+    marker = target.runtime_dir / "instance.json"
+    data = json.loads(marker.read_text(encoding="utf-8"))
+    ident = target.identity
+    assert {k: data[k] for k in launcher.INSTANCE_MARKER_FIELDS} == {
+        "project_id": ident.project_id,
+        "worktree_hash": ident.worktree_hash,
+        "worktree_root": ident.worktree_root,
+        "project_root": ident.project_root,
+    }
+    assert isinstance(data["written_at"], str) and data["written_at"].endswith("Z")
+    assert set(data) == {*launcher.INSTANCE_MARKER_FIELDS, "written_at"}  # nothing else
+    assert stat.S_IMODE(marker.stat().st_mode) == 0o600
+    assert (target.runtime_dir / "build-conport.pid").exists()
+    assert not list(target.runtime_dir.glob(".instance.json.*"))  # no tmp left
+
+    # a second launch finds an identical marker and does not rewrite it
+    before = marker.stat()
+    assert launcher.launch("conport", env={}) == 3
+    after = marker.stat()
+    assert (after.st_ino, after.st_mtime_ns) == (before.st_ino, before.st_mtime_ns)
+    assert len(spawned) == 1  # the build is still live: nothing new spawned
+
+
+def test_a_marker_with_different_fields_is_rewritten(
+    tmp_path: Path, monkeypatch, registry
+):
+    target, _spawned = _build_only_setup(tmp_path, monkeypatch)
+    target.runtime_dir.mkdir(parents=True, exist_ok=True)
+    marker = target.runtime_dir / "instance.json"
+    stale = {
+        "project_id": target.identity.project_id,
+        "worktree_hash": target.identity.worktree_hash,
+        "worktree_root": "/somewhere/else",
+        "project_root": target.identity.project_root,
+        "written_at": "2026-01-01T00:00:00Z",
+    }
+    marker.write_text(json.dumps(stale), encoding="utf-8")
+    assert launcher.launch("conport", env={}) == 3
+    data = json.loads(marker.read_text(encoding="utf-8"))
+    assert data["worktree_root"] == target.identity.worktree_root
+    assert data["written_at"] != "2026-01-01T00:00:00Z"
+
+
+def test_a_marker_write_failure_never_refuses_a_launch(
+    tmp_path: Path, monkeypatch, registry, capsys
+):
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+    target = launcher.build_target(repo, "conport", catalog=CATALOG)
+    (target.runtime_dir / "instance.json").mkdir(parents=True)  # cannot be replaced
+    monkeypatch.setattr(
+        launcher, "ensure_backend", lambda target, **kw: BackendSpec("u", "sse", "conport")
+    )
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend, **kw: 0)
+    assert launcher.launch("conport", env={}) == 0
+    err = capsys.readouterr().err
+    lines = [line for line in err.splitlines() if "instance.json" in line]
+    assert len(lines) == 1 and "LAUNCH_IO_ERROR" not in err
+    assert not list(target.runtime_dir.glob(".instance.json.*"))  # no tmp left

@@ -47,7 +47,16 @@ from . import stdio_proxy
 from .docker_inspect import DockerContainerInfo, inspect_running_containers
 from .lifecycle import _port_is_free, run_lifecycle, runtime_dir_for
 from .locks import instance_lock, reserved_port_lock
-from .reap import _pid_alive, attach, detach, maybe_reap
+from .port_diagnostics import instance_id_for_path
+from .reap import (
+    INSTANCE_MARKER,
+    INSTANCE_MARKER_FIELDS,
+    _pid_alive,
+    _utc_stamp,
+    attach,
+    detach,
+    maybe_reap,
+)
 from .runtime_registry import RuntimeRegistry, default_registry_path
 from .runtime_state import (
     PROJECT_MCP_FILENAME,
@@ -725,6 +734,69 @@ def _signals_exit_through_finally() -> Iterator[None]:
             signal.signal(signum, previous)
 
 
+def _instance_marker_fields(target: LaunchTarget) -> Optional[Dict[str, str]]:
+    """The identity that names ``target.runtime_dir`` (the values ``runtime_dir_for`` uses).
+
+    ``None`` when the identity cannot name it (no project id or worktree root):
+    such a marker would be malformed, so nothing is written.
+    """
+    ident = target.identity
+    project_id = str(getattr(ident, "project_id", None) or "")
+    worktree_root = str(getattr(ident, "worktree_root", None) or "")
+    if not project_id or not worktree_root:
+        return None
+    worktree_hash = getattr(ident, "worktree_hash", None) or instance_id_for_path(
+        worktree_root
+    )
+    return {
+        "project_id": project_id,
+        "worktree_hash": str(worktree_hash),
+        "worktree_root": worktree_root,
+        "project_root": str(getattr(ident, "project_root", None) or worktree_root),
+    }
+
+
+def _write_instance_marker(target: LaunchTarget) -> None:
+    """Best effort: ``<runtime_dir>/instance.json`` names the instance owning the dir.
+
+    Reap finds a runtime dir that never got a registry entry (a launch refused with
+    ``LAUNCH_IMAGE_BUILDING``) through it once the worktree is gone. Written only
+    when missing or different, atomically (tmp file, then ``os.replace``), mode
+    0600; identity fields and a timestamp only, never env or secrets. The caller
+    holds the instance lock. An ``OSError`` prints one stderr line and never
+    refuses the launch.
+    """
+    fields = _instance_marker_fields(target)
+    if fields is None:
+        return
+    marker = target.runtime_dir / INSTANCE_MARKER
+    try:
+        current = json.loads(marker.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        current = None
+    if isinstance(current, dict) and all(
+        current.get(key) == fields[key] for key in INSTANCE_MARKER_FIELDS
+    ):
+        return
+    tmp = marker.with_name(f".{INSTANCE_MARKER}.{os.getpid()}.tmp")
+    try:
+        with contextlib.suppress(FileNotFoundError):
+            tmp.unlink()
+        fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump({**fields, "written_at": _utc_stamp()}, handle, sort_keys=True)
+            handle.write("\n")
+        os.replace(tmp, marker)
+    except OSError as exc:
+        with contextlib.suppress(OSError):
+            tmp.unlink()
+        print(
+            f"dopemux mcp launch: could not write {marker} ({exc}); continuing",
+            file=sys.stderr,
+            flush=True,
+        )
+
+
 def _run_reaper(reaper: Optional[Callable[[], Any]]) -> None:
     try:
         if reaper is not None:
@@ -788,8 +860,11 @@ def launch(
                 # that holds the lock sees either the record or none of this launch.
                 # Released before the reaper (the reap takes the lock itself) and
                 # before ensure_backend (which takes it again; it is not re-entrant).
+                # The instance.json marker is written under the same lock, so a
+                # build-only launch's dir is reapable once its worktree is gone.
                 with instance_lock(target.runtime_dir):
                     record = attach(target.runtime_dir)
+                    _write_instance_marker(target)
                 _run_reaper(reaper)
                 wait_s = _wait_seconds(env)
                 if service == TO_SERVICE:

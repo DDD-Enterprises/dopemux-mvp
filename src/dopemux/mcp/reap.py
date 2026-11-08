@@ -20,11 +20,13 @@ Safety rules (all fail closed):
   candidate that no longer has zero live attachments AND (a missing worktree OR
   ``idle_s`` since ``last_detach``) is skipped as ``stale``: no docker call, no
   state change.
-* "Idle" needs a ``last_detach`` file. A runtime dir without one has an unknown
-  idle time and only the ``worktree_missing`` reason can select it. A launcher
-  ended by SIGTERM/SIGHUP detaches through ``finally``; one killed outright leaves
-  a dead attach record, and pruning that record stamps ``last_detach`` with the
-  record's mtime unless a newer one exists.
+* "Idle" is measured from the newer of ``last_detach`` and the newest dead attach
+  record (``_effective_last_detach``). A launcher ended by SIGTERM/SIGHUP detaches
+  through ``finally``; one killed outright leaves a dead attach record, which
+  planning reads without changing anything, and which pruning under the lock
+  replaces by a ``last_detach`` stamped with the record's mtime unless a newer one
+  exists. A runtime dir with neither has an unknown idle time and only the
+  ``worktree_missing`` reason can select it.
 * Containers are stopped and removed by id, never through ``docker compose`` and
   never with ``rm -f``. A container that fails to stop keeps its leases, registry
   entries and runtime dir. Images are never removed: one image per service and
@@ -37,6 +39,12 @@ Safety rules (all fail closed):
   A pair whose worktree is gone and whose containers are already gone (a reap killed
   after ``docker rm``) is cleaned by a state-only candidate (no container ids); that
   candidate also clears entries and leases with an empty service (owned by nobody).
+* A runtime dir that never got a registry entry (a launch refused with
+  ``LAUNCH_IMAGE_BUILDING`` before any start) is found through the launcher's
+  ``instance.json`` marker: a dir-only candidate (``dir_only``, no container ids)
+  once its worktree is gone, with no live attachment and no live detached build.
+  Never on idle. A marker that is malformed, or that does not name exactly the dir
+  holding it, is ignored; a dir without a marker is never a candidate.
 * Automatic runs are bounded (candidate cap, ``docker stop --time``, command timeout,
   deadline). Under a deadline each docker call gets ``min(cmd_timeout_s, time left)``;
   a candidate is skipped (``deadline``) only once no time is left. They never wait:
@@ -46,7 +54,10 @@ Safety rules (all fail closed):
   waits for the registry lock at most ``min(time left, 2 s)``; when it stays busy
   the candidate is skipped as ``registry_busy`` with its containers already gone,
   registry, leases and runtime dir untouched, and a later run finishes it (a
-  state-only candidate once the worktree is gone). A run that attempted no
+  state-only candidate once the worktree is gone). A registry or lease save that
+  fails (a corrupt file left as is, an ``OSError``) is skipped as ``state_error``
+  the same way, on every run: the runtime dir is removed, and the candidate
+  counted as reaped, only after both saves succeeded. A run that attempted no
   candidate (``deadline``/``cap``/``locked``/``stale``), or whose inspection timed
   out, leaves the ``reap.last`` throttle as it was. The explicit CLI ``--apply``
   waits for every lock.
@@ -61,6 +72,7 @@ Lock order: ``instance_lock(runtime_dir)`` outside, ``registry_lock`` inside
 from __future__ import annotations
 
 import contextlib
+import json
 import os
 import re
 import shutil
@@ -68,7 +80,17 @@ import time
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Tuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+)
 
 from . import docker_runtime as dr
 from .docker_inspect import DockerContainerInfo, inspect_all_managed_containers
@@ -88,6 +110,7 @@ from .runtime_registry import REGISTRY_ENV, RuntimeRegistry, default_registry_pa
 __all__ = [
     "DISABLE_ENV",
     "DISABLE_FILENAME",
+    "INSTANCE_MARKER",
     "ReapCandidate",
     "ReapReport",
     "apply_reap",
@@ -102,6 +125,9 @@ __all__ = [
 
 ATTACHED_DIR = "attached"
 LAST_DETACH = "last_detach"
+#: Written by each launcher under the instance lock: which instance owns the dir.
+INSTANCE_MARKER = "instance.json"
+INSTANCE_MARKER_FIELDS = ("project_id", "worktree_hash", "worktree_root", "project_root")
 DISABLE_FILENAME = "reap.disabled"
 DISABLE_ENV = "DOPEMUX_MCP_REAP"
 STATE_FILENAME = "reap.last"
@@ -264,6 +290,9 @@ class ReapCandidate:
     )  # dopemux.service of those containers
     #: ``container id -> dopemux.service`` (for releasing state service by service).
     container_services: Dict[str, str] = field(default_factory=dict)
+    #: Found through the launcher's ``instance.json`` marker alone: no registry entry
+    #: and no container (a build-only launch). Reaped on ``worktree_missing`` only.
+    dir_only: bool = False
 
     @property
     def state_only(self) -> bool:
@@ -279,6 +308,8 @@ class ReapCandidate:
             "container_ids": list(self.container_ids),
             "reason": self.reason,
             "services": list(self.services),
+            "state_only": self.state_only,
+            "dir_only": self.dir_only,
         }
 
 
@@ -292,8 +323,10 @@ class ReapReport:
     def skip(self, cand: ReapCandidate, reason: str) -> None:
         """``reason``: ``attached`` (a launcher attached first), ``cap``, ``deadline``,
         ``locked`` (an automatic run found the instance lock busy), ``stale`` (no
-        longer eligible under the lock) or ``registry_busy`` (containers removed, the
-        registry lock stayed busy: a later run finishes the state)."""
+        longer eligible under the lock), ``registry_busy`` (containers removed, the
+        registry lock stayed busy: a later run finishes the state) or
+        ``state_error`` (containers removed, a registry or lease save failed: the
+        runtime dir stays and a later run finishes the state)."""
         self.skipped.append(cand)
         self.skip_reasons.append(reason)
 
@@ -343,7 +376,17 @@ def _entry_for(
 def _still_eligible(
     cand: "ReapCandidate", *, now: float, idle_s: float, exists: Callable[[Path], bool]
 ) -> bool:
-    """The plan's predicate on current state (live attachments checked by the caller)."""
+    """The plan's predicate on current state (live attachments checked by the caller).
+
+    Idle time comes from ``_effective_last_detach``, the helper planning uses; under
+    the lock the prune has already turned dead records into ``last_detach``, so
+    both agree. A dir-only candidate qualifies only while its worktree is gone and
+    no detached build is live (never on idle).
+    """
+    if cand.dir_only:
+        return _worktree_gone(cand.worktree_root, exists) and not _live_build(
+            cand.runtime_dir, now
+        )
     if _worktree_gone(cand.worktree_root, exists):
         return True
     age = _last_detach_age(cand.runtime_dir, now)
@@ -351,10 +394,153 @@ def _still_eligible(
 
 
 def _last_detach_age(runtime_dir: Path, now: float) -> Optional[float]:
+    detached = _effective_last_detach(runtime_dir)
+    return None if detached is None else now - detached
+
+
+def _effective_last_detach(runtime_dir: Path) -> Optional[float]:
+    """When the last launcher left, read-only: ``None`` when unknown.
+
+    The newer of ``last_detach``'s mtime and the newest dead attach record's mtime
+    (a launcher killed outright never detached; ``live_attachments(prune=True)``
+    would stamp that time). Records whose name is not a positive pid are ignored,
+    as in ``live_attachments``. Nothing is unlinked or stamped, so planning stays a
+    dry run. An unreadable ``attached`` dir is ``None`` (it also counts as attached).
+    """
+    latest: Optional[float] = None
     try:
-        return now - (runtime_dir / LAST_DETACH).stat().st_mtime
+        latest = (Path(runtime_dir) / LAST_DETACH).stat().st_mtime
+    except OSError:
+        pass
+    try:
+        entries = list((Path(runtime_dir) / ATTACHED_DIR).iterdir())
+    except FileNotFoundError:
+        return latest
     except OSError:
         return None
+    for entry in entries:
+        name = entry.name
+        if not name.isdigit() or int(name) <= 0 or _pid_alive(int(name)):
+            continue
+        try:
+            mtime = entry.stat().st_mtime
+        except OSError:
+            continue  # vanished meanwhile (a concurrent prune stamps last_detach)
+        latest = mtime if latest is None else max(latest, mtime)
+    return latest
+
+
+def _read_instance_marker(runtime_dir: Path) -> Optional[Dict[str, str]]:
+    """The identity fields of ``<runtime_dir>/instance.json``; ``None`` when absent,
+    unreadable or malformed (any field missing, empty or not a string)."""
+    try:
+        data = json.loads((Path(runtime_dir) / INSTANCE_MARKER).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    fields: Dict[str, str] = {}
+    for key in INSTANCE_MARKER_FIELDS:
+        value = data.get(key)
+        if not isinstance(value, str) or not value:
+            return None
+        fields[key] = value
+    return fields
+
+
+def _live_build(runtime_dir: Path, now: float) -> bool:
+    """Whether a detached image build may still write into ``runtime_dir``.
+
+    The launcher's rule (``launcher._live_build_pid``, not imported: the launcher
+    imports this module): a ``build-<service>.pid`` whose pid is alive and whose
+    file is at most ``build_timeout_secs()`` old. A dir or pid file that cannot be
+    read counts as live (never delete under a build); a non-numeric pid does not.
+    """
+    try:
+        entries = list(Path(runtime_dir).iterdir())
+    except FileNotFoundError:
+        return False
+    except OSError:
+        return True
+    budget = dr.build_timeout_secs()
+    for entry in entries:
+        if not (entry.name.startswith("build-") and entry.name.endswith(".pid")):
+            continue
+        try:
+            text = entry.read_text(encoding="utf-8").strip()
+            age = now - entry.stat().st_mtime
+        except FileNotFoundError:
+            continue
+        except OSError:
+            return True
+        except ValueError:  # not text: not a pid the launcher wrote
+            continue
+        if not text.isdigit() or int(text) <= 0:
+            continue
+        if age <= budget and _pid_alive(int(text)):
+            return True
+    return False
+
+
+def _dir_only_candidates(
+    registry: RuntimeRegistry,
+    seen_pairs: Set[Tuple[str, str]],
+    *,
+    now: float,
+    exists: Callable[[Path], bool],
+) -> List[ReapCandidate]:
+    """Launcher-marked runtime dirs that no registry entry or container accounts for.
+
+    A launch refused with ``LAUNCH_IMAGE_BUILDING`` writes its runtime dir before
+    any lifecycle start creates a registry entry. Such a dir is a candidate only
+    when its ``instance.json`` is well-formed and names exactly this dir
+    (``runtime_dir_for_paths``), the pair has no registry entry and no managed
+    container, its worktree is gone, no launcher is attached and no detached build
+    is live. Never on idle (a container-less dir costs nothing). Read-only.
+    """
+    base = Path(registry.path).parent
+    try:
+        dirs = sorted(p for p in base.iterdir() if p.is_dir() and not p.is_symlink())
+    except OSError:
+        return []
+    found: List[ReapCandidate] = []
+    for runtime_dir in dirs:
+        marker = _read_instance_marker(runtime_dir)
+        if marker is None:
+            continue
+        project_id, worktree_hash = marker["project_id"], marker["worktree_hash"]
+        if (
+            not _SAFE_HASH.fullmatch(worktree_hash)
+            or (project_id, worktree_hash) in seen_pairs
+            or _entry_for(registry, project_id, worktree_hash) is not None
+        ):
+            continue
+        expected = runtime_dir_for_paths(
+            project_root=marker["project_root"],
+            worktree_hash=worktree_hash,
+            registry_path=registry.path,
+        )
+        if expected != runtime_dir:
+            continue  # not a dir this marker's instance would use: not ours
+        if (
+            not _worktree_gone(marker["worktree_root"], exists)
+            or live_attachments(runtime_dir, prune=False) > 0
+            or _live_build(runtime_dir, now)
+        ):
+            continue
+        found.append(
+            ReapCandidate(
+                project_id=project_id,
+                worktree_hash=worktree_hash,
+                worktree_root=marker["worktree_root"],
+                runtime_dir=runtime_dir,
+                container_ids=[],
+                reason="worktree_missing",
+                services=[],
+                dir_only=True,
+            )
+        )
+    return found
 
 
 def _has_active_leases(
@@ -386,13 +572,16 @@ def plan_reap(
     Besides container candidates, a registry pair whose worktree is gone and which
     has no container at all but still has unfinished state (a running entry, active
     leases or a runtime dir) yields a state-only candidate, so a reap that died
-    after ``docker rm`` is finished by the next run.
+    after ``docker rm`` is finished by the next run. A launcher-marked runtime dir
+    with no registry entry and no container yields a dir-only candidate
+    (``_dir_only_candidates``). Idle time includes dead attach records
+    (``_effective_last_detach``); nothing is pruned or stamped here.
     """
     if registry.parse_status != "OK":
         return []
 
     groups: Dict[Tuple[str, str], List[DockerContainerInfo]] = {}
-    seen_pairs = set()
+    seen_pairs: Set[Tuple[str, str]] = set()
     for c in containers:
         labels = c.labels or {}
         project_id = labels.get("dopemux.project_id") or ""
@@ -494,6 +683,9 @@ def plan_reap(
                     services=[],
                 )
             )
+    candidates.extend(
+        _dir_only_candidates(registry, seen_pairs, now=now, exists=exists)
+    )
     return candidates
 
 
@@ -642,12 +834,15 @@ def _release_state(
     label: str,
     *,
     wait_s: Optional[float] = None,
-) -> None:
+) -> List[str]:
     """Release ``cand``'s leases and mark its registry entries stopped (registry lock inside).
 
     Both registries in one directory share one ``registry.lock`` and are updated
     under one acquisition, so a lock that stays busy past ``wait_s`` raises
     ``LockBusy`` with neither changed. ``wait_s=None`` blocks (the CLI).
+
+    Returns the error strings it appended to ``report.errors`` (a corrupt registry
+    left as is, an ``OSError`` on save): empty means both registries were saved.
     """
     updates: List[Tuple[Any, Path, Callable[[Any], Any]]] = [
         (PortLeaseRegistry, lease_path, lambda reg: _release_leases(reg, cand)),
@@ -665,7 +860,9 @@ def _release_state(
             for e in (save_state_locked(c, p, m, wait_s=wait_s) for c, p, m in updates)
             if e
         ]
-    report.errors.extend(f"{label}: {error}" for error in errors)
+    recorded = [f"{label}: {error}" for error in errors]
+    report.errors.extend(recorded)
+    return recorded
 
 
 def _reap_one(
@@ -714,7 +911,9 @@ def _reap_one(
         if docker_errors:
             report.errors.extend(f"{label}: {e}" for e in docker_errors)
             # Some containers may still run: keep their leases, entries and the dir,
-            # but release every service whose containers are all gone now.
+            # but release every service whose containers are all gone now. This
+            # branch never removes the dir and never counts as reaped (a failed
+            # save below is already in ``report.errors``).
             done = _services_gone(cand, gone)
             if done:
                 try:
@@ -733,7 +932,7 @@ def _reap_one(
                     )
             return
         try:
-            _release_state(
+            state_errors = _release_state(
                 cand,
                 lease_path,
                 registry_path,
@@ -745,6 +944,12 @@ def _reap_one(
             # Containers are gone; registry, leases and the runtime dir stay for a
             # later run (a state-only candidate once the worktree is gone).
             report.skip(cand, "registry_busy")
+            return
+        if state_errors:
+            # Same as registry_busy: the containers are gone, but a registry or lease
+            # save failed (already in report.errors), so the runtime dir stays as the
+            # recovery artifact and a later run finishes the state.
+            report.skip(cand, "state_error")
             return
         try:
             shutil.rmtree(cand.runtime_dir)
@@ -778,7 +983,8 @@ def apply_reap(
     (``now``, ``idle_s``, ``exists`` as for ``plan_reap``); a candidate that no
     longer qualifies is skipped as ``stale``. ``blocking_locks=False`` (automatic
     runs) skips a candidate whose instance lock is busy (``locked``) and waits for
-    the registry lock at most ``min(time left, 2 s)`` (``registry_busy``).
+    the registry lock at most ``min(time left, 2 s)`` (``registry_busy``). A failed
+    registry or lease save keeps the runtime dir (``state_error``).
 
     ``max_candidates`` caps the work of one call, ``stop_time_s`` becomes
     ``docker stop --time N``, ``cmd_timeout_s`` is the per-command timeout and
