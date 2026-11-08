@@ -47,3 +47,43 @@ Branch-only: delete the branch/worktree. Host: `~/.local/bin/dopemux` is a uv ed
 Owner ruling: the AGY (gemini-4-argon-high) and Grok (grok-4.7) verdicts, both PASS_WITH_RISKS at 30b0fdec9, govern Milestone 1. Codex gpt-6-astra findings F1 and F2 (medium, reap persistence / CLI start serialization) are accepted as OPEN residual risk and are filed for the first follow-up PR, not fixed in this packet. The owner also authorized: push + PR creation; acceptance T1-T11 run by the controller where the standing constraints allow; host cleanup after acceptance. The M1 merge itself remains owner-gated.
 
 Bundle layout note: reports were renamed to the governance allowlist names (`AUDIT_AGY_REPORT.md`, `AUDIT_CODEX_REPORT.md`, `AUDIT_GROK_REPORT.md`, `AUDIT_SUMMARY.md`); raw auditor streams and the two superseded freezes live flat under `review_bundle/` with `superseded-<sha>-` / `raw-` prefixes; the sealed audit subject (prompts as sent, commit list, file hashes, full diff) is in `review_bundle/` too.
+
+## Cycle 2 (2026-11-08) — forced fix + re-audit at 3f1335e7fdcf8165d4669195bfd521cafca13304
+
+### Change Summary
+Forced fix + re-audit cycle after the 30b0fdec9 round: origin/main (#1500) merged as 0cde3a921; then ten commits that close the five PR review-bot threads (test path case; SessionEnd hook timeout 60; `_url_is_repairable` templated URLs fail closed; `--repo` commands load the target checkout's catalog; AGENTS.md image sentence), codex F1 (`state_error`: a failed registry/lease save keeps the runtime dir) and F2 (CLI start/restart/stop serialize the worktree-scoped services under one instance-lock acquisition with facts re-taken under the lock, images pre-built outside it, docker-unavailable snapshots failing closed; the orchestrator stays outside under its own `:7890` lock because the whole-selection design deadlocked against `switch-project`), the crashed-launcher idle rule (dead attach records count from their attach time without mutating during planning), the build-only orphan runtime dir (`instance.json` marker + dir-only `worktree_missing` candidates), the pre-existing restart-did-nothing bug and the orchestrator-only artifact-write race, plus append-only design amendments, how-to corrections and the T7 evidence note; after the push, the Codex connector's one new P2 (tenant provisioning replayed a committed non-re-runnable migration when its checkpoint write was lost) was fixed as Task C, and its follow-up P2 on the next push (`init --repo <subdir>` keeping the subdirectory) as Task A2, both before the freeze.
+
+### Authority Used
+Owner: "fold everything" (2026-11-07) after the forced-cycle ruling; push authorized within the cycle. Not used: merge, thread resolution, signing (owner-only).
+
+### Analysis Performed
+Subagent-driven: two implementers (sonnet batch, opus concurrency cluster; implementers never commit, the controller commits by explicit paths), task reviews with fix rounds, one final whole-cycle review with one fix dispatch and one scoped re-review, a controller-verified micro round. Findings caught before the freeze: ABBA deadlock (implementer), stale snapshot under the lock, inline build under the lock, restart pre-stop snapshot, docker-unavailable fail-open, orchestrator-only override overwrite (reviewers).
+
+### Validation Performed
+See `validations` in PROOF.json and `review_bundle/subject-validations.md`: make test-fast PASS at the frozen head; hooks workflow PASS; docs validators PASS on the two docs pages; ruff/flake8/mypy deltas 0; black/isort 0 on added lines; live cold launch + reap dry-run PASS at this head; acceptance T1–T11 NOT_RUN at this head (recorded at 30b0fdec9); root hygiene FAIL pre-existing.
+
+### Audit outcome at 3f1335e7f
+agy gemini-4-argon-high PASS_WITH_RISKS (governing record), grok grok-4.7 PASS_WITH_RISKS (no findings), codex gpt-6-astra FAIL with two new mediums: F1 mcp_json.py:140 (the host-placeholder guard splits the URL authority before masking placeholders, so a default containing `/`, `?` or `#` escapes the check) and F2 stdio_proxy.py:198 (resend-once recognises "Session terminated" as a substring and can replay a request the backend committed). Breaker tripped per the ruling: owner decides between a cycle 3 (both fixes small) and adjudicating AGY + Grok as governing with codex F1/F2 as a follow-up. Earlier codex F1/F2 (30b0fdec9) are closed: codex confirms C-REAP/C-LOCKS PASS and lists only the two new findings.
+
+### Remaining Uncertainty
+`residual_risks` and `unknowns` in PROOF.json (the final reviewer's list of what an L3 auditor may still raise is pre-stated there).
+
+### Files Touched
+`files_changed` in PROOF.json (diff of the frozen head against the synthetic base merge-tree(5742575c4, f16e0da2c), proof/ excluded).
+
+### Git State
+Branch feat/mcp-just-works-m1 pushed at the frozen head; proof-only successor commits follow; PR #1503 open, base main (up to date with f16e0da2c at freeze time).
+
+### Rollback Plan
+Revert the PR; on a host `ln -sfn ~/.dopemux/venv/bin/dopemux ~/.local/bin/dopemux`; provisioned secrets and the shared images are kept; the how-to's Rollback section restores URL entries.
+
+### Requested Next Step (owner)
+Resolve the five review threads against the fixing commits (table in the hand-off), run the cleanup script, then sign `scripts/audit/sign_local_audit_proof.sh 1503` at the frozen head's proof successor; merge stays owner-gated.
+
+### Audit (three routes at 3f1335e7; observed identity UNKNOWN for all)
+
+| route | requested model | status | findings |
+|---|---|---|---|
+| agy | gemini-4-argon-high | PASS_WITH_RISKS | none |
+| grok | grok-4.7 | PASS_WITH_RISKS | none |
+| codex | gpt-6-astra | FAIL | F1 medium src/dopemux/mcp/mcp_json.py:140; F2 medium src/dopemux/mcp/stdio_proxy.py:198 |

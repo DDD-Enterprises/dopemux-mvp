@@ -344,7 +344,7 @@ index 82bdac8a7..76445f641 100644
      if response:
          sys.stdout.write(json.dumps(response))
 diff --git a/src/dopemux/cli.py b/src/dopemux/cli.py
-index c4b8e570b..ce4e01adb 100644
+index c4b8e570b..b36cc308d 100644
 --- a/src/dopemux/cli.py
 +++ b/src/dopemux/cli.py
 @@ -4153,6 +4153,20 @@ def native_hooks():
@@ -396,8 +396,48 @@ index c4b8e570b..ce4e01adb 100644
          
      # Read existing settings. Invalid JSON must fail closed so a registration
      # attempt cannot silently discard the operator's existing settings.
+@@ -4229,6 +4253,12 @@ def native_hooks_register(is_global: bool):
+             for h in (group.get("hooks") if isinstance(group.get("hooks"), list) else [])
+         )
+ 
++    # SessionEnd hooks otherwise share a 1.5 s budget, but the SessionEnd handler
++    # can spend up to 45 s reaping before it saves session history; mirror the
++    # `"timeout": 60` in the project's own .claude/settings.json. Only SessionEnd
++    # gets a timeout key; every other event is written exactly as before.
++    session_end_timeout_s = 60
++
+     changed = False
+     for event in events:
+         groups = existing["hooks"].setdefault(event, [])
+@@ -4237,8 +4267,25 @@ def native_hooks_register(is_global: bool):
+                 f"Invalid settings in {settings_path}; hooks.{event} must be a JSON array"
+             )
+         if not any(_has_cmd(g) for g in groups):
+-            groups.insert(0, {"hooks": [{"type": "command", "command": cmd}]})
++            new_hook: Dict[str, Any] = {"type": "command", "command": cmd}
++            if event == "SessionEnd":
++                new_hook["timeout"] = session_end_timeout_s
++            groups.insert(0, {"hooks": [new_hook]})
+             changed = True
++        elif event == "SessionEnd":
++            # Heal registrations written before the timeout existed; a timeout
++            # the operator already set (any value) is left alone.
++            for group in groups:
++                if not _has_cmd(group):
++                    continue
++                for hook in group["hooks"]:
++                    if (
++                        isinstance(hook, dict)
++                        and hook.get("command") == cmd
++                        and "timeout" not in hook
++                    ):
++                        hook["timeout"] = session_end_timeout_s
++                        changed = True
+ 
+     if changed:
+         settings_path.parent.mkdir(parents=True, exist_ok=True)
 diff --git a/src/dopemux/commands/mcp_commands.py b/src/dopemux/commands/mcp_commands.py
-index 235209dd8..96c7161d5 100644
+index 235209dd8..c2240203f 100644
 --- a/src/dopemux/commands/mcp_commands.py
 +++ b/src/dopemux/commands/mcp_commands.py
 @@ -24,10 +24,10 @@ import subprocess
@@ -457,7 +497,38 @@ index 235209dd8..96c7161d5 100644
  def _lifecycle_services_option():
      return click.option(
          "--services",
-@@ -130,6 +162,7 @@ def _run_lifecycle_cli(
+@@ -123,6 +155,30 @@ def _lifecycle_services_option():
+     )
+ 
+ 
++def _git_toplevel(path: Path) -> Path:
++    """Git top-level of ``path`` (any directory inside a checkout); ``path`` itself outside git.
++
++    An explicit ``--repo ./src`` must act on the enclosing checkout, as the
++    launcher does (it normalizes its root with ``git rev-parse --show-toplevel``).
++    """
++    resolved = Path(path).expanduser().resolve()
++    try:
++        proc = subprocess.run(
++            ["git", "rev-parse", "--show-toplevel"],
++            cwd=resolved,
++            capture_output=True,
++            text=True,
++            timeout=5,
++            check=False,
++        )
++    except (OSError, subprocess.SubprocessError):
++        return resolved
++    top = proc.stdout.strip()
++    if proc.returncode == 0 and top:
++        return Path(top).resolve()
++    return resolved
++
++
+ def _run_lifecycle_cli(
+     operation: str,
+     *,
+@@ -130,19 +186,25 @@ def _run_lifecycle_cli(
      services: Optional[str],
      dry_run: bool,
      json_output: bool,
@@ -465,7 +536,18 @@ index 235209dd8..96c7161d5 100644
  ) -> None:
      """Shared entry for start/stop/restart/status reconciler."""
      from dopemux.mcp.lifecycle import format_lifecycle_human, run_lifecycle
-@@ -142,7 +175,8 @@ def _run_lifecycle_cli(
+ 
+-    catalog = _load_catalog()
++    # An explicit --repo may be a subdirectory: the checkout root owns .mcp.json,
++    # the envrc and the repo-local catalog (as for the launcher), so both the
++    # catalog and the lifecycle run use it.
++    target_root = _git_toplevel(repo_arg) if repo_arg is not None else None
++    catalog = _load_catalog(target_root) if target_root is not None else _load_catalog()
+     svc_list = [s.strip() for s in (services or "").split(",") if s.strip()] or None
+     result = run_lifecycle(
+         operation,
+-        repo=repo_arg,
++        repo=target_root,
          services=svc_list,
          catalog=catalog,
          dry_run=dry_run,
@@ -475,7 +557,7 @@ index 235209dd8..96c7161d5 100644
      )
      if json_output:
          sys.stdout.write(result.to_json())
-@@ -162,10 +196,17 @@ def _run_lifecycle_cli(
+@@ -162,10 +224,17 @@ def _run_lifecycle_cli(
  
  @mcp.command("start")
  @_lifecycle_repo_option()
@@ -494,7 +576,7 @@ index 235209dd8..96c7161d5 100644
      """
      🚀 Start project-scoped MCP sidecars (repo-aware reconciler)
  
-@@ -179,15 +220,23 @@ def mcp_start_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: bo
+@@ -179,15 +248,23 @@ def mcp_start_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: bo
          services=services,
          dry_run=dry_run,
          json_output=json_output,
@@ -519,7 +601,7 @@ index 235209dd8..96c7161d5 100644
      """
      🛑 Stop Dopemux-managed MCP sidecars for a target repo
  
-@@ -200,15 +249,23 @@ def mcp_stop_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: boo
+@@ -200,15 +277,23 @@ def mcp_stop_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run: boo
          services=services,
          dry_run=dry_run,
          json_output=json_output,
@@ -544,14 +626,14 @@ index 235209dd8..96c7161d5 100644
      """♻️ Restart project-scoped MCP sidecars (safe stop then start)."""
      _run_lifecycle_cli(
          "restart",
-@@ -216,19 +273,264 @@ def mcp_restart_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run:
+@@ -216,19 +301,270 @@ def mcp_restart_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run:
          services=services,
          dry_run=dry_run,
          json_output=json_output,
 +        trust_env=trust_env,
-     )
- 
- 
++    )
++
++
 +@mcp.command("launch")
 +@click.argument("service")
 +@click.option(
@@ -591,9 +673,14 @@ index 235209dd8..96c7161d5 100644
 +    """Reap sidecars of removed or idle worktrees (design D8).
 +
 +    An instance is reaped when no launcher is attached AND its worktree no longer
-+    exists, or it has been idle (last launcher detached) for 20 minutes.
-+    Containers are matched by dopemux labels plus a registry entry; project and
-+    singleton scope (the task-orchestrator) are never touched. --apply ignores the
++    exists, or it has been idle (last launcher detached) for 20 minutes; never while
++    a detached image build is running in its runtime dir. A launcher killed outright
++    leaves a dead attach record; its attach time counts as the detach. Containers are
++    matched by dopemux labels plus a registry entry; project and singleton scope
++    (the task-orchestrator) are never touched. A runtime dir
++    that a launcher marked (instance.json) but that never got a sidecar (a
++    build-only launch) is removed once its worktree is gone and no launcher or
++    detached image build still uses it; never for idleness. --apply ignores the
 +    automatic-reaping kill switch (file reap.disabled or DOPEMUX_MCP_REAP=0).
 +    """
 +    import time
@@ -627,7 +714,7 @@ index 235209dd8..96c7161d5 100644
 +        containers=docker.containers,
 +        now=time.time(),
 +        lease_registry=PortLeaseRegistry.load(default_lease_registry_path()),
-+    )
+     )
 +    report = None if dry_run else reap.apply_reap(candidates, runner=reap.run_cmd)
 +
 +    if json_output:
@@ -684,11 +771,12 @@ index 235209dd8..96c7161d5 100644
 +        click.echo(message, err=True)
 +        sys.exit(1)
 +
-+    target = lc.resolve_target_repo(repo_arg)
++    # An explicit --repo may be a subdirectory of the checkout: act on its root.
++    target = _git_toplevel(lc.resolve_target_repo(repo_arg))
 +    identity = resolve_identity_view(target)
 +    if not identity.project_id or not identity.project_root:
 +        refuse(f"Cannot resolve the project identity of {target}; run dopemux mcp doctor")
-+    catalog = _load_catalog()
++    catalog = _load_catalog(target)
 +
 +    def inspect_owner() -> Tuple[Any, Optional[str]]:
 +        """(owner container or None when :7890 is free, its project root when foreign)."""
@@ -792,8 +880,8 @@ index 235209dd8..96c7161d5 100644
 +        click.echo(f"task-orchestrator start failed (status {result.status})", err=True)
 +        sys.exit(result.exit_code)
 +    click.echo(f"task-orchestrator on :{port} now serves {identity.project_root}")
-+
-+
+ 
+ 
  @mcp.command("up")
  @click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
  @click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")
@@ -809,7 +897,7 @@ index 235209dd8..96c7161d5 100644
      dry_run: bool,
      json_output: bool,
  ):
-@@ -247,6 +549,7 @@ def mcp_up_cmd(
+@@ -247,6 +583,7 @@ def mcp_up_cmd(
              services=services,
              dry_run=dry_run,
              json_output=json_output,
@@ -817,7 +905,7 @@ index 235209dd8..96c7161d5 100644
          )
          return
      try:
-@@ -301,11 +604,13 @@ def mcp_up_cmd(
+@@ -301,11 +638,13 @@ def mcp_up_cmd(
  
  @mcp.command("down")
  @_lifecycle_repo_option()
@@ -831,7 +919,7 @@ index 235209dd8..96c7161d5 100644
      services: Optional[str],
      dry_run: bool,
      json_output: bool,
-@@ -324,6 +629,7 @@ def mcp_down_cmd(
+@@ -324,6 +663,7 @@ def mcp_down_cmd(
              services=services,
              dry_run=dry_run,
              json_output=json_output,
@@ -839,7 +927,7 @@ index 235209dd8..96c7161d5 100644
          )
          return
      try:
-@@ -347,13 +653,16 @@ def mcp_down_cmd(
+@@ -347,13 +687,16 @@ def mcp_down_cmd(
  
  @mcp.command("status")
  @_lifecycle_repo_option()
@@ -857,7 +945,7 @@ index 235209dd8..96c7161d5 100644
      """
      📊 Diagnostic HUD: Interrogate MCP service health
  
-@@ -387,6 +696,7 @@ def mcp_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose:
+@@ -387,6 +730,7 @@ def mcp_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose:
              services=None,
              dry_run=False,
              json_output=json_output,
@@ -865,7 +953,7 @@ index 235209dd8..96c7161d5 100644
          )
          return
      from ..mcp.docker_runtime import env_with_compose_interpolation
-@@ -502,28 +812,32 @@ def servers():
+@@ -502,28 +846,32 @@ def servers():
  @click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
  @click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")
  @click.option("--repo", "repo_arg", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path), default=None)
@@ -899,7 +987,7 @@ index 235209dd8..96c7161d5 100644
      services: Optional[str],
      dry_run: bool,
      json_output: bool,
-@@ -531,18 +845,21 @@ def servers_down_cmd(
+@@ -531,18 +879,21 @@ def servers_down_cmd(
      """
      💧 Cool Down Cores (Alias): Terminate MCP containers and volumes
      """
@@ -924,7 +1012,7 @@ index 235209dd8..96c7161d5 100644
  
  
  @servers.command("logs")
-@@ -575,8 +892,12 @@ PROJECT_MCP_FILENAME = ".mcp.json"
+@@ -575,8 +926,12 @@ PROJECT_MCP_FILENAME = ".mcp.json"
  ENVRC_FILENAME = ".envrc.dopemux-mcp"   # sourced from .envrc; keeps generated content separate
  
  
@@ -939,7 +1027,7 @@ index 235209dd8..96c7161d5 100644
      explicit = os.environ.get(CATALOG_ENV_VAR)
      if explicit:
          path = Path(explicit).expanduser().resolve()
-@@ -586,16 +907,16 @@ def _catalog_path() -> Optional[Path]:
+@@ -586,16 +941,16 @@ def _catalog_path() -> Optional[Path]:
              )
          return path
  
@@ -961,7 +1049,7 @@ index 235209dd8..96c7161d5 100644
      if catalog_path:
          with catalog_path.open("r", encoding="utf-8") as fh:
              data = yaml.safe_load(fh) or {}
-@@ -699,11 +1020,33 @@ def _render_claude_memory_bridge_entry(name: str, spec: Dict[str, Any]) -> Dict[
+@@ -699,11 +1054,33 @@ def _render_claude_memory_bridge_entry(name: str, spec: Dict[str, Any]) -> Dict[
      return entry
  
  
@@ -995,7 +1083,7 @@ index 235209dd8..96c7161d5 100644
      transport = spec.get("transport", "http")
      entry: Dict[str, Any] = {"type": transport}
  
-@@ -924,11 +1267,19 @@ def _write_envrc(
+@@ -924,11 +1301,19 @@ def _write_envrc(
      port_vars: Dict[str, int],
      worktree: str,
      project_root: str,
@@ -1017,7 +1105,7 @@ index 235209dd8..96c7161d5 100644
          f"# Worktree: {worktree}",
          f"# Project:  {project_root}",
          f"# Generated: {datetime.now().isoformat(timespec='seconds')}",
-@@ -939,6 +1290,11 @@ def _write_envrc(
+@@ -939,6 +1324,11 @@ def _write_envrc(
      lines.append("")
      for var, port in sorted(port_vars.items()):
          lines.append(f"export {var}={port}")
@@ -1029,7 +1117,7 @@ index 235209dd8..96c7161d5 100644
      envrc_path.write_text("\n".join(lines) + "\n")
  
  
-@@ -1390,12 +1746,12 @@ def _apply_in_repo_agent_configs(
+@@ -1390,12 +1780,12 @@ def _apply_in_repo_agent_configs(
          )
  
  
@@ -1045,7 +1133,7 @@ index 235209dd8..96c7161d5 100644
      identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
      try:
          identity = resolve_project_identity(cwd=repo_path, env=identity_env)
-@@ -1404,8 +1760,11 @@ def _ensure_context() -> tuple[Path, Any]:
+@@ -1404,8 +1794,11 @@ def _ensure_context() -> tuple[Path, Any]:
      return repo_path, identity
  
  
@@ -1059,7 +1147,7 @@ index 235209dd8..96c7161d5 100644
      if env_repo:
          repo_path = Path(env_repo).expanduser().resolve()
          if not repo_path.is_dir():
-@@ -1426,7 +1785,7 @@ def _ensure_fast_context() -> tuple[Path, Path]:
+@@ -1426,7 +1819,7 @@ def _ensure_fast_context() -> tuple[Path, Path]:
                  "set DOPEMUX_WORKSPACE_ROOT or run from the repository root."
              )
  
@@ -1068,7 +1156,7 @@ index 235209dd8..96c7161d5 100644
      if project_override:
          project_root = Path(project_override).expanduser().resolve()
          if not project_root.is_dir():
-@@ -1576,13 +1935,14 @@ def _report_ensure_problems(problems: List[str]) -> None:
+@@ -1576,13 +1969,14 @@ def _report_ensure_problems(problems: List[str]) -> None:
  
  
  @mcp.command("ensure")
@@ -1084,7 +1172,7 @@ index 235209dd8..96c7161d5 100644
      """
      🛠️ Stabilize Fleet: Check or remediate catalog-backed MCP prerequisites
  
-@@ -1600,9 +1960,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1600,9 +1994,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
  
      catalog = _load_catalog()
      if fast:
@@ -1096,7 +1184,7 @@ index 235209dd8..96c7161d5 100644
          project_root = identity.project_root
      problems = _ensure_fast_problems(catalog, repo_path, project_root)
      if problems:
-@@ -1656,6 +2016,107 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1656,6 +2050,107 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
      console.logger.info("[success]Full MCP ensure checks green.[/success]")
  
  
@@ -1204,7 +1292,7 @@ index 235209dd8..96c7161d5 100644
  @mcp.command("init")
  @click.option("--force", is_flag=True, help="Overwrite existing .mcp.json and env file without prompting.")
  @click.option("--with", "extra", multiple=True, help="Additional server name beyond catalog defaults (repeatable).")
-@@ -1668,7 +2129,15 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1668,7 +2163,15 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
          "profile core-code when omitted. Never all servers."
      ),
  )
@@ -1221,7 +1309,7 @@ index 235209dd8..96c7161d5 100644
      """
      🌱 Bootstrap Worktree: Scaffold .mcp.json + per-worktree env file
  
-@@ -1676,17 +2145,23 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1676,21 +2179,40 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
      per-worktree servers (default: compatibility profile ``core-code``) plus any
      `--with NAME` extras. Allocates ports deterministically from the worktree
      path so two worktrees never collide on the same host port.
@@ -1249,7 +1337,25 @@ index 235209dd8..96c7161d5 100644
      except ProjectIdentityError as exc:
          raise click.ClickException(f"Could not resolve project identity: {exc}") from exc
  
-@@ -1778,7 +2253,8 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+-    catalog = _load_catalog()
++    # `--repo` may be any directory inside the checkout; catalog lookup, profile
++    # inventory, port allocation and every file write use the worktree root, as
++    # the launcher does. (Test doubles for the identity may not carry one.)
++    worktree_root = getattr(identity, "worktree_root", None)
++    if worktree_root and Path(worktree_root) != repo_path:
++        # Only an enclosing checkout root replaces the target; an ambient
++        # override (--trust-env) pointing elsewhere never redirects the writes.
++        if Path(worktree_root).resolve() in repo_path.resolve().parents:
++            repo_path = Path(worktree_root)
++            repo = str(repo_path)
++
++    # The resolved target's catalog, not the caller's: `init --repo <target>` from
++    # another checkout must see the target's own servers and defaults.
++    catalog = _load_catalog(repo_path)
+ 
+     if catalog.get("profiles") or profile_name is not None:
+         try:
+@@ -1778,7 +2300,8 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
          _atomic_write_json(mcp_json_path, config)
          wrote_mcp_json = True
  
@@ -1259,7 +1365,7 @@ index 235209dd8..96c7161d5 100644
  
      if wrote_mcp_json:
          console.logger.info(f"[success]Wrote {mcp_json_path}[/success]")
-@@ -1792,26 +2268,38 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1792,26 +2315,38 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
          for var, port in sorted(port_vars.items()):
              free = "[success]free[/success]" if _port_is_free(port) else "[warning]in use[/warning]"
              console.logger.info(f"[info]  {var}={port} ({free})[/info]")
@@ -1304,7 +1410,7 @@ index 235209dd8..96c7161d5 100644
      identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
      try:
          identity = resolve_project_identity(cwd=repo, env=identity_env)
-@@ -1972,6 +2460,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
+@@ -1972,6 +2507,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
      default=None,
      help="Target repo/worktree to diagnose (defaults to current git root). Works from any cwd.",
  )
@@ -1312,7 +1418,7 @@ index 235209dd8..96c7161d5 100644
  @click.option(
      "--json",
      "json_output",
-@@ -2004,6 +2493,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
+@@ -2004,6 +2540,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
  )
  def mcp_doctor_cmd(
      repo_arg: Optional[Path],
@@ -1320,7 +1426,7 @@ index 235209dd8..96c7161d5 100644
      json_output: bool,
      verbose: bool,
      skip_docker: bool,
-@@ -2036,17 +2526,18 @@ def mcp_doctor_cmd(
+@@ -2036,17 +2573,18 @@ def mcp_doctor_cmd(
              raise click.ClickException(
                  "--legacy does not support --repo; omit --legacy for repo-aware doctor."
              )
@@ -1341,7 +1447,7 @@ index 235209dd8..96c7161d5 100644
          if not repo:
              raise click.ClickException(
                  "Not inside a git repository. Pass --repo <path> to diagnose another project."
-@@ -2067,6 +2558,9 @@ def mcp_doctor_cmd(
+@@ -2067,6 +2605,9 @@ def mcp_doctor_cmd(
          compose_path=compose_candidate,
          skip_docker=skip_docker,
          process_env=dict(os.environ),
@@ -1351,7 +1457,7 @@ index 235209dd8..96c7161d5 100644
      )
  
      if json_output:
-@@ -2089,10 +2583,10 @@ def mcp_doctor_cmd(
+@@ -2089,10 +2630,10 @@ def mcp_doctor_cmd(
          sys.exit(report.exit_code)
  
  
@@ -1364,7 +1470,7 @@ index 235209dd8..96c7161d5 100644
      if not repo:
          raise click.ClickException("Not inside a git repository.")
  
-@@ -2100,7 +2594,7 @@ def _mcp_doctor_legacy() -> None:
+@@ -2100,7 +2641,7 @@ def _mcp_doctor_legacy() -> None:
      mcp_json_path = Path(repo) / PROJECT_MCP_FILENAME
      problems: List[str] = []
      try:
@@ -1373,7 +1479,7 @@ index 235209dd8..96c7161d5 100644
          identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
          identity = resolve_project_identity(cwd=repo, env=identity_env)
      except ProjectIdentityError as exc:
-@@ -2277,11 +2771,11 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
+@@ -2277,11 +2818,11 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
      return {k: v for k, v in entry.items() if k != "description"}
  
  
@@ -1381,13 +1487,14 @@ index 235209dd8..96c7161d5 100644
 +def _resolve_repo_arg(repo_arg: Optional[Path], *, trust_env: bool = False) -> Path:
      """Resolve --repo or current git root to an absolute path."""
      if repo_arg is not None:
-         return Path(repo_arg).expanduser().resolve()
+-        return Path(repo_arg).expanduser().resolve()
 -    repo = get_repo_root(fallback_cwd=False)
++        return _git_toplevel(repo_arg)
 +    repo = get_repo_root(fallback_cwd=False, trust_env=trust_env)
      if not repo:
          raise click.ClickException(
              "Not inside a git repository. Pass --repo <path> to target another project."
-@@ -2407,11 +2901,13 @@ def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
+@@ -2407,11 +2948,13 @@ def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
      default=None,
      help="Target repo/worktree (defaults to current git root).",
  )
@@ -1401,16 +1508,20 @@ index 235209dd8..96c7161d5 100644
      dry_run: bool,
      apply: bool,
      json_output: bool,
-@@ -2430,7 +2926,7 @@ def mcp_repair_config_cmd(
+@@ -2430,9 +2973,9 @@ def mcp_repair_config_cmd(
  
      from dopemux.mcp.config_repair import apply_repair, format_repair_human, plan_repair
  
 -    repo_path = _resolve_repo_arg(repo_arg)
+-    catalog = _load_catalog()
+-    catalog_path = _catalog_path()
 +    repo_path = _resolve_repo_arg(repo_arg, trust_env=trust_env)
-     catalog = _load_catalog()
-     catalog_path = _catalog_path()
++    catalog = _load_catalog(repo_path)
++    catalog_path = _catalog_path(repo_path)
      catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
-@@ -2441,6 +2937,7 @@ def mcp_repair_config_cmd(
+ 
+     plan = plan_repair(
+@@ -2441,6 +2984,7 @@ def mcp_repair_config_cmd(
          dry_run=dry_run,
          catalog_paths=catalog_paths,
          process_env=dict(os.environ),
@@ -1478,10 +1589,10 @@ index 8884faf43..67d459120 100644
          "workspace_id": identity.workspace_id,
 diff --git a/src/dopemux/mcp/conport_tenant.py b/src/dopemux/mcp/conport_tenant.py
 new file mode 100644
-index 000000000..a0a84fcd8
+index 000000000..1a0387dfb
 --- /dev/null
 +++ b/src/dopemux/mcp/conport_tenant.py
-@@ -0,0 +1,970 @@
+@@ -0,0 +1,1044 @@
 +"""ConPort tenants (design D5): per-project database credentials, resolved automatically.
 +
 +Resolution order (``resolve_tenant``):
@@ -1548,6 +1659,7 @@ index 000000000..a0a84fcd8
 +from .locks import _mkdir_private, project_dir, provision_lock
 +
 +__all__ = [
++    "MIGRATION_APPLIED_PROBES",
 +    "PROVISION_MIGRATIONS",
 +    "PsqlRunner",
 +    "TenantCredentials",
@@ -1611,6 +1723,18 @@ index 000000000..a0a84fcd8
 +    "007_worktree_support_simple",
 +    "008_write_principal",
 +)
++
++# The migrations that cannot be re-run (001 and 002: one BEGIN/COMMIT each,
++# with a bare CREATE VIEW/TRIGGER), each with the last object its transaction
++# creates, as the sealed gate's ``kind:name`` (``migration_schema_errors``)
++# split on ":"; that object existing means the migration committed. A resume
++# probes these before replaying them. Every other migration is made only of
++# idempotent statements and is simply replayed, which also completes one a
++# kill left half applied (003 and 004 are not transactions).
++MIGRATION_APPLIED_PROBES: Dict[str, Tuple[str, ...]] = {
++    "001_enhanced_decision_model": ("view", "decisions_needing_review"),
++    "002_decision_patterns_table": ("view", "pattern_statistics"),
++}
 +
 +Source = Literal["secrets", "legacy_envrc", "provisioned", "legacy_shared"]
 +PsqlRunner = Callable[[str, str], subprocess.CompletedProcess]
@@ -2081,6 +2205,52 @@ index 000000000..a0a84fcd8
 +)
 +
 +
++def _applied_probe_sql(probe: Tuple[str, ...]) -> Optional[str]:
++    """Read-only ``DPMX_APPLIED=true|false`` for one gate-style object; None for an unknown kind."""
++    kind, parts = probe[0], probe[1:]
++    if kind == "view" and len(parts) == 1:  # a view, not any relation of that name
++        exists = (
++            "EXISTS (SELECT 1 FROM pg_views WHERE schemaname = 'public'"
++            f" AND viewname = {_literal(parts[0])})"
++        )
++    elif kind in ("table", "index") and len(parts) == 1:
++        exists = f"to_regclass({_literal('public.' + parts[0])}) IS NOT NULL"
++    elif kind == "column" and len(parts) == 2:
++        exists = (
++            "EXISTS (SELECT 1 FROM information_schema.columns"
++            " WHERE table_schema = 'public'"
++            f" AND table_name = {_literal(parts[0])}"
++            f" AND column_name = {_literal(parts[1])})"
++        )
++    else:
++        return None
++    return f"SELECT 'DPMX_APPLIED=' || ({exists})::text;\n"
++
++
++def _migration_applied(
++    db: str,
++    name: str,
++    scalar: Callable[[str, str, str, str], str],
++    as_role: str,
++) -> bool:
++    """Whether migration ``name`` already committed, judged from the object it creates.
++
++    Fail closed: a psql error, a missing marker or any answer but true/false
++    raises ``CONPORT_TENANT_PROVISION_FAILED``; doubt never replays SQL.
++    """
++    what = f"applied probe for migration {name}"
++    probe = MIGRATION_APPLIED_PROBES.get(name, ())
++    sql = _applied_probe_sql(probe) if probe else None
++    if sql is None:
++        raise TenantError("CONPORT_TENANT_PROVISION_FAILED", f"{what}: no usable probe")
++    answer = scalar(db, as_role + sql, "DPMX_APPLIED", what)
++    if answer not in ("true", "false"):
++        raise TenantError(
++            "CONPORT_TENANT_PROVISION_FAILED", f"{what}: unexpected psql output"
++        )
++    return answer == "true"
++
++
 +def provision_database(
 +    *,
 +    slug: str,
@@ -2101,8 +2271,13 @@ index 000000000..a0a84fcd8
 +    file already holds its password. ``persist`` runs after that check and
 +    before ``CREATE ROLE``, so the password is on disk before Postgres has it.
 +    When the schema already exists, only the migrations after
-+    ``applied_through`` run (001/002 are not re-runnable); ``on_migration`` is
-+    told each one as soon as it has applied, so progress survives a kill.
++    ``applied_through`` run. The ones that cannot be re-run (001/002, listed in
++    ``MIGRATION_APPLIED_PROBES``) are first probed for the last object their
++    one transaction creates, one the gate checks for that version: one that
++    committed before its checkpoint was written is checkpointed, not replayed,
++    and a failing probe refuses. The idempotent rest are replayed.
++    ``on_migration`` is told each one as soon as it has applied, so progress
++    survives a kill.
 +    """
 +    if not _SLUG_RE.match(slug):
 +        raise TenantError(
@@ -2194,6 +2369,16 @@ index 000000000..a0a84fcd8
 +    else:
 +        todo = _remaining_migrations(applied_through)
 +    for name in todo:
++        if (
++            present
++            and name in MIGRATION_APPLIED_PROBES
++            and _migration_applied(db, name, scalar, as_role)
++        ):
++            # Committed, but its checkpoint was never written (a kill, a failed
++            # state write): replaying 001/002 fails on CREATE VIEW/TRIGGER.
++            if on_migration is not None:
++                on_migration(name)
++            continue
 +        sql = (Path(migrations_dir) / f"{name}.sql").read_text(encoding="utf-8")
 +        run(db, as_role + sql, f"migration {name}")
 +        if on_migration is not None:
@@ -2569,10 +2754,10 @@ index 7eeb946fc..dc1e9f61d 100644
      container: DockerContainerInfo,
      *,
 diff --git a/src/dopemux/mcp/docker_runtime.py b/src/dopemux/mcp/docker_runtime.py
-index 48d9bc05c..10c97f4a0 100644
+index 48d9bc05c..d07620bb1 100644
 --- a/src/dopemux/mcp/docker_runtime.py
 +++ b/src/dopemux/mcp/docker_runtime.py
-@@ -9,6 +9,7 @@ with Dopemux labels applied at create time.
+@@ -9,10 +9,13 @@ with Dopemux labels applied at create time.
  
  from __future__ import annotations
  
@@ -2580,7 +2765,13 @@ index 48d9bc05c..10c97f4a0 100644
  import os
  import re
  import shlex
-@@ -41,14 +42,54 @@ DEFAULT_BUILD_TIMEOUT_SECS = 1800.0
++import stat
+ import subprocess
++import uuid
+ from dataclasses import dataclass, field
+ from pathlib import Path
+ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
+@@ -41,14 +44,54 @@ DEFAULT_BUILD_TIMEOUT_SECS = 1800.0
  DEFAULT_UP_TIMEOUT_SECS = 180.0
  
  
@@ -2635,7 +2826,7 @@ index 48d9bc05c..10c97f4a0 100644
      Sets a parse-only bridge token when unset. When *host_path_defaults* is
      true, also derives HOST_CODE_PARENT_DIR / HOST_PROJECT_RELATIVE_PATH from
      *product* (or :func:`product_root`) for any of them that is unset or
-@@ -62,6 +103,9 @@ def env_with_compose_interpolation(
+@@ -62,6 +105,9 @@ def env_with_compose_interpolation(
      dope-context singleton.
      """
      env = dict(os.environ if base is None else base)
@@ -2645,7 +2836,7 @@ index 48d9bc05c..10c97f4a0 100644
      if not str(env.get("DOPECON_BRIDGE_TOKEN") or "").strip():
          env["DOPECON_BRIDGE_TOKEN"] = COMPOSE_INTERPOLATION_PLACEHOLDER
      if host_path_defaults and any(
-@@ -70,14 +114,17 @@ def env_with_compose_interpolation(
+@@ -70,14 +116,17 @@ def env_with_compose_interpolation(
          try:
              root = product if product is not None else product_root()
          except FileNotFoundError:
@@ -2671,7 +2862,7 @@ index 48d9bc05c..10c97f4a0 100644
      return env
  
  
-@@ -255,9 +302,13 @@ def generate_compose_override(
+@@ -255,9 +304,13 @@ def generate_compose_override(
      auth_mode: Optional[str] = None,
      auth_dir: Optional[Path] = None,
      conport_auth_mode: Optional[str] = None,
@@ -2685,7 +2876,7 @@ index 48d9bc05c..10c97f4a0 100644
      Auth, per sidecar: ``DOPE_MEMORY_AUTH_MODE`` (``auth_mode``) for dope-memory
      and ``CONPORT_AUTH_MODE`` (``conport_auth_mode``) for ConPort, each switched
      to ``enforce`` separately. When the host auth directory exists it is mounted
-@@ -285,10 +336,11 @@ def generate_compose_override(
+@@ -285,10 +338,11 @@ def generate_compose_override(
                  f'      - "{host_auth_dir.resolve()}:{DOPE_MEMORY_AUTH_MOUNT}:ro"\n'
              )
          # ports: !override replaces compose.yml all-interface publishes with loopback-only.
@@ -2698,7 +2889,7 @@ index 48d9bc05c..10c97f4a0 100644
        - "127.0.0.1:{http_p}:3004"
        - "127.0.0.1:{mcp_p}:3005"
        - "127.0.0.1:{info_p}:4004"
-@@ -315,10 +367,13 @@ def generate_compose_override(
+@@ -315,10 +369,13 @@ def generate_compose_override(
              auth_volume = (
                  f'      - "{host_auth_dir.resolve()}:{DOPE_MEMORY_AUTH_MOUNT}:ro"\n'
              )
@@ -2713,7 +2904,7 @@ index 48d9bc05c..10c97f4a0 100644
        - "127.0.0.1:{mem_p}:3020"
      environment:
        DOPE_MEMORY_WORKSPACE_ID: "{identity.get('DOPE_MEMORY_WORKSPACE_ID', '')}"
-@@ -382,10 +437,13 @@ def run_cmd(
+@@ -382,10 +439,13 @@ def run_cmd(
      cwd: Optional[Path] = None,
      dry_run: bool = False,
      timeout: float = 180.0,
@@ -2727,7 +2918,7 @@ index 48d9bc05c..10c97f4a0 100644
      try:
          result = run(
              list(cmd),
-@@ -395,6 +453,7 @@ def run_cmd(
+@@ -395,6 +455,7 @@ def run_cmd(
              check=False,
              env=dict(env) if env else None,
              cwd=str(cwd) if cwd else None,
@@ -2735,7 +2926,7 @@ index 48d9bc05c..10c97f4a0 100644
          )
          return RuntimeCommandResult(
              command=list(cmd),
-@@ -416,9 +475,73 @@ def run_cmd(
+@@ -416,9 +477,103 @@ def run_cmd(
          )
  
  
@@ -2791,23 +2982,53 @@ index 48d9bc05c..10c97f4a0 100644
 +    return "\n".join(lines) + "\n"
 +
 +
++def _replace_text_atomically(path: Path, text: str) -> None:
++    """Write ``text`` to a tmp file beside ``path``, then rename it over ``path``.
++
++    A reader (a detached build, a ``compose up --env-file``) sees the old file or
++    the new one, never a truncated one. The new file keeps ``path``'s mode, or gets
++    the default mode (0666 minus the umask, as ``write_text`` would) when it is new.
++    """
++    tmp = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex[:8]}.tmp")
++    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)
++    try:
++        with os.fdopen(fd, "w", encoding="utf-8") as handle:
++            handle.write(text)
++        try:
++            os.chmod(tmp, stat.S_IMODE(path.stat().st_mode))
++        except FileNotFoundError:
++            pass
++        os.replace(tmp, path)
++    except BaseException:
++        try:
++            tmp.unlink()
++        except OSError:
++            pass
++        raise
++
++
 +def compose_build_inputs(
 +    runtime_dir: Path, *, product: Optional[Path] = None
 +) -> tuple[Path, Path]:
 +    """``(build override, env file)`` for ``compose build`` of a sidecar image.
 +
-+    The build override (rewritten each time) only sets the shared ``image:`` tags;
-+    the env file is the lifecycle's ``mcp.env`` or an empty placeholder (compose
-+    needs ``--env-file`` to exist; it does not affect the image). Shared by the
-+    launcher's detached build and ``mcp init``'s pre-build.
++    The build override (rewritten each time, atomically) only sets the shared
++    ``image:`` tags; the env file is the lifecycle's ``mcp.env`` or an empty
++    placeholder (compose needs ``--env-file`` to exist; it does not affect the
++    image). The placeholder is created only when no ``mcp.env`` exists, in one
++    exclusive create, so a concurrent writer's file is never replaced. Shared by
++    the launcher's detached build, ``mcp init``'s pre-build and the lifecycle's
++    pre-build (which runs outside the instance lock).
 +    """
 +    runtime_dir.mkdir(parents=True, exist_ok=True)
 +    override = runtime_dir / BUILD_OVERRIDE_FILENAME
 +    env_file = runtime_dir / "mcp.env"
 +    root = Path(product) if product is not None else product_root()
-+    override.write_text(render_build_override(root), encoding="utf-8")
-+    if not env_file.exists():
-+        env_file.write_text("", encoding="utf-8")
++    _replace_text_atomically(override, render_build_override(root))
++    try:
++        os.close(os.open(env_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666))
++    except FileExistsError:
++        pass
 +    return override, env_file
  
  
@@ -3175,10 +3396,10 @@ index 1cf06deab..137518248 100644
  
 diff --git a/src/dopemux/mcp/launcher.py b/src/dopemux/mcp/launcher.py
 new file mode 100644
-index 000000000..e164abddb
+index 000000000..4c58840e6
 --- /dev/null
 +++ b/src/dopemux/mcp/launcher.py
-@@ -0,0 +1,814 @@
+@@ -0,0 +1,893 @@
 +"""``dopemux mcp launch <service>``: find or start the worktree's sidecar, then proxy stdio.
 +
 +Design D2/D4/D7 of claudedocs/mcp-just-works-design-2026-11-05.md:
@@ -3228,7 +3449,16 @@ index 000000000..e164abddb
 +from .docker_inspect import DockerContainerInfo, inspect_running_containers
 +from .lifecycle import _port_is_free, run_lifecycle, runtime_dir_for
 +from .locks import instance_lock, reserved_port_lock
-+from .reap import _pid_alive, attach, detach, maybe_reap
++from .port_diagnostics import instance_id_for_path
++from .reap import (
++    INSTANCE_MARKER,
++    INSTANCE_MARKER_FIELDS,
++    _pid_alive,
++    _utc_stamp,
++    attach,
++    detach,
++    maybe_reap,
++)
 +from .runtime_registry import RuntimeRegistry, default_registry_path
 +from .runtime_state import (
 +    PROJECT_MCP_FILENAME,
@@ -3671,6 +3901,7 @@ index 000000000..e164abddb
 +            registry_path=target.registry_path,
 +            process_env=_lifecycle_env(env, target.catalog),
 +            trust_env=False,
++            hold_instance_lock=False,  # held above; instance_lock is not re-entrant
 +        )
 +        if result.exit_code != 0:
 +            raise _lifecycle_error(result, target.service, _known_secrets(target, env))
@@ -3756,6 +3987,9 @@ index 000000000..e164abddb
 +            registry_path=target.registry_path,
 +            process_env=_lifecycle_env(env, target.catalog),
 +            trust_env=False,
++            # Explicit: the reserved :7890 lock is held here and is never nested
++            # with launch.lock (locks.py); an orchestrator-only start takes none.
++            hold_instance_lock=False,
 +        )
 +        if result.exit_code != 0:
 +            raise _lifecycle_error(result, TO_SERVICE, _known_secrets(target, env))
@@ -3906,6 +4140,69 @@ index 000000000..e164abddb
 +            signal.signal(signum, previous)
 +
 +
++def _instance_marker_fields(target: LaunchTarget) -> Optional[Dict[str, str]]:
++    """The identity that names ``target.runtime_dir`` (the values ``runtime_dir_for`` uses).
++
++    ``None`` when the identity cannot name it (no project id or worktree root):
++    such a marker would be malformed, so nothing is written.
++    """
++    ident = target.identity
++    project_id = str(getattr(ident, "project_id", None) or "")
++    worktree_root = str(getattr(ident, "worktree_root", None) or "")
++    if not project_id or not worktree_root:
++        return None
++    worktree_hash = getattr(ident, "worktree_hash", None) or instance_id_for_path(
++        worktree_root
++    )
++    return {
++        "project_id": project_id,
++        "worktree_hash": str(worktree_hash),
++        "worktree_root": worktree_root,
++        "project_root": str(getattr(ident, "project_root", None) or worktree_root),
++    }
++
++
++def _write_instance_marker(target: LaunchTarget) -> None:
++    """Best effort: ``<runtime_dir>/instance.json`` names the instance owning the dir.
++
++    Reap finds a runtime dir that never got a registry entry (a launch refused with
++    ``LAUNCH_IMAGE_BUILDING``) through it once the worktree is gone. Written only
++    when missing or different, atomically (tmp file, then ``os.replace``), mode
++    0600; identity fields and a timestamp only, never env or secrets. The caller
++    holds the instance lock. An ``OSError`` prints one stderr line and never
++    refuses the launch.
++    """
++    fields = _instance_marker_fields(target)
++    if fields is None:
++        return
++    marker = target.runtime_dir / INSTANCE_MARKER
++    try:
++        current = json.loads(marker.read_text(encoding="utf-8"))
++    except (OSError, ValueError):
++        current = None
++    if isinstance(current, dict) and all(
++        current.get(key) == fields[key] for key in INSTANCE_MARKER_FIELDS
++    ):
++        return
++    tmp = marker.with_name(f".{INSTANCE_MARKER}.{os.getpid()}.tmp")
++    try:
++        with contextlib.suppress(FileNotFoundError):
++            tmp.unlink()
++        fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
++        with os.fdopen(fd, "w", encoding="utf-8") as handle:
++            json.dump({**fields, "written_at": _utc_stamp()}, handle, sort_keys=True)
++            handle.write("\n")
++        os.replace(tmp, marker)
++    except OSError as exc:
++        with contextlib.suppress(OSError):
++            tmp.unlink()
++        print(
++            f"dopemux mcp launch: could not write {marker} ({exc}); continuing",
++            file=sys.stderr,
++            flush=True,
++        )
++
++
 +def _run_reaper(reaper: Optional[Callable[[], Any]]) -> None:
 +    try:
 +        if reaper is not None:
@@ -3969,8 +4266,11 @@ index 000000000..e164abddb
 +                # that holds the lock sees either the record or none of this launch.
 +                # Released before the reaper (the reap takes the lock itself) and
 +                # before ensure_backend (which takes it again; it is not re-entrant).
++                # The instance.json marker is written under the same lock, so a
++                # build-only launch's dir is reapable once its worktree is gone.
 +                with instance_lock(target.runtime_dir):
 +                    record = attach(target.runtime_dir)
++                    _write_instance_marker(target)
 +                _run_reaper(reaper)
 +                wait_s = _wait_seconds(env)
 +                if service == TO_SERVICE:
@@ -3994,11 +4294,14 @@ index 000000000..e164abddb
 +            if record is not None:
 +                detach(record)
 diff --git a/src/dopemux/mcp/lifecycle.py b/src/dopemux/mcp/lifecycle.py
-index 14be695e9..b79de70e6 100644
+index 14be695e9..709cdd60a 100644
 --- a/src/dopemux/mcp/lifecycle.py
 +++ b/src/dopemux/mcp/lifecycle.py
-@@ -7,16 +7,28 @@ from __future__ import annotations
+@@ -5,18 +5,42 @@ Uses Packet 001 doctor for preflight. Never adopts unlabeled containers.
  
+ from __future__ import annotations
+ 
++import contextlib
  import json
  import re
 +import shutil
@@ -4007,7 +4310,18 @@ index 14be695e9..b79de70e6 100644
  from dataclasses import dataclass, field
  from pathlib import Path
 -from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
-+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
++from typing import (
++    Any,
++    Callable,
++    ContextManager,
++    Dict,
++    List,
++    Mapping,
++    Optional,
++    Sequence,
++    Set,
++    Tuple,
++)
  
 +from . import conport_tenant as ct
  from . import docker_inspect as di
@@ -4027,7 +4341,7 @@ index 14be695e9..b79de70e6 100644
  from .runtime_registry import (
      RegistryError,
      RuntimeRegistry,
-@@ -26,6 +38,7 @@ from .runtime_registry import (
+@@ -26,6 +50,7 @@ from .runtime_registry import (
  from .runtime_state import (
      ENVRC_FILENAME,
      PROJECT_MCP_FILENAME,
@@ -4035,7 +4349,7 @@ index 14be695e9..b79de70e6 100644
      load_mcp_json,
      resolve_identity_view,
  )
-@@ -42,7 +55,6 @@ BLOCKING_FINDING_CODES = frozenset(
+@@ -42,7 +67,6 @@ BLOCKING_FINDING_CODES = frozenset(
          "PROJECT_ROOT_UNKNOWN",
          "MCP_JSON_PARSE_ERROR",
          "ENVRC_PARSE_ERROR",
@@ -4043,7 +4357,7 @@ index 14be695e9..b79de70e6 100644
          "MCP_JSON_MISSING",
          "TRANSPORT_MISMATCH",
          "PORT_RESERVED_COLLISION",
-@@ -135,11 +147,29 @@ class LifecycleResult:
+@@ -135,11 +159,29 @@ class LifecycleResult:
          return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
  
  
@@ -4075,7 +4389,7 @@ index 14be695e9..b79de70e6 100644
      if not path.is_dir():
          raise FileNotFoundError(f"Target path not found: {path}")
      return path
-@@ -191,6 +221,10 @@ def _doctor_blocking_findings(
+@@ -191,6 +233,10 @@ def _doctor_blocking_findings(
                  continue
              if svc and svc not in services and code.startswith("DOCKER_CONTAINER"):
                  continue
@@ -4086,7 +4400,7 @@ index 14be695e9..b79de70e6 100644
              blocking.append(f)
          elif f.get("severity") == "FAIL" and code not in NON_BLOCKING_EVEN_IF_IN_SET:
              # Extra hard FAILs
-@@ -221,6 +255,209 @@ def _extract_ports(env: Mapping[str, str], services: Sequence[str], catalog: Map
+@@ -221,6 +267,265 @@ def _extract_ports(env: Mapping[str, str], services: Sequence[str], catalog: Map
      return ports
  
  
@@ -4174,6 +4488,24 @@ index 14be695e9..b79de70e6 100644
 +    return held
 +
 +
++def _ports_published_by_this_instance(
++    docker: Optional[di.DockerInspectResult], identity: ProjectIdentityView
++) -> Set[int]:
++    """Host ports the running, managed containers of this worktree instance publish."""
++    if docker is None or not docker.available:
++        return set()
++    out: Set[int] = set()
++    for c in docker.containers:
++        labels = c.labels or {}
++        if (
++            labels.get(dr.LABEL_MANAGED) == "true"
++            and labels.get("dopemux.project_id") == identity.project_id
++            and labels.get("dopemux.worktree_hash") == identity.worktree_hash
++        ):
++            out.update(int(p) for p in (c.published_ports or []))
++    return out
++
++
 +def _resolve_ports(
 +    identity: ProjectIdentityView,
 +    selected: Sequence[str],
@@ -4188,11 +4520,22 @@ index 14be695e9..b79de70e6 100644
 +) -> Dict[str, int]:
 +    """Port map ``{port_env_var: port}`` for ``selected`` services.
 +
-+    Order: ports an envrc/process env already names win; otherwise the active
-+    leases bound to this project/worktree; otherwise (when ``allocate``)
-+    allocate and persist new leases under ``registry_lock``. The lock is held
++    Order without ``allocate``: ports an envrc/process env already names win;
++    otherwise the active leases bound to this project/worktree. With ``allocate``
++    the next paragraph decides which env ports count, and the rest are allocated
++    and persisted as new leases under ``registry_lock``. The lock is held
 +    only for the release/allocate-and-save step. Task Orchestrator is a reserved
 +    singleton port, never leased, and is left to the caller's default.
++
++    With ``allocate`` (Task B7-2), an env/envrc port of a leased service counts only
++    when this identity holds an active lease for that variable on that very port
++    (``_leased_ports``). Otherwise it is a preferred value for the locked
++    allocation: an existing lease of this identity for the variable wins; with none
++    (``init`` wrote the envrc, then a ``stop`` released the leases) the preferred
++    port is leased when no other lease holds it and the socket is free (a port this
++    worktree's own running sidecar publishes counts as free), else a fresh one, and
++    the returned port replaces the envrc's (the envrc is informational). Without
++    ``allocate`` (status, doctor, stop) env ports are returned as before.
 +
 +    With ``docker`` and ``allocate``, a leased port that a same-project container
 +    of another service publishes (a cross-service collision an older
@@ -4200,6 +4543,21 @@ index 14be695e9..b79de70e6 100644
 +    instead of failing the start.
 +    """
 +    ports = _extract_ports(env or {}, selected, catalog)
++    if allocate and identity.worktree_root and identity.project_root:
++        lease_vars = [
++            v
++            for n in selected
++            if n != "task-orchestrator"
++            for v in _port_vars_for(n, catalog)
++        ]
++        held = _leased_ports(PortLeaseRegistry.load(lease_path), identity, lease_vars)
++        for var in lease_vars:
++            if var in ports and held.get(var) != ports[var]:
++                # Not backed by this identity's lease for that port: a preference
++                # only. `existing_envrc=env` below still offers it to the allocator,
++                # which reuses this identity's lease for the variable if it has one,
++                # else leases the preferred port if it is free and unclaimed.
++                del ports[var]
 +    lease_services = [
 +        n
 +        for n in selected
@@ -4223,7 +4581,19 @@ index 14be695e9..b79de70e6 100644
 +    if not lease_services or not allocate:
 +        return ports
 +
-+    from .port_allocator import allocate_ports
++    from .port_allocator import allocate_ports, port_is_free
++
++    # B7-2: a port this worktree's own running sidecar publishes is not "taken": a
++    # preferred envrc port it holds (its lease was lost) is leased as it is.
++    own_ports = _ports_published_by_this_instance(docker, identity)
++    base_is_free = is_free_fn or port_is_free
++
++    def own_or_free(port: int) -> bool:
++        return int(port) in own_ports or base_is_free(port)
++
++    alloc_is_free: Optional[Callable[[int], bool]] = (
++        own_or_free if own_ports else is_free_fn
++    )
 +
 +    # Exactly the call `mcp_commands._allocate_ports` makes (allocate_ports_map):
 +    # no `identity=`, so the allocator derives the same lease identity as `init`.
@@ -4255,7 +4625,7 @@ index 14be695e9..b79de70e6 100644
 +            persist=True,
 +            dry_run=False,
 +            source=source,
-+            is_free_fn=is_free_fn,
++            is_free_fn=alloc_is_free,
 +        )
 +    if result.status == "BLOCKED":
 +        msgs = "; ".join(f["message"] for f in result.blocking_findings if f.get("message"))
@@ -4296,15 +4666,66 @@ index 14be695e9..b79de70e6 100644
  def _port_to_expected_service(
      port: int,
      *,
-@@ -419,6 +656,161 @@ def _collision_checks(
+@@ -419,177 +724,30 @@ def _collision_checks(
      return findings
  
  
+-def run_lifecycle(
+-    operation: str,
 +def _to_start_gate(
 +    identity: ProjectIdentityView,
 +    docker: di.DockerInspectResult,
-+    *,
-+    catalog: Mapping[str, Any],
+     *,
+-    repo: Optional[str | Path] = None,
+-    services: Optional[Sequence[str]] = None,
+     catalog: Mapping[str, Any],
+-    dry_run: bool = False,
+-    registry_path: Optional[Path] = None,
+-    docker_runner: Optional[Callable[..., Any]] = None,
+-    cmd_runner: Optional[Callable[..., Any]] = None,
+-    skip_doctor: bool = False,
+-    process_env: Optional[Mapping[str, str]] = None,
+-    port_is_free_fn: Optional[Callable[[int], bool]] = None,
+-    product_root: Optional[Path] = None,
+-) -> LifecycleResult:
+-    """Execute start|stop|restart|status for project-scoped MCP sidecars."""
+-    op = operation.lower().strip()
+-    if op not in {"start", "stop", "restart", "status"}:
+-        raise ValueError(f"unsupported operation: {operation}")
+-
+-    target = resolve_target_repo(repo)
+-    is_free = port_is_free_fn or _port_is_free
+-    envrc = load_envrc(target / ENVRC_FILENAME)
+-    doctor_env = merge_envrc_into_environ(dict(process_env or {}), envrc, override=True)
+-    mcp_json = load_mcp_json(target / PROJECT_MCP_FILENAME)
+-    mcp_servers = mcp_json.get("servers") or {}
+-    identity = resolve_identity_view(target, envrc_values=doctor_env)
+-
+-    selected = select_services(services, mcp_servers, catalog)
+-    reg_path = registry_path or default_registry_path()
+-
+-    # Doctor preflight (read-only; never creates registry)
+-    doctor: Optional[DoctorReport] = None
+-    if not skip_doctor and op != "status":
+-        doctor = run_mcp_doctor(
+-            target,
+-            catalog=catalog,
+-            skip_docker=False,
+-            skip_port_probe=True,
+-            process_env=doctor_env,
+-            docker_runner=docker_runner,
+-        )
+-    elif op == "status":
+-        doctor = run_mcp_doctor(
+-            target,
+-            catalog=catalog,
+-            skip_docker=False,
+-            skip_port_probe=False,
+-            process_env=doctor_env,
+-            docker_runner=docker_runner,
+-            port_is_free_fn=is_free,
+-        )
+-
 +    ports: Mapping[str, int],
 +    is_free: Callable[[int], bool],
 +    prior_blocking: Sequence[Mapping[str, Any]] = (),
@@ -4320,128 +4741,144 @@ index 14be695e9..b79de70e6 100644
 +    holding it does not deadlock). Fail-closed: any error, including taking the
 +    lock, is ``TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER``.
 +    """
-+    blocking: List[Dict[str, Any]] = []
-+    warnings: List[Dict[str, Any]] = []
+     blocking: List[Dict[str, Any]] = []
+     warnings: List[Dict[str, Any]] = []
+-
+-    # Identity blockers
+-    if not identity.project_id or identity.identity_confidence == "UNKNOWN":
+-        blocking.append(
+-            {
+-                "code": "PROJECT_IDENTITY_UNKNOWN",
+-                "severity": "FAIL",
+-                "message": "project identity unknown",
+-                "service": None,
+-            }
+-        )
+-    if not identity.worktree_root:
+-        blocking.append(
+-            {
+-                "code": "WORKTREE_ROOT_UNKNOWN",
+-                "severity": "FAIL",
+-                "message": "worktree root unknown",
+-                "service": None,
+-            }
+-        )
+-    if not identity.project_root:
+-        blocking.append(
+-            {
+-                "code": "PROJECT_ROOT_UNKNOWN",
+-                "severity": "FAIL",
+-                "message": "project root unknown",
+-                "service": None,
+-            }
+-        )
+-    if not envrc.present or envrc.parse_status == "MISSING":
+-        blocking.append(
+-            {
+-                "code": "ENVRC_MISSING",
+-                "severity": "FAIL",
+-                "message": f"Missing {ENVRC_FILENAME}",
+-                "service": None,
+-            }
+-        )
+-    elif envrc.parse_status == "ERROR":
+-        blocking.append(
+-            {
+-                "code": "ENVRC_PARSE_ERROR",
+-                "severity": "FAIL",
+-                "message": "envrc parse error",
+-                "service": None,
+-            }
+-        )
+-    elif envrc.parse_status == "PARTIAL":
+-        warnings.append(
+-            {
+-                "code": "ENVRC_PARTIAL_PARSE",
+-                "severity": "WARN",
+-                "message": (
+-                    f"envrc partial parse: {len(envrc.values)} keys loaded, "
+-                    f"{len(envrc.errors)} malformed line(s)"
+-                ),
+-                "service": None,
+-            }
+-        )
+-    if not mcp_json.get("present"):
+-        blocking.append(
+-            {
+-                "code": "MCP_JSON_MISSING",
+-                "severity": "FAIL",
+-                "message": f"Missing {PROJECT_MCP_FILENAME}",
+-                "service": None,
+-            }
+-        )
+-    elif mcp_json.get("parse_status") == "ERROR":
+-        blocking.append(
+-            {
+-                "code": "MCP_JSON_PARSE_ERROR",
+-                "severity": "FAIL",
+-                "message": "mcp.json parse error",
+-                "service": None,
+-            }
+-        )
+-
+-    if doctor:
+-        blocking.extend(
+-            _doctor_blocking_findings(doctor, services=selected, strategy_neutralizes_compose=True)
+-        )
+-        for f in doctor.findings:
+-            if f.get("severity") == "WARN":
+-                warnings.append(f)
+-
+-    # Load registry
+-    if op == "status":
+-        registry = RuntimeRegistry.load(reg_path, create_missing=False)
+-    else:
+-        registry = RuntimeRegistry.load(reg_path, create_missing=False)
+-        if registry.parse_status == "ERROR" and op in {"start", "stop", "restart"}:
+-            blocking.append(
+-                {
+-                    "code": "REGISTRY_PARSE_ERROR",
+-                    "severity": "FAIL",
+-                    "message": f"Registry unreadable: {registry.error}",
+-                    "service": None,
+-                }
+-            )
+-
+-    docker = di.inspect_running_containers(runner=docker_runner)
+-
+-    worktree_root = identity.worktree_root or str(target)
+-    project_root = identity.project_root or str(target)
+-    project_id = identity.project_id or Path(project_root).name
+-    worktree_hash = identity.worktree_hash or instance_id_for_path(worktree_root)
+-    project_hash = identity.project_hash or ""
+-    slug = dr.project_slug(Path(project_root).name)
+-    compose_proj = dr.compose_project_name(slug, worktree_hash)
+-
+-    ports = _extract_ports(doctor_env, selected, catalog)
+-
+-    # Task Orchestrator fixed-port identity gate (Packet 005)
+-    if op in {"start", "restart"} and "task-orchestrator" in selected:
+-        try:
 +    try:
 +        with reserved_port_lock(7890):
-+            from .task_orchestrator_identity import (
-+                evaluate_fixed_port_state,
-+                identity_from_docker_labels,
-+            )
-+
-+            to_spec = (catalog.get("servers") or {}).get("task-orchestrator") or {}
-+            to_port = ports.get(
-+                str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT")
-+            ) or int(to_spec.get("default_port_base") or 7890)
-+            docker_identity = None
-+            if docker.available:
-+                from .task_orchestrator_identity import identity_from_container_heuristics
-+
-+                matches = di.find_containers_for_service(
-+                    docker,
-+                    service_name="task-orchestrator",
-+                    expected_ports=[int(to_port)],
-+                    name_hints=["task-orchestrator", "orchestrator"],
-+                )
-+                for c in matches:
-+                    st = di.classify_container_ownership(
-+                        c,
-+                        project_root=identity.project_root,
-+                        workspace_id=identity.workspace_id,
-+                        project_id=identity.project_id,
-+                        expected_ports=[int(to_port)],
-+                        expected_name_substrings=["task-orchestrator"],
-+                        project_slug_hints=[
-+                            identity.project_id or "",
-+                            Path(identity.project_root or "").name,
-+                        ],
-+                    )
-+                    if st in {"MATCH", "WRONG_PROJECT"}:
-+                        docker_identity = identity_from_docker_labels(
-+                            c.labels or {},
-+                            port=int(to_port),
-+                            container_name=c.name,
-+                        )
-+                        break
-+                    if st in {"COMPOSE_MATCH", "UNLABELED"} and docker_identity is None:
-+                        docker_identity = identity_from_container_heuristics(
-+                            container_name=c.name,
-+                            labels=c.labels or {},
-+                            port=int(to_port),
-+                            target_project_root=identity.project_root,
-+                            target_project_id=identity.project_id,
-+                        )
-+                        if st == "COMPOSE_MATCH" or docker_identity.has_project_proof():
-+                            break
-+            to_eval = evaluate_fixed_port_state(
-+                port=int(to_port),
-+                target_project_id=identity.project_id,
-+                target_project_root=identity.project_root,
-+                target_workspace_id=identity.workspace_id,
-+                target_instance_id=identity.instance_id,
-+                target_worktree_hash=identity.worktree_hash,
-+                is_free_fn=is_free,
-+                docker_identity=docker_identity,
-+                skip_http=True,  # upstream jar has no /info|/health (006R)
-+                for_start=True,
-+            )
-+            for f in to_eval.findings:
-+                if f.get("severity") == "FAIL" or f.get("code", "").startswith(
-+                    "TASK_ORCHESTRATOR_START_BLOCKED"
-+                ):
-+                    blocking.append(
-+                        {
-+                            "code": f.get("code")
-+                            or to_eval.start_block_code
-+                            or "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
-+                            "severity": "FAIL",
-+                            "message": f.get("message") or "TO start blocked",
-+                            "service": "task-orchestrator",
-+                        }
-+                    )
-+                elif f.get("severity") in {"WARN", "UNKNOWN"}:
-+                    warnings.append(
-+                        {
-+                            "code": f.get("code"),
-+                            "severity": f.get("severity"),
-+                            "message": f.get("message"),
-+                            "service": "task-orchestrator",
-+                        }
-+                    )
-+            if not to_eval.start_allowed and to_eval.start_block_code:
-+                if not any(
+             from .task_orchestrator_identity import (
+                 evaluate_fixed_port_state,
+                 identity_from_docker_labels,
+@@ -676,7 +834,8 @@ def run_lifecycle(
+                     )
+             if not to_eval.start_allowed and to_eval.start_block_code:
+                 if not any(
+-                    b.get("code") == to_eval.start_block_code for b in blocking
 +                    b.get("code") == to_eval.start_block_code
 +                    for b in [*prior_blocking, *blocking]
-+                ):
-+                    blocking.append(
-+                        {
-+                            "code": to_eval.start_block_code,
-+                            "severity": "FAIL",
-+                            "message": (
-+                                f"task-orchestrator start blocked "
-+                                f"(match={to_eval.match} port={to_port})"
-+                            ),
-+                            "service": "task-orchestrator",
-+                        }
-+                    )
-+            elif to_eval.start_allowed and to_eval.match == "OK":
-+                warnings.append(
-+                    {
-+                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
-+                        "severity": "INFO",
-+                        "message": "task-orchestrator already running for target project",
-+                        "service": "task-orchestrator",
-+                    }
-+                )
-+            elif to_eval.start_allowed and to_eval.match == "FREE":
-+                warnings.append(
-+                    {
-+                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
-+                        "severity": "INFO",
-+                        "message": f"task-orchestrator fixed port :{to_port} free; start allowed",
-+                        "service": "task-orchestrator",
-+                    }
-+                )
+                 ):
+                     blocking.append(
+                         {
+@@ -707,18 +866,120 @@ def run_lifecycle(
+                         "service": "task-orchestrator",
+                     }
+                 )
+-        except Exception as exc:  # noqa: BLE001
 +    except Exception as exc:  # noqa: BLE001
 +        blocking.append(
 +            {
@@ -4455,63 +4892,69 @@ index 14be695e9..b79de70e6 100644
 +    return blocking, warnings
 +
 +
- def run_lifecycle(
-     operation: str,
-     *,
-@@ -433,6 +825,7 @@ def run_lifecycle(
-     process_env: Optional[Mapping[str, str]] = None,
-     port_is_free_fn: Optional[Callable[[int], bool]] = None,
-     product_root: Optional[Path] = None,
-+    trust_env: bool = False,
- ) -> LifecycleResult:
-     """Execute start|stop|restart|status for project-scoped MCP sidecars."""
-     op = operation.lower().strip()
-@@ -445,7 +838,7 @@ def run_lifecycle(
-     doctor_env = merge_envrc_into_environ(dict(process_env or {}), envrc, override=True)
-     mcp_json = load_mcp_json(target / PROJECT_MCP_FILENAME)
-     mcp_servers = mcp_json.get("servers") or {}
--    identity = resolve_identity_view(target, envrc_values=doctor_env)
-+    identity = resolve_identity_view(target, envrc_values=doctor_env, trust_env=trust_env)
++@dataclass
++class _Facts:
++    """The mutable preflight facts of a lifecycle run and the findings derived from them."""
++
++    registry: RuntimeRegistry
++    docker: di.DockerInspectResult
++    ports: Dict[str, int]
++    blocking: List[Dict[str, Any]]
++    warnings: List[Dict[str, Any]]
++
++
++def _mutable_facts(
++    op: str,
++    *,
++    orchestrator_gate: bool,
++    identity: ProjectIdentityView,
++    target: Path,
++    selected: Sequence[str],
++    catalog: Mapping[str, Any],
++    reg_path: Path,
++    docker_runner: Optional[Callable[..., Any]],
++    doctor_env: Mapping[str, str],
++    is_free: Callable[[int], bool],
++    container_names: Mapping[str, str],
++    project_id: str,
++    worktree_root: str,
++    blocking: Sequence[Dict[str, Any]],
++    warnings: Sequence[Dict[str, Any]],
++) -> _Facts:
++    """Registry, docker snapshot and ports, with their findings appended (deduplicated).
++
++    ``blocking``/``warnings`` are the findings that do not change (identity, envrc,
++    ``.mcp.json``, doctor). One helper for the preflight and for the re-check under
++    the instance lock (B2 fix round 1), so both compute the same thing. The
++    task-orchestrator gate (``orchestrator_gate``) runs only in the preflight: the
++    orchestrator part never runs under the instance lock and re-checks its owner
++    under the reserved lock itself.
++    """
++    blocking = list(blocking)
++    warnings = list(warnings)
++
++    # Load registry
++    if op == "status":
++        registry = RuntimeRegistry.load(reg_path, create_missing=False)
++    else:
++        registry = RuntimeRegistry.load(reg_path, create_missing=False)
++        if registry.parse_status == "ERROR" and op in {"start", "stop", "restart"}:
+             blocking.append(
+                 {
+-                    "code": "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
++                    "code": "REGISTRY_PARSE_ERROR",
+                     "severity": "FAIL",
+-                    "message": f"TO identity preflight failed: {exc}",
+-                    "service": "task-orchestrator",
++                    "message": f"Registry unreadable: {registry.error}",
++                    "service": None,
+                 }
+             )
  
-     selected = select_services(services, mcp_servers, catalog)
-     reg_path = registry_path or default_registry_path()
-@@ -459,6 +852,7 @@ def run_lifecycle(
-             skip_docker=False,
-             skip_port_probe=True,
-             process_env=doctor_env,
-+            trust_env=trust_env,
-             docker_runner=docker_runner,
-         )
-     elif op == "status":
-@@ -468,6 +862,7 @@ def run_lifecycle(
-             skip_docker=False,
-             skip_port_probe=False,
-             process_env=doctor_env,
-+            trust_env=trust_env,
-             docker_runner=docker_runner,
-             port_is_free_fn=is_free,
-         )
-@@ -504,11 +899,12 @@ def run_lifecycle(
-             }
-         )
-     if not envrc.present or envrc.parse_status == "MISSING":
--        blocking.append(
-+        # Ports come from the lease registry now; the envrc is optional.
-+        warnings.append(
-             {
-                 "code": "ENVRC_MISSING",
--                "severity": "FAIL",
--                "message": f"Missing {ENVRC_FILENAME}",
-+                "severity": "INFO",
-+                "message": f"No {ENVRC_FILENAME}; ports resolved from the lease registry",
-                 "service": None,
-             }
-         )
-@@ -585,137 +981,42 @@ def run_lifecycle(
-     slug = dr.project_slug(Path(project_root).name)
-     compose_proj = dr.compose_project_name(slug, worktree_hash)
- 
--    ports = _extract_ports(doctor_env, selected, catalog)
+-    # Lease registry consistency (start only — recommend repair-config on mismatch)
+-    if op == "start":
++    docker = di.inspect_running_containers(runner=docker_runner)
++
 +    try:
 +        ports = _resolve_ports(
 +            identity,
@@ -4534,138 +4977,14 @@ index 14be695e9..b79de70e6 100644
 +        )
 +        blocking.extend(exc.findings)
 +        ports = _extract_ports(doctor_env, selected, catalog)
- 
--    # Task Orchestrator fixed-port identity gate (Packet 005)
++
 +    # Task Orchestrator fixed-port identity gate (Packet 005). `_start_services`
 +    # repeats it under the reserved lock right before the TO start.
-     if op in {"start", "restart"} and "task-orchestrator" in selected:
--        try:
--            from .task_orchestrator_identity import (
--                evaluate_fixed_port_state,
--                identity_from_docker_labels,
--            )
--
--            to_spec = (catalog.get("servers") or {}).get("task-orchestrator") or {}
--            to_port = ports.get(
--                str(to_spec.get("port_var") or "TASK_ORCHESTRATOR_HTTP_PORT")
--            ) or int(to_spec.get("default_port_base") or 7890)
--            docker_identity = None
--            if docker.available:
--                from .task_orchestrator_identity import identity_from_container_heuristics
--
--                matches = di.find_containers_for_service(
--                    docker,
--                    service_name="task-orchestrator",
--                    expected_ports=[int(to_port)],
--                    name_hints=["task-orchestrator", "orchestrator"],
--                )
--                for c in matches:
--                    st = di.classify_container_ownership(
--                        c,
--                        project_root=identity.project_root,
--                        workspace_id=identity.workspace_id,
--                        project_id=identity.project_id,
--                        expected_ports=[int(to_port)],
--                        expected_name_substrings=["task-orchestrator"],
--                        project_slug_hints=[
--                            identity.project_id or "",
--                            Path(identity.project_root or "").name,
--                        ],
--                    )
--                    if st in {"MATCH", "WRONG_PROJECT"}:
--                        docker_identity = identity_from_docker_labels(
--                            c.labels or {},
--                            port=int(to_port),
--                            container_name=c.name,
--                        )
--                        break
--                    if st in {"COMPOSE_MATCH", "UNLABELED"} and docker_identity is None:
--                        docker_identity = identity_from_container_heuristics(
--                            container_name=c.name,
--                            labels=c.labels or {},
--                            port=int(to_port),
--                            target_project_root=identity.project_root,
--                            target_project_id=identity.project_id,
--                        )
--                        if st == "COMPOSE_MATCH" or docker_identity.has_project_proof():
--                            break
--            to_eval = evaluate_fixed_port_state(
--                port=int(to_port),
--                target_project_id=identity.project_id,
--                target_project_root=identity.project_root,
--                target_workspace_id=identity.workspace_id,
--                target_instance_id=identity.instance_id,
--                target_worktree_hash=identity.worktree_hash,
--                is_free_fn=is_free,
--                docker_identity=docker_identity,
--                skip_http=True,  # upstream jar has no /info|/health (006R)
--                for_start=True,
--            )
--            for f in to_eval.findings:
--                if f.get("severity") == "FAIL" or f.get("code", "").startswith(
--                    "TASK_ORCHESTRATOR_START_BLOCKED"
--                ):
--                    blocking.append(
--                        {
--                            "code": f.get("code")
--                            or to_eval.start_block_code
--                            or "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
--                            "severity": "FAIL",
--                            "message": f.get("message") or "TO start blocked",
--                            "service": "task-orchestrator",
--                        }
--                    )
--                elif f.get("severity") in {"WARN", "UNKNOWN"}:
--                    warnings.append(
--                        {
--                            "code": f.get("code"),
--                            "severity": f.get("severity"),
--                            "message": f.get("message"),
--                            "service": "task-orchestrator",
--                        }
--                    )
--            if not to_eval.start_allowed and to_eval.start_block_code:
--                if not any(
--                    b.get("code") == to_eval.start_block_code for b in blocking
--                ):
--                    blocking.append(
--                        {
--                            "code": to_eval.start_block_code,
--                            "severity": "FAIL",
--                            "message": (
--                                f"task-orchestrator start blocked "
--                                f"(match={to_eval.match} port={to_port})"
--                            ),
--                            "service": "task-orchestrator",
--                        }
--                    )
--            elif to_eval.start_allowed and to_eval.match == "OK":
--                warnings.append(
--                    {
--                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
--                        "severity": "INFO",
--                        "message": "task-orchestrator already running for target project",
--                        "service": "task-orchestrator",
--                    }
--                )
--            elif to_eval.start_allowed and to_eval.match == "FREE":
--                warnings.append(
--                    {
--                        "code": "TASK_ORCHESTRATOR_START_ALLOWED",
--                        "severity": "INFO",
--                        "message": f"task-orchestrator fixed port :{to_port} free; start allowed",
--                        "service": "task-orchestrator",
--                    }
--                )
--        except Exception as exc:  # noqa: BLE001
--            blocking.append(
--                {
--                    "code": "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
--                    "severity": "FAIL",
--                    "message": f"TO identity preflight failed: {exc}",
--                    "service": "task-orchestrator",
--                }
--            )
++    if (
++        orchestrator_gate
++        and op in {"start", "restart"}
++        and "task-orchestrator" in selected
++    ):
 +        to_blocking, to_warnings = _to_start_gate(
 +            identity,
 +            docker,
@@ -4676,12 +4995,464 @@ index 14be695e9..b79de70e6 100644
 +        )
 +        blocking.extend(to_blocking)
 +        warnings.extend(to_warnings)
++
++    # Lease registry consistency (start only — recommend repair-config on mismatch)
++    if op == "start":
+         try:
+             from .port_leases import PortLeaseRegistry
  
-     # Lease registry consistency (start only — recommend repair-config on mismatch)
-     if op == "start":
-@@ -1000,7 +1301,9 @@ def run_lifecycle(
+@@ -841,6 +1102,323 @@ def run_lifecycle(
+         if name == "task-orchestrator" and pvar:
+             ports.setdefault(str(pvar), int(spec.get("default_port_base") or 7890))
+ 
++    collision_findings = _collision_checks(
++        services=selected,
++        ports=ports,
++        container_names=container_names,
++        docker=docker,
++        project_id=project_id,
++        worktree_root=worktree_root,
++        catalog=catalog,
++    )
++    if op in {"start", "restart"}:
++        blocking.extend(collision_findings)
++
++    # Deduplicate blocking by code+service+message
++    seen_b = set()
++    uniq_blocking = []
++    for f in blocking:
++        key = (f.get("code"), f.get("service"), f.get("message"))
++        if key in seen_b:
++            continue
++        seen_b.add(key)
++        uniq_blocking.append(f)
++    blocking = uniq_blocking
++
++    return _Facts(
++        registry=registry,
++        docker=docker,
++        ports=ports,
++        blocking=blocking,
++        warnings=warnings,
++    )
++
++
++def _docker_unavailable_finding(
++    snapshot: di.DockerInspectResult, service: Optional[str] = None
++) -> List[Dict[str, Any]]:
++    """``[DOCKER_UNAVAILABLE]`` when ``snapshot`` could not be read, else ``[]``.
++
++    Fix round 4: a snapshot re-read under or after the instance lock must fail
++    closed. An unreadable docker lists no container, which would read as "already
++    stopped" or "not running" and release state or start blindly.
++    """
++    if snapshot.available:
++        return []
++    return [
++        {
++            "code": "DOCKER_UNAVAILABLE",
++            "severity": "FAIL",
++            "message": snapshot.error or "Docker unavailable",
++            "service": service,
++        }
++    ]
++
++
++def _docker_failed_part(
++    op: str,
++    services: Sequence[str],
++    findings: List[Dict[str, Any]],
++    *,
++    not_done: str,
++    identity_dict: Dict[str, Any],
++    reg_path: Path,
++) -> LifecycleResult:
++    """FAIL for ``services`` whose docker snapshot could not be read (nothing was run)."""
++    return LifecycleResult(
++        schema_version=SCHEMA_VERSION,
++        operation=op,
++        dry_run=False,
++        status="FAIL",
++        project_identity=identity_dict,
++        services=[
++            {
++                "service": svc,
++                "action": "failed",
++                "reason": f"docker could not be read; not {not_done}",
++                "findings": list(findings),
++                "commands": [],
++            }
++            for svc in services
++        ],
++        blocking_findings=list(findings),
++        registry_path=str(reg_path),
++        exit_code=1,
++        recommended_next_actions=[
++            "Check that Docker answers (dopemux mcp doctor), then retry.",
++        ],
++    )
++
++
++#: Findings that still block a ``stop`` (it needs no envrc, ports or free ports).
++_STOP_HARD_CODES = frozenset(
++    {"REGISTRY_PARSE_ERROR", "PROJECT_IDENTITY_UNKNOWN", "DOCKER_UNAVAILABLE"}
++)
++
++
++def _stop_blocking(blocking: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
++    """A stop's blocking findings: all of them when one is a hard one, else none.
++
++    For stop, only hard safety blocks (it does not need an envrc when the registry
++    has entries).
++    """
++    if any(f.get("code") in _STOP_HARD_CODES for f in blocking):
++        return blocking
++    return []
++
++
++def _blocked_result(
++    op: str,
++    *,
++    dry_run: bool,
++    selected: Sequence[str],
++    blocking: List[Dict[str, Any]],
++    warnings: List[Dict[str, Any]],
++    container_names: Mapping[str, str],
++    labels_by_service: Mapping[str, Dict[str, str]],
++    ports: Mapping[str, int],
++    catalog: Mapping[str, Any],
++    identity_dict: Dict[str, Any],
++    reg_path: Path,
++) -> LifecycleResult:
++    """The FAIL (``BLOCKED`` when dry) result of a run stopped by ``blocking`` findings."""
++    svc_plans = [
++        {
++            "service": s,
++            "action": "blocked",
++            "reason": "preflight blocked",
++            "container_name": container_names.get(s),
++            "ports": {k: v for k, v in ports.items() if s.split("-")[0] in k.lower() or True},
++            "labels": labels_by_service.get(s, {}),
++            "runtime_files": [],
++            "commands": [],
++            "preflight_findings": [f for f in blocking if f.get("service") in (None, s)],
++        }
++        for s in selected
++    ]
++    # simplify ports in plan
++    for plan in svc_plans:
++        plan["ports"] = _ports_for_service(plan["service"], ports, catalog)
++    return LifecycleResult(
++        schema_version=SCHEMA_VERSION,
++        operation=op,
++        dry_run=dry_run,
++        status="BLOCKED" if dry_run else "FAIL",
++        project_identity=identity_dict,
++        services=svc_plans,
++        blocking_findings=blocking,
++        warnings=warnings,
++        registry_path=str(reg_path),
++        exit_code=1,
++        recommended_next_actions=[
++            "Fix blocking preflight findings (doctor --json), then retry.",
++            "Do not start via cwd compose env injection.",
++        ],
++    )
++
++
++def run_lifecycle(
++    operation: str,
++    *,
++    repo: Optional[str | Path] = None,
++    services: Optional[Sequence[str]] = None,
++    catalog: Mapping[str, Any],
++    dry_run: bool = False,
++    registry_path: Optional[Path] = None,
++    docker_runner: Optional[Callable[..., Any]] = None,
++    cmd_runner: Optional[Callable[..., Any]] = None,
++    skip_doctor: bool = False,
++    process_env: Optional[Mapping[str, str]] = None,
++    port_is_free_fn: Optional[Callable[[int], bool]] = None,
++    product_root: Optional[Path] = None,
++    trust_env: bool = False,
++    hold_instance_lock: bool = True,
++) -> LifecycleResult:
++    """Execute start|stop|restart|status for project-scoped MCP sidecars.
++
++    ``hold_instance_lock`` (default): a non-dry ``stop`` runs under the worktree's
++    ``instance_lock``, and so do the worktree-scoped services of a ``start`` or
++    ``restart`` (one acquisition for a restart's stop and start). The
++    task-orchestrator part always runs outside it (B2: the reserved and instance
++    locks are never nested). Callers that
++    already hold the instance lock (the launcher) pass ``False``.
++    """
++    op = operation.lower().strip()
++    if op not in {"start", "stop", "restart", "status"}:
++        raise ValueError(f"unsupported operation: {operation}")
++
++    target = resolve_target_repo(repo)
++    is_free = port_is_free_fn or _port_is_free
++    envrc = load_envrc(target / ENVRC_FILENAME)
++    doctor_env = merge_envrc_into_environ(dict(process_env or {}), envrc, override=True)
++    mcp_json = load_mcp_json(target / PROJECT_MCP_FILENAME)
++    mcp_servers = mcp_json.get("servers") or {}
++    identity = resolve_identity_view(target, envrc_values=doctor_env, trust_env=trust_env)
++
++    selected = select_services(services, mcp_servers, catalog)
++    reg_path = registry_path or default_registry_path()
++
++    # Doctor preflight (read-only; never creates registry)
++    doctor: Optional[DoctorReport] = None
++    if not skip_doctor and op != "status":
++        doctor = run_mcp_doctor(
++            target,
++            catalog=catalog,
++            skip_docker=False,
++            skip_port_probe=True,
++            process_env=doctor_env,
++            trust_env=trust_env,
++            docker_runner=docker_runner,
++        )
++    elif op == "status":
++        doctor = run_mcp_doctor(
++            target,
++            catalog=catalog,
++            skip_docker=False,
++            skip_port_probe=False,
++            process_env=doctor_env,
++            trust_env=trust_env,
++            docker_runner=docker_runner,
++            port_is_free_fn=is_free,
++        )
++
++    blocking: List[Dict[str, Any]] = []
++    warnings: List[Dict[str, Any]] = []
++
++    # Identity blockers
++    if not identity.project_id or identity.identity_confidence == "UNKNOWN":
++        blocking.append(
++            {
++                "code": "PROJECT_IDENTITY_UNKNOWN",
++                "severity": "FAIL",
++                "message": "project identity unknown",
++                "service": None,
++            }
++        )
++    if not identity.worktree_root:
++        blocking.append(
++            {
++                "code": "WORKTREE_ROOT_UNKNOWN",
++                "severity": "FAIL",
++                "message": "worktree root unknown",
++                "service": None,
++            }
++        )
++    if not identity.project_root:
++        blocking.append(
++            {
++                "code": "PROJECT_ROOT_UNKNOWN",
++                "severity": "FAIL",
++                "message": "project root unknown",
++                "service": None,
++            }
++        )
++    if not envrc.present or envrc.parse_status == "MISSING":
++        # Ports come from the lease registry now; the envrc is optional.
++        warnings.append(
++            {
++                "code": "ENVRC_MISSING",
++                "severity": "INFO",
++                "message": f"No {ENVRC_FILENAME}; ports resolved from the lease registry",
++                "service": None,
++            }
++        )
++    elif envrc.parse_status == "ERROR":
++        blocking.append(
++            {
++                "code": "ENVRC_PARSE_ERROR",
++                "severity": "FAIL",
++                "message": "envrc parse error",
++                "service": None,
++            }
++        )
++    elif envrc.parse_status == "PARTIAL":
++        warnings.append(
++            {
++                "code": "ENVRC_PARTIAL_PARSE",
++                "severity": "WARN",
++                "message": (
++                    f"envrc partial parse: {len(envrc.values)} keys loaded, "
++                    f"{len(envrc.errors)} malformed line(s)"
++                ),
++                "service": None,
++            }
++        )
++    if not mcp_json.get("present"):
++        blocking.append(
++            {
++                "code": "MCP_JSON_MISSING",
++                "severity": "FAIL",
++                "message": f"Missing {PROJECT_MCP_FILENAME}",
++                "service": None,
++            }
++        )
++    elif mcp_json.get("parse_status") == "ERROR":
++        blocking.append(
++            {
++                "code": "MCP_JSON_PARSE_ERROR",
++                "severity": "FAIL",
++                "message": "mcp.json parse error",
++                "service": None,
++            }
++        )
++
++    if doctor:
++        blocking.extend(
++            _doctor_blocking_findings(doctor, services=selected, strategy_neutralizes_compose=True)
++        )
++        for f in doctor.findings:
++            if f.get("severity") == "WARN":
++                warnings.append(f)
++
++    worktree_root = identity.worktree_root or str(target)
++    project_root = identity.project_root or str(target)
++    project_id = identity.project_id or Path(project_root).name
++    worktree_hash = identity.worktree_hash or instance_id_for_path(worktree_root)
++    project_hash = identity.project_hash or ""
++    slug = dr.project_slug(Path(project_root).name)
++    compose_proj = dr.compose_project_name(slug, worktree_hash)
++
+     container_names = {
+         svc: dr.container_name_for(slug, worktree_hash, svc) for svc in selected
+     }
+@@ -881,28 +1459,27 @@ def run_lifecycle(
+             transport=transport,
          )
  
+-    collision_findings = _collision_checks(
+-        services=selected,
+-        ports=ports,
++    # The mutable facts: registry, docker snapshot, ports and every finding derived
++    # from them. A start/restart re-takes them under the instance lock before its
++    # worktree part runs (B2 fix round 1), so a reap that finished in between is seen.
++    facts_kw: Dict[str, Any] = dict(
++        identity=identity,
++        target=target,
++        selected=selected,
++        catalog=catalog,
++        reg_path=reg_path,
++        docker_runner=docker_runner,
++        doctor_env=doctor_env,
++        is_free=is_free,
+         container_names=container_names,
+-        docker=docker,
+         project_id=project_id,
+         worktree_root=worktree_root,
+-        catalog=catalog,
++        blocking=list(blocking),
++        warnings=list(warnings),
+     )
+-    if op in {"start", "restart"}:
+-        blocking.extend(collision_findings)
+-
+-    # Deduplicate blocking by code+service+message
+-    seen_b = set()
+-    uniq_blocking = []
+-    for f in blocking:
+-        key = (f.get("code"), f.get("service"), f.get("message"))
+-        if key in seen_b:
+-            continue
+-        seen_b.add(key)
+-        uniq_blocking.append(f)
+-    blocking = uniq_blocking
++    facts = _mutable_facts(op, orchestrator_gate=True, **facts_kw)
++    registry, docker, ports = facts.registry, facts.docker, facts.ports
++    blocking, warnings = facts.blocking, facts.warnings
+ 
+     identity_dict = identity.to_dict()
+ 
+@@ -926,55 +1503,21 @@ def run_lifecycle(
+ 
+     if blocking and op in {"start", "stop", "restart"}:
+         # stop can proceed only for managed matching; but still block on registry error
+-        if op == "stop" and not any(
+-            f.get("code") == "REGISTRY_PARSE_ERROR" for f in blocking
+-        ):
+-            # For stop, filter blocking to only hard safety (don't require envrc for stop if registry has entries)
+-            hard = [
+-                f
+-                for f in blocking
+-                if f.get("code")
+-                in {
+-                    "REGISTRY_PARSE_ERROR",
+-                    "PROJECT_IDENTITY_UNKNOWN",
+-                    "DOCKER_UNAVAILABLE",
+-                }
+-            ]
+-            if not hard:
+-                blocking = []
++        if op == "stop":
++            blocking = _stop_blocking(blocking)
+         if blocking:
+-            svc_plans = [
+-                {
+-                    "service": s,
+-                    "action": "blocked",
+-                    "reason": "preflight blocked",
+-                    "container_name": container_names.get(s),
+-                    "ports": {k: v for k, v in ports.items() if s.split("-")[0] in k.lower() or True},
+-                    "labels": labels_by_service.get(s, {}),
+-                    "runtime_files": [],
+-                    "commands": [],
+-                    "preflight_findings": [f for f in blocking if f.get("service") in (None, s)],
+-                }
+-                for s in selected
+-            ]
+-            # simplify ports in plan
+-            for plan in svc_plans:
+-                plan["ports"] = _ports_for_service(plan["service"], ports, catalog)
+-            return LifecycleResult(
+-                schema_version=SCHEMA_VERSION,
+-                operation=op,
++            return _blocked_result(
++                op,
+                 dry_run=dry_run,
+-                status="BLOCKED" if dry_run else "FAIL",
+-                project_identity=identity_dict,
+-                services=svc_plans,
+-                blocking_findings=blocking,
++                selected=selected,
++                blocking=blocking,
+                 warnings=warnings,
+-                registry_path=str(reg_path),
+-                exit_code=1,
+-                recommended_next_actions=[
+-                    "Fix blocking preflight findings (doctor --json), then retry.",
+-                    "Do not start via cwd compose env injection.",
+-                ],
++                container_names=container_names,
++                labels_by_service=labels_by_service,
++                ports=ports,
++                catalog=catalog,
++                identity_dict=identity_dict,
++                reg_path=reg_path,
+             )
+ 
+     try:
+@@ -999,8 +1542,20 @@ def run_lifecycle(
+             exit_code=2,
+         )
+ 
++    # One runtime dir (and launch.lock) for every branch below.
++    runtime_dir = runtime_dir_for_paths(
++        project_root=project_root, worktree_hash=worktree_hash, registry_path=reg_path
++    )
++    # D7/D8: a CLI start/restart/stop holds the instance lock that reap takes before
++    # stopping anything, so an automatic reap never removes this instance mid-step.
++    # The launcher already holds it around its start (hold_instance_lock=False; the
++    # lock is not re-entrant). Dry runs never lock.
++    lock_instance = hold_instance_lock and not dry_run
++
      if op == "stop":
 -        return _stop_services(
 +        stop_kw: Dict[str, Any] = dict(
@@ -4690,43 +5461,409 @@ index 14be695e9..b79de70e6 100644
              selected=selected,
              identity_dict=identity_dict,
              project_id=project_id,
-@@ -1018,7 +1321,17 @@ def run_lifecycle(
-             catalog=catalog,
-             slug=slug,
-             worktree_hash=worktree_hash,
-+            runtime_dir=runtime_dir_for_paths(
-+                project_root=project_root, worktree_hash=worktree_hash, registry_path=reg_path
-+            ),
-         )
-+        if dry_run:
+@@ -1014,15 +1569,148 @@ def run_lifecycle(
+             product=product,
+             compose_proj=compose_proj,
+             cmd_runner=cmd_runner,
+-            ports=ports,
+-            catalog=catalog,
+-            slug=slug,
+-            worktree_hash=worktree_hash,
++            ports=ports,
++            catalog=catalog,
++            slug=slug,
++            worktree_hash=worktree_hash,
++            runtime_dir=runtime_dir,
++        )
++        if not lock_instance:
 +            return _stop_services(**stop_kw)
 +        # D8/D7: stop, lease release and runtime-dir removal are one step under the
 +        # instance lock (instance outside, registry inside), so a launcher mid-start
-+        # (it attaches under the same lock) is never cut off.
-+        with instance_lock(stop_kw["runtime_dir"]):
-+            return _stop_services(**stop_kw)
- 
-     if op == "restart":
-         stop_res = _stop_services(
-@@ -1067,6 +1380,8 @@ def run_lifecycle(
-             cmd_runner=cmd_runner,
-             is_free=is_free,
-             target=target,
-+            docker_runner=docker_runner,
-+            envrc_values=dict(envrc.values),
++        # (it attaches under the same lock) is never cut off. _stop_services never
++        # takes the reserved :7890 lock, so the orchestrator's stop may run here.
++        with instance_lock(runtime_dir):
++            # Fix round 3: the facts were read before the lock; a reap that finished
++            # meanwhile removed the containers. Re-take them, as start/restart do, so
++            # no `docker stop` targets a name that is already gone.
++            now = _mutable_facts(op, orchestrator_gate=False, **facts_kw)
++            # Fix round 4: an unreadable docker blocks (DOCKER_UNAVAILABLE is hard);
++            # it would otherwise read as "already stopped" and release the state.
++            now_blocking = _stop_blocking(
++                now.blocking + _docker_unavailable_finding(now.docker)
++            )
++            if now_blocking:
++                return _blocked_result(
++                    op,
++                    dry_run=dry_run,
++                    selected=selected,
++                    blocking=now_blocking,
++                    warnings=now.warnings,
++                    container_names=container_names,
++                    labels_by_service=labels_by_service,
++                    ports=now.ports,
++                    catalog=catalog,
++                    identity_dict=identity_dict,
++                    reg_path=reg_path,
++                )
++            return _stop_services(
++                **{
++                    **stop_kw,
++                    "registry": now.registry,
++                    "docker": now.docker,
++                    "ports": now.ports,
++                }
++            )
++
++    # B2 (cycle 2): only the worktree-scoped services start and restart under the
++    # instance lock. The task-orchestrator is project-scoped (reap never touches it)
++    # and its start takes the reserved :7890 lock; switch-project calls this with
++    # that lock held, so launch.lock around it would be instance -> reserved here and
++    # reserved -> instance there (a deadlock). The two locks are never nested (see
++    # locks.py). Its part runs outside the lock; a run in parts returns what one
++    # call would.
++    worktree_part = [s for s in selected if s != "task-orchestrator"]
++    split = lock_instance and 0 < len(worktree_part) < len(selected)
++    inside = worktree_part if split else selected
++    outside = [s for s in selected if s == "task-orchestrator"] if split else []
++    locking = lock_instance and bool(worktree_part)
++    worktree_lock: ContextManager[Any] = (
++        instance_lock(runtime_dir) if locking else contextlib.nullcontext()
++    )
++
++    def facts_under_lock() -> Tuple[Optional[LifecycleResult], Dict[str, Any]]:
++        """Re-take the mutable facts once launch.lock is held (B2 fix round 1).
++
++        The preflight ran unlocked: a reap that finished while this run waited for
++        the lock has stopped the containers, released the leases and marked the
++        entries stopped. ``(blocked result, {})`` when a finding now blocks the run,
++        else ``(None, fresh registry/docker/ports)`` for the worktree part.
++        """
++        if not locking:
++            return None, {}
++        fresh = _mutable_facts(op, orchestrator_gate=False, **facts_kw)
++        if fresh.blocking:
++            return (
++                _blocked_result(
++                    op,
++                    dry_run=dry_run,
++                    selected=selected,
++                    blocking=fresh.blocking,
++                    warnings=fresh.warnings,
++                    container_names=container_names,
++                    labels_by_service=labels_by_service,
++                    ports=fresh.ports,
++                    catalog=catalog,
++                    identity_dict=identity_dict,
++                    reg_path=reg_path,
++                ),
++                {},
++            )
++        return None, {
++            "registry": fresh.registry,
++            "docker": fresh.docker,
++            "ports": fresh.ports,
++        }
++
++    # Minor 1 (fix round 1): a missing image builds before launch.lock is taken, so
++    # a long build never stalls the worktree's launchers on that lock.
++    prebuilt = (
++        _prebuild_images(
++            inside,
++            docker=docker,
++            container_names=container_names,
++            project_id=project_id,
++            product=product,
++            runtime_dir=runtime_dir,
++            compose_proj=compose_proj,
++            cmd_runner=cmd_runner,
++            # a restart stops and starts the running ones again (fix round 3)
++            include_running=op == "restart",
          )
-         start_res.operation = "restart"
-         if dry_run:
-@@ -1110,6 +1425,8 @@ def run_lifecycle(
-         cmd_runner=cmd_runner,
-         is_free=is_free,
-         target=target,
++        if locking
++        else {}
++    )
++    start_kw: Dict[str, Any] = dict(
++        identity=identity,
++        identity_dict=identity_dict,
++        project_id=project_id,
++        project_root=project_root,
++        worktree_root=worktree_root,
++        project_hash=project_hash,
++        worktree_hash=worktree_hash,
++        slug=slug,
++        compose_proj=compose_proj,
++        container_names=container_names,
++        labels_by_service=labels_by_service,
++        ports=ports,
++        doctor_env=doctor_env,
++        registry=registry,
++        docker=docker,
++        dry_run=dry_run,
++        reg_path=reg_path,
++        product=product,
++        catalog=catalog,
++        cmd_runner=cmd_runner,
++        is_free=is_free,
++        target=target,
 +        docker_runner=docker_runner,
 +        envrc_values=dict(envrc.values),
++    )
+ 
+     if op == "restart":
+-        stop_res = _stop_services(
+-            selected=selected,
++        restart_stop_kw: Dict[str, Any] = dict(
+             identity_dict=identity_dict,
+             project_id=project_id,
+             worktree_root=worktree_root,
+@@ -1040,36 +1728,128 @@ def run_lifecycle(
+             slug=slug,
+             worktree_hash=worktree_hash,
+         )
+-        if stop_res.status == "FAIL" and not dry_run:
+-            stop_res.operation = "restart"
+-            return stop_res
+-        start_res = _start_services(
+-            selected=selected,
+-            identity=identity,
+-            identity_dict=identity_dict,
+-            project_id=project_id,
+-            project_root=project_root,
+-            worktree_root=worktree_root,
+-            project_hash=project_hash,
+-            worktree_hash=worktree_hash,
+-            slug=slug,
+-            compose_proj=compose_proj,
+-            container_names=container_names,
+-            labels_by_service=labels_by_service,
+-            ports=ports,
+-            doctor_env=doctor_env,
+-            registry=registry,
+-            docker=docker,
+-            dry_run=dry_run,
+-            reg_path=reg_path,
+-            product=product,
+-            catalog=catalog,
+-            cmd_runner=cmd_runner,
+-            is_free=is_free,
+-            target=target,
+-        )
++
++        def docker_now(
++            part: Sequence[str], not_done: str
++        ) -> Tuple[Dict[str, Any], Optional[LifecycleResult]]:
++            """A docker snapshot read now for ``part`` (N1, fix rounds 2 to 4).
++
++            The start half reads docker after the stops: the pre-stop snapshot still
++            lists the sidecars just stopped, so the start would report them
++            ``already_running`` and run no ``compose up``. The orchestrator stop reads
++            it after the (possibly long) pre-build. Only docker is read again: a
++            restart's stop releases no leases (no ``release_state``), so the ports
++            stand, and the start's registry save reloads the file itself. Fails
++            closed: an unreadable docker yields ``({}, FAIL for part)`` and nothing
++            runs for that part (never the preflight snapshot instead). ``({}, None)``
++            in a dry run.
++            """
++            if dry_run:
++                return {}, None
++            snapshot = di.inspect_running_containers(runner=docker_runner)
++            unavailable = _docker_unavailable_finding(snapshot)
++            if unavailable:
++                return {}, _docker_failed_part(
++                    op,
++                    part,
++                    unavailable,
++                    not_done=not_done,
++                    identity_dict=identity_dict,
++                    reg_path=reg_path,
++                )
++            return {"docker": snapshot}, None
++
++        # As in one call: every stop before any start, and a failed stop starts
++        # nothing. The worktree stop and start share ONE lock acquisition.
++        stops: List[LifecycleResult] = []
++        starts: List[LifecycleResult] = []
++        stop_res: Optional[LifecycleResult] = None
++        if outside:
++            now_kw, unread = docker_now(outside, "stopped")
++            if unread is not None:
++                # Nothing has been stopped yet: block the whole run, as a preflight
++                # finding would (the worktree half is left untouched).
++                return _blocked_result(
++                    op,
++                    dry_run=dry_run,
++                    selected=selected,
++                    blocking=unread.blocking_findings,
++                    warnings=warnings,
++                    container_names=container_names,
++                    labels_by_service=labels_by_service,
++                    ports=ports,
++                    catalog=catalog,
++                    identity_dict=identity_dict,
++                    reg_path=reg_path,
++                )
++            stops.append(
++                _stop_services(selected=outside, **{**restart_stop_kw, **now_kw})
++            )
++        with worktree_lock:
++            blocked, fresh = facts_under_lock()
++            if blocked is None:
++                stops.append(
++                    _stop_services(selected=inside, **{**restart_stop_kw, **fresh})
++                )
++                stop_res = _merge_parts(stops, selected)
++                if stop_res.status == "FAIL" and not dry_run:
++                    stop_res.operation = "restart"
++                    return stop_res
++                now_kw, unread = docker_now(inside, "started")
++                if unread is not None:
++                    starts = [unread]
++                else:
++                    starts = [
++                        _start_services(
++                            selected=inside,
++                            prebuilt=prebuilt,
++                            **{**start_kw, **fresh, **now_kw},
++                        )
++                    ]
++        if blocked is not None:
++            # Only a re-check under the lock can block here, after the orchestrator
++            # half (outside the lock) was stopped. One call would have blocked before
++            # stopping anything, so an orchestrator this run stopped is started again
++            # (outside launch.lock) and the worktree part is reported blocked.
++            # A failed orchestrator stop starts nothing, as a failed stop never does;
++            # whenever a stop actually ran, its entries are reported with the
++            # blocked worktree part (final review, C2).
++            if not any(
++                entry.get("action") in {"stopped", "failed"}
++                for part in stops
++                for entry in part.services
++            ):
++                return blocked
++            blocked.services = [
++                e for e in blocked.services if e.get("service") in inside
++            ]
++            if not any(
++                part.status != "FAIL"
++                and any(entry.get("action") == "stopped" for entry in part.services)
++                for part in stops
++            ):
++                return _merge_parts([blocked, *stops], selected)
++            now_kw, unread = docker_now(outside, "started")
++            restored = (
++                unread
++                if unread is not None
++                else _start_services(
++                    selected=outside, write_artifacts=False, **{**start_kw, **now_kw}
++                )
++            )
++            return _merge_parts([blocked, restored], selected)
++        if outside:
++            now_kw, unread = docker_now(outside, "started")
++            starts.append(
++                unread
++                if unread is not None
++                else _start_services(
++                    selected=outside, write_artifacts=False, **{**start_kw, **now_kw}
++                )
++            )
++        start_res = _merge_parts(starts, selected)
+         start_res.operation = "restart"
+-        if dry_run:
++        if dry_run and stop_res is not None:
+             start_res.services = [
+                 {
+                     **s,
+@@ -1086,30 +1866,64 @@ def run_lifecycle(
+         return start_res
+ 
+     # start
+-    return _start_services(
+-        selected=selected,
+-        identity=identity,
+-        identity_dict=identity_dict,
+-        project_id=project_id,
+-        project_root=project_root,
+-        worktree_root=worktree_root,
+-        project_hash=project_hash,
+-        worktree_hash=worktree_hash,
+-        slug=slug,
+-        compose_proj=compose_proj,
+-        container_names=container_names,
+-        labels_by_service=labels_by_service,
+-        ports=ports,
+-        doctor_env=doctor_env,
+-        registry=registry,
+-        docker=docker,
+-        dry_run=dry_run,
+-        reg_path=reg_path,
+-        product=product,
+-        catalog=catalog,
+-        cmd_runner=cmd_runner,
+-        is_free=is_free,
+-        target=target,
++    with worktree_lock:
++        blocked, fresh = facts_under_lock()
++        if blocked is not None:
++            return blocked
++        starts = [
++            _start_services(selected=inside, prebuilt=prebuilt, **{**start_kw, **fresh})
++        ]
++    if outside:
++        starts.append(
++            _start_services(selected=outside, write_artifacts=False, **start_kw)
++        )
++    return _merge_parts(starts, selected)
++
++
++def _merge_parts(
++    parts: Sequence[LifecycleResult], selected: Sequence[str]
++) -> LifecycleResult:
++    """What one ``_start_services``/``_stop_services`` call over ``selected`` returns (B2).
++
++    One part is returned as is. Several parts (the worktree-scoped services under the
++    instance lock, the task-orchestrator outside it) merge: service entries in
++    ``selected`` order (stable, so each service keeps its own entry order), FAIL over
++    PASS_WITH_WARNINGS over PASS (PLANNED for a dry run), the highest exit code.
++    """
++    if len(parts) == 1:
++        return parts[0]
++    first = parts[0]
++    order: Dict[str, int] = {}
++    for index, svc in enumerate(selected):
++        order.setdefault(svc, index)
++    services = sorted(
++        (entry for part in parts for entry in part.services),
++        key=lambda entry: order.get(str(entry.get("service")), len(selected)),
++    )
++    statuses = {part.status for part in parts}
++    if first.dry_run:
++        status = "PLANNED"
++    elif "FAIL" in statuses:
++        status = "FAIL"
++    elif "PASS_WITH_WARNINGS" in statuses:
++        status = "PASS_WITH_WARNINGS"
++    else:
++        status = "PASS"
++    return LifecycleResult(
++        schema_version=first.schema_version,
++        operation=first.operation,
++        dry_run=first.dry_run,
++        status=status,
++        project_identity=first.project_identity,
++        services=services,
++        blocking_findings=[f for part in parts for f in part.blocking_findings],
++        warnings=[w for part in parts for w in part.warnings],
++        registry_path=first.registry_path,
++        runtime_artifacts=list(
++            dict.fromkeys(a for part in parts for a in part.runtime_artifacts)
++        ),
++        recommended_next_actions=list(first.recommended_next_actions),
++        exit_code=max(part.exit_code for part in parts),
      )
  
  
-@@ -1176,6 +1493,116 @@ def _already_running_managed(
+@@ -1176,6 +1990,240 @@ def _already_running_managed(
      return None
  
  
@@ -4840,15 +5977,140 @@ index 14be695e9..b79de70e6 100644
 +    ]
 +
 +
++@dataclass
++class _ImageStep:
++    """A sidecar image probe, and its build once that ran (D4)."""
++
++    image: str
++    findings: List[Dict[str, Any]]
++    build_command: Optional[List[str]] = None  # set when the image is missing
++    build_result: Optional[dr.RuntimeCommandResult] = None  # set once it was built
++
++
++def _plan_image(
++    svc: str,
++    *,
++    product: Path,
++    cmd_runner: Optional[Callable[..., Any]],
++    env: Mapping[str, str],
++    build_command: Callable[[], List[str]],
++    image: Optional[str] = None,
++) -> _ImageStep:
++    """Probe the shared image of ``svc`` (read-only); name the build when it is missing."""
++    image_name = image or dr.compose_image_name(svc, product=product)
++    present = dr.docker_image_exists(image_name, runner=cmd_runner, env=env)
++    step = _ImageStep(image=image_name, findings=[])
++    if present is False:
++        step.build_command = build_command()
++        step.findings.append(
++            {
++                "code": "IMAGE_MISSING_WILL_BUILD",
++                "severity": "INFO",
++                "message": (
++                    f"image {image_name} not found; `compose build {svc}` "
++                    f"will run first with a {dr.build_timeout_secs():.0f}s "
++                    f"budget ({dr.BUILD_TIMEOUT_ENV})"
++                ),
++            }
++        )
++    elif present is None:
++        step.findings.append(
++            {
++                "code": "IMAGE_PRESENCE_UNKNOWN",
++                "severity": "WARN",
++                "message": (
++                    f"could not determine whether image {image_name} exists "
++                    "(docker image inspect was inconclusive); running `up` "
++                    "without a pre-build"
++                ),
++            }
++        )
++    return step
++
++
++def _prebuild_images(
++    services: Sequence[str],
++    *,
++    docker: di.DockerInspectResult,
++    container_names: Mapping[str, str],
++    project_id: str,
++    product: Path,
++    runtime_dir: Path,
++    compose_proj: str,
++    cmd_runner: Optional[Callable[..., Any]],
++    include_running: bool = False,
++) -> Dict[str, _ImageStep]:
++    """Probe, and build when missing, the images of ``services`` before launch.lock (B2).
++
++    A build can take ``build_timeout_secs()``; under the instance lock it would stall
++    every launcher of the worktree (attach and ``ensure_backend`` wait for that lock
++    without a bound). A start skips sidecars the preflight saw running, as
++    ``_start_services`` skips their image step; a restart (``include_running``) does
++    not, since it starts them again (building beside the old container only retags
++    the shared image). The build uses the build-only inputs (``compose_build_inputs``)
++    that the launcher and ``mcp init`` use; when they cannot be written, the step is
++    a failed build (``IMAGE_BUILD_FAILED`` for that service), never an exception.
++    """
++    steps: Dict[str, _ImageStep] = {}
++    for svc in services:
++        if svc not in {"conport", "dope-memory"} or svc in steps:
++            continue
++        if not include_running and _already_running_managed(
++            docker, container_names[svc], project_id, svc
++        ):
++            continue
++        env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
++        image = dr.compose_image_name(svc, product=product)
++        # The paths `compose_build_inputs` writes; naming them writes nothing.
++        planned = dr.compose_build_command(
++            product=product,
++            override_path=runtime_dir / dr.BUILD_OVERRIDE_FILENAME,
++            env_file=runtime_dir / "mcp.env",
++            project_name=compose_proj,
++            services=[svc],
++        )
++        step = _plan_image(
++            svc,
++            image=image,
++            product=product,
++            cmd_runner=cmd_runner,
++            env=env,
++            build_command=lambda: list(planned),
++        )
++        if step.build_command is None:
++            steps[svc] = step
++            continue
++        try:
++            dr.compose_build_inputs(runtime_dir, product=product)
++        except OSError as exc:  # fail closed: a failed build of this service, no crash
++            step.build_result = dr.RuntimeCommandResult(
++                command=list(step.build_command),
++                exit_code=1,
++                stderr=f"build inputs in {runtime_dir} could not be written: {exc}",
++            )
++        else:
++            step.build_result = dr.run_cmd(
++                step.build_command,
++                runner=cmd_runner,
++                cwd=product,
++                env=env,
++                dry_run=False,
++                timeout=dr.build_timeout_secs(),
++            )
++        steps[svc] = step
++    return steps
++
++
  def _start_services(**kw: Any) -> LifecycleResult:
      selected: List[str] = kw["selected"]
      identity = kw["identity"]
-@@ -1200,11 +1627,13 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1200,11 +2248,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
      cmd_runner = kw["cmd_runner"]
      is_free = kw["is_free"]
      target: Path = kw["target"]
 +    docker_runner = kw.get("docker_runner")
 +    envrc_values: Mapping[str, str] = kw.get("envrc_values") or {}
++    prebuilt: Mapping[str, _ImageStep] = kw.get("prebuilt") or {}
  
      compose_services = [s for s in selected if s in {"conport", "dope-memory"}]
      to_selected = "task-orchestrator" in selected
@@ -4858,7 +6120,7 @@ index 14be695e9..b79de70e6 100644
      memory_data = Path(worktree_root) / ".dopemux"
      # Project identity used for TO container naming (must match wrapper).
      to_state_id = ""
-@@ -1222,10 +1651,8 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1222,10 +2273,8 @@ def _start_services(**kw: Any) -> LifecycleResult:
          "DOPEMUX_PROJECT_ROOT": project_root,
          "DOPEMUX_WORKTREE_ROOT": worktree_root,
          "DOPEMUX_WORKSPACE_ROOT": worktree_root,
@@ -4871,7 +6133,7 @@ index 14be695e9..b79de70e6 100644
          "TASK_ORCHESTRATOR_PROJECT_ROOT": project_root,
          "CONPORT_CONTAINER_NAME": container_names.get("conport", ""),
          **{k: str(v) for k, v in ports.items()},
-@@ -1245,6 +1672,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1245,6 +2294,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
              container_names=container_names,
              labels_by_service=labels_by_service,
              memory_data_path=memory_data,
@@ -4879,7 +6141,25 @@ index 14be695e9..b79de70e6 100644
          )
  
      plan_doc = {
-@@ -1267,6 +1695,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1258,15 +2308,26 @@ def _start_services(**kw: Any) -> LifecycleResult:
+         "memory_data_path": str(memory_data),
+     }
+ 
++    # The runtime dir's mcp.env, compose override and plan serve the compose
++    # sidecars, whose start writes them under the instance lock. A start without a
++    # compose service (the task-orchestrator alone, which runs outside that lock:
++    # switch-project, ensure_orchestrator, `--services task-orchestrator`, the
++    # orchestrator part of a split run) writes nothing there: it would replace a
++    # sidecar start's override between its write and its `compose up` (B2 and the
++    # final review, C1).
++    skip_artifacts = not compose_services or not kw.get("write_artifacts", True)
+     artifact_paths = dr.write_runtime_artifacts(
+         runtime_base,
+         env_text=env_text,
+         override_text=override_text or "# no compose services\n",
+         plan=plan_doc,
+-        dry_run=dry_run,
++        dry_run=dry_run or skip_artifacts,
      )
  
      service_results: List[Dict[str, Any]] = []
@@ -4889,7 +6169,7 @@ index 14be695e9..b79de70e6 100644
      overall_fail = False
      overall_unknown = False
  
-@@ -1284,6 +1715,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1284,6 +2345,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
              # unlabeled TO on fixed port is already blocked in collision
  
          if existing:
@@ -4904,7 +6184,7 @@ index 14be695e9..b79de70e6 100644
              service_results.append(
                  {
                      "service": svc,
-@@ -1296,12 +1735,13 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1296,12 +2365,13 @@ def _start_services(**kw: Any) -> LifecycleResult:
                      "commands": [],
                      "probe_status": "UNKNOWN",
                      "registry_updated": False,
@@ -4919,7 +6199,7 @@ index 14be695e9..b79de70e6 100644
                      svc=svc,
                      project_id=project_id,
                      identity=identity,
-@@ -1314,7 +1754,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1314,7 +2384,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                      container_names=[existing.name],
                      ports=svc_ports,
                      labels=labels,
@@ -4928,7 +6208,7 @@ index 14be695e9..b79de70e6 100644
                      last_start={"command": ["already_running"], "exit_code": 0},
                  )
              continue
-@@ -1324,13 +1764,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1324,50 +2394,32 @@ def _start_services(**kw: Any) -> LifecycleResult:
          image_findings: List[Dict[str, Any]] = []
          will_build = False
          if svc in {"conport", "dope-memory"}:
@@ -4941,15 +6221,84 @@ index 14be695e9..b79de70e6 100644
 -            # never-started project has no image, so `up` would build inline
 -            # and blow the up budget. Probe (read-only) and build first.
 -            image_name = dr.compose_image_name(compose_proj, svc)
+-            present = dr.docker_image_exists(
+-                image_name, runner=cmd_runner, env=interp_env
 +            # The override names one shared image per service and Dockerfile version
 +            # (D4); missing on this host, `up` would build inline and blow the up
-+            # budget. Probe (read-only) and build first.
-+            image_name = dr.compose_image_name(svc, product=product)
-             present = dr.docker_image_exists(
-                 image_name, runner=cmd_runner, env=interp_env
++            # budget. Probe (read-only) and build first. A step taken before the
++            # instance lock (B2 fix round 1, `_prebuild_images`) is reused as is.
++            step = prebuilt.get(svc) or _plan_image(
++                svc,
++                product=product,
++                cmd_runner=cmd_runner,
++                env=interp_env,
++                build_command=lambda: dr.compose_build_command(
++                    product=product,
++                    override_path=override_file,
++                    env_file=env_file,
++                    project_name=compose_proj,
++                    services=[svc],
++                ),
              )
-@@ -1422,6 +1863,37 @@ def _start_services(**kw: Any) -> LifecycleResult:
-             build_result = None
+-            will_build = present is False
+-            if will_build:
+-                commands.append(
+-                    dr.compose_build_command(
+-                        product=product,
+-                        override_path=override_file,
+-                        env_file=env_file,
+-                        project_name=compose_proj,
+-                        services=[svc],
+-                    )
+-                )
+-                image_findings.append(
+-                    {
+-                        "code": "IMAGE_MISSING_WILL_BUILD",
+-                        "severity": "INFO",
+-                        "message": (
+-                            f"image {image_name} not found; `compose build {svc}` "
+-                            f"will run first with a {dr.build_timeout_secs():.0f}s "
+-                            f"budget ({dr.BUILD_TIMEOUT_ENV})"
+-                        ),
+-                    }
+-                )
+-            elif present is None:
+-                image_findings.append(
+-                    {
+-                        "code": "IMAGE_PRESENCE_UNKNOWN",
+-                        "severity": "WARN",
+-                        "message": (
+-                            f"could not determine whether image {image_name} exists "
+-                            "(docker image inspect was inconclusive); running `up` "
+-                            "without a pre-build"
+-                        ),
+-                    }
+-                )
++            image_name = step.image
++            image_findings.extend(step.findings)
++            will_build = step.build_command is not None and step.build_result is None
++            if step.build_command is not None:
++                commands.append(step.build_command)
+             commands.append(
+                 dr.compose_up_command(
+                     product=product,
+@@ -1407,7 +2459,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
+                     "container_name": cname,
+                     "ports": svc_ports,
+                     "labels": labels,
+-                    "runtime_files": list(artifact_paths.values()),
++                    "runtime_files": (
++                        [] if skip_artifacts else list(artifact_paths.values())
++                    ),
+                     "commands": [dr.redact_command(c) for c in commands],
+                     "preflight_findings": list(image_findings),
+                 }
+@@ -1419,9 +2473,40 @@ def _start_services(**kw: Any) -> LifecycleResult:
+             # Ensure data dir for memory
+             if svc == "dope-memory":
+                 memory_data.mkdir(parents=True, exist_ok=True)
+-            build_result = None
++            build_result = step.build_result  # set when the build ran before the lock
              findings = list(image_findings)
              up_cmd = commands[-1]
 +            up_env = interp_env
@@ -4986,7 +6335,7 @@ index 14be695e9..b79de70e6 100644
              if will_build:
                  build_result = dr.run_cmd(
                      commands[0],
-@@ -1472,7 +1944,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1472,7 +2557,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                  up_cmd,
                  runner=cmd_runner,
                  cwd=product,
@@ -4995,7 +6344,7 @@ index 14be695e9..b79de70e6 100644
                  dry_run=False,
                  timeout=dr.up_timeout_secs(),
              )
-@@ -1480,9 +1952,30 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1480,9 +2565,30 @@ def _start_services(**kw: Any) -> LifecycleResult:
              if result.exit_code != 0:
                  overall_fail = True
              probe = _probe_service(svc, ports, is_free)
@@ -5026,7 +6375,7 @@ index 14be695e9..b79de70e6 100644
                      svc=svc,
                      project_id=project_id,
                      identity=identity,
-@@ -1495,7 +1988,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1495,7 +2601,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                      container_names=[cname],
                      ports=svc_ports,
                      labels=labels,
@@ -5035,7 +6384,7 @@ index 14be695e9..b79de70e6 100644
                      last_start={
                          "command": [dr.redact_command(up_cmd)],
                          "exit_code": result.exit_code,
-@@ -1535,13 +2028,39 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1535,13 +2641,39 @@ def _start_services(**kw: Any) -> LifecycleResult:
              env["TASK_ORCHESTRATOR_HTTP_PORT"] = str(
                  ports.get("TASK_ORCHESTRATOR_HTTP_PORT", 7890)
              )
@@ -5082,7 +6431,7 @@ index 14be695e9..b79de70e6 100644
              action = "started" if result.exit_code == 0 else "failed"
              if result.exit_code != 0:
                  overall_fail = True
-@@ -1553,6 +2072,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1553,6 +2685,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
              if result.exit_code == 0:
                  _registry_upsert(
                      registry,
@@ -5090,7 +6439,7 @@ index 14be695e9..b79de70e6 100644
                      svc=svc,
                      project_id=project_id,
                      identity=identity,
-@@ -1599,17 +2119,15 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1599,17 +2732,15 @@ def _start_services(**kw: Any) -> LifecycleResult:
              )
  
      if not dry_run and registry.parse_status != "ERROR":
@@ -5116,8 +6465,12 @@ index 14be695e9..b79de70e6 100644
              overall_fail = True
  
      if dry_run:
-@@ -1638,7 +2156,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
-         runtime_artifacts=list(artifact_paths.values()),
+@@ -1635,10 +2766,10 @@ def _start_services(**kw: Any) -> LifecycleResult:
+         blocking_findings=[],
+         warnings=[],
+         registry_path=str(reg_path),
+-        runtime_artifacts=list(artifact_paths.values()),
++        runtime_artifacts=[] if skip_artifacts else list(artifact_paths.values()),
          exit_code=exit_code,
          recommended_next_actions=[
 -            "source .envrc.dopemux-mcp && claude",
@@ -5125,7 +6478,7 @@ index 14be695e9..b79de70e6 100644
              "dopemux mcp doctor --repo " + str(target),
          ],
      )
-@@ -1708,6 +2226,9 @@ def _registry_upsert(registry: RuntimeRegistry, **kw: Any) -> None:
+@@ -1708,6 +2839,9 @@ def _registry_upsert(registry: RuntimeRegistry, **kw: Any) -> None:
          registry.data = empty_registry()
          registry.parse_status = "OK"
      registry.upsert_instance(rec)
@@ -5135,7 +6488,7 @@ index 14be695e9..b79de70e6 100644
  
  
  def _probe_service(service: str, ports: Mapping[str, int], is_free: Callable[[int], bool]) -> str:
-@@ -1748,6 +2269,7 @@ def _stop_services(**kw: Any) -> LifecycleResult:
+@@ -1748,6 +2882,7 @@ def _stop_services(**kw: Any) -> LifecycleResult:
  
      results = []
      fail = False
@@ -5143,7 +6496,7 @@ index 14be695e9..b79de70e6 100644
  
      for svc in selected:
          cname = container_names[svc]
-@@ -1835,19 +2357,28 @@ def _stop_services(**kw: Any) -> LifecycleResult:
+@@ -1835,19 +2970,28 @@ def _stop_services(**kw: Any) -> LifecycleResult:
                          "result": res.to_dict(),
                      }
                  )
@@ -5182,7 +6535,7 @@ index 14be695e9..b79de70e6 100644
      return LifecycleResult(
          schema_version=SCHEMA_VERSION,
          operation="stop",
-@@ -1855,11 +2386,60 @@ def _stop_services(**kw: Any) -> LifecycleResult:
+@@ -1855,11 +2999,60 @@ def _stop_services(**kw: Any) -> LifecycleResult:
          status="PLANNED" if dry_run else ("FAIL" if fail else "PASS"),
          project_identity=identity_dict,
          services=results,
@@ -5245,10 +6598,10 @@ index 14be695e9..b79de70e6 100644
      identity_dict = kw["identity_dict"]
 diff --git a/src/dopemux/mcp/locks.py b/src/dopemux/mcp/locks.py
 new file mode 100644
-index 000000000..560c59492
+index 000000000..75594606a
 --- /dev/null
 +++ b/src/dopemux/mcp/locks.py
-@@ -0,0 +1,376 @@
+@@ -0,0 +1,381 @@
 +"""Advisory file locks for MCP lifecycle state.
 +
 +Every lock is an exclusive ``fcntl.flock`` on a small file, released when the
@@ -5263,6 +6616,11 @@ index 000000000..560c59492
 +* ``instance_lock``      outside ``provision_lock`` (a launcher start provisions
 +  the ConPort tenant inside its instance lock; ``provision_lock`` never wraps
 +  another lock)
++* ``reserved_port_lock`` and ``instance_lock`` are never nested, neither inside
++  the other: the task-orchestrator starts under the reserved lock with no
++  instance lock held, and a worktree sidecar start, restart or stop holds the
++  instance lock without the reserved lock (taking them in opposite orders in two
++  processes would deadlock)
 +
 +``flock`` is per open file description, so taking ``registry_lock`` again in
 +the same process while already holding it deadlocks. Never nest it with
@@ -5626,10 +6984,98 @@ index 000000000..560c59492
 +        return [f"{paths[0].parent}: {exc}"]
 +    return [e for e in errors if e]
 diff --git a/src/dopemux/mcp/mcp_json.py b/src/dopemux/mcp/mcp_json.py
-index 4e642ab07..8b59920ab 100644
+index 4e642ab07..356171703 100644
 --- a/src/dopemux/mcp/mcp_json.py
 +++ b/src/dopemux/mcp/mcp_json.py
-@@ -135,6 +135,13 @@ def _url_is_repairable(url: Optional[str]) -> bool:
+@@ -7,6 +7,7 @@ entries are always preserved. Never mutates global (~/.claude.json) config.
+ from __future__ import annotations
+ 
+ import json
++import re
+ from pathlib import Path
+ from typing import Any, Dict, List, Mapping, Optional, Tuple
+ from urllib.parse import urlparse
+@@ -113,28 +114,82 @@ def _functional_subset(entry: Mapping[str, Any]) -> Dict[str, Any]:
+     return {k: entry[k] for k in _FUNCTIONAL_KEYS if k in entry}
+ 
+ 
++_LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1"})
++_PLACEHOLDER = re.compile(r"\$\{[^}:$]*(?::-([^}$]*))?\}")
++
++
++def _neutralize_placeholders(url: str) -> str:
++    """Replace ``${NAME:-default}`` with ``default`` and bare ``${NAME}`` with ``placeholder``.
++
++    The literal token is never a local host, so an unresolved placeholder can
++    never make a URL look provably local.
++    """
++    return _PLACEHOLDER.sub(
++        lambda m: m.group(1) if m.group(1) is not None else "placeholder", url
++    )
++
++
++def _placeholder_in_userinfo_or_host(url: str) -> bool:
++    """True when a ``${...}`` placeholder sits left of the port separator of the authority.
++
++    A host or userinfo placeholder is operator-selected whatever its default
++    (``${HOST:-localhost}`` resolves to a remote host when ``HOST`` is set), so
++    it never proves the endpoint local. Placeholders in the port, path or query
++    are not considered here.
++    """
++    authority = url.split("://", 1)[-1]
++    for sep in ("/", "?", "#"):
++        authority = authority.split(sep, 1)[0]
++    # Mask each placeholder as one opaque character so a ``:`` inside
++    # ``${PORT:-3005}`` is not mistaken for the port separator.
++    masked = _PLACEHOLDER.sub("\x00", authority)
++    userinfo, _, hostport = masked.rpartition("@")
++    if "\x00" in userinfo:
++        return True
++    if hostport.startswith("["):
++        host = hostport.split("]", 1)[0]
++    else:
++        host = hostport.split(":", 1)[0]
++    return "\x00" in host
++
++
+ def _url_is_repairable(url: Optional[str]) -> bool:
++    """True when the catalog may replace ``url``: missing, or provably local with no credentials.
++
++    Port, path and query placeholders are neutralized and the same host/userinfo
++    rules as for literal URLs then apply; a placeholder in the userinfo or host
++    position is never repairable, whatever its default.
++    """
+     if not url or not isinstance(url, str):
+         return True  # missing → can set template
+-    if "${" in url:
+-        # Template placeholders are always candidate for catalog template replace
+-        # when host is local or still a placeholder.
+-        return True
++    templated = "${" in url
++    if templated and _placeholder_in_userinfo_or_host(url):
++        return False
++    candidate = _neutralize_placeholders(url) if templated else url
+     try:
+-        parsed = urlparse(url)
+-    except Exception:  # noqa: BLE001
++        parsed = urlparse(candidate)
++        host = (parsed.hostname or "").lower()
++    except ValueError:
+         return False
+-    host = (parsed.hostname or "").lower()
+-    if host and host not in {"localhost", "127.0.0.1"}:
++    if any(ch in parsed.netloc for ch in "${}"):
++        return False  # unresolved or malformed placeholder: not provably local
++    if host and host not in _LOCAL_HOSTS:
+         return False
++    if templated and not host:
++        return False  # e.g. a fully templated URL: nothing proves it is local
+     # userinfo credentials → never rewrite
+-    if parsed.username or parsed.password:
+-        return False
+-    if "@" in url.split("://", 1)[-1].split("/", 1)[0]:
++    if parsed.username or parsed.password or "@" in parsed.netloc:
+         return False
      return True
  
  
@@ -5643,7 +7089,7 @@ index 4e642ab07..8b59920ab 100644
  def render_catalog_entry(
      name: str,
      catalog: Mapping[str, Any],
-@@ -214,6 +221,18 @@ def plan_mcp_json_repairs(
+@@ -214,6 +269,18 @@ def plan_mcp_json_repairs(
          current_url = current.get("url")
          url_ok = _url_is_repairable(current_url if isinstance(current_url, str) else None)
  
@@ -5662,7 +7108,7 @@ index 4e642ab07..8b59920ab 100644
          new_entry = dict(current)
          change_reasons: List[str] = []
  
-@@ -244,6 +263,15 @@ def plan_mcp_json_repairs(
+@@ -244,6 +311,15 @@ def plan_mcp_json_repairs(
                      if "CATALOG_FIELD_DRIFT" not in change_reasons:
                          change_reasons.append("CATALOG_FIELD_DRIFT")
  
@@ -5775,10 +7221,10 @@ index 8f9413c57..424110ea7 100644
      workspace_override = env_map.get("DOPEMUX_WORKSPACE_ROOT")
 diff --git a/src/dopemux/mcp/reap.py b/src/dopemux/mcp/reap.py
 new file mode 100644
-index 000000000..54907d20d
+index 000000000..7651c8d21
 --- /dev/null
 +++ b/src/dopemux/mcp/reap.py
-@@ -0,0 +1,970 @@
+@@ -0,0 +1,1369 @@
 +"""Reap-only cleanup of idle or removed worktree sidecars (design D8, P-09).
 +
 +A launcher writes ``<runtime_dir>/attached/<pid>`` while it is connected and
@@ -5801,23 +7247,48 @@ index 000000000..54907d20d
 +  candidate that no longer has zero live attachments AND (a missing worktree OR
 +  ``idle_s`` since ``last_detach``) is skipped as ``stale``: no docker call, no
 +  state change.
-+* "Idle" needs a ``last_detach`` file. A runtime dir without one has an unknown
-+  idle time and only the ``worktree_missing`` reason can select it. A launcher
-+  ended by SIGTERM/SIGHUP detaches through ``finally``; one killed outright leaves
-+  a dead attach record, and pruning that record stamps ``last_detach`` with the
-+  record's mtime unless a newer one exists.
++* No instance is planned or reaped while a detached image build is live in its
++  runtime dir (a ``build-<service>.pid`` whose pid is alive and that is at most
++  ``build_timeout_secs()`` old), whatever its reason; under the lock a build that
++  started after the plan makes the candidate ``stale`` (Task B5 round 1).
++* Under the lock, before anything is stopped or released, one read-only
++  ``docker ps -a`` for the pair (``dopemux.managed=true``, ``dopemux.scope=worktree``,
++  its project id and worktree hash) must list no container the plan did not list. A container the plan
++  did not list (a start or restart since the plan created it), or no answer from
++  docker, makes the plan outdated: the candidate is ``stale``, with no stop and no
++  state change, and the next run plans it afresh. Planned containers that are gone
++  are fine (Task B5 round 2 for candidates without containers, Task B6 for all).
++* "Idle" is measured from the newer of ``last_detach`` and the newest dead attach
++  record (``_effective_last_detach``). A launcher ended by SIGTERM/SIGHUP detaches
++  through ``finally``; one killed outright leaves a dead attach record, which
++  planning reads without changing anything, and which pruning under the lock
++  replaces by a ``last_detach`` stamped with the record's mtime unless a newer one
++  exists. A runtime dir with neither has an unknown idle time and only the
++  ``worktree_missing`` reason can select it.
 +* Containers are stopped and removed by id, never through ``docker compose`` and
 +  never with ``rm -f``. A container that fails to stop keeps its leases, registry
-+  entries and runtime dir. Images are never removed: one image per service and
-+  Dockerfile version is shared by every worktree and project.
++  entries and runtime dir. Images are never removed: one image per service is shared
++  by every worktree and project that runs the same dopemux checkout (one key per
++  checkout path and Dockerfile version).
 +* Registry entries and leases are changed only for the services whose containers
 +  this reap stopped and removed (the ``dopemux.service`` label), service by service:
 +  when one service's container fails, the services whose containers are all gone
 +  are still released and the runtime dir stays. The task-orchestrator
 +  is a ``project``-scope container, never a candidate, so it is never marked stopped.
-+  A pair whose worktree is gone and whose containers are already gone (a reap killed
-+  after ``docker rm``) is cleaned by a state-only candidate (no container ids); that
-+  candidate also clears entries and leases with an empty service (owned by nobody).
++  A pair whose containers are already gone but whose state is not (a reap killed
++  after ``docker rm``, ``registry_busy``, ``state_error``) is cleaned by a
++  state-only candidate (no container ids) on the same predicate as a container
++  candidate: its worktree is gone, or it has been idle ``idle_s`` (Task B5); on
++  idle only while a running entry or an active lease is left, never for a runtime
++  dir alone (round 2). The pair check under the lock (above) skips it as ``stale``
++  when any container is listed for it again. That candidate also clears entries and
++  leases with an empty service (owned by nobody).
++* A runtime dir that never got a registry entry (a launch refused with
++  ``LAUNCH_IMAGE_BUILDING`` before any start) is found through the launcher's
++  ``instance.json`` marker: a dir-only candidate (``dir_only``, no container ids)
++  once its worktree is gone, with no live attachment and no live detached build.
++  Never on idle. A marker that is malformed, or that does not name exactly the dir
++  holding it, is ignored; a dir without a marker is never a candidate.
 +* Automatic runs are bounded (candidate cap, ``docker stop --time``, command timeout,
 +  deadline). Under a deadline each docker call gets ``min(cmd_timeout_s, time left)``;
 +  a candidate is skipped (``deadline``) only once no time is left. They never wait:
@@ -5827,10 +7298,13 @@ index 000000000..54907d20d
 +  waits for the registry lock at most ``min(time left, 2 s)``; when it stays busy
 +  the candidate is skipped as ``registry_busy`` with its containers already gone,
 +  registry, leases and runtime dir untouched, and a later run finishes it (a
-+  state-only candidate once the worktree is gone). A run that attempted no
-+  candidate (``deadline``/``cap``/``locked``/``stale``), or whose inspection timed
-+  out, leaves the ``reap.last`` throttle as it was. The explicit CLI ``--apply``
-+  waits for every lock.
++  state-only candidate once it is idle or its worktree is gone). A registry or
++  lease save that fails (a corrupt file left as is, an ``OSError``) is skipped as
++  ``state_error`` the same way, on every run: the runtime dir is removed, and the
++  candidate counted as reaped, only after both saves succeeded. A run that
++  attempted no candidate (``deadline``/``cap``/``locked``/``attached``/``stale``),
++  or whose inspection timed out, leaves the ``reap.last`` throttle as it was. The
++  explicit CLI ``--apply`` waits for every lock.
 +* Automatic reaping (:func:`maybe_reap`: hooks and launcher) honours a kill switch:
 +  the file ``<runtime root>/reap.disabled`` or ``DOPEMUX_MCP_REAP`` set to
 +  ``0``/``off``/``false``. The explicit CLI ``dopemux mcp reap --apply`` ignores it.
@@ -5842,6 +7316,7 @@ index 000000000..54907d20d
 +from __future__ import annotations
 +
 +import contextlib
++import json
 +import os
 +import re
 +import shutil
@@ -5849,7 +7324,17 @@ index 000000000..54907d20d
 +from dataclasses import dataclass, field, replace
 +from datetime import datetime, timezone
 +from pathlib import Path
-+from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Tuple
++from typing import (
++    Any,
++    Callable,
++    Dict,
++    List,
++    Literal,
++    Optional,
++    Sequence,
++    Set,
++    Tuple,
++)
 +
 +from . import docker_runtime as dr
 +from .docker_inspect import DockerContainerInfo, inspect_all_managed_containers
@@ -5869,6 +7354,7 @@ index 000000000..54907d20d
 +__all__ = [
 +    "DISABLE_ENV",
 +    "DISABLE_FILENAME",
++    "INSTANCE_MARKER",
 +    "ReapCandidate",
 +    "ReapReport",
 +    "apply_reap",
@@ -5883,6 +7369,14 @@ index 000000000..54907d20d
 +
 +ATTACHED_DIR = "attached"
 +LAST_DETACH = "last_detach"
++#: Written by each launcher under the instance lock: which instance owns the dir.
++INSTANCE_MARKER = "instance.json"
++INSTANCE_MARKER_FIELDS = (
++    "project_id",
++    "worktree_hash",
++    "worktree_root",
++    "project_root",
++)
 +DISABLE_FILENAME = "reap.disabled"
 +DISABLE_ENV = "DOPEMUX_MCP_REAP"
 +STATE_FILENAME = "reap.last"
@@ -5934,6 +7428,11 @@ index 000000000..54907d20d
 +    except OSError:
 +        with contextlib.suppress(OSError):
 +            tmp.unlink()
++
++
++def _is_pid_text(text: str) -> bool:
++    """Whether ``text`` is a positive pid in ASCII digits (``"²".isdigit()`` is true)."""
++    return text.isascii() and text.isdigit() and int(text) > 0
 +
 +
 +def _pid_alive(pid: int) -> bool:
@@ -5989,7 +7488,7 @@ index 000000000..54907d20d
 +    newest_dead: Optional[float] = None
 +    for entry in entries:
 +        name = entry.name
-+        if not name.isdigit() or int(name) <= 0:
++        if not _is_pid_text(name):
 +            continue
 +        if _pid_alive(int(name)):
 +            live += 1
@@ -6045,6 +7544,12 @@ index 000000000..54907d20d
 +    )  # dopemux.service of those containers
 +    #: ``container id -> dopemux.service`` (for releasing state service by service).
 +    container_services: Dict[str, str] = field(default_factory=dict)
++    #: Found through the launcher's ``instance.json`` marker alone: no registry entry
++    #: and no container (a build-only launch). Reaped on ``worktree_missing`` only.
++    dir_only: bool = False
++    #: The project root of the pair (registry entry or marker); leases are matched
++    #: with it by the lease registry's identity rule (Task B7-1).
++    project_root: str = ""
 +
 +    @property
 +    def state_only(self) -> bool:
@@ -6060,6 +7565,8 @@ index 000000000..54907d20d
 +            "container_ids": list(self.container_ids),
 +            "reason": self.reason,
 +            "services": list(self.services),
++            "state_only": self.state_only,
++            "dir_only": self.dir_only,
 +        }
 +
 +
@@ -6073,8 +7580,10 @@ index 000000000..54907d20d
 +    def skip(self, cand: ReapCandidate, reason: str) -> None:
 +        """``reason``: ``attached`` (a launcher attached first), ``cap``, ``deadline``,
 +        ``locked`` (an automatic run found the instance lock busy), ``stale`` (no
-+        longer eligible under the lock) or ``registry_busy`` (containers removed, the
-+        registry lock stayed busy: a later run finishes the state)."""
++        longer eligible under the lock), ``registry_busy`` (containers removed, the
++        registry lock stayed busy: a later run finishes the state) or
++        ``state_error`` (containers removed, a registry or lease save failed: the
++        runtime dir stays and a later run finishes the state)."""
 +        self.skipped.append(cand)
 +        self.skip_reasons.append(reason)
 +
@@ -6124,7 +7633,18 @@ index 000000000..54907d20d
 +def _still_eligible(
 +    cand: "ReapCandidate", *, now: float, idle_s: float, exists: Callable[[Path], bool]
 +) -> bool:
-+    """The plan's predicate on current state (live attachments checked by the caller)."""
++    """The plan's predicate on current state (live attachments checked by the caller).
++
++    Idle time comes from ``_effective_last_detach``, the helper planning uses; under
++    the lock the prune has already turned dead records into ``last_detach``, so
++    both agree. No candidate qualifies while a detached image build is live in its
++    runtime dir (B5 round 1: a build that started after the plan is respected). A
++    dir-only candidate qualifies only while its worktree is gone (never on idle).
++    """
++    if _live_build(cand.runtime_dir, now):
++        return False
++    if cand.dir_only:
++        return _worktree_gone(cand.worktree_root, exists)
 +    if _worktree_gone(cand.worktree_root, exists):
 +        return True
 +    age = _last_detach_age(cand.runtime_dir, now)
@@ -6132,23 +7652,230 @@ index 000000000..54907d20d
 +
 +
 +def _last_detach_age(runtime_dir: Path, now: float) -> Optional[float]:
++    detached = _effective_last_detach(runtime_dir)
++    return None if detached is None else now - detached
++
++
++def _plan_reason(
++    worktree_root: str,
++    runtime_dir: Path,
++    *,
++    now: float,
++    idle_s: float,
++    exists: Callable[[Path], bool],
++) -> Optional[Reason]:
++    """The plan's reason for a registry-joined pair (live attachments checked by the
++    caller): ``worktree_missing``, else ``idle`` once ``idle_s`` passed since the
++    effective last detach, else ``None``. Container and state-only candidates share it.
++    """
++    if _worktree_gone(worktree_root, exists):
++        return "worktree_missing"
++    age = _last_detach_age(runtime_dir, now)
++    if age is not None and age >= idle_s:
++        return "idle"
++    return None
++
++
++def _effective_last_detach(runtime_dir: Path) -> Optional[float]:
++    """When the last launcher left, read-only: ``None`` when unknown.
++
++    The newer of ``last_detach``'s mtime and the newest dead attach record's mtime
++    (a launcher killed outright never detached; ``live_attachments(prune=True)``
++    would stamp that time). Records whose name is not a positive pid are ignored,
++    as in ``live_attachments``. Nothing is unlinked or stamped, so planning stays a
++    dry run. An unreadable ``attached`` dir is ``None`` (it also counts as attached).
++    """
++    latest: Optional[float] = None
 +    try:
-+        return now - (runtime_dir / LAST_DETACH).stat().st_mtime
++        latest = (Path(runtime_dir) / LAST_DETACH).stat().st_mtime
++    except OSError:
++        pass
++    try:
++        entries = list((Path(runtime_dir) / ATTACHED_DIR).iterdir())
++    except FileNotFoundError:
++        return latest
 +    except OSError:
 +        return None
++    for entry in entries:
++        name = entry.name
++        if not _is_pid_text(name) or _pid_alive(int(name)):
++            continue
++        try:
++            mtime = entry.stat().st_mtime
++        except OSError:
++            continue  # vanished meanwhile (a concurrent prune stamps last_detach)
++        latest = mtime if latest is None else max(latest, mtime)
++    return latest
++
++
++def _read_instance_marker(runtime_dir: Path) -> Optional[Dict[str, str]]:
++    """The identity fields of ``<runtime_dir>/instance.json``; ``None`` when absent,
++    unreadable or malformed (any field missing, empty or not a string)."""
++    try:
++        data = json.loads(
++            (Path(runtime_dir) / INSTANCE_MARKER).read_text(encoding="utf-8")
++        )
++    except (OSError, ValueError):
++        return None
++    if not isinstance(data, dict):
++        return None
++    fields: Dict[str, str] = {}
++    for key in INSTANCE_MARKER_FIELDS:
++        value = data.get(key)
++        if not isinstance(value, str) or not value:
++            return None
++        fields[key] = value
++    return fields
++
++
++def _live_build(runtime_dir: Path, now: float) -> bool:
++    """Whether a detached image build may still write into ``runtime_dir``.
++
++    The launcher's rule (``launcher._live_build_pid``, not imported: the launcher
++    imports this module): a ``build-<service>.pid`` whose pid is alive and whose
++    file is at most ``build_timeout_secs()`` old. A dir or pid file that cannot be
++    read counts as live (never delete under a build); a non-numeric pid does not.
++    """
++    try:
++        entries = list(Path(runtime_dir).iterdir())
++    except FileNotFoundError:
++        return False
++    except OSError:
++        return True
++    budget = dr.build_timeout_secs()
++    for entry in entries:
++        if not (entry.name.startswith("build-") and entry.name.endswith(".pid")):
++            continue
++        try:
++            text = entry.read_text(encoding="utf-8").strip()
++            age = now - entry.stat().st_mtime
++        except FileNotFoundError:
++            continue
++        except OSError:
++            return True
++        except ValueError:  # not text: not a pid the launcher wrote
++            continue
++        if not _is_pid_text(text):
++            continue
++        if age <= budget and _pid_alive(int(text)):
++            return True
++    return False
++
++
++def _dir_only_candidates(
++    registry: RuntimeRegistry,
++    seen_pairs: Set[Tuple[str, str]],
++    *,
++    now: float,
++    exists: Callable[[Path], bool],
++) -> List[ReapCandidate]:
++    """Launcher-marked runtime dirs that no registry entry or container accounts for.
++
++    A launch refused with ``LAUNCH_IMAGE_BUILDING`` writes its runtime dir before
++    any lifecycle start creates a registry entry. Such a dir is a candidate only
++    when its ``instance.json`` is well-formed (an absolute ``worktree_root``) and
++    names exactly this dir (``runtime_dir_for_paths``), the pair has no registry
++    entry and no managed container, its worktree is gone, no launcher is attached
++    and no detached build is live. Never on idle (a container-less dir costs
++    nothing). Read-only.
++    """
++    base = Path(registry.path).parent
++    try:
++        dirs = sorted(p for p in base.iterdir() if p.is_dir() and not p.is_symlink())
++    except OSError:
++        return []
++    found: List[ReapCandidate] = []
++    for runtime_dir in dirs:
++        marker = _read_instance_marker(runtime_dir)
++        if marker is None:
++            continue
++        project_id, worktree_hash = marker["project_id"], marker["worktree_hash"]
++        if (
++            not _SAFE_HASH.fullmatch(worktree_hash)
++            or not os.path.isabs(marker["worktree_root"])  # relative: judged vs the cwd
++            or (project_id, worktree_hash) in seen_pairs
++            or _entry_for(registry, project_id, worktree_hash) is not None
++        ):
++            continue
++        expected = runtime_dir_for_paths(
++            project_root=marker["project_root"],
++            worktree_hash=worktree_hash,
++            registry_path=registry.path,
++        )
++        if expected != runtime_dir:
++            continue  # not a dir this marker's instance would use: not ours
++        if (
++            not _worktree_gone(marker["worktree_root"], exists)
++            or live_attachments(runtime_dir, prune=False) > 0
++            or _live_build(runtime_dir, now)
++        ):
++            continue
++        found.append(
++            ReapCandidate(
++                project_id=project_id,
++                worktree_hash=worktree_hash,
++                worktree_root=marker["worktree_root"],
++                project_root=marker["project_root"],
++                runtime_dir=runtime_dir,
++                container_ids=[],
++                reason="worktree_missing",
++                services=[],
++                dir_only=True,
++            )
++        )
++    return found
++
++
++def _lease_is_the_pairs(
++    leases: PortLeaseRegistry,
++    lease: Dict[str, Any],
++    *,
++    worktree_root: str,
++    project_root: str,
++    worktree_hash: str,
++    project_id: str,
++) -> bool:
++    """Whether a worktree-scope ``lease`` belongs to the pair (Task B7-1).
++
++    Same worktree root (trailing ``/`` ignored), then the lease registry's own rule,
++    ``PortLeaseRegistry.identity_matches``, as the allocator and the lifecycle use it:
++    a lease written by ``allocate_ports()`` (``init``, the launcher) carries the
++    project directory's name as ``project_id`` while a reap candidate carries the
++    hashed ``ProjectIdentity.project_id``; the same worktree root decides, and a
++    lease whose ``worktree_hash`` differs is not the pair's.
++    """
++    if str(lease.get("worktree_root") or "").rstrip("/") != worktree_root.rstrip("/"):
++        return False
++    return leases.identity_matches(
++        lease,
++        worktree_root=worktree_root,
++        project_root=project_root or None,
++        worktree_hash=worktree_hash or None,
++        project_id=project_id or None,
++    )
 +
 +
 +def _has_active_leases(
-+    leases: Optional[PortLeaseRegistry], worktree_root: str, project_id: str
++    leases: Optional[PortLeaseRegistry],
++    worktree_root: str,
++    project_id: str,
++    *,
++    project_root: str = "",
++    worktree_hash: str = "",
 +) -> bool:
 +    if leases is None or leases.parse_status != "OK":
 +        return False
-+    root = worktree_root.rstrip("/")
 +    return any(
-+        str(lease.get("worktree_root") or "").rstrip("/") == root
-+        and (lease.get("scope") or _REAPABLE_SCOPE) == _REAPABLE_SCOPE
++        (lease.get("scope") or _REAPABLE_SCOPE) == _REAPABLE_SCOPE
 +        and lease.get("service") != _ORCHESTRATOR
-+        and (not lease.get("project_id") or lease["project_id"] == project_id)
++        and _lease_is_the_pairs(
++            leases,
++            lease,
++            worktree_root=worktree_root,
++            project_root=project_root,
++            worktree_hash=worktree_hash,
++            project_id=project_id,
++        )
 +        for lease in leases.active_leases()
 +    )
 +
@@ -6164,16 +7891,22 @@ index 000000000..54907d20d
 +) -> List[ReapCandidate]:
 +    """Instances to reap. Read-only; an unreadable registry yields ``[]``.
 +
-+    Besides container candidates, a registry pair whose worktree is gone and which
-+    has no container at all but still has unfinished state (a running entry, active
-+    leases or a runtime dir) yields a state-only candidate, so a reap that died
-+    after ``docker rm`` is finished by the next run.
++    Besides container candidates, a registry pair that has no container at all but
++    still has unfinished state yields a state-only candidate when no launcher is
++    attached and no detached build is live: on ``worktree_missing`` with a running
++    entry, active leases or a runtime dir; on ``idle`` (``idle_s``, the container
++    candidates' predicate) only with a running entry or active leases. So a reap
++    that died after ``docker rm``, or was skipped as ``registry_busy`` or
++    ``state_error``, is finished by a later run. A launcher-marked runtime dir
++    with no registry entry and no container yields a dir-only candidate
++    (``_dir_only_candidates``). Idle time includes dead attach records
++    (``_effective_last_detach``); nothing is pruned or stamped here.
 +    """
 +    if registry.parse_status != "OK":
 +        return []
 +
 +    groups: Dict[Tuple[str, str], List[DockerContainerInfo]] = {}
-+    seen_pairs = set()
++    seen_pairs: Set[Tuple[str, str]] = set()
 +    for c in containers:
 +        labels = c.labels or {}
 +        project_id = labels.get("dopemux.project_id") or ""
@@ -6203,13 +7936,11 @@ index 000000000..54907d20d
 +        )
 +        if live_attachments(runtime_dir, prune=False) > 0:
 +            continue
-+        reason: Optional[Reason] = None
-+        if _worktree_gone(worktree_root, exists):
-+            reason = "worktree_missing"
-+        else:
-+            age = _last_detach_age(runtime_dir, now)
-+            if age is not None and age >= idle_s:
-+                reason = "idle"
++        if _live_build(runtime_dir, now):  # B5 round 1: never under a running build
++            continue
++        reason = _plan_reason(
++            worktree_root, runtime_dir, now=now, idle_s=idle_s, exists=exists
++        )
 +        if reason is None:
 +            continue
 +        candidates.append(
@@ -6217,6 +7948,7 @@ index 000000000..54907d20d
 +                project_id=project_id,
 +                worktree_hash=worktree_hash,
 +                worktree_root=worktree_root,
++                project_root=project_root,
 +                runtime_dir=runtime_dir,
 +                container_ids=sorted(c.id for c in members),
 +                reason=reason,
@@ -6246,8 +7978,6 @@ index 000000000..54907d20d
 +        if entry is None:
 +            continue
 +        worktree_root, project_root, entries = entry
-+        if not _worktree_gone(worktree_root, exists):
-+            continue
 +        runtime_dir = runtime_dir_for_paths(
 +            project_root=project_root,
 +            worktree_hash=worktree_hash,
@@ -6255,13 +7985,32 @@ index 000000000..54907d20d
 +        )
 +        if live_attachments(runtime_dir, prune=False) > 0:
 +            continue
++        if _live_build(runtime_dir, now):  # B5 round 1: never under a running build
++            continue
++        # Task B5: the same predicate as a container candidate. A pair whose state an
++        # idle reap left behind (registry_busy, state_error, a reap killed after
++        # `docker rm`) is finished while its checkout still exists.
++        state_reason = _plan_reason(
++            worktree_root, runtime_dir, now=now, idle_s=idle_s, exists=exists
++        )
++        if state_reason is None:
++            continue
++        # A runtime dir alone qualifies only a missing worktree (as for dir-only
++        # candidates); an idle pair needs a running entry or an active lease
++        # (Task B5 round 2).
 +        unfinished = (
 +            any(
 +                e.get("status") != "stopped" and e.get("service") != _ORCHESTRATOR
 +                for e in entries
 +            )
-+            or _has_active_leases(lease_registry, worktree_root, project_id)
-+            or runtime_dir.exists()
++            or _has_active_leases(
++                lease_registry,
++                worktree_root,
++                project_id,
++                project_root=project_root,
++                worktree_hash=worktree_hash,
++            )
++            or (state_reason == "worktree_missing" and runtime_dir.exists())
 +        )
 +        if unfinished:
 +            candidates.append(
@@ -6269,12 +8018,16 @@ index 000000000..54907d20d
 +                    project_id=project_id,
 +                    worktree_hash=worktree_hash,
 +                    worktree_root=worktree_root,
++                    project_root=project_root,
 +                    runtime_dir=runtime_dir,
 +                    container_ids=[],
-+                    reason="worktree_missing",
++                    reason=state_reason,
 +                    services=[],
 +                )
 +            )
++    candidates.extend(
++        _dir_only_candidates(registry, seen_pairs, now=now, exists=exists)
++    )
 +    return candidates
 +
 +
@@ -6284,8 +8037,9 @@ index 000000000..54907d20d
 +def _owned_by(service: Optional[str], cand: ReapCandidate) -> bool:
 +    """Whether this reap is responsible for ``service`` of the candidate's pair.
 +
-+    An empty service belongs to nobody: only a state-only candidate (worktree
-+    gone, no container left) clears it, so it cannot keep the pair alive forever.
++    An empty service belongs to nobody: only a state-only candidate (no container
++    left; its worktree gone or idle) clears it, so it cannot keep the pair alive
++    forever.
 +    """
 +    if not service:
 +        return cand.state_only
@@ -6295,15 +8049,19 @@ index 000000000..54907d20d
 +
 +
 +def _release_leases(reg: PortLeaseRegistry, cand: ReapCandidate) -> None:
-+    root = cand.worktree_root.rstrip("/")
 +    for lease in reg.leases():
 +        if lease.get("status") != "active":
 +            continue
-+        if str(lease.get("worktree_root") or "").rstrip("/") != root:
-+            continue
 +        if (lease.get("scope") or _REAPABLE_SCOPE) != _REAPABLE_SCOPE:
 +            continue
-+        if lease.get("project_id") and lease["project_id"] != cand.project_id:
++        if not _lease_is_the_pairs(
++            reg,
++            lease,
++            worktree_root=cand.worktree_root,
++            project_root=cand.project_root,
++            worktree_hash=cand.worktree_hash,
++            project_id=cand.project_id,
++        ):
 +            continue
 +        if not _owned_by(lease.get("service"), cand):
 +            continue
@@ -6400,6 +8158,66 @@ index 000000000..54907d20d
 +    return errors, gone
 +
 +
++def _pair_container_ids(
++    cand: ReapCandidate,
++    runner: Callable[..., Any],
++    *,
++    call_timeout: Callable[[], Optional[float]] = lambda: None,
++    out_of_time: Callable[[], bool] = lambda: False,
++) -> Optional[Set[str]]:
++    """Ids of the containers (any state) docker lists now for the candidate's pair.
++
++    One ``docker ps -a`` filtered by ``dopemux.managed=true`` and
++    ``dopemux.scope=worktree`` (the planner's own filters, so an unmanaged or
++    project-scoped container carrying the pair's labels cannot keep the candidate
++    ``stale`` forever), ``dopemux.project_id`` and ``dopemux.worktree_hash``,
++    called under the instance lock before any candidate stops or releases anything
++    (Task B5 round 2 for state-only and dir-only candidates, Task B6 for every
++    candidate), bounded like every docker call of the run. ``None`` (unknown: fail
++    closed) when the call fails, times out, raises or no time is left. The
++    task-orchestrator's wrapper labels carry no ``dopemux.worktree_hash``, so a
++    running orchestrator never matches.
++    """
++    if out_of_time():
++        return None
++    cmd = [
++        "docker",
++        "ps",
++        "-a",
++        "--filter",
++        f"label={dr.LABEL_MANAGED}=true",
++        "--filter",
++        f"label=dopemux.scope={_REAPABLE_SCOPE}",
++        "--filter",
++        f"label=dopemux.project_id={cand.project_id}",
++        "--filter",
++        f"label=dopemux.worktree_hash={cand.worktree_hash}",
++        "--format",
++        "{{.ID}}",
++    ]
++    timeout = call_timeout()
++    try:
++        result = runner(cmd, **({} if timeout is None else {"timeout": timeout}))
++    except Exception:  # noqa: BLE001 - unknown means "maybe": never release then
++        return None
++    if getattr(result, "exit_code", 1) != 0:
++        return None
++    return {
++        line.strip()
++        for line in (getattr(result, "stdout", "") or "").splitlines()
++        if line.strip()
++    }
++
++
++def _unplanned_ids(listed: Set[str], planned: Sequence[str]) -> List[str]:
++    """Listed ids that match no planned id (short and full ids of one container match)."""
++    return sorted(
++        cid
++        for cid in listed
++        if not any(p.startswith(cid) or cid.startswith(p) for p in planned if p)
++    )
++
++
 +def _services_gone(cand: ReapCandidate, gone: Sequence[str]) -> List[str]:
 +    """Services of ``cand`` all of whose containers are in ``gone``."""
 +    removed = set(gone)
@@ -6423,12 +8241,15 @@ index 000000000..54907d20d
 +    label: str,
 +    *,
 +    wait_s: Optional[float] = None,
-+) -> None:
++) -> List[str]:
 +    """Release ``cand``'s leases and mark its registry entries stopped (registry lock inside).
 +
 +    Both registries in one directory share one ``registry.lock`` and are updated
 +    under one acquisition, so a lock that stays busy past ``wait_s`` raises
 +    ``LockBusy`` with neither changed. ``wait_s=None`` blocks (the CLI).
++
++    Returns the error strings it appended to ``report.errors`` (a corrupt registry
++    left as is, an ``OSError`` on save): empty means both registries were saved.
 +    """
 +    updates: List[Tuple[Any, Path, Callable[[Any], Any]]] = [
 +        (PortLeaseRegistry, lease_path, lambda reg: _release_leases(reg, cand)),
@@ -6446,7 +8267,9 @@ index 000000000..54907d20d
 +            for e in (save_state_locked(c, p, m, wait_s=wait_s) for c, p, m in updates)
 +            if e
 +        ]
-+    report.errors.extend(f"{label}: {error}" for error in errors)
++    recorded = [f"{label}: {error}" for error in errors]
++    report.errors.extend(recorded)
++    return recorded
 +
 +
 +def _reap_one(
@@ -6485,6 +8308,16 @@ index 000000000..54907d20d
 +                cand, "stale"
 +            )  # a launcher came and went, or the worktree is back
 +            return
++        # Task B5 round 2 / B6: a container the plan did not list (a start or a
++        # restart since the plan created it), or no answer from docker, makes the
++        # plan outdated: stopping and releasing now would orphan a live instance.
++        # Planned ids that are gone are fine (nothing else is alive).
++        listed = _pair_container_ids(
++            cand, runner, call_timeout=call_timeout, out_of_time=out_of_time
++        )
++        if listed is None or _unplanned_ids(listed, cand.container_ids):
++            report.skip(cand, "stale")
++            return
 +        docker_errors, gone = _stop_and_remove(
 +            cand,
 +            runner,
@@ -6495,7 +8328,9 @@ index 000000000..54907d20d
 +        if docker_errors:
 +            report.errors.extend(f"{label}: {e}" for e in docker_errors)
 +            # Some containers may still run: keep their leases, entries and the dir,
-+            # but release every service whose containers are all gone now.
++            # but release every service whose containers are all gone now. This
++            # branch never removes the dir and never counts as reaped (a failed
++            # save below is already in ``report.errors``).
 +            done = _services_gone(cand, gone)
 +            if done:
 +                try:
@@ -6514,7 +8349,7 @@ index 000000000..54907d20d
 +                    )
 +            return
 +        try:
-+            _release_state(
++            state_errors = _release_state(
 +                cand,
 +                lease_path,
 +                registry_path,
@@ -6524,8 +8359,14 @@ index 000000000..54907d20d
 +            )
 +        except LockBusy:
 +            # Containers are gone; registry, leases and the runtime dir stay for a
-+            # later run (a state-only candidate once the worktree is gone).
++            # later run (a state-only candidate once idle or the worktree is gone).
 +            report.skip(cand, "registry_busy")
++            return
++        if state_errors:
++            # Same as registry_busy: the containers are gone, but a registry or lease
++            # save failed (already in report.errors), so the runtime dir stays as the
++            # recovery artifact and a later run finishes the state.
++            report.skip(cand, "state_error")
 +            return
 +        try:
 +            shutil.rmtree(cand.runtime_dir)
@@ -6559,7 +8400,8 @@ index 000000000..54907d20d
 +    (``now``, ``idle_s``, ``exists`` as for ``plan_reap``); a candidate that no
 +    longer qualifies is skipped as ``stale``. ``blocking_locks=False`` (automatic
 +    runs) skips a candidate whose instance lock is busy (``locked``) and waits for
-+    the registry lock at most ``min(time left, 2 s)`` (``registry_busy``).
++    the registry lock at most ``min(time left, 2 s)`` (``registry_busy``). A failed
++    registry or lease save keeps the runtime dir (``state_error``).
 +
 +    ``max_candidates`` caps the work of one call, ``stop_time_s`` becomes
 +    ``docker stop --time N``, ``cmd_timeout_s`` is the per-command timeout and
@@ -6655,8 +8497,9 @@ index 000000000..54907d20d
 +    10 and a 45 s deadline.
 +
 +    ``state_file`` is touched before any work (so concurrent hooks do not all run);
-+    when candidates existed but none was attempted (deadline, cap, or a busy
-+    instance lock), or the docker inspection timed out, the touch is undone, so a
++    when candidates existed but none was attempted (deadline, cap, a busy instance
++    lock, a launcher attached since the plan, or no longer eligible), or the docker
++    inspection timed out, the touch is undone, so a
 +    run that did nothing never consumes the throttle. Instance locks are taken
 +    non-blocking and the inspection is bounded by ``min(cmd_timeout_s, time left)``.
 +    """
@@ -6735,7 +8578,9 @@ index 000000000..54907d20d
 +        idle_s=idle_s,
 +    )
 +    not_attempted = sum(
-+        1 for r in report.skip_reasons if r in {"cap", "deadline", "locked", "stale"}
++        1
++        for r in report.skip_reasons
++        if r in {"cap", "deadline", "locked", "attached", "stale"}
 +    )
 +    if not_attempted == len(candidates):
 +        _restore_throttle(state, previous)

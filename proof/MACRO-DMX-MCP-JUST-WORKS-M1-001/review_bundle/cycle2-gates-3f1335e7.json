@@ -1,0 +1,74 @@
+[
+  {
+    "command": "make test-fast",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "4434 passed, 2 skipped, 2 warnings in 492.28s at the frozen head (controller-run; clean on the first run at this head; earlier heads saw single --maxfail stops on pre-existing host-dependent tests (allocator, init :7890 probe, keychain), each repeated clean)"
+  },
+  {
+    "command": ".venv/bin/python -m pytest tests/test_native_hooks_workflow.py -q",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "12 passed at the frozen head"
+  },
+  {
+    "command": "scripts/docs_validator.py + scripts/docs_frontmatter_guard.py (how-to, design doc)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "rc=0 on docs/02-how-to/mcp-setup-other-repos.md and claudedocs/mcp-just-works-design-2026-11-05.md; AGENTS.md and .claude/claude.md fail both at the base too (no frontmatter; not docs/ pages)"
+  },
+  {
+    "command": "ruff check --select F,E9 / flake8 --select F,E7,E9,W6 per changed .py file, head vs a real worktree of the cycle base 0cde3a921 (cycle2-gates.sh)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "0 new findings in every changed file (cycle2-gates-<head>.json/txt in review_bundle)"
+  },
+  {
+    "command": "black / isort drift restricted to the lines the cycle added (cycle2-format-touched.py, real paths)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "0 black and 0 isort drift on added lines in all changed src modules; the 8 black-flagged lines in lifecycle.py are legacy lines moved verbatim with the preflight extraction"
+  },
+  {
+    "command": "mypy --explicit-package-bases --ignore-missing-imports per changed src module, head vs base worktree (repo config)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "0 new errors (cli 1301/1301, mcp_commands 87/87, launcher 17/17, lifecycle 17/17, mcp_json 9/9, reap 17/17, docker_runtime and locks unchanged counts)"
+  },
+  {
+    "command": "make lint / make type-check (repo-wide)",
+    "exit_code": null,
+    "bucket": "NOT_RUN",
+    "reason": "not clean/functional on main (21828 flake8 findings; mypy duplicate-module abort); per-file deltas recorded instead"
+  },
+  {
+    "command": "task reviews (sonnet for Task A, opus for Task B) + scoped re-reviews + final whole-cycle review (opus) + scoped re-review",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "Task A approved after one stub fix; Task B approved after fix rounds 1-4 (ABBA deadlock in the first B2 design caught by the implementer; stale-snapshot, build-under-lock, restart-did-nothing, docker-unavailable fail-open found by review and fixed); final whole-cycle review Needs-fixes → fixed (orchestrator-only artifact write race, doc truths, tests) → Approved; micro round controller-verified"
+  },
+  {
+    "command": "PR review bots (Copilot, Codex connector) on the pushed head",
+    "exit_code": null,
+    "bucket": "NOT_RUN",
+    "reason": "Codex connector: reviewed every pushed head when triggered by a PR comment (3dec0ab3e, e49a1c8e8, 357f6ab99, 2e08a3b7c, 71866e4d1); every finding fixed before the freeze (Tasks C, A2, A3, B5, B6, B7); no review of the final head 3f1335e7f within the 30-minute cap (owner may re-request). Copilot: reviewed e49a1c8e8 (3 threads: proof SHA → resolves with this proof; .env.example note → owner edit, file deny-ruled for the controller; host placeholder → Task A3) and none of the later heads (an explicit review request was denied to the controller → owner click in the PR UI) — bucket NOT_RUN for the final head; every earlier finding PASS (fixed)"
+  },
+  {
+    "command": "live: cold `dopemux mcp launch conport </dev/null` in a fresh detached worktree at the frozen head; `dopemux mcp reap --dry-run --json` after `git worktree remove`",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "launch exit 0 in 3 s (hold_instance_lock=False path, no deadlock); instance.json marker 0600 with identity fields; container up; dry-run lists the removed worktree's instance as worktree_missing (T8 dry-run at this head); warm launch exit 0; nothing applied (cycle2-live-smoke-<head>.txt)"
+  },
+  {
+    "command": "acceptance T1–T11 (design §6)",
+    "exit_code": null,
+    "bucket": "NOT_RUN",
+    "reason": "run at the previous code head 30b0fdec9 (PASS 7 / PARTIAL 1 / NOT_RUN 4, proof/.../AUDIT_ACCEPTANCE.md); at this head only the T8 dry-run and a cold launch were repeated (live smoke); reap --apply, switch-project and the dNh_CRM items stay owner-run"
+  },
+  {
+    "command": "scripts/check_root_hygiene.py --all-files",
+    "exit_code": 1,
+    "bucket": "FAIL",
+    "reason": "pre-existing: all offenders are tracked on origin/main, none from this branch"
+  }
+]

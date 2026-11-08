@@ -1,9 +1,8 @@
 Reading prompt from stdin...
-2026-11-07T04:58:54.223112Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3010/mcp)")))
-2026-11-07T04:58:54.222875Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3006/mcp)")))
-2026-11-07T04:58:54.478698Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3010/mcp)")))
-2026-11-07T04:58:54.479040Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3006/mcp)")))
-2026-11-07T04:58:55.493274Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3006/mcp)")))
-2026-11-07T04:58:55.493614Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3010/mcp)")))
-2026-11-07T05:11:39.133937Z ERROR rmcp::transport::streamable_http_client: fail to delete session: unexpected server response: DELETE returned HTTP 404 session_id="60ce426c-5c4e-4d33-aa6d-5f47f8735811"
+2026-11-08T23:03:03.663792Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3006/mcp)")))
+2026-11-08T23:03:03.663832Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3010/mcp)")))
+2026-11-08T23:03:03.918408Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3010/mcp)")))
+2026-11-08T23:03:03.920591Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3006/mcp)")))
+2026-11-08T23:03:04.921797Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3010/mcp)")))
+2026-11-08T23:03:04.922469Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3006/mcp)")))
 codex exit=0

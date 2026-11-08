@@ -4,8 +4,8 @@
   "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1",
   "branch": "feat/mcp-just-works-m1",
   "repo_identity": "DDD-Enterprises/dopemux-mvp",
-  "head_sha": "30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
-  "commit_sha": "30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
+  "head_sha": "3f1335e7fdcf8165d4669195bfd521cafca13304",
+  "commit_sha": "3f1335e7fdcf8165d4669195bfd521cafca13304",
   "routes": [
     {
       "workstream": "supervisor/controller",
@@ -57,7 +57,68 @@
       "skills": []
     },
     {
-      "workstream": "independent L3 audit route \u2014 codex",
+      "workstream": "cycle 2 implementer Task A (bot items, AGENTS.md)",
+      "runner": "claude-code Agent",
+      "model_requested": "sonnet",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:test-driven-development"
+      ]
+    },
+    {
+      "workstream": "cycle 2 implementer Task B (reap/lifecycle/launcher, 4 fix rounds, final-review fixes, micro round)",
+      "runner": "claude-code Agent",
+      "model_requested": "opus",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:test-driven-development"
+      ]
+    },
+    {
+      "workstream": "cycle 2 implementer Task C (tenant resume reconciliation)",
+      "runner": "claude-code Agent",
+      "model_requested": "opus",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:test-driven-development"
+      ]
+    },
+    {
+      "workstream": "cycle 2 task reviews / scoped re-reviews",
+      "runner": "claude-code Agent",
+      "model_requested": "sonnet (Task A) / opus (Task B, 5 passes)",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:requesting-code-review"
+      ]
+    },
+    {
+      "workstream": "cycle 2 final whole-cycle review + scoped re-review",
+      "runner": "claude-code Agent",
+      "model_requested": "opus",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:requesting-code-review"
+      ]
+    },
+    {
+      "workstream": "cycle 2 controller (supervision, commits by explicit paths, gates, freeze, proof)",
+      "runner": "claude-code",
+      "model_requested": "claude-fable-5-1",
+      "model_observed": "claude-fable-5-1 (session)",
+      "effort": "UNKNOWN",
+      "skills": [
+        "superpowers:subagent-driven-development",
+        "task-packet"
+      ]
+    },
+    {
+      "workstream": "independent L3 audit route \u2014 codex (cycle 2 at 3f1335e7)",
       "runner": "codex",
       "model_requested": "gpt-6-astra",
       "model_observed": "UNKNOWN",
@@ -69,24 +130,25 @@
       "exit_code": 0,
       "marker_echoed": true,
       "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDIT_CODEX_REPORT.md",
-      "raw_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/ (raw-* files)",
+      "raw_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/raw-codex*",
+      "verdict_json_repair": null,
       "findings": [
         {
           "id": "F1",
           "severity": "medium",
-          "location": "src/dopemux/mcp/reap.py:736",
-          "summary": "Registry persistence failure does not prevent runtime deletion or a reaped result."
+          "location": "src/dopemux/mcp/mcp_json.py:140",
+          "summary": "Authority splitting before placeholder masking allows remote-selectable templates to be overwritten by launcher repair."
         },
         {
           "id": "F2",
           "severity": "medium",
-          "location": "src/dopemux/mcp/lifecycle.py:1336",
-          "summary": "Direct start/restart operations are not serialized against the new automatic reaper."
+          "location": "src/dopemux/mcp/stdio_proxy.py:198",
+          "summary": "Substring-based session-termination recognition can replay a request already processed by the backend."
         }
       ]
     },
     {
-      "workstream": "independent L3 audit route \u2014 agy",
+      "workstream": "independent L3 audit route \u2014 agy (cycle 2 at 3f1335e7)",
       "runner": "agy",
       "model_requested": "gemini-4-argon-high",
       "model_observed": "UNKNOWN",
@@ -98,18 +160,12 @@
       "exit_code": 0,
       "marker_echoed": true,
       "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDIT_AGY_REPORT.md",
-      "raw_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/ (raw-* files)",
-      "findings": [
-        {
-          "id": "F1",
-          "severity": "low",
-          "location": "AGENTS.md:309",
-          "summary": "AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared per service and Dockerfile version across all worktrees and projects on the host."
-        }
-      ]
+      "raw_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/raw-agy*",
+      "verdict_json_repair": "verdict JSON contained a non-JSON string expression '\"<hex>\"[0:0] + \"<hex>\"' in file_hashes (model output glitch); repaired to the second literal, which is the expression's value; the raw return is kept verbatim in review_bundle/",
+      "findings": []
     },
     {
-      "workstream": "independent L3 audit route \u2014 grok",
+      "workstream": "independent L3 audit route \u2014 grok (cycle 2 at 3f1335e7)",
       "runner": "grok",
       "model_requested": "grok-4.7",
       "model_observed": "UNKNOWN",
@@ -121,7 +177,8 @@
       "exit_code": 0,
       "marker_echoed": true,
       "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDIT_GROK_REPORT.md",
-      "raw_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/ (raw-* files)",
+      "raw_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/raw-grok*",
+      "verdict_json_repair": null,
       "findings": []
     }
   ],
@@ -136,7 +193,18 @@
     "T6 docs b2c6e3efa+94a2a6f6a",
     "final review fix 7ae26f045",
     "residual fix eb3f0624b",
-    "audit fix 3bf5d4f26"
+    "audit fix 3bf5d4f26",
+    "cycle 2 base: merge origin/main f16e0da2c (#1500) as 0cde3a921",
+    "cycle 2 Task A 5c3ed8f8d+71664c910: test path case, SessionEnd hook timeout, templated URL guard, --repo catalog loading, AGENTS.md image sentence",
+    "cycle 2 Task B a59327f4d (+ checkpoint e57d2b10c): state_error on failed saves, crashed-launcher idle rule, instance.json marker + dir-only candidates, CLI start/restart under the instance lock with the orchestrator outside (option b)",
+    "cycle 2 Task B fix rounds a479eb2b2 (facts re-taken under the lock; pre-build before the lock), 3f9dc74e1 (restart re-reads docker after stops), eac840c8b (restart pre-build; stop re-read; restore guard), dcd16a74b (unavailable docker snapshots fail closed)",
+    "cycle 2 final-review fixes fec505f29 (orchestrator-only start writes no runtime artifacts; atomic build inputs; doc truths incl. per-checkout image wording; real-flock ABBA test) + micro round 3dec0ab3e",
+    "cycle 2 Task C 335fd4ce1 (post-push Codex P2): tenant provisioning does not replay a committed non-re-runnable migration on resume (probe of the last view 001/002 create; idempotent migrations replayed; static idempotency scan)",
+    "cycle 2 Task A2 05f2634ac + f66a8d793 (post-push Codex P2): --repo targets inside a checkout normalize to the worktree root (init, lifecycle CLI catalog, switch-project, repair-config)",
+    "cycle 2 Task A3 357f6ab99 (Copilot re-review): a URL placeholder in the userinfo or host position is never repairable, whatever its default",
+    "cycle 2 Task B5 979c1eb6a + 1dfaf8829 + 1cfa8d6e0 (post-push Codex P2): state-only leftovers qualify on idle too (needing a running entry or an active lease); a live detached image build excludes every candidate kind; state-only/dir-only candidates re-inspect the pair's containers under the lock before releasing",
+    "cycle 2 Task B6 556171674 (post-push Codex P2): every reap candidate re-inspects its pair's containers under the instance lock; an unplanned container or an unanswered docker ps skips it as stale",
+    "cycle 2 Task B7 9e3c78ba3 + 3f1335e7f (post-push Codex P2s): reap matches leases by worktree identity under both project-id conventions; env-file ports are re-leased on start (preferred values through the locked allocation)"
   ],
   "files_changed": [
     ".claude/WORKTREE_MCP_SETUP.md",
@@ -188,7 +256,9 @@
     "tests/unit/test_mcp_commands_catalog.py",
     "tests/unit/test_mcp_commands_lifecycle.py",
     "tests/unit/test_mcp_commands_repair.py",
+    "tests/unit/test_mcp_commands_repo_catalog.py",
     "tests/unit/test_mcp_commands_snapshot.py",
+    "tests/unit/test_mcp_config_repair.py",
     "tests/unit/test_mcp_conport_tenant.py",
     "tests/unit/test_mcp_doctor_repo_aware.py",
     "tests/unit/test_mcp_fleet_catalog.py",
@@ -213,70 +283,76 @@
       "command": "make test-fast",
       "exit_code": 0,
       "bucket": "PASS",
-      "reason": "4229 passed, 2 skipped, 2 warnings in 496.08s (0:08:16) at 30b0fdec996fcd782bf2f816900f9ff4dabd4c01 (implementer-run, controller-verified from the log)"
+      "reason": "4434 passed, 2 skipped, 2 warnings in 492.28s at the frozen head (controller-run; clean on the first run at this head; earlier heads saw single --maxfail stops on pre-existing host-dependent tests (allocator, init :7890 probe, keychain), each repeated clean)"
     },
     {
-      "command": ".venv/bin/python -m pytest tests/test_native_hooks_workflow.py -v",
+      "command": ".venv/bin/python -m pytest tests/test_native_hooks_workflow.py -q",
       "exit_code": 0,
       "bucket": "PASS",
-      "reason": "12 passed at 7ae26f045; file unchanged since"
+      "reason": "12 passed at the frozen head"
     },
     {
-      "command": "scripts/docs_validator.py + scripts/docs_frontmatter_guard.py (file-scoped on touched docs)",
+      "command": "scripts/docs_validator.py + scripts/docs_frontmatter_guard.py (how-to, design doc)",
       "exit_code": 0,
       "bucket": "PASS",
-      "reason": "rc=0 on the how-to and both claudedocs files"
+      "reason": "rc=0 on docs/02-how-to/mcp-setup-other-repos.md and claudedocs/mcp-just-works-design-2026-11-05.md; AGENTS.md and .claude/claude.md fail both at the base too (no frontmatter; not docs/ pages)"
     },
     {
-      "command": "ruff check --select F,E9 / flake8 --select F,E7,E9,W6 per-file diff vs base 583720375",
+      "command": "ruff check --select F,E9 / flake8 --select F,E7,E9,W6 per changed .py file, head vs a real worktree of the cycle base 0cde3a921 (cycle2-gates.sh)",
       "exit_code": 0,
       "bucket": "PASS",
-      "reason": "0 new entries over the changed .py files"
+      "reason": "0 new findings in every changed file (cycle2-gates-<head>.json/txt in review_bundle)"
     },
     {
-      "command": "black --check / isort --check-only (five new modules, repo config)",
+      "command": "black / isort drift restricted to the lines the cycle added (cycle2-format-touched.py, real paths)",
       "exit_code": 0,
       "bucket": "PASS",
-      "reason": "clean"
+      "reason": "0 black and 0 isort drift on added lines in all changed src modules; the 8 black-flagged lines in lifecycle.py are legacy lines moved verbatim with the preflight extraction"
     },
     {
-      "command": "mypy --explicit-package-bases --ignore-missing-imports (five new modules)",
+      "command": "mypy --explicit-package-bases --ignore-missing-imports per changed src module, head vs base worktree (repo config)",
       "exit_code": 0,
       "bucket": "PASS",
-      "reason": "0 errors in the new modules; repo-wide mypy aborts on main (pre-existing)"
+      "reason": "0 new errors (cli 1301/1301, mcp_commands 87/87, launcher 17/17, lifecycle 17/17, mcp_json 9/9, reap 17/17, docker_runtime and locks unchanged counts)"
     },
     {
       "command": "make lint / make type-check (repo-wide)",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "reason": "not clean/functional on main (21828 flake8 findings; mypy duplicate-module abort); per-file diffs recorded instead"
+      "reason": "not clean/functional on main (21828 flake8 findings; mypy duplicate-module abort); per-file deltas recorded instead"
     },
     {
-      "command": "live: dopemux mcp launch conport/dope-memory + claude mcp list (worktree)",
+      "command": "task reviews (sonnet for Task A, opus for Task B) + scoped re-reviews + final whole-cycle review (opus) + scoped re-review",
       "exit_code": 0,
       "bucket": "PASS",
-      "reason": "at 7f5cb621a: both Connected; sibling-lease collision healed (live-check-3c-fix1.log)"
+      "reason": "Task A approved after one stub fix; Task B approved after fix rounds 1-4 (ABBA deadlock in the first B2 design caught by the implementer; stale-snapshot, build-under-lock, restart-did-nothing, docker-unavailable fail-open found by review and fixed); final whole-cycle review Needs-fixes \u2192 fixed (orchestrator-only artifact write race, doc truths, tests) \u2192 Approved; micro round controller-verified"
     },
     {
-      "command": "live: dopemux mcp init --repo <fresh repo>; dopemux mcp launch conport (gate)",
-      "exit_code": 0,
-      "bucket": "PASS",
-      "reason": "at 8f12edee4/baf8b1151: tenant provisioned, images built, conport connected, gate cleared (live-check-4-tenant-probe.log)"
-    },
-    {
-      "command": "live: dopemux mcp reap --dry-run --json",
-      "exit_code": 0,
-      "bucket": "PASS",
-      "reason": "at 859fd844d: empty plan with the kill-switch (live-check-5-reap-dryrun.log)"
-    },
-    {
-      "command": "live: reap --apply, switch-project, Codex/EnterWorktree probes, legacy-envrc adoption, acceptance T1\u2013T11",
+      "command": "PR review bots (Copilot, Codex connector) on the pushed head",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "reason": "owner-run; reap --apply denied to the controller by the permission classifier"
+      "reason": "Codex connector: reviewed every pushed head when triggered by a PR comment (3dec0ab3e, e49a1c8e8, 357f6ab99, 2e08a3b7c, 71866e4d1); every finding fixed before the freeze (Tasks C, A2, A3, B5, B6, B7); no review of the final head 3f1335e7f within the 30-minute cap (owner may re-request). Copilot: reviewed e49a1c8e8 (3 threads: proof SHA \u2192 resolves with this proof; .env.example note \u2192 owner edit, file deny-ruled for the controller; host placeholder \u2192 Task A3) and none of the later heads (an explicit review request was denied to the controller \u2192 owner click in the PR UI) \u2014 bucket NOT_RUN for the final head; every earlier finding PASS (fixed)"
+    },
+    {
+      "command": "live: cold `dopemux mcp launch conport </dev/null` in a fresh detached worktree at the frozen head; `dopemux mcp reap --dry-run --json` after `git worktree remove`",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "launch exit 0 in 3 s (hold_instance_lock=False path, no deadlock); instance.json marker 0600 with identity fields; container up; dry-run lists the removed worktree's instance as worktree_missing (T8 dry-run at this head); warm launch exit 0; nothing applied (cycle2-live-smoke-<head>.txt)"
+    },
+    {
+      "command": "acceptance T1\u2013T11 (design \u00a76)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "run at the previous code head 30b0fdec9 (PASS 7 / PARTIAL 1 / NOT_RUN 4, proof/.../AUDIT_ACCEPTANCE.md); at this head only the T8 dry-run and a cold launch were repeated (live smoke); reap --apply, switch-project and the dNh_CRM items stay owner-run"
+    },
+    {
+      "command": "scripts/check_root_hygiene.py --all-files",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "reason": "pre-existing: all offenders are tracked on origin/main, none from this branch"
     }
   ],
-  "codereview_status": "PASS (final whole-branch opus review 'with fixes' \u2192 fixes applied and re-reviewed; residual + audit rounds verified)",
+  "codereview_status": "PASS (cycle 2: Task A review sonnet approved after one stub fix; Task B review opus approved after fix rounds 1-4; final whole-cycle review opus Needs-fixes \u2192 fixed \u2192 scoped re-review approved; micro round controller-verified). Cycle 1 status retained: final whole-branch opus review with fixes, residual + audit rounds verified.",
   "precommit_status": "NOT_RUN",
   "audit": {
     "required": true,
@@ -285,22 +361,46 @@
       "agy": "PASS_WITH_RISKS",
       "grok": "PASS_WITH_RISKS"
     },
-    "route": "three routes at the frozen head (codex gpt-6-astra, agy gemini-4-argon-high, grok grok-4.7); operator picks the governing verdict; embedded_audit below carries the agy record (schema-valid)"
+    "route": "three routes at the frozen head 3f1335e7 (codex gpt-6-astra, agy gemini-4-argon-high, grok grok-4.7); embedded_audit below carries the agy record (schema-valid); the 30b0fdec9 round is superseded (review_bundle/superseded-30b0fdec9-*)"
   },
-  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1503 (open; merge owner-gated; embedded-audit signature = owner step)",
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1503 (open; cycle 2 pushed and frozen at 3f1335e7f; BLOCKER: codex FAIL F1/F2 at the frozen head \u2192 owner decides cycle 3 vs adjudication; signature = owner step after that decision; merge owner-gated)",
   "residual_risks": [
-    "flaky tests/unit/test_mcp_port_allocator.py::test_sequential_single_service_allocations_never_share_a_port (~1/30 isolated runs)",
-    "SIGKILLed-only launcher leaves its instance to the worktree-missing rule",
-    "second restart of the same backend within one proxy window needs /mcp reconnect",
-    "per-worktree mcp.env/compose.override reflect the last launched service",
-    "legacy projects stay on the shared ConPort store (D5 Option A)"
+    "a launcher waits on launch.lock with no bound while a CLI start/restart/stop holds it (compose up \u2264180 s per service, docker stop on restart, tenant provisioning; a build under the lock only when a reap removed the containers during the wait and the image is also missing)",
+    "a split restart stops the orchestrator before waiting for launch.lock, so its downtime includes that wait",
+    "the orchestrator start is not serialized against a reap's runtime-dir removal (at worst that start fails; it no longer writes into the runtime dir)",
+    "the orchestrator branch's own re-inspect under :7890 (pre-existing) treats an unreadable docker as no owner and falls back to the port probe",
+    "a SIGKILLed launcher counts as detached at its attach time: no idle grace after it dies (documented)",
+    "dir-only reaping: an ambiguous pair counts as no registry entry; needs a readable OK registry and automatic runs skip planning on an empty registry; runtime dirs created by init or the CLI pre-build carry no marker",
+    "duplicate concurrent builds possible (CLI pre-build, init, launcher detached build); the pid guard covers launchers only",
+    "dry-run restart shows running sidecars as already_running; a refused orchestrator stop can be dropped from a blocked split restart's report",
+    "doctor --repo, doctor --profile --repo and profile show --repo still load the caller's catalog (deferred, documented in the design amendments)",
+    "output-shape changes: reap --json gains state_only/dir_only; a split run's start-plan.json lists only the worktree services; orchestrator-only starts return runtime_artifacts: []",
+    "dead code carried over verbatim in lifecycle.py (\u2026 or True filters, an unreachable orchestrator branch, if not is_free(...): pass, identical already_running conditional)",
+    "lock-order evidence: the ABBA case has a real-flock test; other ordering tests use spies and the reap-interleaving tests replay a reap inside a patched lock",
+    "under the lock, write_runtime_artifacts still truncates and rewrites mcp.env and the override (a detached build started earlier may read a truncated mcp.env)",
+    "a removed worktree whose sidecars keep running can reappear as an empty directory through Docker bind mounts (dope-memory ./.dopemux), demoting worktree_missing to idle (still reaped after idle_s)",
+    "flaky/host-dependent tests: test_mcp_port_allocator sequential allocation (1/12 isolated here) and test_init_next_steps (real mcp init against the host :7890/docker) \u2014 pre-existing",
+    "cycle 1 residuals retained: second restart of the same backend within one proxy window needs /mcp reconnect; per-worktree mcp.env/compose.override reflect the last launched service; legacy projects stay on the shared ConPort store (D5 Option A); build.log shared per runtime dir",
+    "a state-only reap candidate that keeps failing (state_error on a corrupt lease file) is planned every run and can take the launcher's cap-of-1 slot (no docker call)",
+    "an unreadable build pid file excludes its instance from reaping until fixed (fail closed); a reused pid excludes it for at most build_timeout_secs",
+    "idle is measured from launcher attach/detach only: sidecars started by hand with the CLI and never attached are reaped after idle_s (design)",
+    "in the explicit `reap --apply`, the under-lock pair inspection can hold launch.lock for up to run_cmd's 180 s default if docker hangs, as docker stop/rm already could",
+    "an idle state-only pair whose only remaining state is a runtime dir (entries stopped, leases released) is finished only when the worktree is gone (by ruling: never delete a live worktree's build log on idle)",
+    "reap candidates of every kind are re-inspected under the lock (one bounded read-only docker ps -a per attempted candidate); a plan whose container set changed, or an unanswered inspection, is skipped as stale and re-planned next run",
+    "LEASE_ENVRC_MISMATCH no longer blocks a leased service's start (the worktree's existing lease wins over a differing env-file port; doctor still reports the mismatch); the env file is informational by design",
+    "the host's port-leases.json holds hundreds of released test leases (pytest tmp paths) from earlier suite runs that wrote to the real registry; pre-existing hygiene, candidate for `dopemux mcp leases reconcile`/owner cleanup",
+    "a `start --dry-run` allocates and persists leases (intended and test-pinned; since B7 it also re-leases unleased env-file ports) \u2014 an auditor may question a dry run that writes leases",
+    "a legacy or manual container running on the env-file port while this worktree's lease names another port makes `start` report already_running with registry ports the container does not publish (previously a blocking LEASE_ENVRC_MISMATCH); doctor still reports the mismatch; stop then start recreates the container on the leased port",
+    "the own-sidecar port guard trusts the 4-hex worktree_hash label; a collision between two worktrees of one project would let one adopt the other's published port (such a collision already breaks container naming and the runtime dir)",
+    "codex route at 3f1335e7f: F1 medium (host-placeholder guard splits the authority before masking; delimiter-in-default defaults escape) and F2 medium (substring match of 'Session terminated' in the proxy's resend-once can replay a committed request) \u2014 OPEN pending the owner's decision"
   ],
   "unknowns": [
-    "observed model identity of every delegated agent and external auditor (no runtime receipts except harness error messages)",
-    "owner-run acceptance T1\u2013T11",
-    "Codex/EnterWorktree launcher behaviour (NOT_RUN probes)"
+    "observed model identity of every delegated agent and external auditor (no runtime receipts)",
+    "owner-run acceptance items at this head (reap --apply, switch-project/T6b, dNh_CRM T5, EnterWorktree T2)",
+    "cause of the 30 s stall on the first two launches during the 30b0fdec9 acceptance (not reproduced since; cold launch at this head 3 s)",
+    "writer of the untracked ignored .env seen in an acceptance worktree (deny rule prevents reading it)"
   ],
-  "cleanup_status": "probe fixture (~/code/.tenant-probe-m1, tenant conport_tenant_probe_m1_84fc294a, its project dir and runtime dir, container) and ~/.dopemux/mcp/runtime/reap.disabled intentionally left for owner acceptance T8; lint-base worktree .worktrees/lint-base-583720375 to be removed after the PR",
+  "cleanup_status": "owner-run cleanup script (reap --apply denied to the controller by the auto-mode classifier) covers: acceptance instances 55ab/accept-m1-t4/tenant-probe-m1, the cycle-2 smoke instances dopemux-mvp-d79c (at 3dec0ab3e) and dopemux-mvp-570c (at the frozen head 3f1335e7f), both with their worktrees removed (reap candidates), tenants conport_accept_m1_t4_747a8534 and conport_tenant_probe_m1_84fc294a, throwaway repos, legacy orphan runtime dir dopemux-mvp-2271 (no marker), the reap.disabled kill switch (delete LAST); base worktree .worktrees/c2-base-0cde3a92 removed by the controller before the freeze (done)",
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
@@ -309,26 +409,26 @@
     "invocation": "agy --model gemini-4-argon-high --output-format json --print-timeout 25m --add-dir <sealed subject> --print=<AUDIT_PROMPT.agy.full.txt> (exact requested model gemini-4-argon-high; the schema enum lacks it, hence 'gemini')",
     "exit_code": 0,
     "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDITOR_REPORT.md",
-    "findings": [
-      {
-        "id": "F1",
-        "severity": "LOW",
-        "title": "AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared ",
-        "status": "ACCEPTED_RISK",
-        "body": "AGENTS.md:309: AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared per service and Dockerfile version across all worktrees and projects on the host. \u2014 evidence: AGENTS.md:309-310 says 'The first launch in a new worktree builds its images (LAUNCH_IMAGE_BUILDING; then /mcp reconnect all).' Commit 02658fcbe changed docker_runtime.compose_image_name (src/dopemux/mcp/docker_runtime.py:487-516) to tag dopemux-<service>:<12-hex-sha256> per service and Dockerfile content, and updated docs/02-how-to/mcp-setup-other-repos.md:122-128 and .claude/claude.md:270-273 accordingly, leaving AGENTS.md:309 with the pre-I4 wording."
-      }
-    ],
+    "findings": [],
     "fixes_applied": [
       "eb3f0624b audit (codex FAIL: F1 high first-session guard gap, F3 medium unbounded reap locks/inspection) \u2192 fixed in 3bf5d4f26",
       "3bf5d4f26 audit (codex FAIL: 2 medium \u2014 stale reap eligibility under the lock; unbounded registry lock on automatic reaps) \u2192 fixed in 30b0fdec9",
-      "superseded returns kept under proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/superseded-*/"
+      "superseded returns kept under proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/superseded-*/",
+      "30b0fdec9 audit round (codex FAIL F1 reap persistence failure deleted the runtime dir; F2 CLI start/restart not serialized against the reaper) + AGY low AGENTS.md:309 + five PR bot threads + acceptance findings 2 (orphan build-only runtime dir) and 3 (T7 hook_status.json wording) \u2192 fixed in cycle 2 (0cde3a921..<frozen head>); the 30b0fdec9 returns are kept under review_bundle/superseded-30b0fdec9-*",
+      "cycle 2 review findings fixed before the freeze: ABBA deadlock of the first B2 design vs switch-project; stale preflight snapshot under the lock; inline image build under the lock; restart handed the pre-stop snapshot to its starts; docker-unavailable snapshots failed open; orchestrator-only start wrote the worktree's compose override without the lock",
+      "post-push Codex connector P2 on conport_tenant.py:716 (resume replays a committed 001/002 after a lost checkpoint \u2192 'already exists' forever) \u2192 fixed in Task C 335fd4ce1; probe SQL verified read-only against two provisioned tenant databases on the host",
+      "post-push Codex connector P2 on mcp_commands.py:2164 (init --repo <subdir> wrote .mcp.json/.envrc and allocated leases in the subdirectory) \u2192 fixed in Task A2 05f2634ac + f66a8d793 (lifecycle CLI passes the normalized root to run_lifecycle too)",
+      "Copilot re-review (e49a1c8e8): host-position placeholder defaults do not prove locality \u2192 Task A3 357f6ab99; its .env.example note (host-path variables also required by dopemux commands that start dope-context) is an OWNER edit (.env* deny-ruled for the controller); its proof-SHA thread resolves with this cycle's proof",
+      "post-push Codex connector P2 on reap.py:673 (an interrupted/failed idle reap's leftovers never finished while the checkout existed) \u2192 fixed in Task B5 979c1eb6a; live-build exclusion generalized in 1dfaf8829",
+      "post-push Codex connector P2 on reap.py:1011 (a CLI restart recreating an idle sidecar between plan and lock had the replacement's state released) \u2192 fixed in Task B6 556171674",
+      "post-push Codex connector P2s: reap.py:783 (leases with the directory-name project_id were never released or counted \u2192 ports leaked on reap) and lifecycle.py:385 (env-file ports after init\u2192stop were treated as reservations \u2192 unleased start) \u2192 fixed in Task B7 9e3c78ba3"
     ],
     "remaining_risks": [
-      "AGENTS.md:309 contains stale wording implying image builds happen per new worktree rather than once per service/Dockerfile version on the host (Finding F1, low).",
-      "In stdio_proxy.py:316-329, an initial connect failure consumes the 60-second reconnect window budget via the immediate startup retry, so if the backend subsequently restarts within 60 seconds of that retry, the proxy will exit 1 and require '/mcp reconnect' rather than auto-healing a second time inside the same 60-second window.",
-      "Deferred M1 items documented in LEDGER_SUMMARY.md \u00a7Deferred (e.g., M2 legacy shared-store row migration, M2 ~/.claude.json global audit, and in-flight tool calls during a task-orchestrator restart returning CONNECTION_CLOSED without replay) remain open by design.",
-      "codex route at 30b0fdec9 = FAIL with two medium reap/serialization findings (F1 reap persistence failure still deletes the runtime dir; F2 CLI start/restart not serialized against the automatic reaper) \u2014 OPEN, governing pick owner-gated",
-      "grok route at 30b0fdec9 = PASS_WITH_RISKS (0 findings, tool-less containment verified)"
+      "Direct CLI `dopemux mcp start --service task-orchestrator` does not acquire `instance_lock` (by design, to avoid nesting `instance_lock` with `reserved_port_lock(7890)`), so a concurrent `reap --apply` on a removed/idle worktree can remove `runtime_dir` after the orchestrator registry update; `skip_artifacts = not compose_services` (src/dopemux/mcp/lifecycle.py:710) prevents recreating `runtime_dir`, leaving at most a stale orchestrator registry entry (documented in design.md:304).",
+      "`dopemux mcp doctor --repo <target>` and `dopemux mcp profile show --repo <target>` still load the caller checkout's catalog when invoked from outside `<target>` (documented in design.md:305).",
+      "Interactive `dopemux mcp switch-project` without `--yes` performs an unlocked pre-check before prompting the operator and re-verifies ownership under `reserved_port_lock(7890)` before mutating state (src/dopemux/commands/mcp_commands.py:432-477, documented in design.md:306).",
+      "codex route at 3f1335e7 = FAIL",
+      "grok route at 3f1335e7 = PASS_WITH_RISKS"
     ],
     "skip_reason": null,
     "instruction_like_content": {
@@ -338,7 +438,7 @@
       "matches": []
     }
   },
-  "generated_at": "2026-11-07T05:13:34.470077+00:00",
+  "generated_at": "2026-11-08T23:24:00.224799+00:00",
   "packet_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
   "audit_identity": {
     "implementer": {

@@ -1,9 +1,9 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1503,
-  "head_sha": "30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
+  "head_sha": "3f1335e7fdcf8165d4669195bfd521cafca13304",
   "packet_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
-  "generated_at": "2026-11-07T08:16:55Z",
+  "generated_at": "2026-11-08T23:24:00.224799+00:00",
   "mutation_performed": false,
   "github_mutation_route_added": false,
   "audit_identity": {
@@ -30,26 +30,26 @@
     "invocation": "agy --model gemini-4-argon-high --output-format json --print-timeout 25m --add-dir <sealed subject> --print=<AUDIT_PROMPT.agy.full.txt> (exact requested model gemini-4-argon-high; the schema enum lacks it, hence 'gemini')",
     "exit_code": 0,
     "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDITOR_REPORT.md",
-    "findings": [
-      {
-        "id": "F1",
-        "severity": "LOW",
-        "title": "AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared ",
-        "status": "ACCEPTED_RISK",
-        "body": "AGENTS.md:309: AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared per service and Dockerfile version across all worktrees and projects on the host. \u2014 evidence: AGENTS.md:309-310 says 'The first launch in a new worktree builds its images (LAUNCH_IMAGE_BUILDING; then /mcp reconnect all).' Commit 02658fcbe changed docker_runtime.compose_image_name (src/dopemux/mcp/docker_runtime.py:487-516) to tag dopemux-<service>:<12-hex-sha256> per service and Dockerfile content, and updated docs/02-how-to/mcp-setup-other-repos.md:122-128 and .claude/claude.md:270-273 accordingly, leaving AGENTS.md:309 with the pre-I4 wording."
-      }
-    ],
+    "findings": [],
     "fixes_applied": [
       "eb3f0624b audit (codex FAIL: F1 high first-session guard gap, F3 medium unbounded reap locks/inspection) \u2192 fixed in 3bf5d4f26",
       "3bf5d4f26 audit (codex FAIL: 2 medium \u2014 stale reap eligibility under the lock; unbounded registry lock on automatic reaps) \u2192 fixed in 30b0fdec9",
-      "superseded returns kept under proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/superseded-*/"
+      "superseded returns kept under proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/superseded-*/",
+      "30b0fdec9 audit round (codex FAIL F1 reap persistence failure deleted the runtime dir; F2 CLI start/restart not serialized against the reaper) + AGY low AGENTS.md:309 + five PR bot threads + acceptance findings 2 (orphan build-only runtime dir) and 3 (T7 hook_status.json wording) \u2192 fixed in cycle 2 (0cde3a921..<frozen head>); the 30b0fdec9 returns are kept under review_bundle/superseded-30b0fdec9-*",
+      "cycle 2 review findings fixed before the freeze: ABBA deadlock of the first B2 design vs switch-project; stale preflight snapshot under the lock; inline image build under the lock; restart handed the pre-stop snapshot to its starts; docker-unavailable snapshots failed open; orchestrator-only start wrote the worktree's compose override without the lock",
+      "post-push Codex connector P2 on conport_tenant.py:716 (resume replays a committed 001/002 after a lost checkpoint \u2192 'already exists' forever) \u2192 fixed in Task C 335fd4ce1; probe SQL verified read-only against two provisioned tenant databases on the host",
+      "post-push Codex connector P2 on mcp_commands.py:2164 (init --repo <subdir> wrote .mcp.json/.envrc and allocated leases in the subdirectory) \u2192 fixed in Task A2 05f2634ac + f66a8d793 (lifecycle CLI passes the normalized root to run_lifecycle too)",
+      "Copilot re-review (e49a1c8e8): host-position placeholder defaults do not prove locality \u2192 Task A3 357f6ab99; its .env.example note (host-path variables also required by dopemux commands that start dope-context) is an OWNER edit (.env* deny-ruled for the controller); its proof-SHA thread resolves with this cycle's proof",
+      "post-push Codex connector P2 on reap.py:673 (an interrupted/failed idle reap's leftovers never finished while the checkout existed) \u2192 fixed in Task B5 979c1eb6a; live-build exclusion generalized in 1dfaf8829",
+      "post-push Codex connector P2 on reap.py:1011 (a CLI restart recreating an idle sidecar between plan and lock had the replacement's state released) \u2192 fixed in Task B6 556171674",
+      "post-push Codex connector P2s: reap.py:783 (leases with the directory-name project_id were never released or counted \u2192 ports leaked on reap) and lifecycle.py:385 (env-file ports after init\u2192stop were treated as reservations \u2192 unleased start) \u2192 fixed in Task B7 9e3c78ba3"
     ],
     "remaining_risks": [
-      "AGENTS.md:309 contains stale wording implying image builds happen per new worktree rather than once per service/Dockerfile version on the host (Finding F1, low).",
-      "In stdio_proxy.py:316-329, an initial connect failure consumes the 60-second reconnect window budget via the immediate startup retry, so if the backend subsequently restarts within 60 seconds of that retry, the proxy will exit 1 and require '/mcp reconnect' rather than auto-healing a second time inside the same 60-second window.",
-      "Deferred M1 items documented in LEDGER_SUMMARY.md \u00a7Deferred (e.g., M2 legacy shared-store row migration, M2 ~/.claude.json global audit, and in-flight tool calls during a task-orchestrator restart returning CONNECTION_CLOSED without replay) remain open by design.",
-      "codex route at 30b0fdec9 = FAIL with two medium reap/serialization findings (F1 reap persistence failure still deletes the runtime dir; F2 CLI start/restart not serialized against the automatic reaper) \u2014 OPEN, governing pick owner-gated",
-      "grok route at 30b0fdec9 = PASS_WITH_RISKS (0 findings, tool-less containment verified)"
+      "Direct CLI `dopemux mcp start --service task-orchestrator` does not acquire `instance_lock` (by design, to avoid nesting `instance_lock` with `reserved_port_lock(7890)`), so a concurrent `reap --apply` on a removed/idle worktree can remove `runtime_dir` after the orchestrator registry update; `skip_artifacts = not compose_services` (src/dopemux/mcp/lifecycle.py:710) prevents recreating `runtime_dir`, leaving at most a stale orchestrator registry entry (documented in design.md:304).",
+      "`dopemux mcp doctor --repo <target>` and `dopemux mcp profile show --repo <target>` still load the caller checkout's catalog when invoked from outside `<target>` (documented in design.md:305).",
+      "Interactive `dopemux mcp switch-project` without `--yes` performs an unlocked pre-check before prompting the operator and re-verifies ownership under `reserved_port_lock(7890)` before mutating state (src/dopemux/commands/mcp_commands.py:432-477, documented in design.md:306).",
+      "codex route at 3f1335e7 = FAIL",
+      "grok route at 3f1335e7 = PASS_WITH_RISKS"
     ],
     "skip_reason": null,
     "instruction_like_content": {

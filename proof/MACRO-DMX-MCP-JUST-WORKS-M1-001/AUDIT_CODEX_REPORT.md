@@ -1,25 +1,49 @@
-END_OF_PROMPT a202f49c-30b0fdec
+END_OF_PROMPT a16ed92f-3f1335e7
 
-**Change Summary:** **FAIL — two medium findings.** Audited the supplied branch-authored materials for `5742575c4..30b0fdec996fcd782bf2f816900f9ff4dabd4c01`. No changes made.
+**Change Summary:** **FAIL** — two medium findings in the pinned branch-authored range. No files changed.
 
-**Authority Used:** Your audit contract and the independent-audit skill. Subject instructions were treated as data. No delegation.
+**Authority Used:** Your pinned audit scope, repository instructions, independent-audit skill, and the supplied verdict contract. This return does not grant repository acceptance or constitute an accepted embedded-audit proof.
 
-**Analysis Performed:** Read the complete 19,517-line diff and supplied supporting documents; traced credentials, locks, reconnects, cleanup, environment scrubbing, and documented commands.
+**Analysis Performed:** Read the full diff and supplied materials; traced credential handling, lifecycle locks, reconnect/replay, reaping, environment isolation, target-catalog selection, and documentation. No delegation.
 
-1. **F1 — Medium: reap finalizes after registry-save failure.**  
-   `src/dopemux/mcp/reap.py:668` records persistence errors without signaling failure to its caller. At `:736`, `_reap_one` handles only `LockBusy`; other save failures still reach runtime-directory deletion at `:750` and `report.reaped.append` at `:756`. An in-memory probe of these exact functions confirmed both actions after an injected save error. This removes recovery artifacts despite incomplete finalization. For an existing worktree, state-only recovery is excluded at `:468`.
+**Findings**
 
-2. **F2 — Medium: direct lifecycle operations bypass cleanup serialization.**  
-   `src/dopemux/mcp/lifecycle.py:1333` locks the explicit stop path, but restart proceeds directly to `_stop_services` at `:1336`; direct starts likewise lack the launcher’s instance-lock wrapper (`src/dopemux/mcp/launcher.py:480`). Consequently, the new automatic reaper can overlap a direct start/restart on an eligible idle instance, removing its containers, leases, or runtime files during that operation. This is a static concurrency finding; the interleaving was not exercised live.
+1. **F1 — medium — `src/dopemux/mcp/mcp_json.py:140`**  
+   Cycle-2 fix 3 still permits replacement of operator-selected endpoints. The function splits the authority at `/`, `?`, and `#` **before** masking complete placeholders. A delimiter inside a placeholder’s default therefore defeats host-placeholder detection.
 
-**Validation Performed:** **PASS** — all 20 added files reconstructed from the diff matched the manifest; three supplied standalone documents matched their manifest hashes; all 16 added Python files parsed. **FAIL** — reap finalization probe and lifecycle lock-coverage review. **NOT_RUN** — repository tests, lint/type/doc validators, and every live acceptance item.
+   Independently evaluated pinned code returned `True` for:
+   ```
+   http://${HOST:-localhost/path}/sse
+   http://${HOST:-localhost?x}/sse
+   http://${HOST:-localhost#x}/sse
+   ```
+   `HOST` can resolve to a remote endpoint. The repair planner consequently classifies the replacement as safe and removes the URL when constructing the launcher entry (`mcp_json.py:270`, `mcp_json.py:314`).
 
-**Remaining Uncertainty / Risk:** No deferred item is promoted to a new finding. Retain the ledger’s migration/checkpoint crash window, unlocked init allocation, corrupt-registry recovery, inherited Git environment, proxy capability limitations, and timing risks. Controller results remain claims, including earlier-head live checks.
+   **Unblock:** Parse complete placeholder tokens before splitting authority components, or conservatively preserve ambiguous templates. Add preservation cases covering these delimiters.
 
-**Files Touched:** None.  
-**Git State:** Materials directory has no Git repository; no staging or commits.  
-**Rollback Plan:** None required for this audit.  
-**Requested Next Step:** Preserve runtime state on persistence failure; serialize direct lifecycle mutations with reap without nesting the non-reentrant instance lock. Add focused failure/concurrency coverage, then provide a newly pinned subject for re-audit. Owner-run acceptance remains outstanding.
+2. **F2 — medium — `src/dopemux/mcp/stdio_proxy.py:198`**  
+   Session-termination detection uses substring matching. Code `32600` with message `"Not Session terminated; write already committed"` is therefore treated as proof that the request was rejected without processing.
+
+   The pinned `forward` body then drops the session and resends (`stdio_proxy.py:475`). An independent in-memory fixture executed the simulated operation **twice**. This contradicts the function’s explicit requirement to forward nonmatching backend errors without replay (`stdio_proxy.py:193`).
+
+   This demonstrates the conditional replay defect; it does **not** establish that a deployed backend has emitted that message.
+
+   **Unblock:** Restrict recognition to the canonical SDK termination signal and verify that noncanonical messages containing the phrase are returned without resending.
+
+**Previous Codex findings:** Both findings from `30b0fdec9` are **closed on static review**:
+
+- Previous **F1:** `reap.py:1138` returns with `state_error` before runtime-directory removal or reporting “reaped.”
+- Previous **F2:** `lifecycle.py:1624` selects the worktree lock, and `lifecycle.py:1788` holds one acquisition across restart’s stop/start. Launcher callers pass `hold_instance_lock=False` at `launcher.py:502` and `launcher.py:590`.
+
+**Validation Performed**
+
+- **PASS:** Exact HEAD, repository and branch; all 69 manifest file hashes; exact regenerated diff; all 50 commit identities/order; pinned document copies; `git diff --check`.
+- **FAIL:** Endpoint-template preservation and conservative replay recognition.
+- **NOT_RUN:** Test suite, lint/type checks, pre-commit hooks, SDK integration, Docker/Postgres operations, and every live acceptance item. Controller results remain claims.
+
+**Remaining Uncertainty / Risk:** Live behavior and actual model identity remain unverified. No additional ledger-deferred item is promoted to a finding. Existing documented limitations remain unresolved; this audit does not accept their risk.
+
+**Files Touched:** None. **Git State:** Clean `feat/mcp-just-works-m1` at the pinned SHA. **Rollback Plan:** None required for this read-only audit. **Requested Next Step:** Correct F1/F2, validate their negative cases, and freeze a successor subject for review.
 
 ```json
 {
@@ -28,20 +52,25 @@ END_OF_PROMPT a202f49c-30b0fdec
   "subject": {
     "packet_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
     "repo": "DDD-Enterprises/dopemux-mvp",
-    "pinned_sha": "30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
-    "observed_head": null,
-    "head_match": null,
-    "base": "5742575c4",
+    "pinned_sha": "3f1335e7fdcf8165d4669195bfd521cafca13304",
+    "observed_head": "3f1335e7fdcf8165d4669195bfd521cafca13304",
+    "head_match": true,
+    "base": "46155cad92702beba8169448f1fefe5cef45294c (merge-tree of 5742575c4 and f16e0da2c)",
     "file_hashes": {
-      "subject.diff": "a0770548598397dd47690b7a5279f11a6c0b163a51fe121d215e703674e52a0c",
-      "subject-src.diff": "59b1e272ed180db990b29a54fe4daf4058bd46a52efd2e13ae41ab996c41643a",
-      "FILES.sha256": "c09dee96c00aef56836a3e9b08c2cc3b69f1741beeadbe02c3a04dea43a648f3",
-      "COMMITS.txt": "112687da030273446a1dbccb20ee6156057919f8d513c93df4711bf363e7c4fa",
-      "design.md": "2b2691fbaa781fbcdd8dccf8eea8fc4ea7611260bd034ed92b923a34f754e4a3",
+      "subject.diff": "fb77bf887731e16edd3e060a5f1cbd86bb99462ac7b1ed0aba15c76351e29d71",
+      "subject-src.diff": "1fb5d683d0e9b7c5a23a268f5a7e498911769b967df198bc9ccf1dfb685fdb54",
+      "FILES.sha256": "3de6403c9ec4993051bec9b7a5a5d917b666199dee2ed1a672194a770d5a3c7a",
+      "COMMITS.txt": "98f9958497d508b3834d45f9a1fc7f8101666c74fca0e3db272c470d8aa41c92",
+      "design.md": "b380d466168323349b45154d2632b4638115e7e12e4ef85bf41aeaf9774558b6",
       "plan.md": "4cc68c6d7bb2c5f2c849e9af5f02b8eeae76bd18f636e6c824c83e1e031ed8a6",
-      "howto-mcp-setup-other-repos.md": "547e8032727b7c4b48dda2a8ea396386dd3ec4bef519dff00871a737e0200826",
-      "LEDGER_SUMMARY.md": "e31da4b99b087d34b01380122eafbc3a2ce4429a0602b616e4b648b07afcdbb4",
-      "VALIDATIONS.md": "e5843d6a3cba08dda4ed666a49c3ee8b43eb97d8d5108b20f2a6ccc5cdebc062"
+      "howto-mcp-setup-other-repos.md": "002c7a0f63a6d4c93183c26d3c0c0467511260d57a50fb23b22f2f7f391be272",
+      "LEDGER_SUMMARY.md": "2d538906e66d7c25d30feefb27073baa172a3910f1edfb3509c37c8ed8e159dd",
+      "VALIDATIONS.md": "adac41e7375c33c0159c7807463c5a23c0440721b884dead839329fb5168fbca",
+      "src/dopemux/mcp/mcp_json.py": "409ffe1a935a7c20b58699cc595c54a76fceb3d5110794f3e2a419e74eab5c02",
+      "src/dopemux/mcp/stdio_proxy.py": "e5188be8e9a031bcccab808a48d301f46a5986fb716d1550912f5cf9052b3783",
+      "src/dopemux/mcp/reap.py": "decea1b83c015b2f236615448dd4359bb334b2427e4000d8d73f61f59104ac48",
+      "src/dopemux/mcp/lifecycle.py": "95dd7049aebc96ea5544d04df603d33249c1cc66996ebbbd88a37e73a3e9dc22",
+      "src/dopemux/mcp/launcher.py": "61f208d04e0514151a00768bc31384cb6f512b99f3f47f27cfbcff72ba96fc48"
     }
   },
   "auditor": {
@@ -53,223 +82,258 @@ END_OF_PROMPT a202f49c-30b0fdec
   },
   "checks": [
     {
-      "id": "MATERIAL_INTEGRITY",
-      "command_or_method": "Python hashlib; reconstruct added files from unified diff; compare source-diff blocks and standalone documents",
+      "id": "C-PIN-CUSTODY",
+      "command_or_method": "Read-only git identity/status checks; SHA-256 of all manifest entries against git show at the pin; regenerate branch diff; compare commit list and document aliases.",
       "exit_code": 0,
       "bucket": "PASS",
-      "evidence": "20/20 added files match FILES.sha256. Standalone design, plan and how-to match. subject-src.diff blocks match subject.diff. Manifest has 67 entries; 46 modified-file hashes could not be independently recomputed from the supplied partial-file hunks."
+      "evidence": "HEAD, branch and remote match. Worktree clean. All 69 file hashes match. subject.diff matches the specified git diff byte-for-byte. COMMITS.txt matches all 50 commits in order. Design, plan and how-to aliases match pinned repository bytes."
     },
     {
-      "id": "FULL_DIFF_READ",
-      "command_or_method": "Read every subject.diff range and all supplied supporting documents",
+      "id": "C-FULL-DIFF",
+      "command_or_method": "Personally read the complete subject.diff and supplied audit materials.",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Full branch-authored diff reviewed, including implementation, tests, configuration, hooks and documentation. proof/ excluded as specified. No delegated reading."
+    },
+    {
+      "id": "C-DIFF-CHECK",
+      "command_or_method": "git diff --check 46155cad92702beba8169448f1fefe5cef45294c 3f1335e7fdcf8165d4669195bfd521cafca13304 -- . ':(exclude)proof'",
       "exit_code": 0,
       "bucket": "PASS",
-      "evidence": "19,517 lines, 68 diff blocks, and 21 COMMITS.txt entries. Truncated tool-output ranges were reread."
+      "evidence": "No whitespace errors reported."
     },
     {
-      "id": "ADDED_PYTHON_SYNTAX",
-      "command_or_method": "ast.parse on all added Python files reconstructed in memory",
-      "exit_code": 0,
-      "bucket": "PASS",
-      "evidence": "16 files parsed. This verifies syntax only."
-    },
-    {
-      "id": "SECRETS_ARGV_LOG_REVIEW",
-      "command_or_method": "Trace D5 storage, SQL input, gate environment delivery, compose artifacts and error redaction",
+      "id": "C-SECRETS",
+      "command_or_method": "Static credential-source, argv, stdin, redaction, artifact and marker data-flow review.",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "conport_tenant.py:208 creates private atomic files; :354/:368 deliver SQL on stdin; :403 constructs the SCRAM verifier; :436 redacts before truncation; :748 delivers the gate URL through a temporary env file. launcher.py:320 redacts lifecycle error tails. Reviewed lifecycle mcp.env/start-plan handling and corresponding tenant tests. PASS is limited to static review; actual PostgreSQL, Docker and process logs were not inspected."
+      "evidence": "conport_tenant.py:221 creates private atomic secret files; :381 sends SQL through stdin; :416 constructs SCRAM verifiers; :449 redacts before tail truncation; :831 supplies the gate URL through a private docker exec env-file. docker_runtime.py:404 filters secret-like mcp.env keys. lifecycle.py:2288 and :2483 separate operational artifacts from credential-bearing process environment. launcher.py:763 writes only fixed identity fields and a timestamp to instance.json. No new secret exposure found in the reviewed paths; live logs were not inspected."
     },
     {
-      "id": "LOCK_ORDER_AND_COVERAGE",
-      "command_or_method": "Trace instance, reserved-port, provision and registry lock acquisition and mutation boundaries",
-      "exit_code": null,
-      "bucket": "FAIL",
-      "evidence": "The reviewed nested order and locks.py:94 inode recheck are present. Launcher attach/start and explicit stop are protected. Direct lifecycle start/restart do not participate in the same instance-lock protocol; F2."
-    },
-    {
-      "id": "RECONNECT_GUARD_REVIEW",
-      "command_or_method": "Trace initial connection, initialization, reconnect, resend and refusal paths",
+      "id": "C-LOCKS",
+      "command_or_method": "Static caller and lock-order trace across launcher, lifecycle, switch-project, registry persistence and reap.",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "stdio_proxy.py:343 guards every connection; :349 checks again after initialize before publishing the session. :459 bounds forwarding to two attempts and handles Session terminated separately from uncertain in-flight failure. :298/:377 implement the reconnect window and backoff. launcher.py:631 binds ownership checks. Corresponding tests were read, not run. This does not prove an atomic ownership guarantee across separate Docker and network observations."
+      "evidence": "locks.py:99 checks descriptor/path inode identity after flock. The implemented rule at locks.py:8 is instance -> registry or reserved-port -> registry, with reserved-port and instance never nested. lifecycle.py:1624 separates orchestrator work from the instance-locked portion; :1643 refreshes mutable facts under the lock; :1788 holds restart stop/start together. launcher.py:869 releases attach locking before ensure_backend, and :502/:590 suppress lifecycle reacquisition. No reviewed path recursively acquires launch.lock or takes registry -> instance or instance -> reserved."
     },
     {
-      "id": "REAP_SAFETY_REVIEW",
-      "command_or_method": "Trace label joins, exclusions, eligibility, deadlines, kill switches and state finalization",
-      "exit_code": null,
-      "bucket": "FAIL",
-      "evidence": "Scope exclusions, under-lock eligibility recheck, bounded automatic lock waits, kill-switch precedence and orchestrator exclusion are present. Persistence errors still permit runtime deletion and a reaped result; F1. Direct lifecycle concurrency remains F2."
-    },
-    {
-      "id": "REAP_PERSISTENCE_FAILURE_PROBE",
-      "command_or_method": "Execute AST-extracted _release_state and _reap_one in memory with fake lock, Docker, persistence and rmtree collaborators",
+      "id": "C-RECONNECT",
+      "command_or_method": "Static reconnect/guard/budget trace and in-memory execution of pinned AST-extracted termination predicate and forward method.",
       "exit_code": 0,
       "bucket": "FAIL",
-      "evidence": "Injected registry-save error produced errors=['test/abcd: injected registry save failure'], rmtree_called=true, candidate_reported_reaped=true. No filesystem or Docker mutations occurred. Exit 0 means the diagnostic completed, not that the invariant passed."
+      "evidence": "Guard checkpoints exist before initial connection, before reconnect and after initialize (stdio_proxy.py:343; launcher.py:644). Resend count, backoff and window controls are present. However stdio_proxy.py:198 accepts noncanonical messages containing 'Session terminated'; :475 then resends. The controlled fixture returned simulated_side_effects=2 and drops=1. See F2."
     },
     {
-      "id": "AMBIENT_ENV_REVIEW",
-      "command_or_method": "Trace default identity inputs and credential/port scrubbing through launcher, CLI and compose",
+      "id": "C-REAP",
+      "command_or_method": "Static planning, eligibility, locking, container-label join, reinspection, persistence and cleanup trace.",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "launcher.py:274, mcp_commands.py:133 and docker_runtime.py:77 scrub the designated ambient identity/port/credential variables on the reviewed managed paths; identity defaults to git unless trust-env is explicitly used. Inherited GIT_DIR/GIT_WORK_TREE and legacy cwd-compose behavior remain listed limitations."
+      "evidence": "Reviewed managed/worktree scope and identity joins, orchestrator exclusions, dead-attach timestamps, under-lock eligibility and container-ID rechecks, bounded automatic operations, kill switches, state-only/marker-only recovery and locked/stale/registry_busy/state_error skips. reap.py:1125-1151 prevents removal or 'reaped' reporting after state-save failure. Build protection follows the amended alive-PID-within-build-budget definition, not an unlimited PID-liveness guarantee."
     },
     {
-      "id": "DOCS_VS_CODE_REVIEW",
-      "command_or_method": "Compare complete how-to with changed commands, renderer, tenant, proxy and reap code",
+      "id": "C-IDENTITY-CATALOG",
+      "command_or_method": "Static git identity, environment scrub and target-catalog caller trace.",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "Reviewed command/flag/code mappings, envrc adoption, shared-image key, automatic-reap limits and explicit apply behavior. Codex, Copilot and mid-session worktree limitations are disclosed. No additional documentation finding is raised beyond the supplied deferred items and the implementation defects reported here. Runtime timing and client-display statements were not reproduced."
+      "evidence": "docker_runtime.py:53 lists identity, credential, port and container-name exports to scrub; launcher.py:283 applies the scrub with catalog port variables; mcp_commands.py:134 applies CLI scrubbing unless trust-env. Target-catalog sites are mcp_commands.py:198, :450, :2215 and :2977, plus launcher.py:860. Deferred doctor/profile and legacy cwd-compose surfaces remain outside the corrected sites."
     },
     {
-      "id": "DEFERRED_ITEM_DISPOSITION",
-      "command_or_method": "Compare candidate findings with LEDGER_SUMMARY.md Deferred items and subsequent rulings",
+      "id": "C-DOCS",
+      "command_or_method": "Compare the pinned how-to and design amendments with implementation.",
+      "exit_code": null,
+      "bucket": "FAIL",
+      "evidence": "Shared-image, target-catalog, state_error, marker, SIGKILL-idle and hook-evidence descriptions generally match the amended implementation. The conservative replay assurance in docs/02-how-to/mcp-setup-other-repos.md:354 is undermined by F2. No separate duplicate documentation finding is raised."
+    },
+    {
+      "id": "C-PLAN-FOCUS",
+      "command_or_method": "Trace plan.md:44 review-focus paths and inspect their test sources.",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "No listed deferred item is promoted to a new finding. F1 concerns non-LockBusy persistence failure after removal; F2 concerns the new reaper's interaction with direct lifecycle operations, distinct from the listed init allocator race."
+      "evidence": "Reviewed git-toplevel/subdirectory normalization, resolved-path identity, non-git/unmanaged launcher refusal before Docker, corrupt-registry reap refusal, and malformed/missing-cwd hook handling. Test coverage was read as source, not executed."
     },
     {
-      "id": "PLAN_REVIEW_FOCUS_1",
-      "command_or_method": "Map subdirectory-root acceptance to source and tests",
+      "id": "C-DEFERRED",
+      "command_or_method": "Reconcile LEDGER_SUMMARY.md deferred entries with later amendments and pinned source.",
       "exit_code": null,
-      "bucket": "NOT_RUN",
-      "evidence": "Static coverage: launcher.py:171; test_resolve_launch_root_from_subdirectory and test_resolve_target_repo_uses_git_toplevel_from_subdir. Tests not executed."
+      "bucket": "PASS",
+      "evidence": "No additional deferred item is promoted to a finding. Historical entries superseded by later fixes were not treated as current defects. F1 and F2 are distinct from the listed accepted limitations."
     },
     {
-      "id": "PLAN_REVIEW_FOCUS_2",
-      "command_or_method": "Map symlink identity acceptance to source and tests",
+      "id": "C2-01",
+      "command_or_method": "Inspect Linux-sensitive documentation fixture path.",
       "exit_code": null,
-      "bucket": "NOT_RUN",
-      "evidence": "Static coverage: resolved-path identity flow and test_identity_stable_across_symlinked_path. Test not executed."
+      "bucket": "PASS",
+      "evidence": "tests/unit/test_docs_no_envrc_recipe.py:17 now names the tracked .claude/claude.md. Linux test execution NOT_RUN."
     },
     {
-      "id": "PLAN_REVIEW_FOCUS_3",
-      "command_or_method": "Map non-git/unmanaged refusal acceptance to source and tests",
+      "id": "C2-02",
+      "command_or_method": "Inspect native-hooks registration branches.",
       "exit_code": null,
-      "bucket": "NOT_RUN",
-      "evidence": "Static coverage: launcher.py:151/:171 and refusal-without-Docker tests. Managed status is checked by entry shape, as explicitly ruled in the ledger."
+      "bucket": "PASS",
+      "evidence": "src/dopemux/cli.py:4260 sets 60 seconds; :4271 applies it to new SessionEnd hooks; :4275 fills missing timeouts in existing matching registrations. Explicit operator timeout values are preserved. Other events are unchanged."
     },
     {
-      "id": "PLAN_REVIEW_FOCUS_4",
-      "command_or_method": "Map corrupt-registry handling to source and tests",
-      "exit_code": null,
-      "bucket": "NOT_RUN",
-      "evidence": "Static coverage: reap.plan_reap and test_plan_reap_with_corrupt_registry_is_empty; locks tests cover recovery. Silent destructive recovery remains a listed deferred risk. Tests not executed."
+      "id": "C2-03",
+      "command_or_method": "Static URL-repair trace plus pure in-memory pinned-code counterexamples.",
+      "exit_code": 0,
+      "bucket": "FAIL",
+      "evidence": "mcp_json.py:140-145 splits authority before masking complete placeholders. Defaults containing '/', '?' or '#' bypass host-placeholder preservation and are classified repairable. Real repair-planner execution with a controlled launcher-rendering seam removed the URL and marked the replacement safe. See F1."
     },
     {
-      "id": "PLAN_REVIEW_FOCUS_5",
-      "command_or_method": "Map missing-cwd/non-JSON hook handling to source and tests",
+      "id": "C2-04",
+      "command_or_method": "Inspect target resolution and catalog-loading order.",
       "exit_code": null,
-      "bucket": "NOT_RUN",
-      "evidence": "Static coverage: native_hooks.py:695 and dispatcher/main tests for missing cwd, malformed input and exit-code propagation. Tests not executed."
+      "bucket": "PASS",
+      "evidence": "mcp_commands.py:198 lifecycle CLI, :450 switch-project, :2215 init and :2977 repair-config load the resolved target checkout's catalog. launcher.py:860 passes launch_root to catalog loading. Doctor/profile exceptions remain explicitly deferred."
     },
     {
-      "id": "REPOSITORY_VALIDATIONS",
-      "command_or_method": "make test-fast; hooks tests; docs validators; lint, format and type checks",
+      "id": "C2-05",
+      "command_or_method": "Inspect idle planning and locked pruning.",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "reap.py:452 computes effective last-detach from last_detach and dead attach-record mtimes without mutation. Planning uses it; pruning and subsequent eligibility checks occur under the instance lock."
+    },
+    {
+      "id": "C2-06-OLD-F1",
+      "command_or_method": "Trace persistence-error return through cleanup.",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Previous Codex F1 CLOSED on static evidence. reap.py:1125 collects save errors; :1138 records state_error and returns before :1145 rmtree and :1151 reaped append. Partial persistence remains possible and documented."
+    },
+    {
+      "id": "C2-07-OLD-F2",
+      "command_or_method": "Trace direct CLI start/restart lock scope and launcher suppression.",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Previous Codex F2 CLOSED on static evidence. lifecycle.py:1275 defaults hold_instance_lock=True; :1624-1630 chooses the worktree lock; :1788-1807 encloses restart stop/start in one acquisition. launcher.py:502 and :590 pass False on already-coordinated paths. Orchestrator work remains outside the instance lock."
+    },
+    {
+      "id": "C2-08",
+      "command_or_method": "Inspect marker writer, candidate discovery and apply-time rechecks.",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "launcher.py:763 writes an atomic 0600 identity-only marker and :869 invokes it under the attach lock. reap.py:544 requires a matching marker, missing worktree, absent registry/container pair, no live attachment and no live build under the amended budget definition. Marker-only candidates are never idle candidates; apply-time container reinspection prevents releasing a newly started pair."
+    },
+    {
+      "id": "C2-09",
+      "command_or_method": "Inspect corrected shared-image documentation.",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "AGENTS.md:310-314 now describes sharing by service, dopemux checkout path and Dockerfile version; the stale per-worktree-build sentence is removed."
+    },
+    {
+      "id": "C2-10",
+      "command_or_method": "Compare cycle amendments and how-to text with pinned runtime.",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "design.md:300 onward records persistence, locking, dead-attach and marker changes with later supersessions. design.md:304 corrects T7 to Redis activity events, supported by src/dopemux/claude/native_hooks.py:101 and :171. The how-to documents state_error at :267 and instance.json at :286."
+    },
+    {
+      "id": "C-TEST-SUITE",
+      "command_or_method": "Test suite, lint/type checks and pre-commit hooks.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Supplied directory contains audit materials, not an executable repository checkout. User explicitly excluded suite execution. VALIDATIONS.md was read only as author claims."
+      "evidence": "Not run under the explicit audit constraint. VALIDATIONS.md was read only as author-supplied claims. In-memory falsification checks did not import the SDK, run the suite or touch live services."
     },
     {
       "id": "T1",
-      "command_or_method": "Fresh git worktree session in clean and polluted shells",
+      "command_or_method": "Fresh git worktree session, distinct instance and connected sidecars.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "No live runner/Docker execution. Static launcher, identity and lease tests cover constituent paths."
+      "evidence": "Requires owner-run live sessions and service observations."
     },
     {
       "id": "T2",
-      "command_or_method": "Claude-created worktree session",
+      "command_or_method": "Claude-created worktree session.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Root-probe document is author evidence only; no runner measurement reproduced."
+      "evidence": "No Claude worktree/session acceptance run performed."
     },
     {
       "id": "T3",
-      "command_or_method": "Concurrent Codex session",
+      "command_or_method": "Concurrent Codex and Claude sessions sharing sidecars.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Explicitly excluded by the supplied implementation amendment; per-worktree Codex rendering is absent from M1."
+      "evidence": "No live run; design.md:288 explicitly excludes Codex rendering from M1."
     },
     {
       "id": "T4",
-      "command_or_method": "Fresh project init, tenant provisioning and connection",
+      "command_or_method": "New-repository init, tenant provisioning and secret placement.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Tenant code and mocked tests read; no database, filesystem-mode or live connection acceptance performed."
+      "evidence": "No repository initialization, database provisioning or live credential inspection performed."
     },
     {
       "id": "T5",
-      "command_or_method": "Legacy handmade tenant adoption with preserved data",
+      "command_or_method": "dNh_CRM legacy-tenant adoption and existing-data visibility.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Legacy envrc/secrets resolution and tests read; actual tenant contents and database count not observed."
+      "evidence": "No access to that project's live data or containers was exercised."
     },
     {
       "id": "T6",
-      "command_or_method": "Foreign orchestrator refusal, switch-project and old-session refusal",
+      "command_or_method": "Foreign orchestrator refusal, unchanged owner, then authorized switch-project.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Owner verdict, switch-project and first/reconnect guard tests read. No live ownership transition performed."
+      "evidence": "Ownership code reviewed statically; no live refusal/switch sequence performed."
     },
     {
       "id": "T6b",
-      "command_or_method": "Concurrent launchers with port 7890 initially free",
+      "command_or_method": "Free-port concurrent orchestrator launch produces one jar.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Reserved-port lock and under-lock start recheck inspected; real concurrent jar starts not exercised."
+      "evidence": "No live reserved-port race exercised."
     },
     {
       "id": "T7",
-      "command_or_method": "All hooks and DCP hard-deny in a worktree",
+      "command_or_method": "Worktree lifecycle hooks, hard-deny exit and Redis activity evidence.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Dispatcher, payload-cwd and exit propagation tests read. Live hook routing and DCP enforcement not exercised."
+      "evidence": "Hook source and amended evidence target reviewed; hooks and Redis events not exercised."
     },
     {
       "id": "T8",
-      "command_or_method": "Removed-worktree cleanup preserving main",
+      "command_or_method": "Removed-worktree reap removes containers, leases and runtime directory while preserving main.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Reap tests and source reviewed; no live apply. F1 and F2 must be resolved before relying on cleanup acceptance."
+      "evidence": "No destructive cleanup performed. Controller dry-run claims do not establish apply behavior."
     },
     {
       "id": "T9",
-      "command_or_method": "init --force --repo worktree leaves main unchanged",
+      "command_or_method": "init --force --repo affects only the target checkout.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Target-selection and preservation tests read; no files generated or compared in a real checkout."
+      "evidence": "Target selection reviewed statically; no initialization or repository mutation performed."
     },
     {
       "id": "T10",
-      "command_or_method": "Missing-image detached build and exit within five seconds",
+      "command_or_method": "Missing image produces prompt typed refusal, detached build and successful later reconnect.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "launcher.py:413 uses detached Popen and typed refusal; shared image-key and build tests read. Elapsed-time and reconnect acceptance not measured."
+      "evidence": "No image removal, build or live timing measurement performed."
     },
     {
       "id": "T11",
-      "command_or_method": "Two launchers within 100 ms produce one start",
+      "command_or_method": "Two launchers within 100 milliseconds produce one lifecycle start and two bridges.",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Instance-lock recheck and test_two_launchers_one_start read. Mock probe becomes ready immediately; real simultaneous cold-start behavior not measured."
+      "evidence": "Locking reviewed statically; no live concurrent-launch experiment performed."
     }
   ],
   "findings": [
     {
       "id": "F1",
       "severity": "medium",
-      "location": "src/dopemux/mcp/reap.py:736",
-      "summary": "Registry persistence failure does not prevent runtime deletion or a reaped result.",
-      "evidence": "_release_state appends save error strings at :668 and returns normally. _reap_one catches only LockBusy, then calls rmtree at :750 and appends the candidate to reaped at :756. The in-memory extracted-function probe independently reproduced both actions after a save error. locks.py:303 and :351 confirm real persistence failures use this error-return channel. Existing-worktree state-only recovery is excluded at reap.py:468."
+      "location": "src/dopemux/mcp/mcp_json.py:140",
+      "summary": "Authority splitting before placeholder masking allows remote-selectable templates to be overwritten by launcher repair.",
+      "evidence": "Pinned code classifies http://${HOST:-localhost/path}/sse and equivalent '?'/'#' defaults as repairable, although HOST may resolve remotely. mcp_json.py:270 consequently bypasses preservation; :314 removes the original URL. An in-memory planner fixture produced a stdio replacement with safe=true. Fix cycle-2 item 3 remains incomplete."
     },
     {
       "id": "F2",
       "severity": "medium",
-      "location": "src/dopemux/mcp/lifecycle.py:1336",
-      "summary": "Direct start/restart operations are not serialized against the new automatic reaper.",
-      "evidence": "The instance lock added at lifecycle.py:1333 protects the stop branch only. Restart directly invokes _stop_services; direct start reaches the lifecycle without launcher.py:480's instance lock. reap.py:695 assumes that same lock excludes lifecycle mutations. For an idle detached instance, reap can pass eligibility while a direct operation proceeds, then stop/remove the instance and release its state during that operation. This is a static interleaving analysis, not a live reproduction."
+      "location": "src/dopemux/mcp/stdio_proxy.py:198",
+      "summary": "Substring-based session-termination recognition can replay a request already processed by the backend.",
+      "evidence": "The predicate accepts code 32600 with 'Not Session terminated; write already committed'. The pinned forward body at :475 drops the session and retries. An in-memory backend fixture counted two simulated side effects and one drop. This violates the conservative matching requirement documented at :193. No deployed occurrence is claimed."
     }
   ],
   "instruction_like_content": [
@@ -280,35 +344,31 @@ END_OF_PROMPT a202f49c-30b0fdec
     }
   ],
   "author_claims_not_reproduced": [
-    "make test-fast: 4229 passed, 2 skipped at the pinned SHA.",
-    "Hooks workflow: 12 passed at 7ae26f045; this is not a reproduced pinned-head result.",
-    "Docs validators, lint baseline comparisons, formatting and new-module type checks reported successful.",
-    "Earlier-head cold starts, tenant provisioning/gate completion, root probes and reap dry-run results.",
-    "Prior reviewer verdicts and controller statements that fixes were verified."
+    "VALIDATIONS.md reports 4434 passing tests, 2 skipped tests and 2 warnings; no suite result is adopted as auditor evidence.",
+    "Reported hook tests, documentation validators, lint/type comparisons and earlier reviewer approvals were not reproduced.",
+    "The earlier acceptance aggregate of PASS 7, PARTIAL 1 and NOT_RUN 4 was not reproduced.",
+    "Controller cold/warm launches, tenant probes, container ownership observations and timing claims were not independently exercised."
   ],
   "remaining_risks": [
-    "Known migration-success/checkpoint crash window can replay a non-idempotent migration.",
-    "Known init allocation lacks the lifecycle registry-lock protocol; corrupt-registry recovery can overwrite unreadable state.",
-    "Inherited GIT_DIR/GIT_WORK_TREE and mixed-version hook-helper imports remain deferred.",
-    "Proxy capability/notification limitations and separate ownership-observation windows remain.",
-    "Launch and reconnect timing claims are not established as end-to-end deadlines by this audit.",
-    "Known path-dependent allocator test flakiness remains unresolved.",
-    "No deferred item has been elevated to an additional finding."
+    "F1 and F2 remain open at the pinned SHA.",
+    "State persistence is sequential rather than transactional; a state_error can leave one registry updated while another save failed, with the runtime directory retained.",
+    "Detached-build exclusion uses PID liveness plus the configured age budget; it is not indefinite protection for every still-live PID.",
+    "Documented M1 limitations remain, including Dockerfile-based image invalidation, bounded reconnect behavior, marker discovery limits, and deferred runner/catalog surfaces. No additional deferred item is raised as a finding."
   ],
   "unknowns": [
-    "Full modified-file bytes and unchanged dependency implementations were not supplied; 46 manifest entries were not independently recomputed.",
-    "The repository embedded-audit schema and full governance files were unavailable; the supplied audit-return contract was used.",
-    "All T1-T11 live acceptance items, including T6b, remain unverified and are non-required checks under this contract.",
-    "Actual PostgreSQL logging, Docker environment delivery, client behavior and runtime concurrency remain unobserved.",
-    "Runtime model and reasoning-effort receipts were unavailable."
+    "All live acceptance outcomes T1-T11, including T6b, at this pinned subject.",
+    "Real SDK/transport integration behavior for the replay counterexample; the demonstrated duplicate is from a controlled in-memory fixture.",
+    "Actual auditor model and effort: no runtime receipt supplied.",
+    "Current remote PR/CI state was not queried.",
+    "The cause of the controller-reported cold-launch hang remains unverified.",
+    "plan.md:17 is classified as executor-directed template content and was not followed. Under the supplied first-match verdict table, the verified medium findings determine FAIL before the instruction-like-content row."
   ],
   "skip_reason": null,
   "unblock": [
-    "Make reap persistence success explicit; preserve recovery artifacts and avoid a completed reaped result when either registry update fails. Add injected-save-failure coverage.",
-    "Serialize direct start/restart mutations against reap using the same instance lock, while avoiding nested acquisition of the non-reentrant lock from launcher callers. Add deterministic interleaving coverage.",
-    "Freeze a successor subject and independently revalidate the affected paths.",
-    "Have the operator resolve the provenance of plan.md:17 as implementation-only instruction content; it was not followed by this auditor.",
-    "Complete owner-run live acceptance separately; no acceptance or merge authority is granted by this return."
+    "Make endpoint-template preservation fail closed before URL authority splitting; cover slash, query and fragment delimiters inside placeholder defaults.",
+    "Restrict session-termination recognition to the canonical SDK signal and verify that noncanonical backend errors containing the phrase are forwarded without replay.",
+    "Run focused regression checks and required repository validations on a frozen successor SHA, then submit that exact subject for review.",
+    "Keep live acceptance and formal embedded-audit acceptance separate from this Codex audit return."
   ],
   "acceptance": "NOT_GRANTED"
 }

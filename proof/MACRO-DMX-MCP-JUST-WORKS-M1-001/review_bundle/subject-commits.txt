@@ -1,3 +1,32 @@
+3f1335e7f test(mcp): B7 negatives and legacy-restart lease test; single is_free selection in _resolve_ports (B7 micro round)
+9e3c78ba3 fix(mcp): reap matches leases by worktree identity under both project-id conventions; env-file ports are re-leased on start (PR #1503 Codex review)
+71866e4d1 fix(reap): pair inspection also filters dopemux.scope=worktree, matching the planner (B6 one-liner)
+556171674 fix(reap): every candidate re-inspects its pair's containers under the instance lock; an unplanned container or an unanswered docker ps skips it as stale (PR #1503 Codex review)
+2e08a3b7c fix(reap): pair inspection also requires dopemux.managed=true; supersession notes and wording (B5 micro round)
+1cfa8d6e0 fix(reap): state-only and dir-only candidates re-inspect the pair's containers under the lock; idle needs a running entry or an active lease (Task B5 round 2)
+1dfaf8829 fix(reap): a live detached image build excludes every candidate kind from reaping (plan and locked re-check)
+979c1eb6a fix(reap): state-only leftovers qualify on idle too, not only when the worktree is gone (PR #1503 Codex review)
+357f6ab99 fix(mcp): a placeholder in the URL's userinfo or host position is never repairable, whatever its default (PR #1503 Copilot review)
+f66a8d793 fix(mcp): lifecycle CLI passes the normalized checkout root to run_lifecycle as well (Task A2 review fix)
+05f2634ac fix(mcp): --repo targets inside a checkout normalize to the worktree root (init, lifecycle catalog, switch-project, repair-config) (PR #1503 Codex review)
+e49a1c8e8 fix(conport-tenant): exact view probe via pg_views; stricter DO-block scan; probe-false tests (Task C micro round)
+335fd4ce1 fix(conport-tenant): do not replay a committed non-re-runnable migration on resume (PR #1503 Codex review)
+3dec0ab3e fix(mcp): orchestrator-only dry run lists no runtime files; reap re-check and image-sharing wording (micro round)
+fec505f29 fix(mcp): orchestrator-only starts write no runtime artifacts; atomic build inputs; doc truths (final-review fix round)
+dcd16a74b fix(mcp): docker snapshots re-read under or after the instance lock fail closed when unavailable (Task B fix round 4)
+eac840c8b fix(mcp): restart pre-builds the sidecars it restarts; stop re-reads facts under its lock; orchestrator restore only after a clean stop (Task B fix round 3)
+3f9dc74e1 fix(mcp): restart re-reads docker after its stops so stopped sidecars are started again (Task B fix round 2)
+a479eb2b2 fix(mcp): re-take docker/port facts under the instance lock; pre-build images outside it (Task B review fixes)
+a59327f4d fix(mcp): reap persistence, CLI start/restart serialization, crashed-launcher idle rule, orphan runtime dir marker (codex F1/F2, Codex P2, acceptance finding 2)
+e57d2b10c wip(mcp): Task B checkpoint — reap persistence/idle/marker work in progress (controller checkpoint after a session restart; focused tests exit ; completed in the next commit)
+71664c910 test(mcp): switch-project _load_catalog stub accepts the repo argument (Task A review fix)
+5c3ed8f8d fix(mcp): PR #1503 review batch — test path case, SessionEnd hook timeout, templated URL guard, --repo catalog loading, AGENTS.md image sentence
+0cde3a921 merge: origin/main (f16e0da2c, #1500 auth writer serialization) into feat/mcp-just-works-m1
+8e6886332 proof(mcp-just-works-m1): acceptance log re-encoded as valid UTF-8 (governance text check)
+4914ee388 proof(mcp-just-works-m1): acceptance run T1-T11 at the PR tip (PASS 7, PARTIAL 1, NOT_RUN 4)
+570996d1c proof(pr-1503): unsigned embedded-audit proof for PR #1503 bound to audited head 30b0fdec9
+871f077a7 proof(mcp-just-works-m1): suite receipt at the proof tip tree (code identical to 30b0fdec9)
+140f8b592 proof(mcp-just-works-m1): three-route L3 audit bundle at 30b0fdec9 in the governance layout
 30b0fdec9 fix(mcp): reap re-evaluates eligibility under the instance lock; bounded registry lock on automatic reaps with recoverable skip
 3bf5d4f26 fix(mcp): guard the first backend session and re-verify after connect; non-blocking instance locks and bounded inspection on automatic reaps
 eb3f0624b fix(mcp): per-service build pid; launcher reap actually runs within its deadline; rebuild recipe; redact before truncate; guard binding test

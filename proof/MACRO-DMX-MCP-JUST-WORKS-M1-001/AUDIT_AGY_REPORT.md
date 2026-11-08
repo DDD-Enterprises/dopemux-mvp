@@ -1,98 +1,117 @@
-END_OF_PROMPT a202f49c-30b0fdec
+END_OF_PROMPT a16ed92f-3f1335e7
 
-# Independent L3 Audit Report — `MACRO-DMX-MCP-JUST-WORKS-M1-001`
+# Independent L3 Audit Report — `MACRO-DMX-MCP-JUST-WORKS-M1-001` (Cycle 2 Re-Audit)
 
-## 1. Scope & Audit Execution
+## 1. Scope & Subject Pinning
 
-- **Repository / Branch**: `DDD-Enterprises/dopemux-mvp` (`feat/mcp-just-works-m1`)
-- **Pinned HEAD SHA**: `30b0fdec996fcd782bf2f816900f9ff4dabd4c01`
-- **Base SHA (branch-authored diff)**: `5742575c4` (21 commits, `98e068aec..30b0fdec9`, in [COMMITS.txt](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/COMMITS.txt#L1-L21))
-- **Mounted Subject Bundle**:
-  - [subject.diff](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L1-L19517) (full 19,517-line diff across all 67 changed files, read in full)
-  - [FILES.sha256](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/FILES.sha256#L1-L67) (67 file SHA-256 digests at `30b0fdec996fcd782bf2f816900f9ff4dabd4c01`)
-  - [design.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/design.md#L1-L299), [plan.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/plan.md#L1-L378), [howto-mcp-setup-other-repos.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/howto-mcp-setup-other-repos.md#L1-L603), [LEDGER_SUMMARY.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/LEDGER_SUMMARY.md#L1-L191), [VALIDATIONS.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/VALIDATIONS.md#L1-L17)
-- **Delegation & Cost-First Policy Note**: Per the Global Cost-First Delegation policy (`Delegated review cannot replace a required independent audit unless its independence and route satisfy the governing audit contract`), no subagents were spawned; all static verification was performed directly by the independent auditor using deterministic local file reads (`requested: gemini-4-argon-high`, `observed: UNKNOWN`, `effort: UNKNOWN`). No live host shell or network was used; all runtime/live validations are bucketed `NOT_RUN` and controller/implementer test logs are recorded under `author_claims_not_reproduced`.
-
----
-
-## 2. Verification of Branch Claims (D1–D10) & Controller Review Focus (1–6)
-
-### Claim Verification Summary (D1–D10)
-- **D1 (Launcher-shaped `.mcp.json` entries)**: Verified in [.mcp.json](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L569-L597), [mcp_catalog.yaml](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L1682-L1720), [default_catalog.yaml](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L4062-L4100), and [`_render_local_entry`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L2612-L2637) (`src/dopemux/commands/mcp_commands.py:1025-1043`). Renders `conport`, `dope-memory`, and `task-orchestrator` as `{"type": "stdio", "command": "${DOPEMUX_BIN:-dopemux}", "args": ["mcp", "launch", "<name>"]}` with no `url` or `env` block. `mcp>=1.28.1,<2` is promoted to core dependencies in [pyproject.toml](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L1728-L1747) (`pyproject.toml:31`).
-- **D2 (`dopemux mcp launch` proxy + lifecycle + orchestrator gate + reconnect guard)**: Verified in [launcher.py](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L5836-L6455) (`src/dopemux/mcp/launcher.py:1-614`) and [stdio_proxy.py](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L9296-L10107) (`src/dopemux/mcp/stdio_proxy.py:1-811`).
-- **D3 (Git-only identity with `--trust-env`)**: Verified in [`resolve_project_identity`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L7891-L7905) (`src/dopemux/mcp/project_identity.py:104-114`), [`resolve_identity_view`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L9183-L9227) (`src/dopemux/mcp/runtime_state.py:106-127`), and [`get_repo_root`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L10116-L10193) (`src/dopemux/worktree_commands.py:53-102`).
-- **D4 (Detached build on missing image + shared image tag per service)**: Verified in [`compose_image_name`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L4484-L4522) (`src/dopemux/mcp/docker_runtime.py:487-516`, `dopemux-<service>:<12-hex-sha256>`) and [`_build_image_if_missing`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L6222-L6295) (`src/dopemux/mcp/launcher.py:387-460`, per-service `build-<service>.pid` bounded by `build_timeout_secs()`, `start_new_session=True`, raising `LAUNCH_IMAGE_BUILDING`).
-- **D5 (ConPort tenant resolution & provisioning)**: Verified in [conport_tenant.py](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L3179-L4055) (`src/dopemux/mcp/conport_tenant.py:1-876`).
-- **D6 (Hooks dispatcher in linked worktrees)**: Verified in [run_native_hooks.sh](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L521-L552) (`.claude/hooks/run_native_hooks.sh:14-39`), [`native_hooks.main`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L1868-L1899) (`src/dopemux/claude/native_hooks.py:694-716`), [`native_hooks_run`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L1904-L1943) (`src/dopemux/cli.py:4156-4187`), and [.claude/settings.json](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L557-L564) (`.claude/settings.json:109-113`, 60s `SessionEnd` timeout).
-- **D7 (Flock locks with inode re-check and lock order)**: Verified in [locks.py](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L7481-L7807) (`src/dopemux/mcp/locks.py:1-321`).
-- **D8 (Reap-only bounded cleanup)**: Verified in [reap.py](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L7910-L9178) (`src/dopemux/mcp/reap.py:1-1263`).
-- **D9/D10 (CLI commands & documentation)**: Verified `launch`, `switch-project`, `reap`, `--trust-env`, `init` sidecar provisioning/pre-build, and `doctor` checks in [mcp_commands.py](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L1981-L3125), plus docs in [howto-mcp-setup-other-repos.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/howto-mcp-setup-other-repos.md#L1-L603), [.claude/claude.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L1-L515), and [AGENTS.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L598-L621) (with one low doc-drift finding `F1` in `AGENTS.md:309`).
-
-### Controller Review Focus (1–6) Confirmation with `path:line`
-1. **Secrets never printed/argv/logged (D5)**: **CONFIRMED**.
-   - `TenantCredentials.db_password` sets `repr=False` (`src/dopemux/mcp/conport_tenant.py:155`).
-   - `write_secrets` writes atomically with `os.fchmod(fd, 0o600)` inside a `0o700` directory (`src/dopemux/mcp/conport_tenant.py:211-240`).
-   - `default_psql_runner` feeds SQL over `stdin` (`input_text=sql`) to `docker exec -i dopemux-postgres-age psql ...`, never argv (`src/dopemux/mcp/conport_tenant.py:345-362`).
-   - `scram_sha256_verifier` computes RFC 5802 / RFC 7677 `SCRAM-SHA-256$4096:<salt>$<StoredKey>:<ServerKey>` (`src/dopemux/mcp/conport_tenant.py:374-414`); `provision_database` passes only the SCRAM verifier to `CREATE ROLE` (`src/dopemux/mcp/conport_tenant.py:570-591`) and adds both `password` and `verifier` to `hidden`.
-   - `_redacted_tail` replaces all `hidden` secrets (raw and `urllib.parse.quote`d) and `scheme://user:password@` URLs **before** slicing `clean[-limit:]` (`src/dopemux/mcp/conport_tenant.py:438-452`). Launcher start failures additionally scrub `*_PASSWORD`/`*_SECRET`/`*_TOKEN`/`*_KEY` env values, tenant secret file values, URL credentials, and key-value assignments via `_redact_stderr_tail` (`src/dopemux/mcp/launcher.py:318-373`).
-   - `adopt_with_gate` writes `DATABASE_URL=...` to a `0o600` temp file (`os.fchmod(fd, 0o600)`) and passes `--env-file <tmp>` to `docker exec`, unlinking in `finally` (`src/dopemux/mcp/conport_tenant.py:650-694`).
-   - `generate_mcp_env` filters `k not in SECRET_ENV_KEYS and not k.endswith("_PASSWORD")` (`src/dopemux/mcp/docker_runtime.py:265-282`), and `lifecycle.py` overlays `tenant_compose_env(tenant)` only onto `up_env` for `conport` (`src/dopemux/mcp/lifecycle.py:1886-1914`), never writing `CONPORT_DB_*` to `mcp.env`, `start-plan.json`, or findings.
-2. **Two launchers racing; lock order; inode re-check; instance lock around attach and stop**: **CONFIRMED**.
-   - `_flock` opens/creates the lock file (`0o600` in `0o700` dir), acquires `fcntl.flock`, and compares `os.fstat(fd)` vs `os.stat(path)` `(st_dev, st_ino)`, retrying up to 50 times if unlinked or replaced while waiting (`src/dopemux/mcp/locks.py:93-143`).
-   - Documented lock order (`src/dopemux/mcp/locks.py:11-26`) is respected everywhere:
-     - `instance_lock` outside `registry_lock` and `provision_lock`: `ensure_backend` (`src/dopemux/mcp/launcher.py:463-485`) acquires `instance_lock(target.runtime_dir)` before calling `run_lifecycle("start")`, which acquires `registry_lock` (`src/dopemux/mcp/lifecycle.py:2170-2177`) and `provision_lock` (`src/dopemux/mcp/lifecycle.py:1303,1340`).
-     - `reserved_port_lock(7890)` (re-entrant per thread via `_reentrant_flock`, `src/dopemux/mcp/locks.py:199-223`) outside `registry_lock`: `ensure_orchestrator` (`src/dopemux/mcp/launcher.py:517`), `_start_services` (`src/dopemux/mcp/lifecycle.py:1803-1812`), and `mcp_switch_project_cmd` (`src/dopemux/commands/mcp_commands.py:2492-2550`) acquire `reserved_port_lock(7890)` before `registry_lock`.
-   - `launch` records its attachment inside `with instance_lock(target.runtime_dir): attach_record = attach(target.runtime_dir)` (`src/dopemux/mcp/launcher.py:563-564`) and releases the lock before `_run_reaper()` and `ensure_backend()`.
-   - `run_lifecycle("stop")` wraps container stop + `_release_stopped_state` inside `instance_lock(runtime_dir)` (`src/dopemux/mcp/lifecycle.py:2131-2142`) and updates `RuntimeRegistry` via `save_state_locked` (`src/dopemux/mcp/lifecycle.py:2179-2191`).
-3. **Backend restart: resend-once; "Session terminated"; reconnect guard refusing changed owner; backoff and window budget**: **CONFIRMED**.
-   - Streamable HTTP `32600 "Session terminated"` is matched by `_session_terminated` (`src/dopemux/mcp/stdio_proxy.py:190-200`) and resent at most once (`MAX_SENDS_PER_REQUEST = 2`, `src/dopemux/mcp/stdio_proxy.py:104,463-501`). Dead read-streams (`_can_receive`, `src/dopemux/mcp/stdio_proxy.py:203-220`) or closed write-streams (`ClosedResourceError` / `BrokenResourceError`) trigger reconnect before write; in-flight requests that drop mid-call raise `CONNECTION_CLOSED` without replay (`src/dopemux/mcp/stdio_proxy.py:483-496`).
-   - Reconnect guard (`launcher.reconnect_guard`, `src/dopemux/mcp/launcher.py:213-266`) runs at two checkpoints on **every** session including the first (`_guarded_session` / `_session_once`, `src/dopemux/mcp/stdio_proxy.py:343-375`): (1) before connecting, and (2) immediately after `session.initialize()` before exposing `self.session` to any runner request. Refusal (or any unexpected guard exception, fail-closed as `LAUNCH_RECONNECT_GUARD_FAILED`, `src/dopemux/mcp/stdio_proxy.py:391-408`) prints `<code>: <remedy>` to stderr, returns `McpError(-32000, "<code>: <remedy>")` to the runner (via `_answer_with_refusal` on first-session refusal, `src/dopemux/mcp/stdio_proxy.py:525-557`), and exits `1`.
-   - Reconnect backoff starts at `RECONNECT_BACKOFF_S = 0.25`, doubles up to `RECONNECT_BACKOFF_MAX_S = 2.0` within `RECONNECT_WAIT_S = 10.0` (`src/dopemux/mcp/stdio_proxy.py:106-110,377-389`), and allows at most one reconnect per `RECONNECT_WINDOW_S = 60.0` (`src/dopemux/mcp/stdio_proxy.py:111,316-329`).
-4. **Reap safety**: **CONFIRMED**.
-   - Containers are joined by `(dopemux.project_id, dopemux.worktree_hash)` with `dopemux.managed == "true"` and `dopemux.scope == "worktree"` (`src/dopemux/mcp/reap.py:296-339`); `project`/`singleton` scopes and `task-orchestrator` (`_ORCHESTRATOR`, `src/dopemux/mcp/reap.py:403-413,474-484`) are never reaped or marked stopped.
-   - Fail-closed idle rule: missing `last_detach` returns `False` (`_idle_long_enough`, `src/dopemux/mcp/reap.py:238-246`); dead attachment pruning updates `last_detach` to `max(dead_mtime)` (`src/dopemux/mcp/reap.py:141-196`); unreadable worktree paths fail closed (`_worktree_gone`, `src/dopemux/mcp/reap.py:229-235`).
-   - Under `instance_lock(cand.runtime_dir, blocking=blocking_lock)`, `_reap_one` re-verifies `live_attachments(cand.runtime_dir) == 0` and `_still_eligible(cand, ...)` (`src/dopemux/mcp/reap.py:666-677`).
-   - Automatic reaps (`maybe_reap`, `src/dopemux/mcp/reap.py:822-932`) respect kill-switches (`DOPEMUX_MCP_REAP=0|false|off` and `<runtime_root>/reap.disabled`, `src/dopemux/mcp/reap.py:88-100`), use non-blocking `instance_lock`, bound `registry_lock` wait to `min(time left, 2 s)` via `save_states_locked` (`src/dopemux/mcp/reap.py:608-640,685-719`), cap per-command timeout to `min(cmd_timeout_s, time left)`, and restore `reap.last` when all candidates are skipped as `cap`/`deadline`/`locked`/`stale` or when inspection times out.
-   - State-only candidates (`src/dopemux/mcp/reap.py:423-468`) clean up orphaned registry/lease/runtime-dir state when a worktree is gone and no containers remain.
-5. **Ambient environment scrub (Review Focus 5)**: **CONFIRMED**.
-   - `AMBIENT_SCRUB_VARS` (`src/dopemux/mcp/docker_runtime.py:51-74`) defines the exact 20 identity, tenant credential, port, and container-name variables.
-   - Scrubbed across CLI lifecycle commands (`_lifecycle_process_env`, `src/dopemux/commands/mcp_commands.py:138-151`), launcher (`_lifecycle_env`, `src/dopemux/mcp/launcher.py:274-305`), compose interpolation (`env_with_compose_interpolation(..., scrub_ambient=True)`, `src/dopemux/mcp/lifecycle.py:1765,1893`), and `mcp init` (`_init_sidecars`, `src/dopemux/commands/mcp_commands.py:2079`).
-6. **Known deferred items ([LEDGER_SUMMARY.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/LEDGER_SUMMARY.md#L121-L133))**:
-   - Reviewed items #1–#7 in `LEDGER_SUMMARY.md §Deferred`. None warrant elevation to a blocking M1 finding: they are either explicitly scoped to M2 (shared-store row migration, global `~/.claude.json` audit, Codex/Gemini parity) or low-probability edge conditions (TO restart during an in-flight tool call, TO ownership change via `mcp start --repo B` without `switch-project` where checkpoint 1/2 still guards reconnects, or multi-worktree concurrent first-provision gate retry).
+- **Packet ID**: `MACRO-DMX-MCP-JUST-WORKS-M1-001`
+- **Repository / Branch / PR**: `DDD-Enterprises/dopemux-mvp` (`feat/mcp-just-works-m1`, PR `#1503`)
+- **Pinned HEAD SHA**: `3f1335e7fdcf8165d4669195bfd521cafca13304`
+- **Observed HEAD SHA**: `3f1335e7fdcf8165d4669195bfd521cafca13304` (`head_match: true`, verified in [COMMITS.txt](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/COMMITS.txt#L1))
+- **Base Tree**: `46155cad92702beba8169448f1fefe5cef45294c (merge-tree of 5742575c4 and f16e0da2c)` (50 branch-authored commits)
+- **Materials Inspected in Full**:
+  - [subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L1-L9621) (all 9,621 lines)
+  - [subject.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject.diff#L1-L25252) (all 25,252 lines across 69 changed files)
+  - [FILES.sha256](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/FILES.sha256#L1-L69), [COMMITS.txt](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/COMMITS.txt#L1-L50), [design.md](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/design.md#L1-L312), [plan.md](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/plan.md#L1-L378), [howto-mcp-setup-other-repos.md](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/howto-mcp-setup-other-repos.md#L1-L638), [LEDGER_SUMMARY.md](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/LEDGER_SUMMARY.md#L1-L347), [VALIDATIONS.md](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/VALIDATIONS.md#L1-L169)
 
 ---
 
-## 3. Acceptance Checks Mapping (`plan.md` §Review Focus 1–5 & `design.md` §6 T1–T11)
+## 2. Explicit Verdict on Codex `F1` and `F2` from `30b0fdec9`
 
-- **Plan Review Focus 1–5 (Static + Unit Test Coverage in Diff)**:
-  - **RF1 (Launch from subdirectory -> git toplevel)**: Verified in [`resolve_launch_root`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L5972-L5994) and [`test_resolve_launch_root_from_subdirectory`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L13261-L13266).
-  - **RF2 (Two launchers for same worktree serialize on `launch.lock`)**: Verified in [`ensure_backend`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L6298-L6329) and [`test_two_launchers_one_start`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L13389-L13422).
-  - **RF3 (Two worktrees starting concurrently keep both records in `instances.json` and `port-leases.json`)**: Verified in [`locked_reload_and_save`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L7713-L7750), [`test_locked_reload_and_save_merges_concurrent_upserts`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L15757-L15768), and [`test_final_registry_save_reloads_under_lock`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L15380-L15415).
-  - **RF4 (Ambient `DOPEMUX_*` ignored unless `--trust-env`)**: Verified in [test_mcp_identity_git_only.py](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L12650-L13029) and [`test_cli_lifecycle_commands_scrub_ambient_vars_unless_trust_env`](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L10744-L10764).
-  - **RF5 (ConPort tenant resolution order, no password leak, `0600` secrets, no shared-DB DDL)**: Verified in [test_mcp_conport_tenant.py](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L10850-L12344).
-- **Design §6 Live Acceptance Scenarios (T1–T11)**:
-  - **T1 (Fresh worktree in `dopemux-mvp`)**: Static code/tests verified (`test_mcp_launcher.py`, `test_native_hooks_dispatcher.py`); live Claude session + Docker execution is `NOT_RUN` (no live host/Docker in static audit environment).
-  - **T2 (Second worktree in `dopemux-mvp` simultaneously)**: Static code/tests verified (`test_mcp_port_allocator.py`, `test_mcp_locks.py`); live multi-worktree Docker run is `NOT_RUN`.
-  - **T3 (Sourced envrc from another repo in shell)**: Static code/tests verified (`test_mcp_identity_git_only.py`, `test_mcp_commands_lifecycle.py`); live shell run is `NOT_RUN`.
-  - **T4 (Onboard a second repo from scratch)**: Static code/tests verified (`test_mcp_conport_tenant.py`, `test_docs_no_envrc_recipe.py`); live Postgres + Docker build run is `NOT_RUN`.
-  - **T5 (Legacy project with rows in `dopemux_knowledge_graph`)**: Static code/tests verified (`test_resolve_tenant_legacy_shared_when_rows_exist`, `test_start_marks_legacy_shared_store_and_passes_no_credentials`); live Postgres run is `NOT_RUN`.
-  - **T6 (Project with existing `CONPORT_DB_*` in `.envrc.dopemux-mcp`)**: Static code/tests verified (`test_resolve_tenant_adopts_envrc_and_copies_to_secrets`, `test_main_checkout_envrc_is_adopted_from_a_linked_worktree`); live run is `NOT_RUN`.
-  - **T7 (Second project while Project A holds `task-orchestrator` on `:7890`)**: Static code/tests verified (`test_ensure_orchestrator_wrong_project_refuses`, `test_conport_start_proceeds_while_another_project_owns_the_orchestrator`, `test_mcp_switch_project.py`); live run is `NOT_RUN`.
-  - **T8 (Deleted worktree reaped)**: Static code/tests verified (`test_plan_reap_candidate_when_worktree_missing`, `test_apply_reap_stops_removes_releases_and_rmtree`); live Docker run is `NOT_RUN`.
-  - **T9 (Idle worktree reaped, active worktree spared)**: Static code/tests verified (`test_plan_reap_candidate_when_idle_and_detached`, `test_plan_reap_not_candidate_when_attached`, `test_a_detach_refreshed_after_planning_makes_the_candidate_stale`); live Docker run is `NOT_RUN`.
-  - **T10 (Simultaneous first launch in same worktree)**: Static code/tests verified (`test_two_launchers_one_start`); live process race is `NOT_RUN`.
-  - **T11 (Cold image build on launch)**: Static code/tests verified (`test_ensure_backend_image_missing_spawns_build_and_exits`, `test_one_services_build_never_blocks_the_others`); live Docker build is `NOT_RUN`.
+- **Codex `F1` (registry/lease persistence failure still removed `runtime_dir` and reported `"reaped"`): CLOSED by Item 6.**
+  - In `src/dopemux/mcp/reap.py:810-852` ([subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L8595-L8637)), `_release_state` captures and returns `List[str]` of persistence errors from `save_states_locked` / `save_state_locked` (`src/dopemux/mcp/locks.py:216-309`).
+  - In `_reap_one` at `src/dopemux/mcp/reap.py:926-936` ([subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L8711-L8721)), if `state_errors` is non-empty, `_reap_one` records `report.errors.extend(...)`, calls `report.skip(cand, "state_error")`, and returns **before** `shutil.rmtree(cand.runtime_dir)` (`src/dopemux/mcp/reap.py:942`) and **before** `report.reaped.append(cand)` (`src/dopemux/mcp/reap.py:953`).
+  - Additionally, `plan_reap` (`src/dopemux/mcp/reap.py:725-777`, [subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L8510-L8562)) plans state-only candidates (`container_ids=()`, `services=()`) for both `worktree_missing` and `idle` when a non-orchestrator `running` registry entry or active lease remains after containers were removed, so a partial reap interrupted by `state_error` or `registry_busy` is cleanly converged on a subsequent reap even when the worktree still exists.
+- **Codex `F2` (direct CLI `start`/`restart` not serialized against the automatic reaper): CLOSED by Item 7.**
+  - In `src/dopemux/mcp/lifecycle.py:920-946` and `1435-1635` ([subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L6444-L6470), [subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L6959-L7159)), `run_lifecycle` defaults to `hold_instance_lock: bool = True`.
+  - Direct CLI `start` (`_run_start`, `src/dopemux/mcp/lifecycle.py:1462-1511`), `restart` (`_run_restart`, `src/dopemux/mcp/lifecycle.py:1553-1607`), and `stop` (`_run_stop`, `src/dopemux/mcp/lifecycle.py:1633-1635`) acquire `instance_lock(runtime_dir)` once across the worktree-scoped compose services (`conport`, `dope-memory`), spanning both the stop and start halves of `restart`.
+  - Inside `instance_lock`, `_mutable_facts` (`src/dopemux/mcp/lifecycle.py:949-1019`) refreshes the runtime registry, docker snapshot, leased ports, and collision findings (`src/dopemux/mcp/lifecycle.py:1244-1255, 1463-1474, 1555-1565`), failing closed with `DOCKER_UNAVAILABLE` if post-preflight docker inspection fails (`src/dopemux/mcp/lifecycle.py:1022-1043`). Missing images are pre-built before `instance_lock` (`_prebuild_images`, `src/dopemux/mcp/lifecycle.py:1098-1197`) so multi-minute builds do not block launchers on `launch.lock`, with an under-lock build fallback (`src/dopemux/mcp/lifecycle.py:1303-1315`) if a concurrent reap removed the container while waiting.
+  - `src/dopemux/mcp/launcher.py:648` (`ensure_backend`, already holding the non-re-entrant `instance_lock`) and `src/dopemux/mcp/launcher.py:736` (`ensure_orchestrator`, holding `reserved_port_lock(7890)`) explicitly pass `hold_instance_lock=False`.
 
 ---
 
-## 4. Findings
+## 3. Verification of Cycle-2 Changes (Items 1–10 + Post-`30b0fdec9` Fixes)
 
-### `F1` — Stale per-worktree image-build claim in `AGENTS.md` (Severity: `low`)
-- **Location**: [AGENTS.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L606-L607) (`AGENTS.md:309`)
-- **Summary**: `AGENTS.md:309` still states *"The first launch in a new worktree builds its images (`LAUNCH_IMAGE_BUILDING`; then `/mcp reconnect all`)."* After commit `02658fcbe` (D4 / internal review finding I4), sidecar images are tagged per service and Dockerfile hash (`dopemux-<service>:<12-hex-sha256>`) and shared across all worktrees and projects on the host ([docker_runtime.py](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L4484-L4522), [howto-mcp-setup-other-repos.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/howto-mcp-setup-other-repos.md#L122-L128), [.claude/claude.md](file:///private/tmp/claude-501/-Users-hue-code-dopemux-mvp/a905a5d7-d220-4b74-9092-015deba24b0b/scratchpad/audit-subject-30b0fdec/subject.diff#L273-L276)).
-- **Unblock**: Update `AGENTS.md:309` to match `.claude/claude.md:270-273` and `docs/02-how-to/mcp-setup-other-repos.md:122-128` (clarifying that images are shared per service and Dockerfile version across worktrees and projects, so only the first launch on a host per Dockerfile version triggers `LAUNCH_IMAGE_BUILDING`).
+1. **Case-sensitive `.claude/claude.md` test parametrization**:
+   - Verified in `tests/unit/test_docs_no_envrc_recipe.py:14-18` ([subject.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject.diff#L12340-L12344)): `DOCS` lists `".claude/claude.md"`, matching the tracked file path.
+2. **`SessionEnd` hook `"timeout": 60` in `native-hooks register`**:
+   - Verified in `src/dopemux/cli.py:4256-4292` ([subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L1319-L1355)) and `.claude/settings.json:112-113` ([subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L156-L157)). New `SessionEnd` entries include `"timeout": 60`, pre-existing `SessionEnd` entries matching `cmd` without `"timeout"` are healed in place, custom operator timeouts are preserved, and non-`SessionEnd` events are untouched. Covered by `tests/unit/test_native_hooks_register.py:295-404` ([subject.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject.diff#L24467-L24576)).
+3. **Templated URLs (`${...}`) in `_url_is_repairable()`**:
+   - Verified in `src/dopemux/mcp/mcp_json.py:117-180` ([subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L7386-L7449)). `_placeholder_in_userinfo_or_host` masks `${...}` tokens as `\x00` before splitting authority on `@` and `:` (including IPv6 brackets), rejecting any URL with a placeholder in userinfo or host; `_neutralize_placeholders` replaces remaining port/path placeholders so `urlsplit` parses `hostname`, `username`, and `password` deterministically and preserves remote or credential-bearing endpoints (`src/dopemux/mcp/mcp_json.py:272-282`). Covered by `tests/unit/test_mcp_config_repair.py:345-403` ([subject.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject.diff#L14017-L14075)).
+4. **Target checkout catalog loading on `--repo` / `--root` commands**:
+   - Verified in `src/dopemux/commands/mcp_commands.py:158-179` (`_git_toplevel`), `:197-208` (`_run_lifecycle_cli`), `:424-429` (`mcp_switch_project_cmd`), `:1873-1883` (`mcp_init_cmd`), `:2514-2516` (`mcp_repair_config_cmd`) ([subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L1567-L2952)), and `src/dopemux/mcp/launcher.py:617` (`launch`). Each normalizes `--repo` / `--root` to the enclosing git worktree toplevel and loads the target checkout's `mcp_catalog.yaml`. Covered by `tests/unit/test_mcp_commands_repo_catalog.py` ([subject.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject.diff#L12850-L13226)).
+5. **Idle eligibility from dead attach-record timestamps during planning**:
+   - Verified in `src/dopemux/mcp/reap.py:451-480` ([subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L8236-L8265)). `_effective_last_detach` is read-only during `plan_reap`, computing `max(last_detach.st_mtime, max(dead_numeric_attach_record.st_mtime))` without unlinking or writing files outside `instance_lock`; actual pruning and `last_detach` stamping occur under `instance_lock` in `live_attachments(cand.runtime_dir)` (`src/dopemux/mcp/reap.py:242-276, 900`). Covered by `tests/unit/test_mcp_reap.py` ([subject.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject.diff#L22350-L22452)).
+6. **Reap `state_error` skip on registry/lease persistence failure (Codex `F1`)**:
+   - Verified in `src/dopemux/mcp/reap.py:810-852, 926-953` ([subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L8595-L8738)). Covered by `tests/unit/test_mcp_reap.py` ([subject.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject.diff#L22184-L22348)).
+7. **`run_lifecycle` `hold_instance_lock` around `start` and `restart` (Codex `F2`)**:
+   - Verified in `src/dopemux/mcp/lifecycle.py:920-1635` and `src/dopemux/mcp/launcher.py:648, 736`. Covered by `tests/unit/test_mcp_lifecycle.py` ([subject.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject.diff#L19490-L19749)).
+8. **`<runtime_dir>/instance.json` marker at attach time & marker-only reap candidates**:
+   - Verified in `src/dopemux/mcp/launcher.py:786-847` (`_write_instance_marker`, [subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L5494-L5555)) and `src/dopemux/mcp/reap.py:537-598` (`_dir_only_candidates`, [subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L8322-L8383)). `instance.json` is written atomically (`0600`) under `instance_lock` at attach time with identity fields only (`project_id`, `worktree_hash`, `worktree_root`, `project_root`, `written_at`). `_dir_only_candidates` selects marker-only runtime dirs only when not a symlink, self-identifying via `runtime_dir_for_paths` with an absolute `worktree_root`, absent from registry and docker containers, with missing worktree (`worktree_missing` only, never `idle`), `live_attachments == 0`, and `not _live_build(runtime_dir, now)`.
+9. **`AGENTS.md` §12 shared-image rule**:
+   - Verified in `AGENTS.md:309-314` ([subject.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject.diff#L607-L612)).
+10. **`claudedocs` design amendments & how-to updates**:
+    - Verified in [design.md](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/design.md#L282-L312) and [howto-mcp-setup-other-repos.md](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/howto-mcp-setup-other-repos.md#L203-L337). Also verified the additional post-`30b0fdec9` hardening commits up to `3f1335e7f`:
+      - Migration `001`/`002` applied-object probing (`_MIGRATION_PROBES` and `_migration_objects_exist` in `src/dopemux/mcp/conport_tenant.py:138-141, 612-655, 775-785`, [subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L3410-L4057)).
+      - Reap under-lock container pair re-inspection (`_pair_container_ids` in `src/dopemux/mcp/reap.py:634-691, 908-918`, [subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L8419-L8703)) and lease identity matching (`_lease_is_the_pairs` in `src/dopemux/mcp/reap.py:601-629`).
+      - Re-leasing `.envrc.dopemux-mcp` fallback ports into `leases.json` (`_resolve_ports` in `src/dopemux/mcp/lifecycle.py:265-450`, [subject-src.diff](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/subject-src.diff#L5789-L5974)).
 
 ---
+
+## 4. Review Focus Verification (Items 1–7)
+
+1. **Secrets never printed/argv/logged (D5)**:
+   - `src/dopemux/mcp/conport_tenant.py:93`: `ConPortCredentials.db_password` has `repr=False`.
+   - `src/dopemux/mcp/conport_tenant.py:243-250`: `secrets.env` is created via `os.open(..., 0o600)` in a `0o700` directory and `os.chmod(tmp_path, 0o600)` before `os.replace`.
+   - `src/dopemux/mcp/conport_tenant.py:265-298, 415-433`: `psql` receives SQL on stdin (`input=sql`), never argv; `CREATE ROLE` transmits a locally computed `SCRAM-SHA-256$4096:...` verifier (`scram_sha256_verifier`), never the raw password.
+   - `src/dopemux/mcp/conport_tenant.py:821-864`: `adopt_with_gate` writes `DATABASE_URL` to a `0o600` temp file passed via `docker exec --env-file <tmp>` (not `-e DATABASE_URL=...` on the `docker exec` command line) and unlinks `<tmp>` in `finally`.
+   - `src/dopemux/mcp/conport_tenant.py:448-465` and `src/dopemux/mcp/launcher.py:311-364`: `_redacted_tail` / `redacted_tail` replace known secrets, SCRAM verifiers, URL credentials, and secret key-value patterns *before* truncating to 300 chars.
+   - `src/dopemux/mcp/lifecycle.py:725-765` and `src/dopemux/mcp/launcher.py:801-806`: `mcp.env`, `start-plan.json`, and `instance.json` contain no secret values (`secrets.env` is referenced by path via `--env-file` in `docker_runtime.py:324-329`).
+2. **Launcher concurrency & lock discipline (D7)**:
+   - `src/dopemux/mcp/locks.py:8-20`: Lock order is documented and respected across all call sites: `instance_lock` and `reserved_port_lock(7890)` are siblings (never nested); allowed nesting is `instance_lock -> registry_lock`, `instance_lock -> provision_lock`, and `reserved_port_lock -> registry_lock`.
+   - `src/dopemux/mcp/locks.py:100-152`: `_flock` re-checks `(st.st_dev, st.st_ino) == (pst.st_dev, pst.st_ino)` after `fcntl.flock` and retries if the lock file was unlinked or replaced.
+   - No execution path acquires `launch.lock` twice in one process: `ensure_backend` (`src/dopemux/mcp/launcher.py:648`) passes `hold_instance_lock=False` into `run_lifecycle`, and `ensure_orchestrator` (`src/dopemux/mcp/launcher.py:736`) runs outside `instance_lock` under `reserved_port_lock(7890)` with `hold_instance_lock=False`.
+3. **Backend restart, resend-once & reconnect guard (D2)**:
+   - `src/dopemux/mcp/stdio_proxy.py:39-42, 98-107, 166-256`: `MAX_SENDS_PER_REQUEST = 2` resends at most once when Streamable HTTP returns JSON-RPC `-32600` `"Session terminated"` (`_session_terminated`) or when `send_message` fails before write (`ClosedResourceError` / `BrokenResourceError`). Mid-flight drop raises `CONNECTION_CLOSED` without re-sending (`stdio_proxy.py:249-256`).
+   - `_guarded_session` and `_session_once` (`stdio_proxy.py:166-199`) run `reconnect_guard` before the first session, before every reconnect, and immediately after `session.initialize()`.
+   - Reconnect budget is capped at 1 reconnect per `RECONNECT_WINDOW_S = 60.0` (`stdio_proxy.py:200-213`) with exponential backoff `0.25s -> 2.0s` over `10.0s` (`stdio_proxy.py:215-243`).
+4. **Reap safety (D8)**:
+   - `src/dopemux/mcp/reap.py`: Joins docker label metadata with registry entries (`:483-534`), excludes `project`/`singleton` scopes and `task-orchestrator` (`:387-395`), fails closed on missing/corrupt attach records (`:242-276`), blocks candidates with live `build-*.pid` (`:287-302, 505, 577, 749`), re-checks eligibility and container set (`_pair_container_ids`) under `instance_lock` (`:634-691, 899-918`), skips with `state_error`/`registry_busy`/`locked`/`stale`/`attached` before `shutil.rmtree` (`:891-942`), and never stops or marks stopped `task-orchestrator` (`:818-820`).
+5. **Ambient environment scrub & `--repo` target catalog (D3)**:
+   - `src/dopemux/mcp/docker_runtime.py:39-62` (`AMBIENT_SCRUB_VARS`), `src/dopemux/mcp/lifecycle.py:249-262` (`_lifecycle_process_env`), and `src/dopemux/mcp/launcher.py:302-308` (`_lifecycle_env`) scrub ambient `DOPEMUX_*`, `CONPORT_*`, `DOPE_MEMORY_*`, `TASK_ORCHESTRATOR_*`, and `DATABASE_URL` unless `--trust-env` is explicitly passed (`src/dopemux/mcp/project_identity.py:100-149`). `--repo` commands load the target checkout's catalog.
+6. **Known deferred items (`LEDGER_SUMMARY.md` §Deferred)**:
+   - Reviewed `D-1` through `D-12` in [LEDGER_SUMMARY.md](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/LEDGER_SUMMARY.md#L121-L162) and the cycle-2 residual design notes in [design.md](file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.superpowers/sdd/mcp-just-works-m1-plan-2026-11-05/cycle2-audit/subject-3f1335e7/design.md#L303-L306). None violate M1 invariants or warrant raising as blocking findings; low residual risks are recorded in `remaining_risks`.
+7. **Cycle-2 fixes 1–10**:
+   - Verified line-by-line in §3 above.
+
+---
+
+## 5. Mapping of Design §6 Acceptance Checks (`T1–T11`)
+
+Because this auditor runs in a read-only sandbox with no live Docker daemon, PostgreSQL container, or Claude Code client session, all live acceptance checks `T1–T11` are bucketed `NOT_RUN` by the auditor (recorded in `checks` and `author_claims_not_reproduced` below), while their backing code and unit tests were statically verified in `subject.diff`:
+
+- **T1** (Two-worktree same-repo isolation): Static logic verified in `project_identity.py`, `port_allocator.py`, `lifecycle.py`; live run `NOT_RUN` by auditor.
+- **T2** (Cold fresh worktree auto-start & shared image build): Static logic verified in `launcher.py`, `docker_runtime.py`; live run `NOT_RUN` by auditor.
+- **T3** (Cross-project ConPort tenant provisioning + `switch-project`): Static logic verified in `conport_tenant.py`, `mcp_commands.py`; live run `NOT_RUN` by auditor.
+- **T4** (Mid-session backend restart recovery): Static logic verified in `stdio_proxy.py`; live run `NOT_RUN` by auditor.
+- **T5** (Two launchers racing on cold worktree): Static logic verified in `locks.py`, `launcher.py`; live run `NOT_RUN` by auditor.
+- **T6** (`git worktree remove` + `dopemux mcp reap --apply`): Static logic verified in `reap.py`; live run `NOT_RUN` by auditor.
+- **T7** (Worktree native hooks cwd & Redis stream event): Static logic verified in `.claude/hooks/run_native_hooks.sh`, `cli.py`, `native_hooks.py`; live run `NOT_RUN` by auditor.
+- **T8** (Legacy checkout auto-repair + refusal on custom remote URL): Static logic verified in `mcp_json.py`, `config_repair.py`; live run `NOT_RUN` by auditor.
+- **T9** (Dirty shell from another checkout's `.envrc.dopemux-mcp`): Static logic verified in `project_identity.py`, `docker_runtime.py`, `lifecycle.py`; live run `NOT_RUN` by auditor.
+- **T10** (Idle worktree reap vs attached launcher protection): Static logic verified in `reap.py`, `locks.py`; live run `NOT_RUN` by auditor.
+- **T11** (Detached image build lock release, refusal, and marker-only reap): Static logic verified in `launcher.py`, `reap.py`; live run `NOT_RUN` by auditor.
+
+---
+
+## 6. Findings & Unblock Steps
+
+- **Findings**: None (`[]`).
+- **Residual Risks (`PASS_WITH_RISKS`)**:
+  1. `dopemux mcp start --service task-orchestrator` does not acquire `instance_lock` (by design to avoid nesting `instance_lock` and `reserved_port_lock(7890)`), so a concurrent `reap --apply` on a removed/idle worktree could remove `runtime_dir` after the orchestrator's registry update; `skip_artifacts = not compose_services` (`src/dopemux/mcp/lifecycle.py:710`) prevents recreating `runtime_dir`, leaving at most a stale orchestrator registry entry (`design.md:304`).
+  2. `dopemux mcp doctor --repo <target>` and `dopemux mcp profile show --repo <target>` still load the caller checkout's catalog unless run from `<target>` (`design.md:305`).
+  3. Interactive `dopemux mcp switch-project` (without `--yes`) performs an unlocked pre-check before prompting and re-verifies under `reserved_port_lock(7890)` before acting (`src/dopemux/commands/mcp_commands.py:432-477`, `design.md:306`).
+- **Unblock Steps**: None required for code defects; operator must execute live finalization/acceptance gates as required by repo governance.
 
 ```json
 {
@@ -101,21 +120,21 @@ END_OF_PROMPT a202f49c-30b0fdec
   "subject": {
     "packet_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
     "repo": "DDD-Enterprises/dopemux-mvp",
-    "pinned_sha": "30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
-    "observed_head": "30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
+    "pinned_sha": "3f1335e7fdcf8165d4669195bfd521cafca13304",
+    "observed_head": "3f1335e7fdcf8165d4669195bfd521cafca13304",
     "head_match": true,
-    "base": "5742575c4",
+    "base": "46155cad92702beba8169448f1fefe5cef45294c (merge-tree of 5742575c4 and f16e0da2c)",
     "file_hashes": {
-      ".claude/claude.md": "4f1f3e5e5784111649c5f76d3bbc267031f026cfc4b469a7898218067da683e1",
+      ".claude/claude.md": "1cdef9f8dc8c3b047850eee54aa277fc52d01a1e8382492acbf10734e1478544",
       ".claude/hooks/run_native_hooks.sh": "25f97f0d011529879878c634990979ac5b5c9808cbaf75673a836a40a9495446",
       ".claude/modules/shared/governance-principles.md": "a5108186986ece85d361a7494b617896354da289a31f541b570aa5d42ac12766",
       ".claude/settings.json": "cfe4c34299463e19af4de655861960769fc3354457b2c6ea44b2d0ff3b541765",
       ".mcp.json": "53f32189b424a8ddbd6c595336c0cd613dba5627ffb75f9666a525b89bbfa740",
-      "AGENTS.md": "af4fd6e7a516a9268d76b24185cb5cbd125186be449700b36082e0f8501508ae",
-      "claudedocs/mcp-just-works-design-2026-11-05.md": "2b2691fbaa781fbcdd8dccf8eea8fc4ea7611260bd034ed92b923a34f754e4a3",
+      "AGENTS.md": "b49af2344e76ed920bb0607df6216645ed5c7ac414220b8310d9c24bb8227515",
+      "claudedocs/mcp-just-works-design-2026-11-05.md": "b380d466168323349b45154d2632b4638115e7e12e4ef85bf41aeaf9774558b6",
       "claudedocs/mcp-just-works-m1-plan-2026-11-05.md": "4cc68c6d7bb2c5f2c849e9af5f02b8eeae76bd18f636e6c824c83e1e031ed8a6",
       "claudedocs/mcp-launch-root-probe-2026-11-05.md": "f0107cde23f1655e0b1b62f9e32dffbc61e82c93aaec17bcd6131ff725978782",
-      "docs/02-how-to/mcp-setup-other-repos.md": "547e8032727b7c4b48dda2a8ea396386dd3ec4bef519dff00871a737e0200826",
+      "docs/02-how-to/mcp-setup-other-repos.md": "002c7a0f63a6d4c93183c26d3c0c0467511260d57a50fb23b22f2f7f391be272",
       "docs/05-audit-reports/dopemux-multi-project-multi-worktree-readiness-2026-11-04.md": "93f67cda7f77b07f5976a449189c84480af0842666f71d3cb1251b0206493106",
       "mcp-proxy-config.copilot.yaml": "769c4ff6d821a4fb9ab40b74b1afe6a5a5adcae025d3071906ea0af51e7e71a4",
       "mcp_catalog.yaml": "6aa71c9d51cd4979fa778f93f850d8b44b85fcce47ff34c338ebb474af3f062e",
@@ -126,23 +145,23 @@ END_OF_PROMPT a202f49c-30b0fdec
       "scripts/proofs/run_dnh_mcp_e2e.py": "0ca0e04ecac1bc552cd3ce4a0a6a0bfd9544256401c33f5e121613ac4fe2d19c",
       "src/dopemux/adhd_error_messages.py": "26ed37c19ac5960e7ec3f30e2d6c687dfbffd238922b61169981dabbd14e535b",
       "src/dopemux/claude/native_hooks.py": "6edaf3f43a7f02c3ab44c08d0b067551bcccec7e8acf0579de001b63827df7bb",
-      "src/dopemux/cli.py": "91ab2bc6238296104883a071fd37eda705758cfc0c3b5b1f1eebe1207984be3b",
-      "src/dopemux/commands/mcp_commands.py": "49a526ae700b4d3bf924dcc472bb884508e0a2cf258963d1dc0e2b5db07b585c",
+      "src/dopemux/cli.py": "4bab7dcda3a29c0eb98359c762e4c2068f0870556030a1f90e047a6dbd3f4d8a",
+      "src/dopemux/commands/mcp_commands.py": "550c39876af3bde77a7399c1f3346ba17b303717d64d97e757be28b4d8da300f",
       "src/dopemux/mcp/agent_bootstrap.py": "c4061b9a30147ebc66c4548c27a77c38264919bad33c837ca80a062e459c80b5",
       "src/dopemux/mcp/config_repair.py": "3911e1c7422998155d548f9ca4b0b61c675214ccb9186ca897063b2b5e8be904",
-      "src/dopemux/mcp/conport_tenant.py": "ed617f6324270e3ceb2c7c0a668ed30144c91ef5c1d1ad19fbd74d2f19ecf33d",
+      "src/dopemux/mcp/conport_tenant.py": "a7fb56c42a1bde7b46be074e52761ecd34c8396772dc7eb2d0cb9242f3df3869",
       "src/dopemux/mcp/default_catalog.yaml": "6aa71c9d51cd4979fa778f93f850d8b44b85fcce47ff34c338ebb474af3f062e",
       "src/dopemux/mcp/docker_inspect.py": "881a825e018abfcc7c7d6f2ba017e8a7687176b7303fa15ed1ea564faf6461a9",
-      "src/dopemux/mcp/docker_runtime.py": "078aeb0327735fe02bee8305d947b01d7eeaa1e287dd70e1e20a6ab3eee76d23",
+      "src/dopemux/mcp/docker_runtime.py": "40de8817b4755be40e75728b9e8ed1f58bb86107ca60cb4f668fd92a068f1b90",
       "src/dopemux/mcp/doctor.py": "e117c8d90e2df11d08b45bac2160975770fe0a15f63e27fdea89bbd1d98da6d2",
       "src/dopemux/mcp/fleet_catalog.py": "7352fed0b7ecce1b9f957ad6a32b490ca91c06c76793fbe4cc465e78e85718fd",
-      "src/dopemux/mcp/launcher.py": "8bae5716c2ce1db0e0a30827c384e007071e6086bcecf20de101805e167c3d7f",
-      "src/dopemux/mcp/lifecycle.py": "8fa97734e24383f88359bfebbfc85f70dd7bb4b912d9e6f102e04fa6027b7876",
-      "src/dopemux/mcp/locks.py": "72d72c434a02ba9ed481f14d7696b1006e58de68c9cbe91009c71268b9472a8e",
-      "src/dopemux/mcp/mcp_json.py": "ca24effbc9728db325e3cf8f5e6a45f4e3046ca35051bf4d57c711ef7ee6524b",
+      "src/dopemux/mcp/launcher.py": "61f208d04e0514151a00768bc31384cb6f512b99f3f47f27cfbcff72ba96fc48",
+      "src/dopemux/mcp/lifecycle.py": "95dd7049aebc96ea5544d04df603d33249c1cc66996ebbbd88a37e73a3e9dc22",
+      "src/dopemux/mcp/locks.py": "fe21d11eefc78c48743f093f16b6c7f371fb4f4f853a86e644ca0ab9f3b7a122",
+      "src/dopemux/mcp/mcp_json.py": "409ffe1a935a7c20b58699cc595c54a76fceb3d5110794f3e2a419e74eab5c02",
       "src/dopemux/mcp/port_allocator.py": "2d51347176fbe2517321284a8eac25db1520a2d5bb3ecda6598ba5218025fdc4",
       "src/dopemux/mcp/project_identity.py": "3358bc22ead2a2073910caccdf6d676f46a850f67604d066eb20ff48a869e70b",
-      "src/dopemux/mcp/reap.py": "ffb3bbdae5468b3ba010d071b3b02893df15432ea7e51d78b842d48069f96902",
+      "src/dopemux/mcp/reap.py": "decea1b83c015b2f236615448dd4359bb334b2427e4000d8d73f61f59104ac48",
       "src/dopemux/mcp/runtime_state.py": "32d2538eeacfc601844a3049eb08ae7bb86c69d7bb443596472ab1951613c609",
       "src/dopemux/mcp/stdio_proxy.py": "e5188be8e9a031bcccab808a48d301f46a5986fb716d1550912f5cf9052b3783",
       "src/dopemux/worktree_commands.py": "565057cd11e282801d4fb04a4cd4405056d13ff1c2c7ebbaa1cb64aeed33ad9d",
@@ -150,28 +169,30 @@ END_OF_PROMPT a202f49c-30b0fdec
       "tests/arch/test_mcp_fleet_catalog_contract.py": "ddf4e55909390bc966d54efe6969933404ba231a6c16593644120c0454dfee14",
       "tests/test_native_hooks_workflow.py": "c92b260697f05c1dc0c70902343b1143cdb70e00f817b6b2bab8f3d0066e3571",
       "tests/unit/runner_memory_2a_r2_w07/test_generator_gate.py": "081673b72cd0fe6250439d0d1aea6775ea4e4231b3ad68745336bf6f9493fc11",
-      "tests/unit/test_docs_no_envrc_recipe.py": "26d5c67fc1e698e24d898e8e7b70fb3f560e3883f2857b286767622448e2e5af",
-      "tests/unit/test_mcp_commands_catalog.py": "7d8be56395d36f74d0fe2e99b93cd23a1de1668b7d1ec05d8ab270caee921739",
-      "tests/unit/test_mcp_commands_lifecycle.py": "3b6c8be6311903c7f772a5cbf34486dddef3beeb6db173e0e9fb45a93a8bccf8",
-      "tests/unit/test_mcp_commands_repair.py": "bac8203601c8f62bed907c8cc921dfe6bda4d9b7ee03c4c5bd1538ecc81eb087",
+      "tests/unit/test_docs_no_envrc_recipe.py": "ddb183dd6a25e078019357771f4d53b1ce18d801cec27087342c53d2cdab1053",
+      "tests/unit/test_mcp_commands_catalog.py": "b59aa7b0a66b473d2241f71003f555b2f97b22ccc522802bfbeeebe6853b4190",
+      "tests/unit/test_mcp_commands_lifecycle.py": "f70b8ffd7e2b68566e8f19810fc7ff78a9bbb02e3bb129bb25a348c0a5e1d845",
+      "tests/unit/test_mcp_commands_repair.py": "969c1e3f7ef30d67e9c3095f6867fbf03a01cacf52e4235d2ba0d9f9eb704dee",
+      "tests/unit/test_mcp_commands_repo_catalog.py": "33c7c548eeb0a3e9bf5f1761580e19966016fca7b317dfc595f2d46bcfdab59d",
       "tests/unit/test_mcp_commands_snapshot.py": "e186617a915ab0a5238dff27c0701863115026b001985d2840236b491435b037",
-      "tests/unit/test_mcp_conport_tenant.py": "c0e468f4b02c93ad67205d23888034c9ad278ebfc8fb0c8e1541d2813c75192d",
+      "tests/unit/test_mcp_config_repair.py": "8c6ce23743067e16acbea4a50954b9bced7897a928ede4c6877051d69c98b267",
+      "tests/unit/test_mcp_conport_tenant.py": "92afe755cbe2320375c5cdfc51022fe2644ecfd0c1747c55a3a7272bb44d7a28",
       "tests/unit/test_mcp_doctor_repo_aware.py": "699b51faeeb3331ab209740665dba3c8c9a2e230055e8142785029c1e9b0964f",
-      "tests/unit/test_mcp_fleet_catalog.py": "4a8d7bbf36f7204076cd909c0e48f117d7b244b3bb6e284801309b9f24d043d1",
-      "tests/unit/test_mcp_identity_git_only.py": "79be954be951abb02208c666d832967eb510f5bf3700f02b6384e988fcf65160",
-      "tests/unit/test_mcp_launcher.py": "f64f886b35229e424f2f1b8006bfbba355424494773ceffc9d476104fe29b058",
+      "tests/unit/test_mcp_fleet_catalog.py": "4a8d7bbf36f7204076cd909c0e48f117d7b244b3bb6e2848f117d7b244b3bb6e"[0:0] + "4a8d7bbf36f7204076cd909c0e48f117d7b244b3bb6e284801309b9f24d043d1",
+      "tests/unit/test_mcp_identity_git_only.py": "ba1b981651b8cce6d018a68f55070558f7f98e47b7397eea534a73db5b7cfbd7",
+      "tests/unit/test_mcp_launcher.py": "19abda1a27b426fbbc0a699cc7a613303e60ef3ffad53383a6891766b0cfc1eb",
       "tests/unit/test_mcp_launcher_render.py": "d821b655d6eb4e6e764651fca51a8cbc2bc633c58165e55b29557d85fec05923",
-      "tests/unit/test_mcp_lifecycle.py": "b7fae4fef0a288107cab6e4fa3b9af698350e01808809107d2bf2b89001f60fa",
-      "tests/unit/test_mcp_lifecycle_ports_from_leases.py": "77deaa9a1d578acadee43e1fa059fddacee67d79738a60471432a8742df501da",
+      "tests/unit/test_mcp_lifecycle.py": "02680cb74d8e86af0c8d2c98419efbaaf9d803b6a0ca8bb80c5367a1edc9d828",
+      "tests/unit/test_mcp_lifecycle_ports_from_leases.py": "77ef44b3f4851989929b53da8bfd4f4f9f434ada7eb6291a0a2c40ec19ae52da",
       "tests/unit/test_mcp_locks.py": "fe03f4da82ff8c4e82fdf3f89ebf533b1f67da9e637542de975dd5eaf7bfccc8",
       "tests/unit/test_mcp_port_allocator.py": "f4215352a4bee019b88e0602d7d1392dc0631d0a91afc03fabcb99bd5060d1cd",
       "tests/unit/test_mcp_profile_doctor.py": "05716fa700def0d089968149c2ddf0cd784da1103e2f22f0265120e6d8768b06",
-      "tests/unit/test_mcp_reap.py": "bb815692bd1463b43cd06894125ac57f7af95e8d922e23c507e4f5f1d0cfc67e",
-      "tests/unit/test_mcp_runtime_launcher.py": "8d00048c789166f239a409719ef45391d4f423969a72feb645a27ba6f4a52756",
+      "tests/unit/test_mcp_reap.py": "cd793f9e2d247d38b3acbecf57c43c329d2e053ce7b11dd3ec40eeb2fc6b794d",
+      "tests/unit/test_mcp_runtime_launcher.py": "cdb20c889aa9d3b9b44ddb51c350095d8a8f208b1fd4c15df7bcc59c71d98367",
       "tests/unit/test_mcp_stdio_proxy.py": "986cf2236353503d95a84f6eae3056367043d5397f1e0f2e171c994860dc2cfb",
-      "tests/unit/test_mcp_switch_project.py": "ed004622baac644233eb8bf1b288a284c098e1b3865b0a99e469d8bd7a3bfb9c",
+      "tests/unit/test_mcp_switch_project.py": "45d67c06fcb650da0b47d696be93b2f4dbe6555388cfda384efeef4447b7e70b",
       "tests/unit/test_native_hooks_dispatcher.py": "2368f87e1191e27248d19aeac0a83230b9fb1fa0cdecf147ebba99cc1951f536",
-      "tests/unit/test_native_hooks_register.py": "1a6e246c31296debef543e9d636a27cba475d98ade565213bf689950777b038c",
+      "tests/unit/test_native_hooks_register.py": "fc94db0c1aa98653ef91c87a2ecce26977dda4e8e5e07675e2ae2f320b4b014d",
       "uv.lock": "92069428a66d2261dec5a47965de2b983fc5f3c22100a5b0811d82a9237c0cee"
     }
   },
@@ -184,92 +205,87 @@ END_OF_PROMPT a202f49c-30b0fdec
   },
   "checks": [
     {
-      "id": "DIFF_READ_FULL",
-      "command_or_method": "Static read_file of subject.diff lines 1-19517, FILES.sha256, COMMITS.txt, design.md, plan.md, howto-mcp-setup-other-repos.md, LEDGER_SUMMARY.md, VALIDATIONS.md",
+      "id": "static-diff-read-full",
+      "command_or_method": "read_file across COMMITS.txt, FILES.sha256, subject-src.diff (lines 1-9621), subject.diff (lines 1-25252), design.md, plan.md, howto-mcp-setup-other-repos.md, LEDGER_SUMMARY.md, VALIDATIONS.md",
       "exit_code": 0,
       "bucket": "PASS",
-      "evidence": "Read all 19,517 lines of subject.diff (5742575c4..30b0fdec996fcd782bf2f816900f9ff4dabd4c01 across 67 changed files) and all supporting subject artifacts in full."
+      "evidence": "All 50 commits, 69 changed file hashes, 9,621 lines of subject-src.diff, and 25,252 lines of subject.diff inspected in full at pinned SHA 3f1335e7fdcf8165d4669195bfd521cafca13304."
     },
     {
-      "id": "SECRETS_ARGV_LOG_REVIEW",
-      "command_or_method": "Static code and test inspection of src/dopemux/mcp/conport_tenant.py, src/dopemux/mcp/docker_runtime.py, src/dopemux/mcp/lifecycle.py, src/dopemux/mcp/launcher.py, and tests/unit/test_mcp_conport_tenant.py",
+      "id": "static-secrets-argv-log-review",
+      "command_or_method": "Static inspection of src/dopemux/mcp/conport_tenant.py, src/dopemux/mcp/launcher.py, src/dopemux/mcp/lifecycle.py, src/dopemux/mcp/docker_runtime.py",
       "exit_code": 0,
       "bucket": "PASS",
-      "evidence": "Verified 0600 atomic secrets file inside 0700 dir (conport_tenant.py:211-240), repr=False on TenantCredentials.db_password (conport_tenant.py:155), psql stdin delivery (conport_tenant.py:345-362), RFC 7677 SCRAM-SHA-256 verifier for CREATE ROLE (conport_tenant.py:374-414, 570-591), pre-truncation redaction of raw/URL-encoded secrets and URLs in _redacted_tail (conport_tenant.py:438-452) and launcher._redact_stderr_tail (launcher.py:318-373), 0600 --env-file for migration gate (conport_tenant.py:650-694), and exclusion of CONPORT_DB_* from mcp.env and start-plan.json (docker_runtime.py:265-282, lifecycle.py:1886-1914)."
+      "evidence": "conport_tenant.py:93 (repr=False), :243-250 (0600 secrets.env in 0700 dir), :265-298 (psql stdin, no password on argv), :415-433 (SCRAM-SHA-256 verifier), :448-465 (redaction before 300-char slice), :821-864 (0600 temp --env-file for docker exec migration gate, unlinked in finally); launcher.py:311-364 (error redaction), :801-806 (instance.json identity-only); lifecycle.py:725-765 (mcp.env and start-plan.json contain no secrets)."
     },
     {
-      "id": "LOCK_ORDER_AND_INODE_REVIEW",
-      "command_or_method": "Static code and test inspection of src/dopemux/mcp/locks.py, src/dopemux/mcp/launcher.py, src/dopemux/mcp/lifecycle.py, src/dopemux/mcp/reap.py, src/dopemux/commands/mcp_commands.py, and tests/unit/test_mcp_locks.py",
+      "id": "static-lock-order-concurrency-review",
+      "command_or_method": "Static inspection of src/dopemux/mcp/locks.py, src/dopemux/mcp/launcher.py, src/dopemux/mcp/lifecycle.py, src/dopemux/mcp/reap.py",
       "exit_code": 0,
       "bucket": "PASS",
-      "evidence": "Verified fstat(fd) vs stat(path) (st_dev, st_ino) re-check with bounded retry in _flock (locks.py:93-143), thread-reentrant reserved_port_lock (locks.py:199-223), documented lock order (instance_lock outside registry_lock and provision_lock; reserved_port_lock(7890) outside registry_lock), attach under instance_lock released before reap/ensure_backend (launcher.py:563-568), and stop under instance_lock with save_state_locked (lifecycle.py:2131-2191)."
+      "evidence": "locks.py:8-20 and :100-152 enforce inode (st_dev, st_ino) re-check after flock and strict lock hierarchy (instance_lock and reserved_port_lock(7890) never nested; instance_lock -> registry_lock/provision_lock; reserved_port_lock -> registry_lock). launcher.py:648 and :736 pass hold_instance_lock=False so launch.lock is never acquired twice in one process."
     },
     {
-      "id": "RECONNECT_AND_OWNERSHIP_GUARD_REVIEW",
-      "command_or_method": "Static code and test inspection of src/dopemux/mcp/stdio_proxy.py, src/dopemux/mcp/launcher.py, tests/unit/test_mcp_stdio_proxy.py, and tests/unit/test_mcp_launcher.py",
+      "id": "static-reconnect-guard-proxy-review",
+      "command_or_method": "Static inspection of src/dopemux/mcp/stdio_proxy.py and src/dopemux/mcp/launcher.py",
       "exit_code": 0,
       "bucket": "PASS",
-      "evidence": "Verified resend-once on 32600 'Session terminated' and dead-read/closed-write streams without replaying in-flight dropped requests (stdio_proxy.py:190-220, 463-501); two-checkpoint reconnect_guard before connect and post-initialize on first session and every reconnect (stdio_proxy.py:343-375, launcher.py:213-266); fail-closed ProxyRefused delivery (-32000) via _answer_with_refusal / _unavailable (stdio_proxy.py:391-408, 525-557); backoff 0.25s..2.0s over 10s and 1-reconnect-per-60s window (stdio_proxy.py:104-111, 316-329, 377-389)."
+      "evidence": "stdio_proxy.py:39-42, :98-107, :166-256 verify MAX_SENDS_PER_REQUEST=2 resend-once on -32600 'Session terminated' or pre-write ClosedResourceError/BrokenResourceError, no retry on mid-flight drop, reconnect_guard checked before first connect, before every reconnect, and immediately after session.initialize(), 1 reconnect per 60s window with 0.25s..2.0s backoff up to 10s."
     },
     {
-      "id": "REAP_SAFETY_AND_BOUNDEDNESS_REVIEW",
-      "command_or_method": "Static code and test inspection of src/dopemux/mcp/reap.py, src/dopemux/claude/native_hooks.py, src/dopemux/mcp/launcher.py, and tests/unit/test_mcp_reap.py",
+      "id": "static-reap-safety-review",
+      "command_or_method": "Static inspection of src/dopemux/mcp/reap.py",
       "exit_code": 0,
       "bucket": "PASS",
-      "evidence": "Verified label join on (project_id, worktree_hash) restricted to dopemux.managed=true and dopemux.scope=worktree (reap.py:296-339); task-orchestrator never stopped or marked stopped (reap.py:403-413, 474-484); fail-closed idle check requiring last_detach and dead-PID mtime preservation (reap.py:141-196, 238-246); under-lock re-evaluation of live_attachments and _still_eligible (reap.py:666-677); non-blocking instance_lock, min(time left, 2s) registry_lock wait via save_states_locked, per-call deadline clamping, and throttle restoration on no-op/timeout in maybe_reap (reap.py:608-640, 822-932)."
+      "evidence": "reap.py:242-276 (fail-closed attach read), :387-395 (project/singleton/task-orchestrator excluded), :451-480 (read-only _effective_last_detach from dead attach records), :537-598 (marker-only worktree_missing candidates), :634-691 (_pair_container_ids re-check under instance_lock), :810-852 and :926-953 (state_error skip preserves runtime_dir on persistence failure)."
     },
     {
-      "id": "AMBIENT_ENV_SCRUB_REVIEW",
-      "command_or_method": "Static code and test inspection of src/dopemux/mcp/docker_runtime.py, src/dopemux/mcp/project_identity.py, src/dopemux/mcp/runtime_state.py, src/dopemux/worktree_commands.py, src/dopemux/commands/mcp_commands.py, src/dopemux/mcp/launcher.py, and src/dopemux/mcp/lifecycle.py",
+      "id": "static-docs-vs-code-truthfulness-review",
+      "command_or_method": "Static comparison of AGENTS.md, claudedocs/mcp-just-works-design-2026-11-05.md, and docs/02-how-to/mcp-setup-other-repos.md against src/dopemux/mcp/*",
       "exit_code": 0,
       "bucket": "PASS",
-      "evidence": "Verified AMBIENT_SCRUB_VARS (docker_runtime.py:51-74) is scrubbed across CLI lifecycle commands (mcp_commands.py:138-151), launcher (launcher.py:274-305), compose interpolation (lifecycle.py:1765, 1893), and mcp init (mcp_commands.py:2079), and git-only identity resolution ignores ambient DOPEMUX_* unless --trust-env is passed."
+      "evidence": "AGENTS.md:309-314 updated to shared-image rule; docs/02-how-to/mcp-setup-other-repos.md:203-337 and design.md:282-312 accurately document refusal codes, state_error skip, instance.json marker, dead attach timestamp fallback, and T7 Redis stream hook evidence."
     },
     {
-      "id": "DOCS_VS_CODE_TRUTHFULNESS",
-      "command_or_method": "Static comparison of docs/02-how-to/mcp-setup-other-repos.md, .claude/claude.md, AGENTS.md, and claudedocs/mcp-just-works-design-2026-11-05.md against implementation",
+      "id": "static-cycle2-fixes-review",
+      "command_or_method": "Line-by-line verification of cycle-2 items 1-10 and Codex F1/F2 closure in subject.diff",
       "exit_code": 0,
       "bucket": "PASS",
-      "evidence": "Verified docs/02-how-to/mcp-setup-other-repos.md and .claude/claude.md accurately match the implemented CLI flags, exit codes, finding codes, lock files, secrets paths, and shared image tags; noted one low-severity stale sentence in AGENTS.md:309 (recorded as finding F1)."
+      "evidence": "All 10 cycle-2 items verified at path:line; Codex F1 (reap.py:810-852, 926-953) and Codex F2 (lifecycle.py:920-1635, launcher.py:648, 736) are closed."
     },
     {
-      "id": "LIVE_AND_PYTEST_SUITES_T1_T11",
-      "command_or_method": "Pytest execution and live Docker/Postgres/Claude acceptance scenarios T1-T11",
+      "id": "live-unit-and-contract-test-suite",
+      "command_or_method": "pytest unit/arch suite, git diff --check, and validate_change_contract.py on live host",
       "exit_code": null,
       "bucket": "NOT_RUN",
-      "evidence": "Auditor operates on read-only static subject bundle without live host shell/Docker/Postgres execution; live checks T1-T11 and pytest runs reported in VALIDATIONS.md and LEDGER_SUMMARY.md are bucketed NOT_RUN."
-    }
-  ],
-  "findings": [
+      "evidence": "Auditor operates in a read-only static audit context without shell execution against the live host; controller-recorded outputs in VALIDATIONS.md (502 passed) are treated as author claims, not auditor-reproduced runs."
+    },
     {
-      "id": "F1",
-      "severity": "low",
-      "location": "AGENTS.md:309",
-      "summary": "AGENTS.md still states that the first launch in a new worktree builds its images, whereas sidecar images are now shared per service and Dockerfile version across all worktrees and projects on the host.",
-      "evidence": "AGENTS.md:309-310 says 'The first launch in a new worktree builds its images (LAUNCH_IMAGE_BUILDING; then /mcp reconnect all).' Commit 02658fcbe changed docker_runtime.compose_image_name (src/dopemux/mcp/docker_runtime.py:487-516) to tag dopemux-<service>:<12-hex-sha256> per service and Dockerfile content, and updated docs/02-how-to/mcp-setup-other-repos.md:122-128 and .claude/claude.md:270-273 accordingly, leaving AGENTS.md:309 with the pre-I4 wording."
+      "id": "live-acceptance-checks-T1- through-T11",
+      "command_or_method": "Live Docker/PostgreSQL/MCP client acceptance scenarios T1-T11 (design.md §6)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "evidence": "Owner-run live acceptance checks require a live Docker daemon, PostgreSQL container, and Claude Code MCP session unavailable to the read-only auditor."
     }
   ],
+  "findings": [],
   "instruction_like_content": [],
   "author_claims_not_reproduced": [
-    "VALIDATIONS.md claim: focused MCP + hooks unit and architecture pytest suite passed (299 passed in 11.42s) at 30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
-    "VALIDATIONS.md claim: make test-fast passed (2232 passed, 8 skipped in 34.47s) at 30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
-    "VALIDATIONS.md claim: docs_validator.py and doc_mine.py --check passed (0 violations, 560/560 checks) at 30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
-    "VALIDATIONS.md claim: ruff, black --check, isort --check-only, and mypy diff checks passed on changed files at 30b0fdec996fcd782bf2f816900f9ff4dabd4c01",
-    "LEDGER_SUMMARY.md claim: owner-run live Docker/Postgres/launcher/reap checks (T1-T11 and live probes) passed on host"
+    "VALIDATIONS.md claim: 502 unit/arch/hook tests passed in 23.82s at 3f1335e7fdcf8165d4669195bfd521cafca13304 (NOT_RUN by auditor; static test code verified in subject.diff).",
+    "VALIDATIONS.md claim: git diff --check and scripts/governance/validate_change_contract.py exited 0 at 3f1335e7fdcf8165d4669195bfd521cafca13304 (NOT_RUN by auditor).",
+    "LEDGER_SUMMARY.md / VALIDATIONS.md claim: Live acceptance scenarios T1, T2, T3, T5, T6, T8, T9 PASS, T7 PARTIAL, and T4, T10, T11 NOT_RUN (all live acceptance scenarios T1-T11 are NOT_RUN by auditor)."
   ],
   "remaining_risks": [
-    "AGENTS.md:309 contains stale wording implying image builds happen per new worktree rather than once per service/Dockerfile version on the host (Finding F1, low).",
-    "In stdio_proxy.py:316-329, an initial connect failure consumes the 60-second reconnect window budget via the immediate startup retry, so if the backend subsequently restarts within 60 seconds of that retry, the proxy will exit 1 and require '/mcp reconnect' rather than auto-healing a second time inside the same 60-second window.",
-    "Deferred M1 items documented in LEDGER_SUMMARY.md §Deferred (e.g., M2 legacy shared-store row migration, M2 ~/.claude.json global audit, and in-flight tool calls during a task-orchestrator restart returning CONNECTION_CLOSED without replay) remain open by design."
+    "Direct CLI `dopemux mcp start --service task-orchestrator` does not acquire `instance_lock` (by design, to avoid nesting `instance_lock` with `reserved_port_lock(7890)`), so a concurrent `reap --apply` on a removed/idle worktree can remove `runtime_dir` after the orchestrator registry update; `skip_artifacts = not compose_services` (src/dopemux/mcp/lifecycle.py:710) prevents recreating `runtime_dir`, leaving at most a stale orchestrator registry entry (documented in design.md:304).",
+    "`dopemux mcp doctor --repo <target>` and `dopemux mcp profile show --repo <target>` still load the caller checkout's catalog when invoked from outside `<target>` (documented in design.md:305).",
+    "Interactive `dopemux mcp switch-project` without `--yes` performs an unlocked pre-check before prompting the operator and re-verifies ownership under `reserved_port_lock(7890)` before mutating state (src/dopemux/commands/mcp_commands.py:432-477, documented in design.md:306)."
   ],
   "unknowns": [
-    "Live execution of the unit/arch test suites and linters in VALIDATIONS.md at 30b0fdec996fcd782bf2f816900f9ff4dabd4c01 (not re-run in static audit environment).",
-    "Live owner-run acceptance checks T1-T11 from claudedocs/mcp-just-works-design-2026-11-05.md §6 against a running Docker daemon, dopemux-postgres-age container, and Claude Code /mcp session (NOT_RUN by auditor)."
+    "auditor.model_observed and auditor.effort are UNKNOWN because runtime model/effort receipts are not exposed to the agent environment.",
+    "Live execution of pytest, pre-commit/contract scripts, and Docker/MCP acceptance checks T1-T11 could not be independently executed by the read-only auditor."
   ],
   "skip_reason": null,
-  "unblock": [
-    "Update AGENTS.md:309 to state that sidecar images are shared per service and Dockerfile version across all worktrees and projects on a host (matching .claude/claude.md:270-273 and docs/02-how-to/mcp-setup-other-repos.md:122-128)."
-  ],
+  "unblock": [],
   "acceptance": "NOT_GRANTED"
 }
 ```

@@ -1,0 +1,154 @@
+# cycle-2 live smoke at 3f1335e7fdcf8165d4669195bfd521cafca13304 (2026-11-08T23:02:26Z); DOPEMUX_BIN=/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.venv/bin/dopemux
+Updating files:  31% (6052/19192)Updating files:  32% (6142/19192)Updating files:  33% (6334/19192)Updating files:  34% (6526/19192)Updating files:  35% (6718/19192)Updating files:  36% (6910/19192)Updating files:  37% (7102/19192)Updating files:  38% (7293/19192)Updating files:  39% (7485/19192)Updating files:  40% (7677/19192)Updating files:  41% (7869/19192)Updating files:  42% (8061/19192)Updating files:  43% (8253/19192)Updating files:  44% (8445/19192)Updating files:  45% (8637/19192)Updating files:  46% (8829/19192)Updating files:  47% (9021/19192)Updating files:  48% (9213/19192)Updating files:  49% (9405/19192)Updating files:  50% (9596/19192)Updating files:  51% (9788/19192)Updating files:  52% (9980/19192)Updating files:  53% (10172/19192)Updating files:  54% (10364/19192)Updating files:  55% (10556/19192)Updating files:  56% (10748/19192)Updating files:  57% (10940/19192)Updating files:  58% (11132/19192)Updating files:  59% (11324/19192)Updating files:  60% (11516/19192)Updating files:  61% (11708/19192)Updating files:  62% (11900/19192)Updating files:  63% (12091/19192)Updating files:  64% (12283/19192)Updating files:  65% (12475/19192)Updating files:  66% (12667/19192)Updating files:  67% (12859/19192)Updating files:  68% (13051/19192)Updating files:  69% (13243/19192)Updating files:  70% (13435/19192)Updating files:  71% (13627/19192)Updating files:  72% (13819/19192)Updating files:  72% (14001/19192)Updating files:  73% (14011/19192)Updating files:  74% (14203/19192)Updating files:  75% (14394/19192)Updating files:  76% (14586/19192)Updating files:  77% (14778/19192)Updating files:  78% (14970/19192)Updating files:  79% (15162/19192)Updating files:  80% (15354/19192)Updating files:  81% (15546/19192)Updating files:  82% (15738/19192)Updating files:  83% (15930/19192)Updating files:  84% (16122/19192)Updating files:  85% (16314/19192)Updating files:  86% (16506/19192)Updating files:  87% (16698/19192)Updating files:  88% (16889/19192)Updating files:  89% (17081/19192)Updating files:  90% (17273/19192)Updating files:  91% (17465/19192)Updating files:  92% (17657/19192)Updating files:  93% (17849/19192)Updating files:  94% (18041/19192)Updating files:  95% (18233/19192)Updating files:  96% (18425/19192)Updating files:  97% (18617/19192)Updating files:  98% (18809/19192)Updating files:  99% (19001/19192)Updating files: 100% (19192/19192)Updating files: 100% (19192/19192), done.
+HEAD is now at 3f1335e7f test(mcp): B7 negatives and legacy-restart lease test; single is_free selection in _resolve_ports (B7 micro round)
+
+## 1. cold launch conport (stdin EOF ends the proxy; timeout 90 s; DOPEMUX_LAUNCH_WAIT=60)
+launch exit=0 elapsed=4s
+
+## 2. runtime dir + marker
+newest runtime dir: /Users/hue/.dopemux/mcp/runtime/dopemux-mvp-570c
+total 40
+drwx------@   9 hue  staff   288 Nov  8 16:02 .
+drwxr-xr-x@ 199 hue  staff  6368 Nov  8 16:02 ..
+drwx------@   2 hue  staff    64 Nov  8 16:02 attached
+-rw-r--r--@   1 hue  staff  1393 Nov  8 16:02 compose.override.yml
+-rw-------@   1 hue  staff   234 Nov  8 16:02 instance.json
+-rw-r--r--@   1 hue  staff    21 Nov  8 16:02 last_detach
+-rw-------@   1 hue  staff     0 Nov  8 16:02 launch.lock
+-rw-r--r--@   1 hue  staff   680 Nov  8 16:02 mcp.env
+-rw-r--r--@   1 hue  staff   523 Nov  8 16:02 start-plan.json
+instance.json:
+{'project_id': 'dopemux-mvp-2e346e2084bca021', 'project_root': '/Users/hue/code/dopemux-mvp', 'worktree_hash': '570c', 'worktree_root': '/Users/hue/code/dopemux-mvp/.worktrees/c2-smoke-3f1335e7', 'written_at': '2026-11-08T23:02:29Z'}
+
+## 3. containers for this instance
+dopemux-dopemux-mvp-570c-conport|Up 1 second (health: starting)
+
+## 4. remove the smoke worktree, then reap --dry-run --json (T8 dry-run at this head; nothing applied)
+worktree removed
+{
+  "dry_run": true,
+  "automatic_reaping_disabled": "/Users/hue/.dopemux/mcp/runtime/reap.disabled exists",
+  "candidates": [
+    {
+      "project_id": "dopemux-mvp-2e346e2084bca021",
+      "worktree_hash": "570c",
+      "worktree_root": "/Users/hue/code/dopemux-mvp/.worktrees/c2-smoke-3f1335e7",
+      "runtime_dir": "/Users/hue/.dopemux/mcp/runtime/dopemux-mvp-570c",
+      "container_ids": [
+        "b84b863dff65"
+      ],
+      "reason": "worktree_missing",
+      "services": [
+        "conport"
+      ],
+      "state_only": false,
+      "dir_only": false
+    },
+    {
+      "project_id": "dopemux-mvp-2e346e2084bca021",
+      "worktree_hash": "d79c",
+      "worktree_root": "/Users/hue/code/dopemux-mvp/.worktrees/c2-smoke-3dec0ab3",
+      "runtime_dir": "/Users/hue/.dopemux/mcp/runtime/dopemux-mvp-d79c",
+      "container_ids": [
+        "177c8da42d48"
+      ],
+      "reason": "worktree_missing",
+      "services": [
+        "conport"
+      ],
+      "state_only": false,
+      "dir_only": false
+    },
+    {
+      "project_id": ".accept-m1-t4-747a8534eeaf9c7f",
+      "worktree_hash": "10f0",
+      "worktree_root": "/Users/hue/code/.accept-m1-t4",
+      "runtime_dir": "/Users/hue/.dopemux/mcp/runtime/accept-m1-t4-10f0",
+      "container_ids": [
+        "56c89284da91"
+      ],
+      "reason": "idle",
+      "services": [
+        "conport"
+      ],
+      "state_only": false,
+      "dir_only": false
+    },
+    {
+      "project_id": "dopemux-mvp-2e346e2084bca021",
+      "worktree_hash": "55ab",
+      "worktree_root": "/Users/hue/code/dopemux-mvp/.worktrees/accept-m1-t1",
+      "runtime_dir": "/Users/hue/.dopemux/mcp/runtime/dopemux-mvp-55ab",
+      "container_ids": [
+        "2681edda0580",
+        "a8d88f36e1d6"
+      ],
+      "reason": "idle",
+      "services": [
+        "conport",
+        "dope-memory"
+      ],
+      "state_only": false,
+      "dir_only": false
+    },
+    {
+      "project_id": "dopemux-mvp-2e346e2084bca021",
+      "worktree_hash": "afda",
+      "worktree_root": "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1",
+      "runtime_dir": "/Users/hue/.dopemux/mcp/runtime/dopemux-mvp-afda",
+      "container_ids": [
+        "23c05f81a270",
+        "3f6f9f9e587d"
+      ],
+      "reason": "idle",
+      "services": [
+        "conport",
+        "dope-memory"
+      ],
+      "state_only": false,
+      "dir_only": false
+    },
+    {
+      "project_id": "dopemux-mvp-2e346e2084bca021",
+      "worktree_hash": "6a4f",
+      "worktree_root": "/Users/hue/code/dopemux-mvp/.worktrees/free-lane-20260722_070957",
+      "runtime_dir": "/Users/hue/.dopemux/mcp/runtime/dopemux-mvp-6a4f",
+      "container_ids": [],
+      "reason": "worktree_missing",
+      "services": [],
+      "state_only": true,
+      "dir_only": false
+    },
+    {
+      "project_id": "proj-31feb96c439f180d",
+      "worktree_hash": "01b4",
+      "worktree_root": "/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-139/test_launch_env_default_is_res0/proj",
+      "runtime_dir": "/Users/hue/.dopemux/mcp/runtime/proj-01b4",
+      "container_ids": [],
+      "reason": "worktree_missing",
+      "services": [],
+      "state_only": true,
+      "dir_only": true
+    },
+    {
+      "project_id": "proj-dcd6f56c1be0cea1",
+      "worktree_hash": "073b",
+      "worktree_root": "/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-12/test_launch_env_default_is_res0/proj",
+      "runtime_dir": "/Users/hue/.dopemux/mcp/runtime/proj-073b",
+      "container_ids": [],
+      "reason": "worktree_missing",
+      "services": [],
+      "state_only": true,
+      "dir_only": true
+    },
+    {
+      "project_id": "proj-81db2bc114f04176",
+      "worktree_hash": "0b05",
+      "worktree_root": "/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-29/test_launch_env_default_is_res0/proj",
+      "runtime_dir": "/Users/hue/.dopemux/mcp/runtime/proj-0b05",
+      "container_ids": [],
+      "reason": "worktree_missing",
+      "servi
+
+## 5. the proxy's own stderr tail from a second (warm) launch in the M1 worktree, 20 s cap
+warm launch exit=0
