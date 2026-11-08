@@ -129,15 +129,42 @@ def _neutralize_placeholders(url: str) -> str:
     )
 
 
+def _placeholder_in_userinfo_or_host(url: str) -> bool:
+    """True when a ``${...}`` placeholder sits left of the port separator of the authority.
+
+    A host or userinfo placeholder is operator-selected whatever its default
+    (``${HOST:-localhost}`` resolves to a remote host when ``HOST`` is set), so
+    it never proves the endpoint local. Placeholders in the port, path or query
+    are not considered here.
+    """
+    authority = url.split("://", 1)[-1]
+    for sep in ("/", "?", "#"):
+        authority = authority.split(sep, 1)[0]
+    # Mask each placeholder as one opaque character so a ``:`` inside
+    # ``${PORT:-3005}`` is not mistaken for the port separator.
+    masked = _PLACEHOLDER.sub("\x00", authority)
+    userinfo, _, hostport = masked.rpartition("@")
+    if "\x00" in userinfo:
+        return True
+    if hostport.startswith("["):
+        host = hostport.split("]", 1)[0]
+    else:
+        host = hostport.split(":", 1)[0]
+    return "\x00" in host
+
+
 def _url_is_repairable(url: Optional[str]) -> bool:
     """True when the catalog may replace ``url``: missing, or provably local with no credentials.
 
-    Templated URLs get no special pass: placeholders are neutralized first and
-    the same host/userinfo rules as for literal URLs then apply.
+    Port, path and query placeholders are neutralized and the same host/userinfo
+    rules as for literal URLs then apply; a placeholder in the userinfo or host
+    position is never repairable, whatever its default.
     """
     if not url or not isinstance(url, str):
         return True  # missing → can set template
     templated = "${" in url
+    if templated and _placeholder_in_userinfo_or_host(url):
+        return False
     candidate = _neutralize_placeholders(url) if templated else url
     try:
         parsed = urlparse(candidate)

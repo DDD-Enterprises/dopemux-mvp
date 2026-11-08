@@ -354,7 +354,12 @@ def test_json_schema_shape(tmp_path: Path):
         # Templated URLs: neutralize the placeholders, then apply the host rules.
         ("http://localhost:${CONPORT_PORT:-3005}/sse", True),
         ("http://127.0.0.1:${PORT}/mcp", True),
-        ("http://${CONPORT_HOST:-localhost}:3005/sse", True),
+        # A host/userinfo placeholder is operator-selected whatever its default.
+        ("http://${CONPORT_HOST:-localhost}:3005/sse", False),
+        ("http://${HOST:-127.0.0.1}:3005/sse", False),
+        ("http://${USER:-x}@localhost:3005/sse", False),
+        ("http://[${HOST:-::1}]:3005/sse", False),
+        ("http://local${SUFFIX:-host}:3005/sse", False),
         ("https://remote.example:${REMOTE_PORT:-443}/sse", False),
         ("http://user:${PASSWORD}@localhost:3005/sse", False),
         ("http://${HOST}:3005/sse", False),
