@@ -248,17 +248,23 @@ images (they are shared). `SessionEnd` hooks share a
 1.5 s budget unless the hook sets `timeout` (Claude Code hooks and environment-variable
 references, read 2026-11-05), so `.claude/settings.json` sets `"timeout": 60` on that hook entry
 (`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` is the alternative). A reap interrupted after
-`docker rm` is finished by the next run.
+`docker rm` is finished by the next run. On any run, a registry or lease save that fails (a
+corrupt file is left as is) skips the instance as `state_error`: its containers are removed,
+its registry entries, leases and runtime dir stay, and a later run finishes it.
 
 **Kill switch for automatic reaping:** create the file
 `~/.dopemux/mcp/runtime/reap.disabled`, or set `DOPEMUX_MCP_REAP=0` (also `off`/`false`).
 The explicit `dopemux mcp reap --apply` ignores the kill switch and prints a note on stderr.
 
-An instance recorded by an older launcher (no `last_detach` file) is reaped only when its
-worktree path is missing. A launcher killed outright (SIGKILL) leaves a dead attach record;
-when a later reap or full `stop` prunes it, `last_detach` takes that record's time. A worktree
+An instance with neither a `last_detach` file nor a dead attach record (one recorded by an
+older launcher) is reaped only when its worktree path is missing. A launcher killed outright
+(SIGKILL) leaves a dead attach record; its time counts as the last detach, so the instance
+still goes idle, and when a later reap or full `stop` prunes it, `last_detach` takes that
+record's time. A worktree
 on an unmounted volume looks missing, so its sidecars get reaped; the next launch recreates
-them.
+them. A removed worktree's runtime dir that a launcher created is reaped even when no sidecar
+ever started (a launch that only built an image), because each launcher marks the dir with
+`instance.json`.
 
 ---
 

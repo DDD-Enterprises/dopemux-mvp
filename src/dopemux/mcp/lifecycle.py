@@ -5,6 +5,7 @@ Uses Packet 001 doctor for preflight. Never adopts unlabeled containers.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 import shutil
@@ -12,7 +13,17 @@ import socket
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import (
+    Any,
+    Callable,
+    ContextManager,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 from . import conport_tenant as ct
 from . import docker_inspect as di
@@ -826,8 +837,16 @@ def run_lifecycle(
     port_is_free_fn: Optional[Callable[[int], bool]] = None,
     product_root: Optional[Path] = None,
     trust_env: bool = False,
+    hold_instance_lock: bool = True,
 ) -> LifecycleResult:
-    """Execute start|stop|restart|status for project-scoped MCP sidecars."""
+    """Execute start|stop|restart|status for project-scoped MCP sidecars.
+
+    ``hold_instance_lock`` (default): a non-dry ``stop`` runs under the worktree's
+    ``instance_lock``, and so do the worktree-scoped services of a ``start`` or
+    ``restart`` (one acquisition for a restart's stop and start). The
+    task-orchestrator part always runs outside it (B2, D7 order). Callers that
+    already hold the instance lock (the launcher) pass ``False``.
+    """
     op = operation.lower().strip()
     if op not in {"start", "stop", "restart", "status"}:
         raise ValueError(f"unsupported operation: {operation}")
@@ -1300,6 +1319,16 @@ def run_lifecycle(
             exit_code=2,
         )
 
+    # One runtime dir (and launch.lock) for every branch below.
+    runtime_dir = runtime_dir_for_paths(
+        project_root=project_root, worktree_hash=worktree_hash, registry_path=reg_path
+    )
+    # D7/D8: a CLI start/restart/stop holds the instance lock that reap takes before
+    # stopping anything, so an automatic reap never removes this instance mid-step.
+    # The launcher already holds it around its start (hold_instance_lock=False; the
+    # lock is not re-entrant). Dry runs never lock.
+    lock_instance = hold_instance_lock and not dry_run
+
     if op == "stop":
         stop_kw: Dict[str, Any] = dict(
             release_state=True,
@@ -1321,88 +1350,33 @@ def run_lifecycle(
             catalog=catalog,
             slug=slug,
             worktree_hash=worktree_hash,
-            runtime_dir=runtime_dir_for_paths(
-                project_root=project_root, worktree_hash=worktree_hash, registry_path=reg_path
-            ),
+            runtime_dir=runtime_dir,
         )
-        if dry_run:
+        if not lock_instance:
             return _stop_services(**stop_kw)
         # D8/D7: stop, lease release and runtime-dir removal are one step under the
         # instance lock (instance outside, registry inside), so a launcher mid-start
-        # (it attaches under the same lock) is never cut off.
-        with instance_lock(stop_kw["runtime_dir"]):
+        # (it attaches under the same lock) is never cut off. _stop_services never
+        # takes the reserved :7890 lock, so the orchestrator's stop may run here.
+        with instance_lock(runtime_dir):
             return _stop_services(**stop_kw)
 
-    if op == "restart":
-        stop_res = _stop_services(
-            selected=selected,
-            identity_dict=identity_dict,
-            project_id=project_id,
-            worktree_root=worktree_root,
-            container_names=container_names,
-            labels_by_service=labels_by_service,
-            registry=registry,
-            docker=docker,
-            dry_run=dry_run,
-            reg_path=reg_path,
-            product=product,
-            compose_proj=compose_proj,
-            cmd_runner=cmd_runner,
-            ports=ports,
-            catalog=catalog,
-            slug=slug,
-            worktree_hash=worktree_hash,
-        )
-        if stop_res.status == "FAIL" and not dry_run:
-            stop_res.operation = "restart"
-            return stop_res
-        start_res = _start_services(
-            selected=selected,
-            identity=identity,
-            identity_dict=identity_dict,
-            project_id=project_id,
-            project_root=project_root,
-            worktree_root=worktree_root,
-            project_hash=project_hash,
-            worktree_hash=worktree_hash,
-            slug=slug,
-            compose_proj=compose_proj,
-            container_names=container_names,
-            labels_by_service=labels_by_service,
-            ports=ports,
-            doctor_env=doctor_env,
-            registry=registry,
-            docker=docker,
-            dry_run=dry_run,
-            reg_path=reg_path,
-            product=product,
-            catalog=catalog,
-            cmd_runner=cmd_runner,
-            is_free=is_free,
-            target=target,
-            docker_runner=docker_runner,
-            envrc_values=dict(envrc.values),
-        )
-        start_res.operation = "restart"
-        if dry_run:
-            start_res.services = [
-                {
-                    **s,
-                    "restart_plan": {
-                        "stop": next(
-                            (x for x in stop_res.services if x.get("service") == s.get("service")),
-                            {},
-                        ),
-                        "start": s,
-                    },
-                }
-                for s in start_res.services
-            ]
-        return start_res
-
-    # start
-    return _start_services(
-        selected=selected,
+    # B2 (cycle 2): only the worktree-scoped services start and restart under the
+    # instance lock. The task-orchestrator is project-scoped (reap never touches it)
+    # and its start takes the reserved :7890 lock; switch-project calls this with
+    # that lock held, so launch.lock around it would be instance -> reserved here and
+    # reserved -> instance there (a deadlock, and against D7's order). Its part runs
+    # outside the lock; a run in parts returns what one call would.
+    worktree_part = [s for s in selected if s != "task-orchestrator"]
+    split = lock_instance and 0 < len(worktree_part) < len(selected)
+    inside = worktree_part if split else selected
+    outside = [s for s in selected if s == "task-orchestrator"] if split else []
+    worktree_lock: ContextManager[Any] = (
+        instance_lock(runtime_dir)
+        if lock_instance and worktree_part
+        else contextlib.nullcontext()
+    )
+    start_kw: Dict[str, Any] = dict(
         identity=identity,
         identity_dict=identity_dict,
         project_id=project_id,
@@ -1427,6 +1401,113 @@ def run_lifecycle(
         target=target,
         docker_runner=docker_runner,
         envrc_values=dict(envrc.values),
+    )
+
+    if op == "restart":
+        restart_stop_kw: Dict[str, Any] = dict(
+            identity_dict=identity_dict,
+            project_id=project_id,
+            worktree_root=worktree_root,
+            container_names=container_names,
+            labels_by_service=labels_by_service,
+            registry=registry,
+            docker=docker,
+            dry_run=dry_run,
+            reg_path=reg_path,
+            product=product,
+            compose_proj=compose_proj,
+            cmd_runner=cmd_runner,
+            ports=ports,
+            catalog=catalog,
+            slug=slug,
+            worktree_hash=worktree_hash,
+        )
+        # As in one call: every stop before any start, and a failed stop starts
+        # nothing. The worktree stop and start share ONE lock acquisition.
+        stops = [_stop_services(selected=outside, **restart_stop_kw)] if outside else []
+        with worktree_lock:
+            stops.append(_stop_services(selected=inside, **restart_stop_kw))
+            stop_res = _merge_parts(stops, selected)
+            if stop_res.status == "FAIL" and not dry_run:
+                stop_res.operation = "restart"
+                return stop_res
+            starts = [_start_services(selected=inside, **start_kw)]
+        if outside:
+            starts.append(
+                _start_services(selected=outside, write_artifacts=False, **start_kw)
+            )
+        start_res = _merge_parts(starts, selected)
+        start_res.operation = "restart"
+        if dry_run:
+            start_res.services = [
+                {
+                    **s,
+                    "restart_plan": {
+                        "stop": next(
+                            (x for x in stop_res.services if x.get("service") == s.get("service")),
+                            {},
+                        ),
+                        "start": s,
+                    },
+                }
+                for s in start_res.services
+            ]
+        return start_res
+
+    # start
+    with worktree_lock:
+        starts = [_start_services(selected=inside, **start_kw)]
+    if outside:
+        starts.append(
+            _start_services(selected=outside, write_artifacts=False, **start_kw)
+        )
+    return _merge_parts(starts, selected)
+
+
+def _merge_parts(
+    parts: Sequence[LifecycleResult], selected: Sequence[str]
+) -> LifecycleResult:
+    """What one ``_start_services``/``_stop_services`` call over ``selected`` returns (B2).
+
+    One part is returned as is. Several parts (the worktree-scoped services under the
+    instance lock, the task-orchestrator outside it) merge: service entries in
+    ``selected`` order (stable, so each service keeps its own entry order), FAIL over
+    PASS_WITH_WARNINGS over PASS (PLANNED for a dry run), the highest exit code.
+    """
+    if len(parts) == 1:
+        return parts[0]
+    first = parts[0]
+    order: Dict[str, int] = {}
+    for index, svc in enumerate(selected):
+        order.setdefault(svc, index)
+    services = sorted(
+        (entry for part in parts for entry in part.services),
+        key=lambda entry: order.get(str(entry.get("service")), len(selected)),
+    )
+    statuses = {part.status for part in parts}
+    if first.dry_run:
+        status = "PLANNED"
+    elif "FAIL" in statuses:
+        status = "FAIL"
+    elif "PASS_WITH_WARNINGS" in statuses:
+        status = "PASS_WITH_WARNINGS"
+    else:
+        status = "PASS"
+    return LifecycleResult(
+        schema_version=first.schema_version,
+        operation=first.operation,
+        dry_run=first.dry_run,
+        status=status,
+        project_identity=first.project_identity,
+        services=services,
+        blocking_findings=[f for part in parts for f in part.blocking_findings],
+        warnings=[w for part in parts for w in part.warnings],
+        registry_path=first.registry_path,
+        runtime_artifacts=list(
+            dict.fromkeys(a for part in parts for a in part.runtime_artifacts)
+        ),
+        recommended_next_actions=list(first.recommended_next_actions),
+        exit_code=max(part.exit_code for part in parts),
     )
 
 
@@ -1686,12 +1767,15 @@ def _start_services(**kw: Any) -> LifecycleResult:
         "memory_data_path": str(memory_data),
     }
 
+    # B2: the task-orchestrator part of a start run in parts writes nothing into the
+    # runtime dir (it runs outside the instance lock); the worktree part, under the
+    # lock, already wrote the artifacts for the compose services.
     artifact_paths = dr.write_runtime_artifacts(
         runtime_base,
         env_text=env_text,
         override_text=override_text or "# no compose services\n",
         plan=plan_doc,
-        dry_run=dry_run,
+        dry_run=dry_run or not kw.get("write_artifacts", True),
     )
 
     service_results: List[Dict[str, Any]] = []

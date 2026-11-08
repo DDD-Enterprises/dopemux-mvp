@@ -1416,13 +1416,16 @@ def test_a_failed_state_save_keeps_the_runtime_dir_and_is_not_reaped(
     leases_before = (runtime / "port-leases.json").read_text()
     registry_before = (runtime / "instances.json").read_text()
     real_save = reap.save_states_locked
-    monkeypatch.setattr(reap, "save_states_locked", lambda updates, wait_s=None: ["boom"])
+    monkeypatch.setattr(
+        reap, "save_states_locked", lambda updates, wait_s=None: ["boom"]
+    )
     runner = Recorder()
     report = reap.apply_reap(cands, runner=runner)
     assert report.reaped == []
     assert report.skipped == cands and report.skip_reasons == ["state_error"]
     assert any("boom" in e for e in report.errors)
-    assert {c[-1] for c in runner.calls if c[1] == "rm"} == {"a1", "a2"}  # containers gone
+    removed = {c[-1] for c in runner.calls if c[1] == "rm"}
+    assert removed == {"a1", "a2"}  # the containers are gone
     assert _rt_dir(runtime).is_dir()  # the recovery artifacts stay
     assert (runtime / "port-leases.json").read_text() == leases_before
     assert (runtime / "instances.json").read_text() == registry_before
@@ -1471,10 +1474,14 @@ def test_a_failed_state_save_after_a_partial_docker_failure_is_never_reaped(
     tmp_path: Path, runtime: Path, monkeypatch
 ):
     _missing, cands = _setup_apply(tmp_path, runtime)
-    monkeypatch.setattr(reap, "save_states_locked", lambda updates, wait_s=None: ["boom"])
+    monkeypatch.setattr(
+        reap, "save_states_locked", lambda updates, wait_s=None: ["boom"]
+    )
     report = reap.apply_reap(cands, runner=Recorder(fail={("docker", "stop", "a1")}))
     assert report.reaped == [] and report.skipped == []
-    assert any("a1" in e for e in report.errors) and any("boom" in e for e in report.errors)
+    assert any("a1" in e for e in report.errors) and any(
+        "boom" in e for e in report.errors
+    )
     assert _rt_dir(runtime).is_dir()
 
 
@@ -1648,7 +1655,9 @@ def test_a_marked_dir_of_a_removed_worktree_is_a_dir_only_candidate(
     assert _plan(RuntimeRegistry.load(runtime / "instances.json"), []) == []
 
 
-def test_a_marked_dir_with_a_live_build_is_not_a_candidate(tmp_path: Path, runtime: Path):
+def test_a_marked_dir_with_a_live_build_is_not_a_candidate(
+    tmp_path: Path, runtime: Path
+):
     reg = _empty_runtime_registry(runtime)
     rt = _marked_dir(runtime, tmp_path / "removed" / "proj")
     _build_pid(rt, os.getpid())  # alive and young: the build may still write here
@@ -1690,7 +1699,10 @@ def test_runtime_dirs_without_a_good_marker_are_ignored(tmp_path: Path, runtime:
         runtime,
         missing,
         worktree_hash="beef0002",
-        marker={"project_id": PROJECT_ID, "worktree_hash": "beef0002"},  # fields missing
+        marker={
+            "project_id": PROJECT_ID,
+            "worktree_hash": "beef0002",
+        },  # fields missing
     )
     _marked_dir(
         runtime,
@@ -1731,7 +1743,9 @@ def test_a_marked_dir_with_a_live_attachment_is_not_a_candidate(
     assert _plan(reg, []) == []
 
 
-def test_a_dir_only_candidate_is_rechecked_under_the_lock(tmp_path: Path, runtime: Path):
+def test_a_dir_only_candidate_is_rechecked_under_the_lock(
+    tmp_path: Path, runtime: Path
+):
     reg = _empty_runtime_registry(runtime)
     missing = tmp_path / "removed" / "proj"
     rt = _marked_dir(runtime, missing)

@@ -127,7 +127,12 @@ ATTACHED_DIR = "attached"
 LAST_DETACH = "last_detach"
 #: Written by each launcher under the instance lock: which instance owns the dir.
 INSTANCE_MARKER = "instance.json"
-INSTANCE_MARKER_FIELDS = ("project_id", "worktree_hash", "worktree_root", "project_root")
+INSTANCE_MARKER_FIELDS = (
+    "project_id",
+    "worktree_hash",
+    "worktree_root",
+    "project_root",
+)
 DISABLE_FILENAME = "reap.disabled"
 DISABLE_ENV = "DOPEMUX_MCP_REAP"
 STATE_FILENAME = "reap.last"
@@ -434,7 +439,9 @@ def _read_instance_marker(runtime_dir: Path) -> Optional[Dict[str, str]]:
     """The identity fields of ``<runtime_dir>/instance.json``; ``None`` when absent,
     unreadable or malformed (any field missing, empty or not a string)."""
     try:
-        data = json.loads((Path(runtime_dir) / INSTANCE_MARKER).read_text(encoding="utf-8"))
+        data = json.loads(
+            (Path(runtime_dir) / INSTANCE_MARKER).read_text(encoding="utf-8")
+        )
     except (OSError, ValueError):
         return None
     if not isinstance(data, dict):

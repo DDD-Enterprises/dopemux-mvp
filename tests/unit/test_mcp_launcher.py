@@ -1477,7 +1477,9 @@ def test_a_marker_write_failure_never_refuses_a_launch(
     target = launcher.build_target(repo, "conport", catalog=CATALOG)
     (target.runtime_dir / "instance.json").mkdir(parents=True)  # cannot be replaced
     monkeypatch.setattr(
-        launcher, "ensure_backend", lambda target, **kw: BackendSpec("u", "sse", "conport")
+        launcher,
+        "ensure_backend",
+        lambda target, **kw: BackendSpec("u", "sse", "conport"),
     )
     monkeypatch.setattr(launcher, "run_proxy", lambda backend, **kw: 0)
     assert launcher.launch("conport", env={}) == 0
@@ -1485,3 +1487,29 @@ def test_a_marker_write_failure_never_refuses_a_launch(
     lines = [line for line in err.splitlines() if "instance.json" in line]
     assert len(lines) == 1 and "LAUNCH_IO_ERROR" not in err
     assert not list(target.runtime_dir.glob(".instance.json.*"))  # no tmp left
+
+
+# --- cycle 2 B2: the launcher never asks the lifecycle for the instance lock ----------
+
+
+def test_ensure_backend_and_orchestrator_pass_hold_instance_lock_false(
+    tmp_path: Path, registry, no_image_build
+):
+    # ensure_backend already holds launch.lock (not re-entrant); ensure_orchestrator
+    # holds the reserved :7890 lock, which must never wrap launch.lock (D7).
+    backend_lc = FakeLifecycle(_started("conport", CONPORT_PORTS))
+    launcher.ensure_backend(
+        _target(tmp_path / "a"), wait_s=5, lifecycle=backend_lc, probe=lambda b: True
+    )
+    to_lc = FakeLifecycle(
+        _started("task-orchestrator", {"TASK_ORCHESTRATOR_HTTP_PORT": 7890})
+    )
+    launcher.ensure_orchestrator(
+        _target(tmp_path / "b", "task-orchestrator"),
+        docker=_docker_with(),
+        lifecycle=to_lc,
+        probe=lambda b: True,
+        port_is_free=lambda p: True,
+    )
+    assert [c.get("hold_instance_lock", "missing") for c in backend_lc.calls] == [False]
+    assert [c.get("hold_instance_lock", "missing") for c in to_lc.calls] == [False]

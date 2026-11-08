@@ -499,6 +499,7 @@ def ensure_backend(
             registry_path=target.registry_path,
             process_env=_lifecycle_env(env, target.catalog),
             trust_env=False,
+            hold_instance_lock=False,  # held above; instance_lock is not re-entrant
         )
         if result.exit_code != 0:
             raise _lifecycle_error(result, target.service, _known_secrets(target, env))
@@ -584,6 +585,9 @@ def ensure_orchestrator(
             registry_path=target.registry_path,
             process_env=_lifecycle_env(env, target.catalog),
             trust_env=False,
+            # Explicit: the reserved :7890 lock is held here and must never wrap
+            # launch.lock (D7); an orchestrator-only start takes none anyway.
+            hold_instance_lock=False,
         )
         if result.exit_code != 0:
             raise _lifecycle_error(result, TO_SERVICE, _known_secrets(target, env))

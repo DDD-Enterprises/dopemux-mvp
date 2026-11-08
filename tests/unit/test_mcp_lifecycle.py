@@ -1161,3 +1161,240 @@ def test_stop_keeps_a_record_written_concurrently_between_read_and_save(tmp_path
         "ours-dope-memory": "stopped",
         "sibling-conport": "running",  # the concurrent record survived
     }
+
+
+# --- cycle 2 B2 (codex F2, amended ruling (b)): CLI start/restart vs the reaper -------
+
+WORKTREE_SERVICES = ["conport", "dope-memory"]
+TO = "task-orchestrator"
+
+
+def _runtime_dir_of(repo: Path, reg: Path) -> Path:
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    identity = resolve_identity_view(repo, trust_env=False)
+    slug = dr.project_slug(Path(identity.project_root).name)
+    return reg.parent / f"{slug}-{identity.worktree_hash}"
+
+
+def _lock_spies(monkeypatch):
+    """Record instance-lock and reserved-lock acquisitions and every stop/start part.
+
+    Events: ``("instance", dir)``, ``("instance-released",)``, ``("reserved",
+    instance_held)``, ``("stop"|"start", selected, instance_held)``.
+    """
+    import contextlib
+
+    from dopemux.mcp import lifecycle as lc
+
+    events: list = []
+    held = {"instance": 0}
+
+    @contextlib.contextmanager
+    def instance_spy(runtime_dir, *, blocking=True):
+        events.append(("instance", Path(runtime_dir)))
+        held["instance"] += 1
+        try:
+            yield
+        finally:
+            held["instance"] -= 1
+            events.append(("instance-released",))
+
+    @contextlib.contextmanager
+    def reserved_spy(port):
+        events.append(("reserved", held["instance"]))
+        yield
+
+    real_start, real_stop = lc._start_services, lc._stop_services
+
+    def start_spy(**kw):
+        events.append(("start", list(kw["selected"]), held["instance"]))
+        return real_start(**kw)
+
+    def stop_spy(**kw):
+        events.append(("stop", list(kw["selected"]), held["instance"]))
+        return real_stop(**kw)
+
+    monkeypatch.setattr(lc, "instance_lock", instance_spy)
+    monkeypatch.setattr(lc, "reserved_port_lock", reserved_spy)
+    monkeypatch.setattr(lc, "_start_services", start_spy)
+    monkeypatch.setattr(lc, "_stop_services", stop_spy)
+    return events
+
+
+def _run(tmp_path: Path, op: str, services, *, runner=None, docker=None, **kw):
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    repo = _fixture_repo(tmp_path)
+    reg = tmp_path / "reg" / "instances.json"
+    result = run_lifecycle(
+        op,
+        repo=repo,
+        services=services,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker or _docker_empty(),
+        cmd_runner=runner or _recording_runner(),
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+        **kw,
+    )
+    return result, repo, reg
+
+
+@pytest.mark.parametrize("op", ["start", "restart"])
+def test_worktree_start_and_restart_hold_the_instance_lock_once(
+    tmp_path: Path, monkeypatch, op
+):
+    events = _lock_spies(monkeypatch)
+    result, repo, reg = _run(tmp_path, op, WORKTREE_SERVICES)
+    assert result.exit_code == 0, result.to_dict()
+    assert [e for e in events if e[0] == "instance"] == [
+        ("instance", _runtime_dir_of(repo, reg))
+    ]
+    parts = [e for e in events if e[0] in {"stop", "start"}]
+    expected = [("start", WORKTREE_SERVICES, 1)]
+    if op == "restart":  # stop and start under ONE acquisition
+        expected = [("stop", WORKTREE_SERVICES, 1)] + expected
+    assert parts == expected
+
+
+@pytest.mark.parametrize("op", ["start", "restart"])
+def test_the_orchestrator_part_never_runs_under_the_instance_lock(
+    tmp_path: Path, monkeypatch, op
+):
+    events = _lock_spies(monkeypatch)
+    result, repo, reg = _run(tmp_path, op, [*WORKTREE_SERVICES, TO])
+    assert result.exit_code == 0, result.to_dict()
+    assert [e for e in events if e[0] == "instance"] == [
+        ("instance", _runtime_dir_of(repo, reg))
+    ]
+    reserved = [e for e in events if e[0] == "reserved"]
+    assert len(reserved) >= 2  # the preflight gate and the start itself
+    assert all(held == 0 for _, held in reserved)  # launch.lock never held then
+    # the instance lock is released before the orchestrator's start takes :7890
+    released = events.index(("instance-released",))
+    to_start = events.index(("start", [TO], 0))
+    assert released < to_start < len(events) - 1
+    assert events[to_start + 1] == ("reserved", 0)
+    parts = [e for e in events if e[0] in {"stop", "start"}]
+    if op == "start":
+        assert parts == [("start", WORKTREE_SERVICES, 1), ("start", [TO], 0)]
+    else:  # every stop before any start, the orchestrator's halves outside
+        assert parts == [
+            ("stop", [TO], 0),
+            ("stop", WORKTREE_SERVICES, 1),
+            ("start", WORKTREE_SERVICES, 1),
+            ("start", [TO], 0),
+        ]
+    # the runtime artifacts are written once, under the lock, for the compose services
+    override = (_runtime_dir_of(repo, reg) / "compose.override.yml").read_text()
+    assert "conport" in override and not override.startswith("# no compose services")
+
+
+@pytest.mark.parametrize("op", ["start", "restart"])
+@pytest.mark.parametrize(
+    "services", [WORKTREE_SERVICES, [*WORKTREE_SERVICES, TO], [TO]]
+)
+def test_no_instance_lock_without_hold_instance_lock_or_in_a_dry_run(
+    tmp_path: Path, monkeypatch, op, services
+):
+    from dopemux.mcp import lifecycle as lc
+
+    def no_lock(*_a, **_k):
+        raise AssertionError("must not take launch.lock")
+
+    monkeypatch.setattr(lc, "instance_lock", no_lock)
+    result, _repo, _reg = _run(tmp_path / "a", op, services, hold_instance_lock=False)
+    assert result.exit_code == 0, result.to_dict()
+    dry, _repo, _reg = _run(tmp_path / "b", op, services, dry_run=True)
+    assert dry.status == "PLANNED"
+
+
+def test_an_orchestrator_only_start_takes_no_instance_lock(tmp_path: Path, monkeypatch):
+    # switch-project calls this under the reserved lock: launch.lock there would be
+    # reserved -> instance, the reverse of the CLI start's order (ABBA deadlock).
+    events = _lock_spies(monkeypatch)
+    result, _repo, _reg = _run(tmp_path, "start", [TO])
+    assert result.exit_code == 0, result.to_dict()
+    assert [e for e in events if e[0] == "instance"] == []
+    assert [e for e in events if e[0] == "start"] == [("start", [TO], 0)]
+
+
+def _summary(result):
+    return {
+        "operation": result.operation,
+        "status": result.status,
+        "exit_code": result.exit_code,
+        "services": [(s["service"], s.get("action")) for s in result.services],
+        "blocking": result.blocking_findings,
+        "warnings": result.warnings,
+        "artifacts": [Path(a).name for a in result.runtime_artifacts],
+        "next": [a.split(" --repo ")[0] for a in result.recommended_next_actions],
+    }
+
+
+@pytest.mark.parametrize("op", ["start", "restart"])
+@pytest.mark.parametrize("up_rc", [0, 1])
+@pytest.mark.parametrize(
+    "services",
+    [[*WORKTREE_SERVICES, TO], [TO, "conport"], ["dope-memory", TO, "conport"]],
+)
+def test_a_split_run_returns_what_one_call_returns(tmp_path: Path, op, up_rc, services):
+    locked, _r, _g = _run(
+        tmp_path / "a", op, services, runner=_recording_runner(up_rc=up_rc)
+    )
+    single, _r, _g = _run(
+        tmp_path / "b",
+        op,
+        services,
+        runner=_recording_runner(up_rc=up_rc),
+        hold_instance_lock=False,
+    )
+    assert _summary(locked) == _summary(single)  # incl. the per-service order
+
+
+def test_a_failed_stop_in_a_split_restart_starts_nothing(tmp_path: Path):
+    def failing_stop():
+        calls: list = []
+
+        def runner(cmd, **kwargs):
+            calls.append(list(cmd))
+            rc = 1 if list(cmd[:2]) == ["docker", "stop"] else 0
+            return SimpleNamespace(returncode=rc, stdout="", stderr="")
+
+        runner.calls = calls
+        return runner
+
+    results = {}
+    for name, hold in (("locked", True), ("single", False)):
+        (tmp_path / name).mkdir()
+        repo, reg, _rt, docker_ps, _leases = _stop_world(tmp_path / name)
+        runner = failing_stop()
+        results[name] = run_lifecycle(
+            "restart",
+            repo=repo,
+            services=[*WORKTREE_SERVICES, TO],
+            catalog=_catalog(),
+            registry_path=reg,
+            docker_runner=docker_ps,
+            cmd_runner=runner,
+            product_root=_product(tmp_path / name),
+            process_env={},
+            skip_doctor=True,
+            port_is_free_fn=lambda p: True,
+            hold_instance_lock=hold,
+        )
+        assert not any(
+            "up" in c or c[:1] == ["bash"] for c in runner.calls
+        ), runner.calls
+    assert results["locked"].status == "FAIL" and results["locked"].exit_code == 1
+    assert _summary(results["locked"]) == _summary(results["single"])
+
+
+def test_run_lifecycle_holds_the_instance_lock_by_default():
+    import inspect
+
+    param = inspect.signature(run_lifecycle).parameters["hold_instance_lock"]
+    assert param.default is True and param.kind is inspect.Parameter.KEYWORD_ONLY
