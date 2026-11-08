@@ -61,7 +61,7 @@ jobs:
             state="success"
             description="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8")); print("carried forward PRs " + ",".join(str(n) for n in d["pull_requests"]))' "$payload")"
           elif [ -f "$payload" ]; then
-            description="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8")).get("reason","carry-forward refused"))[:140]' "$payload")"
+            description="$(python3 -c 'import json,sys; reason=json.load(open(sys.argv[1], encoding="utf-8")).get("reason") or "carry-forward refused"; print(str(reason)[:140])' "$payload")"
           fi
           description="${description:0:140}"
           gh api "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
