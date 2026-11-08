@@ -613,7 +613,12 @@ _VERIFY_SQL = (
 def _applied_probe_sql(probe: Tuple[str, ...]) -> Optional[str]:
     """Read-only ``DPMX_APPLIED=true|false`` for one gate-style object; None for an unknown kind."""
     kind, parts = probe[0], probe[1:]
-    if kind in ("table", "view", "index") and len(parts) == 1:
+    if kind == "view" and len(parts) == 1:  # a view, not any relation of that name
+        exists = (
+            "EXISTS (SELECT 1 FROM pg_views WHERE schemaname = 'public'"
+            f" AND viewname = {_literal(parts[0])})"
+        )
+    elif kind in ("table", "index") and len(parts) == 1:
         exists = f"to_regclass({_literal('public.' + parts[0])}) IS NOT NULL"
     elif kind == "column" and len(parts) == 2:
         exists = (
@@ -672,11 +677,12 @@ def provision_database(
     before ``CREATE ROLE``, so the password is on disk before Postgres has it.
     When the schema already exists, only the migrations after
     ``applied_through`` run. The ones that cannot be re-run (001/002, listed in
-    ``MIGRATION_APPLIED_PROBES``) are first probed for the object they create,
-    the gate's own evidence: one that committed before its checkpoint was
-    written is checkpointed, not replayed, and a failing probe refuses. The
-    idempotent rest are replayed. ``on_migration`` is told each one as soon as
-    it has applied, so progress survives a kill.
+    ``MIGRATION_APPLIED_PROBES``) are first probed for the last object their
+    one transaction creates, one the gate checks for that version: one that
+    committed before its checkpoint was written is checkpointed, not replayed,
+    and a failing probe refuses. The idempotent rest are replayed.
+    ``on_migration`` is told each one as soon as it has applied, so progress
+    survives a kill.
     """
     if not _SLUG_RE.match(slug):
         raise TenantError(

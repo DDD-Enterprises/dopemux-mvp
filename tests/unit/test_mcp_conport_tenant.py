@@ -158,8 +158,12 @@ def _probed_object(sql: str) -> Optional[str]:
     )
     if column:
         return f"{column.group(1)}.{column.group(2)}"
-    relation = re.search(r"to_regclass\('public\.(\w+)'\)", sql)
-    return relation.group(1) if relation else None
+    relation = re.search(
+        r"to_regclass\('public\.(\w+)'\)"
+        r"|schemaname\s*=\s*'public'\s+AND\s+viewname\s*=\s*'(\w+)'",
+        sql,
+    )
+    return (relation.group(1) or relation.group(2)) if relation else None
 
 
 def _label(sql: str) -> Optional[str]:
@@ -442,10 +446,13 @@ _RERUNNABLE = tuple(
     )
 )
 _DO_BLOCK = re.compile(r"\bDO\s+(\$\w*\$)(.*?)\1\s*;", re.S | re.I)
+#: Any write verb anywhere in a DO body (string literals removed first).
 _SIDE_EFFECT = re.compile(
-    r"^\s*(?:CREATE|ALTER|DROP|INSERT|UPDATE|DELETE|TRUNCATE|GRANT|REVOKE|EXECUTE)\b",
-    re.M | re.I,
+    r"\b(?:CREATE|ALTER|DROP|INSERT|UPDATE|DELETE|TRUNCATE|GRANT|REVOKE|EXECUTE"
+    r"|PERFORM)\b",
+    re.I,
 )
+_STRING_LITERAL = re.compile(r"'(?:[^']|'')*'")
 
 
 def _not_rerunnable(sql: str) -> List[str]:
@@ -458,7 +465,7 @@ def _not_rerunnable(sql: str) -> List[str]:
     bad = [
         "DO block: " + " ".join(block.group(2).split())[:60]
         for block in _DO_BLOCK.finditer(sql)
-        if _SIDE_EFFECT.search(block.group(2))
+        if _SIDE_EFFECT.search(_STRING_LITERAL.sub("''", block.group(2)))
     ]
     for statement in _DO_BLOCK.sub("", sql).split(";"):
         flat = " ".join(statement.split())
@@ -471,22 +478,72 @@ def _not_rerunnable(sql: str) -> List[str]:
 
 
 @pytest.mark.parametrize(
-    "probe, asked",
+    "probe, asked, form",
     [
-        (("view", "pattern_statistics"), "pattern_statistics"),
-        (("index", "idx_progress_instance"), "idx_progress_instance"),
-        (("table", "users"), "users"),
-        (("column", "custom_data", "write_principal"), "custom_data.write_principal"),
-        (("trigger", "update_patterns_modtime"), None),
+        (
+            ("view", "pattern_statistics"),
+            "pattern_statistics",
+            "EXISTS (SELECT 1 FROM pg_views WHERE schemaname = 'public'"
+            " AND viewname = 'pattern_statistics')",
+        ),
+        (
+            ("index", "idx_progress_instance"),
+            "idx_progress_instance",
+            "to_regclass('public.idx_progress_instance') IS NOT NULL",
+        ),
+        (("table", "users"), "users", "to_regclass('public.users') IS NOT NULL"),
+        (
+            ("column", "custom_data", "write_principal"),
+            "custom_data.write_principal",
+            "FROM information_schema.columns WHERE table_schema = 'public'",
+        ),
+        (("trigger", "update_patterns_modtime"), None, None),
     ],
+    ids=["view", "index", "table", "column", "unknown-kind"],
 )
-def test_applied_probe_sql_covers_the_gate_kinds(probe, asked):
+def test_applied_probe_sql_covers_the_gate_kinds(probe, asked, form):
     sql = ct._applied_probe_sql(probe)
     if asked is None:  # a kind the gate does not check: no SQL, so the probe refuses
         assert sql is None
         return
     assert sql.startswith("SELECT 'DPMX_APPLIED=' || (") and sql.endswith(")::text;\n")
+    assert form in sql
     assert _probed_object(sql) == asked
+
+
+@pytest.mark.parametrize(
+    "sql, flagged",
+    [
+        (
+            "DO $$ BEGIN CREATE TRIGGER t BEFORE UPDATE ON x"
+            " FOR EACH ROW EXECUTE FUNCTION f(); END $$;",
+            True,
+        ),
+        (
+            "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM users) THEN"
+            " INSERT INTO users (id) VALUES ('x'); END IF; END $$;",
+            True,
+        ),
+        ("DO $$ BEGIN PERFORM f(); END $$;", True),
+        (  # read-only checks pass, even with a write verb inside a message
+            "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM users) THEN"
+            " RAISE WARNING 'may need to update or create rows'; END IF; END $$;",
+            False,
+        ),
+        ("CREATE INDEX IF NOT EXISTS idx_x ON t (a, COALESCE (b, ''));", False),
+        ("CREATE VIEW v AS SELECT 1;", True),
+    ],
+    ids=[
+        "do-one-line-create-trigger",
+        "do-one-line-if-then-insert",
+        "do-perform",
+        "do-read-only-with-verb-in-a-string",
+        "idempotent-index",
+        "bare-create-view",
+    ],
+)
+def test_rerun_scan_flags_side_effects_anywhere_in_a_do_block(sql, flagged):
+    assert bool(_not_rerunnable(sql)) is flagged, _not_rerunnable(sql)
 
 
 def test_only_migrations_that_cannot_be_rerun_are_probed():
@@ -1430,6 +1487,52 @@ def test_schema_present_without_a_checkpoint_runs_only_the_uncommitted_migration
     for sql in probes:  # read-only, as the tenant role, no secret
         assert sql.startswith("SET ROLE conport_fake_tenant;\nSELECT 'DPMX_APPLIED='")
         assert FAKE_PROVISIONED_PASSWORD not in sql
+
+
+_REPLAYED_003_ON = [f"migration:{m}" for m in ct.PROVISION_MIGRATIONS[2:]]
+
+
+@pytest.mark.parametrize(
+    "committed, expected",
+    [
+        (
+            ("001_enhanced_decision_model",),
+            [
+                "probe:decisions_needing_review",  # true: skipped
+                "probe:pattern_statistics",  # false: sent
+                "migration:002_decision_patterns_table",
+                *_REPLAYED_003_ON,
+            ],
+        ),
+        (
+            (),
+            [
+                "probe:decisions_needing_review",
+                "migration:001_enhanced_decision_model",
+                "probe:pattern_statistics",
+                "migration:002_decision_patterns_table",
+                *_REPLAYED_003_ON,
+            ],
+        ),
+    ],
+    ids=["only-001-committed", "nothing-beyond-the-schema"],
+)
+def test_schema_present_without_a_checkpoint_sends_what_did_not_commit(
+    committed, expected
+):
+    psql = FakePsql(
+        role_exists=True,
+        db_exists=True,
+        schema_present=True,
+        existing=[":".join(ct.MIGRATION_APPLIED_PROBES[m]) for m in committed],
+        already_applied=committed,
+    )
+    checkpoints: List[str] = []
+
+    _provision_resumed(psql, checkpoints, applied_through="")
+
+    assert psql.steps() == expected
+    assert checkpoints == list(ct.PROVISION_MIGRATIONS)
 
 
 @pytest.mark.parametrize(
