@@ -91,7 +91,7 @@ dopemux mcp init --repo ~/code/your-project
 ```
 
 Run it from any directory; `--repo` names the target (default: the git checkout of the
-current directory). It:
+current directory; any directory inside a checkout is accepted and normalized to its root). It:
 
 - writes `.mcp.json` with the launcher entries for the catalog's per-worktree servers
   (`--profile NAME` and `--with SERVER` adjust the set; it never selects "all");

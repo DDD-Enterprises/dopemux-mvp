@@ -155,6 +155,30 @@ def _lifecycle_services_option():
     )
 
 
+def _git_toplevel(path: Path) -> Path:
+    """Git top-level of ``path`` (any directory inside a checkout); ``path`` itself outside git.
+
+    An explicit ``--repo ./src`` must act on the enclosing checkout, as the
+    launcher does (it normalizes its root with ``git rev-parse --show-toplevel``).
+    """
+    resolved = Path(path).expanduser().resolve()
+    try:
+        proc = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=resolved,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return resolved
+    top = proc.stdout.strip()
+    if proc.returncode == 0 and top:
+        return Path(top).resolve()
+    return resolved
+
+
 def _run_lifecycle_cli(
     operation: str,
     *,
@@ -169,7 +193,7 @@ def _run_lifecycle_cli(
 
     # The target checkout's repo-local catalog governs --repo (as the launcher does).
     catalog = (
-        _load_catalog(Path(repo_arg).expanduser().resolve())
+        _load_catalog(_git_toplevel(repo_arg))
         if repo_arg is not None
         else _load_catalog()
     )
@@ -418,7 +442,8 @@ def mcp_switch_project_cmd(repo_arg: Optional[Path], yes: bool):
         click.echo(message, err=True)
         sys.exit(1)
 
-    target = lc.resolve_target_repo(repo_arg)
+    # An explicit --repo may be a subdirectory of the checkout: act on its root.
+    target = _git_toplevel(lc.resolve_target_repo(repo_arg))
     identity = resolve_identity_view(target)
     if not identity.project_id or not identity.project_root:
         refuse(f"Cannot resolve the project identity of {target}; run dopemux mcp doctor")
@@ -2174,6 +2199,17 @@ def mcp_init_cmd(
     except ProjectIdentityError as exc:
         raise click.ClickException(f"Could not resolve project identity: {exc}") from exc
 
+    # `--repo` may be any directory inside the checkout; catalog lookup, profile
+    # inventory, port allocation and every file write use the worktree root, as
+    # the launcher does. (Test doubles for the identity may not carry one.)
+    worktree_root = getattr(identity, "worktree_root", None)
+    if worktree_root and Path(worktree_root) != repo_path:
+        # Only an enclosing checkout root replaces the target; an ambient
+        # override (--trust-env) pointing elsewhere never redirects the writes.
+        if Path(worktree_root).resolve() in repo_path.resolve().parents:
+            repo_path = Path(worktree_root)
+            repo = str(repo_path)
+
     # The resolved target's catalog, not the caller's: `init --repo <target>` from
     # another checkout must see the target's own servers and defaults.
     catalog = _load_catalog(repo_path)
@@ -2785,7 +2821,7 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
 def _resolve_repo_arg(repo_arg: Optional[Path], *, trust_env: bool = False) -> Path:
     """Resolve --repo or current git root to an absolute path."""
     if repo_arg is not None:
-        return Path(repo_arg).expanduser().resolve()
+        return _git_toplevel(repo_arg)
     repo = get_repo_root(fallback_cwd=False, trust_env=trust_env)
     if not repo:
         raise click.ClickException(

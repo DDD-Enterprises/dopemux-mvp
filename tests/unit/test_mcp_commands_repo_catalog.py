@@ -183,3 +183,122 @@ def test_repair_config_repo_reports_and_uses_the_targets_catalog(
     data = json.loads(result.output)
     target_catalog = str(repos.target / mcp_commands.CATALOG_FILENAME)
     assert data["inputs"]["catalog_paths"] == [target_catalog]
+
+
+# --- Task A2: an explicit --repo inside a checkout is normalized to its root ----
+
+
+@pytest.fixture
+def target_subdir(repos: SimpleNamespace) -> Path:
+    sub = repos.target / "src" / "pkg"
+    sub.mkdir(parents=True)
+    return sub
+
+
+def test_init_repo_subdirectory_writes_at_the_checkout_root(
+    repos: SimpleNamespace, target_subdir: Path
+) -> None:
+    result = CliRunner().invoke(
+        mcp_commands.mcp,
+        ["init", "--repo", str(target_subdir), "--with", "target-only-svc"],
+    )
+
+    assert result.exit_code == 0, result.output
+    # Files land at the checkout root, never in the subdirectory.
+    assert (repos.target / ".mcp.json").is_file()
+    assert (repos.target / mcp_commands.ENVRC_FILENAME).is_file()
+    assert not (target_subdir / ".mcp.json").exists()
+    assert not (target_subdir / mcp_commands.ENVRC_FILENAME).exists()
+    # The checkout's repo-local catalog was used (target-only server accepted).
+    rendered = json.loads((repos.target / ".mcp.json").read_text())
+    assert set(rendered["mcpServers"]) == {"base-svc", "target-only-svc"}
+    envrc = (repos.target / mcp_commands.ENVRC_FILENAME).read_text()
+    assert f"export DOPEMUX_PROJECT_ROOT={repos.target}" in envrc
+    assert str(target_subdir) not in envrc
+    # Output and next steps name the root, not the subdirectory.
+    flat = "".join(result.output.split())
+    assert "".join(str(repos.target).split()) in flat
+    assert "".join(f"--repo {target_subdir}".split()) not in flat
+
+
+def test_init_repo_outside_git_keeps_the_identity_error(
+    repos: SimpleNamespace, tmp_path: Path
+) -> None:
+    plain = tmp_path / "not-a-checkout"
+    plain.mkdir()
+
+    result = CliRunner().invoke(mcp_commands.mcp, ["init", "--repo", str(plain)])
+
+    assert result.exit_code != 0
+    assert not (plain / ".mcp.json").exists()
+
+
+def test_resolve_repo_arg_normalizes_a_subdirectory_to_the_toplevel(
+    repos: SimpleNamespace, target_subdir: Path
+) -> None:
+    assert mcp_commands._resolve_repo_arg(target_subdir) == repos.target
+    assert mcp_commands._resolve_repo_arg(repos.target) == repos.target
+
+
+def test_git_toplevel_helper_degrades_to_the_given_path_outside_git(
+    tmp_path: Path,
+) -> None:
+    plain = tmp_path / "plain"
+    plain.mkdir()
+
+    assert mcp_commands._git_toplevel(plain) == plain.resolve()
+
+
+def test_run_lifecycle_cli_loads_the_toplevel_catalog_for_a_subdirectory(
+    repos: SimpleNamespace, target_subdir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from dopemux.mcp import lifecycle
+
+    loaded: List[Optional[Path]] = []
+
+    def fake_load(repo: Optional[Path] = None) -> Dict[str, Any]:
+        loaded.append(repo)
+        return {"version": 1, "servers": {}}
+
+    monkeypatch.setattr(mcp_commands, "_load_catalog", fake_load)
+    monkeypatch.setattr(
+        lifecycle,
+        "run_lifecycle",
+        lambda op, **kw: SimpleNamespace(status="PASS", exit_code=0, to_json=lambda: "{}\n"),
+    )
+
+    mcp_commands._run_lifecycle_cli(
+        "status", repo_arg=target_subdir, services=None, dry_run=True, json_output=True
+    )
+
+    assert loaded == [repos.target]
+
+
+def test_repair_config_repo_subdirectory_repairs_the_checkout_root(
+    repos: SimpleNamespace, target_subdir: Path
+) -> None:
+    (repos.target / ".mcp.json").write_text('{"mcpServers": {}}\n', encoding="utf-8")
+
+    result = CliRunner().invoke(
+        mcp_commands.mcp,
+        ["repair-config", "--repo", str(target_subdir), "--dry-run", "--json"],
+    )
+
+    assert result.exit_code == 0, result.output
+    data = json.loads(result.output)
+    assert data["repo"] == str(repos.target)
+    assert data["inputs"]["mcp_json_path"] == str(repos.target / ".mcp.json")
+    assert data["inputs"]["catalog_paths"] == [
+        str(repos.target / mcp_commands.CATALOG_FILENAME)
+    ]
+
+
+def test_identity_view_already_normalizes_a_subdirectory(
+    repos: SimpleNamespace, target_subdir: Path
+) -> None:
+    # Survey fact for lifecycle/switch-project: `run_lifecycle` and `switch-project`
+    # take their worktree root from the identity view, which resolves the git
+    # toplevel of any directory inside the checkout.
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    assert resolve_identity_view(target_subdir).worktree_root == str(repos.target)
