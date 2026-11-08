@@ -1816,3 +1816,54 @@ def test_a_marker_with_a_relative_worktree_root_is_ignored(
         project_root=tmp_path / "removed" / "proj",
     )
     assert _plan(reg, []) == []
+
+
+# --- final-review fix round (C4, T2) --------------------------------------------------
+
+
+def test_an_attached_only_run_leaves_reap_last_untouched(
+    tmp_path: Path, runtime: Path, monkeypatch
+):
+    """C4: a run whose only skip is `attached` attempted nothing."""
+    wt = tmp_path / "wt" / "proj"
+    wt.mkdir(parents=True)
+    _registry(runtime, wt)
+    _detached(_rt_dir(runtime), ago=5000)
+    real_apply = reap.apply_reap
+
+    def launcher_attaches_after_planning(candidates, **kwargs):
+        reap.attach(_rt_dir(runtime))  # this (live) process attaches
+        return real_apply(candidates, **kwargs)
+
+    monkeypatch.setattr(reap, "apply_reap", launcher_attaches_after_planning)
+    state = tmp_path / "s"
+    runner = Recorder()
+    got = reap.maybe_reap(
+        throttle_s=600,
+        state_file=state,
+        now=lambda: NOW,
+        idle_s=IDLE,
+        inspector=FakeInspect([_container("a1")]),
+        runner=runner,
+    )
+    assert got is not None and got.skip_reasons == ["attached"]
+    assert runner.calls == []
+    assert not state.exists()  # the throttle was not consumed
+
+
+def test_a_symlinked_runtime_dir_is_never_a_dir_only_candidate(
+    tmp_path: Path, runtime: Path
+):
+    """T2: a symlink in the runtime root is skipped, even with a well-formed marker."""
+    reg = _empty_runtime_registry(runtime)
+    missing = tmp_path / "removed" / "proj"
+    elsewhere = tmp_path / "elsewhere"
+    real = _marked_dir(elsewhere, missing)  # a marked dir outside the runtime root
+    (runtime / real.name).symlink_to(real, target_is_directory=True)
+    assert (runtime / real.name).is_dir()
+    assert _plan(reg, []) == []
+    assert real.is_dir() and (real / "instance.json").exists()
+    # control: the same marked dir as a real directory in the runtime root is listed
+    (runtime / real.name).unlink()
+    _marked_dir(runtime, missing)
+    assert [c.dir_only for c in _plan(reg, [])] == [True]

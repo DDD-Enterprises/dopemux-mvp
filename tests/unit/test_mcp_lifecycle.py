@@ -1808,9 +1808,20 @@ def test_a_split_restart_blocked_under_the_lock_restores_the_orchestrator(
         assert parts == [("stop", [TO], 0), ("start", [TO], 0)]
         assert actions[TO] == "started"
         assert events.index(("instance-released",)) < events.index(("start", [TO], 0))
-    else:  # not running, or its stop failed: nothing is started
+    elif case == "not_running":  # no stop ran: the plain blocked result
         assert parts == [("stop", [TO], 0)]
         assert actions[TO] == "blocked"
+    else:  # its stop failed: nothing is started, and the stop part is reported
+        assert parts == [("stop", [TO], 0)]
+        to_entries = [
+            (s.get("container_name"), s.get("action"))
+            for s in result.services
+            if s["service"] == TO
+        ]
+        assert to_entries == [
+            ("task-orchestrator-x", "stopped"),
+            ("task-orchestrator-y", "failed"),
+        ]
 
 
 # --- cycle 2 fix round 3 ----------------------------------------------------------------
@@ -2158,3 +2169,182 @@ def test_a_split_restart_whose_orchestrator_start_read_fails_fails_that_half(
     actions = {s["service"]: s.get("action") for s in result.services}
     assert actions[TO] == "failed"  # never already_running from an unread snapshot
     assert not [c for c in runner.calls if c["cmd"][:1] == ["bash"]]  # no wrapper
+
+
+# --- final-review fix round ----------------------------------------------------------
+
+
+def test_an_orchestrator_only_start_leaves_the_worktree_artifacts_alone(tmp_path: Path):
+    # C1: a sidecar start (holding launch.lock) writes its override, resolves the
+    # tenant, then runs compose up -f compose.override.yml; an orchestrator start must
+    # never rewrite that file in between.
+    repo = _fixture_repo(tmp_path)
+    reg = tmp_path / "reg" / "instances.json"
+    rt = _runtime_dir_of(repo, reg)
+    rt.mkdir(parents=True)
+    before = {
+        "compose.override.yml": "services:\n  conport:\n    container_name: ours\n",
+        "mcp.env": "DOPEMUX_PROJECT_ID=x\n",
+        "start-plan.json": '{"services": ["conport"]}\n',
+    }
+    for name, text in before.items():
+        (rt / name).write_text(text, encoding="utf-8")
+    result = run_lifecycle(
+        "start",
+        repo=repo,
+        services=[TO],
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=_docker_empty(),
+        cmd_runner=_recording_runner(),
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert result.exit_code == 0, result.to_dict()
+    for name, text in before.items():
+        assert (rt / name).read_text(encoding="utf-8") == text, name
+
+
+def test_a_blocked_split_restart_whose_restore_read_fails_starts_nothing(
+    tmp_path: Path, monkeypatch
+):
+    # C6: the residual-6 restore path, with the orchestrator's pre-start read failing
+    from dopemux.mcp import lifecycle as lc
+
+    events = _lock_spies(monkeypatch)
+    spy_stop = lc._stop_services
+
+    def to_stop(**kw):
+        if kw["selected"] != [TO]:
+            return spy_stop(**kw)
+        events.append(("stop", [TO], 0))
+        return lc.LifecycleResult(
+            schema_version=lc.SCHEMA_VERSION,
+            operation="stop",
+            dry_run=False,
+            status="PASS",
+            project_identity={},
+            services=[
+                {
+                    "service": TO,
+                    "action": "stopped",
+                    "container_name": "task-orchestrator-x",
+                    "commands": [],
+                }
+            ],
+        )
+
+    monkeypatch.setattr(lc, "_stop_services", to_stop)
+    _blocked_after_the_wait(monkeypatch)
+    runner = _recording_runner()
+    # 1 preflight, 2 before the orchestrator stop, 3 re-check (blocks), 4 restore read
+    docker = _failing_on(_docker_empty(), 4)
+    result, _repo, _reg = _run(
+        tmp_path, "restart", [*WORKTREE_SERVICES, TO], runner=runner, docker=docker
+    )
+    assert docker.seen["n"] == 4
+    assert result.status == "FAIL" and result.exit_code == 1
+    assert _unavailable(result)
+    actions = {s["service"]: s.get("action") for s in result.services}
+    assert actions == {"conport": "blocked", "dope-memory": "blocked", TO: "failed"}
+    assert not [e for e in events if e[0] == "start"]
+    assert not [c for c in runner.calls if c["cmd"][:1] == ["bash"]]
+
+
+def test_no_deadlock_with_a_reserved_lock_holder_that_wants_launch_lock(
+    tmp_path: Path, monkeypatch
+):
+    """T4: real flocks. Another process holds :7890 and then wants this worktree's
+    launch.lock (the old ABBA partner); a CLI start of conport + task-orchestrator
+    must finish, taking :7890 only after launch.lock is released."""
+    import contextlib
+    import threading
+
+    from dopemux.mcp import lifecycle as lc
+    from dopemux.mcp import locks
+
+    events: list = []
+    held = {"instance": False}
+    main_holds_instance = threading.Event()
+    helper_holds_reserved = threading.Event()
+
+    @contextlib.contextmanager
+    def instance_then_let_the_helper_in(runtime_dir, *, blocking=True):
+        with locks.instance_lock(runtime_dir, blocking=blocking):
+            held["instance"] = True
+            events.append("main: instance acquired")
+            main_holds_instance.set()
+            assert helper_holds_reserved.wait(2), "helper never took :7890"
+            try:
+                yield
+            finally:
+                held["instance"] = False
+                events.append("main: instance released")
+
+    worker: dict = {}
+
+    @contextlib.contextmanager
+    def recorded_reserved(port):
+        mine = threading.current_thread() is worker.get("thread")
+        if mine:
+            events.append(f"main: wants :7890 (instance held={held['instance']})")
+        with locks.reserved_port_lock(port):
+            if mine:
+                events.append("main: got :7890")
+            yield
+
+    def helper(runtime_dir: Path) -> None:
+        main_holds_instance.wait(5)
+        with locks.reserved_port_lock(7890):
+            events.append("helper: :7890 acquired")
+            helper_holds_reserved.set()
+            with locks.instance_lock(runtime_dir):  # waits for the main run
+                events.append("helper: instance acquired")
+
+    monkeypatch.setattr(lc, "instance_lock", instance_then_let_the_helper_in)
+    monkeypatch.setattr(lc, "reserved_port_lock", recorded_reserved)
+    repo = _fixture_repo(tmp_path)
+    reg = tmp_path / "reg" / "instances.json"
+    thread = threading.Thread(
+        target=helper, args=(_runtime_dir_of(repo, reg),), daemon=True
+    )
+    thread.start()
+    outcome: dict = {}
+
+    def cli_start() -> None:
+        outcome["result"] = run_lifecycle(
+            "start",
+            repo=repo,
+            services=["conport", TO],
+            catalog=_catalog(),
+            registry_path=reg,
+            docker_runner=_docker_empty(),
+            cmd_runner=_recording_runner(),
+            product_root=_product(tmp_path),
+            process_env={},
+            skip_doctor=True,
+            port_is_free_fn=lambda p: True,
+        )
+
+    worker["thread"] = threading.Thread(target=cli_start, daemon=True)
+    worker["thread"].start()
+    worker["thread"].join(5)  # a deadlock would leave both threads blocked here
+    thread.join(5)
+    assert not worker["thread"].is_alive() and not thread.is_alive(), events
+    assert outcome["result"].exit_code == 0, outcome["result"].to_dict()
+    wants = [e for e in events if e.startswith("main: wants :7890")]
+    # the preflight gate (before launch.lock), then the orchestrator start and its
+    # re-entrant owner re-check (after it): never while launch.lock is held
+    assert len(wants) == 3 and all(e.endswith("held=False)") for e in wants), events
+    order = [
+        "main: instance acquired",
+        "helper: :7890 acquired",
+        "main: instance released",
+        "helper: instance acquired",
+    ]
+    assert [events.index(e) for e in order] == sorted(events.index(e) for e in order)
+    # the orchestrator start got :7890 only once the helper had let go of it
+    last_got = max(i for i, e in enumerate(events) if e == "main: got :7890")
+    assert last_got > events.index("helper: instance acquired"), events

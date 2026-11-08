@@ -309,3 +309,22 @@ def test_switch_project_marks_the_old_owners_entry_stopped(
         "other-project-task-orchestrator": "stopped",
         "other-project-conport": "running",  # only the orchestrator that was stopped
     }
+
+
+def test_switch_project_loads_the_target_checkouts_catalog(
+    repo: Path, rec: Recorder, tmp_path: Path, monkeypatch
+):
+    """T1: the catalog comes from the checkout being switched to, not the caller's."""
+    loaded: List[Any] = []
+    target_catalog = {"version": 1, "servers": {}, "marker": "target"}
+
+    def load(*args: Any, **kwargs: Any) -> Dict[str, Any]:
+        loaded.append(args[0] if args else kwargs.get("repo"))
+        return target_catalog
+
+    monkeypatch.setattr(mcp_commands, "_load_catalog", load)
+    _docker(monkeypatch, _to(_labels("other-project", str(tmp_path / "other"))))
+    result = _invoke(repo, "--yes")
+    assert result.exit_code == 0, result.output
+    assert loaded == [repo]  # the resolved --repo checkout
+    assert len(rec.lifecycle) == 1 and rec.lifecycle[0]["catalog"] is target_catalog

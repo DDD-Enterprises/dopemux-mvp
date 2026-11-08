@@ -403,3 +403,37 @@ def test_override_renderer_sets_the_shared_image(tmp_path: Path):
     )
     for svc, image in images.items():
         assert f"    image: {image}\n" in text
+
+
+def test_build_inputs_are_published_atomically(tmp_path: Path, monkeypatch):
+    """C3: the build override is written to a tmp file and renamed into place (a
+    reader never sees a truncated file); an existing mcp.env is never touched and a
+    missing one is created empty, without clobbering a concurrent writer."""
+    import os
+    import stat
+
+    product = _fake_product(tmp_path / "product")
+    rt = tmp_path / "rt"
+    replaced: list = []
+    real_replace = os.replace
+
+    def recording_replace(src, dst):
+        replaced.append((Path(src).name, Path(dst).name))
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(dr.os, "replace", recording_replace)
+    override, env_file = dr.compose_build_inputs(rt, product=product)
+    assert replaced and replaced[-1][1] == "compose.build.yml"
+    assert replaced[-1][0].startswith(".compose.build.yml.") and replaced[-1][
+        0
+    ].endswith(".tmp")
+    assert env_file.read_text(encoding="utf-8") == ""  # created empty
+    # the second call replaces the override again, keeps its mode, keeps mcp.env
+    os.chmod(override, 0o640)
+    env_file.write_text("DOPEMUX_PROJECT_ID=x\n", encoding="utf-8")
+    replaced.clear()
+    override2, _ = dr.compose_build_inputs(rt, product=product)
+    assert [dst for _src, dst in replaced] == ["compose.build.yml"]
+    assert stat.S_IMODE(override2.stat().st_mode) == 0o640
+    assert env_file.read_text(encoding="utf-8") == "DOPEMUX_PROJECT_ID=x\n"
+    assert not [p.name for p in rt.iterdir() if p.name.endswith(".tmp")]

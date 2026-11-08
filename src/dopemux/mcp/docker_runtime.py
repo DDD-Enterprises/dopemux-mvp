@@ -13,7 +13,9 @@ import hashlib
 import os
 import re
 import shlex
+import stat
 import subprocess
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
@@ -524,23 +526,53 @@ def render_build_override(product: Path) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _replace_text_atomically(path: Path, text: str) -> None:
+    """Write ``text`` to a tmp file beside ``path``, then rename it over ``path``.
+
+    A reader (a detached build, a ``compose up --env-file``) sees the old file or
+    the new one, never a truncated one. The new file keeps ``path``'s mode, or gets
+    the default mode (0666 minus the umask, as ``write_text`` would) when it is new.
+    """
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex[:8]}.tmp")
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(text)
+        try:
+            os.chmod(tmp, stat.S_IMODE(path.stat().st_mode))
+        except FileNotFoundError:
+            pass
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+        raise
+
+
 def compose_build_inputs(
     runtime_dir: Path, *, product: Optional[Path] = None
 ) -> tuple[Path, Path]:
     """``(build override, env file)`` for ``compose build`` of a sidecar image.
 
-    The build override (rewritten each time) only sets the shared ``image:`` tags;
-    the env file is the lifecycle's ``mcp.env`` or an empty placeholder (compose
-    needs ``--env-file`` to exist; it does not affect the image). Shared by the
-    launcher's detached build and ``mcp init``'s pre-build.
+    The build override (rewritten each time, atomically) only sets the shared
+    ``image:`` tags; the env file is the lifecycle's ``mcp.env`` or an empty
+    placeholder (compose needs ``--env-file`` to exist; it does not affect the
+    image). The placeholder is created only when no ``mcp.env`` exists, in one
+    exclusive create, so a concurrent writer's file is never replaced. Shared by
+    the launcher's detached build, ``mcp init``'s pre-build and the lifecycle's
+    pre-build (which runs outside the instance lock).
     """
     runtime_dir.mkdir(parents=True, exist_ok=True)
     override = runtime_dir / BUILD_OVERRIDE_FILENAME
     env_file = runtime_dir / "mcp.env"
     root = Path(product) if product is not None else product_root()
-    override.write_text(render_build_override(root), encoding="utf-8")
-    if not env_file.exists():
-        env_file.write_text("", encoding="utf-8")
+    _replace_text_atomically(override, render_build_override(root))
+    try:
+        os.close(os.open(env_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666))
+    except FileExistsError:
+        pass
     return override, env_file
 
 

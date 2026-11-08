@@ -119,13 +119,14 @@ connect. Two things are expected the first time:
   project's `.mcp.json`; a new project's servers show `Pending approval` in `claude mcp list`
   until the first interactive session approves them (observed). That is Claude Code's prompt,
   not a launcher failure.
-- **The first launch on a host builds the images once.** There is one image per service and
-  Dockerfile version, `dopemux-<service>:<key>`, where `<key>` hashes the dopemux-mvp checkout
-  path and the service's Dockerfile bytes; every worktree and project shares it. So the first
-  launch on the host (and the first after that Dockerfile changes) prints
-  `LAUNCH_IMAGE_BUILDING` and exits while one detached build per service runs (about 2.5
-  minutes observed on 2026-11-05; the build log path is printed); later worktrees reuse the
-  image. When the build finishes, run `/mcp reconnect all` in the session. Running
+- **The first launch from a dopemux checkout builds the images once.** There is one image per
+  service and Dockerfile version, `dopemux-<service>:<key>`, where `<key>` hashes the
+  dopemux-mvp checkout path and the service's Dockerfile bytes; it is shared by every worktree
+  and project that runs the same dopemux checkout (one key per checkout path and Dockerfile
+  version). So the first launch with that checkout (and the first after that Dockerfile
+  changes) prints `LAUNCH_IMAGE_BUILDING` and exits while one detached build per service runs
+  (about 2.5 minutes observed on 2026-11-05; the build log path is printed); later worktrees
+  reuse the image. When the build finishes, run `/mcp reconnect all` in the session. Running
   `dopemux mcp init --repo <checkout>` first pre-builds them instead. Sidecar source edits
   that leave the Dockerfile unchanged need a [forced rebuild](#force-a-rebuild).
 
@@ -215,7 +216,8 @@ dopemux mcp reap --json          # machine-readable output (stdout is pure JSON)
 Safety rules: containers are matched by `dopemux.managed`, `dopemux.project_id` and
 `dopemux.worktree_hash` labels plus a runtime-registry entry; `project` and `singleton`
 scope containers (the task-orchestrator, host singletons) are never touched.
-A full `dopemux mcp stop` for a worktree also releases its leases and removes its runtime dir.
+A full `dopemux mcp stop` for a worktree also releases its leases and removes its runtime dir,
+unless a launcher is still attached (then the dir stays and the stop warns).
 
 Reaping also runs automatically, bounded and never as a daemon. "Throttled" means at most
 once per 600 s, through `~/.dopemux/mcp/runtime/reap.last`:
@@ -231,15 +233,19 @@ Automatic runs never wait on a lock and cap every docker call:
 - Every docker call, the initial `docker ps -a` included, gets at most its per-call timeout
   and never more than the time left before the deadline. A timed-out `docker ps -a` skips
   the run.
-- An instance whose lock is held (a launcher is starting it) is skipped as `locked`.
+- An instance whose lock is held (a launcher is attaching to it or starting it, or a CLI
+  `start`, `restart` or `stop` holds it) is skipped as `locked`.
 - The final registry and lease update waits at most 2 s (or the time left) for the
   registry lock. If it stays busy, the instance is skipped as `registry_busy`: its
   containers are already removed, its registry entries, leases and runtime dir are left
   as they were, and a later run finishes it (once the worktree is gone, as a state-only
   candidate; while it still exists, the worktree's next start rewrites them).
-- Under its lock each candidate is checked again: if a launcher attached or left since
-  the plan, or the worktree is back, it is skipped as `stale`, with no docker call and no
-  change.
+- Under its lock each candidate is checked again, with no docker call and no change when it
+  no longer qualifies: a launcher attached by then skips it as `attached`; otherwise it is
+  skipped as `stale` when its worktree is present and it has not been idle for 20 minutes (a
+  launcher that attached and left since the plan restarts that clock). A build-only runtime
+  dir (below) is also skipped as `stale` when its worktree is back or a detached image build
+  is running.
 
 Skipped instances are retried at the next run. A run that could start none of its
 candidates, or whose `docker ps -a` timed out, leaves the `reap.last` throttle as it was.
@@ -416,12 +422,12 @@ dopemux mcp fleet doctor --repo ~/code/your-project \
   the same probe). Do not rely on these launchers from Codex.
 * **Cost: two sidecar containers per worktree** (`conport`, `dope-memory`) plus the one
   orchestrator, bounded by reap.
-* A launcher killed with SIGKILL before any other launcher of that worktree detaches leaves
-  no `last_detach`, so its instance is left to the worktree-missing rule (the idle rule
-  needs `last_detach`) until a later launcher detaches or a reap or full `stop` prunes the
-  dead attach record.
-* The first launch on a host (per Dockerfile version) is a full image build; later
-  worktrees and projects reuse the shared image. A change to sidecar source code that leaves
+* A launcher killed with SIGKILL counts as detached at its attach time (the mtime of the dead
+  attach record it leaves, which nothing refreshes), so once no other launcher is attached its
+  instance can be reaped as idle 20 minutes after that time, even if the launcher ran longer.
+* The first launch per dopemux checkout and Dockerfile version is a full image build; later
+  worktrees and projects that run the same checkout reuse the shared image (one key per
+  checkout path and Dockerfile version). A change to sidecar source code that leaves
   its Dockerfile alone is not picked up until you [force a rebuild](#force-a-rebuild).
 * **The Copilot proxy config (`mcp-proxy-config.copilot.yaml`) is rendered but NOT_RUN /
   unverified**: `dopemux mcp generate` writes the launcher entries into it, and no Copilot

@@ -12,6 +12,11 @@ Lock order when nested (never the reverse):
 * ``instance_lock``      outside ``provision_lock`` (a launcher start provisions
   the ConPort tenant inside its instance lock; ``provision_lock`` never wraps
   another lock)
+* ``reserved_port_lock`` and ``instance_lock`` are never nested, neither inside
+  the other: the task-orchestrator starts under the reserved lock with no
+  instance lock held, and a worktree sidecar start, restart or stop holds the
+  instance lock without the reserved lock (taking them in opposite orders in two
+  processes would deadlock)
 
 ``flock`` is per open file description, so taking ``registry_lock`` again in
 the same process while already holding it deadlocks. Never nest it with

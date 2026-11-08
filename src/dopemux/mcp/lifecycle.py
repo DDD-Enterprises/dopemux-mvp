@@ -1222,7 +1222,8 @@ def run_lifecycle(
     ``hold_instance_lock`` (default): a non-dry ``stop`` runs under the worktree's
     ``instance_lock``, and so do the worktree-scoped services of a ``start`` or
     ``restart`` (one acquisition for a restart's stop and start). The
-    task-orchestrator part always runs outside it (B2, D7 order). Callers that
+    task-orchestrator part always runs outside it (B2: the reserved and instance
+    locks are never nested). Callers that
     already hold the instance lock (the launcher) pass ``False``.
     """
     op = operation.lower().strip()
@@ -1560,8 +1561,9 @@ def run_lifecycle(
     # instance lock. The task-orchestrator is project-scoped (reap never touches it)
     # and its start takes the reserved :7890 lock; switch-project calls this with
     # that lock held, so launch.lock around it would be instance -> reserved here and
-    # reserved -> instance there (a deadlock, and against D7's order). Its part runs
-    # outside the lock; a run in parts returns what one call would.
+    # reserved -> instance there (a deadlock). The two locks are never nested (see
+    # locks.py). Its part runs outside the lock; a run in parts returns what one
+    # call would.
     worktree_part = [s for s in selected if s != "task-orchestrator"]
     split = lock_instance and 0 < len(worktree_part) < len(selected)
     inside = worktree_part if split else selected
@@ -1752,16 +1754,24 @@ def run_lifecycle(
             # half (outside the lock) was stopped. One call would have blocked before
             # stopping anything, so an orchestrator this run stopped is started again
             # (outside launch.lock) and the worktree part is reported blocked.
-            # A failed orchestrator stop starts nothing, as a failed stop never does.
+            # A failed orchestrator stop starts nothing, as a failed stop never does;
+            # whenever a stop actually ran, its entries are reported with the
+            # blocked worktree part (final review, C2).
             if not any(
-                part.status != "FAIL"
-                and any(entry.get("action") == "stopped" for entry in part.services)
+                entry.get("action") in {"stopped", "failed"}
                 for part in stops
+                for entry in part.services
             ):
                 return blocked
             blocked.services = [
                 e for e in blocked.services if e.get("service") in inside
             ]
+            if not any(
+                part.status != "FAIL"
+                and any(entry.get("action") == "stopped" for entry in part.services)
+                for part in stops
+            ):
+                return _merge_parts([blocked, *stops], selected)
             now_kw, unread = docker_now(outside, "started")
             restored = (
                 unread
@@ -2241,15 +2251,20 @@ def _start_services(**kw: Any) -> LifecycleResult:
         "memory_data_path": str(memory_data),
     }
 
-    # B2: the task-orchestrator part of a start run in parts writes nothing into the
-    # runtime dir (it runs outside the instance lock); the worktree part, under the
-    # lock, already wrote the artifacts for the compose services.
+    # The runtime dir's mcp.env, compose override and plan serve the compose
+    # sidecars, whose start writes them under the instance lock. A start without a
+    # compose service (the task-orchestrator alone, which runs outside that lock:
+    # switch-project, ensure_orchestrator, `--services task-orchestrator`, the
+    # orchestrator part of a split run) writes nothing there: it would replace a
+    # sidecar start's override between its write and its `compose up` (B2 and the
+    # final review, C1).
+    skip_artifacts = not compose_services or not kw.get("write_artifacts", True)
     artifact_paths = dr.write_runtime_artifacts(
         runtime_base,
         env_text=env_text,
         override_text=override_text or "# no compose services\n",
         plan=plan_doc,
-        dry_run=dry_run or not kw.get("write_artifacts", True),
+        dry_run=dry_run or skip_artifacts,
     )
 
     service_results: List[Dict[str, Any]] = []
@@ -2692,7 +2707,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
         blocking_findings=[],
         warnings=[],
         registry_path=str(reg_path),
-        runtime_artifacts=list(artifact_paths.values()),
+        runtime_artifacts=[] if skip_artifacts else list(artifact_paths.values()),
         exit_code=exit_code,
         recommended_next_actions=[
             "claude  # open a session here, or /mcp reconnect all in a running one",

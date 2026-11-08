@@ -58,8 +58,8 @@ Safety rules (all fail closed):
   fails (a corrupt file left as is, an ``OSError``) is skipped as ``state_error``
   the same way, on every run: the runtime dir is removed, and the candidate
   counted as reaped, only after both saves succeeded. A run that attempted no
-  candidate (``deadline``/``cap``/``locked``/``stale``), or whose inspection timed
-  out, leaves the ``reap.last`` throttle as it was. The explicit CLI ``--apply``
+  candidate (``deadline``/``cap``/``locked``/``attached``/``stale``), or whose
+  inspection timed out, leaves the ``reap.last`` throttle as it was. The explicit CLI ``--apply``
   waits for every lock.
 * Automatic reaping (:func:`maybe_reap`: hooks and launcher) honours a kill switch:
   the file ``<runtime root>/reap.disabled`` or ``DOPEMUX_MCP_REAP`` set to
@@ -1094,8 +1094,9 @@ def maybe_reap(
     10 and a 45 s deadline.
 
     ``state_file`` is touched before any work (so concurrent hooks do not all run);
-    when candidates existed but none was attempted (deadline, cap, or a busy
-    instance lock), or the docker inspection timed out, the touch is undone, so a
+    when candidates existed but none was attempted (deadline, cap, a busy instance
+    lock, a launcher attached since the plan, or no longer eligible), or the docker
+    inspection timed out, the touch is undone, so a
     run that did nothing never consumes the throttle. Instance locks are taken
     non-blocking and the inspection is bounded by ``min(cmd_timeout_s, time left)``.
     """
@@ -1174,7 +1175,9 @@ def maybe_reap(
         idle_s=idle_s,
     )
     not_attempted = sum(
-        1 for r in report.skip_reasons if r in {"cap", "deadline", "locked", "stale"}
+        1
+        for r in report.skip_reasons
+        if r in {"cap", "deadline", "locked", "attached", "stale"}
     )
     if not_attempted == len(candidates):
         _restore_throttle(state, previous)

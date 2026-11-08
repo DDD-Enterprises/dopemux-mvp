@@ -1513,3 +1513,45 @@ def test_ensure_backend_and_orchestrator_pass_hold_instance_lock_false(
     )
     assert [c.get("hold_instance_lock", "missing") for c in backend_lc.calls] == [False]
     assert [c.get("hold_instance_lock", "missing") for c in to_lc.calls] == [False]
+
+
+def test_the_marker_is_written_while_the_instance_lock_is_held(
+    tmp_path: Path, monkeypatch, registry
+):
+    """T3: attach record and instance.json are written inside one launch.lock hold."""
+    import contextlib
+
+    repo = _git_repo(tmp_path / "x")
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(launcher, "_load_catalog", lambda *a, **k: CATALOG)
+    events: List[str] = []
+    held = {"now": False}
+
+    @contextlib.contextmanager
+    def spy_lock(runtime_dir):
+        events.append("lock")
+        held["now"] = True
+        try:
+            yield
+        finally:
+            held["now"] = False
+            events.append("unlock")
+
+    real_marker = launcher._write_instance_marker
+
+    def spy_marker(target):
+        events.append(f"marker(held={held['now']})")
+        return real_marker(target)
+
+    monkeypatch.setattr(launcher, "instance_lock", spy_lock)
+    monkeypatch.setattr(launcher, "_write_instance_marker", spy_marker)
+    monkeypatch.setattr(
+        launcher,
+        "ensure_backend",
+        lambda target, **kw: BackendSpec("u", "sse", "conport"),
+    )
+    monkeypatch.setattr(launcher, "run_proxy", lambda backend, **kw: 0)
+    assert launcher.launch("conport", env={}) == 0
+    assert events == ["lock", "marker(held=True)", "unlock"]
+    target = launcher.build_target(repo, "conport", catalog=CATALOG)
+    assert (target.runtime_dir / "instance.json").is_file()

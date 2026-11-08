@@ -585,8 +585,8 @@ def ensure_orchestrator(
             registry_path=target.registry_path,
             process_env=_lifecycle_env(env, target.catalog),
             trust_env=False,
-            # Explicit: the reserved :7890 lock is held here and must never wrap
-            # launch.lock (D7); an orchestrator-only start takes none anyway.
+            # Explicit: the reserved :7890 lock is held here and is never nested
+            # with launch.lock (locks.py); an orchestrator-only start takes none.
             hold_instance_lock=False,
         )
         if result.exit_code != 0:

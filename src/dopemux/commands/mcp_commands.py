@@ -321,9 +321,13 @@ def mcp_reap_cmd(dry_run: bool, json_output: bool):
     """Reap sidecars of removed or idle worktrees (design D8).
 
     An instance is reaped when no launcher is attached AND its worktree no longer
-    exists, or it has been idle (last launcher detached) for 20 minutes.
-    Containers are matched by dopemux labels plus a registry entry; project and
-    singleton scope (the task-orchestrator) are never touched. --apply ignores the
+    exists, or it has been idle (last launcher detached) for 20 minutes. A launcher
+    killed outright leaves a dead attach record; its attach time counts as the
+    detach. Containers are matched by dopemux labels plus a registry entry; project
+    and singleton scope (the task-orchestrator) are never touched. A runtime dir
+    that a launcher marked (instance.json) but that never got a sidecar (a
+    build-only launch) is removed once its worktree is gone and no launcher or
+    detached image build still uses it; never for idleness. --apply ignores the
     automatic-reaping kill switch (file reap.disabled or DOPEMUX_MCP_REAP=0).
     """
     import time
