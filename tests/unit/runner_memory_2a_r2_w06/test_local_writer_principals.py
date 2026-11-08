@@ -119,6 +119,7 @@ def test_promotable_wrappers_forward_principal(ledger):
         "internal:" + "a" * 65,
         "runner:claude",  # local writers may only self-assert an internal principal
         "internal:hooks; DROP TABLE raw_activity_events",
+        "internal:cli\n",  # a trailing newline must not pass the end anchor
     ],
 )
 def test_invalid_principal_is_rejected_and_writes_nothing(ledger, bad):

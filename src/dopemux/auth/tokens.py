@@ -11,8 +11,9 @@ from .errors import InvalidPrincipalError
 
 # Same pattern the memory servers enforce when they load the hash file
 # (services/working-memory-assistant/auth_identity.py:69,
-# docker/mcp-servers-source/conport/auth_identity.py).
-PRINCIPAL_RE = re.compile(r"^(runner|internal):[a-z0-9][a-z0-9_.-]{0,63}$")
+# docker/mcp-servers-source/conport/auth_identity.py). `\Z`, not `$`: `$` also
+# matches before a trailing newline, and a principal goes into a `security -i` line.
+PRINCIPAL_RE = re.compile(r"^(runner|internal):[a-z0-9][a-z0-9_.-]{0,63}\Z")
 
 # Design 5.1 (Wave 2A). Other principals matching PRINCIPAL_RE are accepted.
 KNOWN_PRINCIPALS = (

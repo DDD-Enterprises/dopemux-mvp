@@ -31,7 +31,7 @@ SECURITY_BIN = "/usr/bin/security"
 TIMEOUT_SECONDS = 10.0
 
 _ITEM_NOT_FOUND_EXIT = 44  # observed macOS security(1) exit for "item not found"
-_WRITABLE_TOKEN_RE = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_-]{15,511}$")
+_WRITABLE_TOKEN_RE = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_-]{15,511}\Z")
 
 _HINT = (
     "The login keychain may be locked, or there is no login session "

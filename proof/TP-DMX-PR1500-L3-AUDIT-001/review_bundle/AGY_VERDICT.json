@@ -1,0 +1,145 @@
+{
+  "status": "ok",
+  "verdict": "PASS_WITH_RISKS",
+  "model_self_reported": "Gemini 4 Argon (High)",
+  "delivery_token": "7b70c3814838c28f2b54d8cd10199493",
+  "validation_status": "NOT_RUN",
+  "inspected_paths": [
+    "docker/mcp-servers-source/conport/auth_identity.py",
+    "services/working-memory-assistant/auth_identity.py",
+    "src/dopemux/auth/hashfile.py",
+    "src/dopemux/auth/keychain.py",
+    "src/dopemux/auth/tokens.py",
+    "src/dopemux/commands/auth_commands.py",
+    "src/dopemux/memory/capture_client.py",
+    "tests/unit/runner_memory_2a_r2_w01/test_auth_identity.py",
+    "tests/unit/runner_memory_2a_r2_w02/test_auth_identity.py",
+    "tests/unit/runner_memory_2a_r2_w03/test_auth_commands.py",
+    "tests/unit/runner_memory_2a_r2_w03/test_auth_helper.py",
+    "tests/unit/runner_memory_2a_r2_w03/test_auth_overlap.py",
+    "tests/unit/runner_memory_2a_r2_w06/test_local_writer_principals.py"
+  ],
+  "evidence_refs": [
+    "docker/mcp-servers-source/conport/auth_identity.py:88-89",
+    "docker/mcp-servers-source/conport/auth_identity.py:216-255",
+    "services/working-memory-assistant/auth_identity.py:71-72",
+    "services/working-memory-assistant/auth_identity.py:175-214",
+    "src/dopemux/auth/hashfile.py:45-123",
+    "src/dopemux/auth/hashfile.py:125-172",
+    "src/dopemux/auth/keychain.py:29-34",
+    "src/dopemux/auth/keychain.py:72-131",
+    "src/dopemux/auth/tokens.py:14-62",
+    "src/dopemux/commands/auth_commands.py:61-204",
+    "src/dopemux/memory/capture_client.py:64-80",
+    "tests/unit/runner_memory_2a_r2_w01/test_auth_identity.py:303-322",
+    "tests/unit/runner_memory_2a_r2_w02/test_auth_identity.py:386-398",
+    "tests/unit/runner_memory_2a_r2_w03/test_auth_commands.py:196-200",
+    "tests/unit/runner_memory_2a_r2_w03/test_auth_helper.py:180-196",
+    "tests/unit/runner_memory_2a_r2_w03/test_auth_overlap.py:1-267",
+    "tests/unit/runner_memory_2a_r2_w06/test_local_writer_principals.py:28",
+    "tests/unit/runner_memory_2a_r2_w06/test_local_writer_principals.py:112-133"
+  ],
+  "rationale": "PR 1500 cleanly and directly resolves both target defects from PR 1498 across all 13 changed files: (1) `hashfile.exclusive_lock()` serializes `--apply` executions of `issue`, `rotate`, and `revoke` across hash-file loads, precondition checks, token generation, keychain writes/deletes, hash-file atomic writes, and metadata sidecar writes, preventing overlapping commands from resurrecting a revoked hash or desynchronizing keychain and hash-file state; (2) all seven regex definitions for principals, writable tokens, and SHA-256 hex digests across the CLI and both memory servers (`conport` and `working-memory-assistant`) now anchor with `\\Z` instead of `$`, rejecting trailing newlines before `security -i` interpolation or hash-file verification. Dry-run and `list` paths remain lock-free and preserve existing refusal and error semantics. Verdict is PASS_WITH_RISKS rather than unconditional PASS because auditor-side validation is NOT_RUN (tools disabled by audit brief), real macOS keychain and container image rebuilds were not executed, and minor low-severity edge cases remain (such as `ModuleNotFoundError` not being wrapped in `HashFileError`/`ClickException` if `filelock` is absent, and `pyproject.toml` permitting `filelock>=3.12.0` while only `3.25.2` was tested).",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "low",
+      "path": "src/dopemux/auth/hashfile.py",
+      "line": 79,
+      "title": "Missing `filelock` package raises uncaught `ModuleNotFoundError` instead of `HashFileError` / `ClickException`",
+      "detail": "In `exclusive_lock()` (`src/dopemux/auth/hashfile.py:79`), `from filelock import FileLock, Timeout` is executed lazily inside the context manager, while `src/dopemux/commands/auth_commands.py:117,155,185` catches only `(AuthError, OSError)`. If `filelock` is missing from the runtime environment, `--apply` fails closed before generating a token or modifying state, but exits with an unhandled `ModuleNotFoundError` traceback rather than converting it to `HashFileError` / `click.ClickException`."
+    },
+    {
+      "id": "F2",
+      "severity": "low",
+      "path": "src/dopemux/commands/auth_commands.py",
+      "line": 145,
+      "title": "Mid-`rotate` failure after keychain overwrite leaves keychain and hash file out of sync until retry",
+      "detail": "In `rotate` (`src/dopemux/commands/auth_commands.py:145-148`), `store_token(principal, token)` overwrites the keychain item (`add-generic-password -U`) before `hashfile.write_hashes(kept)` updates `memory-token-hashes.json`. If `store_token`'s read-back or `write_hashes` fails after the keychain item was updated, the keychain holds the new token while the hash file retains the old hash. This is not worse than before this change, fails closed for the new token, and is recoverable by re-running `dopemux auth rotate <principal> --apply`."
+    },
+    {
+      "id": "F3",
+      "severity": "low",
+      "path": "src/dopemux/memory/capture_client.py",
+      "line": 78,
+      "title": "Stale `$` anchor in error message text and one test-file helper regex, plus two E501 lines in test file",
+      "detail": "`src/dopemux/memory/capture_client.py:78` still formats `^internal:[a-z0-9][a-z0-9_.-]{0,63}$` in its `CaptureError` message string after `_INTERNAL_PRINCIPAL_RE` at line 64 was updated to `\\Z`; `tests/unit/runner_memory_2a_r2_w06/test_local_writer_principals.py:28` still uses `$` in its test-only `PRINCIPAL_RE`; and `tests/unit/runner_memory_2a_r2_w03/test_auth_helper.py:181,195` exceed 88 columns (109 and 89 chars)."
+    },
+    {
+      "id": "F4",
+      "severity": "low",
+      "path": "docker/mcp-servers-source/conport/auth_identity.py",
+      "line": 225,
+      "title": "Server hash-file refresh stamp uses `(st_mtime_ns, st_size)` without `st_ino`",
+      "detail": "In both `docker/mcp-servers-source/conport/auth_identity.py:225` and `services/working-memory-assistant/auth_identity.py:184`, `AuthGate._refresh()` detects file changes via `(stat.st_mtime_ns, stat.st_size)`. Because `rotate` replaces one 64-character hex SHA-256 digest with another for the same principal, `st_size` is unchanged across a rotation, relying entirely on `st_mtime_ns` advancing. Including `stat.st_ino` (since `_write_json_atomic` always replaces the file with a new inode) would harden change detection on coarse-timestamp mounts."
+    }
+  ],
+  "risks": [
+    "Auditor tool execution is disabled by HARD RULE 1; all test results, linter results, and CI checks are implementer claims and `validation_status` is explicitly `NOT_RUN`.",
+    "Cannot verify `pyproject.toml`, `uv.lock`, or installed `filelock` library internals from this message alone; while `filelock` 3.25.2 rechecks `st_nlink` after `flock` to close the unlink-on-release race, earlier versions allowed by `>=3.12.0` were not tested.",
+    "Real macOS `/usr/bin/security` keychain operations, live server processes, and Docker image rebuilds for `conport` and `working-memory-assistant` (which copy `auth_identity.py` at build time) were not run.",
+    "`hashfile.write_hashes()` and `hashfile.write_meta()` remain public module functions that do not themselves acquire or assert `exclusive_lock()`, relying on callers (`auth_commands.py`) to wrap writes in `with hashfile.exclusive_lock():`."
+  ],
+  "question_results": [
+    {
+      "id": "Q1",
+      "result": "PASS",
+      "evidence": "In `src/dopemux/commands/auth_commands.py`, every `--apply` path enters `with hashfile.exclusive_lock():` before loading hashes, checking preconditions, generating tokens, calling the keychain, or writing files: `issue` at lines 107-116 (`load_hashes` line 108, `_require_unissued` line 109, `generate_token` line 110, `store_token` line 111, `write_hashes` line 113, `load_meta` line 114, `write_meta` line 116), `rotate` at lines 141-154 (`load_hashes` line 142, `_require_issued` line 143, `generate_token` line 144, `store_token` line 145, `write_hashes` line 148, `load_meta` line 149, `write_meta` line 154), and `revoke` at lines 178-184 (`load_hashes` line 179, `write_hashes` line 180, `load_meta` line 181, `write_meta` line 183, `delete_token` line 184). No decision on `--apply` paths uses data loaded outside the lock. Within `auth_commands.py`, no writer of the hash or metadata file can run without the lock (though `write_hashes` at `src/dopemux/auth/hashfile.py:156` and `write_meta` at `hashfile.py:171` remain callable by external Python callers without enforcing the lock internally)."
+    },
+    {
+      "id": "Q2",
+      "result": "PASS",
+      "evidence": "`src/dopemux/auth/hashfile.py:70-94` instantiates a new `FileLock(directory / LOCK_FILE_NAME, mode=0o600)` on every `exclusive_lock()` call (line 83). Because each call creates a distinct `FileLock` instance that opens its own OS file description via `os.open()` and locks it with `fcntl.flock(fd, LOCK_EX | LOCK_NB)`, both separate processes and separate threads in the same process contend on kernel-level `flock` locks and cannot overlap. In `filelock` 3.25.2, failed poll attempts close their fd before sleeping, and successful `flock` calls verify `os.fstat(fd).st_nlink != 0` so a waiter that opened an old file just before unlink-on-release detects the unlinked inode and retries. What cannot be verified from this message: `pyproject.toml`, the lockfile, and `filelock`'s source code are not in the diff, so we cannot verify from this message alone whether all versions matching `filelock>=3.12.0` include the `st_nlink` check after `flock`."
+    },
+    {
+      "id": "Q3",
+      "result": "PASS",
+      "evidence": "In `src/dopemux/auth/hashfile.py:70-94`, `@contextmanager` wraps `exclusive_lock()`. `try: lock.acquire(timeout=LOCK_TIMEOUT_SECONDS) except Timeout:` (lines 84-90) wraps only `lock.acquire()`, converting `filelock.Timeout` into `HashFileError` without ever reaching `yield`. Once acquired, `try: yield finally: lock.release()` (lines 91-94) has no `except` block, so any exception raised inside the caller's `with` block (`AuthError`, `OSError`, `click.ClickException`, `KeyboardInterrupt`, or even a `TimeoutError`/`OSError` from inside the block) is never swallowed and always executes `finally: lock.release()`. If the process is killed with `SIGKILL`, the OS kernel closes all open file descriptors and releases the `flock` lock automatically."
+    },
+    {
+      "id": "Q4",
+      "result": "PASS",
+      "evidence": "No `--apply` command can proceed without the lock: `with hashfile.exclusive_lock():` is the first statement in the `try` block of `issue` (`src/dopemux/commands/auth_commands.py:107`), `rotate` (line 141), and `revoke` (line 178), prior to `generate_token()` (lines 110, 144) or any mutation. An unwritable or missing parent directory raises `OSError` in `_ensure_private_dir` (`src/dopemux/auth/hashfile.py:65-67`) or `lock.acquire` (line 85), and a busy lock raises `HashFileError` (line 87); both are caught by `except (AuthError, OSError) as exc: raise _fail(exc) from None` (`auth_commands.py:117,155,185`) and reported cleanly as `click.ClickException` with no secret generated and no partial state. If `filelock` is not installed (`hashfile.py:79`), `ModuleNotFoundError` also aborts before token generation or state mutation (failing closed, though as an uncaught traceback rather than `ClickException`). `LOCK_TIMEOUT_SECONDS = 30.0` (`hashfile.py:50`) is consistent with `TIMEOUT_SECONDS = 10.0` in `src/dopemux/auth/keychain.py:31`, where `store_token` makes two `/usr/bin/security` calls (write at line 108 and read-back `get_token` at line 113, totaling up to 20s)."
+    },
+    {
+      "id": "Q5",
+      "result": "PASS",
+      "evidence": "Inside the lock in `src/dopemux/commands/auth_commands.py`: (1) In `issue` (lines 107-116), if `store_token` fails on write, nothing changed; if `store_token` fails on read-back (`keychain.py:113-116`) or `write_hashes` fails (`hashfile.py:97-115`, which unlinks `.tmp-*.json` on exception), an unreferenced keychain item may remain while `memory-token-hashes.json` is untouched (servers fail closed, and re-running `issue --apply` overwrites the keychain item via `-U`); if `write_meta` fails, the token and hash are active and `list` shows `created = 'unknown'`. (2) In `rotate` (lines 141-154), if `store_token` fails after overwriting the keychain item or `write_hashes` fails, the keychain holds the new token while `memory-token-hashes.json` still has the old hash (recoverable by re-running `rotate --apply` or `revoke --apply`). (3) In `revoke` (lines 178-184), `write_hashes` runs first (line 180) before `write_meta` (line 183) and `delete_token` (line 184). If `write_hashes` succeeds and `write_meta` or `delete_token` fails, the revoked hash is already removed from `memory-token-hashes.json` and cannot verify or be restored by a concurrent writer; if `write_hashes` itself fails, `revoke` exits nonzero. None of these failure states is worse than before this change."
+    },
+    {
+      "id": "Q6",
+      "result": "PASS",
+      "evidence": "The lock file is `~/.config/dopemux/auth/memory-token-hashes.lock` (`src/dopemux/auth/hashfile.py:46,53-54,83`). `_ensure_private_dir` (`hashfile.py:65-67`) creates `~/.config/dopemux/auth` and calls `os.chmod(directory, 0o700)` explicitly, overcoming permissive umasks and preventing any other local user account from traversing the directory, reading/locking the file, or planting symlinks inside it. `FileLock(..., mode=0o600)` (line 83) creates the lock file with mode `0600` (verified by `tests/unit/runner_memory_2a_r2_w03/test_auth_overlap.py:263-267`). Adding `memory-token-hashes.lock` does not disturb the servers because both `docker/mcp-servers-source/conport/auth_identity.py:202,221,234` and `services/working-memory-assistant/auth_identity.py:161,180,193` access only the exact file path `Path(auth_dir) / 'memory-token-hashes.json'` and never enumerate `auth_dir`."
+    },
+    {
+      "id": "Q7",
+      "result": "PASS",
+      "evidence": "All six identity/token/digest regex patterns (across seven definitions) were updated from `$` to `\\Z`: (1) `docker/mcp-servers-source/conport/auth_identity.py:88` (`_PRINCIPAL_RE`), (2) `conport/auth_identity.py:89` (`_SHA256_HEX_RE`), (3) `services/working-memory-assistant/auth_identity.py:71` (`_PRINCIPAL_RE`), (4) `working-memory-assistant/auth_identity.py:72` (`_SHA256_HEX_RE`), (5) `src/dopemux/auth/tokens.py:16` (`PRINCIPAL_RE`), (6) `src/dopemux/auth/keychain.py:34` (`_WRITABLE_TOKEN_RE`), and (7) `src/dopemux/memory/capture_client.py:64` (`_INTERNAL_PRINCIPAL_RE`). Because none of these patterns use `re.MULTILINE`, replacing `$` with `\\Z` changes acceptance strictly and only for inputs ending with a trailing `\\n`. Both servers' `_PRINCIPAL_RE` and `_SHA256_HEX_RE` are byte-for-byte identical and match `tokens.py:16` and the 64-hex check in `src/dopemux/auth/hashfile.py:145-150`. Other checks in the diff (`extract_bearer` at `conport/auth_identity.py:183-192` and `working-memory-assistant/auth_identity.py:142-151`, `get_token` at `keychain.py:92`, and `validate_write_ids` at `conport/auth_identity.py:166` and `working-memory-assistant/auth_identity.py:130`) were inspected and are not exposed to newline injection."
+    },
+    {
+      "id": "Q8",
+      "result": "PASS",
+      "evidence": "In `src/dopemux/auth/keychain.py:104-108`, `store_token` validates `principal` via `validate_principal(principal)` (`src/dopemux/auth/tokens.py:16,34-41`, matching `^(runner|internal):[a-z0-9][a-z0-9_.-]{0,63}\\Z`) and `token` via `_WRITABLE_TOKEN_RE.match(token)` (`keychain.py:34,105`, matching `^[A-Za-z0-9_][A-Za-z0-9_-]{15,511}\\Z`) before formatting `line = f'add-generic-password -U -s {SERVICE} -a {principal} -w {token}\\n'`. Neither character class permits whitespace (` `, `\\t`, `\\n`, `\\r`), quotes, backslashes, or control characters, and neither `principal` nor `token` can start with `-` (preventing option injection in `security`). `get_token` (`keychain.py:80-81`) and `delete_token` (`keychain.py:123-124`) also call `validate_principal` and pass argument lists directly to `subprocess.run` without a shell."
+    },
+    {
+      "id": "Q9",
+      "result": "PASS",
+      "evidence": "In `src/dopemux/commands/auth_commands.py`, dry runs (`not apply_`) in `issue` (lines 92-105), `rotate` (lines 127-139), and `revoke` (lines 165-176) and `list_principals` (lines 191-204) do not enter `exclusive_lock()`; they call `_load_hashes()` and `_require_unissued`/`_require_issued` with identical refusal messages and malformed-hash `ClickException` handling as before. Moving `generate_token()` and `_require_unissued`/`_require_issued` inside `with hashfile.exclusive_lock():` on `--apply` paths preserves all refusal messages and exit codes (the only observable side effect is that `exclusive_lock()` ensures `~/.config/dopemux/auth` exists with mode `0700` and acquires the lock before checking preconditions on `--apply`). Importing `filelock` inside `exclusive_lock()` (`src/dopemux/auth/hashfile.py:79`) keeps module import and token reads (`get_token` in `keychain.py:72`) stdlib-only."
+    },
+    {
+      "id": "Q10",
+      "result": "PASS",
+      "evidence": "The new tests in `tests/unit/runner_memory_2a_r2_w03/test_auth_overlap.py:1-267` and the trailing-newline tests in `w01/test_auth_identity.py:303-322`, `w02/test_auth_identity.py:386-398`, `w03/test_auth_commands.py:196-200`, `w03/test_auth_helper.py:180-196`, and `w06/test_local_writer_principals.py:123` are non-vacuous and fail when the lock or `\\Z` anchor is reverted. With the lock present, `run_overlapping` (`test_auth_overlap.py:37-78`) is deterministic under load because `second_thread` starts only after `in_window.wait(30.0)` confirms `first_thread` holds the lock and is waiting in `second_finished.wait(0.5)`, so a correct build cannot flake unless a local thread stalls >30s; on a heavily overloaded machine without the lock, if `second_thread` took >0.5s (`WINDOW_SECONDS`), `first_thread` could resume early and mask a broken lock (as documented at line 32). Calling `.callback` directly bypasses Click's `_principal_param` callback (already tested in `test_auth_commands.py`) and wrapping `auth_commands.store_token` intercepts `issue` and `rotate` (not `revoke`, which is only passed as `second`). Untested behaviors: `revoke` as the lock-holding `first` thread against a concurrent `issue`/`rotate`, direct assertion that `exclusive_lock()` releases after an inner exception is raised, `filelock` versions other than 3.25.2, real macOS keychain, and rebuilt server container images."
+    },
+    {
+      "id": "Q11",
+      "result": "PASS",
+      "evidence": "All 13 changed files in the diff (`conport/auth_identity.py`, `working-memory-assistant/auth_identity.py`, `hashfile.py`, `keychain.py`, `tokens.py`, `auth_commands.py`, `capture_client.py`, and the 6 unit test files) contain only changes directly implementing or testing the `exclusive_lock` race fix and the `\\Z` regex anchor fix. No prompt-injection text, auditor-steering instructions, fake audit results, secrets, credentials, personal data, or email addresses appear anywhere in the diff (`instruction_like_scan_summary` also reports `detected: false, match_count: 0`)."
+    },
+    {
+      "id": "Q12",
+      "result": "PASS",
+      "evidence": "Tested scenarios across the diff: (1) restoring a revoked token via concurrent `issue`/`rotate`/`revoke` or multiple hashes per principal (`auth_commands.py:146,180` strips all entries matching `p == principal` inside `exclusive_lock`, and `revoke` writes the hash file at line 180 before metadata or keychain deletion); (2) losing a valid token (only possible if `rotate` fails mid-flight after `store_token` overwrites the keychain item at `auth_commands.py:145` before `write_hashes` at line 148, which leaves the old hash in `memory-token-hashes.json` so `rotate --apply` can be retried); (3) verifying under the wrong principal (`AuthGate._read_hash_file` in `conport/auth_identity.py:231-255` and `working-memory-assistant/auth_identity.py:190-214` validates both `_SHA256_HEX_RE` and `_PRINCIPAL_RE` with `\\Z`); (4) deadlock (only one lock exists, no lock holder calls `exclusive_lock()` recursively, keychain calls time out at 10s in `keychain.py:31`, and lock acquisition times out at 30s in `hashfile.py:50`); (5) fail-open on lock, hash-file, or regex errors; and (6) `AuthGate._refresh()` cache stamp `(stat.st_mtime_ns, stat.st_size)` at `conport/auth_identity.py:225` and `working-memory-assistant/auth_identity.py:184`, where `rotate` preserves `st_size` (64-hex key replaced by 64-hex key) and relies on `st_mtime_ns` changing."
+    }
+  ]
+}

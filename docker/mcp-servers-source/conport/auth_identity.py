@@ -84,8 +84,9 @@ MAX_TOKEN_CHARS = 512
 MAX_CALLER_LABEL_CHARS = 64
 MAX_BODY_BYTES = 4 * 1024 * 1024
 
-_PRINCIPAL_RE = re.compile(r"^(runner|internal):[a-z0-9][a-z0-9_.-]{0,63}$")
-_SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
+# `\Z`, not `$`: `$` also matches before a trailing newline.
+_PRINCIPAL_RE = re.compile(r"^(runner|internal):[a-z0-9][a-z0-9_.-]{0,63}\Z")
+_SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}\Z")
 _NON_PRINTABLE_RE = re.compile(r"[^\x20-\x7e]")
 
 

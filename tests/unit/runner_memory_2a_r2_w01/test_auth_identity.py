@@ -297,3 +297,26 @@ def test_should_list_exactly_the_mutating_tools():
             "memory_mark_issue",
         }
     )
+
+
+def test_should_not_verify_a_principal_with_a_trailing_newline(tmp_path):
+    token = fake_token()
+    auth_dir = tmp_path / "auth"
+    auth_dir.mkdir()
+    digest = hashlib.sha256(token.encode()).hexdigest()
+    (auth_dir / HASH_FILE_NAME).write_text(
+        json.dumps({digest: "runner:codex\n"}), encoding="utf-8"
+    )
+    gate = auth_identity.AuthGate(mode="log", auth_dir=auth_dir)
+    assert gate.authenticate(f"Bearer {token}").verified is False
+
+
+def test_should_skip_a_digest_with_a_trailing_newline(tmp_path):
+    auth_dir = tmp_path / "auth"
+    auth_dir.mkdir()
+    digest = hashlib.sha256(b"x").hexdigest()
+    (auth_dir / HASH_FILE_NAME).write_text(
+        json.dumps({digest + "\n": "runner:codex"}), encoding="utf-8"
+    )
+    gate = auth_identity.AuthGate(mode="log", auth_dir=auth_dir)
+    assert gate._read_hash_file() == ({}, "ok")

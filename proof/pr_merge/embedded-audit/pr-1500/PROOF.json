@@ -1,0 +1,142 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-opus-5-5, effort xhigh; one session, no subagents; self-reported, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high (contained: init.tools == [], see review_bundle/AUDIT_INVOCATION.txt); grok CLI 1.0.70; session_id=01a1aa5e-dfbd-7e63-b3d9-04b54a3b780c; grok exit=0 2026-11-05T06:24:02Z; one attempt; raw stream retained in review_bundle/GROK_AUDIT_STREAM.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1500-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "GROK-1",
+        "severity": "MEDIUM",
+        "title": "Advisory lock only covers dopemux auth writers",
+        "status": "OPEN",
+        "body": "src/dopemux/auth/hashfile.py exclusive_lock docstring and write_hashes/write_meta: writers must call exclusive_lock; write_hashes/write_meta do not self-lock. Hand edit of memory-token-hashes.json bypasses mutual exclusion (disclosed). A concurrent non-CLI writer or manual edit can still race with CLI apply paths. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-2",
+        "severity": "MEDIUM",
+        "title": "filelock version floor untested",
+        "status": "OPEN",
+        "body": "hashfile.py imports filelock.FileLock; disclosed only 3.25.2 tested while dependency allows >=3.12.0. filelock 3.25 deletes lock file on release and rechecks st_nlink. Older allowed filelock builds may lack the st_nlink recheck; mutual exclusion under those versions is not evidenced here. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-3",
+        "severity": "MEDIUM",
+        "title": "auth_identity.py changes require image rebuilds not run in CI",
+        "status": "OPEN",
+        "body": "docker/mcp-servers-source/conport/auth_identity.py and services/working-memory-assistant/auth_identity.py both change _PRINCIPAL_RE/_SHA256_HEX_RE to \\Z; disclosed no image build in CI. Deployed memory images keep old $ anchors until rebuilt. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-4",
+        "severity": "LOW",
+        "title": "Missing filelock yields ImportError not HashFileError",
+        "status": "OPEN",
+        "body": "hashfile.py exclusive_lock: from filelock import FileLock, Timeout inside the CM; auth_commands apply paths catch (AuthError, OSError) only. Fail-closed (no unlocked apply) but operator message is a traceback rather than the HashFileError path. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-5",
+        "severity": "LOW",
+        "title": "Pre-existing keychain/hash partial-failure window unchanged",
+        "status": "OPEN",
+        "body": "auth_commands issue/rotate: store_token then write_hashes inside exclusive_lock; disclosed crash between keychain write and hash write still orphans keychain item. Not worse than PR 1498; revoke still removes hash before delete_token so a revoked hash does not survive a failed keychain delete. OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-6",
+        "severity": "LOW",
+        "title": "Test-only principal pattern still uses $",
+        "status": "OPEN",
+        "body": "tests/unit/runner_memory_2a_r2_w06/test_local_writer_principals.py PRINCIPAL_RE = re.compile(...$); production _INTERNAL_PRINCIPAL_RE in capture_client.py uses \\Z. Does not affect runtime identity checks. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-1",
+        "severity": "LOW",
+        "title": "Missing `filelock` package raises uncaught `ModuleNotFoundError` instead of `HashFileError` / `ClickException`",
+        "status": "OPEN",
+        "body": "[src/dopemux/auth/hashfile.py:79] In `exclusive_lock()` (`src/dopemux/auth/hashfile.py:79`), `from filelock import FileLock, Timeout` is executed lazily inside the context manager, while `src/dopemux/commands/auth_commands.py:117,155,185` catches only `(AuthError, OSError)`. If `filelock` is missing from the runtime environment, `--apply` fails closed before generating a token or modifying state, but exits with an unhandled `ModuleNotFoundError` traceback rather than converting it to `HashFileError` / `click.ClickException`. Corroborating auditor. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-2",
+        "severity": "LOW",
+        "title": "Mid-`rotate` failure after keychain overwrite leaves keychain and hash file out of sync until retry",
+        "status": "OPEN",
+        "body": "[src/dopemux/commands/auth_commands.py:145] In `rotate` (`src/dopemux/commands/auth_commands.py:145-148`), `store_token(principal, token)` overwrites the keychain item (`add-generic-password -U`) before `hashfile.write_hashes(kept)` updates `memory-token-hashes.json`. If `store_token`'s read-back or `write_hashes` fails after the keychain item was updated, the keychain holds the new token while the hash file retains the old hash. This is not worse than before this change, fails closed for the new token, and is recoverable by re-running `dopemux auth rotate <principal> --apply`. Corroborating auditor. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-3",
+        "severity": "LOW",
+        "title": "Stale `$` anchor in error message text and one test-file helper regex, plus two E501 lines in test file",
+        "status": "OPEN",
+        "body": "[src/dopemux/memory/capture_client.py:78] `src/dopemux/memory/capture_client.py:78` still formats `^internal:[a-z0-9][a-z0-9_.-]{0,63}$` in its `CaptureError` message string after `_INTERNAL_PRINCIPAL_RE` at line 64 was updated to `\\Z`; `tests/unit/runner_memory_2a_r2_w06/test_local_writer_principals.py:28` still uses `$` in its test-only `PRINCIPAL_RE`; and `tests/unit/runner_memory_2a_r2_w03/test_auth_helper.py:181,195` exceed 88 columns (109 and 89 chars). Corroborating auditor. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-4",
+        "severity": "LOW",
+        "title": "Server hash-file refresh stamp uses `(st_mtime_ns, st_size)` without `st_ino`",
+        "status": "OPEN",
+        "body": "[docker/mcp-servers-source/conport/auth_identity.py:225] In both `docker/mcp-servers-source/conport/auth_identity.py:225` and `services/working-memory-assistant/auth_identity.py:184`, `AuthGate._refresh()` detects file changes via `(stat.st_mtime_ns, stat.st_size)`. Because `rotate` replaces one 64-character hex SHA-256 digest with another for the same principal, `st_size` is unchanged across a rotation, relying entirely on `st_mtime_ns` advancing. Including `stat.st_ino` (since `_write_json_atomic` always replaces the file with a new inode) would harden change detection on coarse-timestamp mounts. Corroborating auditor. OPERATOR: decision pending."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "GROK-1 (MEDIUM, OPEN): Advisory lock only covers dopemux auth writers",
+      "GROK-2 (MEDIUM, OPEN): filelock version floor untested",
+      "GROK-3 (MEDIUM, OPEN): auth_identity.py changes require image rebuilds not run in CI",
+      "GROK-4 (LOW, OPEN): Missing filelock yields ImportError not HashFileError",
+      "GROK-5 (LOW, OPEN): Pre-existing keychain/hash partial-failure window unchanged",
+      "GROK-6 (LOW, OPEN): Test-only principal pattern still uses $",
+      "AGY-1 (LOW, OPEN): Missing `filelock` package raises uncaught `ModuleNotFoundError` instead of `HashFileError` / `ClickException`",
+      "AGY-2 (LOW, OPEN): Mid-`rotate` failure after keychain overwrite leaves keychain and hash file out of sync until retry",
+      "AGY-3 (LOW, OPEN): Stale `$` anchor in error message text and one test-file helper regex, plus two E501 lines in test file",
+      "AGY-4 (LOW, OPEN): Server hash-file refresh stamp uses `(st_mtime_ns, st_size)` without `st_ino`",
+      "Grok risk: Lock is advisory and CLI-only; same-user hand edits or future callers of write_hashes without exclusive_lock reintroduce lost-update races.",
+      "Grok risk: Only filelock 3.25.2 evidenced; pyproject allows older 3.12+ where delete-on-release / st_nlink behaviour may differ.",
+      "Grok risk: No real macOS keychain or live server validation in this message; stub security only.",
+      "Grok risk: Both memory images must be rebuilt for \\Z server-side; CI at this head did not build them (implementer claim).",
+      "Grok risk: Crash/SIGKILL after keychain store_token and before write_hashes still leaves keychain ahead of hash file (pre-existing).",
+      "Grok risk: Overlap tests use 0.5s window and Thread + store_token wrap; extreme scheduling could hide a missing lock (implementer notes slow machine hides bug, never fails a correct build).",
+      "Grok risk: Library internals of filelock (deleted lock file vs waiter holding old fd) cannot be verified from this message alone.",
+      "AGY risk: Auditor tool execution is disabled by HARD RULE 1; all test results, linter results, and CI checks are implementer claims and `validation_status` is explicitly `NOT_RUN`.",
+      "AGY risk: Cannot verify `pyproject.toml`, `uv.lock`, or installed `filelock` library internals from this message alone; while `filelock` 3.25.2 rechecks `st_nlink` after `flock` to close the unlink-on-release race, earlier versions allowed by `>=3.12.0` were not tested.",
+      "AGY risk: Real macOS `/usr/bin/security` keychain operations, live server processes, and Docker image rebuilds for `conport` and `working-memory-assistant` (which copy `auth_identity.py` at build time) were not run.",
+      "AGY risk: `hashfile.write_hashes()` and `hashfile.write_meta()` remain public module functions that do not themselves acquire or assert `exclusive_lock()`, relying on callers (`auth_commands.py`) to wrap writes in `with hashfile.exclusive_lock():`.",
+      "Audit scope: both auditors saw the whole diff 583720375...9fbd5fe27, 13 files, with full file text.",
+      "The auditors could not run anything. Team-lead spot checks of their claims matched the code, with two AGY line citations off by one or two lines (FINDING_TRIAGE.md). These are not a re-audit.",
+      "Auditor model identity: requested grok-4.5; init.model grok-4.5; receipt grok-4.5-build; self-reported grok-4.7, where PR 1498's run self-reported grok-4; provider attestation UNKNOWN.",
+      "Which auditor governs was a team-lead call, stated to the operator and not overruled, following PR 1498's ruling. The operator did not rule on it for this PR. The two verdicts agree, so it does not change the result.",
+      "AGY tool permissions were always-proceed; containment rests on the observed absence of tool steps.",
+      "AGY's process did not exit after its result and was stopped by the wrapper, so its wrapper exit is 137 (AGY_RUN_RECORD.md). The verdict is unaffected.",
+      "This PR ran without a MacroPacket. Its authority is the operator's 'Merge, fix next' ruling; no TP_ROUTE was emitted before the work."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  },
+  "generated_at": "2026-11-05T06:30:25Z",
+  "head_sha": "9fbd5fe27da6b21b58c59df34a34c14671ab5007",
+  "packet_id": "TP-DMX-PR1500-L3-AUDIT-001",
+  "pr_number": 1500,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
