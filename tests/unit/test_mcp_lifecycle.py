@@ -1755,14 +1755,23 @@ def _blocked_after_the_wait(monkeypatch):
     monkeypatch.setattr(lc, "_mutable_facts", facts)
 
 
-@pytest.mark.parametrize("was_running", [True, False])
+@pytest.mark.parametrize("case", ["was_running", "not_running", "stop_failed"])
 def test_a_split_restart_blocked_under_the_lock_restores_the_orchestrator(
-    tmp_path: Path, monkeypatch, was_running
+    tmp_path: Path, monkeypatch, case
 ):
     from dopemux.mcp import lifecycle as lc
 
     events = _lock_spies(monkeypatch)
     spy_stop = lc._stop_services
+    entries = {
+        "was_running": [("task-orchestrator-x", "stopped")],
+        "not_running": [("task-orchestrator-x", "already_stopped")],
+        # one container stopped, another failed to: a failed stop starts nothing
+        "stop_failed": [
+            ("task-orchestrator-x", "stopped"),
+            ("task-orchestrator-y", "failed"),
+        ],
+    }[case]
 
     def to_stop(**kw):
         if kw["selected"] != [TO]:
@@ -1772,15 +1781,16 @@ def test_a_split_restart_blocked_under_the_lock_restores_the_orchestrator(
             schema_version=lc.SCHEMA_VERSION,
             operation="stop",
             dry_run=False,
-            status="PASS",
+            status="FAIL" if case == "stop_failed" else "PASS",
             project_identity={},
             services=[
                 {
                     "service": TO,
-                    "action": "stopped" if was_running else "already_stopped",
-                    "container_name": "task-orchestrator-x",
+                    "action": action,
+                    "container_name": name,
                     "commands": [],
                 }
+                for name, action in entries
             ],
         )
 
@@ -1794,10 +1804,210 @@ def test_a_split_restart_blocked_under_the_lock_restores_the_orchestrator(
     actions = {s["service"]: s.get("action") for s in result.services}
     assert actions["conport"] == actions["dope-memory"] == "blocked"
     parts = [e for e in events if e[0] in {"stop", "start"}]
-    if was_running:  # started again, outside launch.lock, after it was released
+    if case == "was_running":  # started again, outside launch.lock, after its release
         assert parts == [("stop", [TO], 0), ("start", [TO], 0)]
         assert actions[TO] == "started"
         assert events.index(("instance-released",)) < events.index(("start", [TO], 0))
-    else:  # it was not running: left as it was
+    else:  # not running, or its stop failed: nothing is started
         assert parts == [("stop", [TO], 0)]
         assert actions[TO] == "blocked"
+
+
+# --- cycle 2 fix round 3 ----------------------------------------------------------------
+
+
+def _missing_image_until_built(runner, events):
+    """Wrap a cmd runner: images are missing until a `compose build` of them ran."""
+    built: set = set()
+
+    def wrapped(cmd, **kwargs):
+        cmd = list(cmd)
+        if cmd[:3] == ["docker", "image", "inspect"]:
+            svc = next((s for s in WORKTREE_SERVICES if f"-{s}:" in cmd[3]), None)
+            if svc not in built:
+                return SimpleNamespace(
+                    returncode=1, stdout="", stderr=f"Error: No such image: {cmd[3]}"
+                )
+            return SimpleNamespace(returncode=0, stdout="sha256:x\n", stderr="")
+        if "compose" in cmd and "build" in cmd:
+            built.add(cmd[-1])
+            events.append(f"build:{cmd[-1]}")
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        out = runner(cmd, **kwargs)
+        if cmd[:2] == ["docker", "stop"]:
+            events.append("stop")
+        elif "compose" in cmd and "up" in cmd:
+            events.append(f"up:{cmd[-1]}")
+        return out
+
+    return wrapped
+
+
+def _event_lock(monkeypatch, events):
+    import contextlib
+
+    from dopemux.mcp import lifecycle as lc
+
+    @contextlib.contextmanager
+    def lock_spy(rt, *, blocking=True):
+        events.append("lock")
+        try:
+            yield
+        finally:
+            events.append("unlock")
+
+    monkeypatch.setattr(lc, "instance_lock", lock_spy)
+
+
+def test_a_restart_with_a_missing_image_builds_before_the_lock(
+    tmp_path: Path, monkeypatch
+):
+    # the documented forced rebuild: `docker image rm --force ...`, then `mcp restart`
+    repo, reg, docker, runner, calls, alive, busy, names = _running_world(tmp_path)
+    events: list = []
+    _event_lock(monkeypatch, events)
+    result = run_lifecycle(
+        "restart",
+        repo=repo,
+        services=["conport"],
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker,
+        cmd_runner=_missing_image_until_built(runner, events),
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: p not in busy,
+    )
+    assert result.status == "PASS" and result.exit_code == 0, result.to_dict()
+    assert events == ["build:conport", "lock", "stop", "up:conport", "unlock"]
+    conport = _svc(result, "conport")
+    assert conport["action"] == "started"
+    assert "IMAGE_BUILT" in _codes(conport["findings"])
+
+
+def test_a_split_restart_reads_docker_again_before_the_orchestrator_stop(
+    tmp_path: Path, monkeypatch
+):
+    from dopemux.mcp import docker_inspect as di
+    from dopemux.mcp import lifecycle as lc
+
+    events: list = []
+    real_inspect = di.inspect_running_containers
+
+    def numbered_inspect(*args, **kwargs):
+        result = real_inspect(*args, **kwargs)
+        result.seq = len([e for e in events if e[0] == "ps"])  # type: ignore[attr-defined]
+        events.append(("ps", result.seq))  # type: ignore[attr-defined]
+        return result
+
+    real_stop = lc._stop_services
+
+    def stop_spy(**kw):
+        events.append(
+            ("stop", list(kw["selected"]), getattr(kw["docker"], "seq", None))
+        )
+        return real_stop(**kw)
+
+    monkeypatch.setattr(di, "inspect_running_containers", numbered_inspect)
+    monkeypatch.setattr(lc, "_stop_services", stop_spy)
+    builds: list = []
+    runner = _missing_image_until_built(_recording_runner(), builds)
+
+    def recording(cmd, **kwargs):
+        out = runner(cmd, **kwargs)
+        if builds and ("built",) not in events:
+            events.append(("built",))
+        return out
+
+    result, _repo, _reg = _run(
+        tmp_path, "restart", [*WORKTREE_SERVICES, TO], runner=recording
+    )
+    assert result.exit_code == 0, result.to_dict()
+    to_stop = next(e for e in events if e[0] == "stop" and e[1] == [TO])
+    assert to_stop[2] is not None
+    # the snapshot the orchestrator stop used was read after the pre-build
+    assert events.index(("ps", to_stop[2])) > events.index(("built",))
+
+
+def test_a_reap_finishing_while_a_cli_stop_waits_issues_no_stop_of_gone_names(
+    tmp_path: Path, monkeypatch
+):
+    repo, reg, runtime_dir, docker, lease_path, state, identity = _lease_world(tmp_path)
+    reaps = _reap_while_waiting(
+        monkeypatch,
+        runtime_dir=runtime_dir,
+        reg=reg,
+        lease_path=lease_path,
+        state=state,
+        identity=identity,
+    )
+    calls: list = []
+
+    def runner(cmd, **kwargs):  # docker: a gone container cannot be stopped
+        calls.append(list(cmd))
+        if list(cmd[:2]) == ["docker", "stop"] and state["gone"]:
+            return SimpleNamespace(
+                returncode=1,
+                stdout="",
+                stderr="Error response from daemon: No such container",
+            )
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    result = run_lifecycle(
+        "stop",
+        repo=repo,
+        services=None,
+        catalog=_catalog(),
+        registry_path=reg,
+        docker_runner=docker,
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda p: True,
+    )
+    assert len(reaps) == 1
+    assert not [c for c in calls if c[:2] == ["docker", "stop"]]
+    assert result.status == "PASS" and result.exit_code == 0, result.to_dict()
+    actions = {(s["service"], s.get("action")) for s in result.services}
+    assert {a for _, a in actions} == {"already_stopped"}
+    assert not runtime_dir.exists()
+
+
+def test_a_start_blocked_under_the_lock_starts_nothing(tmp_path: Path, monkeypatch):
+    events = _lock_spies(monkeypatch)
+    _blocked_after_the_wait(monkeypatch)
+    runner = _recording_runner()
+    result, _repo, _reg = _run(
+        tmp_path, "start", [*WORKTREE_SERVICES, TO], runner=runner
+    )
+    assert result.status == "FAIL" and result.exit_code == 1
+    assert any(
+        f["code"] == "DOCKER_CONTAINER_PORT_COLLISION" for f in result.blocking_findings
+    )
+    assert {s["service"]: s.get("action") for s in result.services} == {
+        "conport": "blocked",
+        "dope-memory": "blocked",
+        TO: "blocked",
+    }
+    assert [e for e in events if e[0] == "start"] == []  # no part started
+    assert not [c for c in runner.calls if c["kind"] in {"up", "build"}]
+
+
+def test_a_build_input_write_failure_is_a_build_failure_not_a_crash(
+    tmp_path: Path, monkeypatch
+):
+    def unwritable(runtime_dir, *, product=None):
+        raise OSError(30, "Read-only file system", str(runtime_dir))
+
+    monkeypatch.setattr(dr, "compose_build_inputs", unwritable)
+    runner = _recording_runner(inspect_rc=1)  # images missing
+    result, _repo, _reg = _run(tmp_path, "start", WORKTREE_SERVICES, runner=runner)
+    assert result.status == "FAIL" and result.exit_code == 1
+    for svc in WORKTREE_SERVICES:
+        entry = _svc(result, svc)
+        assert entry["action"] == "failed"
+        assert "IMAGE_BUILD_FAILED" in _codes(entry["findings"])
+        assert "Read-only file system" in str(entry["findings"])
+    assert not [c for c in runner.calls if c["kind"] in {"up", "build"}]

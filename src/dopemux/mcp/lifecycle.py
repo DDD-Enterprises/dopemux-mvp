@@ -1077,6 +1077,23 @@ def _mutable_facts(
     )
 
 
+#: Findings that still block a ``stop`` (it needs no envrc, ports or free ports).
+_STOP_HARD_CODES = frozenset(
+    {"REGISTRY_PARSE_ERROR", "PROJECT_IDENTITY_UNKNOWN", "DOCKER_UNAVAILABLE"}
+)
+
+
+def _stop_blocking(blocking: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """A stop's blocking findings: all of them when one is a hard one, else none.
+
+    For stop, only hard safety blocks (it does not need an envrc when the registry
+    has entries).
+    """
+    if any(f.get("code") in _STOP_HARD_CODES for f in blocking):
+        return blocking
+    return []
+
+
 def _blocked_result(
     op: str,
     *,
@@ -1372,22 +1389,8 @@ def run_lifecycle(
 
     if blocking and op in {"start", "stop", "restart"}:
         # stop can proceed only for managed matching; but still block on registry error
-        if op == "stop" and not any(
-            f.get("code") == "REGISTRY_PARSE_ERROR" for f in blocking
-        ):
-            # For stop, filter blocking to only hard safety (don't require envrc for stop if registry has entries)
-            hard = [
-                f
-                for f in blocking
-                if f.get("code")
-                in {
-                    "REGISTRY_PARSE_ERROR",
-                    "PROJECT_IDENTITY_UNKNOWN",
-                    "DOCKER_UNAVAILABLE",
-                }
-            ]
-            if not hard:
-                blocking = []
+        if op == "stop":
+            blocking = _stop_blocking(blocking)
         if blocking:
             return _blocked_result(
                 op,
@@ -1465,7 +1468,33 @@ def run_lifecycle(
         # (it attaches under the same lock) is never cut off. _stop_services never
         # takes the reserved :7890 lock, so the orchestrator's stop may run here.
         with instance_lock(runtime_dir):
-            return _stop_services(**stop_kw)
+            # Fix round 3: the facts were read before the lock; a reap that finished
+            # meanwhile removed the containers. Re-take them, as start/restart do, so
+            # no `docker stop` targets a name that is already gone.
+            now = _mutable_facts(op, orchestrator_gate=False, **facts_kw)
+            now_blocking = _stop_blocking(now.blocking)
+            if now_blocking:
+                return _blocked_result(
+                    op,
+                    dry_run=dry_run,
+                    selected=selected,
+                    blocking=now_blocking,
+                    warnings=now.warnings,
+                    container_names=container_names,
+                    labels_by_service=labels_by_service,
+                    ports=now.ports,
+                    catalog=catalog,
+                    identity_dict=identity_dict,
+                    reg_path=reg_path,
+                )
+            return _stop_services(
+                **{
+                    **stop_kw,
+                    "registry": now.registry,
+                    "docker": now.docker,
+                    "ports": now.ports,
+                }
+            )
 
     # B2 (cycle 2): only the worktree-scoped services start and restart under the
     # instance lock. The task-orchestrator is project-scoped (reap never touches it)
@@ -1528,6 +1557,8 @@ def run_lifecycle(
             runtime_dir=runtime_dir,
             compose_proj=compose_proj,
             cmd_runner=cmd_runner,
+            # a restart stops and starts the running ones again (fix round 3)
+            include_running=op == "restart",
         )
         if locking
         else {}
@@ -1579,13 +1610,15 @@ def run_lifecycle(
             worktree_hash=worktree_hash,
         )
 
-        def docker_after_stop() -> Dict[str, Any]:
-            """N1 (fix round 2): the start half reads docker as it is after the stops.
+        def docker_now() -> Dict[str, Any]:
+            """A docker snapshot read now (N1, fix rounds 2 and 3); ``{}`` in a dry run.
 
-            The pre-stop snapshot still lists the sidecars just stopped, so the start
-            would report them ``already_running`` and run no ``compose up``. Only docker
-            is read again: a restart's stop releases no leases (no ``release_state``),
-            so the ports stand, and the start's registry save reloads the file itself.
+            The start half reads docker after the stops: the pre-stop snapshot still
+            lists the sidecars just stopped, so the start would report them
+            ``already_running`` and run no ``compose up``. The orchestrator stop reads
+            it after the (possibly long) pre-build. Only docker is read again: a
+            restart's stop releases no leases (no ``release_state``), so the ports
+            stand, and the start's registry save reloads the file itself.
             """
             if dry_run:
                 return {}
@@ -1593,7 +1626,13 @@ def run_lifecycle(
 
         # As in one call: every stop before any start, and a failed stop starts
         # nothing. The worktree stop and start share ONE lock acquisition.
-        stops = [_stop_services(selected=outside, **restart_stop_kw)] if outside else []
+        stops: List[LifecycleResult] = []
+        starts: List[LifecycleResult] = []
+        stop_res: Optional[LifecycleResult] = None
+        if outside:
+            stops.append(
+                _stop_services(selected=outside, **{**restart_stop_kw, **docker_now()})
+            )
         with worktree_lock:
             blocked, fresh = facts_under_lock()
             if blocked is None:
@@ -1608,7 +1647,7 @@ def run_lifecycle(
                     _start_services(
                         selected=inside,
                         prebuilt=prebuilt,
-                        **{**start_kw, **fresh, **docker_after_stop()},
+                        **{**start_kw, **fresh, **docker_now()},
                     )
                 ]
         if blocked is not None:
@@ -1616,10 +1655,11 @@ def run_lifecycle(
             # half (outside the lock) was stopped. One call would have blocked before
             # stopping anything, so an orchestrator this run stopped is started again
             # (outside launch.lock) and the worktree part is reported blocked.
+            # A failed orchestrator stop starts nothing, as a failed stop never does.
             if not any(
-                entry.get("action") == "stopped"
+                part.status != "FAIL"
+                and any(entry.get("action") == "stopped" for entry in part.services)
                 for part in stops
-                for entry in part.services
             ):
                 return blocked
             blocked.services = [
@@ -1628,7 +1668,7 @@ def run_lifecycle(
             restored = _start_services(
                 selected=outside,
                 write_artifacts=False,
-                **{**start_kw, **docker_after_stop()},
+                **{**start_kw, **docker_now()},
             )
             return _merge_parts([blocked, restored], selected)
         if outside:
@@ -1636,12 +1676,12 @@ def run_lifecycle(
                 _start_services(
                     selected=outside,
                     write_artifacts=False,
-                    **{**start_kw, **docker_after_stop()},
+                    **{**start_kw, **docker_now()},
                 )
             )
         start_res = _merge_parts(starts, selected)
         start_res.operation = "restart"
-        if dry_run:
+        if dry_run and stop_res is not None:
             start_res.services = [
                 {
                     **s,
@@ -1952,20 +1992,26 @@ def _prebuild_images(
     runtime_dir: Path,
     compose_proj: str,
     cmd_runner: Optional[Callable[..., Any]],
+    include_running: bool = False,
 ) -> Dict[str, _ImageStep]:
     """Probe, and build when missing, the images of ``services`` before launch.lock (B2).
 
     A build can take ``build_timeout_secs()``; under the instance lock it would stall
     every launcher of the worktree (attach and ``ensure_backend`` wait for that lock
-    without a bound). Sidecars the preflight saw running are skipped, as
-    ``_start_services`` skips their image step. The build uses the build-only inputs
-    (``compose_build_inputs``) that the launcher and ``mcp init`` use.
+    without a bound). A start skips sidecars the preflight saw running, as
+    ``_start_services`` skips their image step; a restart (``include_running``) does
+    not, since it starts them again (building beside the old container only retags
+    the shared image). The build uses the build-only inputs (``compose_build_inputs``)
+    that the launcher and ``mcp init`` use; when they cannot be written, the step is
+    a failed build (``IMAGE_BUILD_FAILED`` for that service), never an exception.
     """
     steps: Dict[str, _ImageStep] = {}
     for svc in services:
         if svc not in {"conport", "dope-memory"} or svc in steps:
             continue
-        if _already_running_managed(docker, container_names[svc], project_id, svc):
+        if not include_running and _already_running_managed(
+            docker, container_names[svc], project_id, svc
+        ):
             continue
         env = dr.env_with_compose_interpolation(product=product, scrub_ambient=True)
 
@@ -1979,13 +2025,24 @@ def _prebuild_images(
                 services=[svc],
             )
 
-        step = _plan_image(
-            svc,
-            product=product,
-            cmd_runner=cmd_runner,
-            env=env,
-            build_command=build_command,
-        )
+        try:
+            step = _plan_image(
+                svc,
+                product=product,
+                cmd_runner=cmd_runner,
+                env=env,
+                build_command=build_command,
+            )
+        except OSError as exc:  # the build inputs could not be written: fail closed
+            step = _ImageStep(
+                image=dr.compose_image_name(svc, product=product),
+                findings=[],
+                build_result=dr.RuntimeCommandResult(
+                    command=["docker", "compose", "build", svc],
+                    exit_code=1,
+                    stderr=f"build inputs in {runtime_dir} could not be written: {exc}",
+                ),
+            )
         if step.build_command is not None:
             step.build_result = dr.run_cmd(
                 step.build_command,
