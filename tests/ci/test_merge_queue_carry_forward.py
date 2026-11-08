@@ -73,6 +73,34 @@ def test_single_pr_merge_carries_forward_when_both_gates_passed():
     assert result.pull_request_heads == (PR_HEAD,)
 
 
+def test_full_base_ref_matches_the_pull_request_branch_name():
+    parents = {QUEUE: (BASE, PR_HEAD)}
+    result = evaluate(
+        head_sha=QUEUE,
+        base_sha=BASE,
+        head_ref="refs/heads/gh-readonly-queue/main/pr-1466-abcdef0",
+        base_ref="refs/heads/main",
+        parents_of=parents.get,
+        github=FakeGitHub(),
+    )
+    assert result.pull_requests == (1466,)
+
+
+def test_missing_steward_is_refused():
+    parents = {QUEUE: (BASE, PR_HEAD)}
+    github = FakeGitHub()
+    github.statuses[PR_HEAD][STEWARD_CONTEXT] = "failure"
+    with pytest.raises(CarryForwardError, match="PR Steward / final readiness"):
+        evaluate(
+            head_sha=QUEUE,
+            base_sha=BASE,
+            head_ref="gh-readonly-queue/main/pr-1466-abcdef0",
+            base_ref="main",
+            parents_of=parents.get,
+            github=github,
+        )
+
+
 def test_missing_audit_or_steward_is_refused():
     parents = {QUEUE: (BASE, PR_HEAD)}
     github = FakeGitHub()

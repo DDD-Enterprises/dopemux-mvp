@@ -103,12 +103,18 @@ def merge_pr_heads(
     return tuple(found)
 
 
+def _branch_name(ref: str) -> str:
+    """Return the branch name from a short name or a refs/heads full ref."""
+    return ref.removeprefix("refs/heads/")
+
+
 def _open_pr_number(
     pulls: Sequence[Mapping[str, object]],
     *,
     sha: str,
     base_ref: str,
 ) -> int:
+    base_name = _branch_name(base_ref)
     matches: list[int] = []
     for pull in pulls:
         if pull.get("state") != "open":
@@ -117,7 +123,7 @@ def _open_pr_number(
         head = pull.get("head")
         if not isinstance(base, Mapping) or not isinstance(head, Mapping):
             continue
-        if base.get("ref") != base_ref or head.get("sha") != sha:
+        if base.get("ref") != base_name or head.get("sha") != sha:
             continue
         number = pull.get("number")
         if isinstance(number, int):
@@ -125,7 +131,7 @@ def _open_pr_number(
     if len(matches) != 1:
         raise CarryForwardError(
             f"{sha} is not the head of exactly one open pull request "
-            f"targeting {base_ref}"
+            f"targeting {base_name}"
         )
     return matches[0]
 
