@@ -1,0 +1,43 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "grok-4.7",
+      "model_family": "xai-grok",
+      "runner": "grok-build",
+      "runtime_family": "xai-grok-build"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --mode plan --sandbox --effort high --disable-slash-commands --model gemini-4-argon-high --output-format text --print \"$(cat /tmp/pr1504-audit-prompt.md)\" > /tmp/pr1504-agy-audit.log 2> /tmp/pr1504-agy-audit.err; AGY CLI version observed at proof assembly 1.5.3 (the audit run did not print its version); stderr: warning: --mode plan has no effect while slash command expansion is disabled; log mtime 2026-11-08T19:11:15Z; exit 0; one attempt; raw log retained in review_bundle/AGY_AUDIT.txt sha256 7521e7f0e652d37947e933378f8fc8b730d7f41595b44b165b3bfeda4b63f85d",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1504-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "In scripts/ci/merge_queue_carry_forward.py:233, check_conclusion sorts matching check runs by started_at/completed_at string (falling back to empty string), so a newly queued check run with null timestamps could sort before an older completed run; in practice PR checks are already completed before entering the merge queue.",
+      "In scripts/ci/merge_queue_carry_forward.py:63, parse_queue_pr_numbers returns None when head_ref does not match _REF_RE (for example, if a target branch name contains a slash), skipping the ref-name cross-check while still enforcing git parent topology, open PR head/base matching, and check/status verification.",
+      "Corroborating Grok 4.5 F1 (LOW, non-governing, PASS_WITH_RISKS): unit-test re-run on merge_group is inferred because the ci-complete on: trigger is outside the pinned diff. Advisory jobs skip merge_group; the tests job does not.",
+      "Corroborating Grok 4.5 F2 (LOW, non-governing): if gh api itself fails while posting the refusal status, the job still fails closed but the explicit PR Steward failure status may not be written.",
+      "Auditor model identity: invoked gemini-4-argon-high (Argon 4, effort high) after the operator said \"it's argon 4 now\". Recorded auditor_model is the trusted-schema family value gemini. The enum on main has no gemini-4-argon-high value, and CI loads that schema from the default branch.",
+      "Grok 4.5 corroboration is retained in review_bundle/GROK_AUDIT.txt and is not the signed verdict. Provider-attested model identity for the AGY run is UNKNOWN; the CLI selector was gemini-4-argon-high."
+    ],
+    "skip_reason": null
+  },
+  "generated_at": "2026-11-09T04:40:42Z",
+  "head_sha": "1d43dc0ee4bb97b445f2209636a111bb796cb008",
+  "packet_id": "TP-DMX-PR1504-L3-AUDIT-001",
+  "pr_number": 1504,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}
