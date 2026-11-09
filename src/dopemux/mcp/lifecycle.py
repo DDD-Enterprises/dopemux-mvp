@@ -80,20 +80,10 @@ BLOCKING_FINDING_CODES = frozenset(
     }
 )
 
-# Doctor findings computed against the envrc ports before allocation. For
-# start/restart the lifecycle recomputes them against the RESOLVED ports
-# (`_collision_checks`; `_resolve_ports` raises PortAllocationBlocked when no free
-# port exists), so they are not carried as blockers there.
-PORT_DEPENDENT_DOCTOR_CODES = frozenset(
-    {
-        "PORT_RESERVED_COLLISION",
-        "PORT_INTRA_CONFIG_COLLISION",
-        "PORT_OWNED_BY_OTHER_PROJECT",
-        "DOCKER_CONTAINER_WRONG_PROJECT",
-        "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
-        "DOCKER_CONTAINER_PORT_COLLISION",
-    }
-)
+# For start/restart a doctor container finding (computed against the envrc ports
+# before allocation) is carried only while its container publishes a port in the
+# RESOLVED port map; see `_split_deferred_doctor`.
+DEFERRED_DOCTOR_CODE_PREFIX = "DOCKER_CONTAINER_"
 
 # Informational doctor codes that should not block (lifecycle neutralizes compose hazards)
 NON_BLOCKING_EVEN_IF_IN_SET = frozenset(
@@ -935,6 +925,93 @@ def _to_start_gate(
     return blocking, warnings
 
 
+def _split_deferred_doctor(
+    findings: Sequence[Dict[str, Any]],
+    docker: di.DockerInspectResult,
+    ports: Mapping[str, int],
+    expected_names: Sequence[str] = (),
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """``(kept, dropped)`` doctor container findings, judged against the resolved ports.
+
+    A finding is kept when docker cannot be read, when it names no container
+    (``evidence[0]`` is the container name), when that container bears one of
+    ``expected_names`` (this run's container names: it is adoptable by name
+    wherever it publishes), or when it publishes a resolved port. It is dropped
+    only when an unrelated container holds just a stale envrc port or is gone.
+    """
+    if not docker.available:
+        return list(findings), []
+    resolved = {int(p) for p in ports.values() if isinstance(p, int)}
+    kept: List[Dict[str, Any]] = []
+    dropped: List[Dict[str, Any]] = []
+    for f in findings:
+        evidence = f.get("evidence") or []
+        name = str(evidence[0]) if evidence else ""
+        ours_by_name = any(name == e or name.endswith(e) for e in expected_names if e)
+        held = any(
+            (c.name == name or c.name.endswith(name))
+            and resolved & {int(p) for p in c.published_ports}
+            for c in docker.containers
+        )
+        (kept if not name or ours_by_name or held else dropped).append(f)
+    return kept, dropped
+
+
+def _resolved_port_findings(
+    selected: Sequence[str],
+    ports: Mapping[str, int],
+    catalog: Mapping[str, Any],
+) -> List[Dict[str, Any]]:
+    """Duplicate and reserved ports in the resolved map (retained leases included)."""
+    from .port_allocator import singleton_reserved_ports
+
+    reserved = singleton_reserved_ports(catalog)
+    reserved.setdefault(7890, "task-orchestrator")
+    findings: List[Dict[str, Any]] = []
+    seen: Dict[int, Tuple[str, str]] = {}
+    for name in selected:
+        spec = (catalog.get("servers") or {}).get(name) or {}
+        if not isinstance(spec, dict):
+            continue
+        variables = [spec.get("port_var")] + [
+            e.get("var")
+            for e in (spec.get("extra_port_vars") or [])
+            if isinstance(e, dict)
+        ]
+        for var in filter(None, variables):
+            port = ports.get(str(var))
+            if not isinstance(port, int):
+                continue
+            if name != "task-orchestrator" and port in reserved:
+                findings.append(
+                    {
+                        "code": "PORT_RESERVED_COLLISION",
+                        "severity": "FAIL",
+                        "service": name,
+                        "message": (
+                            f"resolved port :{port} ({var}) is a reserved "
+                            "singleton port"
+                        ),
+                    }
+                )
+            other = seen.get(port)
+            if other is not None and other[0] != name:
+                findings.append(
+                    {
+                        "code": "PORT_INTRA_CONFIG_COLLISION",
+                        "severity": "FAIL",
+                        "service": name,
+                        "message": (
+                            f"resolved ports collide: {other[1]}={port} and "
+                            f"{var}={port}"
+                        ),
+                    }
+                )
+            else:
+                seen.setdefault(port, (name, str(var)))
+    return findings
+
+
 @dataclass
 class _Facts:
     """The mutable preflight facts of a lifecycle run and the findings derived from them."""
@@ -963,6 +1040,7 @@ def _mutable_facts(
     worktree_root: str,
     blocking: Sequence[Dict[str, Any]],
     warnings: Sequence[Dict[str, Any]],
+    deferred_doctor: Sequence[Dict[str, Any]] = (),
 ) -> _Facts:
     """Registry, docker snapshot and ports, with their findings appended (deduplicated).
 
@@ -1170,6 +1248,24 @@ def _mutable_facts(
     )
     if op in {"start", "restart"}:
         blocking.extend(collision_findings)
+        blocking.extend(_resolved_port_findings(selected, ports, catalog))
+        kept, dropped = _split_deferred_doctor(
+            deferred_doctor, docker, ports, list(container_names.values())
+        )
+        blocking.extend(kept)
+        for f in dropped:
+            warnings.append(
+                {
+                    "code": "DOCTOR_PORT_FINDING_REEVALUATED",
+                    "severity": "INFO",
+                    "service": f.get("service"),
+                    "message": (
+                        f"doctor {f.get('code')} (computed against the envrc port "
+                        "before allocation) is re-evaluated against the resolved "
+                        f"ports: {f.get('message')}"
+                    ),
+                }
+            )
 
     # Deduplicate blocking by code+service+message
     seen_b = set()
@@ -1460,25 +1556,17 @@ def run_lifecycle(
             }
         )
 
+    deferred_doctor: List[Dict[str, Any]] = []
     if doctor:
         doctor_blocking = _doctor_blocking_findings(
             doctor, services=selected, strategy_neutralizes_compose=True
         )
         for f in doctor_blocking:
             code = f.get("code") or ""
-            if op in {"start", "restart"} and code in PORT_DEPENDENT_DOCTOR_CODES:
-                warnings.append(
-                    {
-                        "code": "DOCTOR_PORT_FINDING_REEVALUATED",
-                        "severity": "INFO",
-                        "service": f.get("service"),
-                        "message": (
-                            f"doctor {code} (computed against the envrc port before "
-                            "allocation) is re-evaluated against the resolved "
-                            f"ports: {f.get('message')}"
-                        ),
-                    }
-                )
+            if op in {"start", "restart"} and code.startswith(
+                DEFERRED_DOCTOR_CODE_PREFIX
+            ):
+                deferred_doctor.append(f)
             else:
                 blocking.append(f)
         for f in doctor.findings:
@@ -1550,6 +1638,7 @@ def run_lifecycle(
         worktree_root=worktree_root,
         blocking=list(blocking),
         warnings=list(warnings),
+        deferred_doctor=list(deferred_doctor),
     )
     facts = _mutable_facts(op, orchestrator_gate=True, **facts_kw)
     registry, docker, ports = facts.registry, facts.docker, facts.ports

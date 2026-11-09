@@ -728,6 +728,7 @@ def _run(op, tmp_path, repo, paths, taken, is_free=None):
         catalog=_catalog(),
         dry_run=True,
         registry_path=paths.reg,
+        docker_runner=_docker_empty(),
         product_root=product,
         process_env={},
         port_is_free_fn=is_free or (lambda p: p != taken),
@@ -936,3 +937,161 @@ def test_a_worktree_hash_without_a_scope_label_is_another_worktree(
     result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
 
     _blocked_by_port_collision(result)
+
+
+# --- Task G: retained leases and the resolved port map are still validated ---------
+
+
+def _retarget_lease(paths, port_var: str, port: int) -> None:
+    reg = PortLeaseRegistry.load(paths.leases)
+    lease = next(L for L in reg.active_leases() if L["port_var"] == port_var)
+    reg.upsert_lease({**lease, "port": port})
+    reg.save()
+
+
+def _leased_start(tmp_path, paths):
+    repo = _repo(tmp_path)
+    first = _start(tmp_path, repo, paths)
+    conport = next(s for s in first.services if s["service"] == "conport")
+    return repo, conport["ports"]["CONPORT_MCP_PORT"]
+
+
+def test_two_retained_leases_on_one_port_block(tmp_path, paths):
+    repo, conport_port = _leased_start(tmp_path, paths)
+    _retarget_lease(paths, "DOPE_MEMORY_PORT", conport_port)
+
+    result = _run("start", tmp_path, repo, paths, conport_port, is_free=lambda p: True)
+
+    assert result.status == "BLOCKED", result.to_dict()
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "PORT_INTRA_CONFIG_COLLISION" in codes, result.blocking_findings
+
+
+def test_a_retained_lease_on_the_reserved_orchestrator_port_blocks(tmp_path, paths):
+    repo, _ = _leased_start(tmp_path, paths)
+    _retarget_lease(paths, "CONPORT_MCP_PORT", 7890)
+
+    result = _run("start", tmp_path, repo, paths, 7890, is_free=lambda p: True)
+
+    assert result.status == "BLOCKED", result.to_dict()
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "PORT_RESERVED_COLLISION" in codes, result.blocking_findings
+
+
+def test_a_same_project_container_without_hash_or_scope_and_foreign_workspace_blocks(
+    tmp_path, paths, monkeypatch
+):
+    repo, kept = _leased_start(tmp_path, paths)
+    identity = resolve_identity_view(repo)
+    leased = _active_by_var(paths, identity.worktree_root)
+    (repo / ".envrc.dopemux-mcp").write_text(
+        "".join(f"export {var}={port}\n" for var, port in leased.items())
+    )
+    legacy = _sibling_container(
+        identity,
+        kept,
+        **{"dopemux.worktree_hash": None, "dopemux.scope": None},
+    )
+    _patch_docker(monkeypatch, legacy)
+
+    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
+
+    assert result.status == "BLOCKED", result.to_dict()
+
+
+def test_split_deferred_doctor_keeps_everything_when_docker_is_unavailable():
+    from dopemux.mcp import docker_inspect as di
+
+    finding = {
+        "code": "DOCKER_CONTAINER_WRONG_PROJECT",
+        "service": "conport",
+        "evidence": ["some-container"],
+    }
+    down = di.DockerInspectResult(available=False, error="no docker")
+    kept, dropped = lc._split_deferred_doctor(
+        [finding], down, {"CONPORT_MCP_PORT": 3005}
+    )
+    assert kept == [finding] and dropped == []
+
+
+def test_split_deferred_doctor_drops_only_findings_off_the_resolved_ports():
+    from dopemux.mcp import docker_inspect as di
+
+    def container(name, port):
+        return di.DockerContainerInfo(
+            id=name, name=name, ports=[], labels={}, published_ports=[port]
+        )
+
+    on_port = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", "evidence": ["on-resolved"]}
+    off_port = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", "evidence": ["on-stale"]}
+    gone = {"code": "DOCKER_CONTAINER_PORT_COLLISION", "evidence": ["not-running"]}
+    docker = di.DockerInspectResult(
+        available=True,
+        containers=[container("on-resolved", 3005), container("on-stale", 3040)],
+    )
+    kept, dropped = lc._split_deferred_doctor(
+        [on_port, off_port, gone], docker, {"CONPORT_MCP_PORT": 3005}
+    )
+    assert kept == [on_port]
+    assert dropped == [off_port, gone]
+
+
+def test_a_container_bearing_our_expected_name_with_foreign_labels_blocks(
+    tmp_path, paths, monkeypatch
+):
+    """Probe 26: a moved worktree's leftover, off the resolved ports, same name."""
+    from dopemux.mcp import docker_runtime as dr
+
+    repo, kept = _leased_start(tmp_path, paths)
+    identity = resolve_identity_view(repo)
+    expected = dr.container_name_for(
+        dr.project_slug(Path(identity.project_root).name),
+        identity.worktree_hash,
+        "conport",
+    )
+    leftover = _sibling_container(
+        identity,
+        3999,
+        **{"dopemux.worktree_hash": None, "dopemux.scope": None},
+    )
+    leftover.name = expected
+    _patch_docker(monkeypatch, leftover)
+
+    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
+
+    assert result.status == "BLOCKED", result.to_dict()
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "DOCKER_CONTAINER_WRONG_PROJECT" in codes, result.blocking_findings
+
+
+@pytest.mark.parametrize("evidence", [{"evidence": []}, {}])
+def test_split_deferred_doctor_keeps_a_finding_without_a_container_name(evidence):
+    from dopemux.mcp import docker_inspect as di
+
+    finding = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", **evidence}
+    docker = di.DockerInspectResult(available=True, containers=[])
+    kept, dropped = lc._split_deferred_doctor(
+        [finding], docker, {"CONPORT_MCP_PORT": 3005}, ["dopemux-x-conport"]
+    )
+    assert kept == [finding] and dropped == []
+
+
+def test_split_deferred_doctor_keeps_a_finding_bearing_an_expected_name():
+    from dopemux.mcp import docker_inspect as di
+
+    def container(name, port):
+        return di.DockerContainerInfo(
+            id=name, name=name, ports=[], labels={}, published_ports=[port]
+        )
+
+    ours = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", "evidence": ["dopemux-x-conport"]}
+    other = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", "evidence": ["unrelated"]}
+    docker = di.DockerInspectResult(
+        available=True,
+        containers=[container("dopemux-x-conport", 3999), container("unrelated", 3998)],
+    )
+    kept, dropped = lc._split_deferred_doctor(
+        [ours, other], docker, {"CONPORT_MCP_PORT": 3005}, ["dopemux-x-conport"]
+    )
+    assert kept == [ours]
+    assert dropped == [other]
