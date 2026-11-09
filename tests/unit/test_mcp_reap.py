@@ -2365,3 +2365,62 @@ def test_a_same_root_lease_with_another_worktree_hash_is_not_the_pairs(
     }
     assert status["lease-conport-3100"] == "released"
     assert status["lease-foreign-hash"] == "active"
+
+
+# --- automatic reap on an empty registry (cycle 5, Codex connector P2) ---------------
+
+
+def _auto_reap(tmp_path: Path, inspect: FakeInspect, runner: "Recorder"):
+    return reap.maybe_reap(
+        throttle_s=0,
+        state_file=tmp_path / "s",
+        now=lambda: NOW,
+        idle_s=IDLE,
+        inspector=inspect,
+        runner=runner,
+    )
+
+
+def test_maybe_reap_reaches_a_marked_dir_of_a_removed_worktree_on_an_empty_registry(
+    tmp_path: Path, runtime: Path
+):
+    _empty_runtime_registry(runtime)
+    rt = _marked_dir(runtime, tmp_path / "removed" / "proj")
+    _build_pid(rt, _dead_pid())  # the build finished
+    inspect = FakeInspect([])
+    runner = Recorder()
+
+    got = _auto_reap(tmp_path, inspect, runner)
+
+    assert got is not None and got.errors == [], got
+    assert [c.runtime_dir for c in got.reaped] == [rt]
+    assert inspect.calls == 1
+    assert not rt.exists()
+
+
+def test_maybe_reap_skips_docker_on_an_empty_registry_without_marked_dirs(
+    tmp_path: Path, runtime: Path
+):
+    _empty_runtime_registry(runtime)
+    (runtime / "scratch").mkdir()  # a dir with no instance.json is not a marker
+    inspect = FakeInspect([])
+
+    got = _auto_reap(tmp_path, inspect, Recorder())
+
+    assert got is not None and got.reaped == [] and got.errors == []
+    assert inspect.calls == 0
+
+
+def test_maybe_reap_leaves_a_marked_dir_of_an_existing_worktree_alone(
+    tmp_path: Path, runtime: Path
+):
+    _empty_runtime_registry(runtime)
+    live = tmp_path / "wt" / "proj"
+    live.mkdir(parents=True)
+    rt = _marked_dir(runtime, live)
+    runner = Recorder()
+
+    got = _auto_reap(tmp_path, FakeInspect([]), runner)
+
+    assert got is not None and got.reaped == [] and got.errors == []
+    assert rt.exists() and runner.calls == []
