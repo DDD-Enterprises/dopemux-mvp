@@ -371,6 +371,26 @@ def test_json_schema_shape(tmp_path: Path):
         ("http://${HOST-localhost}:3005/sse", False),
         ("http://localhost:${A${B}}/sse", False),
         ("http://localhost:${UNCLOSED/sse", False),
+        # A delimiter inside a host/userinfo placeholder default must not end
+        # the authority.
+        ("http://${HOST:-localhost/path}/sse", False),
+        ("http://${HOST:-localhost?x}/sse", False),
+        ("http://${HOST:-localhost#x}/sse", False),
+        ("http://${HOST:-user@localhost}:3005/sse", False),
+        ("http://${HOST:-localhost:3005}/sse", False),
+        ("http://${U:-a/b}@localhost:3005/sse", False),
+        ("${BASE:-http://localhost:3005}/sse", False),
+        # A placeholder supplying the scheme or the base fails closed; a later
+        # literal ``://`` in the path or query is never the authority.
+        ("${BASE:-http://localhost:3005}/sse?next=http://remote.example", False),
+        ("${SCHEME:-http}://localhost:3005/sse", False),
+        ("http${X:-}://localhost:3005/sse", False),
+        ("http:${X:-}//localhost:3005/sse", False),
+        ("http://localhost:3005/sse?next=http://remote.example", True),
+        ("http://localhost:${PORT:-3005}/sse?u=ws://x", True),
+        # Placeholders only in the port, path or query stay repairable.
+        ("http://localhost:${PORT:-3005}/${P:-a/b}", True),
+        ("http://localhost:3005/sse?x=${Q:-a/b}", True),
         # Every URL the catalog itself renders must stay repairable.
         ("http://localhost:${CONPORT_MCP_PORT:-3005}/sse", True),
         ("http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp", True),
@@ -379,6 +399,35 @@ def test_json_schema_shape(tmp_path: Path):
 )
 def test_url_is_repairable_templated_and_literal(url: Any, expected: bool) -> None:
     assert mj._url_is_repairable(url) is expected
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        ("http://localhost:3005/sse", False),
+        ("http://${HOST:-localhost}:3005/sse", True),
+        ("http://${HOST:-localhost/path}/sse", True),
+        ("http://${HOST:-localhost?x}/sse", True),
+        ("http://${HOST:-localhost#x}/sse", True),
+        ("http://${HOST:-user@localhost}:3005/sse", True),
+        ("http://${HOST:-localhost:3005}/sse", True),
+        ("http://${U:-a/b}@localhost:3005/sse", True),
+        ("${BASE:-http://localhost:3005}/sse", True),
+        ("${BASE:-http://localhost:3005}/sse?next=http://remote.example", True),
+        ("${SCHEME:-http}://localhost:3005/sse", True),
+        ("http${X:-}://localhost:3005/sse", True),
+        ("http:${X:-}//localhost:3005/sse", True),
+        ("http://localhost:3005/sse?next=http://remote.example", False),
+        ("http://localhost:${PORT:-3005}/sse?u=ws://x", False),
+        ("http://localhost:${PORT:-3005}/${P:-a/b}", False),
+        ("http://localhost:3005/sse?x=${Q:-a/b}", False),
+        ("http://[${HOST:-::1}]:3005/sse", True),
+    ],
+)
+def test_placeholder_in_userinfo_or_host_masks_before_splitting(
+    url: str, expected: bool
+) -> None:
+    assert mj._placeholder_in_userinfo_or_host(url) is expected
 
 
 def test_templated_remote_launcher_url_is_preserved_not_replaced(tmp_path: Path):

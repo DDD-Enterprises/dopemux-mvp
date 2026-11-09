@@ -7,6 +7,7 @@ lowlevel `Server`. No network except the refused-port probe.
 
 from __future__ import annotations
 
+import importlib.util
 import socket
 import time
 from contextlib import asynccontextmanager
@@ -246,9 +247,13 @@ class _Backend:
 
     def __init__(self, *plan: str) -> None:
         # per session: "ok" | "refuse" | "dead_read" | "terminated" | "terminated_echo"
+        # | "terminated_lookalike" (a look-alike error that is not the SDK's)
         self.plan = list(plan)
         self.sessions: List[Dict[str, Any]] = []
         self.calls: List[str] = []
+        #: Methods of the non-initialize requests the transport saw
+        #: (``terminated*`` modes).
+        self.sent: List[str] = []
         self.called = anyio.Event()
         self.server = self._server()
         #: While ``time.monotonic()`` is below this, every connect is refused.
@@ -309,6 +314,7 @@ class _Backend:
                             outbound,
                             client_streams[1],
                             server_streams[1].clone(),
+                            self.sent,
                         )
                     self.sessions.append(
                         {
@@ -327,7 +333,11 @@ class _Backend:
 
     @staticmethod
     async def _terminate(
-        mode: str, outbound: Any, to_server: Any, to_client: Any
+        mode: str,
+        outbound: Any,
+        to_server: Any,
+        to_client: Any,
+        sent: Any = None,
     ) -> None:
         """The streamable HTTP transport after a backend restart (SDK 1.29).
 
@@ -346,7 +356,14 @@ class _Backend:
                         or (root.params or {}).get("name") == "echo"
                     )
                 ):
-                    error = types.ErrorData(code=32600, message="Session terminated")
+                    if sent is not None:
+                        sent.append(root.method)
+                    message = (
+                        "Not Session terminated; write already committed"
+                        if mode == "terminated_lookalike"
+                        else "Session terminated"
+                    )
+                    error = types.ErrorData(code=32600, message=message)
                     reply = types.JSONRPCError(jsonrpc="2.0", id=root.id, error=error)
                     await to_client.send(SessionMessage(types.JSONRPCMessage(reply)))
                 else:
@@ -477,6 +494,55 @@ async def test_proxy_reconnects_and_resends_after_streamable_session_terminated(
     assert result.content[0].text == "ok:2"
     assert backend.calls == ["echo"]  # the backend executed it exactly once
     assert len(backend.sessions) == 2
+
+
+@pytest.mark.parametrize(
+    ("code", "message", "expected"),
+    [
+        (32600, "Session terminated", True),
+        (32600, "Not Session terminated; write already committed", False),
+        (32600, "Session terminated.", False),
+        (32600, " Session terminated", False),
+        (32600, "", False),
+        (32601, "Session terminated", False),
+        (-32600, "Session terminated", False),
+    ],
+)
+def test_session_terminated_is_exact_code_and_message(
+    code: int, message: str, expected: bool
+) -> None:
+    error = types.ErrorData(code=code, message=message)
+    assert stdio_proxy._session_terminated(error) is expected
+
+
+async def test_proxy_does_not_resend_a_lookalike_error_that_may_have_committed():
+    backend = _Backend("terminated_lookalike", "ok")
+    async with _runner_via(backend) as (runner, box):
+        with anyio.fail_after(5):
+            with pytest.raises(McpError) as info:
+                await runner.call_tool("echo", {})
+        assert "code" not in box  # no reconnect, still serving the runner
+    assert info.value.error.code == 32600
+    assert info.value.error.message == "Not Session terminated; write already committed"
+    assert backend.sent == ["tools/call"]  # sent exactly once, never resent
+    assert len(backend.sessions) == 1
+
+
+def test_sdk_still_answers_a_dead_session_with_the_exact_literal() -> None:
+    """Drift guard: an SDK reword must be seen at upgrade.
+
+    Otherwise it would silently degrade the proxy to never-resend.
+    """
+    try:
+        spec = importlib.util.find_spec("mcp.client.streamable_http")
+    except ModuleNotFoundError:
+        spec = None
+    if spec is None or not spec.origin:
+        pytest.skip("mcp.client.streamable_http is not importable")
+    with open(spec.origin, encoding="utf-8") as handle:
+        source = handle.read()
+    assert f'message="{stdio_proxy.SESSION_TERMINATED_MESSAGE}"' in source
+    assert f"code={stdio_proxy.SESSION_TERMINATED_CODE}" in source
 
 
 async def test_proxy_does_not_loop_when_fresh_session_is_also_terminated():

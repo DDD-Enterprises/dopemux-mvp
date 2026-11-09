@@ -116,6 +116,7 @@ def _functional_subset(entry: Mapping[str, Any]) -> Dict[str, Any]:
 
 _LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1"})
 _PLACEHOLDER = re.compile(r"\$\{[^}:$]*(?::-([^}$]*))?\}")
+_LITERAL_SCHEME = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://")
 
 
 def _neutralize_placeholders(url: str) -> str:
@@ -130,20 +131,37 @@ def _neutralize_placeholders(url: str) -> str:
 
 
 def _placeholder_in_userinfo_or_host(url: str) -> bool:
-    """True when a ``${...}`` placeholder sits left of the port separator of the authority.
+    """True when a ``${...}`` placeholder sits in the userinfo or host position.
+
+    That is the userinfo or host of a URL that starts with a literal ``scheme://``,
+    or anywhere in a URL that does not (such a URL is never repairable).
 
     A host or userinfo placeholder is operator-selected whatever its default
     (``${HOST:-localhost}`` resolves to a remote host when ``HOST`` is set), so
     it never proves the endpoint local. Placeholders in the port, path or query
-    are not considered here.
+    are not considered here when the URL starts with a literal scheme.
+
+    Placeholders are masked over the whole URL before the authority is split:
+    a default may itself contain ``/``, ``?``, ``#``, ``@``, ``:`` or ``://``
+    (``http://${HOST:-localhost/x}/sse``), and splitting first would end the
+    authority inside the placeholder.
+
+    Only a literal scheme at the very start is stripped. When a placeholder
+    supplies the scheme, the ``//`` or the whole base
+    (``${BASE:-http://localhost}/sse``, ``${S:-http}://localhost/sse``), a later
+    ``://`` in the path or query is not the authority, so such URLs fail closed:
+    the function returns True and they are never repairable.
     """
-    authority = url.split("://", 1)[-1]
+    # Mask each placeholder as one opaque character so a delimiter inside
+    # ``${PORT:-3005}`` is neither the port separator nor the end of the authority.
+    masked = _PLACEHOLDER.sub("\x00", url)
+    scheme = _LITERAL_SCHEME.match(masked)
+    if scheme is None:
+        return "\x00" in masked
+    authority = masked[scheme.end() :]
     for sep in ("/", "?", "#"):
         authority = authority.split(sep, 1)[0]
-    # Mask each placeholder as one opaque character so a ``:`` inside
-    # ``${PORT:-3005}`` is not mistaken for the port separator.
-    masked = _PLACEHOLDER.sub("\x00", authority)
-    userinfo, _, hostport = masked.rpartition("@")
+    userinfo, _, hostport = authority.rpartition("@")
     if "\x00" in userinfo:
         return True
     if hostport.startswith("["):

@@ -17,7 +17,8 @@ Rules:
   once on the reconnected session. A request in flight when its session drops
   gets an error at once and is never replayed (its effect is unknown).
 * A Streamable HTTP backend restart invalidates the session: each POST on it
-  gets HTTP 404, which the SDK answers with ``32600 "Session terminated"``. The
+  gets HTTP 404, which the SDK (``_send_session_terminated_error``) answers with
+  exactly ``32600 "Session terminated"``, matched in full, never as a substring. The
   backend never processed that request, so the session is dropped and the
   request is sent once on the reconnected (freshly initialized) session; a
   second "Session terminated" is returned to the runner, never retried again
@@ -190,13 +191,17 @@ SESSION_TERMINATED_MESSAGE = "Session terminated"
 def _session_terminated(error: types.ErrorData) -> bool:
     """True when the backend rejected the request unprocessed: its session is gone.
 
-    Code and text must both match. The code alone is not enough: a backend's
-    own error with that code may come from a request it did process, which must
-    never be replayed. If the SDK rewords the message, this degrades to passing
-    the error to the runner (the behaviour before), never to a duplicate call.
+    The code and the whole message must equal what the SDK's
+    ``_send_session_terminated_error`` writes (``32600`` and exactly
+    ``"Session terminated"``). Neither the code alone nor a substring is enough:
+    a backend's own error may carry that code or contain that text for a request
+    it did process, which must never be replayed. If the SDK rewords the
+    message, this degrades to passing the error to the runner (the behaviour
+    before), never to a duplicate call.
     """
-    return error.code == SESSION_TERMINATED_CODE and SESSION_TERMINATED_MESSAGE in (
-        error.message or ""
+    return (
+        error.code == SESSION_TERMINATED_CODE
+        and error.message == SESSION_TERMINATED_MESSAGE
     )
 
 
