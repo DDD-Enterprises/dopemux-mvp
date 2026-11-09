@@ -128,7 +128,7 @@ def test_non_merge_queue_commit_is_refused():
         )
 
 
-def test_ref_names_must_match_merge_parents():
+def test_queue_ref_may_name_only_the_newest_pull_request():
     parents = {QUEUE: (BASE, PR_HEAD), OTHER: (QUEUE, "e" * 40)}
     github = FakeGitHub()
     github.pulls["e" * 40] = [
@@ -141,14 +141,26 @@ def test_ref_names_must_match_merge_parents():
     ]
     github.checks["e" * 40] = {AUDIT_CHECK: "success"}
     github.statuses["e" * 40] = {STEWARD_CONTEXT: "success"}
-    with pytest.raises(CarryForwardError, match="queue ref names"):
+    result = evaluate(
+        head_sha=OTHER,
+        base_sha=BASE,
+        head_ref="gh-readonly-queue/main/pr-1440-abcdef0",
+        base_ref="main",
+        parents_of=parents.get,
+        github=github,
+    )
+    assert result.pull_requests == (1440, 1466)
+
+
+def test_queue_ref_naming_an_absent_pull_request_is_refused():
+    with pytest.raises(CarryForwardError, match="not merge parents"):
         evaluate(
-            head_sha=OTHER,
+            head_sha=QUEUE,
             base_sha=BASE,
-            head_ref="gh-readonly-queue/main/pr-1466-abcdef0",
+            head_ref="gh-readonly-queue/main/pr-9999-abcdef0",
             base_ref="main",
-            parents_of=parents.get,
-            github=github,
+            parents_of=lambda _sha: (BASE, PR_HEAD),
+            github=FakeGitHub(),
         )
 
 
@@ -159,6 +171,7 @@ def test_newer_in_progress_check_is_not_a_success():
         1: {
             "check_runs": [
                 {
+                    "id": 10,
                     "name": AUDIT_CHECK,
                     "status": "completed",
                     "conclusion": "success",
@@ -166,10 +179,11 @@ def test_newer_in_progress_check_is_not_a_success():
                     "completed_at": "2026-11-07T00:01:00Z",
                 },
                 {
+                    "id": 11,
                     "name": AUDIT_CHECK,
-                    "status": "in_progress",
+                    "status": "queued",
                     "conclusion": None,
-                    "started_at": "2026-11-07T00:02:00Z",
+                    "started_at": None,
                     "completed_at": None,
                 },
             ]

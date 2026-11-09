@@ -165,11 +165,16 @@ def evaluate(
             )
         numbers.append(number)
     named = parse_queue_pr_numbers(head_ref)
-    if named is not None and tuple(sorted(named)) != tuple(sorted(numbers)):
-        raise CarryForwardError(
-            f"queue ref names PRs {list(named)} but the merge parents are "
-            f"PRs {numbers}"
-        )
+    # GitHub names the temporary branch for the newest pull request only
+    # (`main/pr-2`) even when that commit also contains earlier queued
+    # pull requests. Every discovered parent is still required to pass both
+    # gates. A name that points at a pull request outside those parents fails.
+    if named is not None:
+        missing = [number for number in named if number not in numbers]
+        if missing:
+            raise CarryForwardError(
+                "queue ref names PRs " f"{missing} that are not merge parents {numbers}"
+            )
     return CarryForward(
         pull_requests=tuple(numbers),
         pull_request_heads=pr_heads,
@@ -187,6 +192,17 @@ def git_parents(repo: Path, sha: str) -> tuple[str, ...]:
     if result.returncode != 0:
         raise CarryForwardError(f"cannot read parents of {sha}")
     return tuple(parent for parent in result.stdout.split() if parent)
+
+
+def _check_run_order(run: Mapping[str, object]) -> tuple[int, str]:
+    """Sort key: higher GitHub check-run id is newer."""
+    raw_id = run.get("id")
+    try:
+        run_id = int(raw_id)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        run_id = -1
+    stamp = str(run.get("started_at") or run.get("completed_at") or "")
+    return (run_id, stamp)
 
 
 class GhApi(GitHubView):
@@ -228,11 +244,11 @@ class GhApi(GitHubView):
                 break
         if not matches:
             return None
-        # An in-progress rerun sorts after an older success. Only a completed
-        # success on the newest run may be carried forward.
-        matches.sort(
-            key=lambda run: str(run.get("started_at") or run.get("completed_at") or "")
-        )
+        # Check-run ids increase as GitHub creates runs. A queued rerun can
+        # have null timestamps, which sort before an older success and would
+        # otherwise hide the rerun. Only a completed success on the highest
+        # id may be carried forward.
+        matches.sort(key=_check_run_order)
         latest = matches[-1]
         if latest.get("status") != "completed":
             return None
