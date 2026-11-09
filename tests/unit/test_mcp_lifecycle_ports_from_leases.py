@@ -682,3 +682,257 @@ def test_a_port_another_worktrees_container_publishes_is_not_adopted(tmp_path, p
     ours = _active_by_var(paths, identity.worktree_root)
     assert ours["CONPORT_MCP_PORT"] == ports["CONPORT_MCP_PORT"]
     assert ours["CONPORT_HTTP_PORT"] == envrc_ports["CONPORT_HTTP_PORT"]
+
+
+# --- Task F: doctor port findings are re-evaluated after allocation ----------------
+
+
+def _foreign_conport_on_stale_envrc_port(tmp_path, paths, monkeypatch):
+    """`init` then `stop`; another project's conport sidecar holds the envrc port.
+
+    The doctor and the lifecycle both read docker through
+    ``docker_inspect.inspect_running_containers``, so patching it feeds both.
+    """
+    from dopemux.mcp import docker_inspect as di
+
+    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+    taken = envrc_ports["CONPORT_MCP_PORT"]
+    foreign = di.DockerContainerInfo(
+        id="c0ffee000004",
+        name="dopemux-other-project-conport",
+        ports=[f"127.0.0.1:{taken}->3004/tcp"],
+        labels={
+            "dopemux.managed": "true",
+            "dopemux.service": "conport",
+            "dopemux.project_id": "another-project",
+            "dopemux.worktree_hash": "eeee",
+        },
+        published_ports=[taken],
+    )
+    monkeypatch.setattr(
+        di,
+        "inspect_running_containers",
+        lambda **_k: di.DockerInspectResult(available=True, containers=[foreign]),
+    )
+    return repo, identity, taken
+
+
+def _run(op, tmp_path, repo, paths, taken, is_free=None):
+    product = tmp_path / "product"
+    if not product.exists():
+        product = _product(tmp_path)
+    return run_lifecycle(
+        op,
+        repo=repo,
+        services=["conport", "dope-memory"],
+        catalog=_catalog(),
+        dry_run=True,
+        registry_path=paths.reg,
+        product_root=product,
+        process_env={},
+        port_is_free_fn=is_free or (lambda p: p != taken),
+    )
+
+
+def test_start_after_init_and_stop_ignores_a_foreign_container_on_the_stale_port(
+    tmp_path, paths, monkeypatch
+):
+    repo, identity, taken = _foreign_conport_on_stale_envrc_port(
+        tmp_path, paths, monkeypatch
+    )
+    result = _run("start", tmp_path, repo, paths, taken)
+
+    assert result.status != "BLOCKED", result.blocking_findings
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "DOCKER_CONTAINER_WRONG_PROJECT" not in codes, result.blocking_findings
+    conport = next(s for s in result.services if s["service"] == "conport")
+    assert conport["ports"]["CONPORT_MCP_PORT"] != taken
+
+
+def test_stop_does_not_re_evaluate_doctor_port_findings(tmp_path, paths, monkeypatch):
+    """Control: only start/restart re-evaluate port findings; other ops are unchanged.
+
+    A stop result's warnings are always empty, so the registry is made unreadable:
+    REGISTRY_PARSE_ERROR makes ``_stop_blocking`` return every finding, and the
+    doctor's container finding must still be among them.
+    """
+    repo, identity, taken = _foreign_conport_on_stale_envrc_port(
+        tmp_path, paths, monkeypatch
+    )
+    paths.reg.parent.mkdir(parents=True, exist_ok=True)
+    paths.reg.write_text("{not json")
+    result = _run("stop", tmp_path, repo, paths, taken)
+
+    assert result.operation == "stop"
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "DOCKER_CONTAINER_WRONG_PROJECT" in codes, result.blocking_findings
+    assert not [
+        w for w in result.warnings if w.get("code") == "DOCTOR_PORT_FINDING_REEVALUATED"
+    ]
+
+
+def test_start_still_carries_a_port_independent_doctor_blocker(
+    tmp_path, paths, monkeypatch
+):
+    """Control: a doctor blocker that does not depend on ports stays a blocker."""
+    repo, identity, taken = _foreign_conport_on_stale_envrc_port(
+        tmp_path, paths, monkeypatch
+    )
+    (repo / ".mcp.json").write_text("{not json")
+    result = _run("start", tmp_path, repo, paths, taken)
+
+    assert result.status == "BLOCKED"
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "MCP_JSON_PARSE_ERROR" in codes, result.blocking_findings
+
+
+def test_a_re_evaluated_port_finding_is_recorded_as_an_info_warning(
+    tmp_path, paths, monkeypatch
+):
+    """A successful start result carries no preflight warnings (pre-existing), so
+    the entry is observed on a result that is blocked for another reason."""
+    repo, identity, taken = _foreign_conport_on_stale_envrc_port(
+        tmp_path, paths, monkeypatch
+    )
+    (repo / ".mcp.json").write_text("{not json")
+    result = _run("start", tmp_path, repo, paths, taken)
+
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "DOCKER_CONTAINER_WRONG_PROJECT" not in codes, result.blocking_findings
+    reevaluated = [
+        w for w in result.warnings if w.get("code") == "DOCTOR_PORT_FINDING_REEVALUATED"
+    ]
+    assert len(reevaluated) == 1, result.warnings
+    assert reevaluated[0]["service"] == "conport"
+    assert reevaluated[0]["severity"] == "INFO"
+    assert "DOCKER_CONTAINER_WRONG_PROJECT" in reevaluated[0]["message"]
+
+
+def _sibling_container(identity, port: int, **label_overrides):
+    """A managed conport sidecar publishing ``port`` that is not this worktree's."""
+    from dopemux.mcp import docker_inspect as di
+
+    labels = {
+        "dopemux.managed": "true",
+        "dopemux.service": "conport",
+        "dopemux.scope": "worktree",
+        "dopemux.project_id": identity.project_id,
+        "dopemux.worktree_hash": "ffff",
+        "dopemux.workspace_id": "/elsewhere/sibling",
+        "dopemux.worktree_root": "/elsewhere/sibling",
+        "dopemux.project_root": "/elsewhere/sibling",
+    }
+    labels.update(label_overrides)
+    labels = {k: v for k, v in labels.items() if v is not None}
+    return di.DockerContainerInfo(
+        id="c0ffee000005",
+        name="dopemux-sibling-conport",
+        ports=[f"127.0.0.1:{port}->3004/tcp"],
+        labels=labels,
+        published_ports=[port],
+    )
+
+
+def _patch_docker(monkeypatch, container):
+    from dopemux.mcp import docker_inspect as di
+
+    monkeypatch.setattr(
+        di,
+        "inspect_running_containers",
+        lambda **_k: di.DockerInspectResult(available=True, containers=[container]),
+    )
+
+
+def _blocked_by_port_collision(result):
+    assert result.status == "BLOCKED", result.to_dict()
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "DOCKER_CONTAINER_PORT_COLLISION" in codes, result.blocking_findings
+
+
+def test_a_sibling_worktrees_container_on_the_port_our_lease_keeps_blocks(
+    tmp_path, paths, monkeypatch
+):
+    repo = _repo(tmp_path)
+    first = _start(tmp_path, repo, paths)
+    conport = next(s for s in first.services if s["service"] == "conport")
+    kept = conport["ports"]["CONPORT_MCP_PORT"]
+    identity = resolve_identity_view(repo)
+    _patch_docker(monkeypatch, _sibling_container(identity, kept))
+
+    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
+
+    _blocked_by_port_collision(result)
+
+
+def test_a_sibling_worktrees_container_on_a_re_leased_stale_port_blocks(
+    tmp_path, paths, monkeypatch
+):
+    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+    taken = envrc_ports["CONPORT_MCP_PORT"]
+    _patch_docker(monkeypatch, _sibling_container(identity, taken))
+
+    # The connect probe misses the published port, so the same port is re-leased.
+    result = _run("start", tmp_path, repo, paths, taken, is_free=lambda p: True)
+
+    _blocked_by_port_collision(result)
+
+
+def test_a_managed_container_without_project_id_of_another_root_blocks(
+    tmp_path, paths, monkeypatch
+):
+    repo = _repo(tmp_path)
+    first = _start(tmp_path, repo, paths)
+    conport = next(s for s in first.services if s["service"] == "conport")
+    kept = conport["ports"]["CONPORT_MCP_PORT"]
+    identity = resolve_identity_view(repo)
+    legacy = _sibling_container(
+        identity,
+        kept,
+        **{
+            "dopemux.project_id": None,
+            "dopemux.worktree_hash": None,
+            "dopemux.scope": None,
+        },
+    )
+    _patch_docker(monkeypatch, legacy)
+
+    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
+
+    _blocked_by_port_collision(result)
+
+
+def test_another_projects_container_on_a_kept_port_is_not_called_same_project(
+    tmp_path, paths, monkeypatch
+):
+    repo = _repo(tmp_path)
+    first = _start(tmp_path, repo, paths)
+    conport = next(s for s in first.services if s["service"] == "conport")
+    kept = conport["ports"]["CONPORT_MCP_PORT"]
+    identity = resolve_identity_view(repo)
+    other = _sibling_container(identity, kept, **{"dopemux.project_id": "other-proj"})
+    _patch_docker(monkeypatch, other)
+
+    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
+
+    assert result.status == "BLOCKED", result.to_dict()
+    codes = {f["code"] for f in result.blocking_findings}
+    assert "PORT_OWNED_BY_OTHER_PROJECT" in codes, result.blocking_findings
+    assert not [
+        f for f in result.blocking_findings if "same-project" in f.get("message", "")
+    ]
+
+
+def test_a_worktree_hash_without_a_scope_label_is_another_worktree(
+    tmp_path, paths, monkeypatch
+):
+    repo = _repo(tmp_path)
+    first = _start(tmp_path, repo, paths)
+    conport = next(s for s in first.services if s["service"] == "conport")
+    kept = conport["ports"]["CONPORT_MCP_PORT"]
+    identity = resolve_identity_view(repo)
+    unscoped = _sibling_container(identity, kept, **{"dopemux.scope": None})
+    _patch_docker(monkeypatch, unscoped)
+
+    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
+
+    _blocked_by_port_collision(result)

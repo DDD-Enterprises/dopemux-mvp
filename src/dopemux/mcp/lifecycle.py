@@ -80,6 +80,21 @@ BLOCKING_FINDING_CODES = frozenset(
     }
 )
 
+# Doctor findings computed against the envrc ports before allocation. For
+# start/restart the lifecycle recomputes them against the RESOLVED ports
+# (`_collision_checks`; `_resolve_ports` raises PortAllocationBlocked when no free
+# port exists), so they are not carried as blockers there.
+PORT_DEPENDENT_DOCTOR_CODES = frozenset(
+    {
+        "PORT_RESERVED_COLLISION",
+        "PORT_INTRA_CONFIG_COLLISION",
+        "PORT_OWNED_BY_OTHER_PROJECT",
+        "DOCKER_CONTAINER_WRONG_PROJECT",
+        "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
+        "DOCKER_CONTAINER_PORT_COLLISION",
+    }
+)
+
 # Informational doctor codes that should not block (lifecycle neutralizes compose hazards)
 NON_BLOCKING_EVEN_IF_IN_SET = frozenset(
     {
@@ -560,6 +575,7 @@ def _collision_checks(
     docker: di.DockerInspectResult,
     project_id: str,
     worktree_root: str,
+    worktree_hash: str,
     catalog: Optional[Mapping[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     findings: List[Dict[str, Any]] = []
@@ -673,6 +689,46 @@ def _collision_checks(
                         f"Port :{port} ({var}) held by same-project container "
                         f"{owner.name} labeled service={owner_svc_label} "
                         f"(expected {expected_svc})"
+                    ),
+                }
+            )
+            continue
+        # The launcher's owner rule (`_check_sidecar_owner`) for same-project
+        # containers: a worktree-scoped sidecar is ours only with our worktree hash.
+        # Another project's owner falls through to PORT_OWNED_BY_OTHER_PROJECT below.
+        owner_hash = labels.get("dopemux.worktree_hash")
+        if (
+            managed
+            and labels.get("dopemux.project_id") == project_id
+            and labels.get("dopemux.scope", "worktree") == "worktree"
+            and owner_hash
+            and owner_hash != worktree_hash
+        ):
+            findings.append(
+                {
+                    "code": "DOCKER_CONTAINER_PORT_COLLISION",
+                    "severity": "FAIL",
+                    "service": expected_svc,
+                    "message": (
+                        f"Port :{port} ({var}) held by same-project container "
+                        f"{owner.name} of another worktree ({owner_hash})"
+                    ),
+                }
+            )
+            continue
+        if (
+            managed
+            and not labels.get("dopemux.project_id")
+            and ownership == "WRONG_PROJECT"
+        ):
+            findings.append(
+                {
+                    "code": "DOCKER_CONTAINER_PORT_COLLISION",
+                    "severity": "FAIL",
+                    "service": expected_svc,
+                    "message": (
+                        f"Port :{port} ({var}) held by managed container "
+                        f"{owner.name} whose project root does not match"
                     ),
                 }
             )
@@ -1109,6 +1165,7 @@ def _mutable_facts(
         docker=docker,
         project_id=project_id,
         worktree_root=worktree_root,
+        worktree_hash=identity.worktree_hash or instance_id_for_path(worktree_root),
         catalog=catalog,
     )
     if op in {"start", "restart"}:
@@ -1404,9 +1461,26 @@ def run_lifecycle(
         )
 
     if doctor:
-        blocking.extend(
-            _doctor_blocking_findings(doctor, services=selected, strategy_neutralizes_compose=True)
+        doctor_blocking = _doctor_blocking_findings(
+            doctor, services=selected, strategy_neutralizes_compose=True
         )
+        for f in doctor_blocking:
+            code = f.get("code") or ""
+            if op in {"start", "restart"} and code in PORT_DEPENDENT_DOCTOR_CODES:
+                warnings.append(
+                    {
+                        "code": "DOCTOR_PORT_FINDING_REEVALUATED",
+                        "severity": "INFO",
+                        "service": f.get("service"),
+                        "message": (
+                            f"doctor {code} (computed against the envrc port before "
+                            "allocation) is re-evaluated against the resolved "
+                            f"ports: {f.get('message')}"
+                        ),
+                    }
+                )
+            else:
+                blocking.append(f)
         for f in doctor.findings:
             if f.get("severity") == "WARN":
                 warnings.append(f)

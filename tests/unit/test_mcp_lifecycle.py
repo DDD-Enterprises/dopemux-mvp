@@ -376,7 +376,7 @@ def test_start_blocks_transport_mismatch(tmp_path: Path):
     assert "TRANSPORT_MISMATCH" in codes
 
 
-def test_start_blocks_unlabeled_port_owner(tmp_path: Path):
+def _start_with_unlabeled_owner_of_configured_port(tmp_path: Path, **kwargs):
     repo = _fixture_repo(tmp_path)
     reg = tmp_path / "instances.json"
     product = tmp_path / "product"
@@ -394,7 +394,7 @@ def test_start_blocks_unlabeled_port_owner(tmp_path: Path):
         }
         return SimpleNamespace(returncode=0, stdout=json.dumps(row) + "\n", stderr="")
 
-    result = run_lifecycle(
+    return run_lifecycle(
         "start",
         repo=repo,
         services=["conport"],
@@ -404,10 +404,34 @@ def test_start_blocks_unlabeled_port_owner(tmp_path: Path):
         docker_runner=docker_ps,
         product_root=product,
         process_env={},
+        **kwargs,
+    )
+
+
+def test_start_blocks_when_no_free_port_can_replace_an_unlabeled_owner(tmp_path: Path):
+    result = _start_with_unlabeled_owner_of_configured_port(
+        tmp_path, port_is_free_fn=lambda p: False
     )
     assert result.status == "BLOCKED"
     codes = {f.get("code") for f in result.blocking_findings}
-    assert "DOCKER_CONTAINER_PORT_COLLISION" in codes or "DOCKER_CONTAINER_UNLABELED_UNKNOWN" in codes
+    assert codes & {"PORT_ALLOCATION_BLOCKED", "DOCKER_CONTAINER_PORT_COLLISION"}
+
+
+def test_start_re_leases_around_an_unlabeled_container_on_the_configured_port(
+    tmp_path: Path,
+):
+    # The unlabeled container really holds 3041; every other port is free.
+    result = _start_with_unlabeled_owner_of_configured_port(
+        tmp_path, port_is_free_fn=lambda p: p != 3041
+    )
+    assert result.status != "BLOCKED", result.blocking_findings
+    codes = {f.get("code") for f in result.blocking_findings}
+    assert not codes & {
+        "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
+        "DOCKER_CONTAINER_PORT_COLLISION",
+    }
+    conport = next(s for s in result.services if s["service"] == "conport")
+    assert conport["ports"]["CONPORT_MCP_PORT"] != 3041
 
 
 def test_stop_refuses_unlabeled(tmp_path: Path):
