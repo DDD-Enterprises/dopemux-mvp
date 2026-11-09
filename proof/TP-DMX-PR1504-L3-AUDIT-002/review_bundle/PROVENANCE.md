@@ -1,0 +1,23 @@
+# Provenance — TP-DMX-PR1504-L3-AUDIT-002
+
+- Runner: opencode 1.18.30 at /Users/hue/.opencode/bin/opencode
+- Command: opencode run --pure --format json --model cheaper-inference/kimi-k3 --dir /tmp/pr1504-kimi-seal --title pr1504-kimi-audit
+- Prompt file: /tmp/pr1504-kimi-prompt.md (not committed)
+- Prompt bytes: 26401
+- Diff sha256: 5542cbf8d58c6d7c7720c234011ebc91fefbf86cf7aed3ef4b36382bdea52802
+- Session: ses_e405bd5e8ffeFuW9nIk35Ot8Sr
+- Session model: id kimi-k3, providerID cheaper-inference, variant default
+- Message modelID: kimi-k3
+- Agent name on the session: build
+- Event types: step_start, text, step_finish
+- Tool events: none
+- step_finish reason: stop
+- Tokens: input 55533, output 1775, reasoning 10099, total 67407
+- CLI-reported cost: 0
+- Exit: 0
+- Seal directory /tmp/pr1504-kimi-seal contained no files after the run
+- Worktree HEAD at launch and after the run: 1476638d5f55407a070894d096102771bf15e8bf
+- KIMI_AUDIT.txt sha256: 2c48eb451bf9c3c4d62a98c040ce817d8711fa30a3873ba7696f226c95860d74
+- KIMI_EVENTS.txt sha256: 22f140ec0f979c1d018fc3215157b6eed4435356284355c7ed68fdc3a515a540
+- GROK_DELTA_AUDIT.txt is the earlier Grok 4.5 corroboration of commit 1476638d5 only. It is not the governing verdict.
+- Generated at: 2026-11-09T09:33:05Z
