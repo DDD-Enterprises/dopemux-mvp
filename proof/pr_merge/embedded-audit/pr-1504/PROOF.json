@@ -1,11 +1,11 @@
 {
   "audit_identity": {
     "auditor": {
-      "effort": "high",
-      "model": "gemini",
-      "model_family": "google-gemini",
-      "runner": "agy",
-      "runtime_family": "agy"
+      "effort": "default",
+      "model": "kimi-k3",
+      "model_family": "moonshot-kimi",
+      "runner": "opencode-cli",
+      "runtime_family": "opencode"
     },
     "implementer": {
       "model": "grok-4.7",
@@ -17,27 +17,56 @@
   },
   "embedded_audit": {
     "required": true,
-    "status": "PASS",
-    "auditor_tool": "agy",
-    "auditor_model": "gemini",
-    "invocation": "agy --mode plan --sandbox --effort high --disable-slash-commands --model gemini-4-argon-high --output-format text --print \"$(cat /tmp/pr1504-audit-prompt.md)\" > /tmp/pr1504-agy-audit.log 2> /tmp/pr1504-agy-audit.err; AGY CLI version observed at proof assembly 1.5.3 (the audit run did not print its version); stderr: warning: --mode plan has no effect while slash command expansion is disabled; log mtime 2026-11-08T19:11:15Z; exit 0; one attempt; raw log retained in review_bundle/AGY_AUDIT.txt sha256 7521e7f0e652d37947e933378f8fc8b730d7f41595b44b165b3bfeda4b63f85d",
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "opencode-cli",
+    "auditor_model": "kimi-k3",
+    "invocation": "opencode run --pure --format json --model cheaper-inference/kimi-k3 --dir /tmp/pr1504-kimi-seal --title pr1504-kimi-audit \"$(cat /tmp/pr1504-kimi-prompt.md)\"; OpenCode 1.18.30; session ses_e405bd5e8ffeFuW9nIk35Ot8Sr; session model id kimi-k3 providerID cheaper-inference variant default; exit 0; one attempt; no tool events; KIMI_AUDIT.txt sha256 2c48eb451bf9c3c4d62a98c040ce817d8711fa30a3873ba7696f226c95860d74; KIMI_EVENTS.txt sha256 22f140ec0f979c1d018fc3215157b6eed4435356284355c7ed68fdc3a515a540",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-PR1504-L3-AUDIT-001/AUDITOR_REPORT.md",
-    "findings": [],
+    "report_path": "proof/TP-DMX-PR1504-L3-AUDIT-002/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "CF-1",
+        "severity": "LOW",
+        "title": "The step output 'carry_exit' is captured but never consumed; refusal enforcement relies solely on the payload file. Behavior is still fail-closed (missing/!ok payload publishes failure and fails the job), so this is dead code, not a hole.",
+        "status": "ACCEPTED_RISK",
+        "body": "The step output 'carry_exit' is captured but never consumed; refusal enforcement relies solely on the payload file. Behavior is still fail-closed (missing/!ok payload publishes failure and fails the job), so this is dead code, not a hole. Evidence: echo \"carry_exit=$?\" >> \"$GITHUB_OUTPUT\" is written; the subsequent 'Publish PR Steward status' step reads only $RUNNER_TEMP/carry.json and never references steps.carry.outputs.carry_exit. Location: .github/workflows/merge-queue-carry-forward.yml (Carry forward step)"
+      },
+      {
+        "id": "CF-2",
+        "severity": "LOW",
+        "title": "status_state reads a single page of the combined-status endpoint with no pagination, unlike check_conclusion which paginates. Worst case is a false refusal (fail-closed) if the context's latest status falls beyond the first page; it cannot produce a false carry because statuses are returned newest-first.",
+        "status": "ACCEPTED_RISK",
+        "body": "status_state reads a single page of the combined-status endpoint with no pagination, unlike check_conclusion which paginates. Worst case is a false refusal (fail-closed) if the context's latest status falls beyond the first page; it cannot produce a false carry because statuses are returned newest-first. Evidence: payload = self._api(f\"commits/{sha}/status\") with no per_page/page loop; first matching context is returned. Location: scripts/ci/merge_queue_carry_forward.py, GhApi.status_state"
+      },
+      {
+        "id": "CF-3",
+        "severity": "LOW",
+        "title": "Check-run collection stops after 10 pages (1000 runs). If API ordering were not newest-first and >1000 same-name runs existed on one sha, the true highest-id run could be missed and an older success treated as newest. Theoretical only; also the API default filter=latest already returns the newest run per name/app.",
+        "status": "ACCEPTED_RISK",
+        "body": "Check-run collection stops after 10 pages (1000 runs). If API ordering were not newest-first and >1000 same-name runs existed on one sha, the true highest-id run could be missed and an older success treated as newest. Theoretical only; also the API default filter=latest already returns the newest run per name/app. Evidence: for page in range(1, 11): ... commits/{sha}/check-runs?per_page=100&page={page} Location: scripts/ci/merge_queue_carry_forward.py, GhApi.check_conclusion"
+      },
+      {
+        "id": "CF-4",
+        "severity": "LOW",
+        "title": "TOCTOU window: gates on immutable PR-head shas are evaluated at carry time; a rerun completing with failure on the same sha after the queue job succeeded would not retroactively revoke the already-published queue-commit success. Window is small and requires an unusual same-sha rerun.",
+        "status": "ACCEPTED_RISK",
+        "body": "TOCTOU window: gates on immutable PR-head shas are evaluated at carry time; a rerun completing with failure on the same sha after the queue job succeeded would not retroactively revoke the already-published queue-commit success. Window is small and requires an unusual same-sha rerun. Evidence: The workflow publishes state on merge_group.head_sha once; nothing re-validates the PR-head gates between job completion and the queue's merge. Location: scripts/ci/merge_queue_carry_forward.py, evaluate / workflow timing"
+      }
+    ],
     "fixes_applied": [],
     "remaining_risks": [
-      "In scripts/ci/merge_queue_carry_forward.py:233, check_conclusion sorts matching check runs by started_at/completed_at string (falling back to empty string), so a newly queued check run with null timestamps could sort before an older completed run; in practice PR checks are already completed before entering the merge queue.",
-      "In scripts/ci/merge_queue_carry_forward.py:63, parse_queue_pr_numbers returns None when head_ref does not match _REF_RE (for example, if a target branch name contains a slash), skipping the ref-name cross-check while still enforcing git parent topology, open PR head/base matching, and check/status verification.",
-      "Corroborating Grok 4.5 F1 (LOW, non-governing, PASS_WITH_RISKS): unit-test re-run on merge_group is inferred because the ci-complete on: trigger is outside the pinned diff. Advisory jobs skip merge_group; the tests job does not.",
-      "Corroborating Grok 4.5 F2 (LOW, non-governing): if gh api itself fails while posting the refusal status, the job still fails closed but the explicit PR Steward failure status may not be written.",
-      "Auditor model identity: invoked gemini-4-argon-high (Argon 4, effort high) after the operator said \"it's argon 4 now\". Recorded auditor_model is the trusted-schema family value gemini. The enum on main has no gemini-4-argon-high value, and CI loads that schema from the default branch.",
-      "Grok 4.5 corroboration is retained in review_bundle/GROK_AUDIT.txt and is not the signed verdict. Provider-attested model identity for the AGY run is UNKNOWN; the CLI selector was gemini-4-argon-high."
+      "Enforcement depends on branch protection / merge-queue rules (outside this diff) actually requiring the 'independent embedded audit' check and 'PR Steward / final readiness' status on queue commits; the workflow only publishes them.",
+      "Gate authenticity depends on only trusted apps/workflows being able to create check runs named 'independent embedded audit' or statuses named 'PR Steward / final readiness' on PR heads; name-based trust is inherited from the existing Grok/AGY producers, not established here.",
+      "If GitHub changes the gh-readonly-queue ref format, parse_queue_pr_numbers returns None and the name-vs-parent refusal check is skipped (all parents are still individually gated, so this degrades safely).",
+      "ci-complete.yml now skips installer-smoke, scoped-coverage, and integration on merge_group; ci-summary's treatment of skipped advisory jobs is only visible via the updated comment, so queue-time coverage of those jobs is assumed, not verified.",
+      "Observed auditor identity is OpenCode 1.18.30 session ses_e405bd5e8ffeFuW9nIk35Ot8Sr, provider cheaper-inference, model kimi-k3, variant default. The event stream contained step_start, one text part, and step_finish with reason stop. No tool events. CLI-reported tokens: input 55533, output 1775, reasoning 10099, total 67407, cost 0.",
+      "Non-governing Grok 4.5 corroboration of the last commit only (68275a5e..1476638d5) is retained in review_bundle/GROK_DELTA_AUDIT.txt. It is not the signed verdict."
     ],
     "skip_reason": null
   },
-  "generated_at": "2026-11-09T04:40:42Z",
-  "head_sha": "1d43dc0ee4bb97b445f2209636a111bb796cb008",
-  "packet_id": "TP-DMX-PR1504-L3-AUDIT-001",
+  "generated_at": "2026-11-09T09:33:05Z",
+  "head_sha": "1476638d5f55407a070894d096102771bf15e8bf",
+  "packet_id": "TP-DMX-PR1504-L3-AUDIT-002",
   "pr_number": 1504,
   "repo": "DDD-Enterprises/dopemux-mvp"
 }
