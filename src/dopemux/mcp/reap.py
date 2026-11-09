@@ -535,25 +535,6 @@ def _live_build(runtime_dir: Path, now: float) -> bool:
     return False
 
 
-def _any_marked_runtime_dir(registry: RuntimeRegistry) -> bool:
-    """True when some runtime dir next to the registry has an ``instance.json``.
-
-    One directory listing and no reads: a cheap pre-check for ``maybe_reap``. The
-    planner (``_dir_only_candidates``) keeps the authority on validity.
-    """
-    try:
-        for entry in Path(registry.path).parent.iterdir():
-            if (
-                entry.is_dir()
-                and not entry.is_symlink()
-                and (entry / INSTANCE_MARKER).is_file()
-            ):
-                return True
-    except OSError:
-        return False
-    return False
-
-
 def _dir_only_candidates(
     registry: RuntimeRegistry,
     seen_pairs: Set[Tuple[str, str]],
@@ -1282,9 +1263,7 @@ def maybe_reap(
     Does nothing when automatic reaping is disabled (see module docstring) or when
     ``state_file`` (default ``<runtime root>/reap.last``) was touched within
     ``throttle_s`` seconds. Docker is only asked when the runtime registry holds
-    instances or a launcher-marked runtime dir exists (build-only launches leave
-    one before any registry entry); an unreachable docker reaps nothing.
-    Defaults suit hooks: at most 3
+    instances; an unreachable docker reaps nothing. Defaults suit hooks: at most 3
     candidates, ``docker stop --time 5``, 20 s per command; the Stop hook adds a 60 s
     deadline. A launcher passes 1 candidate, ``--time 2``, 3 s per command and an 8 s
     deadline because it runs inside Claude's connect budget; SessionEnd passes 1 / 3 /
@@ -1324,7 +1303,7 @@ def maybe_reap(
     if registry.parse_status == "ERROR":
         report.errors.append(f"{registry.path}: unreadable ({registry.error})")
         return report
-    if not registry.instances() and not _any_marked_runtime_dir(registry):
+    if not registry.instances():
         return report
     inspect_timeout = min(
         _HOOK_DOCKER_TIMEOUT_S, cmd_timeout_s or _HOOK_DOCKER_TIMEOUT_S
