@@ -1,0 +1,29 @@
+```json
+{
+  "status": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "low",
+      "location": ".github/workflows/ci-complete.yml:408",
+      "summary": "Unit-test re-run on merge_group is inferred, not directly shown.",
+      "evidence": "Diff adds merge_group skips only to advisory jobs (installer-smoke, scoped-coverage, integration) and comments that tests remain required/blocking. The ci-complete `on:` trigger block is outside the pinned diff, so merge_group delivery to the tests job is inferred from those guards rather than observed."
+    },
+    {
+      "id": "F2",
+      "severity": "low",
+      "location": ".github/workflows/merge-queue-carry-forward.yml:64",
+      "summary": "Refusal posting of PR Steward depends on gh api succeeding before the job fail.",
+      "evidence": "Publish step defaults state to failure and posts via `gh api .../statuses/...`, then `test \"$state\" = \"success\"`. If `gh api` itself fails, the job fails closed for the Actions check, but the explicit failure status may not be written."
+    }
+  ],
+  "remaining_risks": [
+    "ci-complete.yml merge_group trigger is not in the pinned diff; unit-test re-run on queue commits is inferred from advisory skips and comments.",
+    "If statuses API write fails, PR Steward may be absent rather than explicit failure; merge blocking then depends on required-check configuration.",
+    "Carry-forward trusts GitHub merge-queue first-parent ordering when walking to base_sha.",
+    "Branch-protection registration of `independent embedded audit` and `PR Steward / final readiness` on merge_group is outside this diff (operator/UNKNOWN)."
+  ],
+  "report": "## Scope\nIndependent audit of pinned PR 1504 diff at `1d43dc0ee4bb97b445f2209636a111bb796cb008` (base `f16e0da2cce256096efeaacb1ade625c466dfb6c`) for fail-closed merge-queue carry-forward of `independent embedded audit` and `PR Steward / final readiness`.\n\n## What was checked\n1. **Inheritance gate** (`scripts/ci/merge_queue_carry_forward.py`): queue head must differ from base; first-parent walk to base requires every step to be a merge; non-first parents collected as PR heads; each must be the head of exactly one open PR targeting the normalized base branch; each head must have check `independent embedded audit` conclusion `success` and status `PR Steward / final readiness` state `success`; optional queue-ref PR numbers must match when parseable. Non-merges, cycles, depth > 25, missing/failed gates, and ambiguous PR matches raise `CarryForwardError` and write `{ok: false}`.\n2. **Full vs short refs**: `_branch_name()` and `parse_queue_pr_numbers()` strip `refs/heads/`; unit test covers `base_ref=refs/heads/main` against PR `base.ref=main`.\n3. **Refusal path** (`.github/workflows/merge-queue-carry-forward.yml`): carry step uses `set +e` and always continues; publish step `if: always()` defaults to failure, posts `PR Steward / final readiness`, then `test \"$state\" = \"success\"` so refusal fails the job (Actions check name `independent embedded audit`). Missing payload still posts failure and fails the job.\n4. **Newest check-run rule**: `check_conclusion` sorts by started/completed time and refuses non-completed latest runs (covered by unit test).\n5. **Re-runs**: `codeql.yml` gains `merge_group: types: [checks_requested]`. `ci-complete.yml` keeps blocking jobs (including tests) without a merge_group skip while skipping advisory jobs on merge_group.\n\n## Verdict\n**PASS_WITH_RISKS.** From the pinned diff, carry-forward is fail-closed for the stated inheritance rule, ref normalization, refusal posting/job failure, and CodeQL re-run. Unit-test re-run is strongly implied but not directly evidenced by an `on:` hunk. Residual operational risks remain around status-API write failures and branch-protection wiring."
+}
+```
+GROK_EXIT:0

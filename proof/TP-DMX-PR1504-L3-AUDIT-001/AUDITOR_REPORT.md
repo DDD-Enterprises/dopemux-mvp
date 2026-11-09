@@ -42,7 +42,7 @@ PASS. The merge-queue carry-forward mechanism fails closed.
 
 ## Corroboration
 
-Grok 4.5 (`grok-cli`, effort high) returned PASS_WITH_RISKS with two LOW findings and exit 0. That run is not the signed verdict. Raw log: `review_bundle/GROK_AUDIT.log` (sha256 `65c540229449da788a183a41f3fb5f8801634c5c4ae17ab41f867a1f192a42d8`, mtime 2026-11-08T19:12:42Z).
+Grok 4.5 (`grok-cli`, effort high) returned PASS_WITH_RISKS with two LOW findings and exit 0. That run is not the signed verdict. Raw log: `review_bundle/GROK_AUDIT.txt` (sha256 `65c540229449da788a183a41f3fb5f8801634c5c4ae17ab41f867a1f192a42d8`, mtime 2026-11-08T19:12:42Z).
 
 - F1: unit-test re-run on `merge_group` is inferred. The `ci-complete` `on:` block is outside this diff. Advisory jobs skip `merge_group`; the tests job does not.
 - F2: if `gh api` fails while posting a refusal, the job still fails, and the explicit steward failure status may be missing.
