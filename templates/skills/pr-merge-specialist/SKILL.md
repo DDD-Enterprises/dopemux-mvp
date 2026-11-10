@@ -6,7 +6,7 @@ description: Use when draining dopemux-mvp pull requests, a GitHub merge queue i
 # Skill: PR Merge Specialist
 
 ## Purpose
-Land pull requests through the legal path for the current base branch. A signed embedded audit belongs to the current head. A new head needs a new audit.
+Land pull requests through the legal path for the current base branch. A signed embedded audit belongs to the content commit it names. A proof-only successor does not need another content audit. A substantive change to the pull request does.
 
 ## GitHub merge queue
 When the base branch has an active GitHub merge queue, that queue is the merge path.
