@@ -206,15 +206,14 @@ index 54367a0da..debe4ac99 100644
      {
 diff --git a/task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json b/task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json
 new file mode 100644
-index 000000000..b5a706f81
+index 000000000..a4528fbb9
 --- /dev/null
 +++ b/task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,97 @@
 +{
 +  "id": "TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001",
 +  "project": "dopemux-mvp",
 +  "target": "Risk lane L3 (mutates a CI-enforced proof contract; independent audit required before merge). Admit exactly one further pair, grok-cli / grok-4.7, to the trusted embedded-audit contract so a real Grok 4.7 audit can be recorded without fabricating an auditor identity, keeping grok-cli / grok-4.5 valid. Fail-closed in both directions: auditor_model grok-4.7 requires auditor_tool grok-cli, and auditor_tool grok-cli requires auditor_model in {grok-4.5, grok-4.7}. This packet fixes the vocabulary; it does not audit, accept, or merge any other packet.",
-+  "authorization": "Owner instruction 'admit grok 4.7' on 2026-11-10, motivated by PR #1503, whose governing audit ran on grok-4.7. Evidence that the id is requestable: the Grok CLI stream of that audit reports \"model\":\"grok-4.7\"; the controller adds that evidence file to this proof bundle. This packet did not run any model-list probe or invoke the grok CLI.",
 +  "invariants": [
 +    "Existing enum values and SKIPPED behaviour are unchanged: every tool/model pair valid under the pre-change schema (origin/main c5a0ca34f) stays valid, proven by a hermetic differential test against a hash-pinned vendored copy of that schema, cross-checked against git when the commit is resolvable.",
 +    "The Grok surface is bound in both directions: auditor_model grok-4.7 requires auditor_tool grok-cli, and auditor_tool grok-cli requires auditor_model in {grok-4.5, grok-4.7}. Each conditional carries then.required so it cannot pass vacuously on a missing key.",
@@ -253,12 +252,6 @@ index 000000000..b5a706f81
 +      "task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json",
 +      "proof/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001/**"
 +    ]
-+  },
-+  "rollback": "Revert the commit. The change is additive to one schema file plus tests and a proof bundle; no data migration or runtime state.",
-+  "audit": {
-+    "required": true,
-+    "independence": "independent audit required before merge; auditor must not be grok-cli/grok-4.7",
-+    "status": "NOT audited"
 +  },
 +  "pr": {
 +    "title": "feat(audit): admit the grok-cli/grok-4.7 embedded-audit route",

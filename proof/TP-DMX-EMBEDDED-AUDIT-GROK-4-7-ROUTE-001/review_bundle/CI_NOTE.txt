@@ -1,1 +1,1 @@
-21 pass, 3 skipping, 2 fail (independent embedded audit; PR Steward / final readiness: both need the proof built after this audit). Unit Tests PASS. PR is a draft: Copilot/Codex bot reviews NOT_RUN.
+21 pass, 3 skipping, 2 fail (independent embedded audit: change contract PASS, only reason delta_touches_code vs the round-1 audited head; PR Steward / final readiness). Unit Tests PASS. PR is a draft: Copilot/Codex bot reviews NOT_RUN.

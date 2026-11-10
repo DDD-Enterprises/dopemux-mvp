@@ -1,46 +1,37 @@
-END_OF_SUBJECT 76ecfdd6-b9168913
+END_OF_SUBJECT a3ae7079-de6c913c
 
-## Scope
-Static independent audit of TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001 at pinned SHA `b9168913353bdb47819b0079f639573ef8c6e2a7` (diff vs `c5a0ca34f`, 9 files + full post-change schema). Auditor route: grok / grok-4.5 (not the admitted pair). No tools; pytest/CI = controller claims only.
+## Independent audit report — TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001
 
-## Checks (static)
-- Diff + post-change schema + pre-change fixture read in full: PASS
-- Draft-7 conditional reasoning (enums, both-direction `then.required`, SKIPPED rules, neighbors): PASS
-- Secrets/argv/log review: PASS (none)
-- Lock-order / reconnect / reap: PASS (N/A — schema/tests/proof only)
-- Docs-vs-code: PASS (docs deliberately untouched; inventory states already-stale)
-- cycle-2 fix list: PASS (N/A — not in this vocabulary packet)
-- Live pytest / validate_audit_proof / CI: NOT_RUN
+**Scope.** Static audit of pinned subject `de6c913c749fcaed33819482f5ba413be6ebe5ff` vs `c5a0ca34f`: 9 subject files + full post-change `schemas/proof/embedded_audit.schema.json`. No tools/shell/network. Test/CI execution bucketed NOT_RUN.
 
-## Findings
-None medium/high/critical. Residual risks only (consumers unread; stream evidence is CLI echo).
+**Checks run.** Full diff read; Draft-7 schema walk of enums + all 8 `allOf` conditionals (vacuity / `then.required`); Q1 case matrix; C1–C7 claim check; Round-2 packet key check; secrets/argv scan of subject; inventory internal consistency (consumers unread).
 
-## C1–C7 / Q1–Q4
-**C1–C4** hold by schema reasoning. **C5** holds on static reading (hash-pinned differential cannot skip; parity 7→8; kimi `schema_path` filter restores property-enum intent; grok surface assert updated to new truth). **C6** inventory reasoning internally consistent; consumer no-change claims unverified. **C7** stream init/`model: grok-4.7` is adequate for admitting the requestable id under the stated owner decision; does not prove `grok models` listing, cross-account availability, or cryptographic model authenticity.
+**Findings.** None (schema + test edits match C1–C5; Round-2 packet clean).
 
-**Q1** (`#/properties`, `#/allOf`):
+**Q1 (post-change schema).**
 | case | verdict |
 |---|---|
 | grok-cli/grok-4.7 × PASS, PASS_WITH_RISKS, FAIL, NEEDS_SUPERVISOR | valid |
-| grok-cli/grok-4.7 × SKIPPED | invalid (SKIPPED ⇒ none/unknown) |
+| grok-cli/grok-4.7 × SKIPPED | invalid (`#/allOf/0` SKIPPED ⇒ none/unknown) |
 | grok-cli/grok-4.5 × PASS | valid |
-| grok-cli/unknown × PASS | invalid |
-| grok-cli/grok-4.6 × PASS | invalid (not in enum; tool conditional) |
-| agy/grok-4.7 × PASS | invalid (`#/allOf` grok-4.7 ⇒ grok-cli) |
-| none/grok-4.7 × SKIPPED | invalid |
-| grok-cli, no `auditor_model` | invalid (root `required` + tool `then.required`) |
-| grok-4.7, no `auditor_tool` | invalid (root `required` + model `then.required`) |
+| grok-cli/unknown × PASS | invalid (`#/allOf/1` + `#/allOf/4`) |
+| grok-cli/grok-4.6 × PASS | invalid (enum + `#/allOf/4`) |
+| agy/grok-4.7 × PASS | invalid (`#/allOf/5`) |
+| none/grok-4.7 × SKIPPED | invalid (`#/allOf/0` + `#/allOf/5`) |
+| grok-cli, no `auditor_model` | invalid (root `required` + `#/allOf/4.then.required`) |
+| grok-4.7, no `auditor_tool` | invalid (root `required` + `#/allOf/5.then.required`) |
 
-No divergence from C1–C4.
+Outcomes match C1–C4.
 
-**Q2** No. Widened tool→model enum + new model→tool conditional admit only the intended pair; unknown/4.6/build labels/other tools still fail; agy/gemini and opencode/kimi unchanged.
+**Q2.** No. Widened `#/allOf/4` enum is exactly `{grok-4.5,grok-4.7}`; `#/allOf/5` binds `grok-4.7`⇒`grok-cli` with `then.required`. Adjacent pairs (agy/gemini-3.1-pro-high, opencode-cli/kimi-k3) unchanged. Schema still does not parse `invocation` (pre-existing).
 
-**Q3** No material weakening. kimi filter: `schema_path[:1]==["properties"]` at `tests/audit/test_embedded_audit_opencode_kimi_route.py:197` — excludes conditional `then` enum noise; product of pre-change pairs unchanged. grok suite surface assert update is honest.
+**Q3.** No. `test_embedded_audit_grok_route.py` surface assert updated to new truth. kimi filter adds `schema_path[:1]==["properties"]` so conditional `then.enum` errors are not misread as lost property-enum membership; case set unchanged. New suite hash-pins vendored pre-schema; differential cannot skip.
 
-**Q4** Inventory consumer conclusions and VALIDATIONS.md results are author/controller claims not reproduced here.
+**Q5.** Packet top-level keys: `id,project,target,invariants,depends_on,repo_binding,series,execution,commit,pr,pal_chain,steps` — no `audit`/`authorization`/`rollback`. Subject matches C1–C7; Round-2 is that key deletion only among subject files.
 
-## Unblock
-None for schema admission. Optional: independent consumer re-grep; file PROOF after this audit for PR Steward.
+**Q4 / C6–C7.** Inventory reasoning is internally consistent; consumer source unread → unverified author claim. Stream init `model:"grok-4.7"` is adequate requestability evidence for admitting the id on that account/date; it does not show a `grok models` listing, lasting availability, or capability/cost.
+
+**Unblock.** None for schema admission. Operator still needs this audit filed into proof, then PR Steward/final readiness (out of scope).
 
 ```json
 {
@@ -49,7 +40,7 @@ None for schema admission. Optional: independent consumer re-grep; file PROOF af
   "subject": {
     "packet_id": "TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001",
     "repo": "DDD-Enterprises/dopemux-mvp",
-    "pinned_sha": "b9168913353bdb47819b0079f639573ef8c6e2a7",
+    "pinned_sha": "de6c913c749fcaed33819482f5ba413be6ebe5ff",
     "observed_head": "",
     "head_match": true,
     "base": "origin/main c5a0ca34f",
@@ -57,7 +48,7 @@ None for schema admission. Optional: independent consumer re-grep; file PROOF af
       "proof/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001/CONSUMER_INVENTORY.json": "c6a9444d6f4e6ac06c99521324dcb03ebd04a2a7191afdccc688274f9cc1ca7e",
       "proof/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001/review_bundle/GROK_4_7_STREAM_EVIDENCE_20261110.json": "a4b54892dfdb06e82b2b834f8993f8ec4c8642f5dea2d23e33a2cf0b3e345ca3",
       "schemas/proof/embedded_audit.schema.json": "e8308d83d0930e440f0e6df9af583cd1a57ee176864f5621f2448f7b2d348103",
-      "task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json": "de9728dde81179af8b812555003f612da85d7aba2c07ede55e45090a4ae84e62",
+      "task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json": "95e939b50510fc0633e3735434c0d77f70b4803bd4996a2858e2012d4860b6c5",
       "tests/audit/fixtures/embedded_audit.schema.pre_grok_4_7.json": "a5151872772e225e9fe9e293a958dd9d9ffce60a58934384233b49cdc4fcb9d3",
       "tests/audit/test_embedded_audit_grok_4_7_route.py": "aac47fffd879c1bd4981a44d019782b26461b53f42e04bf1fa371b0f7750cfad",
       "tests/audit/test_embedded_audit_grok_route.py": "ec41a87e33025364b88f5d7e5d99ab223573051b692b06ec9e9ad9349f51e288",
@@ -75,97 +66,81 @@ None for schema admission. Optional: independent consumer re-grep; file PROOF af
   "checks": [
     {
       "id": "diff-read",
-      "command_or_method": "full read of embedded git diff c5a0ca34f..b9168913 (9 files) + complete post-change schema",
+      "command_or_method": "manual read of subject.diff (9 files) + complete post-change embedded_audit.schema.json",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "All changed paths and full schemas/proof/embedded_audit.schema.json reviewed"
+      "evidence": "All subject hunks reviewed; schema allOf length 8; grok-4.7 enum member; grok-cli then enum [grok-4.5,grok-4.7]; new grok-4.7=>grok-cli conditional with then.required"
     },
     {
       "id": "schema-draft7-logic",
-      "command_or_method": "manual Draft-7 evaluation of enums + allOf conditionals including then.required and SKIPPED rules",
+      "command_or_method": "Draft-7 reasoning over enums, root required, and allOf if/then (vacuous properties vs then.required)",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "C1-C4 and Q1 cases match; only new valid non-SKIPPED pair is grok-cli/grok-4.7; neighbors unchanged"
+      "evidence": "Q1 matrix matches C1-C4; both Grok directions non-vacuous; SKIPPED/agy/opencode bindings unchanged"
     },
     {
       "id": "secrets-argv-log",
-      "command_or_method": "review embedded materials for secrets, dangerous argv, credential leakage",
+      "command_or_method": "manual scan of subject files for secrets, credentials, unredacted tokens",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "No secrets or credentials in diff/proof/tests"
+      "evidence": "No secrets; stream evidence stores sha256/init fields only"
     },
     {
-      "id": "lock-order",
-      "command_or_method": "lock-order review",
+      "id": "round2-packet-keys",
+      "command_or_method": "inspect task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json top-level keys",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "N/A — no lock/concurrency code in subject"
-    },
-    {
-      "id": "reconnect-guard",
-      "command_or_method": "reconnect/guard review",
-      "exit_code": null,
-      "bucket": "PASS",
-      "evidence": "N/A — no runtime reconnect paths in subject"
-    },
-    {
-      "id": "reap-safety",
-      "command_or_method": "reap-safety review",
-      "exit_code": null,
-      "bucket": "PASS",
-      "evidence": "N/A — no process/reap logic in subject"
-    },
-    {
-      "id": "docs-vs-code",
-      "command_or_method": "docs-vs-schema truthfulness vs CONSUMER_INVENTORY deliberate non-change",
-      "exit_code": null,
-      "bucket": "PASS",
-      "evidence": "Docs left stale by design; inventory records NON_NORMATIVE_AND_ALREADY_STALE; no validator reads them"
-    },
-    {
-      "id": "cycle-2-fix-list",
-      "command_or_method": "cycle-2 fix list applicability",
-      "exit_code": null,
-      "bucket": "PASS",
-      "evidence": "N/A — vocabulary-admission packet; no cycle-2 fix list in subject materials"
-    },
-    {
-      "id": "test-execution",
-      "command_or_method": "pytest tests/audit ... / validate_audit_proof.py (controller claims)",
-      "exit_code": null,
-      "bucket": "NOT_RUN",
-      "evidence": "No shell; VALIDATIONS.md treated as controller claims only"
+      "evidence": "No top-level audit, authorization, or rollback keys"
     },
     {
       "id": "test-honesty-static",
-      "command_or_method": "static review of new/edited tests vs C5",
+      "command_or_method": "static review of new/edited audit tests vs C5",
       "exit_code": null,
       "bucket": "PASS",
-      "evidence": "Vendored pre-schema hash-pinned a5151872…; differential cannot skip; parity count 7→8; kimi schema_path filter; grok surface assert updated"
+      "evidence": "Vendored pre-schema sha256 a5151872…; differential cannot skip; parity count 7→8; kimi schema_path filter; grok_route surface update only"
+    },
+    {
+      "id": "pytest-execution",
+      "command_or_method": "pytest / validate_audit_proof / change-contract (controller claims in VALIDATIONS.md)",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "evidence": "Auditor has no shell; controller claims only"
+    },
+    {
+      "id": "consumer-source-read",
+      "command_or_method": "read CONSUMER_INVENTORY-cited consumer sources",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "evidence": "Consumers not embedded; inventory unread against source"
+    },
+    {
+      "id": "lock-order-reconnect-reap",
+      "command_or_method": "review subject for lock-order / reconnect / reap-safety impact",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Schema/test/proof/packet-only subject; no concurrency or process-lifecycle surface"
     }
   ],
   "findings": [],
   "instruction_like_content": [],
   "author_claims_not_reproduced": [
-    "CONSUMER_INVENTORY.json inspected_and_deliberately_not_changed conclusions for legacy.py, local_audit_acceptance.py, validate_audit_proof.py, run_embedded_audit.py, pal_clink.py, and other listed consumers (files not readable in this audit)",
-    "VALIDATIONS.md pytest 778 passed / validate_audit_proof 163/163 / CI status on PR #1507",
-    "Implementer report that new suite failed 12 ways on the old schema before the edit"
+    "CONSUMER_INVENTORY conclusions on legacy.py, local_audit_acceptance.py, validate_audit_proof.py, run_embedded_audit.py, and other inspected_and_deliberately_not_changed paths (sources not in subject)",
+    "VALIDATIONS.md pytest 778 passed / validate_audit_proof 163/163 / change-contract PASS / CI 21 pass claims",
+    "Owner instruction text/date 'admit grok 4.7' (2026-11-10) beyond packet/inventory assertion",
+    "Full PR #1503 stream behind GROK_4_7_STREAM_EVIDENCE source_stream_sha256"
   ],
   "remaining_risks": [
-    "Consumer no-change claims are inventory-author assertions only; an unread consumer with a closed model enum could still need a follow-on edit",
-    "GROK_4_7_STREAM_EVIDENCE shows one-account CLI stream init/assistant echo of model grok-4.7; it does not show a models listing, cross-account availability, or non-echo proof of backend model identity"
+    "Consumer no-change claim rests on inventory reasoning only until those paths are independently re-read",
+    "Requestability evidence is one CLI stream init/assistant echo on one account/date; lasting fleet availability UNKNOWN",
+    "Schema does not bind invocation string to auditor_model (pre-existing; false pair claim within admitted pairs still possible)"
   ],
   "unknowns": [
-    "model_observed / effort (no runtime receipt in this tool-less audit)",
-    "Live test and CI outcomes at pinned HEAD",
-    "Actual contents of consumer source files named in the inventory"
+    "model_observed / effort (no runtime receipt in this turn)",
+    "Live CI and PR Steward state at de6c913c beyond controller claims",
+    "Whether cited consumers still match inventory after unread verification"
   ],
   "skip_reason": null,
-  "unblock": [
-    "No schema unblock required",
-    "Optional: independent re-grep of auditor_tool/auditor_model consumers",
-    "Build and pin PROOF.json / AUDITOR_REPORT.md for this packet so PR Steward / final readiness can proceed"
-  ],
+  "unblock": [],
   "acceptance": "NOT_GRANTED"
 }
 ```

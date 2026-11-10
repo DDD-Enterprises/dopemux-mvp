@@ -4,18 +4,29 @@ import datetime, hashlib, json, shutil, subprocess, sys
 from pathlib import Path
 W = Path("/Users/hue/code/dopemux-mvp/.worktrees/audit-grok47-route"); D = W / ".superpowers/sdd/grok47-route"
 PK = "TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001"; P = W / "proof" / PK; RB = P / "review_bundle"
-H = "b9168913353bdb47819b0079f639573ef8c6e2a7"; H8 = H[:8]; BASE = "c5a0ca34f"
+H = "de6c913c749fcaed33819482f5ba413be6ebe5ff"; PREV = "b9168913"; H8 = H[:8]; BASE = "c5a0ca34f"
 S = D / f"subject-{H8}"; R = D / f"raw-{H8}"
 def git(*a): return subprocess.run(["git", "-C", str(W), *a], capture_output=True, text=True, check=True).stdout.strip()
 assert git("rev-parse", "HEAD") == H, "HEAD moved; this builder is pinned to the audited head"
-v = json.loads((D / "grok-verdict.json").read_text()); report = (D / "grok-report.md").read_text()
+v = json.loads((D / f"grok-verdict-{H8}.json").read_text()); report = (D / f"grok-report-{H8}.md").read_text()
 assert v["status"] == "PASS_WITH_RISKS" and v["findings"] == [] and v["subject"]["pinned_sha"] == H
 nonce = (S / "NONCE").read_text().strip(); assert f"END_OF_SUBJECT {nonce}-{H8}" in report
 init = json.loads((R / "grok.jsonl").read_text().split("\n")[0]); assert init["model"] == "grok-4.5" and init["tools"] == []
 RB.mkdir(parents=True, exist_ok=True)
+# Round 1 (audited b91689133, voided by the packet-schema fix de6c913c7): keep its records under superseded names.
+KEEP = {"GROK_4_7_STREAM_EVIDENCE_20261110.json"}
+for f in sorted(RB.iterdir()):
+    if f.name in KEEP or f.name.startswith("superseded-"): continue
+    subprocess.run(["git", "-C", str(W), "mv", str(f), str(RB / f"superseded-{PREV}-{f.name}")], check=True)
+for name in ("PROOF.json", "AUDITOR_REPORT.md"):
+    ext = name.split(".")[-1]; shutil.copyfile(P / name, RB / f"superseded-{PREV}-{name.rsplit('.',1)[0]}.{ext}")
+old_sig = W / "proof/pr_merge/embedded-audit/pr-1507/PROOF.json.sig"
+shutil.copyfile(W / "proof/pr_merge/embedded-audit/pr-1507/PROOF.json", RB / f"superseded-{PREV}-PR_PROOF.json")
+if old_sig.exists():
+    shutil.copyfile(old_sig, RB / f"superseded-{PREV}-PR_PROOF.sig.txt"); subprocess.run(["git", "-C", str(W), "rm", "-q", str(old_sig)], check=True)
 for src, dst in {S / "AUDIT_PROMPT.grok.full.txt": "AUDIT_PROMPT.txt", S / "subject.diff": "SUBJECT.diff", S / "FILES.sha256": "SUBJECT_FILES.sha256.txt",
                  S / "VALIDATIONS.md": "VALIDATION_CLAIMS.md", R / "grok.jsonl": "GROK_AUDIT_STREAM.txt", R / "grok.stderr": "GROK_AUDIT_STDERR.txt",
-                 R / "started": "GROK_STARTED.txt", D / "grok-verdict.json": "GROK_VERDICT.json", D / "GROK_DISALLOWED.txt": "GROK_DISALLOWED_TOOLS.txt",
+                 R / "started": "GROK_STARTED.txt", D / f"grok-verdict-{H8}.json": "GROK_VERDICT.json", D / "GROK_DISALLOWED.txt": "GROK_DISALLOWED_TOOLS.txt",
                  D / "freeze-and-audit.sh": "FREEZE_AND_AUDIT.sh.txt", D / "ci-note.txt": "CI_NOTE.txt", Path(__file__): "BUILD_PROOF.py.txt"}.items():
     shutil.copyfile(src, RB / dst)
 (RB / "GROK_INIT_TOOLS.json").write_text(json.dumps({k: init.get(k) for k in ("type", "subtype", "model", "tools", "permissionMode", "session_id")}, indent=2) + "\n")
@@ -27,16 +38,16 @@ inv = (f"grok -m grok-4.5 --effort high --sandbox workspace --max-turns 1 --no-s
 risks = list(v["remaining_risks"]) + ["Test execution NOT_RUN by the auditor (no shell on this route); the 778-passed result and CI are controller/CI evidence, not auditor evidence.",
                                       "Copilot/Codex PR-bot reviews NOT_RUN: the PR was a draft at the freeze."]
 emb = {"required": True, "status": "PASS_WITH_RISKS", "auditor_tool": "grok-cli", "auditor_model": "grok-4.5", "invocation": inv, "exit_code": 0,
-       "report_path": f"proof/{PK}/AUDITOR_REPORT.md", "findings": [], "fixes_applied": [], "remaining_risks": risks, "skip_reason": None,
+       "report_path": f"proof/{PK}/AUDITOR_REPORT.md", "findings": [], "fixes_applied": ["de6c913c7: removed the top-level keys audit, authorization, rollback from the task-packet JSON (CI packet_schema_fail after the round-1 audit); re-audited in full at this head."], "remaining_risks": risks, "skip_reason": None,
        "instruction_like_content": {"detected": False, "match_count": 0, "matches": [], "truncated": False}}
 ident = {"auditor": {"effort": "high", "model": "grok-4.5", "model_family": "xai-grok", "runner": "grok-cli", "runtime_family": "xai-grok-cli"},
          "implementer": {"model": "claude-sonnet-5-5 implementer subagent (requested 'sonnet'; observed UNKNOWN) under a claude-fable-5-2 controller session; self-reported, not provider-attested",
                          "model_family": "anthropic-claude", "runner": "claude-code-cli", "runtime_family": "anthropic-claude-code"},
          "independence": "PROVEN"}
 now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-files = git("diff", "--name-only", BASE, H).split("\n")
+files = git("diff", "--name-only", BASE, "b91689133").split("\n")
 packet = {"packet_id": PK, "tp_id": PK, "macro_id": None, "repo": "DDD-Enterprises/dopemux-mvp", "pr_number": 1507, "branch": "feat/embedded-audit-grok-4-7-route",
-          "base": "main", "base_sha": git("rev-parse", BASE), "head_sha": H, "audited_head_sha": H, "kind": "feat", "risk_lane": "L3",
+          "base": "main", "base_sha": git("rev-parse", BASE), "head_sha": H, "audited_head_sha": H, "kind": "feat", "risk_lane": "L2",
           "implementer": "Claude Code: one Sonnet implementer subagent; controller verified and committed (self-reported).", "audited_files": files,
           "audit_identity": ident,
           "auditor_run": {"session_id": init["session_id"], "launched": started, "attempts": 1, "verdict": "PASS_WITH_RISKS", "model_requested": "grok-4.5",
@@ -48,12 +59,13 @@ packet = {"packet_id": PK, "tp_id": PK, "macro_id": None, "repo": "DDD-Enterpris
               {"name": "auditor test execution", "result": "NOT_RUN", "detail": "tool-less route"},
               {"name": "Copilot / Codex PR-bot review", "result": "NOT_RUN", "detail": "PR was a draft at the freeze"},
               {"name": "grok models listing probe", "result": "NOT_RUN", "detail": "requestability rests on the CLI stream echo in review_bundle/GROK_4_7_STREAM_EVIDENCE_20261110.json"}],
-          "operator_decisions": ["2026-11-10: 'admit grok 4.7' (this packet).", "2026-11-10: '1 try grok 4.5' (auditor route for this packet; one attempt)."],
+          "superseded_rounds": [{"audited_head": "b9168913353bdb47819b0079f639573ef8c6e2a7", "auditor": "grok-cli / grok-4.5", "verdict": "PASS_WITH_RISKS", "findings": 0, "signed_head": "1cc8f0ff7", "voided_by": "de6c913c7 (packet_schema_fail fix: dropped 3 disallowed keys from the task-packet JSON after CI rejected it)", "records": "review_bundle/superseded-b9168913-*"}],
+          "operator_decisions": ["2026-11-10: 'admit grok 4.7' (this packet).", "2026-11-10: '1 try grok 4.5' (auditor route for this packet; one attempt).", "2026-11-10: 'go' (second grok-4.5 audit at de6c913c7 after the packet-schema fix; one attempt)."],
           "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1507; signing, ready-mark and merge are operator gates",
           "generated_at": now, "embedded_audit": emb}
 (P / "PROOF.json").write_text(json.dumps(packet, indent=2, ensure_ascii=False) + "\n")
 prd = W / "proof/pr_merge/embedded-audit/pr-1507"; prd.mkdir(parents=True, exist_ok=True)
 (prd / "PROOF.json").write_text(json.dumps({"audit_identity": ident, "embedded_audit": emb, "generated_at": now, "github_mutation_route_added": False, "head_sha": H,
                                             "mutation_performed": False, "packet_id": PK, "pr_number": 1507, "repo": "DDD-Enterprises/dopemux-mvp"}, indent=2, ensure_ascii=False) + "\n")
-sums = "".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n" for p in sorted(RB.iterdir()) if p.name != "SHA256SUMS.txt")
+sums = "".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n" for p in sorted(RB.iterdir()) if p.name != "SHA256SUMS.txt" and not p.name.startswith("superseded-"))
 (RB / "SHA256SUMS.txt").write_text(sums); print("built", now, len(list(RB.iterdir())), "bundle files")

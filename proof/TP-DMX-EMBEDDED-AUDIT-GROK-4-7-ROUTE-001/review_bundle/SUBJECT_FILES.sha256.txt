@@ -1,7 +1,7 @@
 c6a9444d6f4e6ac06c99521324dcb03ebd04a2a7191afdccc688274f9cc1ca7e  proof/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001/CONSUMER_INVENTORY.json
 a4b54892dfdb06e82b2b834f8993f8ec4c8642f5dea2d23e33a2cf0b3e345ca3  proof/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001/review_bundle/GROK_4_7_STREAM_EVIDENCE_20261110.json
 e8308d83d0930e440f0e6df9af583cd1a57ee176864f5621f2448f7b2d348103  schemas/proof/embedded_audit.schema.json
-de9728dde81179af8b812555003f612da85d7aba2c07ede55e45090a4ae84e62  task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json
+95e939b50510fc0633e3735434c0d77f70b4803bd4996a2858e2012d4860b6c5  task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json
 a5151872772e225e9fe9e293a958dd9d9ffce60a58934384233b49cdc4fcb9d3  tests/audit/fixtures/embedded_audit.schema.pre_grok_4_7.json
 aac47fffd879c1bd4981a44d019782b26461b53f42e04bf1fa371b0f7750cfad  tests/audit/test_embedded_audit_grok_4_7_route.py
 ec41a87e33025364b88f5d7e5d99ab223573051b692b06ec9e9ad9349f51e288  tests/audit/test_embedded_audit_grok_route.py
