@@ -53,6 +53,7 @@
         "gemini",
         "gemini-3.1-pro-high",
         "grok-4.5",
+        "grok-4.7",
         "kimi-k3",
         "unknown"
       ]
@@ -308,11 +309,36 @@
       "then": {
         "properties": {
           "auditor_model": {
-            "const": "grok-4.5"
+            "enum": [
+              "grok-4.5",
+              "grok-4.7"
+            ]
           }
         },
         "required": [
           "auditor_model"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "auditor_model": {
+            "const": "grok-4.7"
+          }
+        },
+        "required": [
+          "auditor_model"
+        ]
+      },
+      "then": {
+        "properties": {
+          "auditor_tool": {
+            "const": "grok-cli"
+          }
+        },
+        "required": [
+          "auditor_tool"
         ]
       }
     },
