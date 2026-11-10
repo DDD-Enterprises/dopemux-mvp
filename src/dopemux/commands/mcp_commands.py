@@ -351,7 +351,8 @@ def mcp_reap_cmd(dry_run: bool, json_output: bool):
     (the task-orchestrator) are never touched. A runtime dir
     that a launcher marked (instance.json) but that never got a sidecar (a
     build-only launch) is removed once its worktree is gone and no launcher or
-    detached image build still uses it; never for idleness. --apply ignores the
+    detached image build still uses it; never for idleness. Nothing is planned
+    while the runtime registry file is missing (a start creates it). --apply ignores the
     automatic-reaping kill switch (file reap.disabled or DOPEMUX_MCP_REAP=0).
     """
     import time
