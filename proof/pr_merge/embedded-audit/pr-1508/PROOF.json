@@ -1,7 +1,7 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1508,
-  "head_sha": "661fa97b344b7986d109f11790d449b79f5c9c6b",
+  "head_sha": "dd9ac0732e055e87721f7b6cf60661dcf95122f9",
   "base_sha": "c5a0ca34f53dd0f2d55e11139dff74828ab34ab5",
   "audit_identity": {
     "auditor": {
@@ -24,53 +24,54 @@
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "opencode-cli",
     "auditor_model": "kimi-k3",
-    "invocation": "opencode run --pure --format json --model cheaper-inference/kimi-k3 --dir /tmp/pr1508-kimi-seal-r3 --title pr1508-kimi-audit-r3; OpenCode 1.18.30; session ses_e331ef8b2ffeu3AbxXNzO5rx0N; session model id kimi-k3 providerID cheaper-inference variant default; exit 0; one attempt; no tool parts; KIMI_AUDIT.txt sha256 829758a382e5fac93b3d6f91430c789f9ad66728e7c673dee228c6d47436b4dc; KIMI_EVENTS.txt sha256 3f74099605d4eeca51bb53949ee369f4731dfb9113eb4ea9913307c32f78ec17",
+    "invocation": "opencode run --pure --format json --model cheaper-inference/kimi-k3 --dir /tmp/pr1508-kimi-seal-r4 --title pr1508-kimi-audit-r4c; OpenCode 1.18.30; session ses_e330e3207ffeH6Sbq5K2BFbQAG; session model id kimi-k3 providerID cheaper-inference variant default; exit 0; one governing attempt after two pre-stream failures; no tool parts; KIMI_AUDIT.txt sha256 05df84ad2e0bd44e6eaae9732d875c9ae4e1a9568451b515661a1276f66e24b0; KIMI_EVENTS.txt sha256 8d128be5f76cd986fc74d990e6b6e8de897d89ed7f143e3f58bf637b8a7878b7",
     "exit_code": 0,
-    "report_path": "proof/TP-DMX-PR1508-L2-AUDIT-003/AUDITOR_REPORT.md",
+    "report_path": "proof/TP-DMX-PR1508-L2-AUDIT-004/AUDITOR_REPORT.md",
     "findings": [
       {
         "id": "F1",
         "severity": "MEDIUM",
-        "title": "Break condition is broader than a bad fileno",
-        "status": "ACCEPTED_RISK",
-        "body": "The break matches OSError, TypeError, or ValueError anywhere in the loop body, not only select() on a bad file descriptor. One transient error of those types ends monitoring where the old code would have retried."
+        "title": "start() can restore RUNNING after the monitor has exited",
+        "status": "OPEN",
+        "body": "start() sleeps 0.5 seconds and then sets RUNNING when poll() is None. A monitor failure in that window sets ERROR and exits, and start() can overwrite ERROR. is_running() is then true with no monitor until the terminated child is reaped, or indefinitely if the child ignores the terminate signal."
       },
       {
         "id": "F2",
         "severity": "MEDIUM",
-        "title": "Monitor exit shares the transient error counter",
+        "title": "Prior skill risks remain",
         "status": "ACCEPTED_RISK",
-        "body": "When the monitor breaks, the process is no longer watched. The signal is one log line and the same errors_count increment used for a retryable error."
+        "body": "Skill files are unchanged from c30f74fe385c768a7599aa7920cfa5abc92313db. Prohibitions are prose while merge.py, queue_drain.py, and worktree.py still emit gh pr update-branch --rebase and gh pr merge --rebase --delete-branch. The skill has no command that detects an active merge queue. gh pr merge --auto is outside the stop list."
       },
       {
         "id": "F3",
         "severity": "LOW",
-        "title": "The new test covers only the break path",
+        "title": "openai.yaml does not name the required checks",
         "status": "ACCEPTED_RISK",
-        "body": "test_monitor_process_stops_when_stdout_is_not_selectable uses a Mock stdout and a 30-minute inactivity timeout. It does not assert that other exceptions still sleep and retry."
+        "body": "agents/openai.yaml still does not repeat the two required check names. That text is unchanged from c30f74fe385c768a7599aa7920cfa5abc92313db."
       },
       {
         "id": "F4",
         "severity": "LOW",
         "title": "This commit has no CI result yet",
-        "status": "ACCEPTED_RISK",
-        "body": "Local pytest of tests/unit/test_claude_autoresponder.py reported 29 passed. Commit 661fa97b344b7986d109f11790d449b79f5c9c6b has not been through the merge queue."
+        "status": "OPEN",
+        "body": "Local pytest of tests/unit/test_claude_autoresponder.py reported 30 passed in 1.81s. Commit dd9ac0732e055e87721f7b6cf60661dcf95122f9 has no CI result."
       },
       {
         "id": "F5",
         "severity": "INFO",
-        "title": "Prior skill risks remain",
-        "status": "ACCEPTED_RISK",
-        "body": "Skill files are unchanged from c30f74fe385c768a7599aa7920cfa5abc92313db. Prohibitions are prose while merge.py, queue_drain.py, and worktree.py still emit gh pr update-branch --rebase and gh pr merge --rebase --delete-branch. The skill has no command that detects an active merge queue. gh pr merge --auto is outside the stop list. openai.yaml does not repeat the two required check names."
+        "title": "terminate() handles only a missing method",
+        "status": "OPEN",
+        "body": "The new handler catches AttributeError from terminate(). An OSError from terminate() leaves the monitor thread. Status is already ERROR and the stop event is already set."
       }
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "OSError, TypeError, and ValueError anywhere in the monitor loop end monitoring, including a transient error that the old loop would have retried.",
-      "Monitor termination uses the same errors_count as a retryable error.",
-      "The sleep-and-retry path has no regression test.",
-      "Commit 661fa97b344b7986d109f11790d449b79f5c9c6b has local unit-test evidence only.",
-      "Skill prohibitions remain prose. merge.py, queue_drain.py, and worktree.py still emit the forbidden git commands."
+      "start() can set RUNNING after the monitor has already exited with ERROR during the 0.5 second startup window.",
+      "Skill prohibitions remain prose. merge.py, queue_drain.py, and worktree.py still emit the forbidden git commands.",
+      "openai.yaml does not repeat the two required check names.",
+      "Commit dd9ac0732e055e87721f7b6cf60661dcf95122f9 has local unit-test evidence only.",
+      "An OSError from terminate() is not caught.",
+      "Other exceptions still sleep 5 seconds and retry."
     ],
     "skip_reason": null
   }
