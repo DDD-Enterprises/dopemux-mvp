@@ -61,9 +61,14 @@
       "detail": "163/163 both times"
     },
     {
-      "name": "CI on PR #1507 at the audited head",
+      "name": "CI on PR #1507 at the audited head: Unit Tests and all non-gate jobs",
       "result": "PASS",
-      "detail": "21 pass, 3 skipping, 2 fail (independent embedded audit: change contract PASS, only reason delta_touches_code vs the round-1 audited head; PR Steward / final readiness). Unit Tests PASS. PR is a draft: Copilot/Codex bot reviews NOT_RUN."
+      "detail": "21 pass, 3 skipping. Unit Tests PASS. PR was a draft: Copilot/Codex bot reviews NOT_RUN."
+    },
+    {
+      "name": "CI on PR #1507 at the audited head: independent embedded audit and PR Steward / final readiness",
+      "result": "FAIL",
+      "detail": "2 fail, both expected before a signed proof for this head existed. independent embedded audit: change contract PASS, only reason delta_touches_code vs the round-1 audited head. PR Steward / final readiness: blocked pending the audit gate and owner release. Corrected after Copilot review on PR #1507: this record previously folded the two failing gates into a single PASS entry."
     },
     {
       "name": "auditor test execution",
