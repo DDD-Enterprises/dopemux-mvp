@@ -348,8 +348,16 @@ Task
                 time.sleep(1)
 
             except Exception as e:
-                logger.error(f"Error in monitor thread: {e}")
                 self._metrics.errors_count += 1
+                # select() on a non-file stdout (a test mock, or a pipe
+                # whose fileno is already gone) raises every pass. Sleeping
+                # and retrying keeps this thread, or a test that calls the
+                # monitor directly, busy until the inactivity timeout, which
+                # is the same 30 minutes as the unit-test job limit.
+                if isinstance(e, (OSError, TypeError, ValueError)):
+                    logger.error("Auto responder monitor stopping: %s", e)
+                    break
+                logger.error("Error in monitor thread: %s", e)
                 time.sleep(5)
 
     def restart(self) -> bool:
