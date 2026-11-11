@@ -492,3 +492,6 @@ class TestMonitorThread:
 
         assert elapsed < 2
         assert autoresponder_manager._metrics.errors_count >= 1
+        assert autoresponder_manager._metrics.status == AutoResponderStatus.ERROR
+        autoresponder_manager._process.terminate.assert_called_once()
+        assert not autoresponder_manager.is_running()
