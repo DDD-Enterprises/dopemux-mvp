@@ -1,0 +1,92 @@
+[
+  {
+    "command": "make test-fast",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "4500 passed, 2 skipped, 2 warnings in 1336.87s (0:22:16) at the cycle-4 frozen head fc591cba (controller-run, background); cycle-3 head 43294e99b: 4476 passed, 2 skipped; cycle-2 head 3f1335e7f: 4434 passed, 2 skipped"
+  },
+  {
+    "command": ".venv/bin/python -m pytest tests/test_native_hooks_workflow.py -q",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "12 passed at fc591cba (cycle3-hooks-workflow-fc591cba.txt)"
+  },
+  {
+    "command": "scripts/docs_validator.py + scripts/docs_frontmatter_guard.py (how-to, design doc)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "rc=0 on docs/02-how-to/mcp-setup-other-repos.md and claudedocs/mcp-just-works-design-2026-11-05.md; AGENTS.md and .claude/claude.md fail both at the base too (no frontmatter; not docs/ pages); re-run at 43294e99 rc=0 both (no docs changed in cycle 3); re-run at fc591cba rc=0 both (cycle 4 appends one design amendment bullet)"
+  },
+  {
+    "command": "ruff check --select F,E9 / flake8 --select F,E7,E9,W6 per changed .py file, head vs a real worktree of the cycle base 0cde3a921 (cycle2-gates.sh)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "0 new findings in every changed file at fc591cba vs 0cde3a921 (cycle2-gates-fc591cba.txt in review_bundle)"
+  },
+  {
+    "command": "black / isort drift restricted to the lines the cycle added (cycle2-format-touched.py, real paths)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "0 black and 0 isort drift on added lines in all changed src modules at fc591cba (mcp_json.py 0/0, stdio_proxy.py 0/0); the 8 black-flagged lines in lifecycle.py are the same legacy lines moved verbatim in cycle 2"
+  },
+  {
+    "command": "mypy --explicit-package-bases --ignore-missing-imports per changed src module, head vs base worktree (repo config)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "0 new errors at fc591cba (cli 1297/1301 \u2014 fewer than base, mcp_commands 87/87, launcher 17/17, lifecycle 17/17, mcp_json 9/9, reap 17/17, stdio_proxy 1/1)"
+  },
+  {
+    "command": "make lint / make type-check (repo-wide)",
+    "exit_code": null,
+    "bucket": "NOT_RUN",
+    "reason": "not clean/functional on main (21828 flake8 findings; mypy duplicate-module abort); per-file deltas recorded instead"
+  },
+  {
+    "command": "task reviews (cycle 2: sonnet Task A, opus Task B + final whole-cycle; cycle 3: opus Task D; cycle 4: opus Task E)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "Task A approved after one stub fix; Task B approved after fix rounds 1-4 (ABBA deadlock in the first B2 design caught by the implementer; stale-snapshot, build-under-lock, restart-did-nothing, docker-unavailable fail-open found by review and fixed); final whole-cycle review Needs-fixes \u2192 fixed (orchestrator-only artifact write race, doc truths, tests) \u2192 Approved; micro round controller-verified. Cycle 3 Task D (sonnet implementer): opus review round 0 NEEDS_FIXES (FINDING 1 medium: the scheme strip took the first `://` anywhere after masking, so a placeholder base with a later literal `://` was still repairable) \u2192 round 1 APPROVED (45-URL adversarial probe, RED re-verified 8 failed on the round-0 line, catalog URLs unchanged) \u2192 docstring-only micro round controller-verified. Cycle 3 Task D (sonnet implementer): opus review round 0 NEEDS_FIXES (FINDING 1 medium: the scheme strip took the first `://` anywhere after masking, so a placeholder base with a later literal `://` was still repairable) \u2192 round 1 APPROVED (45-URL adversarial probe, RED re-verified 8 failed on the round-0 line, catalog URLs unchanged) \u2192 docstring-only micro round controller-verified. Cycle 4 Task E + Task F (sonnet implementer): Task E: round 0 NEEDS_FIXES on one LOW doc sentence (dictated by the controller's brief; the how-to's manual recipe equals the catalog templates and is still repaired) → doc/comment micro round controller-verified, code approved (63-URL adversarial probe; environment-independence proven with hostile env values; RED re-verified 15 failed on HEAD). Task F: round 0 NEEDS_FIXES (MEDIUM: dropped doctor findings were the only guard for a same-project sibling-worktree container on a resolved port; LOW: stop control proved nothing) → round 2 `_collision_checks(worktree_hash)` + launcher ownership rule → re-review NEEDS_FIXES on two LOWs (other-project diagnosis, overclaiming bullet) → round 3 APPROVED (25-case probe table on HEAD vs new; no false positives on own, legacy or orchestrator containers)"
+  },
+  {
+    "command": "PR review bots (Copilot, Codex connector) on the pushed head",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "Codex connector: reviewed every pushed head of cycles 2 and 3 when triggered by a PR comment; 3f1335e7f clean (receipt 2026-11-08T20:50:31Z \u2014 the d4e021126 proof recorded it NOT_RUN in error: a clean result is an issue comment, not a PR review; cycle2-bot-reviews.sh now captures receipts); 43294e99b clean (receipt 2026-11-09T04:23:59Z, reviewed commit 43294e99bd); fc591cba: 83b468e71 one P2 (lifecycle.py:1409 stale-envrc-port doctor blocker survives a successful re-lease) → fixed as Task F; fc591cba1 clean (receipt 2026-11-09T07:49:14Z, reviewed commit fc591cba1f). Copilot: reviewed e49a1c8e8 only (3 threads, all answered: proof SHA \u2192 this proof; .env.example note \u2192 owner edit; host placeholder \u2192 Task A3); no later head (controller request classifier-denied \u2192 owner click) \u2192 Copilot NOT_RUN on fc591cba"
+  },
+  {
+    "command": "live: cold `dopemux mcp launch conport </dev/null` in a fresh detached worktree at the frozen head; `dopemux mcp reap --dry-run --json` after `git worktree remove`",
+    "exit_code": null,
+    "bucket": "NOT_RUN",
+    "reason": "run at the cycle-2 head 3f1335e7f (cycle2-live-smoke-3f1335e7.txt: launch exit 0 in 3 s, instance.json marker 0600, worktree_missing dry-run candidate, warm launch exit 0); not repeated at fc591cba: cycles 3 and 4 change only the URL-repair predicate and the proxy's error-literal match, both unit-tested; lock paths untouched"
+  },
+  {
+    "command": "acceptance T1\u2013T11 (design \u00a76)",
+    "exit_code": null,
+    "bucket": "NOT_RUN",
+    "reason": "run at the previous code head 30b0fdec9 (PASS 7 / PARTIAL 1 / NOT_RUN 4, proof/.../AUDIT_ACCEPTANCE.md); at 3f1335e7f only the T8 dry-run and a cold launch were repeated (live smoke); nothing at 43294e99b or fc591cba; nothing at 43294e99; reap --apply, switch-project and the dNh_CRM items stay owner-run"
+  },
+  {
+    "command": "scripts/check_root_hygiene.py --all-files",
+    "exit_code": 1,
+    "bucket": "FAIL",
+    "reason": "pre-existing: re-run at fc591cba (cycle3-root-hygiene-fc591cba.txt), all offenders tracked on origin/main, none from this branch"
+  },
+  {
+    "command": "CI at the pushed head (GitHub Actions)",
+    "exit_code": 0,
+    "bucket": "PASS",
+    "reason": "at fc591cba: Unit Tests (Linux) PASS on rerun 9m39s (attempt 1 cancelled by the job timeout: pre-existing nondeterministic asyncio MCP-session hang, also seen once locally in a Wave 2A SSE test; see residual_risks), Documentation Check PASS on rerun and `checks` PASS on rerun (attempt-1 failures were lychee setup exit 22 / GitHub-side), Code Quality & Linting, Audit Proof Validator (--all), Security Review, Extractor Smoke/Full, Model Routing, Clobber Guard, Auditor Router PASS; Analyze (ruby) FAIL = CodeQL bundle download HTTP 504 (run not retryable; passed at 43294e99b and 83b468e71; reruns on the next push); at 43294e99b: Unit Tests (Linux) PASS 13m42s, Code Quality & Linting, Documentation Check, Audit Proof Validator (--all), Security Review, Extractor Smoke/Full, CodeQL PASS; Scoped Coverage / Integration / Installer Smoke skipping (path filters); 'independent embedded audit' and 'PR Steward / final readiness' FAIL until the owner signs the per-PR proof (expected, unsigned-proof chain)"
+  },
+  {
+    "command": "validate_change_contract.py --base 3f1335e7f --proof-only --content-head 3f1335e7f --audited-head 3f1335e7f --proof-head d4e021126",
+    "exit_code": 1,
+    "bucket": "FAIL",
+    "reason": "expected: 'All changed paths are within proof-only allowlist'; the only findings are two proof_only_missing_signature errors (owner signs). An earlier controller note read this as rc=0 via an undefined zsh PIPESTATUS; corrected (cycle2-change-contract-d4e02112.txt)"
+  },
+  {
+    "command": "validate_change_contract.py --base 3f1335e7f --proof-only --content-head 3f1335e7f --audited-head 3f1335e7f --proof-head d4e021126",
+    "exit_code": 1,
+    "bucket": "FAIL",
+    "reason": "expected: 'All changed paths are within proof-only allowlist'; the only findings are two proof_only_missing_signature errors (owner signs). An earlier controller note read this as rc=0 via an undefined zsh PIPESTATUS; corrected (cycle2-change-contract-d4e02112.txt)"
+  }
+]

@@ -1,9 +1,9 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1503,
-  "head_sha": "3f1335e7fdcf8165d4669195bfd521cafca13304",
+  "head_sha": "efb06f7c5a0677d5a6103cbcb86e02d199c133ba",
   "packet_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
-  "generated_at": "2026-11-08T23:24:00.224799+00:00",
+  "generated_at": "2026-11-12T02:15:53.282636+00:00",
   "mutation_performed": false,
   "github_mutation_route_added": false,
   "audit_identity": {
@@ -14,20 +14,20 @@
       "runtime_family": "anthropic-claude-code"
     },
     "auditor": {
-      "runner": "agy",
-      "model": "gemini",
-      "model_family": "google-gemini",
-      "runtime_family": "google-antigravity-cli",
-      "effort": "UNKNOWN"
+      "runner": "grok-cli",
+      "model": "grok-4.7",
+      "model_family": "xai-grok",
+      "runtime_family": "xai-grok-cli",
+      "effort": "high"
     },
     "independence": "PROVEN"
   },
   "embedded_audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
-    "auditor_tool": "agy",
-    "auditor_model": "gemini",
-    "invocation": "agy --model gemini-4-argon-high --output-format json --print-timeout 25m --add-dir <sealed subject> --print=<AUDIT_PROMPT.agy.full.txt> (exact requested model gemini-4-argon-high; the schema enum lacks it, hence 'gemini')",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.7",
+    "invocation": "grok -m grok-4.7 --effort high --sandbox workspace --cwd <sealed subject> --system-prompt-override <tool-less auditor> --disallowed-tools <GROK_DISALLOWED.txt> --max-turns 1 < AUDIT_PROMPT.grok.full.txt (exact requested model grok-4.7; the schema enum lacks it, hence 'unknown'; observed model UNKNOWN)",
     "exit_code": 0,
     "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDITOR_REPORT.md",
     "findings": [],
@@ -42,14 +42,35 @@
       "Copilot re-review (e49a1c8e8): host-position placeholder defaults do not prove locality \u2192 Task A3 357f6ab99; its .env.example note (host-path variables also required by dopemux commands that start dope-context) is an OWNER edit (.env* deny-ruled for the controller); its proof-SHA thread resolves with this cycle's proof",
       "post-push Codex connector P2 on reap.py:673 (an interrupted/failed idle reap's leftovers never finished while the checkout existed) \u2192 fixed in Task B5 979c1eb6a; live-build exclusion generalized in 1dfaf8829",
       "post-push Codex connector P2 on reap.py:1011 (a CLI restart recreating an idle sidecar between plan and lock had the replacement's state released) \u2192 fixed in Task B6 556171674",
-      "post-push Codex connector P2s: reap.py:783 (leases with the directory-name project_id were never released or counted \u2192 ports leaked on reap) and lifecycle.py:385 (env-file ports after init\u2192stop were treated as reservations \u2192 unleased start) \u2192 fixed in Task B7 9e3c78ba3"
+      "post-push Codex connector P2s: reap.py:783 (leases with the directory-name project_id were never released or counted \u2192 ports leaked on reap) and lifecycle.py:385 (env-file ports after init\u2192stop were treated as reservations \u2192 unleased start) \u2192 fixed in Task B7 9e3c78ba3",
+      "30b0fdec9 audit round (codex FAIL F1 reap persistence failure deleted the runtime dir; F2 CLI start/restart not serialized against the reaper) + AGY low AGENTS.md:309 + five PR bot threads + acceptance findings 2 (orphan build-only runtime dir) and 3 (T7 hook_status.json wording) \u2192 fixed in cycle 2 (0cde3a921..<frozen head>); the 30b0fdec9 returns are kept under review_bundle/superseded-30b0fdec9-*",
+      "cycle 2 review findings fixed before the freeze: ABBA deadlock of the first B2 design vs switch-project; stale preflight snapshot under the lock; inline image build under the lock; restart handed the pre-stop snapshot to its starts; docker-unavailable snapshots failed open; orchestrator-only start wrote the worktree's compose override without the lock",
+      "post-push Codex connector P2 on conport_tenant.py:716 (resume replays a committed 001/002 after a lost checkpoint \u2192 'already exists' forever) \u2192 fixed in Task C 335fd4ce1; probe SQL verified read-only against two provisioned tenant databases on the host",
+      "post-push Codex connector P2 on mcp_commands.py:2164 (init --repo <subdir> wrote .mcp.json/.envrc and allocated leases in the subdirectory) \u2192 fixed in Task A2 05f2634ac + f66a8d793 (lifecycle CLI passes the normalized root to run_lifecycle too)",
+      "Copilot re-review (e49a1c8e8): host-position placeholder defaults do not prove locality \u2192 Task A3 357f6ab99; its .env.example note (host-path variables also required by dopemux commands that start dope-context) is an OWNER edit (.env* deny-ruled for the controller); its proof-SHA thread resolves with this cycle's proof",
+      "post-push Codex connector P2 on reap.py:673 (an interrupted/failed idle reap's leftovers never finished while the checkout existed) \u2192 fixed in Task B5 979c1eb6a; live-build exclusion generalized in 1dfaf8829",
+      "post-push Codex connector P2 on reap.py:1011 (a CLI restart recreating an idle sidecar between plan and lock had the replacement's state released) \u2192 fixed in Task B6 556171674",
+      "post-push Codex connector P2s: reap.py:783 (leases with the directory-name project_id were never released or counted \u2192 ports leaked on reap) and lifecycle.py:385 (env-file ports after init\u2192stop were treated as reservations \u2192 unleased start) \u2192 fixed in Task B7 9e3c78ba3",
+      "cycle 3 / codex F1 (3f1335e7f): host-placeholder detection masks every `${...}` token over the whole URL, then strips only a literal scheme at the very start (otherwise any placeholder fails closed), then splits the authority on `/ ? #`; a delimiter or `://` inside a placeholder default can no longer move the authority or the trusted host (43294e99b). Behaviour change: scheme-relative or scheme-templated URLs are no longer repairable; no catalog URL is affected",
+      "cycle 3 / codex F2 (3f1335e7f): the resend-once path fires only on the SDK's exact session-terminated literal (code 32600 and message == \"Session terminated\"); any other 32600 error is returned to the runner unprocessed (43294e99b)",
+      "cycle 4 / codex F1 (43294e99b): config repair replaces only what dopemux rendered \u2014 the repairable predicate no longer judges a template's default; a port variable set to `3005@remote.example` can no longer make an operator endpoint look local because generic `${PORT}` templates are preserved outright (83b468e71 (Task E), fc591cba1 (Task F))",
+      "cycle 4 / Codex connector P2 (83b468e71): after init \u2192 stop, a foreign container on the stale envrc port no longer blocks a start that re-leased a free port; the doctor's pre-allocation port findings are re-evaluated against the resolved ports instead of being carried forward (83b468e71 (Task E), fc591cba1 (Task F)). Review round 1 (opus) then found that the dropped doctor findings had been the only guard against a same-project sibling worktree's container on a resolved port; `_collision_checks` now applies the launcher's ownership rule (project_id AND worktree_hash; managed container without a project id and a foreign project root) and flags such containers as DOCKER_CONTAINER_PORT_COLLISION",
+      "cycle 5 / codex F1+F2 (fc591cba1): for start/restart every doctor blocker is carried except a DOCKER_CONTAINER_* finding whose container neither publishes a resolved port nor bears one of this run's expected container names (no container evidence \u2192 kept), and the resolved port map is validated for duplicates and reserved ports even when `_resolve_ports` retained leases; the stale-envrc-port recovery (connector P2) is kept; the two Task F behaviour changes (compose-only container with our expected name; project-scoped orchestrator from another worktree) revert to blocking as on main (192a84dc3 (Task G), 380c2c52c (Task H))",
+      "REVERTED (cycle 6, 2bbf08f65): cycle 5 / Codex connector P2 (192a84dc3): automatic reap no longer skips planning on an empty registry when launcher-marked runtime dirs exist; the dir-only recovery (worktree_missing only) now runs from the hooks and the launcher on a fresh host (192a84dc3 (Task G), 380c2c52c (Task H)) \u2014 the audit at 380c2c52c found the absent-registry (fresh-host) case still open and the discovery unbounded; the connector's finding is an open follow-up outside this packet"
     ],
     "remaining_risks": [
-      "Direct CLI `dopemux mcp start --service task-orchestrator` does not acquire `instance_lock` (by design, to avoid nesting `instance_lock` with `reserved_port_lock(7890)`), so a concurrent `reap --apply` on a removed/idle worktree can remove `runtime_dir` after the orchestrator registry update; `skip_artifacts = not compose_services` (src/dopemux/mcp/lifecycle.py:710) prevents recreating `runtime_dir`, leaving at most a stale orchestrator registry entry (documented in design.md:304).",
-      "`dopemux mcp doctor --repo <target>` and `dopemux mcp profile show --repo <target>` still load the caller checkout's catalog when invoked from outside `<target>` (documented in design.md:305).",
-      "Interactive `dopemux mcp switch-project` without `--yes` performs an unlocked pre-check before prompting the operator and re-verifies ownership under `reserved_port_lock(7890)` before mutating state (src/dopemux/commands/mcp_commands.py:432-477, documented in design.md:306).",
-      "codex route at 3f1335e7 = FAIL",
-      "grok route at 3f1335e7 = PASS_WITH_RISKS"
+      "A dopemux port variable whose runtime value is not a port (for example 3005@remote.example) can move the host when the client expands a repaired template; repair judges the template, not the value",
+      "One resend still happens if a backend returns exactly 32600 and Session terminated after processing the request",
+      "ClosedResourceError/BrokenResourceError in forward() is retried once on the next session",
+      "_live_build treats a build pid older than the build budget as stale",
+      "Automatic reap does not clean launcher-marked runtime dirs while the registry lists no instance or the registry file is missing or unreadable; explicit reap also plans nothing until that file exists and parses OK (owner-accepted follow-up)",
+      "dopemux mcp status uses _resolve_ports(allocate=False) and can show stale envrc ports after a re-lease (item 18, code unchanged since cycle 2)",
+      "Runner cancellation of an in-flight tool call is not forwarded to the backend (item 18)",
+      "Legacy mcp up/down/logs without --repo still use the shell environment",
+      "Gate temp env file can remain if the process is killed before adopt_with_gate's finally",
+      "doctor --repo and profile doctor/show still load the caller catalog (deferred)",
+      "codex route at efb06f7c = NEEDS_SUPERVISOR",
+      "agy route at efb06f7c = NOT_RUN (not launched in cycles 4 to 6: the agy route failed on its individual quota at the cycle-3 freeze (HTTP 429 RESOURCE_EXHAUSTED 2026-11-09T04:43Z, resets \u22482026-11-14; review_bundle/cycle3-raw-agy-quota-error.json); the owner chose Grok as the governing route on 2026-11-09)"
     ],
     "skip_reason": null,
     "instruction_like_content": {

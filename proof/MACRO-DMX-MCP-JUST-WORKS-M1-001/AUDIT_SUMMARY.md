@@ -87,3 +87,71 @@ Resolve the five review threads against the fixing commits (table in the hand-of
 | agy | gemini-4-argon-high | PASS_WITH_RISKS | none |
 | grok | grok-4.7 | PASS_WITH_RISKS | none |
 | codex | gpt-6-astra | FAIL | F1 medium src/dopemux/mcp/mcp_json.py:140; F2 medium src/dopemux/mcp/stdio_proxy.py:198 |
+
+## Cycle 6 (2026-11-11) — Task H reverted (open follow-up recorded) + re-audit, Grok governing, at efb06f7c5a0677d5a6103cbcb86e02d199c133ba
+
+### Correction to the cycle-2 record
+
+The d4e021126 proof said the Codex connector did not review the cycle-2 head 3f1335e7f within the 30-minute cap. It did: issue-comment receipt 2026-11-08T20:50:31Z, "Didn't find any major issues", reviewed commit 3f1335e7fd. A clean Codex result is posted as an issue comment, not a PR review; the capture script read reviews only. The script now captures receipts (review_bundle/cycle3-codex-receipts.txt).
+
+### Cycle 3 scope
+
+Owner decision after the cycle-2 verdicts (AGY PASS_WITH_RISKS, Grok PASS_WITH_RISKS, Codex FAIL F1/F2): cycle 3 limited to the two codex findings. Task D (implementer sonnet, review opus: round 0 NEEDS_FIXES (FINDING 1 medium: first-`://` strip after masking) → round 1 APPROVED (45-URL adversarial probe, RED re-verified) → docstring micro round controller-verified): F1 mask-first host-placeholder detection in mcp_json.py; F2 exact SDK-literal match in stdio_proxy.py; tests RED→GREEN plus an SDK drift guard. Commits 43294e99b. Re-frozen at 43294e99b and re-audited by the same three routes.
+
+### Audit outcome at 43294e99b (cycle 3)
+
+Grok PASS_WITH_RISKS (0 findings; states codex F1/F2 from 3f1335e7f closed by items 11-12); AGY NOT_RUN (runner quota, HTTP 429 'Individual quota reached', resets ≈2026-11-14, no audit produced); Codex FAIL with ONE NEW medium F1 mcp_json.py:170 — a port-position placeholder is judged by its default, but PORT=`3005@remote.example` expands to host remote.example, so `http://localhost:${PORT:-3005}/sse` was repairable and the planner would replace an operator endpoint; both 3f1335e7f findings 'closed as specifically reported'. Breaker → owner decided 2026-11-09: Grok governs the embedded-audit record (precedent #1459/#1500) and cycle 4 fixes F1.
+
+### Owner decisions after cycle 3 (2026-11-09)
+
+Grok governs the embedded-audit record (AGY quota 429 until ≈2026-11-14; precedent #1459/#1500; enum value 'unknown' for grok-4.7, exact model in the invocation). Cycle 4 limited to Codex F1.
+
+### Cycle 4 scope
+
+Task E (implementer sonnet, review opus: Task E round 0 NEEDS_FIXES on one LOW doc sentence dictated by the controller's brief (the how-to's manual recipe equals the catalog templates and is still repaired) → doc/comment micro round controller-verified, code approved (63-URL adversarial probe, env-independence proven); Task F round 0 NEEDS_FIXES (MEDIUM: dropped doctor findings were the only guard for a same-project sibling-worktree container on a resolved port; LOW: stop control proved nothing) → round 2 `_collision_checks(worktree_hash)` + launcher ownership rule → re-review NEEDS_FIXES on two LOWs (other-project diagnosis; overclaiming bullet) → round 3 APPROVED (25-case probe table, no false positives)): `_url_is_repairable` replaces only what dopemux rendered (allowlist of its own port variables in port position; every other template preserved; environment never read); `_neutralize_placeholders` removed; planner reason text; design amendment; tests RED→GREEN. Commits 83b468e71 (Task E), fc591cba1 (Task F). Re-frozen at fc591cba1 and re-audited by the codex and grok routes (agy not launched: quota).
+
+### Audit outcome at fc591cba1 (cycle 4)
+
+Grok PASS_WITH_RISKS (0 findings; GOVERNING by owner decision; closure stated for items 6-7, 11-12, 13 and 14); AGY NOT_RUN (not launched: quota); Codex FAIL with TWO NEW mediums, both in item 14 (Task F): F1 lifecycle.py:1469 — the dropped doctor reserved-port / duplicate-port blockers are not recomputed when `_resolve_ports` retains existing leases without allocating (probe: two services' leases retained on :7890, zero collision findings; the doctor blocked this before); F2 lifecycle.py:702 — rule (2) needs a worktree hash, so a managed same-project container with a contradictory workspace label and no hash passes although ownership classifies WRONG_PROJECT and the launcher refuses it. Breaker → owner chose cycle 5 with the convergent fix.
+
+### Owner decision after cycle 4 (2026-11-09)
+
+Cycle 5 with the convergent fix (option 1 of three): the Task F six-code drop is replaced by one checkable invariant and the resolved port map is validated; both codex mediums were regressions of Task F versus main.
+
+### Cycle 5 scope
+
+Task G (implementer sonnet, review opus: Task G round 0 NEEDS_FIXES (one medium: a container with our exact expected name and contradictory workspace labels on an off-map port was dropped as off-port and adopted by name) → round 1 APPROVED (29-case probe table on main vs new: every case main blocked blocks again except the stale-port recovery; Codex F1/F2 probes block; helper edge cases fail closed). Task H: APPROVED first pass (pre-check mirrors the planner; maybe_reap otherwise identical; 5000-dir listing 46 ms; RED verified on 192a84dc3; host registry untouched)): see slices. Commits 192a84dc3 (Task G), 380c2c52c (Task H). Re-frozen at 380c2c52c and re-audited by the codex and grok routes (agy not launched: quota).
+
+### Codex connector at the frozen head
+
+First trigger 10:46:23Z unanswered within the cap → frozen with NOT_RUN in the sealed VALIDATIONS.md; re-trigger 11:19:39Z → clean receipt 11:23:21Z (reviewed commit 380c2c52c8), recorded in cycle5-gates.json and cycle5-bots-note.txt.
+
+### Audit outcome at 380c2c52c (cycle 5)
+
+Grok PASS_WITH_RISKS (GOVERNING; ONE LOW: how-to :287 said automatic reap sees a marker-only runtime dir only while the registry lists an instance — stale after item 16; closure stated for items 6-7, 11-12, 13, 14, 15, 16); AGY NOT_RUN (not launched: quota); Codex FAIL with TWO NEW mediums, both in item 16 (Task H): F1 reap.py:697 — the fix covered an empty registry FILE but not an absent one (fresh host: RuntimeRegistry.load() reports MISSING and plan_reap plans nothing unless OK, before marker discovery; the test used an empty present registry); F2 reap.py:545 — marker discovery enumerated, sorted and read every runtime dir without a deadline or count bound. Codex connector clean on the head (receipt 11:23Z). Breaker → owner chose to REVERT item 16 (2bbf08f65; tree identical to 192a84dc3) and record the connector's finding as an open follow-up (design amendment, fbbe95a59).
+
+### Owner decision after cycle 5 (2026-11-09)
+
+Revert Task H (option 1 of three): the change covered an empty registry file but not an absent one and brought two Codex mediums; Grok had passed the pre-Task-H code; Task G stays. The Codex connector's reap finding is an open, documented follow-up.
+
+### Cycle 6 scope
+
+Mechanical `git revert` of 380c2c52c (2bbf08f65; tree identical to 192a84dc3) plus one append-only design bullet recording the revert and the open follow-up (fbbe95a59). Re-frozen at efb06f7c5 and re-audited by the codex and grok routes (agy not launched: quota).
+
+### Audit outcome at efb06f7c5
+
+| Route | Model (requested) | Status | Findings | Notes |
+|---|---|---|---|---|
+| grok (governing, owner decision) | grok-4.7 | PASS_WITH_RISKS | 0 | Source diff only on this route: design.md line-316 wording and the item-1 test file NOT_RUN; tests/lint and live T1-T11 NOT_RUN |
+| codex (advisory) | gpt-6-astra | NEEDS_SUPERVISOR | 0 | Status comes only from the agentic-worker template line at plan.md:17, classified benign and ignored by the auditor; adjudication is the owner's (pending). All earlier findings confirmed closed; Task H confirmed fully reverted; item-18 follow-ups do not reopen a closure |
+| agy | gemini-4-argon-high | NOT_RUN | - | Quota 429; not launched |
+
+Observed model and effort are UNKNOWN on every route (no runtime receipt). Acceptance NOT_GRANTED by both returns; the signature and the plan.md:17 adjudication are owner steps.
+
+### Audit (three routes at efb06f7c; observed identity UNKNOWN for all)
+
+| route | requested model | status | findings |
+|---|---|---|---|
+| agy | gemini-4-argon-high | NOT_RUN (not launched in cycles 4 to 6: the agy route failed on its individual quota at the cycle-3 freeze (HTTP 429 RESOURCE_EXHAUSTED 2026-11-09T04:43Z, resets ≈2026-11-14; review_bundle/cycle3-raw-agy-quota-error.json); the owner chose Grok as the governing route on 2026-11-09) | none |
+| grok | grok-4.7 | PASS_WITH_RISKS | none |
+| codex | gpt-6-astra | NEEDS_SUPERVISOR | none |

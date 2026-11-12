@@ -437,7 +437,7 @@ index c4b8e570b..b36cc308d 100644
      if changed:
          settings_path.parent.mkdir(parents=True, exist_ok=True)
 diff --git a/src/dopemux/commands/mcp_commands.py b/src/dopemux/commands/mcp_commands.py
-index 235209dd8..c2240203f 100644
+index 235209dd8..dce412a3e 100644
 --- a/src/dopemux/commands/mcp_commands.py
 +++ b/src/dopemux/commands/mcp_commands.py
 @@ -24,10 +24,10 @@ import subprocess
@@ -626,7 +626,7 @@ index 235209dd8..c2240203f 100644
      """♻️ Restart project-scoped MCP sidecars (safe stop then start)."""
      _run_lifecycle_cli(
          "restart",
-@@ -216,19 +301,270 @@ def mcp_restart_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run:
+@@ -216,19 +301,271 @@ def mcp_restart_cmd(repo_arg: Optional[Path], services: Optional[str], dry_run:
          services=services,
          dry_run=dry_run,
          json_output=json_output,
@@ -680,7 +680,8 @@ index 235209dd8..c2240203f 100644
 +    (the task-orchestrator) are never touched. A runtime dir
 +    that a launcher marked (instance.json) but that never got a sidecar (a
 +    build-only launch) is removed once its worktree is gone and no launcher or
-+    detached image build still uses it; never for idleness. --apply ignores the
++    detached image build still uses it; never for idleness. Nothing is planned
++    while the runtime registry file is missing (a start creates it). --apply ignores the
 +    automatic-reaping kill switch (file reap.disabled or DOPEMUX_MCP_REAP=0).
 +    """
 +    import time
@@ -897,7 +898,7 @@ index 235209dd8..c2240203f 100644
      dry_run: bool,
      json_output: bool,
  ):
-@@ -247,6 +583,7 @@ def mcp_up_cmd(
+@@ -247,6 +584,7 @@ def mcp_up_cmd(
              services=services,
              dry_run=dry_run,
              json_output=json_output,
@@ -905,7 +906,7 @@ index 235209dd8..c2240203f 100644
          )
          return
      try:
-@@ -301,11 +638,13 @@ def mcp_up_cmd(
+@@ -301,11 +639,13 @@ def mcp_up_cmd(
  
  @mcp.command("down")
  @_lifecycle_repo_option()
@@ -919,7 +920,7 @@ index 235209dd8..c2240203f 100644
      services: Optional[str],
      dry_run: bool,
      json_output: bool,
-@@ -324,6 +663,7 @@ def mcp_down_cmd(
+@@ -324,6 +664,7 @@ def mcp_down_cmd(
              services=services,
              dry_run=dry_run,
              json_output=json_output,
@@ -927,7 +928,7 @@ index 235209dd8..c2240203f 100644
          )
          return
      try:
-@@ -347,13 +687,16 @@ def mcp_down_cmd(
+@@ -347,13 +688,16 @@ def mcp_down_cmd(
  
  @mcp.command("status")
  @_lifecycle_repo_option()
@@ -945,7 +946,7 @@ index 235209dd8..c2240203f 100644
      """
      📊 Diagnostic HUD: Interrogate MCP service health
  
-@@ -387,6 +730,7 @@ def mcp_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose:
+@@ -387,6 +731,7 @@ def mcp_status_cmd(repo_arg: Optional[Path], json_output: bool, legacy_compose:
              services=None,
              dry_run=False,
              json_output=json_output,
@@ -953,7 +954,7 @@ index 235209dd8..c2240203f 100644
          )
          return
      from ..mcp.docker_runtime import env_with_compose_interpolation
-@@ -502,28 +846,32 @@ def servers():
+@@ -502,28 +847,32 @@ def servers():
  @click.option("--all", "all_services", is_flag=True, help="🚀 Boot Fleet: Start every configured MCP service simultaneously.")
  @click.option("--services", "services", help="🎯 Targeted Ignition: Comma-separated list of specific MCP services to ignite.")
  @click.option("--repo", "repo_arg", type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path), default=None)
@@ -987,7 +988,7 @@ index 235209dd8..c2240203f 100644
      services: Optional[str],
      dry_run: bool,
      json_output: bool,
-@@ -531,18 +879,21 @@ def servers_down_cmd(
+@@ -531,18 +880,21 @@ def servers_down_cmd(
      """
      💧 Cool Down Cores (Alias): Terminate MCP containers and volumes
      """
@@ -1012,7 +1013,7 @@ index 235209dd8..c2240203f 100644
  
  
  @servers.command("logs")
-@@ -575,8 +926,12 @@ PROJECT_MCP_FILENAME = ".mcp.json"
+@@ -575,8 +927,12 @@ PROJECT_MCP_FILENAME = ".mcp.json"
  ENVRC_FILENAME = ".envrc.dopemux-mcp"   # sourced from .envrc; keeps generated content separate
  
  
@@ -1027,7 +1028,7 @@ index 235209dd8..c2240203f 100644
      explicit = os.environ.get(CATALOG_ENV_VAR)
      if explicit:
          path = Path(explicit).expanduser().resolve()
-@@ -586,16 +941,16 @@ def _catalog_path() -> Optional[Path]:
+@@ -586,16 +942,16 @@ def _catalog_path() -> Optional[Path]:
              )
          return path
  
@@ -1049,7 +1050,7 @@ index 235209dd8..c2240203f 100644
      if catalog_path:
          with catalog_path.open("r", encoding="utf-8") as fh:
              data = yaml.safe_load(fh) or {}
-@@ -699,11 +1054,33 @@ def _render_claude_memory_bridge_entry(name: str, spec: Dict[str, Any]) -> Dict[
+@@ -699,11 +1055,33 @@ def _render_claude_memory_bridge_entry(name: str, spec: Dict[str, Any]) -> Dict[
      return entry
  
  
@@ -1083,7 +1084,7 @@ index 235209dd8..c2240203f 100644
      transport = spec.get("transport", "http")
      entry: Dict[str, Any] = {"type": transport}
  
-@@ -924,11 +1301,19 @@ def _write_envrc(
+@@ -924,11 +1302,19 @@ def _write_envrc(
      port_vars: Dict[str, int],
      worktree: str,
      project_root: str,
@@ -1105,7 +1106,7 @@ index 235209dd8..c2240203f 100644
          f"# Worktree: {worktree}",
          f"# Project:  {project_root}",
          f"# Generated: {datetime.now().isoformat(timespec='seconds')}",
-@@ -939,6 +1324,11 @@ def _write_envrc(
+@@ -939,6 +1325,11 @@ def _write_envrc(
      lines.append("")
      for var, port in sorted(port_vars.items()):
          lines.append(f"export {var}={port}")
@@ -1117,7 +1118,7 @@ index 235209dd8..c2240203f 100644
      envrc_path.write_text("\n".join(lines) + "\n")
  
  
-@@ -1390,12 +1780,12 @@ def _apply_in_repo_agent_configs(
+@@ -1390,12 +1781,12 @@ def _apply_in_repo_agent_configs(
          )
  
  
@@ -1133,7 +1134,7 @@ index 235209dd8..c2240203f 100644
      identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
      try:
          identity = resolve_project_identity(cwd=repo_path, env=identity_env)
-@@ -1404,8 +1794,11 @@ def _ensure_context() -> tuple[Path, Any]:
+@@ -1404,8 +1795,11 @@ def _ensure_context() -> tuple[Path, Any]:
      return repo_path, identity
  
  
@@ -1147,7 +1148,7 @@ index 235209dd8..c2240203f 100644
      if env_repo:
          repo_path = Path(env_repo).expanduser().resolve()
          if not repo_path.is_dir():
-@@ -1426,7 +1819,7 @@ def _ensure_fast_context() -> tuple[Path, Path]:
+@@ -1426,7 +1820,7 @@ def _ensure_fast_context() -> tuple[Path, Path]:
                  "set DOPEMUX_WORKSPACE_ROOT or run from the repository root."
              )
  
@@ -1156,7 +1157,7 @@ index 235209dd8..c2240203f 100644
      if project_override:
          project_root = Path(project_override).expanduser().resolve()
          if not project_root.is_dir():
-@@ -1576,13 +1969,14 @@ def _report_ensure_problems(problems: List[str]) -> None:
+@@ -1576,13 +1970,14 @@ def _report_ensure_problems(problems: List[str]) -> None:
  
  
  @mcp.command("ensure")
@@ -1172,7 +1173,7 @@ index 235209dd8..c2240203f 100644
      """
      🛠️ Stabilize Fleet: Check or remediate catalog-backed MCP prerequisites
  
-@@ -1600,9 +1994,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1600,9 +1995,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
  
      catalog = _load_catalog()
      if fast:
@@ -1184,7 +1185,7 @@ index 235209dd8..c2240203f 100644
          project_root = identity.project_root
      problems = _ensure_fast_problems(catalog, repo_path, project_root)
      if problems:
-@@ -1656,6 +2050,107 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1656,6 +2051,107 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
      console.logger.info("[success]Full MCP ensure checks green.[/success]")
  
  
@@ -1292,7 +1293,7 @@ index 235209dd8..c2240203f 100644
  @mcp.command("init")
  @click.option("--force", is_flag=True, help="Overwrite existing .mcp.json and env file without prompting.")
  @click.option("--with", "extra", multiple=True, help="Additional server name beyond catalog defaults (repeatable).")
-@@ -1668,7 +2163,15 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1668,7 +2164,15 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
          "profile core-code when omitted. Never all servers."
      ),
  )
@@ -1309,7 +1310,7 @@ index 235209dd8..c2240203f 100644
      """
      🌱 Bootstrap Worktree: Scaffold .mcp.json + per-worktree env file
  
-@@ -1676,21 +2179,40 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1676,21 +2180,40 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
      per-worktree servers (default: compatibility profile ``core-code``) plus any
      `--with NAME` extras. Allocates ports deterministically from the worktree
      path so two worktrees never collide on the same host port.
@@ -1355,7 +1356,7 @@ index 235209dd8..c2240203f 100644
  
      if catalog.get("profiles") or profile_name is not None:
          try:
-@@ -1778,7 +2300,8 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1778,7 +2301,8 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
          _atomic_write_json(mcp_json_path, config)
          wrote_mcp_json = True
  
@@ -1365,7 +1366,7 @@ index 235209dd8..c2240203f 100644
  
      if wrote_mcp_json:
          console.logger.info(f"[success]Wrote {mcp_json_path}[/success]")
-@@ -1792,26 +2315,38 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1792,26 +2316,38 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
          for var, port in sorted(port_vars.items()):
              free = "[success]free[/success]" if _port_is_free(port) else "[warning]in use[/warning]"
              console.logger.info(f"[info]  {var}={port} ({free})[/info]")
@@ -1410,7 +1411,7 @@ index 235209dd8..c2240203f 100644
      identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
      try:
          identity = resolve_project_identity(cwd=repo, env=identity_env)
-@@ -1972,6 +2507,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
+@@ -1972,6 +2508,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
      default=None,
      help="Target repo/worktree to diagnose (defaults to current git root). Works from any cwd.",
  )
@@ -1418,7 +1419,7 @@ index 235209dd8..c2240203f 100644
  @click.option(
      "--json",
      "json_output",
-@@ -2004,6 +2540,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
+@@ -2004,6 +2541,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
  )
  def mcp_doctor_cmd(
      repo_arg: Optional[Path],
@@ -1426,7 +1427,7 @@ index 235209dd8..c2240203f 100644
      json_output: bool,
      verbose: bool,
      skip_docker: bool,
-@@ -2036,17 +2573,18 @@ def mcp_doctor_cmd(
+@@ -2036,17 +2574,18 @@ def mcp_doctor_cmd(
              raise click.ClickException(
                  "--legacy does not support --repo; omit --legacy for repo-aware doctor."
              )
@@ -1447,7 +1448,7 @@ index 235209dd8..c2240203f 100644
          if not repo:
              raise click.ClickException(
                  "Not inside a git repository. Pass --repo <path> to diagnose another project."
-@@ -2067,6 +2605,9 @@ def mcp_doctor_cmd(
+@@ -2067,6 +2606,9 @@ def mcp_doctor_cmd(
          compose_path=compose_candidate,
          skip_docker=skip_docker,
          process_env=dict(os.environ),
@@ -1457,7 +1458,7 @@ index 235209dd8..c2240203f 100644
      )
  
      if json_output:
-@@ -2089,10 +2630,10 @@ def mcp_doctor_cmd(
+@@ -2089,10 +2631,10 @@ def mcp_doctor_cmd(
          sys.exit(report.exit_code)
  
  
@@ -1470,7 +1471,7 @@ index 235209dd8..c2240203f 100644
      if not repo:
          raise click.ClickException("Not inside a git repository.")
  
-@@ -2100,7 +2641,7 @@ def _mcp_doctor_legacy() -> None:
+@@ -2100,7 +2642,7 @@ def _mcp_doctor_legacy() -> None:
      mcp_json_path = Path(repo) / PROJECT_MCP_FILENAME
      problems: List[str] = []
      try:
@@ -1479,7 +1480,7 @@ index 235209dd8..c2240203f 100644
          identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
          identity = resolve_project_identity(cwd=repo, env=identity_env)
      except ProjectIdentityError as exc:
-@@ -2277,11 +2818,11 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
+@@ -2277,11 +2819,11 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
      return {k: v for k, v in entry.items() if k != "description"}
  
  
@@ -1494,7 +1495,7 @@ index 235209dd8..c2240203f 100644
      if not repo:
          raise click.ClickException(
              "Not inside a git repository. Pass --repo <path> to target another project."
-@@ -2407,11 +2948,13 @@ def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
+@@ -2407,11 +2949,13 @@ def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
      default=None,
      help="Target repo/worktree (defaults to current git root).",
  )
@@ -1508,7 +1509,7 @@ index 235209dd8..c2240203f 100644
      dry_run: bool,
      apply: bool,
      json_output: bool,
-@@ -2430,9 +2973,9 @@ def mcp_repair_config_cmd(
+@@ -2430,9 +2974,9 @@ def mcp_repair_config_cmd(
  
      from dopemux.mcp.config_repair import apply_repair, format_repair_human, plan_repair
  
@@ -1521,7 +1522,7 @@ index 235209dd8..c2240203f 100644
      catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
  
      plan = plan_repair(
-@@ -2441,6 +2984,7 @@ def mcp_repair_config_cmd(
+@@ -2441,6 +2985,7 @@ def mcp_repair_config_cmd(
          dry_run=dry_run,
          catalog_paths=catalog_paths,
          process_env=dict(os.environ),
@@ -4294,7 +4295,7 @@ index 000000000..4c58840e6
 +            if record is not None:
 +                detach(record)
 diff --git a/src/dopemux/mcp/lifecycle.py b/src/dopemux/mcp/lifecycle.py
-index 14be695e9..709cdd60a 100644
+index 14be695e9..bab1c0d5b 100644
 --- a/src/dopemux/mcp/lifecycle.py
 +++ b/src/dopemux/mcp/lifecycle.py
 @@ -5,18 +5,42 @@ Uses Packet 001 doctor for preflight. Never adopts unlabeled containers.
@@ -4357,7 +4358,19 @@ index 14be695e9..709cdd60a 100644
          "MCP_JSON_MISSING",
          "TRANSPORT_MISMATCH",
          "PORT_RESERVED_COLLISION",
-@@ -135,11 +159,29 @@ class LifecycleResult:
+@@ -56,6 +80,11 @@ BLOCKING_FINDING_CODES = frozenset(
+     }
+ )
+ 
++# For start/restart a doctor container finding (computed against the envrc ports
++# before allocation) is carried only while its container publishes a port in the
++# RESOLVED port map; see `_split_deferred_doctor`.
++DEFERRED_DOCTOR_CODE_PREFIX = "DOCKER_CONTAINER_"
++
+ # Informational doctor codes that should not block (lifecycle neutralizes compose hazards)
+ NON_BLOCKING_EVEN_IF_IN_SET = frozenset(
+     {
+@@ -135,11 +164,29 @@ class LifecycleResult:
          return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
  
  
@@ -4389,7 +4402,7 @@ index 14be695e9..709cdd60a 100644
      if not path.is_dir():
          raise FileNotFoundError(f"Target path not found: {path}")
      return path
-@@ -191,6 +233,10 @@ def _doctor_blocking_findings(
+@@ -191,6 +238,10 @@ def _doctor_blocking_findings(
                  continue
              if svc and svc not in services and code.startswith("DOCKER_CONTAINER"):
                  continue
@@ -4400,7 +4413,7 @@ index 14be695e9..709cdd60a 100644
              blocking.append(f)
          elif f.get("severity") == "FAIL" and code not in NON_BLOCKING_EVEN_IF_IN_SET:
              # Extra hard FAILs
-@@ -221,6 +267,265 @@ def _extract_ports(env: Mapping[str, str], services: Sequence[str], catalog: Map
+@@ -221,6 +272,265 @@ def _extract_ports(env: Mapping[str, str], services: Sequence[str], catalog: Map
      return ports
  
  
@@ -4666,7 +4679,62 @@ index 14be695e9..709cdd60a 100644
  def _port_to_expected_service(
      port: int,
      *,
-@@ -419,177 +724,30 @@ def _collision_checks(
+@@ -255,6 +565,7 @@ def _collision_checks(
+     docker: di.DockerInspectResult,
+     project_id: str,
+     worktree_root: str,
++    worktree_hash: str,
+     catalog: Optional[Mapping[str, Any]] = None,
+ ) -> List[Dict[str, Any]]:
+     findings: List[Dict[str, Any]] = []
+@@ -372,6 +683,46 @@ def _collision_checks(
+                 }
+             )
+             continue
++        # The launcher's owner rule (`_check_sidecar_owner`) for same-project
++        # containers: a worktree-scoped sidecar is ours only with our worktree hash.
++        # Another project's owner falls through to PORT_OWNED_BY_OTHER_PROJECT below.
++        owner_hash = labels.get("dopemux.worktree_hash")
++        if (
++            managed
++            and labels.get("dopemux.project_id") == project_id
++            and labels.get("dopemux.scope", "worktree") == "worktree"
++            and owner_hash
++            and owner_hash != worktree_hash
++        ):
++            findings.append(
++                {
++                    "code": "DOCKER_CONTAINER_PORT_COLLISION",
++                    "severity": "FAIL",
++                    "service": expected_svc,
++                    "message": (
++                        f"Port :{port} ({var}) held by same-project container "
++                        f"{owner.name} of another worktree ({owner_hash})"
++                    ),
++                }
++            )
++            continue
++        if (
++            managed
++            and not labels.get("dopemux.project_id")
++            and ownership == "WRONG_PROJECT"
++        ):
++            findings.append(
++                {
++                    "code": "DOCKER_CONTAINER_PORT_COLLISION",
++                    "severity": "FAIL",
++                    "service": expected_svc,
++                    "message": (
++                        f"Port :{port} ({var}) held by managed container "
++                        f"{owner.name} whose project root does not match"
++                    ),
++                }
++            )
++            continue
+         if ownership in {"MATCH", "COMPOSE_MATCH"}:
+             # Require that COMPOSE_MATCH is not just port+slug with wrong service name
+             if ownership == "COMPOSE_MATCH" and expected_name_substrings:
+@@ -419,177 +770,30 @@ def _collision_checks(
      return findings
  
  
@@ -4864,7 +4932,7 @@ index 14be695e9..709cdd60a 100644
              from .task_orchestrator_identity import (
                  evaluate_fixed_port_state,
                  identity_from_docker_labels,
-@@ -676,7 +834,8 @@ def run_lifecycle(
+@@ -676,7 +880,8 @@ def run_lifecycle(
                      )
              if not to_eval.start_allowed and to_eval.start_block_code:
                  if not any(
@@ -4874,11 +4942,14 @@ index 14be695e9..709cdd60a 100644
                  ):
                      blocking.append(
                          {
-@@ -707,18 +866,120 @@ def run_lifecycle(
+@@ -707,16 +912,206 @@ def run_lifecycle(
                          "service": "task-orchestrator",
                      }
                  )
 -        except Exception as exc:  # noqa: BLE001
+-            blocking.append(
+-                {
+-                    "code": "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
 +    except Exception as exc:  # noqa: BLE001
 +        blocking.append(
 +            {
@@ -4890,6 +4961,93 @@ index 14be695e9..709cdd60a 100644
 +        )
 +
 +    return blocking, warnings
++
++
++def _split_deferred_doctor(
++    findings: Sequence[Dict[str, Any]],
++    docker: di.DockerInspectResult,
++    ports: Mapping[str, int],
++    expected_names: Sequence[str] = (),
++) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
++    """``(kept, dropped)`` doctor container findings, judged against the resolved ports.
++
++    A finding is kept when docker cannot be read, when it names no container
++    (``evidence[0]`` is the container name), when that container bears one of
++    ``expected_names`` (this run's container names: it is adoptable by name
++    wherever it publishes), or when it publishes a resolved port. It is dropped
++    only when an unrelated container holds just a stale envrc port or is gone.
++    """
++    if not docker.available:
++        return list(findings), []
++    resolved = {int(p) for p in ports.values() if isinstance(p, int)}
++    kept: List[Dict[str, Any]] = []
++    dropped: List[Dict[str, Any]] = []
++    for f in findings:
++        evidence = f.get("evidence") or []
++        name = str(evidence[0]) if evidence else ""
++        ours_by_name = any(name == e or name.endswith(e) for e in expected_names if e)
++        held = any(
++            (c.name == name or c.name.endswith(name))
++            and resolved & {int(p) for p in c.published_ports}
++            for c in docker.containers
++        )
++        (kept if not name or ours_by_name or held else dropped).append(f)
++    return kept, dropped
++
++
++def _resolved_port_findings(
++    selected: Sequence[str],
++    ports: Mapping[str, int],
++    catalog: Mapping[str, Any],
++) -> List[Dict[str, Any]]:
++    """Duplicate and reserved ports in the resolved map (retained leases included)."""
++    from .port_allocator import singleton_reserved_ports
++
++    reserved = singleton_reserved_ports(catalog)
++    reserved.setdefault(7890, "task-orchestrator")
++    findings: List[Dict[str, Any]] = []
++    seen: Dict[int, Tuple[str, str]] = {}
++    for name in selected:
++        spec = (catalog.get("servers") or {}).get(name) or {}
++        if not isinstance(spec, dict):
++            continue
++        variables = [spec.get("port_var")] + [
++            e.get("var")
++            for e in (spec.get("extra_port_vars") or [])
++            if isinstance(e, dict)
++        ]
++        for var in filter(None, variables):
++            port = ports.get(str(var))
++            if not isinstance(port, int):
++                continue
++            if name != "task-orchestrator" and port in reserved:
++                findings.append(
++                    {
++                        "code": "PORT_RESERVED_COLLISION",
++                        "severity": "FAIL",
++                        "service": name,
++                        "message": (
++                            f"resolved port :{port} ({var}) is a reserved "
++                            "singleton port"
++                        ),
++                    }
++                )
++            other = seen.get(port)
++            if other is not None and other[0] != name:
++                findings.append(
++                    {
++                        "code": "PORT_INTRA_CONFIG_COLLISION",
++                        "severity": "FAIL",
++                        "service": name,
++                        "message": (
++                            f"resolved ports collide: {other[1]}={port} and "
++                            f"{var}={port}"
++                        ),
++                    }
++                )
++            else:
++                seen.setdefault(port, (name, str(var)))
++    return findings
 +
 +
 +@dataclass
@@ -4920,6 +5078,7 @@ index 14be695e9..709cdd60a 100644
 +    worktree_root: str,
 +    blocking: Sequence[Dict[str, Any]],
 +    warnings: Sequence[Dict[str, Any]],
++    deferred_doctor: Sequence[Dict[str, Any]] = (),
 +) -> _Facts:
 +    """Registry, docker snapshot and ports, with their findings appended (deduplicated).
 +
@@ -4939,9 +5098,8 @@ index 14be695e9..709cdd60a 100644
 +    else:
 +        registry = RuntimeRegistry.load(reg_path, create_missing=False)
 +        if registry.parse_status == "ERROR" and op in {"start", "stop", "restart"}:
-             blocking.append(
-                 {
--                    "code": "TASK_ORCHESTRATOR_START_BLOCKED_UNKNOWN_OWNER",
++            blocking.append(
++                {
 +                    "code": "REGISTRY_PARSE_ERROR",
                      "severity": "FAIL",
 -                    "message": f"TO identity preflight failed: {exc}",
@@ -4951,8 +5109,6 @@ index 14be695e9..709cdd60a 100644
                  }
              )
  
--    # Lease registry consistency (start only — recommend repair-config on mismatch)
--    if op == "start":
 +    docker = di.inspect_running_containers(runner=docker_runner)
 +
 +    try:
@@ -4996,12 +5152,10 @@ index 14be695e9..709cdd60a 100644
 +        blocking.extend(to_blocking)
 +        warnings.extend(to_warnings)
 +
-+    # Lease registry consistency (start only — recommend repair-config on mismatch)
-+    if op == "start":
+     # Lease registry consistency (start only — recommend repair-config on mismatch)
+     if op == "start":
          try:
-             from .port_leases import PortLeaseRegistry
- 
-@@ -841,6 +1102,323 @@ def run_lifecycle(
+@@ -841,6 +1236,351 @@ def run_lifecycle(
          if name == "task-orchestrator" and pvar:
              ports.setdefault(str(pvar), int(spec.get("default_port_base") or 7890))
  
@@ -5012,10 +5166,29 @@ index 14be695e9..709cdd60a 100644
 +        docker=docker,
 +        project_id=project_id,
 +        worktree_root=worktree_root,
++        worktree_hash=identity.worktree_hash or instance_id_for_path(worktree_root),
 +        catalog=catalog,
 +    )
 +    if op in {"start", "restart"}:
 +        blocking.extend(collision_findings)
++        blocking.extend(_resolved_port_findings(selected, ports, catalog))
++        kept, dropped = _split_deferred_doctor(
++            deferred_doctor, docker, ports, list(container_names.values())
++        )
++        blocking.extend(kept)
++        for f in dropped:
++            warnings.append(
++                {
++                    "code": "DOCTOR_PORT_FINDING_REEVALUATED",
++                    "severity": "INFO",
++                    "service": f.get("service"),
++                    "message": (
++                        f"doctor {f.get('code')} (computed against the envrc port "
++                        "before allocation) is re-evaluated against the resolved "
++                        f"ports: {f.get('message')}"
++                    ),
++                }
++            )
 +
 +    # Deduplicate blocking by code+service+message
 +    seen_b = set()
@@ -5306,10 +5479,19 @@ index 14be695e9..709cdd60a 100644
 +            }
 +        )
 +
++    deferred_doctor: List[Dict[str, Any]] = []
 +    if doctor:
-+        blocking.extend(
-+            _doctor_blocking_findings(doctor, services=selected, strategy_neutralizes_compose=True)
++        doctor_blocking = _doctor_blocking_findings(
++            doctor, services=selected, strategy_neutralizes_compose=True
 +        )
++        for f in doctor_blocking:
++            code = f.get("code") or ""
++            if op in {"start", "restart"} and code.startswith(
++                DEFERRED_DOCTOR_CODE_PREFIX
++            ):
++                deferred_doctor.append(f)
++            else:
++                blocking.append(f)
 +        for f in doctor.findings:
 +            if f.get("severity") == "WARN":
 +                warnings.append(f)
@@ -5325,7 +5507,7 @@ index 14be695e9..709cdd60a 100644
      container_names = {
          svc: dr.container_name_for(slug, worktree_hash, svc) for svc in selected
      }
-@@ -881,28 +1459,27 @@ def run_lifecycle(
+@@ -881,28 +1621,28 @@ def run_lifecycle(
              transport=transport,
          )
  
@@ -5351,6 +5533,7 @@ index 14be695e9..709cdd60a 100644
 -        catalog=catalog,
 +        blocking=list(blocking),
 +        warnings=list(warnings),
++        deferred_doctor=list(deferred_doctor),
      )
 -    if op in {"start", "restart"}:
 -        blocking.extend(collision_findings)
@@ -5371,7 +5554,7 @@ index 14be695e9..709cdd60a 100644
  
      identity_dict = identity.to_dict()
  
-@@ -926,55 +1503,21 @@ def run_lifecycle(
+@@ -926,55 +1666,21 @@ def run_lifecycle(
  
      if blocking and op in {"start", "stop", "restart"}:
          # stop can proceed only for managed matching; but still block on registry error
@@ -5439,7 +5622,7 @@ index 14be695e9..709cdd60a 100644
              )
  
      try:
-@@ -999,8 +1542,20 @@ def run_lifecycle(
+@@ -999,8 +1705,20 @@ def run_lifecycle(
              exit_code=2,
          )
  
@@ -5461,7 +5644,7 @@ index 14be695e9..709cdd60a 100644
              selected=selected,
              identity_dict=identity_dict,
              project_id=project_id,
-@@ -1014,15 +1569,148 @@ def run_lifecycle(
+@@ -1014,15 +1732,148 @@ def run_lifecycle(
              product=product,
              compose_proj=compose_proj,
              cmd_runner=cmd_runner,
@@ -5616,7 +5799,7 @@ index 14be695e9..709cdd60a 100644
              identity_dict=identity_dict,
              project_id=project_id,
              worktree_root=worktree_root,
-@@ -1040,36 +1728,128 @@ def run_lifecycle(
+@@ -1040,36 +1891,128 @@ def run_lifecycle(
              slug=slug,
              worktree_hash=worktree_hash,
          )
@@ -5774,7 +5957,7 @@ index 14be695e9..709cdd60a 100644
              start_res.services = [
                  {
                      **s,
-@@ -1086,30 +1866,64 @@ def run_lifecycle(
+@@ -1086,30 +2029,64 @@ def run_lifecycle(
          return start_res
  
      # start
@@ -5863,7 +6046,7 @@ index 14be695e9..709cdd60a 100644
      )
  
  
-@@ -1176,6 +1990,240 @@ def _already_running_managed(
+@@ -1176,6 +2153,240 @@ def _already_running_managed(
      return None
  
  
@@ -6104,7 +6287,7 @@ index 14be695e9..709cdd60a 100644
  def _start_services(**kw: Any) -> LifecycleResult:
      selected: List[str] = kw["selected"]
      identity = kw["identity"]
-@@ -1200,11 +2248,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1200,11 +2411,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
      cmd_runner = kw["cmd_runner"]
      is_free = kw["is_free"]
      target: Path = kw["target"]
@@ -6120,7 +6303,7 @@ index 14be695e9..709cdd60a 100644
      memory_data = Path(worktree_root) / ".dopemux"
      # Project identity used for TO container naming (must match wrapper).
      to_state_id = ""
-@@ -1222,10 +2273,8 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1222,10 +2436,8 @@ def _start_services(**kw: Any) -> LifecycleResult:
          "DOPEMUX_PROJECT_ROOT": project_root,
          "DOPEMUX_WORKTREE_ROOT": worktree_root,
          "DOPEMUX_WORKSPACE_ROOT": worktree_root,
@@ -6133,7 +6316,7 @@ index 14be695e9..709cdd60a 100644
          "TASK_ORCHESTRATOR_PROJECT_ROOT": project_root,
          "CONPORT_CONTAINER_NAME": container_names.get("conport", ""),
          **{k: str(v) for k, v in ports.items()},
-@@ -1245,6 +2294,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1245,6 +2457,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
              container_names=container_names,
              labels_by_service=labels_by_service,
              memory_data_path=memory_data,
@@ -6141,7 +6324,7 @@ index 14be695e9..709cdd60a 100644
          )
  
      plan_doc = {
-@@ -1258,15 +2308,26 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1258,15 +2471,26 @@ def _start_services(**kw: Any) -> LifecycleResult:
          "memory_data_path": str(memory_data),
      }
  
@@ -6169,7 +6352,7 @@ index 14be695e9..709cdd60a 100644
      overall_fail = False
      overall_unknown = False
  
-@@ -1284,6 +2345,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1284,6 +2508,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
              # unlabeled TO on fixed port is already blocked in collision
  
          if existing:
@@ -6184,7 +6367,7 @@ index 14be695e9..709cdd60a 100644
              service_results.append(
                  {
                      "service": svc,
-@@ -1296,12 +2365,13 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1296,12 +2528,13 @@ def _start_services(**kw: Any) -> LifecycleResult:
                      "commands": [],
                      "probe_status": "UNKNOWN",
                      "registry_updated": False,
@@ -6199,7 +6382,7 @@ index 14be695e9..709cdd60a 100644
                      svc=svc,
                      project_id=project_id,
                      identity=identity,
-@@ -1314,7 +2384,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1314,7 +2547,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                      container_names=[existing.name],
                      ports=svc_ports,
                      labels=labels,
@@ -6208,7 +6391,7 @@ index 14be695e9..709cdd60a 100644
                      last_start={"command": ["already_running"], "exit_code": 0},
                  )
              continue
-@@ -1324,50 +2394,32 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1324,50 +2557,32 @@ def _start_services(**kw: Any) -> LifecycleResult:
          image_findings: List[Dict[str, Any]] = []
          will_build = False
          if svc in {"conport", "dope-memory"}:
@@ -6282,7 +6465,7 @@ index 14be695e9..709cdd60a 100644
              commands.append(
                  dr.compose_up_command(
                      product=product,
-@@ -1407,7 +2459,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1407,7 +2622,9 @@ def _start_services(**kw: Any) -> LifecycleResult:
                      "container_name": cname,
                      "ports": svc_ports,
                      "labels": labels,
@@ -6293,7 +6476,7 @@ index 14be695e9..709cdd60a 100644
                      "commands": [dr.redact_command(c) for c in commands],
                      "preflight_findings": list(image_findings),
                  }
-@@ -1419,9 +2473,40 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1419,9 +2636,40 @@ def _start_services(**kw: Any) -> LifecycleResult:
              # Ensure data dir for memory
              if svc == "dope-memory":
                  memory_data.mkdir(parents=True, exist_ok=True)
@@ -6335,7 +6518,7 @@ index 14be695e9..709cdd60a 100644
              if will_build:
                  build_result = dr.run_cmd(
                      commands[0],
-@@ -1472,7 +2557,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1472,7 +2720,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                  up_cmd,
                  runner=cmd_runner,
                  cwd=product,
@@ -6344,7 +6527,7 @@ index 14be695e9..709cdd60a 100644
                  dry_run=False,
                  timeout=dr.up_timeout_secs(),
              )
-@@ -1480,9 +2565,30 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1480,9 +2728,30 @@ def _start_services(**kw: Any) -> LifecycleResult:
              if result.exit_code != 0:
                  overall_fail = True
              probe = _probe_service(svc, ports, is_free)
@@ -6375,7 +6558,7 @@ index 14be695e9..709cdd60a 100644
                      svc=svc,
                      project_id=project_id,
                      identity=identity,
-@@ -1495,7 +2601,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1495,7 +2764,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
                      container_names=[cname],
                      ports=svc_ports,
                      labels=labels,
@@ -6384,7 +6567,7 @@ index 14be695e9..709cdd60a 100644
                      last_start={
                          "command": [dr.redact_command(up_cmd)],
                          "exit_code": result.exit_code,
-@@ -1535,13 +2641,39 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1535,13 +2804,39 @@ def _start_services(**kw: Any) -> LifecycleResult:
              env["TASK_ORCHESTRATOR_HTTP_PORT"] = str(
                  ports.get("TASK_ORCHESTRATOR_HTTP_PORT", 7890)
              )
@@ -6431,7 +6614,7 @@ index 14be695e9..709cdd60a 100644
              action = "started" if result.exit_code == 0 else "failed"
              if result.exit_code != 0:
                  overall_fail = True
-@@ -1553,6 +2685,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1553,6 +2848,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
              if result.exit_code == 0:
                  _registry_upsert(
                      registry,
@@ -6439,7 +6622,7 @@ index 14be695e9..709cdd60a 100644
                      svc=svc,
                      project_id=project_id,
                      identity=identity,
-@@ -1599,17 +2732,15 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1599,17 +2895,15 @@ def _start_services(**kw: Any) -> LifecycleResult:
              )
  
      if not dry_run and registry.parse_status != "ERROR":
@@ -6465,7 +6648,7 @@ index 14be695e9..709cdd60a 100644
              overall_fail = True
  
      if dry_run:
-@@ -1635,10 +2766,10 @@ def _start_services(**kw: Any) -> LifecycleResult:
+@@ -1635,10 +2929,10 @@ def _start_services(**kw: Any) -> LifecycleResult:
          blocking_findings=[],
          warnings=[],
          registry_path=str(reg_path),
@@ -6478,7 +6661,7 @@ index 14be695e9..709cdd60a 100644
              "dopemux mcp doctor --repo " + str(target),
          ],
      )
-@@ -1708,6 +2839,9 @@ def _registry_upsert(registry: RuntimeRegistry, **kw: Any) -> None:
+@@ -1708,6 +3002,9 @@ def _registry_upsert(registry: RuntimeRegistry, **kw: Any) -> None:
          registry.data = empty_registry()
          registry.parse_status = "OK"
      registry.upsert_instance(rec)
@@ -6488,7 +6671,7 @@ index 14be695e9..709cdd60a 100644
  
  
  def _probe_service(service: str, ports: Mapping[str, int], is_free: Callable[[int], bool]) -> str:
-@@ -1748,6 +2882,7 @@ def _stop_services(**kw: Any) -> LifecycleResult:
+@@ -1748,6 +3045,7 @@ def _stop_services(**kw: Any) -> LifecycleResult:
  
      results = []
      fail = False
@@ -6496,7 +6679,7 @@ index 14be695e9..709cdd60a 100644
  
      for svc in selected:
          cname = container_names[svc]
-@@ -1835,19 +2970,28 @@ def _stop_services(**kw: Any) -> LifecycleResult:
+@@ -1835,19 +3133,28 @@ def _stop_services(**kw: Any) -> LifecycleResult:
                          "result": res.to_dict(),
                      }
                  )
@@ -6535,7 +6718,7 @@ index 14be695e9..709cdd60a 100644
      return LifecycleResult(
          schema_version=SCHEMA_VERSION,
          operation="stop",
-@@ -1855,11 +2999,60 @@ def _stop_services(**kw: Any) -> LifecycleResult:
+@@ -1855,11 +3162,60 @@ def _stop_services(**kw: Any) -> LifecycleResult:
          status="PLANNED" if dry_run else ("FAIL" if fail else "PASS"),
          project_identity=identity_dict,
          services=results,
@@ -6984,7 +7167,7 @@ index 000000000..75594606a
 +        return [f"{paths[0].parent}: {exc}"]
 +    return [e for e in errors if e]
 diff --git a/src/dopemux/mcp/mcp_json.py b/src/dopemux/mcp/mcp_json.py
-index 4e642ab07..356171703 100644
+index 4e642ab07..e2e903ee9 100644
 --- a/src/dopemux/mcp/mcp_json.py
 +++ b/src/dopemux/mcp/mcp_json.py
 @@ -7,6 +7,7 @@ entries are always preserved. Never mutates global (~/.claude.json) config.
@@ -6995,40 +7178,60 @@ index 4e642ab07..356171703 100644
  from pathlib import Path
  from typing import Any, Dict, List, Mapping, Optional, Tuple
  from urllib.parse import urlparse
-@@ -113,28 +114,82 @@ def _functional_subset(entry: Mapping[str, Any]) -> Dict[str, Any]:
+@@ -113,28 +114,130 @@ def _functional_subset(entry: Mapping[str, Any]) -> Dict[str, Any]:
      return {k: entry[k] for k in _FUNCTIONAL_KEYS if k in entry}
  
  
+-def _url_is_repairable(url: Optional[str]) -> bool:
 +_LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1"})
 +_PLACEHOLDER = re.compile(r"\$\{[^}:$]*(?::-([^}$]*))?\}")
++_LITERAL_SCHEME = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://")
 +
-+
-+def _neutralize_placeholders(url: str) -> str:
-+    """Replace ``${NAME:-default}`` with ``default`` and bare ``${NAME}`` with ``placeholder``.
-+
-+    The literal token is never a local host, so an unresolved placeholder can
-+    never make a URL look provably local.
-+    """
-+    return _PLACEHOLDER.sub(
-+        lambda m: m.group(1) if m.group(1) is not None else "placeholder", url
-+    )
++#: The only port variables dopemux has rendered into a ``url_template``.
++_DOPEMUX_PORT_VARS = frozenset(
++    {"CONPORT_MCP_PORT", "DOPE_MEMORY_PORT", "TASK_ORCHESTRATOR_HTTP_PORT"}
++)
++_PLACEHOLDER_NAME = re.compile(r"\$\{([A-Z][A-Z0-9_]*)")
++#: Exactly the shape dopemux renders: literal http(s) scheme, literal local host,
++#: one port variable (numeric or absent default), then a literal remainder.
++_SELF_RENDERED = re.compile(
++    r"https?://(?:localhost|127\.0\.0\.1)"
++    r":\$\{([A-Z][A-Z0-9_]*)(?::-[0-9]+)?\}(?:[/?#][^${}\s]*)?"
++)
 +
 +
 +def _placeholder_in_userinfo_or_host(url: str) -> bool:
-+    """True when a ``${...}`` placeholder sits left of the port separator of the authority.
++    """True when a ``${...}`` placeholder sits in the userinfo or host position.
++
++    That is the userinfo or host of a URL that starts with a literal ``scheme://``,
++    or anywhere in a URL that does not (such a URL is never repairable).
 +
 +    A host or userinfo placeholder is operator-selected whatever its default
 +    (``${HOST:-localhost}`` resolves to a remote host when ``HOST`` is set), so
 +    it never proves the endpoint local. Placeholders in the port, path or query
-+    are not considered here.
++    are not considered here when the URL starts with a literal scheme.
++
++    Placeholders are masked over the whole URL before the authority is split:
++    a default may itself contain ``/``, ``?``, ``#``, ``@``, ``:`` or ``://``
++    (``http://${HOST:-localhost/x}/sse``), and splitting first would end the
++    authority inside the placeholder.
++
++    Only a literal scheme at the very start is stripped. When a placeholder
++    supplies the scheme, the ``//`` or the whole base
++    (``${BASE:-http://localhost}/sse``, ``${S:-http}://localhost/sse``), a later
++    ``://`` in the path or query is not the authority, so such URLs fail closed:
++    the function returns True and they are never repairable.
 +    """
-+    authority = url.split("://", 1)[-1]
++    # Mask each placeholder as one opaque character so a delimiter inside
++    # ``${PORT:-3005}`` is neither the port separator nor the end of the authority.
++    masked = _PLACEHOLDER.sub("\x00", url)
++    scheme = _LITERAL_SCHEME.match(masked)
++    if scheme is None:
++        return "\x00" in masked
++    authority = masked[scheme.end() :]
 +    for sep in ("/", "?", "#"):
 +        authority = authority.split(sep, 1)[0]
-+    # Mask each placeholder as one opaque character so a ``:`` inside
-+    # ``${PORT:-3005}`` is not mistaken for the port separator.
-+    masked = _PLACEHOLDER.sub("\x00", authority)
-+    userinfo, _, hostport = masked.rpartition("@")
++    userinfo, _, hostport = authority.rpartition("@")
 +    if "\x00" in userinfo:
 +        return True
 +    if hostport.startswith("["):
@@ -7038,38 +7241,65 @@ index 4e642ab07..356171703 100644
 +    return "\x00" in host
 +
 +
- def _url_is_repairable(url: Optional[str]) -> bool:
-+    """True when the catalog may replace ``url``: missing, or provably local with no credentials.
++def _catalog_port_vars(catalog: Mapping[str, Any]) -> frozenset[str]:
++    """Variable names used in the catalog's ``url``/``url_template`` values."""
++    names: set[str] = set()
++    for spec in (catalog.get("servers") or {}).values():
++        if not isinstance(spec, Mapping):
++            continue
++        for key in ("url", "url_template"):
++            value = spec.get(key)
++            if isinstance(value, str):
++                names.update(_PLACEHOLDER_NAME.findall(value))
++    return frozenset(names)
 +
-+    Port, path and query placeholders are neutralized and the same host/userinfo
-+    rules as for literal URLs then apply; a placeholder in the userinfo or host
-+    position is never repairable, whatever its default.
++
++def _self_rendered_template(url: str, port_vars: frozenset[str]) -> bool:
++    """True when ``url`` has exactly the shape dopemux renders into a ``.mcp.json``.
++
++    That is a literal ``http(s)://``, a literal ``localhost`` or ``127.0.0.1``,
++    and one port variable named in ``port_vars`` as the only placeholder, with a
++    numeric or absent default, then a literal remainder. A variable's value is
++    unknown at repair time, so only this provenance is judged, never the value.
++    """
++    match = _SELF_RENDERED.fullmatch(url)
++    return match is not None and match.group(1) in port_vars
++
++
++def _url_is_repairable(
++    url: Optional[str], port_vars: Optional[frozenset[str]] = None
++) -> bool:
++    """True when the catalog may replace ``url``.
++
++    That is when it is missing; or a literal URL on localhost/127.0.0.1 with no
++    credentials; or a templated URL of exactly the shape dopemux renders itself
++    (literal http(s) scheme, literal local host, one of dopemux's own port
++    variables as the only placeholder in the port position, numeric or absent
++    default, literal remainder). Any other template is operator-authored and
++    preserved. Environment values are never inspected: a variable's value is
++    unknown at repair time, so only the template's provenance is judged.
 +    """
      if not url or not isinstance(url, str):
          return True  # missing → can set template
--    if "${" in url:
+     if "${" in url:
 -        # Template placeholders are always candidate for catalog template replace
 -        # when host is local or still a placeholder.
 -        return True
-+    templated = "${" in url
-+    if templated and _placeholder_in_userinfo_or_host(url):
-+        return False
-+    candidate = _neutralize_placeholders(url) if templated else url
++        return not _placeholder_in_userinfo_or_host(url) and _self_rendered_template(
++            url, port_vars or _DOPEMUX_PORT_VARS
++        )
      try:
--        parsed = urlparse(url)
+         parsed = urlparse(url)
 -    except Exception:  # noqa: BLE001
-+        parsed = urlparse(candidate)
 +        host = (parsed.hostname or "").lower()
 +    except ValueError:
          return False
 -    host = (parsed.hostname or "").lower()
 -    if host and host not in {"localhost", "127.0.0.1"}:
 +    if any(ch in parsed.netloc for ch in "${}"):
-+        return False  # unresolved or malformed placeholder: not provably local
++        return False  # malformed placeholder characters: not provably local
 +    if host and host not in _LOCAL_HOSTS:
          return False
-+    if templated and not host:
-+        return False  # e.g. a fully templated URL: nothing proves it is local
      # userinfo credentials → never rewrite
 -    if parsed.username or parsed.password:
 -        return False
@@ -7089,26 +7319,55 @@ index 4e642ab07..356171703 100644
  def render_catalog_entry(
      name: str,
      catalog: Mapping[str, Any],
-@@ -214,6 +269,18 @@ def plan_mcp_json_repairs(
-         current_url = current.get("url")
-         url_ok = _url_is_repairable(current_url if isinstance(current_url, str) else None)
+@@ -210,9 +313,27 @@ def plan_mcp_json_repairs(
+             )
+             continue
  
+-        # Non-localhost / credential URLs: preserve URL, only repair type if safe
++        # Operator-authored or non-local URL: preserve the URL, only repair type if safe
+         current_url = current.get("url")
+-        url_ok = _url_is_repairable(current_url if isinstance(current_url, str) else None)
++        url_ok = _url_is_repairable(
++            current_url if isinstance(current_url, str) else None,
++            _DOPEMUX_PORT_VARS | _catalog_port_vars(catalog),
++        )
++
 +        is_launcher = _catalog_is_launcher(catalog, name)
 +        if is_launcher and current_url and not url_ok:
-+            # An operator-pointed remote/credential URL is not ours to replace with a launcher.
++            # An operator-authored or non-local URL is not ours to replace.
 +            preserved.append(
 +                {
 +                    "path": mcp_json_path,
 +                    "service": name,
-+                    "reason": "non-localhost or credential URL preserved",
++                    "reason": (
++                        "operator URL preserved "
++                        "(not a literal local URL and not a dopemux-rendered template)"
++                    ),
 +                }
 +            )
 +            continue
-+
+ 
          new_entry = dict(current)
          change_reasons: List[str] = []
+@@ -226,12 +347,15 @@ def plan_mcp_json_repairs(
+             new_entry["url"] = desired["url"]
+             change_reasons.append("URL_MISMATCH")
+         elif not url_ok and desired.get("url") and current.get("url") != desired.get("url"):
+-            # Explicitly do not change non-local URLs
++            # Explicitly do not change operator-authored or non-local URLs
+             preserved.append(
+                 {
+                     "path": mcp_json_path,
+                     "service": name,
+-                    "reason": "non-localhost or credential URL preserved",
++                    "reason": (
++                        "operator URL preserved "
++                        "(not a literal local URL and not a dopemux-rendered template)"
++                    ),
+                 }
+             )
  
-@@ -244,6 +311,15 @@ def plan_mcp_json_repairs(
+@@ -244,6 +368,15 @@ def plan_mcp_json_repairs(
                      if "CATALOG_FIELD_DRIFT" not in change_reasons:
                          change_reasons.append("CATALOG_FIELD_DRIFT")
  
@@ -8708,10 +8967,10 @@ index 70b2ac975..895eef1c5 100644
              catalog_spec.get("optional_env") or []
 diff --git a/src/dopemux/mcp/stdio_proxy.py b/src/dopemux/mcp/stdio_proxy.py
 new file mode 100644
-index 000000000..b7bf0390e
+index 000000000..0d48a9bb4
 --- /dev/null
 +++ b/src/dopemux/mcp/stdio_proxy.py
-@@ -0,0 +1,811 @@
+@@ -0,0 +1,816 @@
 +"""Stdio MCP proxy for ``dopemux mcp launch`` (design D2), on the official ``mcp`` SDK.
 +
 +The runner talks MCP over this process's stdin/stdout; the proxy holds one
@@ -8731,7 +8990,8 @@ index 000000000..b7bf0390e
 +  once on the reconnected session. A request in flight when its session drops
 +  gets an error at once and is never replayed (its effect is unknown).
 +* A Streamable HTTP backend restart invalidates the session: each POST on it
-+  gets HTTP 404, which the SDK answers with ``32600 "Session terminated"``. The
++  gets HTTP 404, which the SDK (``_send_session_terminated_error``) answers with
++  exactly ``32600 "Session terminated"``, matched in full, never as a substring. The
 +  backend never processed that request, so the session is dropped and the
 +  request is sent once on the reconnected (freshly initialized) session; a
 +  second "Session terminated" is returned to the runner, never retried again
@@ -8904,13 +9164,17 @@ index 000000000..b7bf0390e
 +def _session_terminated(error: types.ErrorData) -> bool:
 +    """True when the backend rejected the request unprocessed: its session is gone.
 +
-+    Code and text must both match. The code alone is not enough: a backend's
-+    own error with that code may come from a request it did process, which must
-+    never be replayed. If the SDK rewords the message, this degrades to passing
-+    the error to the runner (the behaviour before), never to a duplicate call.
++    The code and the whole message must equal what the SDK's
++    ``_send_session_terminated_error`` writes (``32600`` and exactly
++    ``"Session terminated"``). Neither the code alone nor a substring is enough:
++    a backend's own error may carry that code or contain that text for a request
++    it did process, which must never be replayed. If the SDK rewords the
++    message, this degrades to passing the error to the runner (the behaviour
++    before), never to a duplicate call.
 +    """
-+    return error.code == SESSION_TERMINATED_CODE and SESSION_TERMINATED_MESSAGE in (
-+        error.message or ""
++    return (
++        error.code == SESSION_TERMINATED_CODE
++        and error.message == SESSION_TERMINATED_MESSAGE
 +    )
 +
 +

@@ -1,3 +1,12 @@
+efb06f7c5 docs(mcp): explicit reap also plans nothing until the registry file exists
+fbbe95a59 docs(design): record the Task H revert and the open automatic-reap follow-up (cycle 5)
+2bbf08f65 revert(mcp): drop the Task H automatic-reap change (cycle 5 audit: two mediums, fresh-host case still open)
+380c2c52c fix(mcp): automatic reap reaches marker-only runtime dirs on an empty registry (cycle 5, Task H)
+192a84dc3 fix(mcp): carry every doctor blocker except container findings off the resolved ports; validate the resolved port map (cycle 5, Task G)
+fc591cba1 fix(mcp): re-evaluate doctor port findings after allocation; launcher ownership rule in collision checks (cycle 4, Task F)
+83b468e71 fix(mcp): config repair replaces only what dopemux rendered (cycle 4, codex F1 at 43294e99b)
+43294e99b fix(mcp): close codex F1/F2 from the 3f1335e7f audit (cycle 3, Task D)
+d4e021126 proof(mcp-just-works-m1): cycle-2 audit bundle at 3f1335e7f (agy/grok PASS_WITH_RISKS, codex FAIL F1/F2 open)
 3f1335e7f test(mcp): B7 negatives and legacy-restart lease test; single is_free selection in _resolve_ports (B7 micro round)
 9e3c78ba3 fix(mcp): reap matches leases by worktree identity under both project-id conventions; env-file ports are re-leased on start (PR #1503 Codex review)
 71866e4d1 fix(reap): pair inspection also filters dopemux.scope=worktree, matching the planner (B6 one-liner)
