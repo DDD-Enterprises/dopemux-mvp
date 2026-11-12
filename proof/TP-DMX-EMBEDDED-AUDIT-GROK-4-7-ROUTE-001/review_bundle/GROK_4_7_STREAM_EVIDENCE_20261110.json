@@ -1,0 +1,17 @@
+{
+  "what": "Runtime evidence that grok-4.7 is a requestable Grok CLI model id: the CLI's own stream-json init event and first assistant message of the PR #1503 cycle-6 audit run report it.",
+  "invocation": "grok -m grok-4.7 --effort high --sandbox workspace ... (tool-less contained audit; full command in PR #1503's cycle6-freeze-and-audit.sh)",
+  "started_utc": "2026-11-10T04:14:42Z",
+  "exit_code": 0,
+  "source_stream_sha256": "0be8306b186cdd918807769386475fabda6ba0bddf015e40b615128dc0cf0a4b",
+  "source_stream_bytes": 135999,
+  "init_event": {
+    "type": "system",
+    "subtype": "init",
+    "model": "grok-4.7",
+    "tools": [],
+    "permissionMode": "default"
+  },
+  "first_assistant_message_model": "grok-4.7",
+  "limits": "Shows the id was accepted and echoed by the CLI on this account on this date. No `grok models` listing was run. The full stream is not copied here; it travels with PR #1503's proof bundle."
+}

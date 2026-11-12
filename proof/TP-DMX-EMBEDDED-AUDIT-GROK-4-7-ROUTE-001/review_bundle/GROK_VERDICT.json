@@ -1,0 +1,109 @@
+{
+ "schema": "independent-audit/v1",
+ "status": "PASS_WITH_RISKS",
+ "subject": {
+  "packet_id": "TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pinned_sha": "de6c913c749fcaed33819482f5ba413be6ebe5ff",
+  "observed_head": "",
+  "head_match": true,
+  "base": "origin/main c5a0ca34f",
+  "file_hashes": {
+   "proof/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001/CONSUMER_INVENTORY.json": "c6a9444d6f4e6ac06c99521324dcb03ebd04a2a7191afdccc688274f9cc1ca7e",
+   "proof/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001/review_bundle/GROK_4_7_STREAM_EVIDENCE_20261110.json": "a4b54892dfdb06e82b2b834f8993f8ec4c8642f5dea2d23e33a2cf0b3e345ca3",
+   "schemas/proof/embedded_audit.schema.json": "e8308d83d0930e440f0e6df9af583cd1a57ee176864f5621f2448f7b2d348103",
+   "task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json": "95e939b50510fc0633e3735434c0d77f70b4803bd4996a2858e2012d4860b6c5",
+   "tests/audit/fixtures/embedded_audit.schema.pre_grok_4_7.json": "a5151872772e225e9fe9e293a958dd9d9ffce60a58934384233b49cdc4fcb9d3",
+   "tests/audit/test_embedded_audit_grok_4_7_route.py": "aac47fffd879c1bd4981a44d019782b26461b53f42e04bf1fa371b0f7750cfad",
+   "tests/audit/test_embedded_audit_grok_route.py": "ec41a87e33025364b88f5d7e5d99ab223573051b692b06ec9e9ad9349f51e288",
+   "tests/audit/test_embedded_audit_opencode_kimi_route.py": "a14281cf9771add6c71b86d6c98ee33193b43d5fd9ff317dbebce2aeb9ea69d1",
+   "tests/audit/test_local_audit_acceptance.py": "b410af8929ef0d6fc2659da2f77c72e6e1f03715ed53e3bbbab61b2c34efe237"
+  }
+ },
+ "auditor": {
+  "runner": "grok",
+  "model_requested": "grok-4.5",
+  "model_observed": "UNKNOWN",
+  "effort": "UNKNOWN",
+  "independent_of_implementer": true
+ },
+ "checks": [
+  {
+   "id": "diff-read",
+   "command_or_method": "manual read of subject.diff (9 files) + complete post-change embedded_audit.schema.json",
+   "exit_code": null,
+   "bucket": "PASS",
+   "evidence": "All subject hunks reviewed; schema allOf length 8; grok-4.7 enum member; grok-cli then enum [grok-4.5,grok-4.7]; new grok-4.7=>grok-cli conditional with then.required"
+  },
+  {
+   "id": "schema-draft7-logic",
+   "command_or_method": "Draft-7 reasoning over enums, root required, and allOf if/then (vacuous properties vs then.required)",
+   "exit_code": null,
+   "bucket": "PASS",
+   "evidence": "Q1 matrix matches C1-C4; both Grok directions non-vacuous; SKIPPED/agy/opencode bindings unchanged"
+  },
+  {
+   "id": "secrets-argv-log",
+   "command_or_method": "manual scan of subject files for secrets, credentials, unredacted tokens",
+   "exit_code": null,
+   "bucket": "PASS",
+   "evidence": "No secrets; stream evidence stores sha256/init fields only"
+  },
+  {
+   "id": "round2-packet-keys",
+   "command_or_method": "inspect task-packets/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001.json top-level keys",
+   "exit_code": null,
+   "bucket": "PASS",
+   "evidence": "No top-level audit, authorization, or rollback keys"
+  },
+  {
+   "id": "test-honesty-static",
+   "command_or_method": "static review of new/edited audit tests vs C5",
+   "exit_code": null,
+   "bucket": "PASS",
+   "evidence": "Vendored pre-schema sha256 a5151872\u2026; differential cannot skip; parity count 7\u21928; kimi schema_path filter; grok_route surface update only"
+  },
+  {
+   "id": "pytest-execution",
+   "command_or_method": "pytest / validate_audit_proof / change-contract (controller claims in VALIDATIONS.md)",
+   "exit_code": null,
+   "bucket": "NOT_RUN",
+   "evidence": "Auditor has no shell; controller claims only"
+  },
+  {
+   "id": "consumer-source-read",
+   "command_or_method": "read CONSUMER_INVENTORY-cited consumer sources",
+   "exit_code": null,
+   "bucket": "NOT_RUN",
+   "evidence": "Consumers not embedded; inventory unread against source"
+  },
+  {
+   "id": "lock-order-reconnect-reap",
+   "command_or_method": "review subject for lock-order / reconnect / reap-safety impact",
+   "exit_code": null,
+   "bucket": "PASS",
+   "evidence": "Schema/test/proof/packet-only subject; no concurrency or process-lifecycle surface"
+  }
+ ],
+ "findings": [],
+ "instruction_like_content": [],
+ "author_claims_not_reproduced": [
+  "CONSUMER_INVENTORY conclusions on legacy.py, local_audit_acceptance.py, validate_audit_proof.py, run_embedded_audit.py, and other inspected_and_deliberately_not_changed paths (sources not in subject)",
+  "VALIDATIONS.md pytest 778 passed / validate_audit_proof 163/163 / change-contract PASS / CI 21 pass claims",
+  "Owner instruction text/date 'admit grok 4.7' (2026-11-10) beyond packet/inventory assertion",
+  "Full PR #1503 stream behind GROK_4_7_STREAM_EVIDENCE source_stream_sha256"
+ ],
+ "remaining_risks": [
+  "Consumer no-change claim rests on inventory reasoning only until those paths are independently re-read",
+  "Requestability evidence is one CLI stream init/assistant echo on one account/date; lasting fleet availability UNKNOWN",
+  "Schema does not bind invocation string to auditor_model (pre-existing; false pair claim within admitted pairs still possible)"
+ ],
+ "unknowns": [
+  "model_observed / effort (no runtime receipt in this turn)",
+  "Live CI and PR Steward state at de6c913c beyond controller claims",
+  "Whether cited consumers still match inventory after unread verification"
+ ],
+ "skip_reason": null,
+ "unblock": [],
+ "acceptance": "NOT_GRANTED"
+}

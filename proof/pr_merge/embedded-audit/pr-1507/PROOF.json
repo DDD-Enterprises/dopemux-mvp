@@ -1,0 +1,52 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-sonnet-5-5 implementer subagent (requested 'sonnet'; observed UNKNOWN) under a claude-fable-5-2 controller session; self-reported, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-cli",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --max-turns 1 --no-subagents --disable-web-search, tool-less contained recipe (init.tools == [], review_bundle/GROK_INIT_TOOLS.json; exact command in review_bundle/FREEZE_AND_AUDIT.sh.txt); session_id=01a1c500-3edf-7a22-af6b-2de41a92487d; started 2026-11-10T10:28:09Z; grok exit=0; one attempt; raw stream review_bundle/GROK_AUDIT_STREAM.txt; marker END_OF_SUBJECT a3ae7079-de6c913c echoed",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [
+      "de6c913c7: removed the top-level keys audit, authorization, rollback from the task-packet JSON (CI packet_schema_fail after the round-1 audit); re-audited in full at this head."
+    ],
+    "remaining_risks": [
+      "Consumer no-change claim rests on inventory reasoning only until those paths are independently re-read",
+      "Requestability evidence is one CLI stream init/assistant echo on one account/date; lasting fleet availability UNKNOWN",
+      "Schema does not bind invocation string to auditor_model (pre-existing; false pair claim within admitted pairs still possible)",
+      "Test execution NOT_RUN by the auditor (no shell on this route); the 778-passed result and CI are controller/CI evidence, not auditor evidence.",
+      "Copilot/Codex PR-bot reviews NOT_RUN: the PR was a draft at the freeze."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  },
+  "generated_at": "2026-11-10T10:29:52Z",
+  "github_mutation_route_added": false,
+  "head_sha": "de6c913c749fcaed33819482f5ba413be6ebe5ff",
+  "mutation_performed": false,
+  "packet_id": "TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001",
+  "pr_number": 1507,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

@@ -182,13 +182,19 @@ def test_opencode_kimi_conditional_is_self_contained(dropped: str) -> None:
     ("tool", "model"), list(itertools.product(PRE_CHANGE_TOOLS, PRE_CHANGE_MODELS))
 )
 def test_pre_change_enum_members_still_accepted(tool: str, model: str) -> None:
-    """Every pre-change tool/model member is still an accepted enum value."""
+    """Every pre-change tool/model member is still an accepted enum value.
+
+    Only the property-level enums count here. A conditional's own ``then`` enum
+    (e.g. grok-cli => {grok-4.5, grok-4.7}) also reports validator ``enum`` on the
+    same instance path, but that is pairing, not enum membership.
+    """
     errors = _errors(_audit(auditor_tool=tool, auditor_model=model))
     enum_errors = [
         err
         for err in errors
         if err.validator == "enum"
         and list(err.path) in (["auditor_tool"], ["auditor_model"])
+        and list(err.schema_path)[:1] == ["properties"]
     ]
     assert enum_errors == [], f"{tool}/{model} lost enum membership: {enum_errors}"
 

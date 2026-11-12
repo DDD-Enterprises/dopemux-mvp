@@ -8,6 +8,9 @@ directions, so neither half can be stated without the other:
     auditor_model == grok-4.5  =>  auditor_tool  == grok-cli
     auditor_tool  == grok-cli  =>  auditor_model == grok-4.5
 
+(Superseded for the second direction by TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001:
+grok-cli now admits {grok-4.5, grok-4.7}. See test_embedded_audit_grok_4_7_route.py.)
+
 `grok-4.5-build` is deliberately NOT admitted. It is a runner-internal
 usage/telemetry label, not a requestable model id -- `grok -m grok-4.5-build`
 fails with `unknown model id`, while `grok-4.5` is selectable. Admitting it
@@ -310,13 +313,14 @@ def test_gemini_31_rejected_for_grok_cli() -> None:
 def test_schema_admits_exactly_one_grok_tool_and_model() -> None:
     """Guard against a later packet quietly widening the Grok surface.
 
-    `grok-4.6` is the runner's current default but is NOT admitted here: this
-    packet was authorized for `grok-4.5` only. Admitting another Grok model is
-    an operator decision, and changing this test is how that decision becomes
-    visible rather than incidental.
+    `grok-4.6` is NOT admitted. This packet was authorized for `grok-4.5`;
+    TP-DMX-EMBEDDED-AUDIT-GROK-4-7-ROUTE-001 later admitted `grok-4.7` on the
+    owner's instruction. Admitting another Grok model is an operator decision,
+    and changing this test is how that decision becomes visible rather than
+    incidental.
     """
     schema = _schema()
     tools = schema["properties"]["auditor_tool"]["enum"]
     models = schema["properties"]["auditor_model"]["enum"]
     assert [t for t in tools if "grok" in t] == ["grok-cli"]
-    assert [m for m in models if "grok" in m] == ["grok-4.5"]
+    assert [m for m in models if "grok" in m] == ["grok-4.5", "grok-4.7"]
