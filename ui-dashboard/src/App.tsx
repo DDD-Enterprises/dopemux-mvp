@@ -25,6 +25,7 @@ import {
   mapAggregateState,
   mapRealtimeState,
   remainingUpstreamSections,
+  sendsForecast,
   upstreamErrorSections,
 } from './cognitiveReading';
 import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
@@ -89,7 +90,9 @@ function DashboardApp() {
   const [httpError, setHttpError] = useState<HttpError | null>(null);
   const [socketState, setSocketState] = useState<SocketState>('connecting');
   const [errorBanner, setErrorBanner] = useState<ErrorBanner | null>(null);
-  const [retryTrigger, setRetryTrigger] = useState(0);
+  // Retry always refetches; it reopens the socket only when the socket is not open.
+  const [httpRetry, setHttpRetry] = useState(0);
+  const [socketRetry, setSocketRetry] = useState(0);
   const [showAllPanels, setShowAllPanels] = useState(false);
   const [isSipLogged, setIsSipLogged] = useState(false);
   const sipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -99,14 +102,19 @@ function DashboardApp() {
   const readingRef = useRef<CognitiveReading>(EMPTY_READING);
   const forecastReceivedAtRef = useRef<number | null>(null);
   const forecastExpiryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Whether the latest snapshot carried the forecast key: then it, not a late GET, decides the forecast.
+  const snapshotSentForecastRef = useRef(false);
 
   const handleRetry = useCallback(() => {
     liveReadingSeenRef.current = false;
     setHttpError(null);
-    setSocketState('connecting');
     setErrorBanner(null);
-    setRetryTrigger((prev) => prev + 1);
-  }, []);
+    setHttpRetry((prev) => prev + 1);
+    if (socketState !== 'open') {
+      setSocketState('connecting');
+      setSocketRetry((prev) => prev + 1);
+    }
+  }, [socketState]);
 
   const handleLogSip = useCallback(() => {
     setIsSipLogged(true);
@@ -219,7 +227,7 @@ function DashboardApp() {
         }
       } else if (isMounted) {
         const forecast = mapAggregateState(payload).prediction;
-        if (forecast !== null && readingRef.current.prediction === null) {
+        if (forecast !== null && readingRef.current.prediction === null && !snapshotSentForecastRef.current) {
           applyReading({ ...readingRef.current, prediction: forecast });
         }
       }
@@ -230,7 +238,7 @@ function DashboardApp() {
     return () => {
       isMounted = false;
     };
-  }, [retryTrigger, applyReading]);
+  }, [httpRetry, applyReading]);
 
   useEffect(() => {
     const socket = new WebSocket(SOCKET_ENDPOINT);
@@ -266,6 +274,7 @@ function DashboardApp() {
           Date.now()
         );
         liveReadingSeenRef.current = true;
+        snapshotSentForecastRef.current = sendsForecast(message);
         applyReading(nextReading, nextReading.prediction !== snapshot.prediction);
         setHttpError((current) => {
           if (current?.upstreamSections == null) {
@@ -316,7 +325,7 @@ function DashboardApp() {
       socket.onclose = null;
       socket.close();
     };
-  }, [retryTrigger, applyReading, reportSocketError]);
+  }, [socketRetry, applyReading, reportSocketError]);
 
   const status = reading.load === null ? null : deriveStatus(reading.load);
   const isCritical = status === 'critical' && !showAllPanels;

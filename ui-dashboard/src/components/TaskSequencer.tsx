@@ -32,6 +32,10 @@ import {
   Zap,
 } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
+
+// Running past the estimate is a warning: yellow, as in the cockpit's status colors. gremlinPink is a
+// brand accent and never a status (theme.ts).
+const OVERTIME_COLOR = brandTokens.colors.giltEdge;
 import { getCompletionTransitionTask, getSkipTransitionTask } from './taskSequencerTransitions';
 
 interface Task {
@@ -617,7 +621,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
               sx={{
                 fontFamily: brandTokens.fonts.display,
                 mb: 1,
-                color: isOvertime ? brandTokens.colors.gremlinPink : 'inherit',
+                color: isOvertime ? OVERTIME_COLOR : 'inherit',
                 ...(isTimerRunning && {
                   animation: 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 }),
@@ -629,14 +633,14 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
               <Typography
                 variant="caption"
                 sx={{
-                  color: brandTokens.colors.gremlinPink,
+                  color: OVERTIME_COLOR,
                   fontWeight: 'bold',
                   letterSpacing: '0.1em',
-                  bgcolor: alpha(brandTokens.colors.gremlinPink, 0.1),
+                  bgcolor: alpha(OVERTIME_COLOR, 0.1),
                   px: 1,
                   py: 0.5,
                   borderRadius: 1,
-                  border: `1px solid ${alpha(brandTokens.colors.gremlinPink, 0.3)}`,
+                  border: `1px solid ${alpha(OVERTIME_COLOR, 0.3)}`,
                 }}
               >
                 OVERTIME +{overtimeMinutes}M
@@ -663,13 +667,13 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   height: 6,
                   borderRadius: 3,
                   bgcolor: alpha(
-                    isOvertime ? brandTokens.colors.gremlinPink : progressPercent > 80 ? brandTokens.colors.giltEdge : brandTokens.colors.saintGold,
+                    isOvertime ? OVERTIME_COLOR : progressPercent > 80 ? brandTokens.colors.giltEdge : brandTokens.colors.saintGold,
                     0.1
                   ),
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: isOvertime ? brandTokens.colors.gremlinPink : progressPercent > 80 ? brandTokens.colors.giltEdge : brandTokens.colors.saintGold,
+                    bgcolor: isOvertime ? OVERTIME_COLOR : progressPercent > 80 ? brandTokens.colors.giltEdge : brandTokens.colors.saintGold,
                     borderRadius: 3,
-                    boxShadow: isOvertime ? `0 0 12px ${alpha(brandTokens.colors.gremlinPink, 0.6)}` : brandTokens.shadows.goldBloom,
+                    boxShadow: isOvertime ? `0 0 12px ${alpha(OVERTIME_COLOR, 0.6)}` : brandTokens.shadows.goldBloom,
                   },
                 }}
                 aria-label={`Progress for task: ${currentTask.title}`}
