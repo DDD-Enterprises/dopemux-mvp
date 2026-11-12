@@ -460,6 +460,24 @@ test('a late GET does not bring back a forecast the socket cleared', async () =>
   expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
 });
 
+test('a later snapshot without the key does not let a late GET restore a cleared forecast', async () => {
+  let resolveFetch: (value: unknown) => void = () => {};
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockReturnValue(new Promise((resolve) => (resolveFetch = resolve)))
+  );
+  await renderApp();
+  await sendStateUpdate({ cognitive_load: 0.45, predicted_load_15min: null });
+  await sendStateUpdate({ cognitive_load: 0.46 });
+
+  await act(async () => {
+    resolveFetch(forecastGet(0.5));
+  });
+
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+  expect(screen.getByText('46%')).toBeInTheDocument();
+});
+
 const clickRetry = async () =>
   act(async () => {
     fireEvent.click(within(screen.getByRole('alert')).getByRole('button', { name: 'Retry' }));
