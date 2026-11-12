@@ -1,0 +1,13 @@
+VERDICT: PASS_WITH_RISKS
+
+F1 | MEDIUM | ACCEPTED_RISK | Push events still fall back to `pre-commit --all-files` when `github.event.before` is missing (force pushes, new branches), so the original failure mode — hooks failing on pre-existing files unrelated to the change — can still break push-triggered runs.
+
+F2 | MEDIUM | ACCEPTED_RISK | Merge-group correctness now depends on `github.event.merge_group.base_sha` being present in the checkout; with a shallow fetch the job will deterministically exit 1, which is fail-closed and therefore safe but can hard-block the merge queue until fetch depth is fixed.
+
+F3 | LOW | ACCEPTED_RISK | Scoping hooks to the base_sha..head range on merge_group means repository-wide hook drift on untouched files is no longer exercised in the queue, so hygiene regressions can accumulate silently until some `--all-files` run surfaces them.
+
+F4 | LOW | ACCEPTED_RISK | Exit 1 on a missing base commit conflates "payload/checkout anomaly" with "hook failure" under the same check name, which can slow triage of future queue failures even though the direction (fail-closed) is correct.
+
+F5 | INFO | ACCEPTED_RISK | When a merge group contains multiple PRs, the range covers the group's combined diff, so this job may run hooks on files owned by other queued PRs and a failure can be attributed to the wrong PR — acceptable, since group-wide gating is the intent.
+
+REMAINING: push-event `--all-files` fallback retains the original failure mode; the job assumes checkout depth sufficient to reach `merge_group.base_sha` or it fails closed and stalls the queue; repo-wide pre-commit drift is no longer exercised on merge_group; failure attribution within multi-PR merge groups is coarse.
