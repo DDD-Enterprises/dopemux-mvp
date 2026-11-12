@@ -118,67 +118,6 @@
       ]
     },
     {
-      "workstream": "cycle 2 implementer Task A (bot items, AGENTS.md)",
-      "runner": "claude-code Agent",
-      "model_requested": "sonnet",
-      "model_observed": "UNKNOWN",
-      "effort": "UNKNOWN",
-      "skills": [
-        "superpowers:test-driven-development"
-      ]
-    },
-    {
-      "workstream": "cycle 2 implementer Task B (reap/lifecycle/launcher, 4 fix rounds, final-review fixes, micro round)",
-      "runner": "claude-code Agent",
-      "model_requested": "opus",
-      "model_observed": "UNKNOWN",
-      "effort": "UNKNOWN",
-      "skills": [
-        "superpowers:test-driven-development"
-      ]
-    },
-    {
-      "workstream": "cycle 2 implementer Task C (tenant resume reconciliation)",
-      "runner": "claude-code Agent",
-      "model_requested": "opus",
-      "model_observed": "UNKNOWN",
-      "effort": "UNKNOWN",
-      "skills": [
-        "superpowers:test-driven-development"
-      ]
-    },
-    {
-      "workstream": "cycle 2 task reviews / scoped re-reviews",
-      "runner": "claude-code Agent",
-      "model_requested": "sonnet (Task A) / opus (Task B, 5 passes)",
-      "model_observed": "UNKNOWN",
-      "effort": "UNKNOWN",
-      "skills": [
-        "superpowers:requesting-code-review"
-      ]
-    },
-    {
-      "workstream": "cycle 2 final whole-cycle review + scoped re-review",
-      "runner": "claude-code Agent",
-      "model_requested": "opus",
-      "model_observed": "UNKNOWN",
-      "effort": "UNKNOWN",
-      "skills": [
-        "superpowers:requesting-code-review"
-      ]
-    },
-    {
-      "workstream": "cycle 2 controller (supervision, commits by explicit paths, gates, freeze, proof)",
-      "runner": "claude-code",
-      "model_requested": "claude-fable-5-1",
-      "model_observed": "claude-fable-5-1 (session)",
-      "effort": "UNKNOWN",
-      "skills": [
-        "superpowers:subagent-driven-development",
-        "task-packet"
-      ]
-    },
-    {
       "workstream": "cycle 7 implementer (merge-conflict resolution in 4 files, #1440 overlap)",
       "runner": "claude-code Agent",
       "model_requested": "sonnet",
@@ -253,17 +192,6 @@
     "final review fix 7ae26f045",
     "residual fix eb3f0624b",
     "audit fix 3bf5d4f26",
-    "cycle 2 base: merge origin/main f16e0da2c (#1500) as 0cde3a921",
-    "cycle 2 Task A 5c3ed8f8d+71664c910: test path case, SessionEnd hook timeout, templated URL guard, --repo catalog loading, AGENTS.md image sentence",
-    "cycle 2 Task B a59327f4d (+ checkpoint e57d2b10c): state_error on failed saves, crashed-launcher idle rule, instance.json marker + dir-only candidates, CLI start/restart under the instance lock with the orchestrator outside (option b)",
-    "cycle 2 Task B fix rounds a479eb2b2 (facts re-taken under the lock; pre-build before the lock), 3f9dc74e1 (restart re-reads docker after stops), eac840c8b (restart pre-build; stop re-read; restore guard), dcd16a74b (unavailable docker snapshots fail closed)",
-    "cycle 2 final-review fixes fec505f29 (orchestrator-only start writes no runtime artifacts; atomic build inputs; doc truths incl. per-checkout image wording; real-flock ABBA test) + micro round 3dec0ab3e",
-    "cycle 2 Task C 335fd4ce1 (post-push Codex P2): tenant provisioning does not replay a committed non-re-runnable migration on resume (probe of the last view 001/002 create; idempotent migrations replayed; static idempotency scan)",
-    "cycle 2 Task A2 05f2634ac + f66a8d793 (post-push Codex P2): --repo targets inside a checkout normalize to the worktree root (init, lifecycle CLI catalog, switch-project, repair-config)",
-    "cycle 2 Task A3 357f6ab99 (Copilot re-review): a URL placeholder in the userinfo or host position is never repairable, whatever its default",
-    "cycle 2 Task B5 979c1eb6a + 1dfaf8829 + 1cfa8d6e0 (post-push Codex P2): state-only leftovers qualify on idle too (needing a running entry or an active lease); a live detached image build excludes every candidate kind; state-only/dir-only candidates re-inspect the pair's containers under the lock before releasing",
-    "cycle 2 Task B6 556171674 (post-push Codex P2): every reap candidate re-inspects its pair's containers under the instance lock; an unplanned container or an unanswered docker ps skips it as stale",
-    "cycle 2 Task B7 9e3c78ba3 + 3f1335e7f (post-push Codex P2s): reap matches leases by worktree identity under both project-id conventions; env-file ports are re-leased on start (preferred values through the locked allocation)",
     "cycle 2 base: merge origin/main f16e0da2c (#1500) as 0cde3a921",
     "cycle 2 Task A 5c3ed8f8d+71664c910: test path case, SessionEnd hook timeout, templated URL guard, --repo catalog loading, AGENTS.md image sentence",
     "cycle 2 Task B a59327f4d (+ checkpoint e57d2b10c): state_error on failed saves, crashed-launcher idle rule, instance.json marker + dir-only candidates, CLI start/restart under the instance lock with the orchestrator outside (option b)",
@@ -436,10 +364,10 @@
       "reason": "at 2479969f: CI at 2479969fe: 20 pass, 3 skipping, 2 fail (independent embedded audit and PR Steward / final readiness: expected before audit evidence and signature exist for this head); Unit Tests PASS; at efb06f7c: ALL PASS on attempt 1 \u2014 Unit Tests (Linux) 12m5s, Code Quality & Linting, Documentation Check, Audit Proof Validator (--all), Security Review, Extractor Smoke/Full/Lint, Auditor Router, Model Routing Consistency, Clobber Guard, CodeQL (actions, javascript-typescript, python, ruby), checks, identity-check, preflight; Scoped Coverage / Integration / Installer Smoke skipping (path filters); 'independent embedded audit' and 'PR Steward / final readiness' FAIL until the owner signs (expected); at 380c2c52c: ALL PASS on attempt 1 \u2014 Unit Tests (Linux) 14m10s, Code Quality & Linting, Documentation Check, Audit Proof Validator (--all), Security Review, Extractor Smoke/Full, CodeQL incl. ruby, lychee checks; Scoped Coverage / Integration / Installer Smoke skipping (path filters); 'independent embedded audit' and 'PR Steward / final readiness' FAIL until the owner signs (expected). At 192a84dc3 likewise ALL PASS on attempt 1 (Unit Tests 10m10s); at fc591cba1: Unit Tests (Linux) PASS on rerun 9m39s (attempt 1 cancelled by the job timeout: pre-existing nondeterministic asyncio MCP-session hang, also seen once locally in a Wave 2A SSE test; see residual_risks), Documentation Check PASS on rerun and `checks` PASS on rerun (attempt-1 failures were lychee setup exit 22 / GitHub-side), Code Quality & Linting, Audit Proof Validator (--all), Security Review, Extractor Smoke/Full, Model Routing, Clobber Guard, Auditor Router PASS; Analyze (ruby) FAIL = CodeQL bundle download HTTP 504 (run not retryable; passed at 43294e99b and 83b468e71; reruns on the next push); at 43294e99b: Unit Tests (Linux) PASS 13m42s, Code Quality & Linting, Documentation Check, Audit Proof Validator (--all), Security Review, Extractor Smoke/Full, CodeQL PASS; Scoped Coverage / Integration / Installer Smoke skipping (path filters); 'independent embedded audit' and 'PR Steward / final readiness' FAIL until the owner signs the per-PR proof (expected, unsigned-proof chain)"
     },
     {
-      "command": "validate_change_contract.py --base 3f1335e7f --proof-only --content-head 3f1335e7f --audited-head 3f1335e7f --proof-head d4e021126",
+      "command": "validate_change_contract.py --base 2479969fe --head <proof commit> --proof-only --content-head 2479969fe --audited-head 2479969fe --proof-head <proof commit>",
       "exit_code": 1,
       "bucket": "FAIL",
-      "reason": "expected: 'All changed paths are within proof-only allowlist'; the only findings are two proof_only_missing_signature errors (owner signs). An earlier controller note read this as rc=0 via an undefined zsh PIPESTATUS; corrected (cycle2-change-contract-d4e02112.txt)"
+      "reason": "expected before the owner signs: 'All changed paths are within proof-only allowlist'; the only findings are two proof_only_missing_signature errors (packet PROOF.json and pr-1503 PROOF.json). Run at the first cycle-7 proof commit be3468715. Full mode (--base 264c97b23 --head HEAD) at the same commit: status=PASS, max_lane=L2."
     }
   ],
   "codereview_status": "CONTROLLER-CHECKED (cycle 7: merge of origin/main 264c97b23 into the branch as f6a8e4401; the four conflicts were resolved by a Sonnet implementer and checked by the controller (no conflict markers; build_normalized_catalog.py --check CHECK_PASS; doctor test file 36 test functions = 27 base + 8 ours + 1 from #1440); no task reviewer and no intermediate model audit: the single Grok audit at 2479969fe is the review of the merge). PASS (cycle 6: mechanical revert of 380c2c52c, controller-verified tree identity with 192a84dc3; design record appended; no model review needed). PASS (cycle 5: Task G implementer sonnet; review opus: Task G round 0 NEEDS_FIXES (one medium: a container with our exact expected name and contradictory workspace labels on an off-map port was dropped as off-port and adopted by name) \u2192 round 1 APPROVED (29-case probe table on main vs new: every case main blocked blocks again except the stale-port recovery; Codex F1/F2 probes block; helper edge cases fail closed). Task H: APPROVED first pass (pre-check mirrors the planner; maybe_reap otherwise identical; 5000-dir listing 46 ms; RED verified on 192a84dc3; host registry untouched)). PASS (cycle 4: Task E implementer sonnet; review opus: Task E round 0 NEEDS_FIXES on one LOW doc sentence dictated by the controller's brief (the how-to's manual recipe equals the catalog templates and is still repaired) \u2192 doc/comment micro round controller-verified, code approved (63-URL adversarial probe, env-independence proven); Task F round 0 NEEDS_FIXES (MEDIUM: dropped doctor findings were the only guard for a same-project sibling-worktree container on a resolved port; LOW: stop control proved nothing) \u2192 round 2 `_collision_checks(worktree_hash)` + launcher ownership rule \u2192 re-review NEEDS_FIXES on two LOWs (other-project diagnosis; overclaiming bullet) \u2192 round 3 APPROVED (25-case probe table, no false positives)). PASS (cycle 3: Task D implementer sonnet; review opus: round 0 NEEDS_FIXES (FINDING 1 medium: first-`://` strip after masking) \u2192 round 1 APPROVED (45-URL adversarial probe, RED re-verified) \u2192 docstring micro round controller-verified). PASS (cycle 2: Task A review sonnet approved after one stub fix; Task B review opus approved after fix rounds 1-4; final whole-cycle review opus Needs-fixes \u2192 fixed \u2192 scoped re-review approved; micro round controller-verified). Cycle 1 status retained: final whole-branch opus review with fixes, residual + audit rounds verified.",
