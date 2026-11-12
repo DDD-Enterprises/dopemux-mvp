@@ -1,0 +1,82 @@
+{
+  "packet_id": "TP-DMX-PR1508-L2-AUDIT-002",
+  "tp_id": "TP-DMX-PR1508-L2-AUDIT-002",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1508,
+  "branch": "docs/pr-merge-skill-queue-stop",
+  "base": "main",
+  "base_sha": "c5a0ca34f53dd0f2d55e11139dff74828ab34ab5",
+  "head_sha": "c30f74fe385c768a7599aa7920cfa5abc92313db",
+  "audited_head_sha": "c30f74fe385c768a7599aa7920cfa5abc92313db",
+  "risk_lane": "L2",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/pr-merge-skill-stop",
+  "exact_model": "kimi-k3",
+  "recorded_auditor_model": "kimi-k3",
+  "model_recording_reason": "OpenCode session info.model recorded id kimi-k3, providerID cheaper-inference, variant default. That id is the trusted schema auditor_model paired with opencode-cli.",
+  "operator_instruction": "kimi",
+  "audit_identity": {
+    "auditor": {
+      "effort": "default",
+      "model": "kimi-k3",
+      "model_family": "moonshot-kimi",
+      "runner": "opencode-cli",
+      "runtime_family": "opencode"
+    },
+    "implementer": {
+      "model": "grok-4.7",
+      "model_family": "xai-grok",
+      "runner": "grok-build",
+      "runtime_family": "xai-grok-build"
+    },
+    "independence": "PROVEN"
+  },
+  "generated_at": "2026-11-10T05:22:15Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "opencode-cli",
+    "auditor_model": "kimi-k3",
+    "invocation": "opencode run --pure --format json --model cheaper-inference/kimi-k3 --dir /tmp/pr1508-kimi-seal-r2 --title pr1508-kimi-audit-r2; OpenCode 1.18.30; session ses_e3c19ee4bffeXp737kGLn7rk8h; session model id kimi-k3 providerID cheaper-inference variant default; exit 0; one attempt; no tool parts; KIMI_AUDIT.txt sha256 99cb2c36250b5cc204c9c6e4521ca5b52223247eb01d1b07d6220acdca5dba5b; KIMI_EVENTS.txt sha256 4739a0520b56bc9512ff52639dcab0708e6ee8fbb27ea2f4764c1f7cdc74e891",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1508-L2-AUDIT-002/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F5",
+        "severity": "MEDIUM",
+        "title": "Prohibitions are prose-only; the banned commands still exist in code",
+        "status": "ACCEPTED_RISK",
+        "body": "Each SKILL.md says merge.py, queue_drain.py, and worktree.py still emit gh pr update-branch --rebase and gh pr merge --rebase --delete-branch, and that those commands stay unused while the queue is active. This diff does not change those files. Enforcement is the skill text."
+      },
+      {
+        "id": "F6",
+        "severity": "LOW",
+        "title": "Active queue state has no detection procedure",
+        "status": "ACCEPTED_RISK",
+        "body": "The stop list is conditioned on while that queue is active. The skill does not give a gh api or ruleset query that detects the condition. Operator authority still requires explicit authority for auto-pilot and queue-drain when no merge queue is active."
+      },
+      {
+        "id": "F7",
+        "severity": "LOW",
+        "title": "gh pr merge --auto is outside the queue stop list",
+        "status": "ACCEPTED_RISK",
+        "body": "The stop list names --rebase, --squash, --delete-branch, and --admin. Enabling auto-merge is covered by the operator-authority sentence that cites AGENTS.md section 9."
+      },
+      {
+        "id": "F8",
+        "severity": "LOW",
+        "title": "The agent prompt does not repeat the two required enqueue checks",
+        "status": "ACCEPTED_RISK",
+        "body": "agents/openai.yaml tells the session to enqueue with gh pr merge <n> --merge and to read SKILL.md before any merge. The check names independent embedded audit and PR Steward / final readiness are in SKILL.md."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "merge.py, queue_drain.py, and worktree.py still emit rebase, update-branch, and delete-branch commands. A session that ignores the skill can still run them.",
+      "Proof-only versus substantive is a judgment. The skill says ambiguity stops for a human decision.",
+      "The enqueue gate names independent embedded audit and PR Steward / final readiness. A renamed check would weaken that sentence.",
+      "Outside an active merge queue, auto-pilot and queue-drain remain available with operator authority.",
+      "Observed auditor identity is OpenCode 1.18.30 session ses_e3c19ee4bffeXp737kGLn7rk8h, provider cheaper-inference, model kimi-k3, variant default. Tokens input 20912, output 1246, reasoning 3608, cache read 32768, cost 0. No tool parts. Exit 0."
+    ],
+    "skip_reason": null
+  }
+}

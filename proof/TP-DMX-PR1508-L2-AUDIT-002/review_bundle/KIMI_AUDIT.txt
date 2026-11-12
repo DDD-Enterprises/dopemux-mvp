@@ -1,0 +1,35 @@
+**verdict: PASS_WITH_RISKS**
+
+**findings:**
+
+- **id:** F1 | **severity:** INFO | **title:** Prior finding on proof-only successor is fixed
+  **body:** All three SKILL.md copies (`.claude/skills/pr-merge-specialist/SKILL.md`, `.github/skills/pr-merge-specialist/SKILL.md`, `templates/skills/pr-merge-specialist/SKILL.md`) now read: "A signed embedded audit belongs to the content commit it names. A proof-only successor does not need another content audit. A substantive change to the pull request does." This no longer forces a fresh content audit on a legal proof-only successor.
+
+- **id:** F2 | **severity:** INFO | **title:** Prior finding on the GitHub-installed copy is fixed; all three copies are identical
+  **body:** The old text recommending `flight --auto-pilot`, `queue-drain`, WSEMT scoring, and rebase-first flow is removed from `.claude`, `.github`, and `templates` copies (all three show the same index change `f77863e9f..84fe4ed7c`). The `agents/openai.yaml` copies likewise drop "prefer rebase-first updates and merges" and replace the `queue-drain --execute` example with `gh pr merge <n> --merge`.
+
+- **id:** F3 | **severity:** INFO | **title:** All six prohibitions are present in all three copies while the queue is active
+  **body:** The stop list in each SKILL.md ("Stop, and do not run any of these, while that queue is active") names `flight --auto-pilot`, `queue-drain`, `gh pr update-branch`, `gh pr merge` with `--rebase`/`--squash`/`--delete-branch`/`--admin`, and force-push. Rebase is additionally blocked by the force-push ban, and delete-branch by "Leave the branch in place." The `openai.yaml` default_prompt mirrors this: "do not update the branch, rebase, delete the branch, admin-bypass, or run auto-pilot or queue-drain."
+
+- **id:** F4 | **severity:** INFO | **title:** No grant of draft merge, still-true thread resolution, or ungated enqueue
+  **body:** Enqueue is restricted to "one non-draft pull request at a time" with "Both of these checks must be success on the current head: `independent embedded audit` and `PR Steward / final readiness`"; "marking a draft ready" and "resolving a review thread whose finding is still true" are on the stop list. The text does not authorize any of the three forbidden grants.
+
+- **id:** F5 | **severity:** MEDIUM | **title:** Prohibitions are prose-only; the banned code paths still exist and are only disclosed, not disabled
+  **body:** Each SKILL.md states "`merge.py`, `queue_drain.py`, and `worktree.py` still emit `gh pr update-branch --rebase` and `gh pr merge --rebase --delete-branch`. Those commands stay unused while the queue is active." Enforcement rests entirely on the agent reading and obeying the skill; nothing in this diff changes executable behavior.
+
+- **id:** F6 | **severity:** LOW | **title:** "Active" queue state has no detection procedure
+  **body:** Every prohibition is conditioned on "while that queue is active," but no command or check is given to determine whether the base branch's merge queue is in fact active. A misdetermination unlocks auto-pilot, queue-drain, and rebase-first merges. Partially mitigated by the Operator authority section requiring explicit authority for auto-pilot/queue-drain "even when no merge queue is active."
+
+- **id:** F7 | **severity:** LOW | **title:** `gh pr merge --auto` not in the stop list
+  **body:** The flag enumeration covers `--rebase`, `--squash`, `--delete-branch`, `--admin` but omits `--auto` (auto-merge). It is only indirectly gated by "enabling auto-merge needs explicit operator authority (AGENTS.md §9)." Low impact because GitHub disables auto-merge when a merge queue is enabled.
+
+- **id:** F8 | **severity:** LOW | **title:** openai.yaml prompt omits the two required enqueue checks
+  **body:** The default_prompt in all three `agents/openai.yaml` files instructs enqueue with `gh pr merge <n> --merge` but does not name the `independent embedded audit` and `PR Steward / final readiness` success-on-current-head requirement. Mitigated by "Read SKILL.md before any merge" and "block on unresolved active threads and missing required approvals or checks."
+
+**remaining risks (stand even though verdict is not FAIL):**
+
+1. The underlying tooling (`merge.py`, `queue_drain.py`, `worktree.py`) still generates rebase/update-branch/delete-branch commands; protection depends on operator/agent compliance with prose, and the skill itself concedes "A green dry-run does not clear them."
+2. "Proof-only" versus "substantive change" has no mechanical test; classification is left to the operator, backstopped only by "Ambiguity stops for a human decision."
+3. The named required checks (`independent embedded audit`, `PR Steward / final readiness`) are asserted as strings; this diff contains no verification that these match actual check-run names on the repository, so a name mismatch could silently weaken the enqueue gate.
+4. Outside an active merge queue, auto-pilot and queue-drain — with their rebase-first code — remain available under operator authority. That is by design in this text, but the pre-existing risky behavior persists in that mode.
+5. The conservative ban on "marking a draft ready" while the queue is active can stall legitimate drafts; safe, but a throughput cost with no exception path.

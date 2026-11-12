@@ -20,6 +20,13 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch origin "${{ github.base_ref }}"
             pre-commit run --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD
+          elif [ "${{ github.event_name }}" = "merge_group" ]; then
+            BEFORE="${{ github.event.merge_group.base_sha }}"
+            if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+              echo "merge_group base commit is not available: ${BEFORE}"
+              exit 1
+            fi
+            pre-commit run --from-ref "$BEFORE" --to-ref "${{ github.sha }}"
           else
             BEFORE="${{ github.event.before }}"
             if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then

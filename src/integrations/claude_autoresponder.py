@@ -347,9 +347,27 @@ Task
 
                 time.sleep(1)
 
-            except Exception as e:
-                logger.error(f"Error in monitor thread: {e}")
+            except (OSError, TypeError, ValueError) as e:
                 self._metrics.errors_count += 1
+                # select() on a non-file stdout raises every pass. Retrying
+                # until the inactivity timeout keeps this thread busy for the
+                # same 30 minutes as the unit-test job. Breaking without
+                # stopping the child leaves it RUNNING and unmonitored.
+                # stop() joins this thread, so terminate inline instead.
+                logger.error("Auto responder monitor stopping: %s", e)
+                self._stop_event.set()
+                self._metrics.status = AutoResponderStatus.ERROR
+                if self._process is not None:
+                    try:
+                        self._process.terminate()
+                    except AttributeError:  # pragma: no cover - defensive
+                        logger.debug(
+                            "Process mock missing terminate; skipping terminate call"
+                        )
+                break
+            except Exception as e:
+                self._metrics.errors_count += 1
+                logger.error("Error in monitor thread: %s", e)
                 time.sleep(5)
 
     def restart(self) -> bool:

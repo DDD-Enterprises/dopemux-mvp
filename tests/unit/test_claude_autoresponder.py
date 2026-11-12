@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import tempfile
 import threading
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -472,3 +473,25 @@ class TestMonitorThread:
         # Should detect error state
         assert autoresponder_manager._metrics.status == AutoResponderStatus.ERROR
         assert autoresponder_manager._metrics.errors_count > 0
+
+    def test_monitor_process_stops_when_stdout_is_not_selectable(
+        self, autoresponder_manager, mock_config_manager
+    ):
+        """A stdout with no fileno must not retry until the inactivity timeout."""
+        config = ClaudeAutoResponderConfig(timeout_minutes=30)
+        mock_config_manager.get_claude_autoresponder_config.return_value = config
+        autoresponder_manager._last_activity = datetime.now()
+        autoresponder_manager._process = Mock()
+        autoresponder_manager._process.poll.return_value = None
+        autoresponder_manager._stop_event = threading.Event()
+        autoresponder_manager._metrics = AutoResponderMetrics(start_time=datetime.now())
+
+        started = time.monotonic()
+        autoresponder_manager._monitor_process()
+        elapsed = time.monotonic() - started
+
+        assert elapsed < 2
+        assert autoresponder_manager._metrics.errors_count >= 1
+        assert autoresponder_manager._metrics.status == AutoResponderStatus.ERROR
+        autoresponder_manager._process.terminate.assert_called_once()
+        assert not autoresponder_manager.is_running()

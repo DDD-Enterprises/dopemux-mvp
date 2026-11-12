@@ -1,0 +1,39 @@
+{
+  "session_id": "ses_e3c20cd30ffeJ7ug7vu0iAieM2",
+  "title": "pr1508-kimi-audit",
+  "version": "1.18.30",
+  "model": {
+    "id": "kimi-k3",
+    "providerID": "cheaper-inference",
+    "variant": "default"
+  },
+  "tokens": {
+    "input": 51985,
+    "output": 1125,
+    "reasoning": 2925,
+    "cache": {
+      "read": 0,
+      "write": 0
+    }
+  },
+  "cost": 0,
+  "time": {
+    "created": 1794287547087,
+    "updated": 1794287633567
+  },
+  "jsonl_types": [
+    "step_start",
+    "text",
+    "step_finish"
+  ],
+  "message_part_types": [
+    "text",
+    "step-start",
+    "reasoning",
+    "step-finish"
+  ],
+  "tool_parts": 0,
+  "diff_sha256": "dd4322730fac4b201318f5a65d52381d78baccdb4e708d089d39164fd714ecb2",
+  "audited_head": "043cd1fd7f5f9f0e5956e543a0ea07fe78984a3f",
+  "base": "c5a0ca34f53dd0f2d55e11139dff74828ab34ab5"
+}

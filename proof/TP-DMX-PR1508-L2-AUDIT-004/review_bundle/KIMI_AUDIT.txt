@@ -1,0 +1,15 @@
+VERDICT: PASS_WITH_RISKS
+
+F1 | MEDIUM | OPEN | start() sleeps 0.5s then sets RUNNING if poll() is None, so a fatal exception in that window is overwritten ERROR→RUNNING after the monitor has exited, leaving is_running() true until the SIGTERM'd child actually reaps — indefinitely if the child ignores SIGTERM — which is the original bug reborn in a narrow window (fix: start() should not set RUNNING when status is already ERROR or the monitor thread is dead).
+F2 | MEDIUM | ACCEPTED_RISK | Skill files are unchanged from c30f74f, so the prior accepted risk stands: prohibitions are prose-only while merge.py, queue_drain.py, and worktree.py still emit `gh pr update-branch --rebase` and `gh pr merge --rebase --delete-branch`, no skill command detects an active merge queue, and `gh pr merge --auto` remains outside the stop list.
+F3 | LOW | ACCEPTED_RISK | openai.yaml still does not repeat the two required check names, a carried-forward accepted risk on unchanged text.
+F4 | LOW | OPEN | Commit dd9ac07 has no CI result yet; the only test evidence is the implementer-reported local pytest run of tests/unit/test_claude_autoresponder.py (30 passed in 1.81s).
+F5 | INFO | OPEN | The new handler only guards terminate() against AttributeError (mock-shaped processes); a real OSError from terminate() would kill the thread with an unhandled exception, though status ERROR and the stop event are already set by then, so the practical impact is bounded.
+
+The core fix is correct: ordering the specific `except (OSError, TypeError, ValueError)` before the generic handler, setting the stop event directly instead of calling stop() (avoiding a self-join of the monitor thread), flipping status to ERROR so is_running() goes false, terminating the orphaned child, and breaking — this closes the reviewed defect where an unselectable stdout left is_running() true with the inactivity timeout never running. The strengthened test (status ERROR, exactly one terminate(), not is_running()) matches the new behavior. The change is strictly better than the parent commit and safe to merge with the named risks.
+
+REMAINING:
+- F1 race: fatal failure inside start()'s 0.5s window can leave a dead monitor with status flipped back to RUNNING; bounded by child exit after terminate(), unbounded only if SIGTERM is ignored — needs a follow-up guard in start().
+- Skill-layer accepted risks unchanged: prose-only prohibitions vs. code-emitted rebase/merge commands, no merge-queue detection, `gh pr merge --auto` not stopped, openai.yaml missing the two check names.
+- CI has not run on dd9ac07; merge should wait for it per L2 lane norms.
+- Pre-existing: non-fatal exceptions still retry every 5s forever, which is unchanged by this commit.
