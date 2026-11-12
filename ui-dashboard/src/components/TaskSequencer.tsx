@@ -32,11 +32,11 @@ import {
   Zap,
 } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
+import { getCompletionTransitionTask, getSkipTransitionTask } from './taskSequencerTransitions';
 
 // Running past the estimate is a warning: yellow, as in the cockpit's status colors. gremlinPink is a
 // brand accent and never a status (theme.ts).
 const OVERTIME_COLOR = brandTokens.colors.giltEdge;
-import { getCompletionTransitionTask, getSkipTransitionTask } from './taskSequencerTransitions';
 
 interface Task {
   id: string;

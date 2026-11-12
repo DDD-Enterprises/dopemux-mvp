@@ -591,6 +591,24 @@ const upstreamGet = (overrides: Record<string, unknown> = {}) => ({
   }),
 });
 
+test('Retry is a new GET: its forecast replaces one an earlier snapshot cleared', async () => {
+  // The energy and recommendation warning outlives the snapshot, so Retry stays on screen with the socket open.
+  const fetchMock = vi.fn().mockResolvedValueOnce(upstreamGet()).mockResolvedValueOnce(forecastGet(0.5));
+  vi.stubGlobal('fetch', fetchMock);
+  await renderApp();
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+  });
+  await sendStateUpdate({ cognitive_load: 0.45, predicted_load_15min: null });
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+
+  // A GET sent after that snapshot is newer than it, so it applies in full.
+  await clickRetry();
+
+  expect(FakeSocket.instances).toHaveLength(1);
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('50%');
+});
+
 test('a snapshot that covers only some failed GET sections keeps a warning naming the rest', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(upstreamGet()));
   await renderApp();
