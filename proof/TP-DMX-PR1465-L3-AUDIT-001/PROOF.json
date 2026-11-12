@@ -1,0 +1,281 @@
+{
+  "packet_id": "TP-DMX-PR1465-L3-AUDIT-001",
+  "branch": "claude/rr-mcp-profile-quarantine",
+  "base": "main",
+  "base_sha": "93050d135ffc2592000c1d0edef82b2912935525",
+  "head_sha": "8e9fe0607c3840685892bd4b530e6d55ddf5f50d",
+  "kind": "mcp_profile_quarantine_fix",
+  "risk_lane": "L3",
+  "implementer": "Claude Code: a claude-fable-5-1 developer subagent implemented the fix test-first under a claude-opus-5-5 supervisor session, which verified RED/GREEN and the MCP regression independently, built the audit prompt with the repo's trusted builder and this proof bundle. All implementer runtimes are Anthropic Claude via Claude Code; the auditor is xAI Grok via grok-cli.",
+  "audited_files": [
+    "src/dopemux/commands/mcp_commands.py",
+    "src/dopemux/mcp/fleet_catalog.py",
+    "tests/unit/test_mcp_fleet_catalog_profile_quarantine.py"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "fallback_auditor_approval": {
+    "approved_by": "operator",
+    "approval_text": "Use Grok",
+    "approved_at": "2026-10-22",
+    "exact_model": "grok-4.5",
+    "recorded_auditor_model": "grok-4.5",
+    "question_answered": "AGY quota is exhausted (429). Switch the follow-up PR audits (#1464, #1465 and the governance PR) to the contained, tool-less Grok route that passed CI for #1459, one attempt per PR? Options: 'Use Grok' or 'Wait for AGY'.",
+    "bounded_input": "trusted prompt built by scripts/audit/pal_clink_runner.py --build-prompt from the PR diff (proof/** excluded); sealed run directory containing only AUDIT_PROMPT.txt; empty tool list (45 built-in ids disallowed incl. use_tool/search_tool and server-side x_search); replaced system prompt; --sandbox workspace",
+    "no_secret_constraints": "prompt contains only the public PR diff and metadata; no env values, tokens, keys or local paths beyond repo-relative names; the auditor had no tool able to read files",
+    "rationale": "Operator chose the Grok route in Claude Code desktop session f10afffd-f9c0-4a2e-86ad-17f8109a3a3a on 2026-10-22 after the operator-approved AGY gemini-4-argon-high route returned HTTP 429 RESOURCE_EXHAUSTED with no verdict. grok-4.5 is the embedded_audit schema's exact Grok value; precedents PR #1420 and #1459."
+  },
+  "superseded_attempts": [
+    {
+      "route": "agy gemini-4-argon-high (operator-approved 'YES AGY for each', 2026-10-22)",
+      "subject_head": "8e9fe0607c3840685892bd4b530e6d55ddf5f50d",
+      "outcome": "status=ERROR: Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 40h24m46s.; 0 tokens, no verdict",
+      "raw_output_sha256": "ca5dd9cb8768f801d65b34795bdf72678693259c524a9feb5b1b811ec6e052d9"
+    }
+  ],
+  "auditor_run": {
+    "grok_cli_version": "grok 1.0.67 (2fe064390d07) [stable]",
+    "session_id": "01a1635c-3c25-7521-8021-747964ca6ab5",
+    "requested_model": "grok-4.5",
+    "requested_effort": "high",
+    "observed_model": "grok-4.5",
+    "observed_reasoning_effort": "high",
+    "init_model": "grok-4.5",
+    "init_permission_mode": "default",
+    "result_subtype": "success",
+    "is_error": false,
+    "num_turns": 1,
+    "stop_reason": "end_turn",
+    "duration_seconds": 50,
+    "model_usage": {
+      "grok-4.5-build": {
+        "inputTokens": 17328,
+        "outputTokens": 2710,
+        "cacheReadInputTokens": 128,
+        "cacheCreationInputTokens": 0,
+        "webSearchRequests": 0,
+        "costUSD": 0.017324496
+      }
+    },
+    "total_cost_usd": 0.017324496,
+    "containment": {
+      "init_tools": [],
+      "init_mcp_servers": [
+        "browser-use",
+        "MCP_DOCKER",
+        "dope-context",
+        "gpt-researcher",
+        "pal-stdio",
+        "serena"
+      ],
+      "tool_use_blocks_observed": [],
+      "session_tool_definitions": [],
+      "system_prompt_replaced": true,
+      "sealed_dir_before": [
+        "AUDIT_PROMPT.txt"
+      ],
+      "sealed_dir_after": [
+        "AUDIT_PROMPT.txt"
+      ],
+      "global_context_residual": "Grok still injects home-level instruction files and the skill-name list as context (no secret values); changing that requires editing ~/.grok/config.toml, which was not authorized. MCP servers start but are unreachable because use_tool/search_tool are disallowed."
+    },
+    "raw_output_sha256": "5b53333505f30e19b16ae3e7ac26b6db44e617189fca7e9257b98090ee2be23d",
+    "prompt_sha256": "55bb958209abcd7e326d8ab4eb61e3535103c71bb8741c30f60979850a8541f1"
+  },
+  "validations": [
+    {
+      "name": "CI: \ud83d\udcca CI Pipeline Summary",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119791101673"
+    },
+    {
+      "name": "CI: CodeQL",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/runs/119786847713"
+    },
+    {
+      "name": "CI: \ud83d\udd0d Extractor Lint",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606417"
+    },
+    {
+      "name": "CI: Analyze (javascript-typescript)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767533557/job/119786600372"
+    },
+    {
+      "name": "CI: \ud83d\udee1\ufe0f Clobber Guard",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767536958/job/119786605630"
+    },
+    {
+      "name": "CI: checks",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537137/job/119786605303"
+    },
+    {
+      "name": "CI: identity-check",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537065/job/119786606045"
+    },
+    {
+      "name": "CI: \ud83d\udc85 Code Quality & Linting",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606321"
+    },
+    {
+      "name": "CI: \ud83e\uddea Unit Tests",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606025"
+    },
+    {
+      "name": "CI: \ud83e\uddea Auditor Router",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606394"
+    },
+    {
+      "name": "CI: \ud83e\uddea Extractor Smoke",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606310"
+    },
+    {
+      "name": "CI: \ud83d\udd12 Security Review",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606350"
+    },
+    {
+      "name": "CI: \ud83e\uddea Extractor Full",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606674"
+    },
+    {
+      "name": "CI: \ud83d\udcda Documentation Check",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606409"
+    },
+    {
+      "name": "CI: independent embedded audit",
+      "result": "FAIL",
+      "detail": "FAILURE at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537019/job/119786607006"
+    },
+    {
+      "name": "CI: \ud83d\udd0d Audit Proof Validator (--all)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606386"
+    },
+    {
+      "name": "CI: \ud83d\uddfa\ufe0f Model Routing Consistency",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786606445"
+    },
+    {
+      "name": "CI: Analyze (ruby)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767533557/job/119786600441"
+    },
+    {
+      "name": "CI: Analyze (python)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767533557/job/119786600511"
+    },
+    {
+      "name": "CI: preflight",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537067/job/119786605594"
+    },
+    {
+      "name": "CI: Analyze (actions)",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767533557/job/119786600578"
+    },
+    {
+      "name": "CI: \ud83e\uddea Installer Smoke",
+      "result": "NOT_RUN",
+      "detail": "SKIPPED at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786607848"
+    },
+    {
+      "name": "CI: \ud83d\udcca Scoped Coverage",
+      "result": "NOT_RUN",
+      "detail": "SKIPPED at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786608377"
+    },
+    {
+      "name": "CI: \ud83d\udd17 Integration Tests",
+      "result": "NOT_RUN",
+      "detail": "SKIPPED at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767537039/job/119786607811"
+    },
+    {
+      "name": "CI: identity-check",
+      "result": "PASS",
+      "detail": "SUCCESS at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767525082/job/119786564196"
+    },
+    {
+      "name": "CI: PR Steward / final readiness",
+      "result": "FAIL",
+      "detail": "FAILURE at head 8e9fe0607c3840685892bd4b530e6d55ddf5f50d (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39767592981"
+    },
+    {
+      "name": "RED->GREEN (supervisor re-run)",
+      "result": "PASS",
+      "detail": "new tests/unit/test_mcp_fleet_catalog_profile_quarantine.py: 6 failed / 1 passed on main 93050d135 source -> 7 passed"
+    },
+    {
+      "name": "MCP regression",
+      "result": "PASS",
+      "detail": "456 passed: test_mcp_fleet_catalog*.py, tests/arch/test_mcp_fleet_catalog_contract.py, tests/mcp, every test importing mcp_commands"
+    },
+    {
+      "name": "real-config smoke (worker, read-only)",
+      "result": "PASS",
+      "detail": "validator on real fleet outputs and all 8 catalog profiles returns [] before and after"
+    },
+    {
+      "name": "full make test / lint / mypy",
+      "result": "NOT_RUN",
+      "detail": "targeted + regression suites only; CI runs the unit pipeline"
+    },
+    {
+      "name": "auditor validation",
+      "result": "NOT_RUN",
+      "detail": "Auditor had no tools or checkout access; validation_status=NOT_RUN."
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <sealed> --system-prompt-override \"<SYSTEM_PROMPT.txt>\" --disallowed-tools \"<DISALLOWED_TOOLS.txt: 45 tool ids incl. use_tool/search_tool/x_search>\" --deny \"Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources\" --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1465-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Profile-plane startable outputs are scanned via existing `_json_mcp_server_names`, while opencode/copilot now record shape/parse errors through `_mapping_server_names`; unparseable profile JSON may fail open (empty name set) rather than appending a parse/shape error, which is weaker than the hardened non-profile paths.",
+      "Quarantine CLI wiring is shown only on the profile generate path in this diff; equivalence of non-profile generate callers is assumed from the pre-existing validator and was not re-verified against full `mcp_commands.py` outside the hunk.",
+      "Static diff-only audit: unit/CLI tests were not executed in this embedded auditor session.",
+      "Auditor route: grok-cli / grok-4.5 is a packet-specific operator-approved fallback (operator selected 'Use Grok' on 2026-10-22) because the operator-approved AGY gemini-4-argon-high route returned HTTP 429 RESOURCE_EXHAUSTED (individual quota, reset ~40h) with no verdict.",
+      "Auditor ran with an empty tool list and a replaced system prompt (validation_status=NOT_RUN); test evidence at the audited head comes from CI and the local runs in this packet's validations."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}
