@@ -1,0 +1,82 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1440,
+  "head_sha": "6b14dbfd488b8fd4cccafbd07960b941b473dd07",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"  (cwd = sealed dir holding only AUDIT_PROMPT.txt built by scripts/audit/pal_clink_runner.py --build-prompt; conversation_id=93de3c66-99d0-45af-8e9b-8b10d950f135; exact record in review_bundle/AUDIT_INVOCATION.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1440-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "LOW",
+        "title": "In src/dopemux/commands/mcp_commands.py:1785-1800, mcp_doctor_cmd invokes plan_repair(...,\u2026",
+        "status": "OPEN",
+        "body": "In src/dopemux/commands/mcp_commands.py:1785-1800, mcp_doctor_cmd invokes plan_repair(..., dry_run=True) only in the human-readable output branch and passes repair_status into format_human_summary, leaving report.recommended_next_actions unfiltered when --json output is requested."
+      },
+      {
+        "id": "F-02",
+        "severity": "LOW",
+        "title": "In src/dopemux/commands/mcp_commands.py:1785-1797, plan_repair is called unconditionally o\u2026",
+        "status": "OPEN",
+        "body": "In src/dopemux/commands/mcp_commands.py:1785-1797, plan_repair is called unconditionally on every non-JSON doctor invocation even when report.recommended_next_actions does not contain a 'repair-config --apply' recommendation."
+      },
+      {
+        "id": "F-03",
+        "severity": "INFO",
+        "title": "In src/dopemux/mcp/doctor.py:1365-1428, format_human_summary suppresses 'repair-config --a\u2026",
+        "status": "ACCEPTED_RISK",
+        "body": "In src/dopemux/mcp/doctor.py:1365-1428, format_human_summary suppresses 'repair-config --apply' recommendations when repair_status is in {'NOOP', 'BLOCKED'} and falls back to an explanatory dry-run message only when all recommended actions were filtered out."
+      },
+      {
+        "id": "F-04",
+        "severity": "INFO",
+        "title": "Documentation updates in .claude/claude.md, AGENTS.md, and docs/02-how-to/mcp-setup-other-\u2026",
+        "status": "ACCEPTED_RISK",
+        "body": "Documentation updates in .claude/claude.md, AGENTS.md, and docs/02-how-to/mcp-setup-other-repos.md consistently document DOPEMUX_MVP_ROOT/DOPEMUX_PRODUCT_ROOT requirements for external installs, Postgres restoration via dopemux mcp up --services postgres, serena as a single container bound to dopemux-mvp (reducing per-worktree container cost from 3N to 2N), and the implemented vs. partial/planned mcp CLI verbs."
+      },
+      {
+        "id": "F-05",
+        "severity": "INFO",
+        "title": "Candidate changes include agent instruction files (.claude/claude.md and AGENTS.md); altho\u2026",
+        "status": "ACCEPTED_RISK",
+        "body": "Candidate changes include agent instruction files (.claude/claude.md and AGENTS.md); although instruction_like_scan_summary reported detected=false, all directive-like prose in the diff was treated strictly as untrusted candidate data."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Behavioral divergence between CLI output modes: 'dopemux mcp doctor --json' serializes report.recommended_next_actions before format_human_summary filtering, so JSON consumers can still receive 'repair-config --apply' recommendations when repair-config dry-run status is NOOP or BLOCKED.",
+      "The CLI integration path in src/dopemux/commands/mcp_commands.py:1785-1800 (calling plan_repair and swallowing exceptions via broad 'except Exception') is only indirectly covered; tests/unit/test_mcp_doctor_repo_aware.py:867-892 unit-tests format_human_summary directly rather than invoking mcp_doctor_cmd.",
+      "Test suite and runtime validation were not executed in this embedded audit environment (validation_status=NOT_RUN) because tools and candidate code execution are disabled by audit policy.",
+      "Auditor model fallback: AGY ran gemini-4-argon-high (recorded as auditor_model 'gemini', the schema's generic value) under explicit operator approval; exact-model evidence for gemini-3.1-pro-high is unavailable in agy 1.4.2.",
+      "Auditor ran sandboxed with no tool or checkout access (validation_status=NOT_RUN); test and lint evidence at the audited head comes from CI and the local runs recorded in the packet PROOF.json validations."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}
