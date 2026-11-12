@@ -1,9 +1,9 @@
 {
   "repo": "DDD-Enterprises/dopemux-mvp",
   "pr_number": 1503,
-  "head_sha": "efb06f7c5a0677d5a6103cbcb86e02d199c133ba",
+  "head_sha": "2479969fec2ec401a9cfe3eed51570829e67b723",
   "packet_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
-  "generated_at": "2026-11-12T02:15:53.282636+00:00",
+  "generated_at": "2026-11-12T08:28:43.611318+00:00",
   "mutation_performed": false,
   "github_mutation_route_added": false,
   "audit_identity": {
@@ -27,7 +27,7 @@
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "grok-cli",
     "auditor_model": "grok-4.7",
-    "invocation": "grok -m grok-4.7 --effort high --sandbox workspace --cwd <sealed subject> --system-prompt-override <tool-less auditor> --disallowed-tools <GROK_DISALLOWED.txt> --max-turns 1 < AUDIT_PROMPT.grok.full.txt (exact requested model grok-4.7; the schema enum lacks it, hence 'unknown'; observed model UNKNOWN)",
+    "invocation": "grok -m grok-4.7 --effort high --sandbox workspace --cwd <sealed subject> --system-prompt-override <tool-less auditor> --disallowed-tools <GROK_DISALLOWED.txt> --max-turns 1 < AUDIT_PROMPT.grok.full.txt (exact requested model grok-4.7; admitted by the embedded-audit schema since #1507; observed model UNKNOWN)",
     "exit_code": 0,
     "report_path": "proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/AUDITOR_REPORT.md",
     "findings": [],
@@ -56,21 +56,23 @@
       "cycle 4 / codex F1 (43294e99b): config repair replaces only what dopemux rendered \u2014 the repairable predicate no longer judges a template's default; a port variable set to `3005@remote.example` can no longer make an operator endpoint look local because generic `${PORT}` templates are preserved outright (83b468e71 (Task E), fc591cba1 (Task F))",
       "cycle 4 / Codex connector P2 (83b468e71): after init \u2192 stop, a foreign container on the stale envrc port no longer blocks a start that re-leased a free port; the doctor's pre-allocation port findings are re-evaluated against the resolved ports instead of being carried forward (83b468e71 (Task E), fc591cba1 (Task F)). Review round 1 (opus) then found that the dropped doctor findings had been the only guard against a same-project sibling worktree's container on a resolved port; `_collision_checks` now applies the launcher's ownership rule (project_id AND worktree_hash; managed container without a project id and a foreign project root) and flags such containers as DOCKER_CONTAINER_PORT_COLLISION",
       "cycle 5 / codex F1+F2 (fc591cba1): for start/restart every doctor blocker is carried except a DOCKER_CONTAINER_* finding whose container neither publishes a resolved port nor bears one of this run's expected container names (no container evidence \u2192 kept), and the resolved port map is validated for duplicates and reserved ports even when `_resolve_ports` retained leases; the stale-envrc-port recovery (connector P2) is kept; the two Task F behaviour changes (compose-only container with our expected name; project-scoped orchestrator from another worktree) revert to blocking as on main (192a84dc3 (Task G), 380c2c52c (Task H))",
-      "REVERTED (cycle 6, 2bbf08f65): cycle 5 / Codex connector P2 (192a84dc3): automatic reap no longer skips planning on an empty registry when launcher-marked runtime dirs exist; the dir-only recovery (worktree_missing only) now runs from the hooks and the launcher on a fresh host (192a84dc3 (Task G), 380c2c52c (Task H)) \u2014 the audit at 380c2c52c found the absent-registry (fresh-host) case still open and the discovery unbounded; the connector's finding is an open follow-up outside this packet"
+      "REVERTED (cycle 6, 2bbf08f65): cycle 5 / Codex connector P2 (192a84dc3): automatic reap no longer skips planning on an empty registry when launcher-marked runtime dirs exist; the dir-only recovery (worktree_missing only) now runs from the hooks and the launcher on a fresh host (192a84dc3 (Task G), 380c2c52c (Task H)) \u2014 the audit at 380c2c52c found the absent-registry (fresh-host) case still open and the discovery unbounded; the connector's finding is an open follow-up outside this packet",
+      "cycle 7: conflict with #1440 (a1ed8fba8) resolved in .claude/claude.md, AGENTS.md, the how-to and tests/unit/test_mcp_doctor_repo_aware.py when origin/main (264c97b23) was merged (f6a8e4401); no audit finding was addressed in this cycle"
     ],
     "remaining_risks": [
-      "A dopemux port variable whose runtime value is not a port (for example 3005@remote.example) can move the host when the client expands a repaired template; repair judges the template, not the value",
-      "One resend still happens if a backend returns exactly 32600 and Session terminated after processing the request",
-      "ClosedResourceError/BrokenResourceError in forward() is retried once on the next session",
-      "_live_build treats a build pid older than the build budget as stale",
-      "Automatic reap does not clean launcher-marked runtime dirs while the registry lists no instance or the registry file is missing or unreadable; explicit reap also plans nothing until that file exists and parses OK (owner-accepted follow-up)",
-      "dopemux mcp status uses _resolve_ports(allocate=False) and can show stale envrc ports after a re-lease (item 18, code unchanged since cycle 2)",
-      "Runner cancellation of an in-flight tool call is not forwarded to the backend (item 18)",
-      "Legacy mcp up/down/logs without --repo still use the shell environment",
-      "Gate temp env file can remain if the process is killed before adopt_with_gate's finally",
-      "doctor --repo and profile doctor/show still load the caller catalog (deferred)",
-      "codex route at efb06f7c = NEEDS_SUPERVISOR",
-      "agy route at efb06f7c = NOT_RUN (not launched in cycles 4 to 6: the agy route failed on its individual quota at the cycle-3 freeze (HTTP 429 RESOURCE_EXHAUSTED 2026-11-09T04:43Z, resets \u22482026-11-14; review_bundle/cycle3-raw-agy-quota-error.json); the owner chose Grok as the governing route on 2026-11-09)"
+      "A dopemux port variable expanded to a non-port value can move the host; repair judges the template only (pre-stated).",
+      "A backend that returns exactly 32600 and 'Session terminated' after processing still gets one resend (pre-stated).",
+      "forward() continues on ClosedResourceError/BrokenResourceError and can send the request again (pre-stated).",
+      "_live_build treats a build pid older than the build budget as finished (pre-stated).",
+      "Automatic reap does not see launcher-marked dirs while the runtime registry lists no instance, and plan_reap plans nothing while that file is missing or unreadable (item 17, documented).",
+      "dopemux mcp status uses _resolve_ports(allocate=False) and can report stale envrc ports (item 18).",
+      "Runner cancellation of an in-flight proxied call is not forwarded (item 18).",
+      "start --dry-run and restart --dry-run persist and can release port leases (item 20). Out of packet; would be medium in a follow-up because the CLI help says no registry writes.",
+      "Legacy dopemux mcp up|down|logs without --repo still uses the shell environment (documented).",
+      "Gate temp env file remains if the process is killed before adopt_with_gate's finally (pre-stated).",
+      "doctor --repo and profile --repo still load the caller catalog (ledger-deferred).",
+      "codex route at 2479969f = NOT_RUN (not launched in cycle 7: the owner chose ONE governing Grok 4.7 run; Codex stays advisory through the PR connector (a connector review is not an audit route and is recorded in the bots note, not here))",
+      "agy route at 2479969f = NOT_RUN (not launched in cycles 4 to 7: the agy route failed on its individual quota at the cycle-3 freeze (HTTP 429 RESOURCE_EXHAUSTED 2026-11-09T04:43Z, resets \u22482026-11-14; review_bundle/cycle3-raw-agy-quota-error.json); the owner chose Grok as the governing route on 2026-11-09)"
     ],
     "skip_reason": null,
     "instruction_like_content": {

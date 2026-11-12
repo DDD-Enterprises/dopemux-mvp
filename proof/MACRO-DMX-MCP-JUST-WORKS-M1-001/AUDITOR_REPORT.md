@@ -1,34 +1,37 @@
-END_OF_SUBJECT 8b72d8c3-efb06f7c
+END_OF_SUBJECT 3cb30c90-2479969f
 
-Static audit of embedded subject at declared pin `efb06f7c5a0677d5a6103cbcb86e02d199c133ba` (base `46155cad9`, branch-authored range only). Route has no shell, no test files, no `design.md`/`plan.md` body, and no live host. Controller logs and prior verdicts are claims, not evidence. Required static checks below were read off `subject-src.diff`, the how-to, `COMMITS.txt`, and the reap/lifecycle/proxy/json sources in that diff.
+Scope: static L3 re-audit of embedded materials for MACRO-DMX-MCP-JUST-WORKS-M1-001 at declared pin `2479969fec2ec401a9cfe3eed51570829e67b723` (base `337a226b25de353c32820e8f86fb674afbd6c25b`). Read `subject-src.diff` (final src/config/hooks vs that base), `delta-since-c6.diff`, the how-to, `mcp-command-registry.txt`, `COMMITS.txt`, `VALIDATIONS.md`, `LEDGER_SUMMARY.md`. No shell, no hash recompute, no pytest, no live Docker. Test files and `product_root()` body are absent from this packet. `plan.md:17` is a pre-existing plan-executor template, not an instruction to this auditor (operator ruling 2026-11-12); left out of `instruction_like_content`.
 
-**Closures**
-- Codex at `30b0fdec9` F1 and F2 stay closed. `reap.py` `_reap_one` skips `state_error` and does not `rmtree` or count `reaped` unless both registry saves return clean. `lifecycle.py` `run_lifecycle(..., hold_instance_lock=True)` takes one instance lock around worktree start/restart; `launcher.py` `ensure_backend` / `ensure_orchestrator` pass `False` while they already hold instance or reserved locks. No second `launch.lock` in one stack; reserved and instance are not nested (`locks.py` order holds; inode re-check still in `_flock`).
-- Codex at `3f1335e7f` F1 and F2 stay closed. `mcp_json.py` masks every `${...}` on the whole string, strips only a leading literal scheme, and fail-closes if the scheme/`//` is itself a placeholder. `stdio_proxy.py` `_session_terminated` is code `32600` and message `== "Session terminated"` only. `forward()` resends that case at most once (`MAX_SENDS_PER_REQUEST`). Any other `McpError`, including a `32600` whose text merely contains the phrase, is returned. `CONNECTION_CLOSED` is not resent. `ClosedResourceError`/`BrokenResourceError` still retry once under the “not written” comment; that does not reopen the substring bug. `_url_is_repairable` does not replace an operator URL unless it is a literal local URL with no userinfo, or exactly `_SELF_RENDERED` (literal `http(s)://localhost|127.0.0.1`, one catalog/dopemux port variable, numeric or absent default, literal remainder). Generic `${PORT:-3005}`, userinfo/host placeholders, scheme-relative templates, and credential URLs are preserved.
-- Codex at `43294e99b` F1 is closed by that same predicate (item 13). Env values are not read.
-- Codex at `fc591cba1` F1 and F2 are closed by item 15. `PORT_*` doctor blockers are carried. `_resolved_port_findings` blocks two selected services on one resolved port and a sidecar on a reserved singleton port, including leases `_resolve_ports` kept without allocating. `DOCKER_CONTAINER_*` is dropped only when docker is readable, evidence names a container, that container is not one of this run’s expected names, and it publishes none of the resolved ports; otherwise the finding stays (no evidence, docker down, expected name, or on-map → fail closed). A same-project no-hash / wrong-workspace container on a resolved port therefore still blocks via the kept doctor finding. `_collision_checks` still requires `project_id` plus a differing `dopemux.worktree_hash` (missing scope treated as `worktree`) and still sends other projects through `PORT_OWNED_BY_OTHER_PROJECT`. This does not start a service on a port another project holds, and it does not drop a main start/restart blocker except the stated stale-envrc container that is off the resolved map and not our expected name. That difference is intentional; I would not raise it.
-- Item 16 is absent. `maybe_reap` returns when `not registry.instances()` before `plan_reap`. No `_any_marked_runtime_dir`. It cannot sweep a live worktree’s marker or run an extra unbounded pre-scan. `_dir_only_candidates` remains plan-time only, `worktree_missing` only, and skips a live `build-*.pid`.
-- Item 17 record matches the code. How-to cleanup text says automatic reap sees an `instance.json` dir only while the registry lists an instance, and no run sees it while that file is missing or unreadable. `plan_reap` returns `[]` unless `parse_status == "OK"`. `mcp reap` help says nothing is planned while the registry file is missing. The open follow-up (build-only marker dirs never reach automatic reap on an empty, missing, or unreadable registry; explicit reap also plans nothing until the file exists and parses OK) is truthful there. I would not raise it. `design.md` wording was not in this embed (`NOT_RUN`).
-- Item 18 does not reopen those closures. `status` with `allocate=False` is display-only. Not forwarding runner cancellation does not take the session-terminated resend path.
-- Cycle-2 items 2–9 hold in this tree (SessionEnd `"timeout": 60` only; target-catalog `--repo` on init, lifecycle CLI, switch-project, repair-config; dead-attach idle age is read-only in planning; marker is identity fields, mode `0600`, under the instance lock; AGENTS.md §12.3 states the shared image key). Item 1’s test parametrization is not in this embed (`NOT_RUN`). Item 10’s design bullets are `NOT_RUN`; the how-to does document `state_error` and `instance.json`.
+Checks: secrets/argv/logs, lock order, reconnect/resend, reap, how-to vs code, items 1–15 and 17–20. Live T1–T11 and `make test-fast` are NOT_RUN here (controller’s suite FAIL is a host `:7890` claim, not reproduced).
 
-**Review focus.** Secrets: SCRAM verifier, psql stdin, gate URL via `0600` `--env-file`, redact-before-truncate, `instance.json` has no env. No password on stdout in the paths read. Locks, reconnect guard (before every connect, including the first, and after every `initialize`), and reap label/scope/idle/deadline/kill-switch/`state_error` rules match the claims. Ambient `DOPEMUX_*` / port / `CONPORT_DB_*` scrub holds unless `--trust-env`; `launch` has no such flag. Deferred ledger items: I would not raise any.
+Closures (verified on the embedded final code):
+- 30b0fdec9 F1 closed by item 6: `reap.py` `_reap_one` skips `state_error` and returns before `shutil.rmtree`; `reaped` is recorded only after both saves.
+- 30b0fdec9 F2 closed by item 7: `run_lifecycle(..., hold_instance_lock=True)` holds `instance_lock` for the worktree half of non-dry start/restart, one acquisition across restart stop+start. `ensure_backend` / `ensure_orchestrator` pass `False` while they already hold the non-reentrant lock. Reserved `:7890` stays outside that lock.
+- 3f1335e7f F1 closed by item 11 and still closed after item 13: `_placeholder_in_userinfo_or_host` masks `${...}` over the whole URL, then strips only a leading literal scheme. No leading scheme ⇒ any placeholder is not repairable.
+- 3f1335e7f F2 closed by item 12: `_session_terminated` is code `32600` and message `== "Session terminated"`. Other 32600 text is returned, not resent. `forward()` resends that exact case once (`MAX_SENDS_PER_REQUEST`).
+- 43294e99b F1 closed by item 13: a template is repairable only when `_self_rendered_template` matches literal `http(s)://localhost|127.0.0.1`, one catalog/dopemux port variable, numeric or absent default, literal remainder. Generic `${PORT:-3005}`, host/userinfo/scheme placeholders, remote hosts, and credential URLs are preserved. Env values are not read.
+- fc591cba1 F1 closed by item 15: `PORT_*` doctor codes are not deferred; `_resolved_port_findings` blocks duplicate resolved ports and a sidecar on a reserved port, including leases `_resolve_ports` kept.
+- fc591cba1 F2 closed by item 15: `_split_deferred_doctor` keeps a `DOCKER_CONTAINER_*` finding when docker is unread, evidence is empty, the container name is expected, or it publishes a resolved port. A same-project no-hash container on a resolved port stays a doctor blocker. `_collision_checks` still requires a hash for the sibling-worktree rule; that rule is defence in depth, not the backstop.
+- Items 6–7, 11–15 still hold on this tree. Item 16 is absent: no `_any_marked_runtime_dir`; `maybe_reap` returns when `registry.instances()` is empty. Item 17’s design bullet and the how-to sentence (marker dirs visible to automatic reap only while the registry lists an instance; no run while the file is missing or unreadable) match that code. Item 18 does not reopen those closures. Item 20’s bullet matches `_mutable_facts` (`allocate=op in {"start","restart"}`, no dry-run input) and `_resolve_ports` (`persist=True`, `dry_run=False`, lease save). `lifecycle.py` is not in `delta-since-c6.diff`.
 
-**Acceptance T1–T11:** `NOT_RUN` here. The owner log at `30b0fdec9` is not this SHA and was not re-executed.
+Cycle 7: conflict resolutions keep M1 text. §12.6 matches `mcp-command-registry.txt` (`switch-project` implemented; `reconcile` only under `leases` / `registry` / `control-plane`; `adopt`/`migrate` absent). Container count text is 2N; serena is one dopemux-mvp container. `product_root()` and the how-to “Restoring Postgres” / `--no-deps` sentences are not in the embedded source, so they stay UNKNOWN, not findings. Delta src hunks in `mcp_commands.py`, `doctor.py`, and `fleet_catalog.py` are upstream merge content. Branch-authored cycle-7 text beyond the doc resolutions is the design follow-up bullet.
 
-No new defect. Residuals below are pre-stated; they keep this at `PASS_WITH_RISKS`, not `PASS`. `plan.md:17` is the repo’s plan-executor header, not an instruction to this auditor, and its body was not embedded; not recorded as instruction-like.
+Findings: none at medium or above.
 
-```json
+Item 20, if it were in scope, would be medium: `--dry-run` help says plan-only and no registry writes, while start/restart dry-run still releases and persists leases. It stays an owner-accepted follow-up (test-locked since `40ea89c24`), not a finding. Other pre-stated residuals (port-var expansion, exact-32600 resend, `ClosedResourceError`/`BrokenResourceError` continue in `forward()`, age-bounded `_live_build`, items 17–18, legacy `up|down|logs`, gate temp env file on SIGKILL, doctor `--repo` catalog) would not be re-raised.
+
+Unblock: none on this packet. Acceptance stays NOT_GRANTED. Follow-ups 17, 18, and 20 stay outside the packet.
+
 {
   "schema": "independent-audit/v1",
   "status": "PASS_WITH_RISKS",
   "subject": {
     "packet_id": "MACRO-DMX-MCP-JUST-WORKS-M1-001",
     "repo": "DDD-Enterprises/dopemux-mvp",
-    "pinned_sha": "efb06f7c5a0677d5a6103cbcb86e02d199c133ba",
+    "pinned_sha": "2479969fec2ec401a9cfe3eed51570829e67b723",
     "observed_head": "",
     "head_match": true,
-    "base": "46155cad92702beba8169448f1fefe5cef45294c (merge-tree of 5742575c4 and f16e0da2c)",
+    "base": "337a226b25de353c32820e8f86fb674afbd6c25b (merge-tree of 5742575c4 and 264c97b23ec1b3e007e62079d4f6d2632ad71775)",
     "file_hashes": {}
   },
   "auditor": {
@@ -39,51 +42,124 @@ No new defect. Residuals below are pre-stated; they keep this at `PASS_WITH_RISK
     "independent_of_implementer": true
   },
   "checks": [
-    {"id": "C-DIFF", "command_or_method": "Read embedded subject-src.diff (src, hooks, settings, catalog, schemas, pyproject) plus COMMITS.txt; tests and design.md/plan.md not in this route", "exit_code": null, "bucket": "PASS", "evidence": "Cycle-6 tree matches items 1-15 and 17; item 16 symbols absent; maybe_reap returns before plan_reap when instances() is empty"},
-    {"id": "C-SECRETS", "command_or_method": "Static review of conport_tenant.py, launcher.py _lifecycle_error/_write_instance_marker, adopt_with_gate, redacted_tail", "exit_code": null, "bucket": "PASS", "evidence": "Password repr=False; CREATE ROLE gets SCRAM verifier; SQL on stdin; gate URL in 0600 env-file not argv; tails redacted before cut; instance.json is project_id, worktree_hash, worktree_root, project_root, written_at at 0600"},
-    {"id": "C-LOCKS", "command_or_method": "Static review of locks.py, launcher.py launch/ensure_*, lifecycle.py run_lifecycle split, mcp_commands.py switch-project", "exit_code": null, "bucket": "PASS", "evidence": "Order instance|reserved outside registry; instance outside provision; reserved and instance never nested; flock re-checks st_dev/st_ino; launcher passes hold_instance_lock=False; CLI default True for worktree start/restart/stop"},
-    {"id": "C-RECONNECT", "command_or_method": "Static review of stdio_proxy.py _session_terminated/forward/_guarded_session and launcher.py reconnect_guard", "exit_code": null, "bucket": "PASS", "evidence": "Guard before connect and after initialize on every session including the first; resend only on exact 32600 Session terminated, once; other 32600 returned"},
-    {"id": "C-REAP", "command_or_method": "Static review of reap.py plan_reap/_reap_one/maybe_reap and native_hooks budgets", "exit_code": null, "bucket": "PASS", "evidence": "Label+scope+registry join; idle uses dead attach mtimes without planning writes; state_error/registry_busy keep the runtime dir; live build excludes all kinds; orchestrator not marked stopped; automatic path does not reach marker-only dirs when the registry lists no instance"},
-    {"id": "C-DOCS", "command_or_method": "Compare howto-mcp-setup-other-repos.md cleanup, sidecar-restart, and image sections to reap.py, stdio_proxy.py, launcher.py, cli.py", "exit_code": null, "bucket": "PASS", "evidence": "How-to automatic-reap/marker/missing-registry paragraph matches reverted maybe_reap and plan_reap non-OK short-circuit; SessionEnd timeout 60 and reap budgets match native_hooks.py and LAUNCH_REAP_LIMITS; state_error documented"},
-    {"id": "C-CYCLE2-15-17", "command_or_method": "Trace items 2-9, 11-15, 17 at the embedded sources; item 16 absence", "exit_code": null, "bucket": "PASS", "evidence": "Prior codex F1/F2 at 30b0fdec9, 3f1335e7f, and fc591cba1, and F1 at 43294e99b, remain closed in this tree; Task H code is not present"},
-    {"id": "C-ITEM1-TEST", "command_or_method": "tests/unit/test_docs_no_envrc_recipe.py parametrization", "exit_code": null, "bucket": "NOT_RUN", "evidence": "Test file not in this route's embed; cannot confirm .claude/claude.md vs CLAUDE.md"},
-    {"id": "C-DESIGN-BULLET", "command_or_method": "claudedocs/mcp-just-works-design-2026-11-05.md Task H revert bullet", "exit_code": null, "bucket": "NOT_RUN", "evidence": "design.md body not embedded; how-to and mcp reap help text were checked instead"},
-    {"id": "C-TESTS-LINT-HASH", "command_or_method": "make test-fast, mypy/ruff, FILES.sha256 recompute, git rev-parse", "exit_code": null, "bucket": "NOT_RUN", "evidence": "No shell on this route; VALIDATIONS.md numbers are controller claims"},
-    {"id": "C-LIVE-T1-T11", "command_or_method": "Owner acceptance T1-T11 and cold launch smoke at efb06f7c", "exit_code": null, "bucket": "NOT_RUN", "evidence": "Not required for this static audit; recorded owner run is at 30b0fdec9, not this SHA"}
+    {
+      "id": "C-DIFF",
+      "command_or_method": "static read of embedded subject-src.diff and delta-since-c6.diff",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Final src/config/hooks diff and cycle-7 delta read. Test diffs and full design body are not in this packet."
+    },
+    {
+      "id": "C-SECRETS",
+      "command_or_method": "static review of conport_tenant.py, launcher.py, lifecycle.py, reap.py instance.json",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "SQL on psql stdin; gate URL via 0600 docker exec --env-file; SCRAM verifier in CREATE ROLE; redacted_tail before error tails; mcp.env/start-plan omit the tenant password; instance.json is identity fields plus written_at, mode 0600."
+    },
+    {
+      "id": "C-LOCKS",
+      "command_or_method": "static review of locks.py, lifecycle.py hold_instance_lock, launcher.py, switch-project",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Order is instance or reserved outside registry; those two are not nested. _flock re-checks st_dev/st_ino. launch.lock is taken once per hold. Launcher passes hold_instance_lock=False under its own instance lock."
+    },
+    {
+      "id": "C-RECONNECT",
+      "command_or_method": "static review of stdio_proxy.py forward/_session_terminated and launcher.reconnect_guard",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Guard runs before every connect and after initialize, first session included. Resend is exact 32600 'Session terminated' once. Other messages return. Backoff 0.25s doubling, cap 2s, wait 10s, window 60s."
+    },
+    {
+      "id": "C-REAP",
+      "command_or_method": "static review of reap.py plan_reap/_reap_one/maybe_reap",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Label join plus registry entry; idle uses dead attach mtimes without planning writes; state_error/registry_busy keep the runtime dir; live build excludes candidates; maybe_reap returns when the registry lists no instance. Task H helper is absent."
+    },
+    {
+      "id": "C-DOCS",
+      "command_or_method": "how-to and AGENTS.md §12.6 versus embedded code and mcp-command-registry.txt",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Launcher shape, git-only identity, refusal exit 3, shared image tag, reap budgets, state_error, marker/registry wording, and the §12.6 verb table match the code and registry. product_root() alias and Restoring Postgres were not in the embedded source."
+    },
+    {
+      "id": "C-CYCLE2",
+      "command_or_method": "items 1-10 on embedded code and delta",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Items 2-9 verified in cli.py, mcp_json.py, mcp_commands.py, reap.py, lifecycle.py, launcher.py, AGENTS.md delta. Item 1 test file and item 10 full design body are not embedded."
+    },
+    {
+      "id": "C-CYCLE3-5",
+      "command_or_method": "items 11-15 and revert item 17 on embedded code",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "URL predicate, exact session literal, doctor deferral plus resolved-port validation, and the Task H revert all match the claims. Earlier closures still hold."
+    },
+    {
+      "id": "C-CYCLE7",
+      "command_or_method": "delta-since-c6.diff versus registry and M1 modules",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Docs resolutions keep M1 text and match the registry. lifecycle/launcher/reap/stdio_proxy/mcp_json are absent from the cycle-7 delta. Design bullet 20 matches _resolve_ports persist path."
+    },
+    {
+      "id": "C-TESTS",
+      "command_or_method": "make test-fast and unit diffs",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "evidence": "No shell. Controller VALIDATIONS claims exit 1 (1 failed, 4517 passed) as a host :7890 flake. Test sources were not embedded."
+    },
+    {
+      "id": "C-HASHES",
+      "command_or_method": "recompute FILES.sha256",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "evidence": "No file access. Controller hash list not treated as proof."
+    },
+    {
+      "id": "C-LIVE",
+      "command_or_method": "acceptance T1-T11 and cold launch at this SHA",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "evidence": "Owner-run items. VALIDATIONS marks them NOT_RUN at this SHA."
+    }
   ],
   "findings": [],
   "instruction_like_content": [],
   "author_claims_not_reproduced": [
-    "make test-fast 4509 passed at efb06f7c",
-    "hooks workflow 12 passed, docs validators rc=0, ruff/flake8/mypy/black deltas",
-    "Codex connector clean receipt on efb06f7c5",
-    "FILES.sha256 (not recomputed)",
-    "design.md revert bullet text at fbbe95a59/efb06f7c5",
-    "acceptance T1-T11 at 30b0fdec9 and live smoke at 3f1335e7f",
-    "installed MCP SDK still contains the literal Session terminated"
+    "make test-fast exit 1 at 2479969fec2ec401a9cfe3eed51570829e67b723 (host :7890 claim)",
+    "tests/unit/test_docs_no_envrc_recipe.py parametrizes .claude/claude.md (file not embedded)",
+    "tests/unit/test_mcp_doctor_repo_aware.py has 36 test functions (only the added test is in the delta)",
+    "product_root() honors DOPEMUX_MVP_ROOT and DOPEMUX_PRODUCT_ROOT (function body not in the diff)",
+    "how-to Restoring Postgres service/volume and sidecar --no-deps (compose source not embedded)",
+    "SDK 1.29 drift-guard test for the Session terminated literal (test file not embedded)",
+    "FILES.sha256 and live T1-T11 at this SHA"
   ],
   "remaining_risks": [
-    "A dopemux port variable whose runtime value is not a port (for example 3005@remote.example) can move the host when the client expands a repaired template; repair judges the template, not the value",
-    "One resend still happens if a backend returns exactly 32600 and Session terminated after processing the request",
-    "ClosedResourceError/BrokenResourceError in forward() is retried once on the next session",
-    "_live_build treats a build pid older than the build budget as stale",
-    "Automatic reap does not clean launcher-marked runtime dirs while the registry lists no instance or the registry file is missing or unreadable; explicit reap also plans nothing until that file exists and parses OK (owner-accepted follow-up)",
-    "dopemux mcp status uses _resolve_ports(allocate=False) and can show stale envrc ports after a re-lease (item 18, code unchanged since cycle 2)",
-    "Runner cancellation of an in-flight tool call is not forwarded to the backend (item 18)",
-    "Legacy mcp up/down/logs without --repo still use the shell environment",
-    "Gate temp env file can remain if the process is killed before adopt_with_gate's finally",
-    "doctor --repo and profile doctor/show still load the caller catalog (deferred)"
+    "A dopemux port variable expanded to a non-port value can move the host; repair judges the template only (pre-stated).",
+    "A backend that returns exactly 32600 and 'Session terminated' after processing still gets one resend (pre-stated).",
+    "forward() continues on ClosedResourceError/BrokenResourceError and can send the request again (pre-stated).",
+    "_live_build treats a build pid older than the build budget as finished (pre-stated).",
+    "Automatic reap does not see launcher-marked dirs while the runtime registry lists no instance, and plan_reap plans nothing while that file is missing or unreadable (item 17, documented).",
+    "dopemux mcp status uses _resolve_ports(allocate=False) and can report stale envrc ports (item 18).",
+    "Runner cancellation of an in-flight proxied call is not forwarded (item 18).",
+    "start --dry-run and restart --dry-run persist and can release port leases (item 20). Out of packet; would be medium in a follow-up because the CLI help says no registry writes.",
+    "Legacy dopemux mcp up|down|logs without --repo still uses the shell environment (documented).",
+    "Gate temp env file remains if the process is killed before adopt_with_gate's finally (pre-stated).",
+    "doctor --repo and profile --repo still load the caller catalog (ledger-deferred)."
   ],
   "unknowns": [
-    "model_observed and effort: no runtime receipt",
-    "git HEAD was not observed; pin is the embedded bundle's declared SHA",
-    "design.md amendment wording",
-    "item 1 test source",
-    "whether every DOCKER_CONTAINER_* doctor finding puts the container name in evidence[0] (item 15 relies on that contract)",
-    "live T1-T11 and cold launch at this SHA"
+    "Live git HEAD was not observed; pin is the embedded packet.",
+    "model_observed and effort have no runtime receipt.",
+    "product_root() alias and Restoring Postgres were not checked against source.",
+    "Item 1 test parametrization and the 36-function doctor count were not counted.",
+    "embedded_audit.schema.json grok-cli/grok-4.7 enum is upstream #1507 and not in the subject diff.",
+    "Controller lint/mypy/CCAR results were not re-run."
   ],
   "skip_reason": null,
   "unblock": [],
   "acceptance": "NOT_GRANTED"
 }
-```

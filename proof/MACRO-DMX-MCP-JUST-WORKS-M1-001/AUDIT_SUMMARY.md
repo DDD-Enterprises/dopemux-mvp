@@ -155,3 +155,25 @@ Observed model and effort are UNKNOWN on every route (no runtime receipt). Accep
 | agy | gemini-4-argon-high | NOT_RUN (not launched in cycles 4 to 6: the agy route failed on its individual quota at the cycle-3 freeze (HTTP 429 RESOURCE_EXHAUSTED 2026-11-09T04:43Z, resets ≈2026-11-14; review_bundle/cycle3-raw-agy-quota-error.json); the owner chose Grok as the governing route on 2026-11-09) | none |
 | grok | grok-4.7 | PASS_WITH_RISKS | none |
 | codex | gpt-6-astra | NEEDS_SUPERVISOR | none |
+
+## Cycle 7 (2026-11-12) — merge of origin/main (264c97b23) + one Grok re-audit (Grok governing; codex and agy not launched), at 2479969fec2ec401a9cfe3eed51570829e67b723
+
+### Cycle 6 outcome, as recorded at the cycle-7 start
+
+Grok 4.7 PASS_WITH_RISKS (GOVERNING by owner decision; 0 findings; states the earlier Codex findings at 30b0fdec9, 3f1335e7f, 43294e99b and fc591cba1 remain closed and that the Task H code is absent after the revert; 10 remaining risks, all pre-stated; source diff only on that route, so the design.md line-316 wording and the item-1 test file were NOT_RUN there); Codex gpt-6-astra (advisory) NEEDS_SUPERVISOR with 0 findings (the status came only from the agent-directed template line at plan.md:17, which it classified as benign instruction-like content; all earlier findings confirmed closed, Task H confirmed fully reverted, the item-18 follow-ups do not reopen a closure); AGY NOT_RUN (quota 429). The cycle-6 proof was built and pushed as proof-only commit b706fc5dd and has never been signed.
+
+### Cycle 7 scope
+
+After the cycle-6 proof (b706fc5dd, unsigned) was pushed, origin/main moved (#1508, #1440, #1507, #1465) and #1440 conflicted with this PR. `f6a8e4401` merges origin/main (264c97b23) into the branch; the four conflicting files (.claude/claude.md, AGENTS.md, docs/02-how-to/mcp-setup-other-repos.md, tests/unit/test_mcp_doctor_repo_aware.py) were resolved by a Sonnet implementer and checked by the controller: M1 text kept; #1440's corrections re-applied where the merged code supports them; #1440's claim that `switch-project` is PLANNED dropped because the code implements it. This is a content change after the cycle-6 audit, so the cycle-6 proof is superseded. Owner decision: ONE fresh Grok 4.7 audit of the merged head (governing); Codex not launched (advisory via the PR connector); AGY not launched (quota until ≈2026-11-14). Re-frozen at 2479969fe.
+
+### Audit outcome at 2479969fe
+
+Grok 4.7 (governing route by owner decision, grok-cli/grok-4.7, one tool-less run at 2479969fe, started 2026-11-12T08:20:35Z, exit 0, marker echoed, init model grok-4.7, tools []): PASS_WITH_RISKS with 0 findings. It states the earlier Codex findings remain closed, that the merge of main lost no M1 claim, and lists 11 remaining risks, all pre-stated; on the item-20 follow-up (start/restart --dry-run persist port leases) it adds that the behaviour would be a medium in a follow-up because the CLI help says a dry run makes no registry writes. It did not list plan.md:17 as instruction-like content. Not reproduced on that route: the suite, the 36-function doctor test count, product_root() and the Restoring Postgres section (sources not embedded), hashes, lint/type results, live T1-T11. Codex audit route: NOT_RUN in cycle 7 (owner chose one Grok run; the Codex connector reviewed the frozen head and found no major issues). AGY: NOT_RUN (quota). Owner rulings on 2026-11-12: plan.md:17 is a benign planning-template header (this adjudicates the cycle-6 Codex NEEDS_SUPERVISOR, which had 0 findings); the dry-run lease persistence is an open follow-up outside this packet.
+
+### Audit (grok launched, codex and agy NOT_RUN, at 2479969f; observed identity UNKNOWN for all)
+
+| route | requested model | status | findings |
+|---|---|---|---|
+| agy | gemini-4-argon-high | NOT_RUN (not launched in cycles 4 to 7: the agy route failed on its individual quota at the cycle-3 freeze (HTTP 429 RESOURCE_EXHAUSTED 2026-11-09T04:43Z, resets ≈2026-11-14; review_bundle/cycle3-raw-agy-quota-error.json); the owner chose Grok as the governing route on 2026-11-09) | none |
+| grok | grok-4.7 | PASS_WITH_RISKS | none |
+| codex | gpt-6-astra | NOT_RUN (not launched in cycle 7: the owner chose ONE governing Grok 4.7 run; Codex stays advisory through the PR connector (a connector review is not an audit route and is recorded in the bots note, not here)) | none |

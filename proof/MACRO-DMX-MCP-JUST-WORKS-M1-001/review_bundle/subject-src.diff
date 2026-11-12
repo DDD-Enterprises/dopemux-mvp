@@ -437,7 +437,7 @@ index c4b8e570b..b36cc308d 100644
      if changed:
          settings_path.parent.mkdir(parents=True, exist_ok=True)
 diff --git a/src/dopemux/commands/mcp_commands.py b/src/dopemux/commands/mcp_commands.py
-index 235209dd8..dce412a3e 100644
+index 567523c30..682fbe7ab 100644
 --- a/src/dopemux/commands/mcp_commands.py
 +++ b/src/dopemux/commands/mcp_commands.py
 @@ -24,10 +24,10 @@ import subprocess
@@ -1118,7 +1118,7 @@ index 235209dd8..dce412a3e 100644
      envrc_path.write_text("\n".join(lines) + "\n")
  
  
-@@ -1390,12 +1781,12 @@ def _apply_in_repo_agent_configs(
+@@ -1402,12 +1793,12 @@ def _apply_in_repo_agent_configs(
          )
  
  
@@ -1134,7 +1134,7 @@ index 235209dd8..dce412a3e 100644
      identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
      try:
          identity = resolve_project_identity(cwd=repo_path, env=identity_env)
-@@ -1404,8 +1795,11 @@ def _ensure_context() -> tuple[Path, Any]:
+@@ -1416,8 +1807,11 @@ def _ensure_context() -> tuple[Path, Any]:
      return repo_path, identity
  
  
@@ -1148,7 +1148,7 @@ index 235209dd8..dce412a3e 100644
      if env_repo:
          repo_path = Path(env_repo).expanduser().resolve()
          if not repo_path.is_dir():
-@@ -1426,7 +1820,7 @@ def _ensure_fast_context() -> tuple[Path, Path]:
+@@ -1438,7 +1832,7 @@ def _ensure_fast_context() -> tuple[Path, Path]:
                  "set DOPEMUX_WORKSPACE_ROOT or run from the repository root."
              )
  
@@ -1157,7 +1157,7 @@ index 235209dd8..dce412a3e 100644
      if project_override:
          project_root = Path(project_override).expanduser().resolve()
          if not project_root.is_dir():
-@@ -1576,13 +1970,14 @@ def _report_ensure_problems(problems: List[str]) -> None:
+@@ -1588,13 +1982,14 @@ def _report_ensure_problems(problems: List[str]) -> None:
  
  
  @mcp.command("ensure")
@@ -1173,7 +1173,7 @@ index 235209dd8..dce412a3e 100644
      """
      🛠️ Stabilize Fleet: Check or remediate catalog-backed MCP prerequisites
  
-@@ -1600,9 +1995,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1612,9 +2007,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
  
      catalog = _load_catalog()
      if fast:
@@ -1185,7 +1185,7 @@ index 235209dd8..dce412a3e 100644
          project_root = identity.project_root
      problems = _ensure_fast_problems(catalog, repo_path, project_root)
      if problems:
-@@ -1656,6 +2051,107 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1668,6 +2063,107 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
      console.logger.info("[success]Full MCP ensure checks green.[/success]")
  
  
@@ -1293,7 +1293,7 @@ index 235209dd8..dce412a3e 100644
  @mcp.command("init")
  @click.option("--force", is_flag=True, help="Overwrite existing .mcp.json and env file without prompting.")
  @click.option("--with", "extra", multiple=True, help="Additional server name beyond catalog defaults (repeatable).")
-@@ -1668,7 +2164,15 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1680,7 +2176,15 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
          "profile core-code when omitted. Never all servers."
      ),
  )
@@ -1310,7 +1310,7 @@ index 235209dd8..dce412a3e 100644
      """
      🌱 Bootstrap Worktree: Scaffold .mcp.json + per-worktree env file
  
-@@ -1676,21 +2180,40 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1688,21 +2192,40 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
      per-worktree servers (default: compatibility profile ``core-code``) plus any
      `--with NAME` extras. Allocates ports deterministically from the worktree
      path so two worktrees never collide on the same host port.
@@ -1356,7 +1356,7 @@ index 235209dd8..dce412a3e 100644
  
      if catalog.get("profiles") or profile_name is not None:
          try:
-@@ -1778,7 +2301,8 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1790,7 +2313,8 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
          _atomic_write_json(mcp_json_path, config)
          wrote_mcp_json = True
  
@@ -1366,7 +1366,7 @@ index 235209dd8..dce412a3e 100644
  
      if wrote_mcp_json:
          console.logger.info(f"[success]Wrote {mcp_json_path}[/success]")
-@@ -1792,26 +2316,38 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1804,26 +2328,38 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
          for var, port in sorted(port_vars.items()):
              free = "[success]free[/success]" if _port_is_free(port) else "[warning]in use[/warning]"
              console.logger.info(f"[info]  {var}={port} ({free})[/info]")
@@ -1411,7 +1411,7 @@ index 235209dd8..dce412a3e 100644
      identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
      try:
          identity = resolve_project_identity(cwd=repo, env=identity_env)
-@@ -1972,6 +2508,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
+@@ -1984,6 +2520,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
      default=None,
      help="Target repo/worktree to diagnose (defaults to current git root). Works from any cwd.",
  )
@@ -1419,7 +1419,7 @@ index 235209dd8..dce412a3e 100644
  @click.option(
      "--json",
      "json_output",
-@@ -2004,6 +2541,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
+@@ -2016,6 +2553,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
  )
  def mcp_doctor_cmd(
      repo_arg: Optional[Path],
@@ -1427,7 +1427,7 @@ index 235209dd8..dce412a3e 100644
      json_output: bool,
      verbose: bool,
      skip_docker: bool,
-@@ -2036,17 +2574,18 @@ def mcp_doctor_cmd(
+@@ -2048,17 +2586,18 @@ def mcp_doctor_cmd(
              raise click.ClickException(
                  "--legacy does not support --repo; omit --legacy for repo-aware doctor."
              )
@@ -1448,7 +1448,7 @@ index 235209dd8..dce412a3e 100644
          if not repo:
              raise click.ClickException(
                  "Not inside a git repository. Pass --repo <path> to diagnose another project."
-@@ -2067,6 +2606,9 @@ def mcp_doctor_cmd(
+@@ -2079,6 +2618,9 @@ def mcp_doctor_cmd(
          compose_path=compose_candidate,
          skip_docker=skip_docker,
          process_env=dict(os.environ),
@@ -1458,7 +1458,7 @@ index 235209dd8..dce412a3e 100644
      )
  
      if json_output:
-@@ -2089,10 +2631,10 @@ def mcp_doctor_cmd(
+@@ -2116,10 +2658,10 @@ def mcp_doctor_cmd(
          sys.exit(report.exit_code)
  
  
@@ -1471,7 +1471,7 @@ index 235209dd8..dce412a3e 100644
      if not repo:
          raise click.ClickException("Not inside a git repository.")
  
-@@ -2100,7 +2642,7 @@ def _mcp_doctor_legacy() -> None:
+@@ -2127,7 +2669,7 @@ def _mcp_doctor_legacy() -> None:
      mcp_json_path = Path(repo) / PROJECT_MCP_FILENAME
      problems: List[str] = []
      try:
@@ -1480,7 +1480,7 @@ index 235209dd8..dce412a3e 100644
          identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
          identity = resolve_project_identity(cwd=repo, env=identity_env)
      except ProjectIdentityError as exc:
-@@ -2277,11 +2819,11 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
+@@ -2304,11 +2846,11 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
      return {k: v for k, v in entry.items() if k != "description"}
  
  
@@ -1495,7 +1495,7 @@ index 235209dd8..dce412a3e 100644
      if not repo:
          raise click.ClickException(
              "Not inside a git repository. Pass --repo <path> to target another project."
-@@ -2407,11 +2949,13 @@ def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
+@@ -2434,11 +2976,13 @@ def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
      default=None,
      help="Target repo/worktree (defaults to current git root).",
  )
@@ -1509,7 +1509,7 @@ index 235209dd8..dce412a3e 100644
      dry_run: bool,
      apply: bool,
      json_output: bool,
-@@ -2430,9 +2974,9 @@ def mcp_repair_config_cmd(
+@@ -2457,9 +3001,9 @@ def mcp_repair_config_cmd(
  
      from dopemux.mcp.config_repair import apply_repair, format_repair_human, plan_repair
  
@@ -1522,7 +1522,7 @@ index 235209dd8..dce412a3e 100644
      catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
  
      plan = plan_repair(
-@@ -2441,6 +2985,7 @@ def mcp_repair_config_cmd(
+@@ -2468,6 +3012,7 @@ def mcp_repair_config_cmd(
          dry_run=dry_run,
          catalog_paths=catalog_paths,
          process_env=dict(os.environ),
@@ -3035,7 +3035,7 @@ index 48d9bc05c..d07620bb1 100644
  
  def docker_image_inspect_command(image: str) -> List[str]:
 diff --git a/src/dopemux/mcp/doctor.py b/src/dopemux/mcp/doctor.py
-index 8e887efae..037e74f17 100644
+index 24bf4759b..c1df30791 100644
 --- a/src/dopemux/mcp/doctor.py
 +++ b/src/dopemux/mcp/doctor.py
 @@ -8,7 +8,9 @@ where labels exist. Never starts/stops containers or mutates config.
@@ -3299,8 +3299,8 @@ index 8e887efae..037e74f17 100644
      # --- Status summary findings ---
      status, exit_code = _summarize_status(findings)
      if status == "PASS":
-@@ -1368,6 +1558,18 @@ def format_human_summary(
-     """Compact human-readable doctor summary."""
+@@ -1377,6 +1567,18 @@ def format_human_summary(
+     """
      repo_name = Path(report.repo_arg).name or report.repo_arg
      lines = [f"MCP Doctor for {repo_name}: {report.status}"]
 +    for finding in report.findings:
@@ -3319,7 +3319,7 @@ index 8e887efae..037e74f17 100644
      priority = {"FAIL": 0, "WARN": 1, "UNKNOWN": 2, "INFO": 3}
      sorted_findings = sorted(
 diff --git a/src/dopemux/mcp/fleet_catalog.py b/src/dopemux/mcp/fleet_catalog.py
-index 1cf06deab..137518248 100644
+index 56878b589..65913d9cb 100644
 --- a/src/dopemux/mcp/fleet_catalog.py
 +++ b/src/dopemux/mcp/fleet_catalog.py
 @@ -11,7 +11,7 @@ import json
@@ -3378,7 +3378,7 @@ index 1cf06deab..137518248 100644
                  "type": "stdio",
                  "command": command,
                  "args": list(spec.get("args") or []),
-@@ -1352,6 +1376,7 @@ _V2_PASSTHROUGH_FIELDS: tuple[str, ...] = (
+@@ -1388,6 +1412,7 @@ _V2_PASSTHROUGH_FIELDS: tuple[str, ...] = (
      "requires_env",
      "optional_env",
      "doctor_args",
@@ -3386,7 +3386,7 @@ index 1cf06deab..137518248 100644
      "env_template",
      "description",
      "tool_aliases",
-@@ -1609,7 +1634,7 @@ _ENDPOINT_FIELDS: tuple[str, ...] = (
+@@ -1645,7 +1670,7 @@ _ENDPOINT_FIELDS: tuple[str, ...] = (
      "extra_port_vars",
      "docker_compose_service",
  )

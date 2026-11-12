@@ -347,7 +347,7 @@ index ff181944a..000000000
 -**Last Updated**: 2025-10-16
 -**Tested**: ui-build, dopemux-worktree-test worktrees
 diff --git a/.claude/claude.md b/.claude/claude.md
-index 6a1820990..64052b46e 100644
+index 6c26e685c..0748b178d 100644
 --- a/.claude/claude.md
 +++ b/.claude/claude.md
 @@ -190,7 +190,7 @@ All Dopemux MCPs documented in `~/.claude/MCP_*.md` (auto-imported):
@@ -359,7 +359,7 @@ index 6a1820990..64052b46e 100644
  
  **Orchestrator-coordination hooks** (ported from upstream `claude-plugins/task-orchestrator`, TP-CS-101 / Path B — see [docs/03-reference/orchestrator-integration/plugin-hooks-port.md](../docs/03-reference/orchestrator-integration/plugin-hooks-port.md)): available as `.claude/hooks/orchestrator_session_start.py` (SessionStart context inject), `orchestrator_post_edit_nudge.py` (PostToolUse edit nudge), `orchestrator_subagent_protocol.py` (SubagentStart agent-owned-phase protocol for implementation subagents), and `orchestrator_enforcement.py` (PreToolUse actor-attribution enforcement [dormant until `actor_authentication.enabled`], skill-invocation enforcement, and EnterPlanMode/ExitPlanMode guidance). These route through `native_hooks.py` when invoked and fail open (no-op) when their helpers or config are absent.
  
-@@ -250,17 +250,33 @@ When you need comprehensive details, refer to:
+@@ -250,19 +250,36 @@ When you need comprehensive details, refer to:
  | `dope-memory`, `task-orchestrator` | `http` | Streamable HTTP — `POST /mcp` |
  | `pal`, `serena`, `dope-context` | `http` | Streamable HTTP — `POST /mcp` |
  
@@ -378,6 +378,8 @@ index 6a1820990..64052b46e 100644
 +dopemux mcp init --repo ~/code/target-repo   # tenant + image pre-build + .mcp.json; commit .mcp.json
 +dopemux mcp doctor --repo ~/code/target-repo
  ```
+-`dopemux mcp start --repo` needs `DOPEMUX_MVP_ROOT` (or `DOPEMUX_PRODUCT_ROOT`) = the dopemux-mvp checkout when
+-`dopemux` is installed outside it (e.g. `~/.dopemux/venv`); see AGENTS.md §12.3.
 -
 -**Debug sequence**: source envrc → `dopemux mcp doctor` → curl probe → tail docker logs
 -→ `./mcp_server_health_report.sh`
@@ -391,6 +393,9 @@ index 6a1820990..64052b46e 100644
 +then `/mcp reconnect all`); later worktrees reuse them and reap never removes them. Sidecar
 +source edits that leave the Dockerfile unchanged need a forced rebuild (`docker image rm
 +dopemux-<service>:<key>`, see the how-to).
++A `dopemux` installed outside the checkout (e.g. `~/.dopemux/venv`) needs `DOPEMUX_MVP_ROOT` (or
++`DOPEMUX_PRODUCT_ROOT`) = the dopemux-mvp checkout (`product_root()` in `src/dopemux/mcp/docker_runtime.py`;
++`init`, `start` and `launch` all use it); see AGENTS.md §12.3.
 +Guide: `docs/02-how-to/mcp-setup-other-repos.md`.
 +
 +**Debug sequence**: run `dopemux mcp launch <name>` by hand in the checkout (prints the
@@ -399,17 +404,19 @@ index 6a1820990..64052b46e 100644
  
  **Sharing classes today**: `postgres-age`, `redis-primary`, `qdrant`, `dope-context`, `litellm`,
  `gpt-researcher`, `exa`, `desktop-commander`, bridges are host singletons (one process, shared).
-@@ -268,10 +284,10 @@ source .envrc.dopemux-mcp && dopemux mcp doctor
+@@ -270,11 +287,11 @@ source .envrc.dopemux-mcp && dopemux mcp doctor
  no stream isolation; its events get promoted into canonical work_log) — the REQUIRED target is project-scoped
- (design §10.4, gate P-21, not yet implemented). `conport`, `dope-memory`, `serena`
+ (design §10.4, gate P-21, not yet implemented). `conport`, `dope-memory`
  are still **worktree-scoped** (one container per worktree) pending identity gates — expect N worktrees to
--cost 3N containers until those land; ConPort's ruled end-state is **project-scoped**, never host-singleton
-+cost 3N containers until those land (the launcher entries reap idle or removed worktrees); ConPort's ruled end-state is **project-scoped**, never host-singleton
+-cost 2N containers until those land (`serena` is one container bound to dopemux-mvp, not per worktree); ConPort's ruled end-state is **project-scoped**, never host-singleton
++cost 2N containers until those land (`serena` is one container bound to dopemux-mvp, not per worktree; the launcher entries reap idle or removed worktrees); ConPort's ruled end-state is **project-scoped**, never host-singleton
  (§10.3). Never start fleet services outside `dopemux mcp` (no raw `docker compose up` / `docker run`). Full
--sharing-class table + command surface (`init`/`start`/`stop`/`doctor` implemented;
--`reconcile`/`adopt`/`migrate`/`switch-project` PLANNED — `switch-project` transitional only): AGENTS.md §12.6
-+sharing-class table + command surface (`init`/`start`/`stop`/`doctor`/`launch`/`switch-project`/`reap`
-+implemented — `switch-project` transitional; `reconcile`/`adopt`/`migrate` PLANNED): AGENTS.md §12.6
+-sharing-class table + command surface (`init`/`start`/`stop`/`doctor`/`repair-config`/`status`/`ensure`/`up`/`down` and
+-more implemented — see AGENTS.md §12.6; `reconcile` exists only as `leases reconcile` / `control-plane reconcile`;
+-`adopt`/`migrate`/`switch-project` PLANNED — `switch-project` transitional only): AGENTS.md §12.6
++sharing-class table + command surface (`init`/`start`/`stop`/`doctor`/`launch`/`switch-project`/`reap`/`repair-config`/`status`/`ensure`/`up`/`down` and
++more implemented — see AGENTS.md §12.6; `switch-project` transitional; `reconcile` exists only as `leases reconcile` / `registry reconcile` / `control-plane reconcile`;
++`adopt`/`migrate` PLANNED): AGENTS.md §12.6
  and `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (ACCEPTED with supervisor rulings 2026-07-28).
  
  **Runner memory identity (Wave 2A, AGENTS.md §12.7)**: dope-memory and ConPort take an auth
@@ -563,7 +570,7 @@ index a5ecd1ac1..09769fb28 100644
      }
    }
 diff --git a/AGENTS.md b/AGENTS.md
-index 38d198b2c..fe4ee061e 100644
+index 6ac88a300..a2f55889d 100644
 --- a/AGENTS.md
 +++ b/AGENTS.md
 @@ -264,6 +264,11 @@ Do not change transport types without reading the server source.  The mapping is
@@ -578,7 +585,7 @@ index 38d198b2c..fe4ee061e 100644
  **Critical invariant**: A `406 Not Acceptable: Client must accept text/event-stream`
  response to a `GET /mcp` is **correct server behaviour** for a Streamable HTTP
  endpoint.  It is NOT evidence that the server is SSE.  The fix is to use `POST`
-@@ -286,25 +291,46 @@ port = default_port_base + sha1(workspace_path)[:4] % 100
+@@ -286,31 +291,52 @@ port = default_port_base + sha1(workspace_path)[:4] % 100
  ### 12.3 Setting Up MCP in a New Repo
  
  ```bash
@@ -594,8 +601,7 @@ index 38d198b2c..fe4ee061e 100644
 +                                              # pre-builds images, writes .mcp.json
  ```
  
--For full guidance including manual (non-dopemux) setup and vanilla Claude Code:
--→ `docs/02-how-to/mcp-setup-other-repos.md`
+-`dopemux mcp start --repo <target>` finds the product `compose.yml` via `DOPEMUX_MVP_ROOT`
 +Nothing is typed per worktree and nothing is sourced: commit `.mcp.json`, and each session's
 +launchers (`dopemux mcp launch <name>`) find or start that worktree's sidecars. Identity comes
 +from git only; ambient `DOPEMUX_*` / `TASK_ORCHESTRATOR_*` variables are ignored unless a
@@ -610,6 +616,14 @@ index 38d198b2c..fe4ee061e 100644
 +checkout and Dockerfile version builds (`LAUNCH_IMAGE_BUILDING`, then `/mcp reconnect all`);
 +later worktrees reuse them.
 +
++`dopemux mcp init|start|launch` find the product `compose.yml` via `DOPEMUX_MVP_ROOT`
+ (or `DOPEMUX_PRODUCT_ROOT`), else the module's parent directories
+ (`src/dopemux/mcp/docker_runtime.py` `product_root()`). A `dopemux` installed outside the
+ checkout (e.g. `~/.dopemux/venv`) has no such ancestor: `export DOPEMUX_MVP_ROOT=<dopemux-mvp checkout>`
+ first, or `start` fails with `PRODUCT_ROOT_UNKNOWN`. Harmless for the repo `.venv` CLI.
+ 
+-For full guidance including manual (non-dopemux) setup and vanilla Claude Code:
+-→ `docs/02-how-to/mcp-setup-other-repos.md`
 +M1 limits: mid-session `EnterWorktree` needs `/mcp reconnect all`; one orchestrator per host;
 +branches that predate the launcher keep URL entries; Codex is not rendered.
 +
@@ -635,17 +649,22 @@ index 38d198b2c..fe4ee061e 100644
     ```bash
     # Streamable HTTP (dope-memory, task-orchestrator, pal, serena):
     curl -X POST http://localhost:$DOPE_MEMORY_PORT/mcp \
-@@ -379,12 +405,12 @@ Canonical command surface (`dopemux mcp <verb>`):
+@@ -385,15 +411,15 @@ Canonical command surface (`dopemux mcp <verb>`):
  
  | Command | Status |
  |---|---|
--| `init`, `start`, `stop`, `doctor` | **IMPLEMENTED** — safe to invoke today |
--| `reconcile`, `adopt`, `migrate`, `switch-project` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
-+| `init` (`--repo`), `start`, `stop`, `doctor`, `launch`, `switch-project`, `reap` | **IMPLEMENTED** — safe to invoke today. `launch <name>` is what `.mcp.json` entries run (MCP clients start it); `switch-project` is the transitional move of the single task-orchestrator (`:7890`); `reap` is dry-run by default (`--apply` acts, `--json` for machines) |
-+| `reconcile`, `adopt`, `migrate` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
+-| `init`, `start`, `stop`, `doctor`, `repair-config`, `status`, `restart`, `ensure`, `add`, `remove`, `list`, `logs`, `up`, `down`, `start-all`, `generate`, `sync-globals`, `snapshot-tools` | **IMPLEMENTED** — verbs registered in `src/dopemux/commands/mcp_commands.py`; `dopemux mcp --help` is authoritative |
+-| `fleet`, `profile`, `leases`, `control-plane` | **IMPLEMENTED** (command groups) |
+-| `reconcile` | **PARTIAL** — no top-level `mcp reconcile`; exists only as `mcp leases reconcile` and `mcp control-plane reconcile` |
+-| `adopt`, `migrate`, `switch-project` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
++| `init` (`--repo`), `start`, `stop`, `doctor`, `launch`, `switch-project`, `reap`, `repair-config`, `status`, `restart`, `ensure`, `add`, `remove`, `list`, `logs`, `up`, `down`, `start-all`, `generate`, `sync-globals`, `snapshot-tools` | **IMPLEMENTED** — verbs registered in `src/dopemux/commands/mcp_commands.py`; `dopemux mcp --help` is authoritative. `launch <name>` is what `.mcp.json` entries run (MCP clients start it); `switch-project` is the transitional move of the single task-orchestrator (`:7890`); `reap` is dry-run by default (`--apply` acts, `--json` for machines) |
++| `fleet`, `profile`, `leases`, `registry`, `control-plane` | **IMPLEMENTED** (command groups) |
++| `reconcile` | **PARTIAL** — no top-level `mcp reconcile`; exists only as `mcp leases reconcile`, `mcp registry reconcile` and `mcp control-plane reconcile` |
++| `adopt`, `migrate` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
  
  Never start fleet services outside `dopemux mcp` (compose/docker-run/shell wrappers are being removed under
- design packet P-22). While ConPort/dope-memory/serena remain worktree-scoped, N worktrees cost 3N containers —
+ design packet P-22). While ConPort/dope-memory remain worktree-scoped, N worktrees cost 2N containers
+ (conport, dope-memory; serena is one container bound to dopemux-mvp) —
 -this is expected, not a bug, until the gates above land.
 +this is expected, not a bug, until the gates above land. Sidecars of removed or idle worktrees are reaped (`dopemux mcp reap`, §12.3).
  
@@ -653,10 +672,10 @@ index 38d198b2c..fe4ee061e 100644
  
 diff --git a/claudedocs/mcp-just-works-design-2026-11-05.md b/claudedocs/mcp-just-works-design-2026-11-05.md
 new file mode 100644
-index 000000000..95b00645a
+index 000000000..e68300771
 --- /dev/null
 +++ b/claudedocs/mcp-just-works-design-2026-11-05.md
-@@ -0,0 +1,316 @@
+@@ -0,0 +1,317 @@
 +---
 +id: mcp-just-works-design-2026-11-05
 +title: Dopemux MCP "Just Works" Design — Milestone 1 (any checkout, zero typing)
@@ -973,6 +992,7 @@ index 000000000..95b00645a
 +- **Doctor port findings are re-evaluated after allocation (cycle 4, Codex connector review of `83b468e71`).** The doctor preflight inspects the envrc ports before `_resolve_ports` may lease replacements, so for `start`/`restart` its port-dependent findings (`PORT_RESERVED_COLLISION`, `PORT_INTRA_CONFIG_COLLISION`, `PORT_OWNED_BY_OTHER_PROJECT`, `DOCKER_CONTAINER_WRONG_PROJECT`, `DOCKER_CONTAINER_UNLABELED_UNKNOWN`, `DOCKER_CONTAINER_PORT_COLLISION`) are no longer carried as blockers; they are recorded as `DOCTOR_PORT_FINDING_REEVALUATED` INFO entries in the preflight facts (visible on blocked results; a successful start's output lists no preflight warnings, which is pre-existing `_start_services` behaviour) and the lifecycle's own collision checks against the resolved ports (plus `PORT_ALLOCATION_BLOCKED` when no free port exists) decide. After `init` → `stop` a foreign container on the stale envrc port no longer blocks a start that re-leased a free port. `stop`/`status` keep the doctor findings as before. The lifecycle's collision check now applies the launcher's ownership rule to any managed worktree-scoped container holding a resolved port: a same-project container of another worktree (different `dopemux.worktree_hash`), or a managed container without a project id whose project root does not match, is a `DOCKER_CONTAINER_PORT_COLLISION`; containers dopemux itself labels are therefore re-checked against the resolved ports, while a managed container without dopemux's project labels (accepted on compose evidence) is not, and only `dopemux mcp doctor` reports those. A project-scoped task-orchestrator container started from another worktree of the same project is no longer blocked by the doctor's workspace mismatch (the orchestrator gate under the reserved lock decides).
 +- **Cycle 5 narrows the Task F re-evaluation to one invariant (Codex audit at `fc591cba1`).** For `start`/`restart` every doctor blocker is carried except a `DOCKER_CONTAINER_*` finding whose container neither publishes a port in the resolved port map nor bears one of this run's expected container names (that one becomes a `DOCTOR_PORT_FINDING_REEVALUATED` INFO entry), and the resolved port map is validated: two selected services on one port or a sidecar on a reserved singleton port block as `PORT_INTRA_CONFIG_COLLISION` / `PORT_RESERVED_COLLISION` even when `_resolve_ports` retained existing leases. The `PORT_*` doctor codes are no longer dropped. Consequently the two behaviour changes recorded in the previous bullet — a managed container with only compose labels holding our expected name, and a project-scoped task-orchestrator container started from another worktree of the same project — block again exactly as on main; the stale-envrc-port recovery (the connector finding) is kept.
 +- **Cycle 5 revert: the automatic-reap change for marker-only runtime dirs on an empty registry (`380c2c52c`) was reverted (`2bbf08f65`).** The independent audit found that it covered an empty registry file but not an absent one (on a fresh host `RuntimeRegistry.load()` reports MISSING and `plan_reap` plans nothing unless the registry is OK), so the Codex PR bot's scenario — launcher-marked runtime dirs of removed worktrees left by build-only launches never reaching the automatic reap while the registry lists no instance — stayed open, and that marker discovery ran unbounded by the automatic reap's deadline or a count cap. Rather than a fourth change to the reap preflight in this PR, the owner chose the revert; the finding is an open follow-up outside this packet. The explicit `dopemux mcp reap` reaches those dirs only once the runtime registry file exists (a non-dry-run `start`, including a launcher's cold start, creates it); on a host where only build-only launches ran there is no such file, so it plans nothing either, as the how-to's Cleanup paragraph says ("no run sees it while that registry file is missing or unreadable").
++- **Cycle 7 open follow-up: `start --dry-run` and `restart --dry-run` persist port leases (Codex connector review of `f6a8e4401`, `lifecycle.py:1081`).** `_mutable_facts` resolves ports with `allocate=True` for `start` and `restart` whether or not the run is a dry run, and `_resolve_ports` then releases conflicting leases, saves the lease registry and calls the allocator with persistence on. A plan-only run therefore creates the lease registry file if it is absent and leaves active leases for the selected lease-managed services, and it can replace an envrc port that another worktree has leased. The behaviour predates the merge of main (the code is unchanged since `40ea89c24`), and five tests in `tests/unit/test_mcp_lifecycle_ports_from_leases.py` exercise allocation through dry runs and assert on the persisted leases, so changing it means threading the dry-run flag into port resolution, computing a non-persisting preview and rewriting those tests. The owner chose not to make that change in this PR; it is an open follow-up outside this packet. Until then a dry run reserves the ports the real start would take; what later releases a lease that only a dry run created was not examined.
 diff --git a/claudedocs/mcp-just-works-m1-plan-2026-11-05.md b/claudedocs/mcp-just-works-m1-plan-2026-11-05.md
 new file mode 100644
 index 000000000..fad1fd378
@@ -1417,10 +1437,10 @@ index 000000000..f83f6d0d4
 +- Project-scope `.mcp.json` servers need the usual one-time approval before Claude Code starts them; headless `-p` runs without approval do not start them.
 +- Codex and the mid-session `EnterWorktree` case remain unmeasured (D11 still applies: entering a worktree mid-session keeps the original checkout's launchers until `/mcp reconnect`).
 diff --git a/docs/02-how-to/mcp-setup-other-repos.md b/docs/02-how-to/mcp-setup-other-repos.md
-index 9c4999ba5..2d78b82d5 100644
+index 88e3c8229..fccc9d5c8 100644
 --- a/docs/02-how-to/mcp-setup-other-repos.md
 +++ b/docs/02-how-to/mcp-setup-other-repos.md
-@@ -3,254 +3,471 @@ id: mcp-setup-other-repos
+@@ -3,175 +3,388 @@ id: mcp-setup-other-repos
  title: Running Dopemux MCP Servers in Other Projects
  type: how-to
  owner: dopemux-infra
@@ -1478,59 +1498,48 @@ index 9c4999ba5..2d78b82d5 100644
  > `cd`ing into `dopemux-mvp` and injecting that repo's env into `docker compose up`.
  > That pattern can replace primary `mcp-conport` and bind the wrong `.dopemux` volume.
 -> Always use `dopemux mcp start --repo <target>` from the safe flow above.
--
-----
--
--## Prerequisites
--
--1. **Shared infrastructure** (postgres, redis, etc.) is already running from the primary
--   dopemux stack once. Sidecar start uses `--no-deps` and does not re-home those services.
--2. **Docker is running**.
--3. **Target workspace** is a git repository (`dopemux mcp init` requires git).
--   If it is not a git repo yet, `git init` first.
 +> Let the launcher (or `dopemux mcp start --repo <target>`) start sidecars.
  
  ---
  
--## Part 1: Using Dopemux (Recommended)
+-## Prerequisites
 -
--### Step 1 — Navigate to your project
+-1. **Shared infrastructure** (postgres, redis, etc.) is already running from the primary
+-   dopemux stack once. Sidecar start uses `--no-deps` and does not re-home those services.
+-   Postgres is **not** in `mcp_catalog.yaml`, so `dopemux mcp ensure --full` does not start
+-   it; see [Restoring Postgres](#restoring-postgres).
+-2. **Docker is running**.
+-3. **Target workspace** is a git repository (`dopemux mcp init` requires git).
+-   If it is not a git repo yet, `git init` first.
+-4. **`DOPEMUX_MVP_ROOT`** (alias `DOPEMUX_PRODUCT_ROOT`) points at the dopemux-mvp
+-   checkout **when `dopemux` is installed outside it** (for example `~/.dopemux/venv`).
+-   `dopemux mcp start --repo` locates the product `compose.yml` from this variable, else
+-   from the module's parent directories (`product_root()` in
+-   `src/dopemux/mcp/docker_runtime.py`). An install outside the checkout has no such
+-   ancestor and fails with `PRODUCT_ROOT_UNKNOWN`. Harmless to set when running the
+-   repo's own `.venv` CLI.
 -
--```bash
--cd ~/code/your-other-project   # must be a git repo
--```
+-   ```bash
+-   export DOPEMUX_MVP_ROOT=~/code/dopemux-mvp
+-   ```
 +## How it works
  
--### Step 2 — Initialise MCP config
+----
 +`dopemux mcp init` renders each per-worktree server as a **stdio launcher entry**, not as a
 +URL:
  
--```bash
--dopemux mcp init
+-## Part 1: Using Dopemux (Recommended)
 +```json
 +"conport": {
 +  "type": "stdio",
 +  "command": "${DOPEMUX_BIN:-dopemux}",
 +  "args": ["mcp", "launch", "conport"]
 +}
- ```
++```
  
--This command:
--- Reads the catalog (`mcp_catalog.yaml` or bundled default)
--- Generates `.mcp.json` with catalog-owned services (`conport`, `dope-memory`,
--  `task-orchestrator`) using `${VAR}` placeholders
--- Writes `.envrc.dopemux-mcp` with deterministic ports for this workspace path
+-### Step 1 — Navigate to your project
 +When the client connects, `dopemux mcp launch <name>`:
- 
--> [!NOTE]
--> **Port allocation (Packet 004):** preferred ports still use
--> `base + sha1(path)[:4] % 100` (or existing envrc values), but assignment goes
--> through the **lease registry** (`~/.dopemux/mcp/runtime/port-leases.json`).
--> Reserved singletons, active foreign leases, and live TCP sockets force **rebind**
--> to the next safe port. Override registry path with
--> `DOPEMUX_MCP_PORT_LEASE_REGISTRY` (tests must never use the real home registry).
--> `wrapper-singleton` services (e.g. `task-orchestrator` on `7890`) are fixed —
--> free/same-project reuse or **block**, never rebind.
++
 +1. takes the git top-level of its working directory (Claude Code starts the child in the
 +   session directory, so that is the checkout you opened the session in) and refuses
 +   outside git, or when `.mcp.json` has no dopemux launcher entry for that server;
@@ -1544,67 +1553,41 @@ index 9c4999ba5..2d78b82d5 100644
 +   unchanged, only the client side is stdio). Before every backend connect, the first one
 +   included, and again right after each `initialize`, the proxy re-proves the backend's owner
 +   from Docker labels (see [Sidecar restarts](#sidecar-restarts)).
- 
--### Step 3 — Repair config (previewable)
++
 +Refusals are one line `CODE: remedy` on stderr with exit code 3. A launcher stopped with
 +SIGTERM or SIGHUP still removes its attach record (exit 143 or 129).
- 
--```bash
--dopemux mcp repair-config --dry-run --json   # plan only; writes nothing
--dopemux mcp repair-config --apply            # local files only
--```
--
--What `repair-config` does:
++
 +### Host prerequisite: one stable `dopemux` on PATH
- 
--- Fixes catalog-owned transport mismatches (e.g. dope-memory / task-orchestrator
--  must be `"type": "http"`, conport stays `"sse"`)
--- Regenerates or patches `.envrc.dopemux-mcp` using the same allocator as `init`
--- Creates/updates `.claude/WORKTREE_MCP_SETUP.md` (agent bootstrap)
--- **Preserves** unknown/custom `.mcp.json` entries
--- **Never** mutates `~/.claude.json` (use `dopemux mcp sync-globals` explicitly)
--- **Never** starts or stops containers
++
 +Every launcher entry runs `${DOPEMUX_BIN:-dopemux}`. The `dopemux` on PATH must be an
 +editable install of your dopemux-mvp checkout; a stale copy would break every project at
 +once. `dopemux mcp doctor` reports `DOPEMUX_BIN_NOT_EDITABLE` and prints the exact remedy,
 +`uv tool install --editable <your dopemux-mvp checkout>`. To point one session at a different
 +binary without editing the tracked `.mcp.json`, export `DOPEMUX_BIN=/path/to/dopemux`
 +before starting the client.
- 
--### Step 4 — Start sidecars (repo-aware reconciler)
++
++`dopemux mcp init`, `start` and `launch` locate the dopemux-mvp product `compose.yml` from
++**`DOPEMUX_MVP_ROOT`** (alias `DOPEMUX_PRODUCT_ROOT`), else from the module's parent
++directories (`product_root()` in `src/dopemux/mcp/docker_runtime.py`). With the editable
++install above the parent directories are the checkout, so nothing needs setting. A
++`dopemux` installed outside the checkout (for example `~/.dopemux/venv`) has no such
++ancestor and fails with `PRODUCT_ROOT_UNKNOWN` (`start`) or `IMAGE_BUILD_FAILED` (`init`);
++`export DOPEMUX_MVP_ROOT=~/code/dopemux-mvp` first. It is harmless to set when running the
++repo's own `.venv` CLI.
++
++The shared infrastructure (postgres, redis, etc.) must already be running from the primary
++dopemux stack; sidecar start uses `--no-deps` and does not re-home it. Postgres is **not**
++in `mcp_catalog.yaml`, so `dopemux mcp ensure --full` does not start it; see
++[Restoring Postgres](#restoring-postgres).
++
 +### Once per new project: `dopemux mcp init --repo <path>`
  
  ```bash
--dopemux mcp start
--# or from any cwd:
--dopemux mcp start --repo ~/code/your-other-project
--dopemux mcp start --repo ~/code/your-other-project --dry-run --json
+-cd ~/code/your-other-project   # must be a git repo
 +dopemux mcp init --repo ~/code/your-project
  ```
  
--What `mcp start` does:
--
--- Runs doctor preflight; **blocks** on transport mismatch, unlabeled port owners,
--  wrong-project containers
--- Generates compose override with **unique container names** and **absolute** target
--  `.dopemux` volume
--- Sets `dopemux.managed=true` + project labels
--- Writes operational registry: `~/.dopemux/mcp/runtime/instances.json`
--- Does **not** adopt unlabeled containers
--- **First start of a project builds its images.** `conport` and `dope-memory` use
--  `build:` with no `image:` in `compose.yml`, so each project needs its own
--  `<project>-<service>` image (about 1.6 GB and 1.9 GB). When that image is absent,
--  `mcp start` runs `docker compose build <service>` before `up` (this takes minutes
--  and shows up as `IMAGE_MISSING_WILL_BUILD` in `--dry-run`). Budgets:
--  `DOPEMUX_MCP_BUILD_TIMEOUT_SECS` (default 1800) for the build and
--  `DOPEMUX_MCP_UP_TIMEOUT_SECS` (default 180) for `up`. A failed build stops that
--  service before `up` (`IMAGE_BUILD_FAILED`).
--- `HOST_CODE_PARENT_DIR` / `HOST_PROJECT_RELATIVE_PATH` (required by `compose.yml`
--  interpolation) default to the dopemux-mvp checkout's parent directory and
--  basename when unset; explicit values are kept. Commands that can start
--  `dope-context` (`mcp up` with it in the service set, `mcp start-all`,
--  `mcp ensure --full`) do not apply the defaults, so its `/workspaces` mount
--  still fails closed until you export both variables.
+-### Step 2 — Initialise MCP config
 +Run it from any directory; `--repo` names the target (default: the git checkout of the
 +current directory; any directory inside a checkout is accepted and normalized to its root). It:
 +
@@ -1654,13 +1637,15 @@ index 9c4999ba5..2d78b82d5 100644
 +2.1.318) and hides the stderr remedy. To see the code and remedy, run the launcher by hand from the checkout:
  
  ```bash
--dopemux mcp status --repo ~/code/your-other-project --json
--dopemux mcp stop --repo ~/code/your-other-project
--# Compatibility: mcp up/down --repo → start/stop
+-dopemux mcp init
 +cd ~/code/your-project && dopemux mcp launch conport
  ```
  
--### Step 5 — Source env and verify
+-This command:
+-- Reads the catalog (`mcp_catalog.yaml` or bundled default)
+-- Generates `.mcp.json` with catalog-owned services (`conport`, `dope-memory`,
+-  `task-orchestrator`) using `${VAR}` placeholders
+-- Writes `.envrc.dopemux-mcp` with deterministic ports for this workspace path
 +(A successful run waits for an MCP client on stdin; the SDK's own INFO lines are kept off
 +stderr. Press Ctrl-C.)
 +
@@ -1691,37 +1676,37 @@ index 9c4999ba5..2d78b82d5 100644
 +`CONPORT_TENANT_UNKNOWN_HISTORY`, `CONPORT_TENANT_GATE_FAILED`); others surface through
 +`LAUNCH_START_FAILED` or `dopemux mcp doctor`.
  
--```bash
--source .envrc.dopemux-mcp
--# or: echo 'source .envrc.dopemux-mcp' >> .envrc && direnv allow
+-> [!NOTE]
+-> **Port allocation (Packet 004):** preferred ports still use
+-> `base + sha1(path)[:4] % 100` (or existing envrc values), but assignment goes
+-> through the **lease registry** (`~/.dopemux/mcp/runtime/port-leases.json`).
+-> Reserved singletons, active foreign leases, and live TCP sockets force **rebind**
+-> to the next safe port. Override registry path with
+-> `DOPEMUX_MCP_PORT_LEASE_REGISTRY` (tests must never use the real home registry).
+-> `wrapper-singleton` services (e.g. `task-orchestrator` on `7890`) are fixed —
+-> free/same-project reuse or **block**, never rebind.
 +---
- 
--dopemux mcp doctor --repo ~/code/your-other-project
--dopemux mcp status --repo ~/code/your-other-project
--```
++
 +## The task-orchestrator is one per host: `switch-project`
- 
--Ownership is proven by labels/registry/probes — not by "port is listening" alone.
++
 +The task-orchestrator listens on the fixed port `7890`, and one project owns it at a time.
 +Ownership is proven from the Docker labels of the container that publishes `7890`, never from
 +"the port answers". A launcher in a project that does not own it refuses with
 +`TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT`; it never stops another project's
 +orchestrator. `conport` and `dope-memory` are unaffected.
  
--### Step 6 — Open Claude Code (or agy)
+-### Step 3 — Repair config (previewable)
 +To move the orchestrator to the project you are in:
  
  ```bash
--claude    # Claude Code
--# or
--agy       # Antigravity CLI
+-dopemux mcp repair-config --dry-run --json   # plan only; writes nothing
+-dopemux mcp repair-config --apply            # local files only
 +dopemux mcp switch-project            # asks before stopping the current owner
 +dopemux mcp switch-project --yes      # no prompt
 +dopemux mcp switch-project --repo ~/code/other-project
  ```
  
--Both clients read `.mcp.json` at session startup and expand `${VAR:-default}` from the
--environment.
+-What `repair-config` does:
 +Then run `/mcp reconnect all` in the session. The command refuses when `:7890` is held by
 +anything that is not a managed task-orchestrator container. It stops and removes the old
 +owner's container with `docker stop` and `docker rm` under the host-wide `:7890` lock, marks
@@ -1730,30 +1715,64 @@ index 9c4999ba5..2d78b82d5 100644
 +`TASK_ORCHESTRATOR_START_BLOCKED_WRONG_PROJECT` on its next request instead of being served by
 +the new owner.
  
- ---
+-- Fixes catalog-owned transport mismatches (e.g. dope-memory / task-orchestrator
+-  must be `"type": "http"`, conport stays `"sse"`)
+-- Regenerates or patches `.envrc.dopemux-mcp` using the same allocator as `init`
+-- Creates/updates `.claude/WORKTREE_MCP_SETUP.md` (agent bootstrap)
+-- **Preserves** unknown/custom `.mcp.json` entries
+-- **Never** mutates `~/.claude.json` (use `dopemux mcp sync-globals` explicitly)
+-- **Never** starts or stops containers
++---
  
--## Global singletons vs local project services
+-### Step 4 — Start sidecars (repo-aware reconciler)
 +## Cleanup: `dopemux mcp reap`
  
--| Surface | Command | Mutates |
--|---------|---------|---------|
--| Local `.mcp.json` + `.envrc.dopemux-mcp` | `mcp init`, `mcp repair-config` | Target repo only |
--| Global `~/.claude.json` singletons | `mcp sync-globals` (explicit `--apply`) | Home global config |
--| Runtime containers | `mcp start` / `stop` / `status` | Docker + runtime registry |
+-```bash
+-dopemux mcp start
+-# or from any cwd:
+-dopemux mcp start --repo ~/code/your-other-project
+-dopemux mcp start --repo ~/code/your-other-project --dry-run --json
+-```
+-
+-What `mcp start` does:
+-
+-- Runs doctor preflight; **blocks** on transport mismatch, unlabeled port owners,
+-  wrong-project containers
+-- Generates compose override with **unique container names** and **absolute** target
+-  `.dopemux` volume
+-- Sets `dopemux.managed=true` + project labels
+-- Writes operational registry: `~/.dopemux/mcp/runtime/instances.json`
+-- Does **not** adopt unlabeled containers
+-- **First start of a project builds its images.** `conport` and `dope-memory` use
+-  `build:` with no `image:` in `compose.yml`, so each project needs its own
+-  `<project>-<service>` image (about 1.6 GB and 1.9 GB). When that image is absent,
+-  `mcp start` runs `docker compose build <service>` before `up` (this takes minutes
+-  and shows up as `IMAGE_MISSING_WILL_BUILD` in `--dry-run`). Budgets:
+-  `DOPEMUX_MCP_BUILD_TIMEOUT_SECS` (default 1800) for the build and
+-  `DOPEMUX_MCP_UP_TIMEOUT_SECS` (default 180) for `up`. A failed build stops that
+-  service before `up` (`IMAGE_BUILD_FAILED`).
+-- `HOST_CODE_PARENT_DIR` / `HOST_PROJECT_RELATIVE_PATH` (required by `compose.yml`
+-  interpolation) default to the dopemux-mvp checkout's parent directory and
+-  basename when unset; explicit values are kept. Commands that can start
+-  `dope-context` (`mcp up` with it in the service set, `mcp start-all`,
+-  `mcp ensure --full`) do not apply the defaults, so its `/workspaces` mount
+-  still fails closed until you export both variables.
 +Each connected launcher leaves an attach record under
 +`~/.dopemux/mcp/runtime/<slug>-<worktree-hash>/attached/`. A worktree's sidecars are reaped
 +when no launcher is attached **and** either its directory no longer exists or it has been idle
 +for 20 minutes since the last launcher detached, and never while a detached image build is
 +running in its runtime dir.
  
--`repair-config` does **not** call `sync-globals`. Keep local ConPort/dope-memory in the
--target worktree; do not duplicate them into global config.
-+```bash
+ ```bash
+-dopemux mcp status --repo ~/code/your-other-project --json
+-dopemux mcp stop --repo ~/code/your-other-project
+-# Compatibility: mcp up/down --repo → start/stop
 +dopemux mcp reap                 # dry run (default): lists what would be reaped
 +dopemux mcp reap --apply         # stop and remove those containers, release leases, remove runtime dir
 +dopemux mcp reap --json          # machine-readable output (stdout is pure JSON)
-+```
-+
+ ```
+ 
+-### Step 5 — Source env and verify
 +Safety rules: containers are matched by `dopemux.managed`, `dopemux.project_id` and
 +`dopemux.worktree_hash` labels plus a runtime-registry entry; `project` and `singleton`
 +scope containers (the task-orchestrator, host singletons) are never touched.
@@ -1827,9 +1846,14 @@ index 9c4999ba5..2d78b82d5 100644
 +automatic runs see it only while the runtime registry lists at least one instance (no run sees
 +it while that registry file is missing or unreadable).
  
- ---
+-```bash
+-source .envrc.dopemux-mcp
+-# or: echo 'source .envrc.dopemux-mcp' >> .envrc && direnv allow
++---
  
--## Fleet / many worktrees
+-dopemux mcp doctor --repo ~/code/your-other-project
+-dopemux mcp status --repo ~/code/your-other-project
+-```
 +## ConPort tenants
 +
 +ConPort stores its data per project. On a project's first start, the credentials are resolved in
@@ -1861,15 +1885,10 @@ index 9c4999ba5..2d78b82d5 100644
 +created and skipped; the re-runnable ones are simply replayed, which also completes one a
 +kill left half applied.
  
--```bash
--dopemux mcp fleet init --repo ~/code/your-project \
--  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature \
--  --dry-run --json
+-Ownership is proven by labels/registry/probes — not by "port is listening" alone.
 +---
  
--dopemux mcp fleet init --repo ~/code/your-project \
--  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature \
--  --apply
+-### Step 6 — Open Claude Code (or agy)
 +## The env file is informational
 +
 +`.envrc.dopemux-mcp` is still written by `init`, so humans can read the ports and ids, and
@@ -1895,13 +1914,15 @@ index 9c4999ba5..2d78b82d5 100644
 +The legacy cwd-compose forms (`dopemux mcp up|down|logs` without `--repo`) still run on your
 +shell environment; they are not part of this recipe.
  
--dopemux mcp fleet doctor --repo ~/code/your-project \
--  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature \
--  --json
+-```bash
+-claude    # Claude Code
+-# or
+-agy       # Antigravity CLI
 -```
 +---
  
--Fleet commands never start containers and never modify `~/.claude.json`.
+-Both clients read `.mcp.json` at session startup and expand `${VAR:-default}` from the
+-environment.
 +## Sidecar restarts
 +
 +If a backend sidecar restarts during a session, the proxy reconnects and resends the rejected
@@ -1927,37 +1948,34 @@ index 9c4999ba5..2d78b82d5 100644
  
  ---
  
--## Current limitations
+@@ -191,95 +404,100 @@ The compose project is `dopemux` and data lives in the named volume
+ 
+ ---
+ 
+-## Global singletons vs local project services
 +## Other commands you may still use
  
--* Preferred ports still derive from hash `%100` — leases rebind on conflict (no longer silent).
--* **Task Orchestrator fixed port `7890` (Packet 005):** port-alive is **not** ownership.
--  Doctor/start prove identity via HTTP `/info`, Docker labels, wrapper metadata, and
--  registry. Wrong-project TO → **FAIL / start blocked**. Unknown owner → not PASS;
--  start blocked. Foreign TO is never stopped automatically. Concurrent multi-project
--  TO still requires only one owner of `7890` at a time.
--* Unlabeled existing containers are not adopted automatically.
--* Lease prune is not automatic; doctor may report `LEASE_STALE` without deleting.
-+| Surface | Command | Mutates |
-+|---------|---------|---------|
+ | Surface | Command | Mutates |
+ |---------|---------|---------|
+-| Local `.mcp.json` + `.envrc.dopemux-mcp` | `mcp init`, `mcp repair-config` | Target repo only |
 +| Local `.mcp.json` + `.envrc.dopemux-mcp` | `mcp init`, `mcp repair-config --dry-run` / `--apply` | Target repo only |
 +| Sidecars by hand | `mcp start`, `mcp stop`, `mcp restart` (each takes `--repo`, `--services`, `--dry-run`, `--json`, `--trust-env`); `mcp status` (`--repo`, `--json`, `--legacy-compose`, `--trust-env`) | Docker + runtime registry |
 +| Orchestrator owner | `mcp switch-project` | The container on `:7890` |
 +| Idle or removed worktrees | `mcp reap` | Containers, leases, runtime dirs |
-+| Global `~/.claude.json` singletons | `mcp sync-globals` (explicit `--apply`) | Home global config |
+ | Global `~/.claude.json` singletons | `mcp sync-globals` (explicit `--apply`) | Home global config |
+-| Runtime containers | `mcp start` / `stop` / `status` | Docker + runtime registry |
  
-----
+-`repair-config` does **not** call `sync-globals`. Keep local ConPort/dope-memory in the
+-target worktree; do not duplicate them into global config.
 +`repair-config` repairs a hand-edited or pre-launcher `.mcp.json` back to the catalog shape,
 +preserves unknown custom entries, never starts or stops containers and never touches
 +`~/.claude.json`. It also writes a short agent note to `.claude/WORKTREE_MCP_SETUP.md` in the target repo. Target repos do not need their own `compose.yml`; `mcp start` is home-aware
 +(labeled sidecars plus the runtime registry at `~/.dopemux/mcp/runtime/instances.json`).
  
--## Part 2: Manual Setup (Without dopemux CLI)
+----
 +Notes for `mcp start`:
  
--Use this approach when you cannot or don't want to use `dopemux mcp init`, or when
--you need to wire MCP into a non-git directory, a CI environment, or a vanilla
--Claude Code project.
+-## Fleet / many worktrees
 +- It runs a doctor preflight and **blocks** on unlabeled port owners and wrong-project
 +  containers; it does not adopt unlabeled containers.
 +- `HOST_CODE_PARENT_DIR` / `HOST_PROJECT_RELATIVE_PATH` (required by `compose.yml`
@@ -1969,7 +1987,10 @@ index 9c4999ba5..2d78b82d5 100644
 +  `DOPEMUX_MCP_BUILD_TIMEOUT_SECS` (default 1800) and `DOPEMUX_MCP_UP_TIMEOUT_SECS`
 +  (default 180). A failed build stops that service before `up` (`IMAGE_BUILD_FAILED`).
  
--### Step 1 — Pick ports
+-```bash
+-dopemux mcp fleet init --repo ~/code/your-project \
+-  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature \
+-  --dry-run --json
 +> [!NOTE]
 +> **Port allocation:** preferred ports use `base + sha1(path)[:4] % 100`, but assignment goes
 +> through the **lease registry** (`~/.dopemux/mcp/runtime/port-leases.json`). Reserved
@@ -1978,34 +1999,35 @@ index 9c4999ba5..2d78b82d5 100644
 +> use the real home registry). `wrapper-singleton` services (`task-orchestrator` on `7890`)
 +> are fixed: free or same-project reuse, or **block**; never rebind.
  
--Choose ports that don't collide with any running services.  Recommended ranges:
--- `conport`: HTTP `304X`, MCP `304X+1`
--- `dope-memory`: `306X`
--- `task-orchestrator`: always `7890` (fixed singleton)
+-dopemux mcp fleet init --repo ~/code/your-project \
+-  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature \
+-  --apply
 +Fleet commands plan many worktrees at once and never start containers or modify
 +`~/.claude.json`:
  
- ```bash
--export CONPORT_HTTP_PORT=3044
--export CONPORT_INFO_PORT=4044
--export CONPORT_MCP_PORT=3045
--export DOPE_MEMORY_PORT=3064
--export TASK_ORCHESTRATOR_HTTP_PORT=7890
--export DOPEMUX_WORKSPACE_ID=/Users/hue/code/your-other-project
--export DOPE_MEMORY_WORKSPACE_ID=your-other-project   # short name
--export DOPE_MEMORY_INSTANCE_ID=a3f2                  # any 4-char hash
++```bash
 +dopemux mcp fleet init --repo ~/code/your-project \
 +  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature --dry-run --json
-+dopemux mcp fleet doctor --repo ~/code/your-project \
+ dopemux mcp fleet doctor --repo ~/code/your-project \
+-  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature \
+-  --json
 +  --worktrees ~/code/your-project --worktrees ~/code/your-project-wt-feature --json
  ```
  
--Save these to `.envrc.dopemux-mcp` in your project root and `source` it.
+-Fleet commands never start containers and never modify `~/.claude.json`.
 -
--### Step 2 — Start Docker services (prefer dopemux)
-+---
+ ---
  
--Prefer the reconciler even for partial manual setups:
+-## Current limitations
+-
+-* Preferred ports still derive from hash `%100` — leases rebind on conflict (no longer silent).
+-* **Task Orchestrator fixed port `7890` (Packet 005):** port-alive is **not** ownership.
+-  Doctor/start prove identity via HTTP `/info`, Docker labels, wrapper metadata, and
+-  registry. Wrong-project TO → **FAIL / start blocked**. Unknown owner → not PASS;
+-  start blocked. Foreign TO is never stopped automatically. Concurrent multi-project
+-  TO still requires only one owner of `7890` at a time.
+-* Unlabeled existing containers are not adopted automatically.
+-* Lease prune is not automatic; doctor may report `LEASE_STALE` without deleting.
 +## Current limitations (M1)
 +
 +* **Mid-session `EnterWorktree` needs `/mcp reconnect all`.** MCP servers bind at session start.
@@ -2038,22 +2060,53 @@ index 9c4999ba5..2d78b82d5 100644
 +* Lease prune is not automatic; `doctor` may report `LEASE_STALE` without deleting.
 +* Unlabeled existing containers are never adopted.
  
+ ---
+ 
+-## Part 2: Manual Setup (Without dopemux CLI)
+-
+-Use this approach when you cannot or don't want to use `dopemux mcp init`, or when
+-you need to wire MCP into a non-git directory, a CI environment, or a vanilla
+-Claude Code project.
+-
+-### Step 1 — Pick ports
+-
+-Choose ports that don't collide with any running services.  Recommended ranges:
+-- `conport`: HTTP `304X`, MCP `304X+1`
+-- `dope-memory`: `306X`
+-- `task-orchestrator`: always `7890` (fixed singleton)
+-
+-```bash
+-export CONPORT_HTTP_PORT=3044
+-export CONPORT_INFO_PORT=4044
+-export CONPORT_MCP_PORT=3045
+-export DOPE_MEMORY_PORT=3064
+-export TASK_ORCHESTRATOR_HTTP_PORT=7890
+-export DOPEMUX_WORKSPACE_ID=/Users/hue/code/your-other-project
+-export DOPE_MEMORY_WORKSPACE_ID=your-other-project   # short name
+-export DOPE_MEMORY_INSTANCE_ID=a3f2                  # any 4-char hash
+-```
+-
+-Save these to `.envrc.dopemux-mcp` in your project root and `source` it.
+-
+-### Step 2 — Start Docker services (prefer dopemux)
+-
+-Prefer the reconciler even for partial manual setups:
+-
 -```bash
 -# After .envrc.dopemux-mcp and .mcp.json exist:
 -dopemux mcp start --repo ~/code/your-other-project
 -```
-+---
++## Manual setup and vanilla Claude Code (no dopemux CLI)
  
 -> [!CAUTION]
 -> Do **not** start sidecars by injecting another project's env into
 -> `dopemux-mvp/compose.yml`. Use `dopemux mcp start --repo <target>` so
 -> container names, labels, and `.dopemux` volumes stay project-scoped.
-+## Manual setup and vanilla Claude Code (no dopemux CLI)
- 
--### Step 3 — Write `.mcp.json`
 +The launcher needs the dopemux CLI. Without it, the project servers cannot be started for you,
 +and you take on the work the launcher does:
  
+-### Step 3 — Write `.mcp.json`
+-
 -Create this file in your **project root** (not in `dopemux-mvp`):
 +1. Start the sidecars yourself (prefer `dopemux mcp start --repo <target>`; never inject another
 +   project's env into `dopemux-mvp/compose.yml`).
@@ -2065,7 +2118,7 @@ index 9c4999ba5..2d78b82d5 100644
  
  ```json
  {
-@@ -258,125 +475,102 @@ Create this file in your **project root** (not in `dopemux-mvp`):
+@@ -287,125 +505,102 @@ Create this file in your **project root** (not in `dopemux-mvp`):
      "conport": {
        "type": "sse",
        "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
@@ -2146,8 +2199,6 @@ index 9c4999ba5..2d78b82d5 100644
 +```bash
 +dopemux mcp sync-globals --apply
 +```
-+
-+---
  
 -1. Write the `.mcp.json` manually (see Part 2, Step 3).
 -2. Set your environment variables in your shell profile or `.env`:
@@ -2162,22 +2213,23 @@ index 9c4999ba5..2d78b82d5 100644
 -   (see Part 2, Step 2).
 -4. Launch `claude` from the project directory — it reads `.mcp.json` at startup.
 -5. Verify with `/mcp` in the Claude Code session.
-+## Troubleshooting
++---
  
 -### Singleton singletons (already running)
-+### A server shows `CONNECTION_CLOSED` or "Pending approval"
++## Troubleshooting
  
 -If `pal`, `serena`, or `dope-context` are running as singletons in your global
 -`~/.claude.json`, they are available in any project automatically — no per-project
 -configuration needed.  Run:
++### A server shows `CONNECTION_CLOSED` or "Pending approval"
+ 
+-```bash
+-dopemux mcp sync-globals --apply   # adds singletons to ~/.claude.json
+-```
 +"Pending approval" is Claude Code waiting for you to approve the project `.mcp.json` servers
 +once. `CONNECTION_CLOSED` means the launcher exited; run it by hand from the checkout to see
 +the `CODE: remedy` line (see the table above):
  
- ```bash
--dopemux mcp sync-globals --apply   # adds singletons to ~/.claude.json
--```
--
 -Or add them manually to `~/.claude.json`:
 -```json
 -{
@@ -2187,6 +2239,7 @@ index 9c4999ba5..2d78b82d5 100644
 -    "dope-context": { "type": "http", "url": "http://localhost:3010/mcp" }
 -  }
 -}
++```bash
 +dopemux mcp launch conport
  ```
  
@@ -2243,7 +2296,7 @@ index 9c4999ba5..2d78b82d5 100644
  
  ### Port collision on `dopemux mcp init`
  
-@@ -384,28 +578,39 @@ and `task-orchestrator`.
+@@ -413,28 +608,39 @@ and `task-orchestrator`.
  Internal port collision: conport.CONPORT_HTTP_PORT and singleton:gpt-researcher both map to :3009
  ```
  
@@ -2300,7 +2353,7 @@ index 9c4999ba5..2d78b82d5 100644
  
  ---
  
-@@ -423,10 +628,11 @@ running containers).
+@@ -452,10 +658,11 @@ running containers).
  | `dope-context`      | `3010` | Singleton, static |
  | `desktop-commander` | `3012` | Singleton, static (SSE) |
  
@@ -2922,7 +2975,7 @@ index c4b8e570b..b36cc308d 100644
      if changed:
          settings_path.parent.mkdir(parents=True, exist_ok=True)
 diff --git a/src/dopemux/commands/mcp_commands.py b/src/dopemux/commands/mcp_commands.py
-index 235209dd8..dce412a3e 100644
+index 567523c30..682fbe7ab 100644
 --- a/src/dopemux/commands/mcp_commands.py
 +++ b/src/dopemux/commands/mcp_commands.py
 @@ -24,10 +24,10 @@ import subprocess
@@ -3603,7 +3656,7 @@ index 235209dd8..dce412a3e 100644
      envrc_path.write_text("\n".join(lines) + "\n")
  
  
-@@ -1390,12 +1781,12 @@ def _apply_in_repo_agent_configs(
+@@ -1402,12 +1793,12 @@ def _apply_in_repo_agent_configs(
          )
  
  
@@ -3619,7 +3672,7 @@ index 235209dd8..dce412a3e 100644
      identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
      try:
          identity = resolve_project_identity(cwd=repo_path, env=identity_env)
-@@ -1404,8 +1795,11 @@ def _ensure_context() -> tuple[Path, Any]:
+@@ -1416,8 +1807,11 @@ def _ensure_context() -> tuple[Path, Any]:
      return repo_path, identity
  
  
@@ -3633,7 +3686,7 @@ index 235209dd8..dce412a3e 100644
      if env_repo:
          repo_path = Path(env_repo).expanduser().resolve()
          if not repo_path.is_dir():
-@@ -1426,7 +1820,7 @@ def _ensure_fast_context() -> tuple[Path, Path]:
+@@ -1438,7 +1832,7 @@ def _ensure_fast_context() -> tuple[Path, Path]:
                  "set DOPEMUX_WORKSPACE_ROOT or run from the repository root."
              )
  
@@ -3642,7 +3695,7 @@ index 235209dd8..dce412a3e 100644
      if project_override:
          project_root = Path(project_override).expanduser().resolve()
          if not project_root.is_dir():
-@@ -1576,13 +1970,14 @@ def _report_ensure_problems(problems: List[str]) -> None:
+@@ -1588,13 +1982,14 @@ def _report_ensure_problems(problems: List[str]) -> None:
  
  
  @mcp.command("ensure")
@@ -3658,7 +3711,7 @@ index 235209dd8..dce412a3e 100644
      """
      🛠️ Stabilize Fleet: Check or remediate catalog-backed MCP prerequisites
  
-@@ -1600,9 +1995,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1612,9 +2007,9 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
  
      catalog = _load_catalog()
      if fast:
@@ -3670,7 +3723,7 @@ index 235209dd8..dce412a3e 100644
          project_root = identity.project_root
      problems = _ensure_fast_problems(catalog, repo_path, project_root)
      if problems:
-@@ -1656,6 +2051,107 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1668,6 +2063,107 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
      console.logger.info("[success]Full MCP ensure checks green.[/success]")
  
  
@@ -3778,7 +3831,7 @@ index 235209dd8..dce412a3e 100644
  @mcp.command("init")
  @click.option("--force", is_flag=True, help="Overwrite existing .mcp.json and env file without prompting.")
  @click.option("--with", "extra", multiple=True, help="Additional server name beyond catalog defaults (repeatable).")
-@@ -1668,7 +2164,15 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
+@@ -1680,7 +2176,15 @@ def mcp_ensure_cmd(fast: bool, full_mode: bool):
          "profile core-code when omitted. Never all servers."
      ),
  )
@@ -3795,7 +3848,7 @@ index 235209dd8..dce412a3e 100644
      """
      🌱 Bootstrap Worktree: Scaffold .mcp.json + per-worktree env file
  
-@@ -1676,21 +2180,40 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1688,21 +2192,40 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
      per-worktree servers (default: compatibility profile ``core-code``) plus any
      `--with NAME` extras. Allocates ports deterministically from the worktree
      path so two worktrees never collide on the same host port.
@@ -3841,7 +3894,7 @@ index 235209dd8..dce412a3e 100644
  
      if catalog.get("profiles") or profile_name is not None:
          try:
-@@ -1778,7 +2301,8 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1790,7 +2313,8 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
          _atomic_write_json(mcp_json_path, config)
          wrote_mcp_json = True
  
@@ -3851,7 +3904,7 @@ index 235209dd8..dce412a3e 100644
  
      if wrote_mcp_json:
          console.logger.info(f"[success]Wrote {mcp_json_path}[/success]")
-@@ -1792,26 +2316,38 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
+@@ -1804,26 +2328,38 @@ def mcp_init_cmd(force: bool, extra: Tuple[str, ...], profile_name: Optional[str
          for var, port in sorted(port_vars.items()):
              free = "[success]free[/success]" if _port_is_free(port) else "[warning]in use[/warning]"
              console.logger.info(f"[info]  {var}={port} ({free})[/info]")
@@ -3896,7 +3949,7 @@ index 235209dd8..dce412a3e 100644
      identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
      try:
          identity = resolve_project_identity(cwd=repo, env=identity_env)
-@@ -1972,6 +2508,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
+@@ -1984,6 +2520,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
      default=None,
      help="Target repo/worktree to diagnose (defaults to current git root). Works from any cwd.",
  )
@@ -3904,7 +3957,7 @@ index 235209dd8..dce412a3e 100644
  @click.option(
      "--json",
      "json_output",
-@@ -2004,6 +2541,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
+@@ -2016,6 +2553,7 @@ def _run_stdio_doctor(name: str, spec: Dict[str, Any], env: Dict[str, str], cwd:
  )
  def mcp_doctor_cmd(
      repo_arg: Optional[Path],
@@ -3912,7 +3965,7 @@ index 235209dd8..dce412a3e 100644
      json_output: bool,
      verbose: bool,
      skip_docker: bool,
-@@ -2036,17 +2574,18 @@ def mcp_doctor_cmd(
+@@ -2048,17 +2586,18 @@ def mcp_doctor_cmd(
              raise click.ClickException(
                  "--legacy does not support --repo; omit --legacy for repo-aware doctor."
              )
@@ -3933,7 +3986,7 @@ index 235209dd8..dce412a3e 100644
          if not repo:
              raise click.ClickException(
                  "Not inside a git repository. Pass --repo <path> to diagnose another project."
-@@ -2067,6 +2606,9 @@ def mcp_doctor_cmd(
+@@ -2079,6 +2618,9 @@ def mcp_doctor_cmd(
          compose_path=compose_candidate,
          skip_docker=skip_docker,
          process_env=dict(os.environ),
@@ -3943,7 +3996,7 @@ index 235209dd8..dce412a3e 100644
      )
  
      if json_output:
-@@ -2089,10 +2631,10 @@ def mcp_doctor_cmd(
+@@ -2116,10 +2658,10 @@ def mcp_doctor_cmd(
          sys.exit(report.exit_code)
  
  
@@ -3956,7 +4009,7 @@ index 235209dd8..dce412a3e 100644
      if not repo:
          raise click.ClickException("Not inside a git repository.")
  
-@@ -2100,7 +2642,7 @@ def _mcp_doctor_legacy() -> None:
+@@ -2127,7 +2669,7 @@ def _mcp_doctor_legacy() -> None:
      mcp_json_path = Path(repo) / PROJECT_MCP_FILENAME
      problems: List[str] = []
      try:
@@ -3965,7 +4018,7 @@ index 235209dd8..dce412a3e 100644
          identity_env["DOPEMUX_WORKSPACE_ROOT"] = repo
          identity = resolve_project_identity(cwd=repo, env=identity_env)
      except ProjectIdentityError as exc:
-@@ -2277,11 +2819,11 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
+@@ -2304,11 +2846,11 @@ def _functional_subset(entry: Dict[str, Any]) -> Dict[str, Any]:
      return {k: v for k, v in entry.items() if k != "description"}
  
  
@@ -3980,7 +4033,7 @@ index 235209dd8..dce412a3e 100644
      if not repo:
          raise click.ClickException(
              "Not inside a git repository. Pass --repo <path> to target another project."
-@@ -2407,11 +2949,13 @@ def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
+@@ -2434,11 +2976,13 @@ def mcp_registry_reconcile_cmd(dry_run: bool, apply: bool, json_output: bool):
      default=None,
      help="Target repo/worktree (defaults to current git root).",
  )
@@ -3994,7 +4047,7 @@ index 235209dd8..dce412a3e 100644
      dry_run: bool,
      apply: bool,
      json_output: bool,
-@@ -2430,9 +2974,9 @@ def mcp_repair_config_cmd(
+@@ -2457,9 +3001,9 @@ def mcp_repair_config_cmd(
  
      from dopemux.mcp.config_repair import apply_repair, format_repair_human, plan_repair
  
@@ -4007,7 +4060,7 @@ index 235209dd8..dce412a3e 100644
      catalog_paths = [str(catalog_path)] if catalog_path else ["bundled:default_catalog.yaml"]
  
      plan = plan_repair(
-@@ -2441,6 +2985,7 @@ def mcp_repair_config_cmd(
+@@ -2468,6 +3012,7 @@ def mcp_repair_config_cmd(
          dry_run=dry_run,
          catalog_paths=catalog_paths,
          process_env=dict(os.environ),
@@ -5520,7 +5573,7 @@ index 48d9bc05c..d07620bb1 100644
  
  def docker_image_inspect_command(image: str) -> List[str]:
 diff --git a/src/dopemux/mcp/doctor.py b/src/dopemux/mcp/doctor.py
-index 8e887efae..037e74f17 100644
+index 24bf4759b..c1df30791 100644
 --- a/src/dopemux/mcp/doctor.py
 +++ b/src/dopemux/mcp/doctor.py
 @@ -8,7 +8,9 @@ where labels exist. Never starts/stops containers or mutates config.
@@ -5784,8 +5837,8 @@ index 8e887efae..037e74f17 100644
      # --- Status summary findings ---
      status, exit_code = _summarize_status(findings)
      if status == "PASS":
-@@ -1368,6 +1558,18 @@ def format_human_summary(
-     """Compact human-readable doctor summary."""
+@@ -1377,6 +1567,18 @@ def format_human_summary(
+     """
      repo_name = Path(report.repo_arg).name or report.repo_arg
      lines = [f"MCP Doctor for {repo_name}: {report.status}"]
 +    for finding in report.findings:
@@ -5804,7 +5857,7 @@ index 8e887efae..037e74f17 100644
      priority = {"FAIL": 0, "WARN": 1, "UNKNOWN": 2, "INFO": 3}
      sorted_findings = sorted(
 diff --git a/src/dopemux/mcp/fleet_catalog.py b/src/dopemux/mcp/fleet_catalog.py
-index 1cf06deab..137518248 100644
+index 56878b589..65913d9cb 100644
 --- a/src/dopemux/mcp/fleet_catalog.py
 +++ b/src/dopemux/mcp/fleet_catalog.py
 @@ -11,7 +11,7 @@ import json
@@ -5863,7 +5916,7 @@ index 1cf06deab..137518248 100644
                  "type": "stdio",
                  "command": command,
                  "args": list(spec.get("args") or []),
-@@ -1352,6 +1376,7 @@ _V2_PASSTHROUGH_FIELDS: tuple[str, ...] = (
+@@ -1388,6 +1412,7 @@ _V2_PASSTHROUGH_FIELDS: tuple[str, ...] = (
      "requires_env",
      "optional_env",
      "doctor_args",
@@ -5871,7 +5924,7 @@ index 1cf06deab..137518248 100644
      "env_template",
      "description",
      "tool_aliases",
-@@ -1609,7 +1634,7 @@ _ENDPOINT_FIELDS: tuple[str, ...] = (
+@@ -1645,7 +1670,7 @@ _ENDPOINT_FIELDS: tuple[str, ...] = (
      "extra_port_vars",
      "docker_compose_service",
  )
@@ -15691,7 +15744,7 @@ index 000000000..57d834a0f
 +    assert not ct.secrets_path(_identity(repo).project_id).exists()
 +    assert (repo / ".mcp.json").exists()
 diff --git a/tests/unit/test_mcp_doctor_repo_aware.py b/tests/unit/test_mcp_doctor_repo_aware.py
-index b02e0cf36..b960a9076 100644
+index 416e05bf9..2c8b1824d 100644
 --- a/tests/unit/test_mcp_doctor_repo_aware.py
 +++ b/tests/unit/test_mcp_doctor_repo_aware.py
 @@ -3,6 +3,7 @@
@@ -15754,12 +15807,10 @@ index b02e0cf36..b960a9076 100644
  
  
  def test_doctor_ignores_foreign_cwd_compose(tmp_path: Path, monkeypatch):
-@@ -862,3 +875,217 @@ def test_build_desired_services_includes_catalog_defaults_when_mcp_json_present(
-     assert "conport" in names
-     assert "dope-memory" in names
+@@ -864,6 +877,220 @@ def test_build_desired_services_includes_catalog_defaults_when_mcp_json_present(
      assert "task-orchestrator" in names
-+
-+
+ 
+ 
 +def test_doctor_warns_when_path_dopemux_is_not_editable_install(tmp_path: Path, monkeypatch):
 +    from dopemux.mcp import doctor as doctor_mod
 +    from dopemux.mcp.docker_runtime import product_root
@@ -15972,6 +16023,11 @@ index b02e0cf36..b960a9076 100644
 +    )
 +    assert result.exit_code in (0, 1, 2), result.output
 +    assert seen.get("check_conport_tenant") is True
++
++
+ def test_format_human_summary_skips_repair_apply_when_repair_is_noop(tmp_path: Path):
+     repo = _write_fixture_repo(
+         tmp_path,
 diff --git a/tests/unit/test_mcp_fleet_catalog.py b/tests/unit/test_mcp_fleet_catalog.py
 index c5b6f0e33..de99b5380 100644
 --- a/tests/unit/test_mcp_fleet_catalog.py

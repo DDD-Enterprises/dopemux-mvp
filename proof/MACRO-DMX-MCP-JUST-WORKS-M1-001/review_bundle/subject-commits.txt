@@ -1,3 +1,6 @@
+2479969fe docs(mcp): record the dry-run lease persistence as an open follow-up (cycle 7)
+f6a8e4401 merge: main into feat/mcp-just-works-m1 (resolve #1440 overlap)
+b706fc5dd proof(mcp-just-works): cycle-6 bundle at efb06f7c5 (Grok 4.7 PASS_WITH_RISKS governs)
 efb06f7c5 docs(mcp): explicit reap also plans nothing until the registry file exists
 fbbe95a59 docs(design): record the Task H revert and the open automatic-reap follow-up (cycle 5)
 2bbf08f65 revert(mcp): drop the Task H automatic-reap change (cycle 5 audit: two mediums, fresh-host case still open)
