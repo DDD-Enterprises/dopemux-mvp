@@ -1,0 +1,8 @@
+{
+  "type": "system",
+  "subtype": "init",
+  "model": "grok-4.5",
+  "tools": [],
+  "permissionMode": "default",
+  "session_id": "01a1c500-3edf-7a22-af6b-2de41a92487d"
+}

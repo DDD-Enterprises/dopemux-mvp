@@ -272,6 +272,9 @@ only the first launch per checkout and Dockerfile version builds (`LAUNCH_IMAGE_
 then `/mcp reconnect all`); later worktrees reuse them and reap never removes them. Sidecar
 source edits that leave the Dockerfile unchanged need a forced rebuild (`docker image rm
 dopemux-<service>:<key>`, see the how-to).
+A `dopemux` installed outside the checkout (e.g. `~/.dopemux/venv`) needs `DOPEMUX_MVP_ROOT` (or
+`DOPEMUX_PRODUCT_ROOT`) = the dopemux-mvp checkout (`product_root()` in `src/dopemux/mcp/docker_runtime.py`;
+`init`, `start` and `launch` all use it); see AGENTS.md §12.3.
 Guide: `docs/02-how-to/mcp-setup-other-repos.md`.
 
 **Debug sequence**: run `dopemux mcp launch <name>` by hand in the checkout (prints the
@@ -282,12 +285,13 @@ logs → `./mcp_server_health_report.sh`
 `gpt-researcher`, `exa`, `desktop-commander`, bridges are host singletons (one process, shared).
 `redis-events` is OBSERVED **host-singleton today and noncompliant** for multi-project use (global container,
 no stream isolation; its events get promoted into canonical work_log) — the REQUIRED target is project-scoped
-(design §10.4, gate P-21, not yet implemented). `conport`, `dope-memory`, `serena`
+(design §10.4, gate P-21, not yet implemented). `conport`, `dope-memory`
 are still **worktree-scoped** (one container per worktree) pending identity gates — expect N worktrees to
-cost 3N containers until those land (the launcher entries reap idle or removed worktrees); ConPort's ruled end-state is **project-scoped**, never host-singleton
+cost 2N containers until those land (`serena` is one container bound to dopemux-mvp, not per worktree; the launcher entries reap idle or removed worktrees); ConPort's ruled end-state is **project-scoped**, never host-singleton
 (§10.3). Never start fleet services outside `dopemux mcp` (no raw `docker compose up` / `docker run`). Full
-sharing-class table + command surface (`init`/`start`/`stop`/`doctor`/`launch`/`switch-project`/`reap`
-implemented — `switch-project` transitional; `reconcile`/`adopt`/`migrate` PLANNED): AGENTS.md §12.6
+sharing-class table + command surface (`init`/`start`/`stop`/`doctor`/`launch`/`switch-project`/`reap`/`repair-config`/`status`/`ensure`/`up`/`down` and
+more implemented — see AGENTS.md §12.6; `switch-project` transitional; `reconcile` exists only as `leases reconcile` / `registry reconcile` / `control-plane reconcile`;
+`adopt`/`migrate` PLANNED): AGENTS.md §12.6
 and `claudedocs/mcp-fleet-multi-instance-design-2026-07-28.md` (ACCEPTED with supervisor rulings 2026-07-28).
 
 **Runner memory identity (Wave 2A, AGENTS.md §12.7)**: dope-memory and ConPort take an auth

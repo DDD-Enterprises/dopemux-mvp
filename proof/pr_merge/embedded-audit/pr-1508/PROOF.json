@@ -1,0 +1,77 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1508,
+  "head_sha": "a2c1cb7c3a58600c272fe67ee71f29f811404ffc",
+  "base_sha": "c5a0ca34f53dd0f2d55e11139dff74828ab34ab5",
+  "audit_identity": {
+    "auditor": {
+      "effort": "default",
+      "model": "kimi-k3",
+      "model_family": "moonshot-kimi",
+      "runner": "opencode-cli",
+      "runtime_family": "opencode"
+    },
+    "implementer": {
+      "model": "grok-4.7",
+      "model_family": "xai-grok",
+      "runner": "grok-build",
+      "runtime_family": "xai-grok-build"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "opencode-cli",
+    "auditor_model": "kimi-k3",
+    "invocation": "opencode run --pure --format json --model cheaper-inference/kimi-k3 --dir /tmp/pr1508-kimi-seal-r5 --title pr1508-kimi-audit-r5; OpenCode 1.18.30; session ses_e32e0d10fffeC4qLwu6sHyi6HV; session model id kimi-k3 providerID cheaper-inference variant default; exit 0; one attempt; no tool parts; KIMI_AUDIT.txt sha256 87264a58f82b178489c75e19f2806a7d8915bac96046bc1ab1b58909cef0e382; KIMI_EVENTS.txt sha256 ba74bce3b930325600a650bb9deb105c8513107d7c8a3f0daf064b0e58a96cbb",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1508-L3-AUDIT-005/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "MEDIUM",
+        "title": "Push events can still scan every file",
+        "status": "ACCEPTED_RISK",
+        "body": "Push events still fall back to pre-commit --all-files when github.event.before is missing. That can fail on files the push did not change."
+      },
+      {
+        "id": "F2",
+        "severity": "MEDIUM",
+        "title": "A missing merge-group base fails the job",
+        "status": "ACCEPTED_RISK",
+        "body": "The merge-group path exits 1 when merge_group.base_sha is not in the checkout. The workflow checks out with fetch-depth 0."
+      },
+      {
+        "id": "F3",
+        "severity": "LOW",
+        "title": "Merge-group hooks no longer scan untouched files",
+        "status": "ACCEPTED_RISK",
+        "body": "The merge-group job checks base_sha through head. Repository-wide hook drift on untouched files is not exercised there."
+      },
+      {
+        "id": "F4",
+        "severity": "LOW",
+        "title": "A missing base and a hook failure share one job",
+        "status": "ACCEPTED_RISK",
+        "body": "Exit 1 on a missing base commit uses the same check name as a hook failure."
+      },
+      {
+        "id": "F5",
+        "severity": "INFO",
+        "title": "A multi-pull-request group checks the combined range",
+        "status": "ACCEPTED_RISK",
+        "body": "When a merge group contains more than one pull request, the range includes the group's combined diff."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Push events still fall back to pre-commit --all-files when github.event.before is missing.",
+      "The merge-group job fails closed if merge_group.base_sha is not in the checkout.",
+      "Merge-group hooks no longer scan untouched files.",
+      "A missing base commit and a hook failure share one job name.",
+      "A multi-pull-request merge group checks the combined range."
+    ],
+    "skip_reason": null
+  }
+}

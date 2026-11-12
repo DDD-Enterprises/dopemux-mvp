@@ -1,0 +1,97 @@
+{
+  "packet_id": "TP-DMX-PR1508-L2-AUDIT-001",
+  "tp_id": "TP-DMX-PR1508-L2-AUDIT-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1508,
+  "branch": "docs/pr-merge-skill-queue-stop",
+  "base": "main",
+  "base_sha": "c5a0ca34f53dd0f2d55e11139dff74828ab34ab5",
+  "head_sha": "043cd1fd7f5f9f0e5956e543a0ea07fe78984a3f",
+  "audited_head_sha": "043cd1fd7f5f9f0e5956e543a0ea07fe78984a3f",
+  "risk_lane": "L2",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/pr-merge-skill-stop",
+  "exact_model": "kimi-k3",
+  "recorded_auditor_model": "kimi-k3",
+  "model_recording_reason": "OpenCode session info.model recorded id kimi-k3, providerID cheaper-inference, variant default. That id is the trusted schema auditor_model paired with opencode-cli.",
+  "operator_instruction": "kimi",
+  "audit_identity": {
+    "auditor": {
+      "effort": "default",
+      "model": "kimi-k3",
+      "model_family": "moonshot-kimi",
+      "runner": "opencode-cli",
+      "runtime_family": "opencode"
+    },
+    "implementer": {
+      "model": "grok-4.7",
+      "model_family": "xai-grok",
+      "runner": "grok-build",
+      "runtime_family": "xai-grok-build"
+    },
+    "independence": "PROVEN"
+  },
+  "generated_at": "2026-11-10T05:15:36Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "opencode-cli",
+    "auditor_model": "kimi-k3",
+    "invocation": "opencode run --pure --format json --model cheaper-inference/kimi-k3 --dir /tmp/pr1508-kimi-seal --title pr1508-kimi-audit; OpenCode 1.18.30; session ses_e3c20cd30ffeJ7ug7vu0iAieM2; session model id kimi-k3 providerID cheaper-inference variant default; exit 0; one attempt; no tool parts; KIMI_AUDIT.txt sha256 8648103bb8f6914f51707e612f31ce966f318d933e0f355fd7f7bb0ca9c92c7d; KIMI_EVENTS.txt sha256 71a5500abb7269539c3fb353e9a5fa81eee437e032bdbd49074670e2f389d14c",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1508-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "MEDIUM",
+        "title": "No procedure to detect an active merge queue",
+        "status": "ACCEPTED_RISK",
+        "body": "templates/skills/pr-merge-specialist/SKILL.md and .claude/skills/pr-merge-specialist/SKILL.md section GitHub merge queue condition the stop-list on an active GitHub merge queue, and the text does not give a gh api, ruleset, or branch query that detects that condition. The stop-list binds when the condition is true. A session that never checks can miss it. Accepted because the wording does not grant the forbidden commands."
+      },
+      {
+        "id": "F2",
+        "severity": "MEDIUM",
+        "title": "Non-queue path guardrails thinned relative to prior text",
+        "status": "ACCEPTED_RISK",
+        "body": "The stop-list and the parking of merge.py, queue_drain.py, and worktree.py are scoped to while the queue is active. Outside that case, SKILL.md no longer restates the audit and steward gate. agents/openai.yaml still says to block on unresolved active threads and missing required approvals or checks, and Operator authority points at AGENTS.md \u00a79. Accepted for this queue-on change."
+      },
+      {
+        "id": "F3",
+        "severity": "LOW",
+        "title": "No per-action re-verification of head or queue state",
+        "status": "ACCEPTED_RISK",
+        "body": "SKILL.md requires independent embedded audit and PR Steward / final readiness success on the current head, and says a new head needs a new audit. It does not give a command that confirms those conclusions against the current head SHA before enqueue."
+      },
+      {
+        "id": "F4",
+        "severity": "LOW",
+        "title": "Thread resolution of a finding that is not still true stays open during an active queue",
+        "status": "ACCEPTED_RISK",
+        "body": "The stop-list bans resolving a review thread whose finding is still true. The scan rule bans resolving any thread during a scan. Resolving a superseded finding while the queue is active is not named. This does not permit a still-true finding."
+      },
+      {
+        "id": "F5",
+        "severity": "INFO",
+        "title": "Placeholder command in examples is non-executable",
+        "status": "ACCEPTED_RISK",
+        "body": "agents/openai.yaml replaces the queue-drain --execute example with gh pr merge <n> --merge. The <n> placeholder is documentation."
+      },
+      {
+        "id": "F6",
+        "severity": "INFO",
+        "title": "External authority reference is outside the diff",
+        "status": "ACCEPTED_RISK",
+        "body": "Operator authority cites AGENTS.md \u00a79, which is not part of these four files. The reference adds a restriction. Its text was not re-read as part of this diff."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Skill text is advisory. merge.py, queue_drain.py, and worktree.py still emit gh pr update-branch --rebase and gh pr merge --rebase --delete-branch. A session that ignores the skill can still run them.",
+      "The skill does not give a detection command for an active merge queue, so the stop-list depends on the session knowing the queue is on.",
+      "The enqueue gate names independent embedded audit and PR Steward / final readiness. A renamed check would weaken that sentence.",
+      "gh pr merge --auto is covered by the operator-authority clause, not by a separate queue-section ban.",
+      "Outside an active queue, auto-pilot and queue-drain remain available with operator authority, and the per-head audit gate is not restated in SKILL.md.",
+      "Observed auditor identity is OpenCode 1.18.30 session ses_e3c20cd30ffeJ7ug7vu0iAieM2, provider cheaper-inference, model kimi-k3, variant default. Tokens input 51985, output 1125, reasoning 2925, cost 0. No tool parts. Exit 0."
+    ],
+    "skip_reason": null
+  }
+}

@@ -1676,6 +1676,18 @@ def mcp_generate_cmd(
             )
         except profile_policy.ProfilePolicyError as exc:
             raise click.ClickException(str(exc)) from exc
+        # Fail closed before any write: decision-required / planned-active servers
+        # must never reach a startable generated output (AGENTS.md §12.5).
+        quarantine_errors = (
+            fleet_catalog.validate_decision_required_generated_config_quarantine(
+                catalog, outputs
+            )
+        )
+        if quarantine_errors:
+            raise click.ClickException(
+                f"decision-required quarantine gate failed for profile `{resolved}`:\n"
+                + "\n".join(f"- {error}" for error in quarantine_errors)
+            )
 
     if not apply:
         console.logger.info("[info]Dry-run only. No files were written.[/info]")
@@ -2615,7 +2627,22 @@ def mcp_doctor_cmd(
         # Deterministic JSON to stdout (not through rich logger)
         sys.stdout.write(report.to_json())
     else:
-        summary = format_human_summary(report, verbose=verbose)
+        repair_status = None
+        try:
+            from dopemux.mcp.config_repair import plan_repair
+
+            repair_status = plan_repair(
+                repo,
+                catalog,
+                dry_run=True,
+                catalog_paths=catalog_paths,
+                process_env=dict(os.environ),
+            ).status
+        except Exception:  # advisory only; never break doctor output
+            repair_status = None
+        summary = format_human_summary(
+            report, verbose=verbose, repair_status=repair_status
+        )
         # Color the status line lightly via console, keep body plain for copy/paste
         status = report.status
         if status == "PASS":

@@ -84,6 +84,20 @@ once. `dopemux mcp doctor` reports `DOPEMUX_BIN_NOT_EDITABLE` and prints the exa
 binary without editing the tracked `.mcp.json`, export `DOPEMUX_BIN=/path/to/dopemux`
 before starting the client.
 
+`dopemux mcp init`, `start` and `launch` locate the dopemux-mvp product `compose.yml` from
+**`DOPEMUX_MVP_ROOT`** (alias `DOPEMUX_PRODUCT_ROOT`), else from the module's parent
+directories (`product_root()` in `src/dopemux/mcp/docker_runtime.py`). With the editable
+install above the parent directories are the checkout, so nothing needs setting. A
+`dopemux` installed outside the checkout (for example `~/.dopemux/venv`) has no such
+ancestor and fails with `PRODUCT_ROOT_UNKNOWN` (`start`) or `IMAGE_BUILD_FAILED` (`init`);
+`export DOPEMUX_MVP_ROOT=~/code/dopemux-mvp` first. It is harmless to set when running the
+repo's own `.venv` CLI.
+
+The shared infrastructure (postgres, redis, etc.) must already be running from the primary
+dopemux stack; sidecar start uses `--no-deps` and does not re-home it. Postgres is **not**
+in `mcp_catalog.yaml`, so `dopemux mcp ensure --full` does not start it; see
+[Restoring Postgres](#restoring-postgres).
+
 ### Once per new project: `dopemux mcp init --repo <path>`
 
 ```bash
@@ -371,6 +385,22 @@ otherwise), and `conport`/`dope-memory` must still be this worktree's
 session, the waiting request (or, when the first session is refused, the runner's first
 request) gets the `CODE: remedy` text as its error, the same line goes to stderr and the proxy
 exits 1.
+
+---
+
+## Restoring Postgres
+
+Postgres (`postgres-age`, ConPort's backing store) belongs to the primary compose stack,
+not the MCP catalog, so `dopemux mcp ensure --full` will not bring it back. If it is
+missing, start it from the dopemux-mvp checkout:
+
+```bash
+cd ~/code/dopemux-mvp
+dopemux mcp up --services postgres
+```
+
+The compose project is `dopemux` and data lives in the named volume
+`dopemux_pg_age_data`; do not delete that volume when recreating the container.
 
 ---
 

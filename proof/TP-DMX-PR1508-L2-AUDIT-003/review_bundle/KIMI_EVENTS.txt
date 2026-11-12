@@ -1,0 +1,6 @@
+session ses_e331ef8b2ffeu3AbxXNzO5rx0N
+event step_start
+event text part.type=text
+event step_finish reason=stop tokens.total=50851 tokens.input=49057 tokens.output=457 tokens.reasoning=1337 tokens.cache.read=0 cost=0
+no tool parts
+exit 0

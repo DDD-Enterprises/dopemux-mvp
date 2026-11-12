@@ -1,0 +1,31 @@
+**Verdict: PASS_WITH_RISKS**
+
+The text answers both audit questions in the affirmative. Every behavior named in the question is prohibited by an explicit, unconditional stop-list entry while the queue is active, and no sentence in the diff grants permission to merge a draft, resolve a still-true finding, or enqueue an unchecked head. The risks below are gaps in enforceability, not false permissions.
+
+**Findings**
+
+- id: F1 · severity: MEDIUM · title: No procedure to detect an active merge queue
+  body: `templates/skills/pr-merge-specialist/SKILL.md` and `.claude/skills/pr-merge-specialist/SKILL.md`, section "GitHub merge queue": the entire protective regime is conditioned on "When the base branch has an active GitHub merge queue," but the text never says how a session determines that condition (no `gh api .../protection`, ruleset, or branch query). The stop-list binds whenever the condition is true, so this is not a permission hole, but a session that never checks can violate the rule in ignorance and the skill gives it no detection step to fail against.
+
+- id: F2 · severity: MEDIUM · title: Non-queue path guardrails thinned relative to prior text
+  body: The stop-list and the parking of the Python emitters are scoped to "while that queue is active": "`merge.py`, `queue_drain.py`, and `worktree.py` still emit `gh pr update-branch --rebase` and `gh pr merge --rebase --delete-branch`. Those commands stay unused while the queue is active." Outside an active queue, the removed sections (Thread Handler, Verification Engine, "Evidence-Based Automation") are replaced only by the "Operator authority" section referencing "AGENTS.md §9" and one line in `agents/openai.yaml` `default_prompt` ("block on unresolved active threads and missing required approvals or checks"). Audit/steward gating for non-queue merges is no longer stated in SKILL.md itself.
+
+- id: F3 · severity: LOW · title: No per-action re-verification of head or queue state
+  body: SKILL.md requires "Both of these checks must be success on the current head: `independent embedded audit` and `PR Steward / final readiness`" and states "A new head needs a new audit," but provides no command to confirm check conclusions against the current head SHA, and no instruction to re-check queue activation before each enqueue. `openai.yaml` says "Read SKILL.md before any merge," which is a read instruction, not a state re-verification.
+
+- id: F4 · severity: LOW · title: Thread resolution permitted when finding is "not still true" during active queue
+  body: The stop-list bans only "resolving a review thread whose finding is still true." By omission, resolving a stale or superseded finding is permitted while the queue is active. The scan rule ("A scan must not rebase, merge, delete a branch, or resolve a thread") covers only scan mode. This reads as a deliberate distinction and creates no false permission for still-true findings, but it leaves a mutation surface open during the queue-active window.
+
+- id: F5 · severity: INFO · title: Placeholder command in examples is non-executable
+  body: `agents/openai.yaml` (both copies) replaces the `queue-drain --execute` example with `gh pr merge <n> --merge`; `<n>` is a literal placeholder. Harmless as documentation, noted for completeness.
+
+- id: F6 · severity: INFO · title: External authority reference not in diff
+  body: "Merging, marking ready, closing, or enabling auto-merge needs explicit operator authority (AGENTS.md §9)" depends on a document outside this diff. The reference is restrictive in direction (it cannot grant permission), but its verifiability cannot be judged from these four files.
+
+**Remaining risks (stand even with a non-FAIL verdict)**
+
+1. Skill text is advisory only. The rebase/delete-emitting code in `merge.py`, `queue_drain.py`, and `worktree.py` remains in the repository and executable; a session that disregards the skill can still run those commands. "A green dry-run does not clear them" mitigates dry-run laundering but cannot enforce anything.
+2. Queue activation is a mutable repository setting. Without a mandated detection step (F1) and re-check (F3), the prohibitions depend on operator diligence at action time.
+3. Audit-to-head binding is enforced only through the two named checks. If the real check-run names drift from "`independent embedded audit`" or "`PR Steward / final readiness`", the enqueue gate silently weakens; the diff cannot confirm the names match reality.
+4. Enabling auto-merge (`gh pr merge --auto --merge`) is addressed only via the general operator-authority clause, not in the queue section, so the "enqueue one non-draft pull request at a time" discipline is not explicitly extended to the auto-merge enqueue path.
+5. The non-queue path (F2) permits auto-pilot and queue-drain with operator authority, and the per-head audit/steward requirements in that mode rest on AGENTS.md §9 and the `openai.yaml` prompt line rather than on SKILL.md, which is the artifact this skill instructs sessions to read before merging.

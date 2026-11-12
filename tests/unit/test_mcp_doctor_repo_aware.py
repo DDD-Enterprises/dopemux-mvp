@@ -1089,3 +1089,31 @@ def test_doctor_cli_asks_for_the_conport_tenant_check(tmp_path: Path, monkeypatc
     )
     assert result.exit_code in (0, 1, 2), result.output
     assert seen.get("check_conport_tenant") is True
+
+
+def test_format_human_summary_skips_repair_apply_when_repair_is_noop(tmp_path: Path):
+    repo = _write_fixture_repo(
+        tmp_path,
+        mcp_servers={
+            "dope-memory": {"type": "sse", "url": "http://localhost:3060/mcp"},
+        },
+    )
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+    )
+    report.recommended_next_actions = [
+        "Run `dopemux mcp repair-config --apply` to rebind.",
+        "Start the service.",
+    ]
+    default = format_human_summary(report)
+    assert "repair-config --apply" in default.split("Next action:")[1]
+    for status in ("NOOP", "BLOCKED"):
+        text = format_human_summary(report, repair_status=status)
+        assert text.split("Next action:")[1].strip() == "Start the service."
+    report.recommended_next_actions = ["Run `dopemux mcp repair-config --apply`."]
+    text = format_human_summary(report, repair_status="BLOCKED")
+    assert "reports BLOCKED" in text

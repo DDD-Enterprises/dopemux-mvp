@@ -1,0 +1,27 @@
+```json
+{
+  "status": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "id": "CF-ID-FALLBACK",
+      "severity": "low",
+      "location": "scripts/ci/merge_queue_carry_forward.py:197",
+      "summary": "Missing or non-integer check-run ids sort as -1, so newest-run selection then depends on the timestamp secondary key.",
+      "evidence": "_check_run_order sets run_id = -1 on TypeError/ValueError. If every match lacks a usable id, a queued run with null timestamps can again sort before an older completed success via stamp=\"\"."
+    },
+    {
+      "id": "CF-TEST-ABSENT-PR-SETUP",
+      "severity": "low",
+      "location": "tests/ci/test_merge_queue_carry_forward.py:155",
+      "summary": "Absent-PR refusal test uses an empty FakeGitHub and may fail earlier than the new naming gate.",
+      "evidence": "test_queue_ref_naming_an_absent_pull_request_is_refused calls evaluate(..., github=FakeGitHub()) with parents (BASE, PR_HEAD). If parent PR discovery raises before the named-vs-parents check, match=\"not merge parents\" may not exercise the new refusal path even though the production check itself refuses missing named PRs."
+    }
+  ],
+  "remaining_risks": [
+    "GitHub check-run payloads without usable id fields fall back to timestamp ordering for ties at id=-1.",
+    "Diff does not show the full assertion body of test_newer_in_progress_check_is_not_a_success; fixture update supports the id/null-timestamp case, but assertion text is outside this pinned subject."
+  ],
+  "report": "## Scope\nIndependent audit of pinned commit `1476638d5f55407a070894d096102771bf15e8bf` on PR 1504, from the supplied diff only. Prior audit subject `1d43dc0ee4bb97b445f2209636a111bb796cb008` is treated as the baseline; this commit is the only intervening code change under review.\n\n## What was checked\n\n### 1. Queue ref naming vs merge parents\n`evaluate()` no longer requires `parse_queue_pr_numbers(head_ref)` to equal the full parent PR set. It now refuses only when a named PR number is absent from discovered merge-parent PR numbers (`missing = [n for n in named if n not in numbers]`).\n\nThat matches the fail-closed contract:\n- GitHub `main/pr-<newest>` naming can proceed while all discovered parents remain in `CarryForward.pull_requests`.\n- A ref naming a PR outside those parents still raises `CarryForwardError`.\n\nTests updated accordingly: newest-only naming is accepted when parents are `(1440, 1466)`; `pr-9999` is refused with `not merge parents`.\n\nParent open-head and audit/steward success gates are not rewritten in this diff; the comment and unchanged parent discovery path keep those obligations on every discovered parent.\n\n### 2. Newest check-run selection\n`_check_run_order` sorts by integer check-run `id` ascending, with timestamp string as a secondary key. `latest_check` still returns success only when `matches[-1]` is `status == \"completed\"` with a successful conclusion path from the existing logic.\n\nA later `queued` run with `started_at`/`completed_at` null and a higher `id` sorts after an older completed success, so the older success is not carried forward. The updated fixture (`id` 10 success, `id` 11 queued with null timestamps) targets exactly that failure mode.\n\n## Verdict\nBoth requested fail-closed properties hold in the pinned diff. Residual risks are limited to missing check-run ids and a possible weak spot in the absent-PR test setup. No medium, high, or critical defect found.\n\n**status: PASS_WITH_RISKS**"
+}
+```
+GROK_EXIT:0

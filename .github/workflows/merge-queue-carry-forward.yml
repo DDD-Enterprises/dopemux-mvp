@@ -1,0 +1,71 @@
+name: merge-queue-carry-forward
+
+# Required audit and steward results are produced for the pull request head
+# by Grok and AGY. The merge queue tests a temporary merge commit. This
+# workflow reports those existing results on that commit when the commit is
+# only a merge of those exact heads into the queue base.
+on:
+  merge_group:
+    types: [checks_requested]
+
+permissions:
+  contents: read
+  checks: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  embedded-audit:
+    name: independent embedded audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout queue commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.merge_group.head_sha }}
+          fetch-depth: 0
+
+      - name: Carry forward passing pull request audits
+        id: carry
+        env:
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+          BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          HEAD_REF: ${{ github.event.merge_group.head_ref }}
+          BASE_REF: ${{ github.event.merge_group.base_ref }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          python3 scripts/ci/merge_queue_carry_forward.py \
+            --repo "$REPO" \
+            --head-sha "$HEAD_SHA" \
+            --base-sha "$BASE_SHA" \
+            --head-ref "$HEAD_REF" \
+            --base-ref "$BASE_REF" \
+            --out "$RUNNER_TEMP/carry.json"
+          echo "carry_exit=$?" >> "$GITHUB_OUTPUT"
+          set -e
+
+      - name: Publish PR Steward status on the queue commit
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+        run: |
+          set -euo pipefail
+          payload="${RUNNER_TEMP}/carry.json"
+          state="failure"
+          description="merge queue audit carry-forward refused"
+          if [ -f "$payload" ] && python3 -c 'import json,sys; assert json.load(open(sys.argv[1], encoding="utf-8"))["ok"]' "$payload"; then
+            state="success"
+            description="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1], encoding="utf-8")); print("carried forward PRs " + ",".join(str(n) for n in d["pull_requests"]))' "$payload")"
+          elif [ -f "$payload" ]; then
+            description="$(python3 -c 'import json,sys; reason=json.load(open(sys.argv[1], encoding="utf-8")).get("reason") or "carry-forward refused"; print(str(reason)[:140])' "$payload")"
+          fi
+          description="${description:0:140}"
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state="$state" \
+            -f context="PR Steward / final readiness" \
+            -f description="$description"
+          test "$state" = "success"

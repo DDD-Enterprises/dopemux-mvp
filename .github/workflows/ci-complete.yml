@@ -118,7 +118,7 @@ jobs:
         if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
-          comment-pr: true
+          comment-pr: "${{ github.event_name == 'pull_request' }}"
           claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
           # Use absolute paths: the upstream composite action chdirs into
           # `github.action_path` before opening these files, so a repo-relative
@@ -408,7 +408,7 @@ jobs:
 
   installer-smoke:
     name: "🧪 Installer Smoke"
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -433,7 +433,7 @@ jobs:
 
   scoped-coverage:
     name: "📊 Scoped Coverage"
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -462,7 +462,7 @@ jobs:
 
   integration:
     name: "🔗 Integration Tests"
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -616,9 +616,9 @@ jobs:
           # Required blocking jobs (always run on PRs, never structurally skipped):
           #   code-quality, tests, extractor-smoke, audit-validator,
           #   routing-consistency, extractor-full, auditor-router, extractor-lint
-          # Advisory jobs (skipped on PRs via `if: github.event_name != 'pull_request'`
-          #   or structurally always-exit-0): security, docs, installer-smoke,
-          #   scoped-coverage, integration
+          # Advisory jobs (skipped on pull_request and merge_group, or
+          # structurally always-exit-0): security, docs, installer-smoke,
+          # scoped-coverage, integration
           # NOTE: branch protection truth is UNKNOWN; operator must verify that
           #   "ci-summary" is registered as a required status check in branch protection.
           code_quality="${{ needs.code-quality.result || 'missing' }}"

@@ -1527,6 +1527,14 @@ def _grok_audit(**overrides: Any) -> dict:
     return audit
 
 
+def _grok_4_7_audit(**overrides: Any) -> dict:
+    audit = _grok_audit()
+    audit["auditor_model"] = "grok-4.7"
+    audit["invocation"] = "grok -m grok-4.7 --always-approve --output-format plain -p '<prompt>'"
+    audit.update(overrides)
+    return audit
+
+
 def _opencode_kimi_audit(**overrides: Any) -> dict:
     audit = _local_embedded_audit()
     audit["auditor_model"] = "kimi-k3"
@@ -1560,6 +1568,11 @@ PARITY_CORPUS: list[tuple[str, dict, bool]] = [
     ("grok model with wrong tool", _grok_audit(auditor_tool="claude-code-cli"), False),
     ("grok tool with wrong model", _grok_audit(auditor_model="gemini"), False),
     ("grok build label is not a model", _grok_audit(auditor_model="grok-4.5-build"), False),
+    ("grok-4.7 pair bound both ways", _grok_4_7_audit(), True),
+    ("grok-4.7 model with wrong tool", _grok_4_7_audit(auditor_tool="claude-code-cli"), False),
+    ("grok-4.7 model borrowed by opencode-cli", _grok_4_7_audit(auditor_tool="opencode-cli"), False),
+    ("grok-cli with grok-4.6 is not admitted", _grok_4_7_audit(auditor_model="grok-4.6"), False),
+    ("grok-4.7 build label is not a model", _grok_4_7_audit(auditor_model="grok-4.7-build"), False),
     ("opencode/kimi pair bound both ways", _opencode_kimi_audit(), True),
     ("opencode/kimi model with wrong tool", _opencode_kimi_audit(auditor_tool="claude-code-cli"), False),
     ("opencode/kimi tool with wrong model", _opencode_kimi_audit(auditor_model="gemini"), False),
@@ -1686,7 +1699,7 @@ def test_every_schema_conditional_is_exercised_by_the_corpus() -> None:
     the corpus is what proves the canonical engine is actually running.
     """
     conditionals = _schema().get("allOf", [])
-    assert len(conditionals) == 7, (
+    assert len(conditionals) == 8, (
         "The trusted schema's allOf set changed. Add parity fixtures covering the "
         "new conditional to PARITY_CORPUS, then update this count."
     )

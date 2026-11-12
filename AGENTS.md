@@ -313,6 +313,12 @@ dopemux checkout (one key per checkout path and Dockerfile version): only the fi
 checkout and Dockerfile version builds (`LAUNCH_IMAGE_BUILDING`, then `/mcp reconnect all`);
 later worktrees reuse them.
 
+`dopemux mcp init|start|launch` find the product `compose.yml` via `DOPEMUX_MVP_ROOT`
+(or `DOPEMUX_PRODUCT_ROOT`), else the module's parent directories
+(`src/dopemux/mcp/docker_runtime.py` `product_root()`). A `dopemux` installed outside the
+checkout (e.g. `~/.dopemux/venv`) has no such ancestor: `export DOPEMUX_MVP_ROOT=<dopemux-mvp checkout>`
+first, or `start` fails with `PRODUCT_ROOT_UNKNOWN`. Harmless for the repo `.venv` CLI.
+
 M1 limits: mid-session `EnterWorktree` needs `/mcp reconnect all`; one orchestrator per host;
 branches that predate the launcher keep URL entries; Codex is not rendered.
 
@@ -395,7 +401,7 @@ sharing-class table (interim class today → end-state, with the gate packet tha
 | `redis-events` | **OBSERVED: host-singleton — UNSAFE/noncompliant for multi-project** (one global container, fixed `dopemux` compose project, no stream isolation; dope-memory promotes events into canonical work_log via a global consumer group = live contamination path). REQUIRED immediate target: **project-scoped** (supervisor §10.4) — ruling changes the authorized target, not the running container | host-singleton only after cross-project isolation is proven | P-21 (**P0**: prefix streams + consumer groups, enforce event-envelope identity) — no P-21 work has landed yet |
 | `pal` — `mcp-pal` HTTP, `mcp-pal-stdio` | active compose surfaces, pending retirement | retired | M5, blocked on M4/P-07 |
 | `pal` — `pal-mcp-server` (off-compose today) | host-singleton, needs adoption | host-singleton, managed | P-07 (`adopt`) |
-| `serena` | worktree-scoped | host-singleton | P-20 (multi-workspace wrapper deployment) |
+| `serena` | single container bound to the dopemux-mvp workspace (`compose.yml` mounts `${DOPEMUX_WORKSPACE_ROOT:-.}:/workspace`; not created per worktree) | host-singleton | P-20 (multi-workspace wrapper deployment) |
 | `conport` | worktree-scoped | **project-scoped** (supervisor §10.3 — storage-level project wall; never host-singleton) | ConPort CRS v2 rewritten around a fixed project tenant (P-18) |
 | `dope-memory` | worktree-scoped | host-singleton | DMX-MEMSPINE-IDENTITY-005 |
 | `task-orchestrator` — Kotlin jar (:7890) | host-singleton, single active project (`switch-project` = transitional only) | **project-scoped leased-port instances** (supervisor §10.1; `multi_project_singleton` NOT authorized) | P-24 (new ADR + implementation) |
@@ -405,11 +411,14 @@ Canonical command surface (`dopemux mcp <verb>`):
 
 | Command | Status |
 |---|---|
-| `init` (`--repo`), `start`, `stop`, `doctor`, `launch`, `switch-project`, `reap` | **IMPLEMENTED** — safe to invoke today. `launch <name>` is what `.mcp.json` entries run (MCP clients start it); `switch-project` is the transitional move of the single task-orchestrator (`:7890`); `reap` is dry-run by default (`--apply` acts, `--json` for machines) |
-| `reconcile`, `adopt`, `migrate` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
+| `init` (`--repo`), `start`, `stop`, `doctor`, `launch`, `switch-project`, `reap`, `repair-config`, `status`, `restart`, `ensure`, `add`, `remove`, `list`, `logs`, `up`, `down`, `start-all`, `generate`, `sync-globals`, `snapshot-tools` | **IMPLEMENTED** — verbs registered in `src/dopemux/commands/mcp_commands.py`; `dopemux mcp --help` is authoritative. `launch <name>` is what `.mcp.json` entries run (MCP clients start it); `switch-project` is the transitional move of the single task-orchestrator (`:7890`); `reap` is dry-run by default (`--apply` acts, `--json` for machines) |
+| `fleet`, `profile`, `leases`, `registry`, `control-plane` | **IMPLEMENTED** (command groups) |
+| `reconcile` | **PARTIAL** — no top-level `mcp reconcile`; exists only as `mcp leases reconcile`, `mcp registry reconcile` and `mcp control-plane reconcile` |
+| `adopt`, `migrate` | **PLANNED** — designed in §7 of the governing design, not yet implemented. Do not invoke or instruct a user to invoke these; they do not exist in the current CLI. |
 
 Never start fleet services outside `dopemux mcp` (compose/docker-run/shell wrappers are being removed under
-design packet P-22). While ConPort/dope-memory/serena remain worktree-scoped, N worktrees cost 3N containers —
+design packet P-22). While ConPort/dope-memory remain worktree-scoped, N worktrees cost 2N containers
+(conport, dope-memory; serena is one container bound to dopemux-mvp) —
 this is expected, not a bug, until the gates above land. Sidecars of removed or idle worktrees are reaped (`dopemux mcp reap`, §12.3).
 
 ### 12.7 Runner memory identity (Wave 2A)
