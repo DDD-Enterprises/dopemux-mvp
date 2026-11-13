@@ -1,0 +1,141 @@
+{
+  "id": "TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001",
+  "project": "dopemux-mvp",
+  "target": "T0 L2: define the MCP capability semantic contract, add a fail-closed shadow policy, and compile deterministic capability decisions for Claude, Codex, OpenCode, Gemini, and Copilot",
+  "invariants": [
+    "Architecture is ratified; this packet does not reopen architecture, design, or audit discovery",
+    "T0 combines the former M0 and M1 work into one L2 tranche",
+    "Implementation runner is Codex using gpt-5.6-sol at high effort",
+    "No runtime probes or provider calls are required before or during deterministic T0 implementation validation",
+    "The semantic contract has exactly five compilation targets: claude, codex, opencode, gemini, and copilot",
+    "Unknown clients, exposure values, lifecycle values, transports, or malformed policy fields fail closed",
+    "Shadow compilation is deterministic, side-effect free, and cannot write or activate client configuration",
+    "Current generated client configs and MCP runtime behavior remain unchanged",
+    "One independent final audit runs only after substantive content head freeze through AGY using Gemini 3.1 Pro",
+    "No intermediate model audit is allowed",
+    "Merge, activation, mark-ready, deployment, and production authority are not granted",
+    "No changes outside the explicit allowlist"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-CAPABILITY",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/t0-semantic-compilation-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "feat(mcp): add shadow capability compiler",
+    "allowlist": [
+      "config/mcp/capability-shadow-policy.yaml",
+      "schemas/mcp/capability-semantic-contract.schema.json",
+      "src/dopemux/mcp/capability_compiler.py",
+      "tests/unit/test_mcp_capability_compiler.py",
+      "task-packets/TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001.json",
+      "proof/TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001.json",
+      "python -m jsonschema -i task-packets/TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest -q tests/unit/test_mcp_capability_compiler.py",
+      "python -m pytest -q tests/unit/test_mcp_fleet_catalog.py tests/arch/test_mcp_fleet_catalog_contract.py",
+      "python -m compileall -q src/dopemux/mcp/capability_compiler.py",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --files config/mcp/capability-shadow-policy.yaml schemas/mcp/capability-semantic-contract.schema.json src/dopemux/mcp/capability_compiler.py tests/unit/test_mcp_capability_compiler.py task-packets/TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001.json proof/TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001/implementation-notes.md"
+    ]
+  },
+  "pr": {
+    "title": "feat(mcp): add shadow capability compiler",
+    "body": "Implements ratified T0 as one L2 tranche: semantic contract, fail-closed shadow policy, and deterministic five-client capability compilation. No generated client config is applied. Merge, activation, and mark-ready remain unauthorized.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Establish repository custody and confirm T0 authority without runtime probes or model calls.",
+      "requirements": [
+        "Use Codex gpt-5.6-sol at high effort",
+        "Use the dedicated T0 worktree and verified origin/main base",
+        "Do not run Pro, Fable, architecture, runtime, provider, or MCP probes"
+      ],
+      "validation": [
+        "Repository identity and clean dedicated worktree are observed",
+        "Packet validates against the canonical Task Packet schema",
+        "Changed paths remain within the packet allowlist"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Define the closed semantic contract and repository-owned shadow policy for capability compilation.",
+      "validation": [
+        "Contract admits exactly the five authorized clients",
+        "Policy mode is pinned to shadow",
+        "Policy defines explicit exposure, lifecycle, and transport decisions",
+        "Unknown semantic inputs fail closed",
+        "Policy validates against the semantic contract schema"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Implement deterministic side-effect-free compilation from MCP fleet catalog plus shadow policy into five client decision projections.",
+      "validation": [
+        "Compiler emits all five authorized clients in stable order",
+        "Server decisions and reasons are stable under input mapping reorder",
+        "No compiler path writes client configuration or contacts runtime services",
+        "Decision-required, planned-active, sequenced, read-plane, and no-exposure cases remain explicit",
+        "Malformed or unknown policy and catalog semantics raise deterministic errors"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Run deterministic validation, record implementation notes, inspect allowlist, and freeze substantive T0 head.",
+      "validation": [
+        "Focused capability compiler tests pass",
+        "Existing MCP fleet catalog tests pass",
+        "Compile check passes",
+        "git diff --check passes",
+        "Changed-contract preflight passes or exact blocker is recorded",
+        "Pre-commit passes or exact blocker is recorded",
+        "Substantive content head is frozen before any independent audit"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Run one independent final T0 audit against the frozen substantive head through AGY with Gemini 3.1 Pro, then add proof-only audit artifacts if the verdict passes.",
+      "requirements": [
+        "Resolve and parser-check the installed AGY model invocation before the one permitted audit call",
+        "Bind audit evidence to the exact frozen substantive head",
+        "Auditor must be independent from Codex implementer",
+        "Do not substitute another model, runner, or intermediate audit"
+      ],
+      "validation": [
+        "Audit runner, model identity, exact head, and raw verdict are recorded",
+        "PASS or explicitly non-blocking PASS_WITH_RISKS is required for T0 proof closure",
+        "Audit failure or unavailable route remains blocking and preserved",
+        "Proof-only successor does not alter substantive implementation"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Publish frozen T0 branch and PR only if packet validation and final audit pass; stop before merge, activation, or mark-ready.",
+      "validation": [
+        "Commit contains only allowlisted paths",
+        "PR targets main and reports exact validation state",
+        "MERGE_AUTHORIZED remains NO",
+        "ACTIVATION_AUTHORIZED remains NO",
+        "MARK_READY_AUTHORIZED remains NO"
+      ]
+    }
+  ]
+}
