@@ -1,0 +1,35 @@
+{
+  "partial": true,
+  "loaded": false,
+  "mode": "apply",
+  "approve": "LTAIP_TASK_ORCHESTRATOR_LOAD",
+  "attempted_at": "2026-07-27T00:42:26.314497+00:00",
+  "base_url": "http://localhost:8000",
+  "payload": "docs/ops/load-plans/task_orchestrator_epics-LTAIP-H0.json",
+  "preflight": {
+    "health": "PASS",
+    "dry_run": "PASS",
+    "entries": 13
+  },
+  "blocker": {
+    "code": "TO_WORKFLOW_STORE_UNAVAILABLE",
+    "summary": "POST/GET /api/workflow/epics fail because WorkflowStore persists via DopeconBridge custom_data which cannot reach a ConPort REST custom_data API.",
+    "evidence": [
+      "GET /health -> 200 task-orchestrator ok",
+      "GET /api/workflow/epics -> 503 DopeconBridge error (401) Not authenticated (missing DOPECON_BRIDGE_TOKEN on task-orchestrator)",
+      "After JWT to bridge: GET /kg/custom_data -> 500 ClientConnectorError conport:3004 Connection refused",
+      "Inside network: conport TCP 3004 refused; 3005/4005 open",
+      "conport:4005 is Info Server only (/health,/info); /api/custom_data -> 404",
+      "conport:3005 is MCP SSE surface, not REST custom_data",
+      "Bridge default CONPORT_URL=http://conport:3004; running bridge env lacks CONPORT_URL override"
+    ],
+    "required_remediation": [
+      "Expose ConPort REST custom_data (or re-point WorkflowStore to a live store)",
+      "Set DOPECON_BRIDGE_TOKEN on task-orchestrator from bridge /auth/token",
+      "Align CONPORT_URL in dopecon-bridge with listening REST port",
+      "Re-run load_task_orchestrator.py --apply --approve LTAIP_TASK_ORCHESTRATOR_LOAD"
+    ]
+  },
+  "receipts": [],
+  "status": "BLOCKED"
+}
