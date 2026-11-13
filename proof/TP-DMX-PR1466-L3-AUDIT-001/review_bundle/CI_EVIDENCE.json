@@ -1,0 +1,127 @@
+[
+  {
+    "name": "CI: CodeQL",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/runs/119794547497"
+  },
+  {
+    "name": "CI: \ud83e\uddea Installer Smoke",
+    "result": "NOT_RUN",
+    "detail": "SKIPPED at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794323268"
+  },
+  {
+    "name": "CI: independent embedded audit",
+    "result": "FAIL",
+    "detail": "FAILURE at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825381/job/119794272180"
+  },
+  {
+    "name": "CI: \ud83d\udd0d Extractor Lint",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272849"
+  },
+  {
+    "name": "CI: \ud83d\udd0d Audit Proof Validator (--all)",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272846"
+  },
+  {
+    "name": "CI: preflight",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825579/job/119794270638"
+  },
+  {
+    "name": "CI: \ud83e\uddea Extractor Smoke",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272973"
+  },
+  {
+    "name": "CI: \ud83d\udc85 Code Quality & Linting",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272715"
+  },
+  {
+    "name": "CI: Analyze (javascript-typescript)",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769820589/job/119794269456"
+  },
+  {
+    "name": "CI: Analyze (python)",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769820589/job/119794269444"
+  },
+  {
+    "name": "CI: Analyze (ruby)",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769820589/job/119794269137"
+  },
+  {
+    "name": "CI: \ud83d\udd12 Security Review",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272918"
+  },
+  {
+    "name": "CI: \ud83d\udcda Documentation Check",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272901"
+  },
+  {
+    "name": "CI: \ud83e\uddea Unit Tests",
+    "result": "NOT_RUN",
+    "detail": "IN_PROGRESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272460"
+  },
+  {
+    "name": "CI: checks",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825564/job/119794270515"
+  },
+  {
+    "name": "CI: \ud83d\udee1\ufe0f Clobber Guard",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825518/job/119794270942"
+  },
+  {
+    "name": "CI: \ud83d\uddfa\ufe0f Model Routing Consistency",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272904"
+  },
+  {
+    "name": "CI: \ud83e\uddea Extractor Full",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272928"
+  },
+  {
+    "name": "CI: Analyze (actions)",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769820589/job/119794269563"
+  },
+  {
+    "name": "CI: \ud83e\uddea Auditor Router",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794272951"
+  },
+  {
+    "name": "CI: identity-check",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825592/job/119794270583"
+  },
+  {
+    "name": "CI: \ud83d\udcca Scoped Coverage",
+    "result": "NOT_RUN",
+    "detail": "SKIPPED at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794274499"
+  },
+  {
+    "name": "CI: \ud83d\udd17 Integration Tests",
+    "result": "NOT_RUN",
+    "detail": "SKIPPED at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769825672/job/119794274058"
+  },
+  {
+    "name": "CI: identity-check",
+    "result": "PASS",
+    "detail": "SUCCESS at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769817121/job/119794242880"
+  },
+  {
+    "name": "CI: PR Steward / final readiness",
+    "result": "FAIL",
+    "detail": "FAILURE at head 7c12570f28df4cfa738001ae3b909e4a951d63b8 (snapshot before proof commits; audit-gate checks fail by design until the signed proof lands): https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39769887990"
+  }
+]
