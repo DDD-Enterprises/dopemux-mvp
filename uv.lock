@@ -1077,12 +1077,14 @@ all = [
     { name = "pydantic-settings" },
     { name = "pyjwt" },
     { name = "pymupdf" },
+    { name = "pypdf" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "pytest-xdist" },
     { name = "python-jose", extra = ["cryptography"] },
+    { name = "python-magic" },
     { name = "python-multipart" },
     { name = "pytz" },
     { name = "qdrant-client" },
@@ -1091,6 +1093,7 @@ all = [
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "structlog" },
     { name = "tenacity" },
+    { name = "tiktoken" },
     { name = "tree-sitter" },
     { name = "tree-sitter-go" },
     { name = "tree-sitter-javascript" },
@@ -1138,7 +1141,9 @@ services = [
     { name = "pydantic-settings" },
     { name = "pyjwt" },
     { name = "pymupdf" },
+    { name = "pypdf" },
     { name = "python-jose", extra = ["cryptography"] },
+    { name = "python-magic" },
     { name = "python-multipart" },
     { name = "pytz" },
     { name = "qdrant-client" },
@@ -1146,6 +1151,7 @@ services = [
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "structlog" },
     { name = "tenacity" },
+    { name = "tiktoken" },
     { name = "tree-sitter" },
     { name = "tree-sitter-go" },
     { name = "tree-sitter-javascript" },
@@ -1217,6 +1223,7 @@ requires-dist = [
     { name = "pyjwt", marker = "extra == 'services'", specifier = ">=2.13.0" },
     { name = "pymilvus", specifier = ">=2.3.0" },
     { name = "pymupdf", marker = "extra == 'services'", specifier = ">=1.23.0" },
+    { name = "pypdf", marker = "extra == 'services'", specifier = ">=4.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=9.0.3" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
@@ -1232,6 +1239,7 @@ requires-dist = [
     { name = "python-docx", specifier = ">=0.8.11" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "python-jose", extras = ["cryptography"], marker = "extra == 'services'", specifier = ">=3.5.0" },
+    { name = "python-magic", marker = "extra == 'services'", specifier = ">=0.4.27" },
     { name = "python-multipart", marker = "extra == 'services'", specifier = ">=0.0.31" },
     { name = "pytz", marker = "extra == 'services'", specifier = ">=2023.3" },
     { name = "pyyaml", specifier = ">=6.0" },
@@ -1251,6 +1259,7 @@ requires-dist = [
     { name = "structlog", marker = "extra == 'services'", specifier = ">=24.1.0" },
     { name = "tenacity", marker = "extra == 'services'", specifier = ">=8.2.3" },
     { name = "textual", specifier = ">=0.54.0" },
+    { name = "tiktoken", marker = "extra == 'services'", specifier = ">=0.7.0" },
     { name = "toml", specifier = ">=0.10.0" },
     { name = "tree-sitter", marker = "extra == 'services'", specifier = ">=0.25.2" },
     { name = "tree-sitter-go", marker = "extra == 'services'", specifier = "==0.23.0" },
@@ -2387,14 +2396,14 @@ wheels = [
 
 [[package]]
 name = "mako"
-version = "1.4.1"
+version = "1.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markupsafe" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2a/12/b5fa2353e2754cd67fb9f83793fa48ff42c213a5da7e719869d2301f6ab8/mako-1.4.1.tar.gz", hash = "sha256:d7904710b662996425a21627710c4777c45053146942cf8a7aebf757c92b8c27", size = 410165, upload-time = "2026-08-05T06:10:56.611Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/05/7f/0b891a82379ffd96d2d8cc6d435fb1055cdaed52829287f81d2a43fd71cb/mako-1.4.2.tar.gz", hash = "sha256:7227a060ee3af55a493af61d73d6beef13044b81dba9586736c13945f09464ce", size = 412231, upload-time = "2026-09-22T20:40:55.06Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a5/54/12ed58d458474aaab5c3d180173e745a4fe131bb330370596876d19ff60f/mako-1.4.1-py3-none-any.whl", hash = "sha256:a359d9a94a541213958742b2698d0a7757bb83551767bc468a74b9905aba9617", size = 80010, upload-time = "2026-08-05T06:10:58.248Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/bb/0e4c30a18858adebc75496ea8a8c3fb65cbf4b36ea1c5028ed8a0a5fa196/mako-1.4.2-py3-none-any.whl", hash = "sha256:e70a2a4308952b33a21208bfd6725da79fae5a8c224578f8cfdeb60e5ace03df", size = 80163, upload-time = "2026-09-22T20:40:56.423Z" },
 ]
 
 [[package]]
@@ -3697,6 +3706,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pypdf"
+version = "6.21.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/51/e1/32a9c4dbd94618145f8bab5c623bdb0a528f23fc8719afd77ba0278fd377/pypdf-6.21.1.tar.gz", hash = "sha256:2d62c383acd6e0dff0a96322ba8b1135229343b084d73c6f6cfd947fd291afcb", size = 7088597, upload-time = "2026-10-17T10:29:52.801Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/85/e6/24c944e473c34e818cf1b98085796fcd780465ecfe17663f2bf8fee1958b/pypdf-6.21.1-py3-none-any.whl", hash = "sha256:553e2d42f5bb3bb2a785a7d3de8ef90bb7df74b5413eff5a7b4388007ea9254b", size = 405134, upload-time = "2026-10-17T10:29:50.687Z" },
+]
+
+[[package]]
 name = "pypdfium2"
 version = "5.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3877,6 +3895,15 @@ wheels = [
 [package.optional-dependencies]
 cryptography = [
     { name = "cryptography" },
+]
+
+[[package]]
+name = "python-magic"
+version = "0.4.27"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/da/db/0b3e28ac047452d079d375ec6798bf76a036a08182dbb39ed38116a49130/python-magic-0.4.27.tar.gz", hash = "sha256:c1ba14b08e4a5f5c31a302b7721239695b2f0f058d125bd5ce1ee36b9d9d3c3b", size = 14677, upload-time = "2022-06-07T20:16:59.508Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6c/73/9f872cb81fc5c3bb48f7227872c28975f998f3e7c2b1c16e95e6432bbb90/python_magic-0.4.27-py2.py3-none-any.whl", hash = "sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3", size = 13840, upload-time = "2022-06-07T20:16:57.763Z" },
 ]
 
 [[package]]
