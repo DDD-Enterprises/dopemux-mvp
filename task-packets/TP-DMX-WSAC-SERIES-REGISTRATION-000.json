@@ -1,0 +1,97 @@
+{
+  "id": "TP-DMX-WSAC-SERIES-REGISTRATION-000",
+  "project": "dopemux-mvp",
+  "target": "L0 byte-preserving registration of the frozen whole-system architecture convergence packet series; no research or architecture judgment in this packet",
+  "invariants": [
+    "Current runtime/source/config/tests and live Git/GitHub state outrank uploaded snapshots, historical handoffs, plans, and architecture prose",
+    "Use OBSERVED, INFERRED, PROPOSED, CLAIMED, CONFLICTING, UNKNOWN, and NOT_RUN; every UNKNOWN names missing evidence",
+    "Preserve system boundaries: Dopemux coordinates; DCP controls policy/context; Dopetask executes only separately authorized work; Task Orchestrator owns workflow legality; canonical systems retain domain authority",
+    "No merge, mark-ready, activation, credential/permission change, production mutation, destructive action, history rewrite, or automatic execution authority is granted",
+    "No secrets, tokens, cookies, private keys, raw credentials, or sensitive provider payloads may enter research/proof artifacts",
+    "Ordinary main movement triggers affected-fact reharvest rather than blanket restart; exact SHA equality is required only where subject provenance requires it",
+    "Registration is byte-preserving L0 metadata work; semantic edits to any successor packet require a new frozen package",
+    "This packet does not authorize any successor packet to execute"
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-WHOLE-SYSTEM-ARCH-CONVERGENCE-001",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(wsac): register whole-system architecture convergence series",
+    "allowlist": [
+      "task-packets/TP-DMX-WSAC-SERIES-REGISTRATION-000.json",
+      "task-packets/TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001.json",
+      "task-packets/TP-DMX-WSAC-R1A-MCP-SERVICE-FLEET-001.json",
+      "task-packets/TP-DMX-WSAC-R1B-RUNNER-AGENT-INTEGRATION-001.json",
+      "task-packets/TP-DMX-WSAC-R1C-DCP-UAG-CONTEXT-ROUTING-001.json",
+      "task-packets/TP-DMX-WSAC-R1D-CANONICAL-SYSTEMS-DATAFLOW-001.json",
+      "task-packets/TP-DMX-WSAC-R1E-GOVERNANCE-EVIDENCE-FINALITY-001.json",
+      "task-packets/TP-DMX-WSAC-R1F-SECURITY-IDENTITY-MULTIPROJECT-001.json",
+      "task-packets/TP-DMX-WSAC-R1G-DEVELOPER-EXPERIENCE-ECONOMY-001.json",
+      "task-packets/TP-DMX-WSAC-R2-EXTERNAL-CAPABILITY-RESEARCH-001.json",
+      "task-packets/TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001.json",
+      "task-packets/TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001.json",
+      "task-packets/TP-DMX-WSAC-P0-CROSS-SYSTEM-CONTRACT-FREEZE-001.json",
+      "task-packets/INDEX.md"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-WSAC-SERIES-REGISTRATION-000.json",
+      "python -m jsonschema -i task-packets/TP-DMX-WSAC-SERIES-REGISTRATION-000.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --files \"task-packets/TP-DMX-WSAC-SERIES-REGISTRATION-000.json\" \"task-packets/INDEX.md\"",
+      "python - <<'PY'\nimport json,glob\nfor p in glob.glob(\"task-packets/TP-DMX-WSAC-*.json\"): json.load(open(p))\nprint(\"JSON_OK\")\nPY",
+      "for f in task-packets/TP-DMX-WSAC-*.json; do python -m jsonschema -i \"$f\" docs/03-reference/spec/dopetask/dopetask-canonical-spec.json || exit 1; done"
+    ]
+  },
+  "pr": {
+    "title": "docs(wsac): register whole-system architecture convergence series",
+    "body": "Publishes the prevalidated WSAC packet series and canonical index entry only. Byte-preserving L0 registration; no research execution, architecture ratification, merge, or activation authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Verify external frozen series package custody before publication.",
+      "validation": [
+        "All packet JSON files parse and validate against the live canonical Task Packet schema",
+        "Manifest hashes match the external package bytes exactly",
+        "Current main and Task Packet schema are reharvested; schema drift is classified before publication",
+        "No packet semantic bytes are edited during registration"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Publish the frozen packet bytes and one canonical INDEX registration entry only.",
+      "validation": [
+        "Only registration allowlist paths change",
+        "Every series packet is registered exactly once",
+        "No runtime, service, governance contract, schema, CI, or model-routing behavior changes"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run deterministic publication validation and stop before research execution.",
+      "validation": [
+        "git diff --check passes",
+        "Task Packet schema validation passes for every published packet",
+        "Changed-contract and pre-commit pass or exact external blocker is recorded",
+        "MERGE_AUTHORIZED remains NO and execution of R0 remains a separate operator dispatch action"
+      ]
+    }
+  ],
+  "execution": {
+    "agent": "shell",
+    "branch": "docs/wsac-series-registration-000",
+    "base_branch": "main"
+  }
+}
