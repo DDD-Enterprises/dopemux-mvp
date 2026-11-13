@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_delivery/gate-ledger.v1.schema.json",
+  "title": "GateLedger v1",
+  "description": "Derived projection of gate satisfaction against an exact subject. SATISFIED records that a gate's evidence is present and current; it never confers execution, merge or activation authority. UNKNOWN and CONFLICTING fail closed for consequential next actions. A required gate class with no entry is not silence but missing evidence: it is materialized as UNKNOWN (GOV-AUD-003), so an incomplete ledger cannot read as a clean one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "ledger_id", "project_id", "repository_id", "worktree_id", "packet_id", "subject_digest_or_head", "policy", "missing_required_gate_classes", "gates"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "governed-delivery.gate-ledger.v1" },
+    "ledger_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "repository_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "workspace_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "worktree_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "instance_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "packet_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "subject_digest_or_head": { "type": "string", "minLength": 1 },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["risk_lane", "policy_digest"],
+      "description": "G0 gate profile is immutable and therefore absent from caller input. Every gate class is required; inapplicability is one explicit NOT_APPLICABLE gate entry.",
+      "properties": {
+        "risk_lane": { "type": ["string", "null"] },
+        "policy_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "missing_required_gate_classes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/gate_class" },
+      "description": "Required classes with no entry at all. Non-empty means the ledger is incomplete and cannot support READY or phase advancement."
+    },
+    "gates": { "type": "array", "items": { "$ref": "#/definitions/gate_entry" } }
+  },
+  "definitions": {
+    "gate_class": {
+      "type": "string",
+      "description": "Gate classes enumerated by DMX-GOV-WORKFLOW-OPT-001 section 05.",
+      "enum": [
+        "IDENTITY", "AUTHORITY", "PACKET", "SCOPE", "VALIDATION", "FREEZE",
+        "AUDIT", "PROOF", "PR", "CI", "REVIEW", "PR_STEWARD",
+        "MERGE_AUTHORITY", "POST_MERGE", "ACTIVATION"
+      ]
+    },
+    "gate_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_id", "gate_class", "state", "policy_owner", "policy_version",
+        "evidence_refs", "subject_digest_or_head", "producer_identity",
+        "observed_at", "blocking_actions", "reason"
+      ],
+      "properties": {
+        "gate_id": { "type": "string", "minLength": 1 },
+        "gate_class": { "$ref": "#/definitions/gate_class" },
+        "state": {
+          "type": "string",
+          "enum": ["NOT_APPLICABLE", "PENDING", "SATISFIED", "UNSATISFIED", "STALE", "BLOCKED", "UNKNOWN", "CONFLICTING"]
+        },
+        "policy_owner": { "type": "string", "minLength": 1 },
+        "policy_version": { "type": "string", "minLength": 1 },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "$ref": "https://dopemux.dev/schemas/governed_delivery/evidence-reference.v1.schema.json" }
+        },
+        "subject_digest_or_head": { "type": "string", "minLength": 1 },
+        "producer_identity": { "type": "string", "minLength": 1 },
+        "observed_at": { "type": "string" },
+        "valid_until": { "type": ["string", "null"] },
+        "blocking_actions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Actions this gate blocks while unsatisfied. Absence of a blocked action is not permission to act."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why the gate holds this state. Required even for SATISFIED so the ledger is never a bare boolean."
+        }
+      }
+    }
+  }
+}

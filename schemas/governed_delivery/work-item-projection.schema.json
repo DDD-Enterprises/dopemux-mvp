@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_delivery/work-item-projection.v1.schema.json",
+  "title": "WorkItemProjection v1",
+  "description": "Navigational projection over native subsystem states, answering where work is, what gates hold, what blocks it, what evidence is current, who acts next and what action is legal. Native states are preserved by reference and never replaced by the derived phase and posture. next_legal_action is a recommendation; dispatch_eligible is structurally false in G0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "projection_id", "work_item_id", "project_id", "repository_id",
+    "worktree_id", "packet_id", "packet_ref",
+    "subject", "phase", "posture", "native_state_refs", "evidence_refs",
+    "blockers", "next_legal_action", "gate_profile_complete",
+    "audit_binding_acceptable", "audit_binding_ref", "updated_at", "projection_digest"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "governed-delivery.work-item-projection.v1" },
+    "projection_id": { "type": "string", "minLength": 1 },
+    "work_item_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "repository_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "workspace_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "worktree_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "instance_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "packet_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "packet_ref": { "type": "string", "minLength": 1 },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base_sha", "head_sha", "tree_sha", "content_digest"],
+      "properties": {
+        "base_sha": { "type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+        "head_sha": { "type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+        "tree_sha": { "type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+        "content_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "phase": {
+      "type": "string",
+      "description": "Coarse navigational phase. Not a workflow state and not a transition authority.",
+      "enum": ["REQUEST", "DESIGN", "AUTHORITY", "IMPLEMENT", "VERIFY", "REVIEW", "MERGE", "POST_MERGE", "ACTIVATE", "TERMINAL"]
+    },
+    "posture": {
+      "type": "string",
+      "enum": ["ACTIVE", "BLOCKED", "DECISION_REQUIRED", "READY", "TERMINAL"]
+    },
+    "native_state_refs": {
+      "type": "array",
+      "description": "Each contributing subsystem's own state, verbatim. Phase and posture never overwrite these.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subsystem", "native_state"],
+        "properties": {
+          "subsystem": { "type": "string", "minLength": 1 },
+          "native_state": { "type": "string", "minLength": 1 },
+          "evidence_ref": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "gate_ledger_ref": { "type": ["string", "null"] },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "$ref": "https://dopemux.dev/schemas/governed_delivery/evidence-reference.v1.schema.json" }
+    },
+    "blockers": {
+      "type": "array",
+      "description": "Root blockers preserved individually. Collapsing them into a single status is forbidden.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["blocker_id", "normalized_class", "statement"],
+        "properties": {
+          "blocker_id": { "type": "string", "minLength": 1 },
+          "normalized_class": {
+            "type": "string",
+            "enum": [
+              "CONTROL_EVENT_NOT_FAILURE", "INVALID_INPUT_OR_ARTIFACT",
+              "STALE_OR_MISMATCHED_EVIDENCE", "VALIDATION_FAILURE",
+              "BLOCKING_FINDING", "AUTHORITY_OR_JUDGMENT_REQUIRED",
+              "CAPABILITY_UNAVAILABLE", "EXTERNAL_SYSTEM_UNAVAILABLE",
+              "SCOPE_OR_CONTAINMENT_VIOLATION", "SECURITY_OR_TRUST_INCIDENT",
+              "TERMINAL_REJECTION_OR_ROLLBACK"
+            ]
+          },
+          "statement": { "type": "string" },
+          "evidence_ref": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "next_legal_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action_type", "actor_class", "authority_ref", "prerequisites", "dispatch_eligible"],
+      "properties": {
+        "action_type": { "type": "string", "minLength": 1 },
+        "actor_class": { "type": "string", "minLength": 1 },
+        "authority_ref": {
+          "type": ["string", "null"],
+          "description": "Where authority for this action would come from. Null means no authority is identified and the action is not permitted."
+        },
+        "prerequisites": { "type": "array", "items": { "type": "string" } },
+        "dispatch_eligible": {
+          "type": "boolean",
+          "const": false,
+          "description": "Structurally false in G0. A recommendation is never an execution permission."
+        }
+      }
+    },
+    "gate_profile_complete": { "type": "boolean" },
+    "audit_binding_acceptable": { "type": "boolean" },
+    "audit_binding_ref": { "type": ["string", "null"], "minLength": 1 },
+    "updated_at": { "type": "string" },
+    "projection_digest": { "type": "string", "minLength": 1 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "posture": { "const": "READY" } }, "required": ["posture"] },
+      "then": {
+        "properties": {
+          "gate_profile_complete": { "const": true },
+          "audit_binding_acceptable": { "const": true },
+          "audit_binding_ref": { "type": "string", "minLength": 1 },
+          "blockers": { "maxItems": 0 }
+        }
+      }
+    }
+  ]
+}
