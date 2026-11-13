@@ -1077,12 +1077,14 @@ all = [
     { name = "pydantic-settings" },
     { name = "pyjwt" },
     { name = "pymupdf" },
+    { name = "pypdf" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
     { name = "pytest-xdist" },
     { name = "python-jose", extra = ["cryptography"] },
+    { name = "python-magic" },
     { name = "python-multipart" },
     { name = "pytz" },
     { name = "qdrant-client" },
@@ -1091,6 +1093,7 @@ all = [
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "structlog" },
     { name = "tenacity" },
+    { name = "tiktoken" },
     { name = "tree-sitter" },
     { name = "tree-sitter-go" },
     { name = "tree-sitter-javascript" },
@@ -1138,7 +1141,9 @@ services = [
     { name = "pydantic-settings" },
     { name = "pyjwt" },
     { name = "pymupdf" },
+    { name = "pypdf" },
     { name = "python-jose", extra = ["cryptography"] },
+    { name = "python-magic" },
     { name = "python-multipart" },
     { name = "pytz" },
     { name = "qdrant-client" },
@@ -1146,6 +1151,7 @@ services = [
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "structlog" },
     { name = "tenacity" },
+    { name = "tiktoken" },
     { name = "tree-sitter" },
     { name = "tree-sitter-go" },
     { name = "tree-sitter-javascript" },
@@ -1217,6 +1223,7 @@ requires-dist = [
     { name = "pyjwt", marker = "extra == 'services'", specifier = ">=2.13.0" },
     { name = "pymilvus", specifier = ">=2.3.0" },
     { name = "pymupdf", marker = "extra == 'services'", specifier = ">=1.23.0" },
+    { name = "pypdf", marker = "extra == 'services'", specifier = ">=4.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=9.0.3" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
@@ -1232,6 +1239,7 @@ requires-dist = [
     { name = "python-docx", specifier = ">=0.8.11" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "python-jose", extras = ["cryptography"], marker = "extra == 'services'", specifier = ">=3.5.0" },
+    { name = "python-magic", marker = "extra == 'services'", specifier = ">=0.4.27" },
     { name = "python-multipart", marker = "extra == 'services'", specifier = ">=0.0.31" },
     { name = "pytz", marker = "extra == 'services'", specifier = ">=2023.3" },
     { name = "pyyaml", specifier = ">=6.0" },
@@ -1251,6 +1259,7 @@ requires-dist = [
     { name = "structlog", marker = "extra == 'services'", specifier = ">=24.1.0" },
     { name = "tenacity", marker = "extra == 'services'", specifier = ">=8.2.3" },
     { name = "textual", specifier = ">=0.54.0" },
+    { name = "tiktoken", marker = "extra == 'services'", specifier = ">=0.7.0" },
     { name = "toml", specifier = ">=0.10.0" },
     { name = "tree-sitter", marker = "extra == 'services'", specifier = ">=0.25.2" },
     { name = "tree-sitter-go", marker = "extra == 'services'", specifier = "==0.23.0" },
@@ -2489,7 +2498,7 @@ wheels = [
 
 [[package]]
 name = "mcp"
-version = "1.29.0"
+version = "1.30.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -2507,9 +2516,9 @@ dependencies = [
     { name = "typing-inspection" },
     { name = "uvicorn", marker = "sys_platform != 'emscripten'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/30/d3/f9acc21dfc886e4f78e2add1a47db46ce16884346afde53f8a064c02c891/mcp-1.29.0.tar.gz", hash = "sha256:52d01f334de1868cc3bb2d6604931126a67631f99a6c5d3b82ba47290315ec36", size = 643148, upload-time = "2026-07-28T13:41:41.939Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ba/93/0142dc84a666daf8ad51a34268f34c12fd6fda4f3810c4be2504eecc8212/mcp-1.30.0.tar.gz", hash = "sha256:445414625fce5c295faa505bb11bacece661ab6f4028d57c935db57820b7a3e4", size = 680511, upload-time = "2026-09-07T14:34:15.845Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/01/c8/248b201f6d753d69fd5d6506011abbb35a946d9142b2ae311a948fd0be3d/mcp-1.29.0-py3-none-any.whl", hash = "sha256:f5a075bb611f23d6f4d080c6a1699fa62772eebc562ba9e66b306ddde1c755f7", size = 223436, upload-time = "2026-07-28T13:41:40.337Z" },
+    { url = "https://files.pythonhosted.org/packages/f5/f4/e58bc33317c92a0203664daaf00bf6f41166cc0149e5d6870a03f7cd004a/mcp-1.30.0-py3-none-any.whl", hash = "sha256:666edb5009503e1047c9d60346a756f94b261f05cc2625f23d41c728ffc484d0", size = 234581, upload-time = "2026-09-07T14:34:14.266Z" },
 ]
 
 [[package]]
@@ -3697,6 +3706,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pypdf"
+version = "6.21.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/51/e1/32a9c4dbd94618145f8bab5c623bdb0a528f23fc8719afd77ba0278fd377/pypdf-6.21.1.tar.gz", hash = "sha256:2d62c383acd6e0dff0a96322ba8b1135229343b084d73c6f6cfd947fd291afcb", size = 7088597, upload-time = "2026-10-17T10:29:52.801Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/85/e6/24c944e473c34e818cf1b98085796fcd780465ecfe17663f2bf8fee1958b/pypdf-6.21.1-py3-none-any.whl", hash = "sha256:553e2d42f5bb3bb2a785a7d3de8ef90bb7df74b5413eff5a7b4388007ea9254b", size = 405134, upload-time = "2026-10-17T10:29:50.687Z" },
+]
+
+[[package]]
 name = "pypdfium2"
 version = "5.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3877,6 +3895,15 @@ wheels = [
 [package.optional-dependencies]
 cryptography = [
     { name = "cryptography" },
+]
+
+[[package]]
+name = "python-magic"
+version = "0.4.27"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/da/db/0b3e28ac047452d079d375ec6798bf76a036a08182dbb39ed38116a49130/python-magic-0.4.27.tar.gz", hash = "sha256:c1ba14b08e4a5f5c31a302b7721239695b2f0f058d125bd5ce1ee36b9d9d3c3b", size = 14677, upload-time = "2022-06-07T20:16:59.508Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6c/73/9f872cb81fc5c3bb48f7227872c28975f998f3e7c2b1c16e95e6432bbb90/python_magic-0.4.27-py2.py3-none-any.whl", hash = "sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3", size = 13840, upload-time = "2022-06-07T20:16:57.763Z" },
 ]
 
 [[package]]
