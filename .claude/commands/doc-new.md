@@ -23,7 +23,7 @@ Create a new documentation file with correct path, naming, and YAML front-matter
    last_review: today
    next_review: +90d
 4) If a Model Context Protocol file-write tool is available (e.g., Desktop Commander), CREATE the file at the computed path. Otherwise, return the full Markdown for manual copy.
-5) After creating, list the relative path and remind me to run: `pre-commit run -a` and `python scripts/docs_manifest.py`.
+5) After creating, list the relative path and remind me to run: `pre-commit run -a`. (Docs manifest generation is unavailable: no generator script exists in this repo.)
 
 **Notes**
 - Never duplicate an existing file; if exists, propose updating it instead.

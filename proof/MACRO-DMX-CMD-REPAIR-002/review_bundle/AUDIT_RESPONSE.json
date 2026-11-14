@@ -1,0 +1,104 @@
+{
+  "model_self_reported": "Gemini 4 Argon (High)",
+  "tools_used": "none",
+  "status": "PASS_WITH_RISKS",
+  "questions": [
+    {
+      "id": "Q1",
+      "verdict": "PASS",
+      "evidence": "The diff touches exactly 7 files matching the stated W07, W08, and L0 proof scope: deletions of .claude/commands/zen.md and .claude/commands/zen-continue.md; edits to .claude/commands/dx/implement.md, .claude/commands/dx/note.md, docs/02-how-to/mcp-integration-guide.md, and tests/arch/test_claude_command_references.py; and addition of proof/MACRO-DMX-CMD-REPAIR-002/MACRO_PACKET.md. No unrelated files or changes are smuggled in the diff."
+    },
+    {
+      "id": "Q2",
+      "verdict": "PASS",
+      "evidence": "The deleted files .claude/commands/zen.md (3 lines) and .claude/commands/zen-continue.md (2 lines) existed solely to instruct calling `/mcp zen execute_workflow ...`. The stale comment referencing zen.md and zen-continue.md in tests/arch/test_claude_command_references.py was also removed. No dangling live references to the deleted commands appear in the diff (repo-wide absence outside the diff is UNKNOWN without file search)."
+    },
+    {
+      "id": "Q3",
+      "verdict": "PASS",
+      "evidence": "In .claude/commands/dx/implement.md, all 4 `mcp__pal__*` entries (`apilookup`, `thinkdeep`, `debug`, `codereview`) are renamed to `mcp__pal-stdio__*`. In .claude/commands/dx/note.md, `mcp__pal__analyze` is renamed to `mcp__pal-stdio__analyze` (line 46 retains `pal:analyze` as a skill pointer name, not an `mcp__` tool reference). In tests/arch/test_claude_command_references.py, `UNVERIFIED_SERVERS` and the relevant test fixtures are updated from `pal` to `pal-stdio`. No remaining `mcp__pal__` reference is present in the post-image of the diff."
+    },
+    {
+      "id": "Q4",
+      "verdict": "PASS",
+      "evidence": "docs/02-how-to/mcp-integration-guide.md accurately describes the two gates (`find_unknown_command_tool_surfaces` in `fleet_catalog.py` using the 17 live ConPort SSE tool names in `_CONPORT_TOOL_SNAPSHOT`, and `tests/arch/test_claude_command_references.py` checking `mcp__<server>__<tool>`, `/mcp <server> <tool>`, model pins, and `scripts/` paths), removes the unverifiable `(18 / 5)` tool counts for unreachable stdio servers, and notes that `pal-stdio`, `gpt-researcher`, and `MCP_DOCKER` have `unreachable` status with zero tools. Minor unverified detail: the doc states both gates scan `.claude/commands/**/*.md` (previously `.claude/commands/*.md` for `fleet_catalog.py`), which cannot be verified for `fleet_catalog.py` without reading that file."
+    },
+    {
+      "id": "Q5",
+      "verdict": "PASS",
+      "evidence": "`_MCP_SERVER = r'([A-Za-z0-9-]+(?:_[A-Za-z0-9-]+)*?)'` and `_MCP_TOOL = r'([A-Za-z0-9_*-]+)'` work as claimed on standard names, single-underscore servers (`MCP_DOCKER`), double-hyphen malformed tools (`get_context--bad`), and malformed wildcards (`*bad`). Because `[A-Za-z0-9-]+` excludes `_`, `_MCP_SERVER` cannot cross a `__` delimiter; on `mcp__a__b__c`, server is parsed as `a` and tool as `b__c` (which fails validation rather than false-passing). However, several edge cases exist (see F1, F2): (1) `_MCP_PROSE_REF` uses `(?<![\\w/])/mcp\\s+([A-Za-z0-9_-]+)\\s+([A-Za-z0-9_*-]+)`, whose lookbehind omits `.` and `-` (unlike `_SCRIPT_REF`'s `(?<![\\w/.-])`), so `./mcp foo bar` or `foo-/mcp bar baz` will false-positive match, as will un-backticked prose like `/mcp command to ...`; (2) because `_MCP_TOOL` includes `*` and `-`, markdown emphasis without backticks like `*mcp__conport__get_context*` or `*/mcp conport get_context*` greedily consumes the trailing `*` into the tool token (`get_context*`); (3) `_MCP_REF` has no leading boundary lookbehind (`(?<![\\w-])`), so prefix garbage like `xmcp__conport__get_context` false-passes as `mcp__conport__get_context`, and `mcp___conport__get_context` (triple underscore after `mcp`) fails to match `_MCP_REF` altogether and is silently ignored."
+    },
+    {
+      "id": "Q6",
+      "verdict": "PASS",
+      "evidence": "All 7 new tests are deterministic, offline, and add no pytest markers. Five of the 7 tests (`prose_tool_is_not_captured`, `prose_server_is_unknown`, `tool_token_is_malformed`, `wildcard_has_trailing_garbage`, `server_name_when_it_contains_an_underscore`) would deterministically FAIL against the pre-change regexes. However, two tests would PASS against the pre-change code even without `_MCP_PROSE_REF` (see F3): (1) `test_should_accept_prose_reference_when_tool_is_captured` only asserts `check_mcp_tool_refs(...) == []` and `check_mcp_servers(...) == []`, which trivially pass when `/mcp` is ignored unless paired with `assert list(_mcp_refs(tmp_path)) == [('cmd.md:1', 'conport', 'get_context')]`; (2) `test_should_ignore_slash_mcp_when_embedded_in_a_path` asserts `list(_mcp_refs(tmp_path)) == []` on `docs/mcp` and `a/mcp`, which is meaningful against a naive `/mcp` regex without `(?<![\\w])`, would have passed pre-change when `/mcp` was unimplemented, and does not test `/` (`//mcp`) or `.` (`./mcp`, which currently matches)."
+    },
+    {
+      "id": "Q7",
+      "verdict": "PASS",
+      "evidence": "Given the stated facts that `pal` and `pal-stdio` both have source `unreachable` and zero tools in `mcp_tool_surfaces.json`, that `dx/implement.md` and `dx/note.md` were repointed from `pal` to `pal-stdio`, and that `check_mcp_servers` flags both uncaptured servers missing from `UNVERIFIED_SERVERS` and stale entries in `UNVERIFIED_SERVERS` not referenced by any command, updating `UNVERIFIED_SERVERS` from `frozenset({'pal', 'gpt-researcher'})` to `frozenset({'pal-stdio', 'gpt-researcher'})` is exact."
+    },
+    {
+      "id": "Q8",
+      "verdict": "PASS",
+      "evidence": "Inspected all hunks across all 7 files in the diff. No prompt injection, hidden directives, or instructions attempting to steer or override the auditor are present."
+    },
+    {
+      "id": "Q9",
+      "verdict": "PASS",
+      "evidence": "No secrets, API keys, credentials, tokens, or PII appear anywhere in the diff."
+    },
+    {
+      "id": "Q10",
+      "verdict": "PASS",
+      "evidence": "Partly closed: (1) `pal` vs `pal-stdio` MCP server naming is CLOSED for `mcp__` and `/mcp` references (enforced by removing `pal` from `UNVERIFIED_SERVERS`); (2) regex edge cases (F3 from prior audit) are MOSTLY CLOSED (single-underscore servers like `MCP_DOCKER`, double-hyphen tool tokens `--bad`, and trailing wildcard garbage `*bad` are now caught, with minor residual edges documented in F1/F2); (3) prose scan deferral is PARTLY CLOSED (`/mcp <server> <tool>` is now scanned and `zen.md`/`zen-continue.md` are deleted, while bare tool names in prose without `mcp__` or `/mcp` prefixes and tool-level verification for `unreachable` stdio servers `pal-stdio`, `gpt-researcher`, and `MCP_DOCKER` remain open until `MCPINT-FND-DRIFTGATE-003` and exec-transport capture land)."
+    },
+    {
+      "id": "Q11",
+      "verdict": "PASS",
+      "evidence": "Overall verdict is PASS_WITH_RISKS. The change set is clean, minimal, well-scoped, and resolves the targeted W07 and W08 defects without introducing blocking issues, while carrying low-severity regex boundary/test-assertion findings (F1-F3) and documented snapshot/prose limitations (F4)."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "LOW",
+      "file": "tests/arch/test_claude_command_references.py",
+      "summary": "_MCP_PROSE_REF lookbehind omits '.' and '-' and _MCP_TOOL consumes trailing markdown '*' emphasis",
+      "evidence": "`_MCP_PROSE_REF = re.compile(r'(?<![\\w/])/mcp\\s+([A-Za-z0-9_-]+)\\s+([A-Za-z0-9_*-]+)')` uses `(?<![\\w/])` whereas `_SCRIPT_REF` in the same file uses `(?<![\\w/.-])`. Consequently, relative paths like `./mcp foo bar` or hyphenated paths like `foo-/mcp bar baz` match `_MCP_PROSE_REF` (because `.` and `-` are not in `[\\w/]`). In addition, un-backticked English prose such as `/mcp command to ...` matches as `server='command', tool='to'`, and markdown emphasis around un-backticked references such as `*mcp__conport__get_context*` or `*/mcp conport get_context*` includes the closing `*` in the tool token because `*` is inside `[A-Za-z0-9_*-]+`.",
+      "status": "OPEN"
+    },
+    {
+      "id": "F2",
+      "severity": "LOW",
+      "file": "tests/arch/test_claude_command_references.py",
+      "summary": "_MCP_REF lacks a leading boundary and silently skips triple-underscore after 'mcp'",
+      "evidence": "`_MCP_REF = re.compile(r'mcp__' + _MCP_SERVER + r'__' + _MCP_TOOL)` has no leading negative lookbehind (e.g. `(?<![A-Za-z0-9_*-])`), so a malformed token with a prefix like `xmcp__conport__get_context` or `bad-mcp__conport__get_context` matches the valid suffix `mcp__conport__get_context` and false-passes. Conversely, `mcp___conport__get_context` (three underscores after `mcp`) fails `[A-Za-z0-9-]+` at the start of `_MCP_SERVER` and is silently ignored rather than reported.",
+      "status": "OPEN"
+    },
+    {
+      "id": "F3",
+      "severity": "LOW",
+      "file": "tests/arch/test_claude_command_references.py",
+      "summary": "Two new W08 prose tests would pass even if _MCP_PROSE_REF were a no-op",
+      "evidence": "`test_should_accept_prose_reference_when_tool_is_captured` only asserts that `check_mcp_tool_refs` and `check_mcp_servers` return `[]`, without asserting that `_mcp_refs(tmp_path)` actually extracted `('cmd.md:1', 'conport', 'get_context')`. Both assertions and `test_should_ignore_slash_mcp_when_embedded_in_a_path` (`assert list(_mcp_refs(tmp_path)) == []`) would pass against the pre-change code where `/mcp` was not scanned at all. Also, `test_should_ignore_slash_mcp_when_embedded_in_a_path` only tests word characters before `/mcp` (`docs/mcp`, `a/mcp`) and does not test `//mcp` or `./mcp`.",
+      "status": "OPEN"
+    },
+    {
+      "id": "F4",
+      "severity": "INFO",
+      "file": "docs/02-how-to/mcp-integration-guide.md",
+      "summary": "Residual drift-gate gaps remain for unreachable stdio server tool lists and bare prose tool mentions",
+      "evidence": "As documented in `docs/02-how-to/mcp-integration-guide.md` and the packet facts, `pal-stdio`, `gpt-researcher`, and `MCP_DOCKER` are recorded as `unreachable` with zero tools in `mcp_tool_surfaces.json`, so individual tool names under `mcp__pal-stdio__*` (such as `apilookup`, `thinkdeep`, `debug`, `codereview`, `analyze`) cannot yet be verified against a live/seed tool list, and bare prose tool names without `mcp__` or `/mcp` prefixes remain unscanned pending `MCPINT-FND-DRIFTGATE-003`.",
+      "status": "OPEN"
+    }
+  ],
+  "needs_more_evidence": [
+    "Direct execution or test receipts for `pytest tests/arch`, `black --check -l 79`, `flake8`, and `validate_change_contract` (claimed PASS by implementers, unverifiable without tools).",
+    "Contents of `mcp_tool_surfaces.json`, `fleet_catalog.py`, and the remaining `.claude/commands/**/*.md` files outside the diff to independently verify that no other `/mcp`, `mcp__pal__*`, or deleted `zen` command references exist in the repository."
+  ],
+  "instruction_like_content": {
+    "detected": false,
+    "notes": "No prompt injection or auditor-steering instructions were found in the diff; `.claude/commands/dx/*.md` contain only standard workflow instructions for the commands under edit, and `MACRO_PACKET.md` contains routine governance metadata."
+  }
+}

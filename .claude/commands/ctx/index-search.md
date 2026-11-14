@@ -9,7 +9,7 @@ allowed-tools: [
   "mcp__dope-context__docs_search",
   "mcp__dope-context__get_index_status"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /ctx:index-search — Index + Search (dope-context)

@@ -1,0 +1,1 @@
+cd <sealed dir: only AUDIT_PROMPT.txt and frozen.diff> && /Users/hue/.local/bin/agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print="$(cat AUDIT_PROMPT.txt)"   (agy 1.3.6; audit #2 of AUDIT-02; --mode plan dropped: no effect with slash commands disabled)

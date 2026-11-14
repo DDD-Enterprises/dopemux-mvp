@@ -2,22 +2,26 @@
 Generate a formatted report from a completed `/research-deep` run. Writes the result to `claudedocs/research/<slug>-<date>.md` so it survives the session.
 
 **Usage**
-- `/research-report` — uses the most recent `research_id` saved in ConPort active context.
+- `/research-report` — uses the most recent `research_id` saved in ConPort custom data.
 - `/research-report abc-123-def` — explicit `research_id` (e.g., to format an older run).
 
 **What you do**
 1) Resolve the `research_id`:
    - If an argument was passed, use it.
-   - Otherwise read `last_research.id` from ConPort active context:
+   - Otherwise read the `last_research` record from ConPort custom data:
      ```
-     ctx = mcp__conport__conport_get_context(workspace_id="$(git rev-parse --show-toplevel)")
-     research_id = ctx.last_research.id
+     record = mcp__conport__get_custom_data(
+       workspace_id="$(git rev-parse --show-toplevel)",
+       category="research",
+       key="last_research"
+     )
+     research_id = record.value.id
      ```
-   - If neither is available, tell me to run `/research-deep "..."` first and stop.
+   - If neither is available (the read returns `Not found`), tell me to run `/research-deep "..."` first and stop.
 2) Verify the MCP server is reachable (`docker ps --filter name=dopemux-mcp-gptr-mcp`). If not, ask me to start it.
 3) Call `mcp__gpt-researcher__write_report` with the resolved `research_id`. Optionally pass a `custom_prompt` if I included guidance like "focus on cost trade-offs."
 4) Compute the output path:
-   - Slugify the original query from ConPort (or use the first 60 chars of the report title if no query is saved).
+   - Slugify `record.value.query` when that record's `id` is the resolved `research_id` (otherwise use the first 60 chars of the report title).
    - Path: `claudedocs/research/<slug>-<YYYY-MM-DD>.md`.
    - Ensure `claudedocs/research/` exists; create if missing.
 5) Write the report Markdown to that path. Prepend YAML frontmatter:
