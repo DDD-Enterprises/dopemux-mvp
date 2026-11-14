@@ -1,0 +1,7 @@
+# Exact invocation record -- PR #1459 L2 embedded audit (TP-DMX-PR1459-L2-AUDIT-001)
+# subject head=fc921797a2e4ad8930f7e9c6882cd2957e9aed0d base=b95aa93e8d21cf1a88c0330a2a1ce258d44dd96a (stacked on PR #1456 branch fix/mcp-lifecycle-repair-001)
+# operator approval (chat 2026-10-21): "go with grok" (fallback auditor grok-cli/grok-4.5; AGY gemini-4-argon-high over quota until about 2026-10-24T03:27Z)
+# grok 1.0.62 (1474f9cbdd91) [stable]
+# start=2026-10-21T20:05:50Z
+cd <scratch>/grok-cwd && grok -m grok-4.5 --effort high --sandbox workspace --cwd <scratch>/grok-cwd --always-approve --disallowed-tools "search_replace,web_search,web_fetch,Agent" --max-turns 80 --output-format json --prompt-file AUDIT_INPUT.md > AUDIT_OUTPUT_RAW.json
+# exit=0 end=2026-10-21T20:07:33Z

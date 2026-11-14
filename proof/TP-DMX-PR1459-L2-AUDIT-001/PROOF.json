@@ -1,0 +1,178 @@
+{
+  "packet_id": "TP-DMX-PR1459-L2-AUDIT-001",
+  "branch": "fix/mcp-start-prebuild-images",
+  "base": "fix/mcp-lifecycle-repair-001",
+  "base_sha": "b95aa93e8d21cf1a88c0330a2a1ce258d44dd96a",
+  "head_sha": "fc921797a2e4ad8930f7e9c6882cd2957e9aed0d",
+  "kind": "mcp_start_prebuild_images_audit",
+  "risk_lane": "L2",
+  "implementer": "Claude Code: commit authored by the provisioning side session (claude-fable-5-1, self-reported) as 9d67f28fc; rebased onto PR #1456 as fc921797a by the supervisor session 76436141-ff29-41f5-9965-9b025f7f3adf (claude-opus-5-5, self-reported), which also built the audit prompt with scripts/audit/pal_clink_runner.py --build-prompt.",
+  "audited_files": [
+    "docs/02-how-to/mcp-setup-other-repos.md",
+    "src/dopemux/mcp/docker_runtime.py",
+    "src/dopemux/mcp/lifecycle.py",
+    "tests/unit/test_mcp_lifecycle.py",
+    "tests/unit/test_mcp_runtime_launcher.py"
+  ],
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "fallback_auditor_approval": {
+    "approved_by": "operator",
+    "approval_text": "go with grok",
+    "approved_at": "2026-10-21",
+    "exact_model": "grok-4.5",
+    "recorded_auditor_model": "grok-4.5",
+    "bounded_input": "trusted prompt built by scripts/audit/pal_clink_runner.py --build-prompt (task, output contract, delimited untrusted metadata + unified diff); grok --sandbox workspace with cwd an empty scratch dir; edit, web and sub-agent tools disallowed",
+    "no_secret_constraints": "prompt contains only the public PR diff and metadata; no env values, tokens or keys",
+    "rationale": "Operator reply 'go with grok' (2026-10-21, Claude Code desktop session 76436141-ff29-41f5-9965-9b025f7f3adf) after the approved AGY gemini-4-argon-high route returned a 429 quota error (reset about 2026-10-24T03:27Z). grok-cli/grok-4.5 is a schema auditor enum and the accepted route for PR #1420; -m grok-4.5 given explicitly because the CLI default grok-4.7 is not admitted."
+  },
+  "auditor_run": {
+    "grok_cli_version": "grok 1.0.62 (1474f9cbdd91) [stable]",
+    "session_id": "01a16011-ef58-7292-b592-01c20e51224b",
+    "request_id": "38707db1-9be3-4b13-b9c6-243039d8957f",
+    "stop_reason": "end_turn",
+    "num_turns": 7,
+    "usage": {
+      "input_tokens": 80280,
+      "cache_read_input_tokens": 191232,
+      "cache_creation_input_tokens": 0,
+      "output_tokens": 9420,
+      "reasoning_tokens": 6711,
+      "total_tokens": 280932
+    },
+    "model_usage_keys": [
+      "grok-4.5-build"
+    ],
+    "total_cost_usd": 0.093312864,
+    "observed_identity": {
+      "current_model_id": "grok-4.5",
+      "reasoning_effort": "high",
+      "summary_path": "~/.grok/sessions/%2Fprivate%2Ftmp%2Fclaude-501%2F-Users-hue-code-dopemux-mvp%2F76436141-ff29-41f5-9965-9b025f7f3adf%2Fscratchpad%2Faudit-pr1459%2Fgrok-cwd/01a16011-ef58-7292-b592-01c20e51224b/summary.json"
+    },
+    "verdict_extraction": "single fenced JSON block after auditor narration, parsed by trusted parser",
+    "raw_output_sha256": "43983b00df07eca75d25aa1b13289dde973f125c6a35661e3fb15e951655e117",
+    "prompt_sha256": "63ce1b1d38169cb1e808840b9362f0ebbb964ccf1514d2e8c43dc46db4c61c75"
+  },
+  "validations": [
+    {
+      "name": "CI documentation check",
+      "result": "PASS",
+      "detail": "\ud83d\udcda Documentation Check SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39666288825/job/119452104029"
+    },
+    {
+      "name": "CI code quality & linting",
+      "result": "PASS",
+      "detail": "\ud83d\udc85 Code Quality & Linting SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39666288825/job/119452104240"
+    },
+    {
+      "name": "CI security review",
+      "result": "PASS",
+      "detail": "\ud83d\udd12 Security Review SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39666288825/job/119452104166"
+    },
+    {
+      "name": "CI unit tests (GitHub Actions, audited head fc921797a)",
+      "result": "PASS",
+      "detail": "\ud83e\uddea Unit Tests SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39666288825/job/119452104054"
+    },
+    {
+      "name": "CI clobber guard",
+      "result": "PASS",
+      "detail": "\ud83d\udee1\ufe0f Clobber Guard SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39666288834/job/119452107663"
+    },
+    {
+      "name": "CI audit proof validator (--all)",
+      "result": "PASS",
+      "detail": "\ud83d\udd0d Audit Proof Validator (--all) SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39666288825/job/119452103546"
+    },
+    {
+      "name": "CI model routing consistency",
+      "result": "PASS",
+      "detail": "\ud83d\uddfa\ufe0f Model Routing Consistency SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39666288825/job/119452103758"
+    },
+    {
+      "name": "CI auditor router",
+      "result": "PASS",
+      "detail": "\ud83e\uddea Auditor Router SUCCESS https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/39666288825/job/119452104220"
+    },
+    {
+      "name": "supervisor: make test-fast at audited head fc921797a",
+      "result": "PASS",
+      "detail": "2721 passed, 2 skipped, exit 0 (2026-10-21)"
+    },
+    {
+      "name": "supervisor: tests for every module PR #1456 and #1459 touch",
+      "result": "PASS",
+      "detail": "78 passed"
+    },
+    {
+      "name": "supervisor: flake8 vs base b95aa93e8",
+      "result": "PASS",
+      "detail": "no new non-style findings; style deltas equal the original commit delta over main"
+    },
+    {
+      "name": "supervisor: pre-commit run --from-ref b95aa93e8 --to-ref HEAD",
+      "result": "PASS",
+      "detail": "all applicable hooks Passed"
+    },
+    {
+      "name": "auditor-side validations",
+      "result": "NOT_RUN",
+      "detail": "validation_status in auditor return: NOT_RUN"
+    }
+  ],
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <scratch>/grok-cwd --always-approve --disallowed-tools \"search_replace,web_search,web_fetch,Agent\" --max-turns 80 --output-format json --prompt-file AUDIT_INPUT.md; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1459-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F-01",
+        "severity": "LOW",
+        "title": "src/dopemux/mcp/docker_runtime.py:docker_image_exists: Absent-image detection depends on stderr containing 'no such image' with exit code 1; other docker CLI/message variants become IMAGE_PRESENCE_UNK",
+        "status": "OPEN",
+        "body": "src/dopemux/mcp/docker_runtime.py:docker_image_exists: Absent-image detection depends on stderr containing 'no such image' with exit code 1; other docker CLI/message variants become IMAGE_PRESENCE_UNKNOWN and skip pre-build."
+      },
+      {
+        "id": "F-02",
+        "severity": "LOW",
+        "title": "src/dopemux/mcp/lifecycle.py:_start_services: Dry-run still executes docker image inspect (read-only side effect) to plan build vs up.",
+        "status": "OPEN",
+        "body": "src/dopemux/mcp/lifecycle.py:_start_services: Dry-run still executes docker image inspect (read-only side effect) to plan build vs up."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "validation_status=NOT_RUN: unit tests and CI were not executed at fc921797a2e4ad8930f7e9c6882cd2957e9aed0d under this embedded audit (candidate not checked out/executed; tools/MCP disabled).",
+      "Remote GitHub PR #1459 head, check runs, and workflow provenance were not re-queried in-session; subject pin rests on frozen scratchpad evidence (HEAD.txt matches trusted head SHA).",
+      "IMAGE_PRESENCE_UNKNOWN and daemon/CLI ambiguity retain the pre-fix failure mode (compose up may build inline under the 180s up budget).",
+      "Per-project image builds (~1.6GB + ~1.9GB) remain operator disk/time cost; documented but not gated beyond build timeout.",
+      "compose_image_name assumes Compose v2 default '{project}-{service}' when build: is set without image:; compose.yml drift would mis-probe.",
+      "build_timeout_secs/up_timeout_secs read os.environ (or an explicit mapping), not lifecycle process_env; hermetic callers must set process env vars for budgets."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
+}

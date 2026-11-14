@@ -9,10 +9,13 @@ with Dopemux labels applied at create time.
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import shlex
+import stat
 import subprocess
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
@@ -29,14 +32,123 @@ LABEL_CREATED_BY = "dopemux.created_by"
 COMPOSE_INTERPOLATION_PLACEHOLDER = "dopemux-compose-interpolation-only"
 
 
+# Product compose.yml marks HOST_CODE_PARENT_DIR as required (`${VAR:?...}`);
+# compose interpolates the whole file, so one unset variable fails every
+# service.
+# HOST_PROJECT_RELATIVE_PATH is its companion for the dope-context mount.
+COMPOSE_HOST_PATH_VARS = ("HOST_CODE_PARENT_DIR", "HOST_PROJECT_RELATIVE_PATH")
+
+BUILD_TIMEOUT_ENV = "DOPEMUX_MCP_BUILD_TIMEOUT_SECS"
+UP_TIMEOUT_ENV = "DOPEMUX_MCP_UP_TIMEOUT_SECS"
+DEFAULT_BUILD_TIMEOUT_SECS = 1800.0
+DEFAULT_UP_TIMEOUT_SECS = 180.0
+
+
+# Identity, port and tenant-credential variables the lifecycle computes itself
+# (mcp.env, the compose override, or ``extra``). A shell that sourced another
+# checkout's envrc carries them; compose ranks process env above --env-file, so
+# without this scrub a worktree could start conport on another project's ports
+# or tenant. Exact names, not a prefix sweep: AGE_PASSWORD, HOST_*, the
+# DOPEMUX_MCP_* budgets and the conport/dope-memory tunables stay.
+AMBIENT_SCRUB_VARS: tuple[str, ...] = (
+    # the launcher's identity set (D3)
+    "DOPEMUX_WORKSPACE_ROOT",
+    "DOPEMUX_PROJECT_ROOT",
+    "DOPEMUX_INSTANCE_ID",
+    "DOPEMUX_WORKSPACE_ID",
+    "TASK_ORCHESTRATOR_PROJECT_ROOT",
+    # tenant credentials (D5): only ``extra`` may supply them
+    "CONPORT_DB_NAME",
+    "CONPORT_DB_USER",
+    "CONPORT_DB_PASSWORD",
+    # ports, names and ids the lifecycle writes to mcp.env / the override
+    "CONPORT_HTTP_PORT",
+    "CONPORT_MCP_PORT",
+    "CONPORT_INFO_PORT",
+    "CONPORT_CONTAINER_NAME",
+    "DOPE_MEMORY_PORT",
+    "DOPE_MEMORY_WORKSPACE_ID",
+    "DOPE_MEMORY_INSTANCE_ID",
+    "WORKSPACE_ID",
+    "DOPEMUX_PROJECT_ID",
+    "DOPEMUX_WORKTREE_ROOT",
+    "TASK_ORCHESTRATOR_HTTP_PORT",
+)
+
+
 def env_with_compose_interpolation(
     base: Optional[Mapping[str, str]] = None,
+    *,
+    host_path_defaults: bool = True,
+    product: Optional[Path] = None,
+    extra: Optional[Mapping[str, str]] = None,
+    scrub_ambient: bool = False,
 ) -> Dict[str, str]:
-    """Copy *base* (or os.environ) and set a parse-only bridge token if unset."""
+    """Copy *base* (or os.environ) and fill compose interpolation defaults.
+
+    ``scrub_ambient`` drops :data:`AMBIENT_SCRUB_VARS` from the copied base
+    before anything else; the lifecycle and launcher pass it, the legacy
+    cwd-compose commands (``mcp up/down/logs`` without ``--repo``) do not,
+    because they deliberately run on the operator's sourced envrc. ``extra``
+    is overlaid last (tenant credentials for one ``compose up``).
+
+    Sets a parse-only bridge token when unset. When *host_path_defaults* is
+    true, also derives HOST_CODE_PARENT_DIR / HOST_PROJECT_RELATIVE_PATH from
+    *product* (or :func:`product_root`) for any of them that is unset or
+    blank (a non-blank operator value always wins). If the product root
+    cannot be located both are left untouched so compose fails closed with
+    its own ``:?`` message.
+
+    Callers that may start ``dope-context`` must pass
+    ``host_path_defaults=False``: the defaults are for interpolation only and
+    must never silently supply the ``/workspaces`` mount source of the
+    dope-context singleton.
+    """
     env = dict(os.environ if base is None else base)
+    if scrub_ambient:
+        for name in AMBIENT_SCRUB_VARS:
+            env.pop(name, None)
     if not str(env.get("DOPECON_BRIDGE_TOKEN") or "").strip():
         env["DOPECON_BRIDGE_TOKEN"] = COMPOSE_INTERPOLATION_PLACEHOLDER
+    if host_path_defaults and any(
+        not str(env.get(name) or "").strip() for name in COMPOSE_HOST_PATH_VARS
+    ):
+        try:
+            root = product if product is not None else product_root()
+        except FileNotFoundError:
+            root = None
+        if root is not None:
+            derived = {
+                "HOST_CODE_PARENT_DIR": str(root.parent),
+                "HOST_PROJECT_RELATIVE_PATH": root.name,
+            }
+            for name, value in derived.items():
+                if not str(env.get(name) or "").strip():
+                    env[name] = value
+    if extra:
+        env.update({str(k): str(v) for k, v in extra.items()})
     return env
+
+
+def _positive_float_env(
+    name: str, default: float, env: Optional[Mapping[str, str]] = None
+) -> float:
+    raw = (os.environ if env is None else env).get(name)
+    try:
+        value = float(str(raw).strip())
+    except (TypeError, ValueError):
+        return default
+    return value if value > 0 else default
+
+
+def build_timeout_secs(env: Optional[Mapping[str, str]] = None) -> float:
+    """Budget for `compose build` (env DOPEMUX_MCP_BUILD_TIMEOUT_SECS, default 1800)."""
+    return _positive_float_env(BUILD_TIMEOUT_ENV, DEFAULT_BUILD_TIMEOUT_SECS, env)
+
+
+def up_timeout_secs(env: Optional[Mapping[str, str]] = None) -> float:
+    """Budget for `compose up` (env DOPEMUX_MCP_UP_TIMEOUT_SECS, default 180)."""
+    return _positive_float_env(UP_TIMEOUT_ENV, DEFAULT_UP_TIMEOUT_SECS, env)
 
 
 def product_root() -> Path:
@@ -192,8 +304,12 @@ def generate_compose_override(
     auth_mode: Optional[str] = None,
     auth_dir: Optional[Path] = None,
     conport_auth_mode: Optional[str] = None,
+    images: Optional[Mapping[str, str]] = None,
 ) -> str:
     """Generate compose.override.yml that neutralizes fixed names + relative volumes.
+
+    ``images`` (service -> :func:`compose_image_name`) adds ``image:`` so
+    ``compose build`` tags, and ``up`` runs, the one shared image of the service.
 
     Auth, per sidecar: ``DOPE_MEMORY_AUTH_MODE`` (``auth_mode``) for dope-memory
     and ``CONPORT_AUTH_MODE`` (``conport_auth_mode``) for ConPort, each switched
@@ -222,10 +338,11 @@ def generate_compose_override(
                 f'      - "{host_auth_dir.resolve()}:{DOPE_MEMORY_AUTH_MOUNT}:ro"\n'
             )
         # ports: !override replaces compose.yml all-interface publishes with loopback-only.
+        image_line = f"    image: {images['conport']}\n" if images and "conport" in images else ""
         blocks.append(
             f"""  conport:
     container_name: {cname}
-    ports: !override
+{image_line}    ports: !override
       - "127.0.0.1:{http_p}:3004"
       - "127.0.0.1:{mcp_p}:3005"
       - "127.0.0.1:{info_p}:4004"
@@ -252,10 +369,13 @@ def generate_compose_override(
             auth_volume = (
                 f'      - "{host_auth_dir.resolve()}:{DOPE_MEMORY_AUTH_MOUNT}:ro"\n'
             )
+        image_line = (
+            f"    image: {images['dope-memory']}\n" if images and "dope-memory" in images else ""
+        )
         blocks.append(
             f"""  dope-memory:
     container_name: {cname}
-    ports: !override
+{image_line}    ports: !override
       - "127.0.0.1:{mem_p}:3020"
     environment:
       DOPE_MEMORY_WORKSPACE_ID: "{identity.get('DOPE_MEMORY_WORKSPACE_ID', '')}"
@@ -319,10 +439,13 @@ def run_cmd(
     cwd: Optional[Path] = None,
     dry_run: bool = False,
     timeout: float = 180.0,
+    input_text: Optional[str] = None,
 ) -> RuntimeCommandResult:
+    """Run *cmd*; ``input_text`` (when given) goes to the child's stdin, never argv."""
     if dry_run:
         return RuntimeCommandResult(command=list(cmd), exit_code=0, dry_run=True)
     run = runner or subprocess.run
+    extra_kw: Dict[str, Any] = {} if input_text is None else {"input": input_text}
     try:
         result = run(
             list(cmd),
@@ -332,6 +455,7 @@ def run_cmd(
             check=False,
             env=dict(env) if env else None,
             cwd=str(cwd) if cwd else None,
+            **extra_kw,
         )
         return RuntimeCommandResult(
             command=list(cmd),
@@ -349,8 +473,171 @@ def run_cmd(
         return RuntimeCommandResult(
             command=list(cmd),
             exit_code=124,
-            stderr="command timed out",
+            stderr=f"command timed out after {timeout:.0f}s",
         )
+
+
+#: Dockerfile of each compose-built sidecar (compose.yml ``build.dockerfile``, context ``.``).
+SIDECAR_DOCKERFILES: Dict[str, str] = {
+    "conport": "docker/mcp-servers/conport/Dockerfile",
+    "dope-memory": "services/working-memory-assistant/Dockerfile.dope-memory",
+}
+BUILD_OVERRIDE_FILENAME = "compose.build.yml"
+_IMAGE_KEY_LEN = 12
+
+
+def image_source_key(service: str, product: Path) -> str:
+    """Short hash of the product root path and the service's Dockerfile bytes.
+
+    Changing the Dockerfile changes the key, so the next start builds a new image.
+    An unreadable Dockerfile hashes as a marker (``compose build`` then fails on it).
+    """
+    digest = hashlib.sha256(str(Path(product).resolve()).encode("utf-8") + b"\0")
+    rel = SIDECAR_DOCKERFILES.get(service)
+    if rel:
+        try:
+            digest.update((Path(product) / rel).read_bytes())
+        except OSError:
+            digest.update(b"\0dockerfile-unreadable")
+    return digest.hexdigest()[:_IMAGE_KEY_LEN]
+
+
+def compose_image_name(service: str, *, product: Optional[Path] = None) -> str:
+    """``dopemux-<service>:<key>``: one image per service and Dockerfile version (design D4).
+
+    Every worktree and project built from the same product checkout shares it, so
+    only the first launch on a host (per Dockerfile version) builds; ``<key>`` is
+    :func:`image_source_key`. Sidecar source edits that leave the Dockerfile
+    unchanged need a forced rebuild (``docker image rm`` the tag). The compose
+    override and the build override set it as ``image:``, so ``compose build`` tags
+    it and ``compose up`` runs it.
+    """
+    root = Path(product) if product is not None else product_root()
+    svc = re.sub(r"[^a-z0-9_.-]+", "-", service.lower())
+    return f"dopemux-{svc}:{image_source_key(service, root)}"
+
+
+def render_build_override(product: Path) -> str:
+    """Compose override for ``compose build``: the shared ``image:`` tag of each sidecar."""
+    lines = ["# Generated by dopemux: shared image tags for `compose build` (design D4).", "services:"]
+    for svc in SIDECAR_DOCKERFILES:
+        lines.append(f"  {svc}:")
+        lines.append(f"    image: {compose_image_name(svc, product=product)}")
+    return "\n".join(lines) + "\n"
+
+
+def _replace_text_atomically(path: Path, text: str) -> None:
+    """Write ``text`` to a tmp file beside ``path``, then rename it over ``path``.
+
+    A reader (a detached build, a ``compose up --env-file``) sees the old file or
+    the new one, never a truncated one. The new file keeps ``path``'s mode, or gets
+    the default mode (0666 minus the umask, as ``write_text`` would) when it is new.
+    """
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex[:8]}.tmp")
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(text)
+        try:
+            os.chmod(tmp, stat.S_IMODE(path.stat().st_mode))
+        except FileNotFoundError:
+            pass
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+        raise
+
+
+def compose_build_inputs(
+    runtime_dir: Path, *, product: Optional[Path] = None
+) -> tuple[Path, Path]:
+    """``(build override, env file)`` for ``compose build`` of a sidecar image.
+
+    The build override (rewritten each time, atomically) only sets the shared
+    ``image:`` tags; the env file is the lifecycle's ``mcp.env`` or an empty
+    placeholder (compose needs ``--env-file`` to exist; it does not affect the
+    image). The placeholder is created only when no ``mcp.env`` exists, in one
+    exclusive create, so a concurrent writer's file is never replaced. Shared by
+    the launcher's detached build, ``mcp init``'s pre-build and the lifecycle's
+    pre-build (which runs outside the instance lock).
+    """
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    override = runtime_dir / BUILD_OVERRIDE_FILENAME
+    env_file = runtime_dir / "mcp.env"
+    root = Path(product) if product is not None else product_root()
+    _replace_text_atomically(override, render_build_override(root))
+    try:
+        os.close(os.open(env_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666))
+    except FileExistsError:
+        pass
+    return override, env_file
+
+
+def docker_image_inspect_command(image: str) -> List[str]:
+    """Read-only command that exits 0 iff *image* exists locally."""
+    return ["docker", "image", "inspect", image, "--format", "{{.Id}}"]
+
+
+def docker_image_exists(
+    image: str,
+    *,
+    runner: Optional[Runner] = None,
+    env: Optional[Mapping[str, str]] = None,
+) -> Optional[bool]:
+    """True when the image exists, False when docker says it does not, else None.
+
+    The docker CLI exits 1 both for "No such image" and for daemon errors
+    (unreachable socket, permission denied), so only the former counts as a
+    definite False; every other outcome is unknown.
+    """
+    result = run_cmd(
+        docker_image_inspect_command(image), runner=runner, env=env, timeout=30.0
+    )
+    if result.exit_code == 0:
+        return True
+    if result.exit_code == 1 and "no such image" in (result.stderr or "").lower():
+        return False
+    return None
+
+
+def _compose_prefix(
+    *, product: Path, override_path: Path, env_file: Path, project_name: str
+) -> List[str]:
+    return [
+        "docker",
+        "compose",
+        "-f",
+        str(product / "compose.yml"),
+        "-f",
+        str(override_path),
+        "--env-file",
+        str(env_file),
+        "-p",
+        project_name,
+    ]
+
+
+def compose_build_command(
+    *,
+    product: Path,
+    override_path: Path,
+    env_file: Path,
+    project_name: str,
+    services: Sequence[str],
+) -> List[str]:
+    """`docker compose ... build <services>` with the same prefix as the up command."""
+    cmd = _compose_prefix(
+        product=product,
+        override_path=override_path,
+        env_file=env_file,
+        project_name=project_name,
+    )
+    cmd.append("build")
+    cmd.extend(list(services))
+    return cmd
 
 
 def compose_up_command(
@@ -362,20 +649,13 @@ def compose_up_command(
     services: Sequence[str],
     no_deps: bool = True,
 ) -> List[str]:
-    cmd = [
-        "docker",
-        "compose",
-        "-f",
-        str(product / "compose.yml"),
-        "-f",
-        str(override_path),
-        "--env-file",
-        str(env_file),
-        "-p",
-        project_name,
-        "up",
-        "-d",
-    ]
+    cmd = _compose_prefix(
+        product=product,
+        override_path=override_path,
+        env_file=env_file,
+        project_name=project_name,
+    )
+    cmd.extend(["up", "-d"])
     if no_deps:
         cmd.append("--no-deps")
     cmd.extend(list(services))

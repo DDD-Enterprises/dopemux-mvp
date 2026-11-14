@@ -748,9 +748,12 @@ def test_copilot_proxy_config_drops_dead_hand_authored_servers():
     }
     for dead in ("mas-sequential-thinking", "conport-admin", "gpt-researcher_wrapped", "pal"):
         assert dead not in servers
-    assert servers["conport"]["type"] == "sse"
+    # Per-worktree memory/orchestrator servers are `client: launcher`: stdio entries.
+    for launcher in ("conport", "dope-memory", "task-orchestrator"):
+        assert servers[launcher]["type"] == "stdio"
+        assert servers[launcher]["args"] == ["mcp", "launch", launcher]
     assert servers["pal-stdio"]["type"] == "stdio"
-    assert servers["dope-memory"]["type"] == "http"
+    assert servers["dope-context"]["type"] == "http"
 
 
 # ---- P1 fleet control plane: catalog-v2 compiler contract ------------------

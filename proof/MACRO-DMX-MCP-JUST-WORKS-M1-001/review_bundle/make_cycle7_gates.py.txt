@@ -1,0 +1,209 @@
+"""Write cycle7-gates.json from the cycle-6 gates plus cycle-7 facts DERIVED FROM RECEIPT FILES (never asserted).
+
+Usage: make_cycle7_gates.py <suite log> <head8> [--fills FILE] [--final] [--out FILE]
+
+Differences from make_cycle6_gates.py (which hard-coded "0 new findings", "12 passed", "rc=0 both" strings):
+  * the suite result comes from the log (pytest summary line and an `exit=N` / `exit N` line; both log formats are read);
+  * hooks / docs validators / ruff+flake8 / black+isort / mypy / root hygiene are read from their receipt files for <head8>
+    (cycle7-hooks-workflow-<h8>.txt, cycle7-docs-validators-<h8>.txt, cycle2-gates-<h8>.txt = output of cycle2-gates.sh,
+    cycle7-root-hygiene-<h8>.txt); a missing receipt gives bucket NOT_RUN, never PASS;
+  * the bots and CI results are placeholders (__BOTS_C7_GATE__, __CI_C7_GATE__) filled from --fills, with their buckets
+    (__BOTS_C7_BUCKET__, __CI_C7_BUCKET__) defaulting to NOT_RUN;
+  * the accumulated duplicate phrases in the cycle-6 acceptance / docs-validator reasons are rewritten once, cleanly, and the
+    duplicated change-contract entry is collapsed (entries are keyed by command).
+Without --final unfilled placeholders are reported and tolerated (a draft); with --final they exit 3.
+"""
+import json
+import re
+import sys
+from pathlib import Path
+
+D = Path(__file__).resolve().parent
+PREV_H8 = "efb06f7c"
+HOST_DEP = "tests/unit/test_docs_no_envrc_recipe.py::test_init_next_steps_do_not_tell_the_user_to_source_the_env_file"
+PLACEHOLDER = re.compile(r"__[A-Z0-9_]*C7[A-Z0-9_]*__")
+
+args = sys.argv[1:]
+final = "--final" in args
+fills_path = Path(args[args.index("--fills") + 1]) if "--fills" in args else None
+out_path = Path(args[args.index("--out") + 1]) if "--out" in args else D / "cycle7-gates.json"
+pos = []
+skip = False
+for a in args:
+    if skip:
+        skip = False
+        continue
+    if a in ("--fills", "--out"):
+        skip = True
+        continue
+    if a.startswith("--"):
+        continue
+    pos.append(a)
+log, h8 = Path(pos[0]), pos[1]
+assert len(h8) == 8, "head8 must be 8 hex chars"
+
+
+def read(p):
+    return p.read_text(errors="replace") if p.is_file() else None
+
+
+# ---------------------------------------------------------------- suite
+text = log.read_text(errors="replace")
+m = re.findall(r"^(?:=+ )?(\d+ (?:failed|passed)[^=\n]*? in [\d.]+s[^=\n]*?)(?: =+)?\s*$", text, re.M)
+summary = m[-1].strip() if m else "UNKNOWN (no pytest summary line)"
+exit_line = re.findall(r"^exit[= ](\d+)", text, re.M)
+rc = int(exit_line[-1]) if exit_line else None
+failed = re.findall(r"^FAILED (\S+)", text, re.M)
+if rc is None:
+    bucket = "UNKNOWN"
+elif rc == 0 and "failed" not in summary and not summary.startswith("UNKNOWN"):
+    bucket = "PASS"
+else:
+    bucket = "FAIL"
+
+g = json.loads((D / "cycle6-gates.json").read_text())
+by = {e["command"]: e for e in g}  # collapses the duplicated change-contract entry
+
+
+def key(prefix):
+    ks = [c for c in by if c.startswith(prefix)]
+    assert len(ks) == 1, (prefix, ks)
+    return ks[0]
+
+
+k = "make test-fast"
+c6 = by[k]["reason"]
+assert " at the cycle-6 frozen head" in c6 and "cycle-5 head 380c2c52c" in c6
+c6_sum = c6.split(" at the cycle-6 frozen head")[0]
+older = c6[c6.index("cycle-5 head 380c2c52c"):]
+note = ""
+if failed:
+    note = f"; failing: {', '.join(failed)}"
+    if set(failed) == {HOST_DEP}:
+        note += " (the pre-listed host-dependent test, see the VALIDATIONS.md known-flaky row: it runs the real `mcp init` against the host and fails while the live task orchestrator holds :7890; a PASS needs a rerun with host :7890 free)"
+by[k].update(exit_code=rc, bucket=bucket,
+             reason=f"{summary} at the cycle-7 frozen head {h8} (controller-run; log exit={rc}, log {log.name}){note}; cycle-6 head efb06f7c: {c6_sum}; {older}")
+
+# ---------------------------------------------------------------- hooks workflow
+k = key(".venv/bin/python -m pytest tests/test_native_hooks_workflow.py")
+f = D / f"cycle7-hooks-workflow-{h8}.txt"
+t = read(f)
+if t is None:
+    by[k].update(exit_code=None, bucket="NOT_RUN", reason=f"NOT_RUN at {h8}: receipt {f.name} not found")
+else:
+    ok = re.search(r"(\d+) passed", t) and not re.search(r"\d+ (failed|error)", t)
+    by[k].update(exit_code=0 if ok else 1, bucket="PASS" if ok else "FAIL", reason=f"{t.strip().splitlines()[-1] if t.strip() else 'empty receipt'} at {h8} ({f.name})")
+
+# ---------------------------------------------------------------- docs validators
+k = key("scripts/docs_validator.py + scripts/docs_frontmatter_guard.py")
+f = D / f"cycle7-docs-validators-{h8}.txt"
+t = read(f)
+if t is None:
+    by[k].update(exit_code=None, bucket="NOT_RUN", reason=f"NOT_RUN at {h8}: receipt {f.name} not found")
+else:
+    rows = re.findall(r"^(\S+) validator=(\d+) frontmatter=(\d+)", t, re.M)
+    ok = bool(rows) and all(v == "0" and fm == "0" for _, v, fm in rows)
+    by[k].update(exit_code=0 if ok else 1, bucket="PASS" if ok else "FAIL",
+                 reason=f"at {h8} ({f.name}): " + "; ".join(f"{p} validator={v} frontmatter={fm}" for p, v, fm in rows)
+                 + ". AGENTS.md and .claude/claude.md fail both validators at the base too (no frontmatter; not docs/ pages). Cycle 7 touches the how-to through the merge of main, so this is a fresh check, not a carry-over")
+
+# ---------------------------------------------------------------- cycle2-gates.sh receipt: ruff/flake8, black/isort, mypy
+gf = D / f"cycle2-gates-{h8}.txt"
+gt = read(gf)
+kl = key("ruff check --select F,E9 / flake8")
+kb = key("black / isort drift")
+km = key("mypy --explicit-package-bases")
+if gt is None:
+    for kk in (kl, kb, km):
+        by[kk].update(exit_code=None, bucket="NOT_RUN", reason=f"NOT_RUN at {h8}: receipt {gf.name} not found (run cycle2-gates.sh <BASE> <head>; recommended BASE = 264c97b23 so main's own changes are not scored)")
+else:
+    base = (re.search(r"^# cycle-2 gates: base (\S+)", gt, re.M) or [None, "UNKNOWN"])[1]
+    s = re.search(r"^## summary: ruff_new=(\d+) flake8_new=(\d+) mypy_new=(\d+)", gt, re.M)
+    if not s:
+        for kk in (kl, kb, km):
+            by[kk].update(exit_code=None, bucket="UNKNOWN", reason=f"UNKNOWN at {h8}: {gf.name} has no `## summary:` line")
+    else:
+        ruff_n, fl_n, my_n = (int(x) for x in s.groups())
+        lint_ok = ruff_n == 0 and fl_n == 0
+        by[kl].update(exit_code=0 if lint_ok else 1, bucket="PASS" if lint_ok else "FAIL",
+                      reason=f"ruff F/E9 new {ruff_n}, flake8 F/E7/E9/W6 new {fl_n} at {h8} vs base {base} ({gf.name} in review_bundle)")
+        mod = re.findall(r"^(src/\S+\.py): head=(\d+) base=(\d+)$", gt.split("## mypy", 1)[1].split("## docs validators", 1)[0], re.M) if "## mypy" in gt else []
+        by[km].update(exit_code=0 if my_n == 0 else 1, bucket="PASS" if my_n == 0 else "FAIL",
+                      reason=f"mypy new errors {my_n} at {h8} vs base {base}; per module head/base: " + ", ".join(f"{p.rsplit('/', 1)[-1][:-3]} {h}/{b}" for p, h, b in mod))
+        cur = {p: (int(b), int(i)) for p, b, i in re.findall(r"^(src/\S+\.py): added_lines=\d+ black_drift_total=\d+ black_in_touched=(\d+) isort_drift_total=\d+ isort_in_touched=(\d+)", gt, re.M)}
+        pt = read(D / f"cycle2-gates-{PREV_H8}.txt") or ""
+        prev = {p: (int(b), int(i)) for p, b, i in re.findall(r"^(src/\S+\.py): added_lines=\d+ black_drift_total=\d+ black_in_touched=(\d+) isort_drift_total=\d+ isort_in_touched=(\d+)", pt, re.M)}
+        worse = {p: v for p, v in cur.items() if v[0] > prev.get(p, (0, 0))[0] or v[1] > prev.get(p, (0, 0))[1]}
+        nz = {p: v for p, v in cur.items() if v != (0, 0)}
+        detail = ", ".join(f"{p.rsplit('/', 1)[-1]} black/isort {v[0]}/{v[1]}" for p, v in sorted(nz.items())) or "none"
+        by[kb].update(exit_code=0 if not worse else 1, bucket="PASS" if not worse else "FAIL",
+                      reason=f"black/isort drift on added lines at {h8} vs base {base} ({gf.name}): nonzero = {detail}; "
+                             + (f"no file above the cycle-6 receipt (cycle2-gates-{PREV_H8}.txt: the same legacy lifecycle.py lines)" if not worse
+                                else "ABOVE the cycle-6 receipt in " + ", ".join(sorted(worse))))
+
+# ---------------------------------------------------------------- reviews
+k = key("task reviews")
+by[k]["command"] = ("task reviews (cycle 2: sonnet Task A, opus Task B + final whole-cycle; cycle 3: opus Task D; cycle 4: opus Task E + Task F; cycle 5: opus Task G + Task H; cycle 6: revert, no review; "
+                    "cycle 7: merge-conflict resolution by a sonnet implementer, controller-checked, no model review)")
+by[k]["reason"] += (". Cycle 7: origin/main (264c97b23) merged into the branch as f6a8e4401; conflicts in .claude/claude.md, AGENTS.md, the how-to and tests/unit/test_mcp_doctor_repo_aware.py resolved by a Sonnet "
+                    "implementer; the controller checked the result (no conflict markers, normalized catalog check, doctor test file 36 test functions = 27 base + 8 ours + 1 from #1440); no task reviewer: "
+                    "the single Grok audit of the merged head is the review of the merge")
+k = key("PR review bots")
+assert by[k]["reason"].endswith("→ Copilot NOT_RUN on efb06f7c")
+by[k]["reason"] = by[k]["reason"] + f"; cycle-7 head {h8}: __BOTS_C7_GATE__"
+by[k].update(exit_code=None, bucket="NOT_RUN")  # until --fills supplies the bucket
+k = key("CI at the pushed head")
+by[k]["reason"] = f"at {h8}: __CI_C7_GATE__; " + by[k]["reason"]
+by[k].update(exit_code=None, bucket="NOT_RUN")
+
+# ---------------------------------------------------------------- unchanged-by-design entries, rewritten cleanly
+k = key("live: cold")
+by[k].update(exit_code=None, bucket="NOT_RUN",
+             reason=("run at the cycle-2 head 3f1335e7f (cycle2-live-smoke-3f1335e7.txt: launch exit 0 in 3 s, instance.json marker 0600, worktree_missing dry-run candidate, warm launch exit 0); "
+                     f"not repeated at {h8}: cycles 3 to 5 changed only the URL-repair predicate, the proxy's error-literal match and the preflight's doctor-finding handling (unit-tested), cycle 6 was a revert plus a "
+                     "design/help-text edit, and cycle 7 merges upstream main (at f6a8e4401 `git diff --stat efb06f7c5 f6a8e4401 -- src` touches only mcp_commands.py, doctor.py, fleet_catalog.py and claude_autoresponder.py: "
+                     "no launcher, lifecycle, reap or lock module); lock paths untouched"))
+k = key("acceptance T1")
+by[k].update(exit_code=None, bucket="NOT_RUN",
+             reason=("run at the previous code head 30b0fdec9 (PASS 7 / PARTIAL 1 / NOT_RUN 4, proof/.../AUDIT_ACCEPTANCE.md); at 3f1335e7f only the T8 dry-run and a cold launch were repeated (live smoke); "
+                     f"nothing at 43294e99b, fc591cba1, 380c2c52c, efb06f7c5 or {h8}; reap --apply, switch-project and the dNh_CRM items stay owner-run"))
+k = key("scripts/check_root_hygiene.py")
+f = D / f"cycle7-root-hygiene-{h8}.txt"
+t = read(f)
+if t is None:
+    by[k].update(exit_code=None, bucket="NOT_RUN", reason=f"NOT_RUN at {h8}: receipt {f.name} not found (cycle-6 record: FAIL, pre-existing, offenders tracked on origin/main)")
+else:
+    bad = "FAILED" in t.splitlines()[0]
+    by[k].update(exit_code=1 if bad else 0, bucket="FAIL" if bad else "PASS",
+                 reason=f"re-run at {h8} ({f.name}): {t.splitlines()[0].strip()}; the cycle-6 record states all offenders are tracked on origin/main and none comes from this branch (not re-verified by this generator)")
+
+# ---------------------------------------------------------------- fills
+out = list(by.values())
+fills = json.loads(fills_path.read_text()) if fills_path else {}
+real = {}
+for kk, val in fills.items():
+    if not kk.startswith("__"):
+        continue  # "_comment" and similar
+    assert kk in ("__BOTS_C7_GATE__", "__CI_C7_GATE__", "__BOTS_C7_BUCKET__", "__CI_C7_BUCKET__"), f"unknown fill key {kk}"
+    if isinstance(val, str) and val.startswith("FILL:"):
+        continue  # still the template text: leave the placeholder in place
+    real[kk] = val
+for kk, val in real.items():
+    if kk.endswith("_BUCKET__"):
+        assert val in ("PASS", "FAIL", "NOT_RUN", "UNKNOWN"), val
+        ent = key("PR review bots") if kk.startswith("__BOTS") else key("CI at the pushed head")
+        for e in out:
+            if e["command"] == ent:
+                e["bucket"] = val
+                e["exit_code"] = 0 if val == "PASS" else None
+js = json.dumps(out, indent=2) + "\n"
+for kk, val in real.items():
+    if not kk.endswith("_BUCKET__"):
+        js = js.replace(kk, json.dumps(val)[1:-1])
+left = sorted(set(PLACEHOLDER.findall(js)))
+out_path.write_text(js)
+print(f"{out_path.name}: {len(out)} entries; suite: {summary!r} rc={rc} bucket={bucket}; buckets: " + ", ".join(f"{e['bucket']}" for e in json.loads(js)))
+if left:
+    print(f"UNFILLED placeholders: {left}")
+    if final:
+        sys.exit(3)

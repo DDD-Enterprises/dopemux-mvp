@@ -59,8 +59,8 @@ def test_mcp_init_keeps_matching_committed_template_and_writes_envrc(tmp_path, m
     mcp_path = tmp_path / mcp_commands.PROJECT_MCP_FILENAME
     mcp_path.write_text(json.dumps(template, indent=2) + "\n")
 
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
 
     result = CliRunner().invoke(mcp_commands.mcp_init_cmd, [])
@@ -90,8 +90,8 @@ def test_mcp_add_appends_primary_and_extra_catalog_ports(tmp_path, monkeypatch):
     catalog = _catalog()
     (tmp_path / mcp_commands.PROJECT_MCP_FILENAME).write_text('{"mcpServers": {}}\n')
 
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
 
     result = CliRunner().invoke(mcp_commands.mcp_add_cmd, ["conport"])
@@ -363,7 +363,7 @@ def test_project_identity_allows_explicit_project_root_outside_git(tmp_path):
 
 def test_load_catalog_falls_back_to_bundled_default(tmp_path, monkeypatch):
     monkeypatch.delenv(mcp_commands.CATALOG_ENV_VAR, raising=False)
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(tmp_path))
 
     catalog = mcp_commands._load_catalog()
 
@@ -382,7 +382,7 @@ def test_sync_globals_dry_run_reports_additions_without_writing(tmp_path, monkey
     global_path.write_text(json.dumps({"mcpServers": {}}, indent=2) + "\n")
     original_bytes = global_path.read_bytes()
 
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "_claude_global_path", lambda: global_path)
 
     result = CliRunner().invoke(mcp_commands.mcp_sync_globals_cmd, [])
@@ -409,7 +409,7 @@ def test_sync_globals_apply_writes_backup_and_preserves_user_description(tmp_pat
         }
     }, indent=2) + "\n")
 
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "_claude_global_path", lambda: global_path)
 
     result = CliRunner().invoke(mcp_commands.mcp_sync_globals_cmd, ["--apply"])
@@ -432,7 +432,7 @@ def test_sync_globals_keeps_extra_entries_without_prune(tmp_path, monkeypatch):
         }
     }, indent=2) + "\n")
 
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "_claude_global_path", lambda: global_path)
 
     result = CliRunner().invoke(mcp_commands.mcp_sync_globals_cmd, ["--apply"])
@@ -452,7 +452,7 @@ def test_sync_globals_prune_removes_unknown_entries(tmp_path, monkeypatch):
         }
     }, indent=2) + "\n")
 
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "_claude_global_path", lambda: global_path)
 
     result = CliRunner().invoke(mcp_commands.mcp_sync_globals_cmd, ["--apply", "--prune"])
@@ -465,7 +465,7 @@ def test_sync_globals_prune_removes_unknown_entries(tmp_path, monkeypatch):
 
 def test_mcp_generate_dry_run_reports_outputs_without_writing(tmp_path, monkeypatch):
     catalog = _singleton_catalog()
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
 
     result = CliRunner().invoke(
         mcp_commands.mcp_generate_cmd,
@@ -481,7 +481,7 @@ def test_mcp_generate_dry_run_reports_outputs_without_writing(tmp_path, monkeypa
 
 def test_mcp_generate_apply_requires_output_dir(monkeypatch):
     catalog = _singleton_catalog()
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
 
     result = CliRunner().invoke(mcp_commands.mcp_generate_cmd, ["--apply"])
 
@@ -494,8 +494,8 @@ def test_mcp_generate_apply_writes_output_dir_and_in_repo_agent_targets(tmp_path
     output_dir = tmp_path / "out"
     repo_dir = tmp_path / "repo"
     repo_dir.mkdir()
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo_dir))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(repo_dir))
 
     result = CliRunner().invoke(
         mcp_commands.mcp_generate_cmd,
@@ -544,8 +544,8 @@ def test_mcp_generate_apply_merges_codex_config_when_the_memory_gate_holds(tmp_p
     (repo_dir / ".codex" / "config.toml").write_text(
         'model = "gpt-5.5"\n\n[agents]\nmax_threads = 4\n'
     )
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo_dir))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(repo_dir))
     monkeypatch.setattr(
         mcp_commands,
         "evaluate_codex_memory_gate",
@@ -569,8 +569,8 @@ def test_mcp_generate_rejects_allow_sequenced_and_names_the_new_gate(tmp_path, m
     catalog = _singleton_catalog()
     repo_dir = tmp_path / "repo"
     repo_dir.mkdir()
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo_dir))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(repo_dir))
 
     result = CliRunner().invoke(
         mcp_commands.mcp_generate_cmd,
@@ -595,8 +595,8 @@ def test_mcp_generate_apply_preserves_opencode_user_keys(tmp_path, monkeypatch):
         '{\n  "instructions": ["AGENTS.md"],\n  "mcp": {"legacy": {"type": "local"}},\n'
         '  "permission": {"pal_*": "ask"}\n}\n'
     )
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(repo_dir))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(repo_dir))
 
     result = CliRunner().invoke(
         mcp_commands.mcp_generate_cmd,
@@ -624,7 +624,7 @@ def test_mcp_ensure_fast_uses_local_checks_without_subprocess(tmp_path, monkeypa
     monkeypatch.delenv("DOPEMUX_WORKSPACE_ROOT", raising=False)
     monkeypatch.delenv("DOPEMUX_PROJECT_ROOT", raising=False)
     monkeypatch.delenv("TASK_ORCHESTRATOR_PROJECT_ROOT", raising=False)
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(
         mcp_commands,
         "resolve_project_identity",
@@ -656,7 +656,7 @@ def test_mcp_ensure_fast_reports_missing_local_config(tmp_path, monkeypatch):
     monkeypatch.delenv("DOPEMUX_WORKSPACE_ROOT", raising=False)
     monkeypatch.delenv("DOPEMUX_PROJECT_ROOT", raising=False)
     monkeypatch.delenv("TASK_ORCHESTRATOR_PROJECT_ROOT", raising=False)
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(
         mcp_commands,
         "resolve_project_identity",
@@ -678,8 +678,8 @@ def test_mcp_ensure_full_fails_closed_when_docker_missing(tmp_path, monkeypatch)
     )
     (tmp_path / mcp_commands.ENVRC_FILENAME).write_text("export CONPORT_MCP_PORT=3005\n")
 
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
     monkeypatch.setattr(mcp_commands.shutil, "which", lambda name: None)
 
@@ -725,8 +725,8 @@ def test_mcp_ensure_full_runs_bounded_remediation_sequence(tmp_path, monkeypatch
         calls.append((cmd, kwargs.get("cwd"), kwargs.get("timeout")))
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
     monkeypatch.setattr(mcp_commands.shutil, "which", lambda name: f"/usr/bin/{name}")
     monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
@@ -810,8 +810,8 @@ def test_mcp_ensure_full_subprocess_timeout_surfaces_as_click_exception(tmp_path
     def fake_run(cmd, **kwargs):
         raise subprocess.TimeoutExpired(cmd=cmd, timeout=kwargs.get("timeout"))
 
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
     monkeypatch.setattr(mcp_commands.shutil, "which", lambda name: f"/usr/bin/{name}")
     monkeypatch.setattr(mcp_commands.subprocess, "run", fake_run)
@@ -852,10 +852,10 @@ def test_doctor_aggregates_problems_and_exits_nonzero(tmp_path, monkeypatch):
     }, indent=2) + "\n")
     # No mcp_commands.ENVRC_FILENAME (.envrc.dopemux-mcp) file → that's a separate problem.
 
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
-    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda: None)
+    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda *_a, **_k: None)
     # Ensure required env is unset and port appears unreachable.
     monkeypatch.delenv("DOPEMUX_WORKSPACE_ID", raising=False)
     monkeypatch.delenv("CONPORT_MCP_PORT", raising=False)
@@ -901,10 +901,10 @@ def test_doctor_runs_relative_stdio_resolution_from_repo_root(tmp_path, monkeypa
         },
     }
 
-    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(tmp_path))
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
+    monkeypatch.setattr(mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(tmp_path))
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: catalog)
     monkeypatch.setattr(mcp_commands, "resolve_project_identity", lambda **_: _identity(tmp_path))
-    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda: None)
+    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda *_a, **_k: None)
     monkeypatch.delenv("TASK_ORCHESTRATOR_PROJECT_ROOT", raising=False)
     subdir = tmp_path / "nested"
     subdir.mkdir()

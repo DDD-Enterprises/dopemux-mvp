@@ -378,6 +378,8 @@ def main() -> int:
     else:
         skip("ENVRC_AFTER.redacted.txt", "missing")
 
+    # The per-repo agent note that `repair-config` writes into the target repo (not a dopemux-mvp file;
+    # setup guide: docs/02-how-to/mcp-setup-other-repos.md).
     boot = DNH / ".claude" / "WORKTREE_MCP_SETUP.md"
     boot_ok = False
     if boot.exists():

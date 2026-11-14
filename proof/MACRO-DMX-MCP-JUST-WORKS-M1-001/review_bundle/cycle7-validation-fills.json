@@ -1,0 +1,30 @@
+{
+ "HOOKS": {
+  "result": "12 passed at 2479969fe (cycle7-hooks-workflow-2479969f.txt)",
+  "bucket": "PASS"
+ },
+ "DOCS": {
+  "result": "docs_validator rc=0 and docs_frontmatter_guard rc=0 on the how-to and the design doc at 2479969fe (cycle7-docs-validators-2479969f.txt)",
+  "bucket": "PASS"
+ },
+ "LINT": {
+  "result": "ruff F/E9 new 0; flake8 F/E7/E9/W6 new 0 vs the cycle base 0cde3a921, the same base as cycles 2 to 6 (cycle2-gates-2479969f.txt)",
+  "bucket": "PASS"
+ },
+ "FORMAT": {
+  "result": "format-touched exit=1, identical to the cycle-6 receipt at efb06f7c5: the only file with black drift inside lines the range added is lifecycle.py (7 lines; legacy lines moved with the preflight extraction), isort 0 in touched lines; no src line was authored in cycle 7 (cycle2-gates-2479969f.txt)",
+  "bucket": "PASS"
+ },
+ "MYPY": {
+  "result": "0 new errors per changed src module vs the cycle base 0cde3a921 (cycle2-gates-2479969f.txt). For the record, the same script against upstream main 264c97b23 counts 88 errors in the PR's src modules that main does not have (cycle7-gates-vs-main-264c97b2-2479969f.txt), e.g. reap.py 17 vs 0; the repo-wide mypy is not functional on main and earlier cycles did not take this measurement, so it is not a gate",
+  "bucket": "PASS"
+ },
+ "CATALOG": {
+  "result": "scripts/commandcode_router/build_normalized_catalog.py --check: CHECK_PASS at 2479969fe (9 base agents, 43 personas)",
+  "bucket": "PASS"
+ },
+ "MERGE": {
+  "result": "re-checked at 2479969fe: no conflict markers in the 4 resolved files; tests/unit/test_mcp_doctor_repo_aware.py has 36 test functions; git diff efb06f7c5..HEAD touches 4 src files, all from upstream main via the merge; full-mode validate_change_contract.py --base 264c97b23 --head HEAD: status=PASS, max_lane=L2 (cycle7-change-contract-full-2479969f.txt)",
+  "bucket": "PASS"
+ }
+}

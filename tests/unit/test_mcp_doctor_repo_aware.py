@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -82,7 +83,8 @@ def _write_fixture_repo(
 ) -> Path:
     repo = tmp_path / "proj"
     repo.mkdir()
-    (repo / ".git").mkdir()
+    # Identity comes from git only, so the fixture must be a real repository.
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
     servers = mcp_servers or {
         "conport": {
             "type": "sse",
@@ -214,24 +216,35 @@ def test_build_desired_services_unions_catalog_defaults():
     assert "task-orchestrator" in names
 
 
-def test_resolve_identity_forces_repo_over_ambient(tmp_path: Path):
+def test_resolve_identity_ignores_ambient(tmp_path: Path, monkeypatch):
+    for name in (
+        "DOPEMUX_WORKSPACE_ROOT",
+        "DOPEMUX_PROJECT_ROOT",
+        "DOPEMUX_INSTANCE_ID",
+        "DOPEMUX_WORKSPACE_ID",
+        "TASK_ORCHESTRATOR_PROJECT_ROOT",
+    ):
+        monkeypatch.delenv(name, raising=False)
     target = tmp_path / "target-repo"
-    target.mkdir()
-    (target / ".git").mkdir()
     foreign = tmp_path / "foreign-repo"
-    foreign.mkdir()
-    (foreign / ".git").mkdir()
+    for repo in (target, foreign):
+        repo.mkdir()
+        subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
 
     view = resolve_identity_view(
         target,
         envrc_values={
             "DOPEMUX_WORKSPACE_ROOT": str(foreign),
             "DOPEMUX_PROJECT_ROOT": str(foreign),
+            "DOPEMUX_INSTANCE_ID": "dcd6",
+            "DOPEMUX_WORKSPACE_ID": str(foreign),
             "TASK_ORCHESTRATOR_PROJECT_ROOT": str(foreign),
         },
     )
     assert view.worktree_root == str(target.resolve())
-    assert any("forced identity" in e for e in view.evidence)
+    assert view.project_root == str(target.resolve())
+    assert view.workspace_id == str(target.resolve())
+    assert not any("forced identity" in e for e in view.evidence)
 
 
 def test_doctor_ignores_foreign_cwd_compose(tmp_path: Path, monkeypatch):
@@ -862,6 +875,220 @@ def test_build_desired_services_includes_catalog_defaults_when_mcp_json_present(
     assert "conport" in names
     assert "dope-memory" in names
     assert "task-orchestrator" in names
+
+
+def test_doctor_warns_when_path_dopemux_is_not_editable_install(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import doctor as doctor_mod
+    from dopemux.mcp.docker_runtime import product_root
+
+    repo = _write_fixture_repo(tmp_path)
+    monkeypatch.setattr(doctor_mod.shutil, "which", lambda name: "/opt/tools/bin/dopemux")
+    monkeypatch.setattr(
+        doctor_mod,
+        "_probe_dopemux_file",
+        lambda bin_path: "/opt/tools/lib/python3.12/site-packages/dopemux/__init__.py",
+    )
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+        check_dopemux_bin=True,
+    )
+    found = [f for f in report.findings if f["code"] == "DOPEMUX_BIN_NOT_EDITABLE"]
+    assert len(found) == 1
+    assert found[0]["severity"] == "WARN"
+    assert found[0]["recommendation"] == f"uv tool install --editable {product_root()}"
+
+    editable = str(product_root() / "src" / "dopemux" / "__init__.py")
+    monkeypatch.setattr(doctor_mod, "_probe_dopemux_file", lambda bin_path: editable)
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={},
+        check_dopemux_bin=True,
+    )
+    assert not [f for f in report.findings if f["code"] == "DOPEMUX_BIN_NOT_EDITABLE"]
+
+
+def test_doctor_skips_dopemux_bin_check_unless_asked(tmp_path: Path, monkeypatch):
+    """Off by default: the lifecycle preflight and tests never probe the real PATH."""
+    from dopemux.mcp import doctor as doctor_mod
+
+    repo = _write_fixture_repo(tmp_path)
+    probed: list = []
+    monkeypatch.setattr(doctor_mod.shutil, "which", lambda name: probed.append(name) or None)
+    monkeypatch.setattr(
+        doctor_mod, "_probe_dopemux_file", lambda bin_path: probed.append(bin_path)
+    )
+    report = run_mcp_doctor(
+        repo, catalog=_catalog(), skip_docker=True, skip_port_probe=True, process_env={}
+    )
+    assert probed == []
+    assert not [f for f in report.findings if f["code"] == "DOPEMUX_BIN_NOT_EDITABLE"]
+
+
+def test_doctor_cli_asks_for_the_dopemux_bin_check(tmp_path: Path, monkeypatch):
+    from click.testing import CliRunner
+
+    from dopemux.commands import mcp_commands
+    from dopemux.mcp import doctor as doctor_mod
+
+    repo = _write_fixture_repo(tmp_path)
+    seen: dict = {}
+    real = doctor_mod.run_mcp_doctor
+
+    def recording(*args, **kwargs):
+        seen["check_dopemux_bin"] = kwargs.get("check_dopemux_bin")  # never the env
+        kwargs["skip_docker"] = True
+        kwargs["skip_port_probe"] = True
+        kwargs["check_dopemux_bin"] = False  # keep the test off the real PATH
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(doctor_mod, "run_mcp_doctor", recording)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", _catalog)
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["doctor", "--repo", str(repo), "--skip-docker", "--json"]
+    )
+    assert result.exit_code in (0, 1, 2), result.output
+    asked = seen.get("check_dopemux_bin")
+    assert asked is True
+
+
+# --- ConPort tenant (Task 4, D5; ruling R1: opt-in, read-only) -----------------
+
+
+def _tenant_psql(count: int, calls: list):
+    def psql(database, sql):
+        calls.append((database, sql))
+        if "DPMX_TABLES=" in sql:
+            out = " ?column? \n----------\n DPMX_TABLES=decisions,progress_entries\n(1 row)\n"
+        else:
+            out = f" ?column? \n----------\n DPMX_COUNT={count}\n(1 row)\n"
+        return subprocess.CompletedProcess(["psql"], 0, out, "")
+
+    return psql
+
+
+def _sidecar_doctor(tmp_path: Path, *, psql=None, skip_docker: bool = False, envrc_extra: str = ""):
+    """Sidecars only and an empty (fake) docker: no UNKNOWN that would mask the status."""
+    catalog = _catalog()
+    catalog["defaults"]["per_worktree"] = ["conport", "dope-memory"]
+    del catalog["servers"]["task-orchestrator"]
+    repo = tmp_path / "proj"
+    if not repo.exists():
+        repo = _write_fixture_repo(
+            tmp_path,
+            mcp_servers={
+                "conport": {"type": "sse", "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"},
+                "dope-memory": {
+                    "type": "http",
+                    "url": "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp",
+                },
+            },
+        )
+    if envrc_extra:
+        envrc = repo / ".envrc.dopemux-mcp"
+        envrc.write_text(envrc.read_text() + envrc_extra)
+    report = run_mcp_doctor(
+        repo,
+        catalog=catalog,
+        skip_docker=skip_docker,
+        skip_port_probe=True,
+        process_env={},
+        docker_runner=lambda *a, **k: SimpleNamespace(returncode=0, stdout="", stderr=""),
+        psql=psql,
+    )
+    return repo, report
+
+
+def test_doctor_warns_legacy_shared_store(tmp_path: Path):
+    calls: list = []
+    _repo, report = _sidecar_doctor(tmp_path, psql=_tenant_psql(3, calls))
+    # The finding itself is a WARN on conport (not inferred from the overall status).
+    assert ("CONPORT_LEGACY_SHARED_STORE", "conport", "WARN") in {
+        (f["code"], f["service"], f["severity"]) for f in report.findings
+    }
+    finding = next(f for f in report.findings if f["code"] == "CONPORT_LEGACY_SHARED_STORE")
+    assert "dopemux_knowledge_graph" in finding["message"] + finding["recommendation"]
+    assert "M2" in finding["recommendation"]
+    assert report.status == "PASS_WITH_WARNINGS"
+    assert calls and all(db == "dopemux_knowledge_graph" for db, _ in calls)
+
+
+def test_doctor_tenant_check_is_opt_in_and_read_only(tmp_path: Path):
+    from dopemux.mcp import conport_tenant as ct
+
+    repo, off = _sidecar_doctor(tmp_path)
+    assert not [f for f in off.findings if f["code"].startswith("CONPORT_")]
+
+    calls: list = []
+    _repo, fresh = _sidecar_doctor(tmp_path, psql=_tenant_psql(0, calls))
+    # A start would provision; the doctor never does, and says nothing.
+    assert not [f for f in fresh.findings if f["code"].startswith("CONPORT_")]
+    assert calls and not any("CREATE " in sql for _db, sql in calls)
+
+    _repo, adopted = _sidecar_doctor(
+        tmp_path,
+        psql=_tenant_psql(0, []),
+        envrc_extra=(
+            "export CONPORT_DB_NAME=conport_fake\nexport CONPORT_DB_USER=conport_fake\n"
+            "export CONPORT_DB_PASSWORD=fake-doctor-pw\n"
+        ),
+    )
+    source = next(f for f in adopted.findings if f["code"] == "CONPORT_TENANT_SOURCE")
+    assert source["severity"] == "INFO" and "legacy_envrc" in source["message"]
+    assert "fake-doctor-pw" not in adopted.to_json()
+    identity = resolve_identity_view(repo)
+    assert not ct.secrets_path(identity.project_id).exists()  # read-only: never copied
+    assert "ConPort tenant: legacy_envrc" in format_human_summary(adopted)
+
+
+def test_doctor_skip_docker_skips_the_tenant_check(tmp_path: Path):
+    calls: list = []
+    _repo, report = _sidecar_doctor(tmp_path, psql=_tenant_psql(3, calls), skip_docker=True)
+    assert calls == []  # no `docker exec ... psql` when docker is skipped
+    finding = next(f for f in report.findings if f["code"] == "CONPORT_TENANT_UNVERIFIED")
+    assert finding["severity"] == "INFO" and finding["service"] == "conport"
+    assert "--skip-docker" in finding["recommendation"]
+    assert not [f for f in report.findings if f["code"] == "CONPORT_LEGACY_SHARED_STORE"]
+
+
+def test_doctor_unreachable_postgres_is_info_naming_the_shared_store_fallback(tmp_path: Path):
+    def down(database, sql):
+        return subprocess.CompletedProcess(["psql"], 2, "", "psql: error: connection refused")
+
+    _repo, report = _sidecar_doctor(tmp_path, psql=down)
+    finding = next(f for f in report.findings if f["code"] == "CONPORT_TENANT_UNVERIFIED")
+    assert finding["severity"] == "INFO"
+    # final review R2: a start in this state refuses instead of guessing the shared store
+    assert "CONPORT_TENANT_UNKNOWN_HISTORY" in finding["recommendation"]
+    assert "CONPORT_LEGACY_SHARED_STORE" not in finding["recommendation"]
+    assert not [f for f in report.findings if f["code"] == "CONPORT_TENANT_UNKNOWN_HISTORY"]
+
+
+def test_doctor_cli_asks_for_the_conport_tenant_check(tmp_path: Path, monkeypatch):
+    from dopemux.mcp import doctor as doctor_mod
+
+    repo = _write_fixture_repo(tmp_path)
+    seen: dict = {}
+    real = doctor_mod.run_mcp_doctor
+
+    def recording(*args, **kwargs):
+        seen["check_conport_tenant"] = kwargs.get("check_conport_tenant")
+        kwargs["check_dopemux_bin"] = False
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(doctor_mod, "run_mcp_doctor", recording)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", _catalog)
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["doctor", "--repo", str(repo), "--skip-docker", "--json"]
+    )
+    assert result.exit_code in (0, 1, 2), result.output
+    assert seen.get("check_conport_tenant") is True
 
 
 def test_format_human_summary_skips_repair_apply_when_repair_is_noop(tmp_path: Path):

@@ -1,0 +1,2 @@
+warning: --disallowed-tools "delegate", "fetch", "browser", "computer", "memory", "read_many_files" name no tool, so they remove nothing
+grok exit=0

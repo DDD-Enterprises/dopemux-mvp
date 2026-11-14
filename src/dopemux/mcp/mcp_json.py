@@ -7,6 +7,7 @@ entries are always preserved. Never mutates global (~/.claude.json) config.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 from urllib.parse import urlparse
@@ -113,26 +114,128 @@ def _functional_subset(entry: Mapping[str, Any]) -> Dict[str, Any]:
     return {k: entry[k] for k in _FUNCTIONAL_KEYS if k in entry}
 
 
-def _url_is_repairable(url: Optional[str]) -> bool:
+_LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1"})
+_PLACEHOLDER = re.compile(r"\$\{[^}:$]*(?::-([^}$]*))?\}")
+_LITERAL_SCHEME = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://")
+
+#: The only port variables dopemux has rendered into a ``url_template``.
+_DOPEMUX_PORT_VARS = frozenset(
+    {"CONPORT_MCP_PORT", "DOPE_MEMORY_PORT", "TASK_ORCHESTRATOR_HTTP_PORT"}
+)
+_PLACEHOLDER_NAME = re.compile(r"\$\{([A-Z][A-Z0-9_]*)")
+#: Exactly the shape dopemux renders: literal http(s) scheme, literal local host,
+#: one port variable (numeric or absent default), then a literal remainder.
+_SELF_RENDERED = re.compile(
+    r"https?://(?:localhost|127\.0\.0\.1)"
+    r":\$\{([A-Z][A-Z0-9_]*)(?::-[0-9]+)?\}(?:[/?#][^${}\s]*)?"
+)
+
+
+def _placeholder_in_userinfo_or_host(url: str) -> bool:
+    """True when a ``${...}`` placeholder sits in the userinfo or host position.
+
+    That is the userinfo or host of a URL that starts with a literal ``scheme://``,
+    or anywhere in a URL that does not (such a URL is never repairable).
+
+    A host or userinfo placeholder is operator-selected whatever its default
+    (``${HOST:-localhost}`` resolves to a remote host when ``HOST`` is set), so
+    it never proves the endpoint local. Placeholders in the port, path or query
+    are not considered here when the URL starts with a literal scheme.
+
+    Placeholders are masked over the whole URL before the authority is split:
+    a default may itself contain ``/``, ``?``, ``#``, ``@``, ``:`` or ``://``
+    (``http://${HOST:-localhost/x}/sse``), and splitting first would end the
+    authority inside the placeholder.
+
+    Only a literal scheme at the very start is stripped. When a placeholder
+    supplies the scheme, the ``//`` or the whole base
+    (``${BASE:-http://localhost}/sse``, ``${S:-http}://localhost/sse``), a later
+    ``://`` in the path or query is not the authority, so such URLs fail closed:
+    the function returns True and they are never repairable.
+    """
+    # Mask each placeholder as one opaque character so a delimiter inside
+    # ``${PORT:-3005}`` is neither the port separator nor the end of the authority.
+    masked = _PLACEHOLDER.sub("\x00", url)
+    scheme = _LITERAL_SCHEME.match(masked)
+    if scheme is None:
+        return "\x00" in masked
+    authority = masked[scheme.end() :]
+    for sep in ("/", "?", "#"):
+        authority = authority.split(sep, 1)[0]
+    userinfo, _, hostport = authority.rpartition("@")
+    if "\x00" in userinfo:
+        return True
+    if hostport.startswith("["):
+        host = hostport.split("]", 1)[0]
+    else:
+        host = hostport.split(":", 1)[0]
+    return "\x00" in host
+
+
+def _catalog_port_vars(catalog: Mapping[str, Any]) -> frozenset[str]:
+    """Variable names used in the catalog's ``url``/``url_template`` values."""
+    names: set[str] = set()
+    for spec in (catalog.get("servers") or {}).values():
+        if not isinstance(spec, Mapping):
+            continue
+        for key in ("url", "url_template"):
+            value = spec.get(key)
+            if isinstance(value, str):
+                names.update(_PLACEHOLDER_NAME.findall(value))
+    return frozenset(names)
+
+
+def _self_rendered_template(url: str, port_vars: frozenset[str]) -> bool:
+    """True when ``url`` has exactly the shape dopemux renders into a ``.mcp.json``.
+
+    That is a literal ``http(s)://``, a literal ``localhost`` or ``127.0.0.1``,
+    and one port variable named in ``port_vars`` as the only placeholder, with a
+    numeric or absent default, then a literal remainder. A variable's value is
+    unknown at repair time, so only this provenance is judged, never the value.
+    """
+    match = _SELF_RENDERED.fullmatch(url)
+    return match is not None and match.group(1) in port_vars
+
+
+def _url_is_repairable(
+    url: Optional[str], port_vars: Optional[frozenset[str]] = None
+) -> bool:
+    """True when the catalog may replace ``url``.
+
+    That is when it is missing; or a literal URL on localhost/127.0.0.1 with no
+    credentials; or a templated URL of exactly the shape dopemux renders itself
+    (literal http(s) scheme, literal local host, one of dopemux's own port
+    variables as the only placeholder in the port position, numeric or absent
+    default, literal remainder). Any other template is operator-authored and
+    preserved. Environment values are never inspected: a variable's value is
+    unknown at repair time, so only the template's provenance is judged.
+    """
     if not url or not isinstance(url, str):
         return True  # missing → can set template
     if "${" in url:
-        # Template placeholders are always candidate for catalog template replace
-        # when host is local or still a placeholder.
-        return True
+        return not _placeholder_in_userinfo_or_host(url) and _self_rendered_template(
+            url, port_vars or _DOPEMUX_PORT_VARS
+        )
     try:
         parsed = urlparse(url)
-    except Exception:  # noqa: BLE001
+        host = (parsed.hostname or "").lower()
+    except ValueError:
         return False
-    host = (parsed.hostname or "").lower()
-    if host and host not in {"localhost", "127.0.0.1"}:
+    if any(ch in parsed.netloc for ch in "${}"):
+        return False  # malformed placeholder characters: not provably local
+    if host and host not in _LOCAL_HOSTS:
         return False
     # userinfo credentials → never rewrite
-    if parsed.username or parsed.password:
-        return False
-    if "@" in url.split("://", 1)[-1].split("/", 1)[0]:
+    if parsed.username or parsed.password or "@" in parsed.netloc:
         return False
     return True
+
+
+def _catalog_is_launcher(catalog: Mapping[str, Any], name: str) -> bool:
+    # Lazy: fleet_catalog imports the CLI module, which this planner avoids at import time.
+    from .fleet_catalog import catalog_client_shape
+
+    return catalog_client_shape((catalog.get("servers") or {}).get(name) or {}) == "launcher"
 
 
 def render_catalog_entry(
@@ -210,9 +313,27 @@ def plan_mcp_json_repairs(
             )
             continue
 
-        # Non-localhost / credential URLs: preserve URL, only repair type if safe
+        # Operator-authored or non-local URL: preserve the URL, only repair type if safe
         current_url = current.get("url")
-        url_ok = _url_is_repairable(current_url if isinstance(current_url, str) else None)
+        url_ok = _url_is_repairable(
+            current_url if isinstance(current_url, str) else None,
+            _DOPEMUX_PORT_VARS | _catalog_port_vars(catalog),
+        )
+
+        is_launcher = _catalog_is_launcher(catalog, name)
+        if is_launcher and current_url and not url_ok:
+            # An operator-authored or non-local URL is not ours to replace.
+            preserved.append(
+                {
+                    "path": mcp_json_path,
+                    "service": name,
+                    "reason": (
+                        "operator URL preserved "
+                        "(not a literal local URL and not a dopemux-rendered template)"
+                    ),
+                }
+            )
+            continue
 
         new_entry = dict(current)
         change_reasons: List[str] = []
@@ -226,12 +347,15 @@ def plan_mcp_json_repairs(
             new_entry["url"] = desired["url"]
             change_reasons.append("URL_MISMATCH")
         elif not url_ok and desired.get("url") and current.get("url") != desired.get("url"):
-            # Explicitly do not change non-local URLs
+            # Explicitly do not change operator-authored or non-local URLs
             preserved.append(
                 {
                     "path": mcp_json_path,
                     "service": name,
-                    "reason": "non-localhost or credential URL preserved",
+                    "reason": (
+                        "operator URL preserved "
+                        "(not a literal local URL and not a dopemux-rendered template)"
+                    ),
                 }
             )
 
@@ -241,6 +365,15 @@ def plan_mcp_json_repairs(
                 # Only patch if current is missing or clearly wrong for catalog-owned
                 if key not in current or current.get(key) != desired.get(key):
                     new_entry[key] = desired[key]
+                    if "CATALOG_FIELD_DRIFT" not in change_reasons:
+                        change_reasons.append("CATALOG_FIELD_DRIFT")
+
+        # A launcher entry carries no endpoint or env of its own: drop leftovers
+        # from the old URL shape instead of keeping them next to the command.
+        if is_launcher:
+            for stale in ("url", "env"):
+                if stale in new_entry and stale not in desired:
+                    del new_entry[stale]
                     if "CATALOG_FIELD_DRIFT" not in change_reasons:
                         change_reasons.append("CATALOG_FIELD_DRIFT")
 
