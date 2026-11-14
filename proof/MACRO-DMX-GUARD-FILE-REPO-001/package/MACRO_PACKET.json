@@ -1,0 +1,251 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-GUARD-FILE-REPO-001",
+  "objective": "Runner Memory Wave 2B Task 0, as its own PR to main: the DCP PreToolUse guard (.claude/hooks/dcp_surface_guard.py) resolves an edit's path from the repository that holds the file, so a red-lane path in a sibling worktree is blocked, and it reads NotebookEdit's notebook_path (plan claudedocs/plans/2026-11-05-runner-memory-parity-2b.md, sha256 7479fa612d67037bd105edaf948266d8516f21ad2ad5584ed933f52ec9fc462b, Task 0 and row C12). Wave 2B's W09 consumes file_repo_root and tool_edit_path; its join J-T0 waits for this PR to merge.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants in each child. PROPOSED macro allowances (no schema field exists; enforced by the team lead; caps, not forecasts): elapsed wall time 6 h from authorization to a frozen head, excluding time waiting for the operator or for CI; subagent tokens 1,200,000 in total; child dispatches 2 (G01 plus at most 1 retry); team-lead correction rounds 2; intermediate model audits 0; advisor calls 0 for every child and the coordinator; the final independent audit is 1 call outside this budget on an operator-approved route. Hitting any cap: stop, preserve work, return NEEDS_SUPERVISOR with the counters.",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "AUTHORIZE_MACRO_DMX_GUARD_FILE_REPO_001_EXECUTION=YES authorizes: creating .worktrees/guard-file-repo-root on a new local branch fix/guard-file-repo-root from main 264c97b23ec1b3e007e62079d4f6d2632ad71775; an import commit of this package (proof/MACRO-DMX-GUARD-FILE-REPO-001/package/); G01 with one local commit.",
+      "AUTHORIZE_MACRO_DMX_GUARD_FILE_REPO_001_PUBLISH=YES authorizes G02 within its T01: push fix/guard-file-repo-root without force, open one PR to main as a draft, mark it ready when CI is green, reply on and resolve review threads.",
+      "Operator decision it rests on: 'Yes, draft Task 0' (2026-11-12), for the plan approved 2026-11-05 ('Approve plan')."
+    ],
+    "global_allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit",
+      "push",
+      "open_pr",
+      "mark_ready"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "sign",
+      "migrate",
+      "credential_write"
+    ],
+    "global_stop_conditions": [
+      "operator gate AUTHORIZE_MACRO_DMX_GUARD_FILE_REPO_001_EXECUTION=YES absent; or, for G02, AUTHORIZE_MACRO_DMX_GUARD_FILE_REPO_001_PUBLISH=YES absent",
+      "worktree HEAD is not fix/guard-file-repo-root descended from 264c97b23ec1b3e007e62079d4f6d2632ad71775, or origin/main moved and .claude/hooks/dcp_surface_guard.py or a test in commit.verify changed there",
+      "any write outside a child allowlist, or any home-directory path, user name or e-mail address in a tracked file",
+      "any child calls the advisor tool or delegates (advisor budget 0)",
+      "a guard or permission prompt refuses an edit (never worked around)",
+      "any force-push, rebase, signature, solo-owner phrase or PROOF.json edit by the macro",
+      "a workstream exceeds its caps, or the macro exceeds its 6 h, 1,200,000-token or 2-dispatch cap",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "60db7c67ccb48f5e74e5bed648fcdc7a0d9357e59097d3a2798e033de4a91a0a"
+    },
+    "authority_ceiling": "Child-specific intersection only; the team lead commits locally with explicit pathspecs and publishes only under AUTHORIZE_MACRO_DMX_GUARD_FILE_REPO_001_PUBLISH=YES. The audit route, signing, the solo-owner release phrase and the merge are the operator's.",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record and ct validate-binding per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "G01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/G01/TASK_PACKET.json",
+        "sha256": "992d2a1be965d900f441a14bc101984274070e98e9be808b456a69af79f0b51d"
+      },
+      "objective": "The PreToolUse guard resolves an edit's path against the repository that holds the file, not the session's project root, and reads notebook_path (plan Task 0, rows C12).",
+      "dependencies": [],
+      "parallel_group": "P0",
+      "mutating": true,
+      "write_surface": [
+        ".claude/hooks/dcp_surface_guard.py",
+        "tests/unit/dcp_surface_guard/__init__.py",
+        "tests/unit/dcp_surface_guard/test_file_repo_root.py"
+      ],
+      "canonical_writers": [
+        "G01-implementer"
+      ],
+      "semantic_scope": [
+        "dcp-surface-guard-paths"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "sign",
+        "commit",
+        "push",
+        "open_pr",
+        "mark_ready"
+      ],
+      "rollback_boundary": "git revert <G01 commit> on fix/guard-file-repo-root (REVERT_COMMITS); base 264c97b23ec1b3e007e62079d4f6d2632ad71775",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-agent",
+          "model": "claude-sonnet-5-5",
+          "effort": "UNKNOWN"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-GUARD-FILE-REPO-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "G02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/G02/TASK_PACKET.json",
+        "sha256": "0eac3339de1b2bb4e0f1da10a242e882c120dc8e5643c57851cf587f32b96003"
+      },
+      "objective": "Publish G01 as a PR to main, settle CI and bot reviews, and freeze the head for the operator's audit route.",
+      "dependencies": [
+        "G01"
+      ],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md"
+      ],
+      "canonical_writers": [
+        "supervisor-G02-implementer"
+      ],
+      "semantic_scope": [
+        "dcp-surface-guard-pr"
+      ],
+      "allowed_actions": [
+        "read",
+        "edit",
+        "validate",
+        "commit",
+        "push",
+        "open_pr",
+        "mark_ready"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "sign"
+      ],
+      "rollback_boundary": "close the PR unmerged and delete the remote branch (operator); nothing reaches main before the operator merges",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code-desktop",
+          "model": "claude-opus-5-5",
+          "effort": "xhigh"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "AUDIT-GUARD-FILE-REPO-001",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J-IMPL",
+      "requires": [
+        "G01"
+      ],
+      "join_type": "ALL_REQUIRED",
+      "condition": "G01 committed; its commit.verify suites pass when the team lead re-runs them."
+    },
+    {
+      "join_id": "J-FREEZE",
+      "requires": [
+        "G01",
+        "G02"
+      ],
+      "join_type": "ALL_REQUIRED",
+      "condition": "CI and bot reviews settled and the head frozen. Then one final independent L3 audit, different family from the implementer, on a route the operator picks; signing and the merge are the operator's. After the merge, Wave 2B's J-T0 is met once the operator says how its build branch takes the change."
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "One independent final audit of the frozen L3 subject, different family from the claude-code implementer, route operator-gated. PROPOSED macro allowances (no schema field exists; enforced by the team lead; caps, not forecasts): elapsed wall time 6 h from authorization to a frozen head, excluding time waiting for the operator or for CI; subagent tokens 1,200,000 in total; child dispatches 2 (G01 plus at most 1 retry); team-lead correction rounds 2; intermediate model audits 0; advisor calls 0 for every child and the coordinator; the final independent audit is 1 call outside this budget on an operator-approved route. Hitting any cap: stop, preserve work, return NEEDS_SUPERVISOR with the counters.",
+    "proof_transport": "This package and the G01 and G02 returns live under proof/MACRO-DMX-GUARD-FILE-REPO-001/, because the change-contract gate schema-checks task-packets/*.json against the dopetask spec, which GEC v2 packets do not follow. The audit bundle and PROOF.json come from the operator's audit route."
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "allowance_exceeded",
+      "child_advisor_call",
+      "red_lane_denial",
+      "final_audit_fail_or_needs_supervisor"
+    ]
+  }
+}
