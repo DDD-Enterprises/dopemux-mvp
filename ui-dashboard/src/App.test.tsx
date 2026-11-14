@@ -443,6 +443,75 @@ test('a late GET does not replace a forecast the socket already sent', async () 
   expect(screen.getByTestId('forecast-value')).toHaveTextContent('70%');
 });
 
+test('a late GET does not bring back a forecast the socket cleared', async () => {
+  let resolveFetch: (value: unknown) => void = () => {};
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockReturnValue(new Promise((resolve) => (resolveFetch = resolve)))
+  );
+  await renderApp();
+  // The key is present, so this snapshot says "no forecast", not "forecast not sent".
+  await sendStateUpdate({ cognitive_load: 0.45, predicted_load_15min: null });
+
+  await act(async () => {
+    resolveFetch(forecastGet(0.5));
+  });
+
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+});
+
+test('a later snapshot without the key does not let a late GET restore a cleared forecast', async () => {
+  let resolveFetch: (value: unknown) => void = () => {};
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockReturnValue(new Promise((resolve) => (resolveFetch = resolve)))
+  );
+  await renderApp();
+  await sendStateUpdate({ cognitive_load: 0.45, predicted_load_15min: null });
+  await sendStateUpdate({ cognitive_load: 0.46 });
+
+  await act(async () => {
+    resolveFetch(forecastGet(0.5));
+  });
+
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+  expect(screen.getByText('46%')).toBeInTheDocument();
+});
+
+const clickRetry = async () =>
+  act(async () => {
+    fireEvent.click(within(screen.getByRole('alert')).getByRole('button', { name: 'Retry' }));
+  });
+
+test('Retry after a failed GET keeps an open socket', async () => {
+  const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) });
+  vi.stubGlobal('fetch', fetchMock);
+  await renderApp();
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+  });
+  expect(screen.getByText('[LIVE]')).toBeInTheDocument();
+
+  await clickRetry();
+
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(FakeSocket.instances).toHaveLength(1);
+  expect(screen.getByText('[LIVE]')).toBeInTheDocument();
+});
+
+test('Retry reopens a closed socket', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
+  await renderApp();
+  await act(async () => {
+    FakeSocket.instances[0].onclose?.();
+  });
+
+  await clickRetry();
+
+  expect(FakeSocket.instances).toHaveLength(2);
+  expect(screen.getByText('[CONNECTING]')).toBeInTheDocument();
+});
+
 const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
 
 const advance = async (ms: number) =>
@@ -520,6 +589,24 @@ const upstreamGet = (overrides: Record<string, unknown> = {}) => ({
     task_recommendations: { error: 'recommender down' },
     ...overrides,
   }),
+});
+
+test('Retry is a new GET: its forecast replaces one an earlier snapshot cleared', async () => {
+  // The energy and recommendation warning outlives the snapshot, so Retry stays on screen with the socket open.
+  const fetchMock = vi.fn().mockResolvedValueOnce(upstreamGet()).mockResolvedValueOnce(forecastGet(0.5));
+  vi.stubGlobal('fetch', fetchMock);
+  await renderApp();
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+  });
+  await sendStateUpdate({ cognitive_load: 0.45, predicted_load_15min: null });
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+
+  // A GET sent after that snapshot is newer than it, so it applies in full.
+  await clickRetry();
+
+  expect(FakeSocket.instances).toHaveLength(1);
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('50%');
 });
 
 test('a snapshot that covers only some failed GET sections keeps a warning naming the rest', async () => {

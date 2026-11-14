@@ -1,0 +1,60 @@
+{
+  "status": "PASS_WITH_RISKS",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "severity": "low",
+      "location": "ui-dashboard/src/components/TaskSequencer.tsx",
+      "summary": "OVERTIME_COLOR is declared between import declarations, ahead of the taskSequencerTransitions import.",
+      "detail": "The new const sits after the theme import and before import { getCompletionTransitionTask, getSkipTransitionTask }. Module syntax allows it; import/first lint, if enabled, will reject this ordering. Overtime and the existing >80% progress branch both resolve to brandTokens.colors.giltEdge, so the overtime cue collapses to the OVERTIME label plus the same gold already used near the end of the estimate."
+    }
+  ],
+  "risks": [
+    {
+      "severity": "medium",
+      "location": "ui-dashboard/src/App.tsx handleRetry / GET effect",
+      "summary": "An explicit forecast clear is latched only for the current GET, and Retry re-arms a full HTTP apply while the socket can stay open.",
+      "detail": "snapshotSentForecastRef is reset at the start of each GET effect. handleRetry always sets liveReadingSeenRef to false and increments httpRetry, and increments socketRetry only when socketState is not open. A Retry after a snapshot that sent predicted_load_15min: null can therefore accept the new GET's prediction and replace the live reading until a later state_update, which is a wider window than the in-flight late-GET tests cover. The design note separates that late-GET rule from Retry; the sticky-clear-across-Retry case is untested."
+    },
+    {
+      "severity": "low",
+      "location": "ui-dashboard/src/time.test.ts",
+      "summary": "Timezone pinning is process-global and the restore path deletes TZ when it was originally unset.",
+      "detail": "beforeAll assigns America/Los_Angeles and the new test expects 2026-10-30T14:01:55Z to format as hour 7. afterAll deletes TZ when originalTz is undefined. Node timezone updates are process-global; delete does not reliably return every platform to the host zone, so later files in the same worker can still observe America/Los_Angeles. This is narrower than the previous module-scope assignment, which never restored TZ."
+    },
+    {
+      "severity": "low",
+      "location": "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+      "summary": "The overtime color check is a source grep.",
+      "detail": "The new test reads TaskSequencer.tsx as text and asserts OVERTIME_COLOR is giltEdge and that isOvertime/OVERTIME_COLOR lines do not contain gremlinPink. It does not render the timer, check computed style, or confirm giltEdge is the theme status warning token."
+    },
+    {
+      "severity": "medium",
+      "location": "audit bounds",
+      "summary": "GitHub head binding, workflow, and code outside the diff were not verified.",
+      "detail": "Tools and skills were disabled. Trusted head a2ca0ee4bf2ee1b673a479f38cdbb4f3fe52f6d6 and base 264c97b23ec1b3e007e62079d4f6d2632ad71775 match the untrusted metadata strings only. The diff was not independently bound to that commit, CI was not inspected, and functions outside the hunks (full GET success path, applyReading, isMessageObject, theme token roles) were not read. Delegation exception: this embedded audit forbids tools, skills, and child agents, so no subtasks were dispatched."
+    }
+  ],
+  "rationale": "On the supplied diff, the late-GET forecast fix matches its new tests. sendsForecast is true when data contains predicted_load_15min, including null. carryForecast uses that helper where it previously checked the same key, so a snapshot that includes the key still replaces the carried forecast and a snapshot that omits it still carries a fresh one. The GET completion path applies a non-null HTTP forecast only when the current prediction is null and snapshotSentForecastRef is still false. That ref is set with ||= sendsForecast(message) on the socket apply path and is cleared when a new GET effect starts. The added tests cover a null forecast key, a later snapshot that omits the key, and a late GET that must remain unknown while load still updates to 46%. Retry now always bumps httpRetry and bumps socketRetry only when socketState is not open, which matches the tests that keep a single socket while [LIVE] and open a second socket after onclose. Those behaviors are visible in the diff and are internally consistent. Residual risk is the Retry path: it clears liveReadingSeenRef and the forecast latch, so a later GET is not held to the same stale-response rule. The overtime edit is a token swap to giltEdge with a source-level test, and the TZ change scopes America/Los_Angeles to this file's beforeAll/afterAll with an hour assertion. Validation was not executed. This is not a clean PASS because Retry-versus-cleared-forecast, TZ restore, rendered color, provenance, and CI remain unverified.",
+  "inspected_paths": [
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/cognitiveReading.ts",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx",
+    "ui-dashboard/src/time.test.ts"
+  ],
+  "evidence_refs": [
+    "Trusted head a2ca0ee4bf2ee1b673a479f38cdbb4f3fe52f6d6 and trusted base 264c97b23ec1b3e007e62079d4f6d2632ad71775; untrusted metadata repeats those SHAs and lists the seven paths above.",
+    "ui-dashboard/src/cognitiveReading.ts: sendsForecast requires isMessageObject(message), isMessageObject(message.data), and 'predicted_load_15min' in message.data; carryForecast returns next when sendsForecast(message) is true.",
+    "ui-dashboard/src/App.tsx: snapshotSentForecastRef resets in the GET effect; HTTP forecast apply requires forecast !== null, readingRef.current.prediction === null, and !snapshotSentForecastRef.current; socket path does snapshotSentForecastRef.current ||= sendsForecast(message); handleRetry increments httpRetry always and socketRetry only inside if (socketState !== 'open'), with the socket effect depending on socketRetry.",
+    "ui-dashboard/src/App.test.tsx: new tests 'a late GET does not bring back a forecast the socket cleared', 'a later snapshot without the key does not let a late GET restore a cleared forecast', 'Retry after a failed GET keeps an open socket' (fetchMock called twice, one FakeSocket, [LIVE]), and 'Retry reopens a closed socket' (two FakeSocket instances, [CONNECTING]).",
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md: late GET fills an unknown forecast only when the snapshot left the key out; Retry refetches GET and reopens the socket only when it is not open.",
+    "ui-dashboard/src/components/TaskSequencer.tsx: const OVERTIME_COLOR = brandTokens.colors.giltEdge inserted before the taskSequencerTransitions import; overtime timer, caption, and progress bar use OVERTIME_COLOR.",
+    "ui-dashboard/src/components/__tests__/Accessibility.test.tsx: source assertions for OVERTIME_COLOR and absence of gremlinPink on isOvertime/OVERTIME_COLOR lines.",
+    "ui-dashboard/src/time.test.ts: beforeAll sets TZ to America/Los_Angeles, afterAll deletes it when originalTz is undefined, and new Date('2026-10-30T14:01:55Z').getHours() is expected to be 7.",
+    "instruction_like_scan_summary: detected false, match_count 0, categories empty, truncated false. No instruction-like candidate content identified in the diff."
+  ],
+  "validation_status": "NOT_RUN"
+}

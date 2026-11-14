@@ -1,9 +1,27 @@
-import { expect, test } from 'vitest';
+import { afterAll, beforeAll, expect, test } from 'vitest';
 
 import { asUtcIso, formatClockTime } from './time';
 
-// Must run before the first Date is built; October 30 2026 is PDT (UTC-7).
-process.env.TZ = 'America/Los_Angeles';
+// October 30 2026 is PDT (UTC-7). Node re-reads TZ when it is assigned, so setting it here
+// pins this file's local-time assertions; restoring it keeps the zone out of other suites
+// that share the worker.
+const originalTz = process.env.TZ;
+
+beforeAll(() => {
+  process.env.TZ = 'America/Los_Angeles';
+});
+
+afterAll(() => {
+  if (originalTz === undefined) {
+    delete process.env.TZ;
+  } else {
+    process.env.TZ = originalTz;
+  }
+});
+
+test('TZ applies to Dates built after it is set', () => {
+  expect(new Date('2026-10-30T14:01:55Z').getHours()).toBe(7);
+});
 
 test('asUtcIso marks a zone-less date-time as UTC and truncates the fraction to milliseconds', () => {
   expect(asUtcIso('2026-10-30T14:01:55.123456')).toBe('2026-10-30T14:01:55.123Z');

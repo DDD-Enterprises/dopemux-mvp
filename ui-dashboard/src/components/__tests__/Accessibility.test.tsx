@@ -227,9 +227,17 @@ test('TaskSequencer.tsx handles Escape key to cancel soft confirmation for Skip'
 test('TaskSequencer.tsx implements overtime visual cues', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
   expect(content).toContain('const isOvertime = useMemo(() =>');
-  expect(content).toContain('color: isOvertime ? brandTokens.colors.gremlinPink : \'inherit\'');
+  expect(content).toContain('color: isOvertime ? OVERTIME_COLOR : \'inherit\'');
   expect(content).toContain('OVERTIME +{overtimeMinutes}M');
-  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*brandTokens\.colors\.gremlinPink\s*:\s*progressPercent\s*>\s*80\s*\?\s*brandTokens\.colors\.giltEdge\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
+  expect(content).toMatch(/bgcolor:\s*alpha\(\s*isOvertime\s*\?\s*OVERTIME_COLOR\s*:\s*progressPercent\s*>\s*80\s*\?\s*brandTokens\.colors\.giltEdge\s*:\s*brandTokens\.colors\.saintGold,\s*0\.1\s*\)/);
+});
+
+test('overtime uses a status color, not the brand accent', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
+  // theme.ts: gremlinPink is a brand accent only, never a status indicator.
+  expect(content).toContain('const OVERTIME_COLOR = brandTokens.colors.giltEdge;');
+  const overtimeLines = content.split('\n').filter((line) => /isOvertime|OVERTIME_COLOR/.test(line));
+  expect(overtimeLines.join('\n')).not.toContain('gremlinPink');
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
