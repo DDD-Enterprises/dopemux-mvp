@@ -114,6 +114,82 @@ def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, 
     return tuple(dict.fromkeys(found))
 
 
+def file_repo_root(file_path: str, fallback: Path) -> Path:
+    """Root of the checkout that owns ``file_path``, else ``fallback``.
+
+    The red-lane rules are repo-relative, so an edit must be read against the
+    repo the file lives in, not the session's project root: a sibling worktree's
+    ``services/task-orchestrator/x.py`` is red-lane there too. Takes the realpath
+    (a relative path is read against ``fallback``), steps up to its nearest
+    existing ancestor (the file and its parent directories may not exist yet),
+    then walks up to the first directory holding a ``.git`` entry, a directory
+    for a main checkout or a file for a linked worktree. No subprocess and no
+    git command: this runs before every edit. Never raises.
+    """
+    try:
+        fallback = Path(fallback)
+        joined = file_path if os.path.isabs(file_path) else os.path.join(fallback, file_path)
+        cur = os.path.realpath(joined)
+        while not os.path.lexists(cur):
+            parent = os.path.dirname(cur)
+            if parent == cur:
+                return fallback
+            cur = parent
+        if not os.path.isdir(cur):
+            cur = os.path.dirname(cur)
+        while True:
+            if os.path.lexists(os.path.join(cur, ".git")):
+                return Path(cur)
+            parent = os.path.dirname(cur)
+            if parent == cur:
+                return fallback
+            cur = parent
+    except (OSError, ValueError):
+        return Path(fallback)
+
+
+def _guard_roots(file_path: str, project_root: Path) -> tuple[Path, ...]:
+    """Every root the guard reads ``file_path`` against, without duplicates.
+
+    ``project_root`` first, then each ancestor directory of the file's nearest
+    existing ancestor that holds a ``.git`` entry (file or directory), nearest
+    first. A ``.git`` entry planted inside a checkout can only add a reading,
+    never hide the project-root or enclosing-checkout one. No subprocess; never
+    raises.
+    """
+    roots = [Path(project_root)]
+    try:
+        joined = file_path if os.path.isabs(file_path) else os.path.join(project_root, file_path)
+        cur = os.path.realpath(joined)
+        while not os.path.lexists(cur):
+            parent = os.path.dirname(cur)
+            if parent == cur:
+                break
+            cur = parent
+        if not os.path.isdir(cur):
+            cur = os.path.dirname(cur)
+        while True:
+            if os.path.lexists(os.path.join(cur, ".git")):
+                roots.append(Path(cur))
+            parent = os.path.dirname(cur)
+            if parent == cur:
+                break
+            cur = parent
+    except (OSError, ValueError):
+        pass
+    return tuple(dict.fromkeys(roots))
+
+
+def tool_edit_path(tool_input: dict) -> str:
+    """The path an Edit/Write/NotebookEdit targets: ``file_path``, else
+    ``notebook_path``, else ``""``. Only non-empty strings are read."""
+    for key in ("file_path", "notebook_path"):
+        value = (tool_input or {}).get(key)
+        if isinstance(value, str) and value:
+            return value
+    return ""
+
+
 def _repo_relative(file_path: str, project_root: Path) -> str:
     """Normalize file_path to forward-slash repo-relative string (primary reading)."""
     return _repo_relative_candidates(file_path, project_root)[0]
@@ -131,7 +207,7 @@ def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) ->
     """Return a block reason when an edit targets a red-lane seam file, else None."""
     if tool_name not in {"Edit", "Write", "NotebookEdit"}:
         return None
-    file_path = str((tool_input or {}).get("file_path") or "")
+    file_path = tool_edit_path(tool_input)
     if not file_path:
         return None
     # TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001: a control character (most
@@ -152,15 +228,16 @@ def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) ->
             f"the literal tool_input.file_path value."
         )
     patterns = _forbidden_patterns()
-    for rel in _repo_relative_candidates(file_path, project_root):
-        if any(p.search(rel) for p in patterns):
-            return (
-                f"🚫 `{rel}` is protected by red lane {RED_LANE_ID} "
-                f"(merge-seam, execute=True). Edits are hard-blocked. "
-                f"If this change is genuinely required, the seam must be lifted "
-                f"via its own ADR + task packet — not an inline edit. "
-                f"See docs/03-reference/dcp/README.md."
-            )
+    for root in _guard_roots(file_path, project_root):
+        for rel in _repo_relative_candidates(file_path, root):
+            if any(p.search(rel) for p in patterns):
+                return (
+                    f"🚫 `{rel}` is protected by red lane {RED_LANE_ID} "
+                    f"(merge-seam, execute=True). Edits are hard-blocked. "
+                    f"If this change is genuinely required, the seam must be lifted "
+                    f"via its own ADR + task packet — not an inline edit. "
+                    f"See docs/03-reference/dcp/README.md."
+                )
     return None
 
 
@@ -236,7 +313,7 @@ def surface_guard_warnings(
     """Return once-per-(session, path) advisory when editing a contract surface."""
     if tool_name not in {"Edit", "Write", "NotebookEdit"}:
         return []
-    file_path = str((tool_input or {}).get("file_path") or "")
+    file_path = tool_edit_path(tool_input)
     if not file_path:
         return []
 
@@ -245,8 +322,11 @@ def surface_guard_warnings(
         return []
 
     category = None
-    for rel in _repo_relative_candidates(file_path, project_root):
-        category = _matches_contract_surface(rel)
+    for root in _guard_roots(file_path, project_root):
+        for rel in _repo_relative_candidates(file_path, root):
+            category = _matches_contract_surface(rel)
+            if category:
+                break
         if category:
             break
     if not category:
