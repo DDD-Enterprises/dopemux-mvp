@@ -1,0 +1,117 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "macro_id": "MACRO-DMX-GUARD-FILE-REPO-001",
+  "stage": "issuance",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json",
+    "operator_gate_refs": [
+      "Operator decision: Yes, draft Task 0 (2026-11-12). Execution NOT authorized until AUTHORIZE_MACRO_DMX_GUARD_FILE_REPO_001_EXECUTION=YES; publishing until AUTHORIZE_MACRO_DMX_GUARD_FILE_REPO_001_PUBLISH=YES"
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L3"
+  },
+  "selection": {
+    "runner": "claude-code-desktop",
+    "runner_availability": "PROVEN",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh",
+    "connector": "desktop-app",
+    "configured_identity": "claude-opus-5-5",
+    "response_claimed_identity": "claude-opus-5-5",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": []
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read",
+      "edit",
+      "validate",
+      "commit"
+    ],
+    "forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "push",
+      "open_pr",
+      "sign",
+      "credential_write"
+    ],
+    "stop_conditions": [
+      "operator gate absent",
+      "authority conflict",
+      "advisor call by any child",
+      "allowance exceeded",
+      "guard or permission refusal",
+      "force-push, rebase, signature or PROOF.json edit"
+    ],
+    "custody_constraints": [
+      "mutation only inside .worktrees/guard-file-repo-root on fix/guard-file-repo-root, except the issuance package on plan/runner-memory-2b"
+    ],
+    "context_constraints": [
+      "children receive only their TASK_PACKET plus cited context_files"
+    ]
+  },
+  "justification": {
+    "why_runner": "issuing supervisor session (Claude Code desktop) that ran W0 and revised the plan",
+    "why_model": "session model claude-opus-5-5 (operator /model, 2026-11-12); issuing a change to the PreToolUse guard that every Claude session in this repo runs before each edit is judgment-tier work",
+    "why_effort": "session effort observed via $CLAUDE_EFFORT=xhigh",
+    "alternatives_considered": [
+      {
+        "route": "claude-sonnet-5-5 issuer",
+        "disposition": "rejected",
+        "reason": "the guard is security enforcement; G01 is pinned to Sonnet, issuance and publishing stay with the supervisor"
+      }
+    ],
+    "cost_latency_tradeoff": "UNKNOWN (no current price evidence recorded)",
+    "evidence": [
+      "claudedocs/plans/2026-11-05-runner-memory-parity-2b.md",
+      "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/ISSUANCE.md"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L3"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "NOT_RUN"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "recorded_at": "2026-11-12T13:33:09Z",
+  "runner_version": "UNKNOWN",
+  "effort_requested": "xhigh",
+  "effort_observed": "xhigh",
+  "auth_profile_ref": "UNKNOWN",
+  "network_posture": "no-network-mutation",
+  "containment_posture": "worktree-scoped",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "not triggered"
+  },
+  "response_claimed_model": "claude-opus-5-5",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "UNKNOWN",
+  "qualification_receipt_ref": "NOT_RUN"
+}
