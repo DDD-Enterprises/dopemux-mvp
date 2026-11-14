@@ -1,0 +1,202 @@
+{
+  "id": "TP-DMX-FOUNDATIONS-W02-ENGINE-001",
+  "project": "dopemux-mvp",
+  "target": "Make the ADHD engine's MCP tools work on the real engine class, proven by tests/arch/test_adhd_engine_mcp_parity.py (6 tests), without editing services/adhd_engine/api/routes.py or services/adhd_engine/tests/test_state_contract.py.",
+  "invariants": [
+    "MACRO-DMX-FOUNDATIONS-001 invariants apply. Authority NONE: nothing here is executed by issuance. Governing documents: plan docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md (requirements and exact write sets) and design docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md (authority, non-goals, constraints). Where this packet and the plan disagree on a write set, STOP and return NEEDS_SUPERVISOR.",
+    "Custody: all mutation happens inside /Users/hue/code/dopemux-mvp/.worktrees/foundations-wave-1 on branch feat/foundations-wave-1 (HEAD at issuance 7c883d7e100e3be54b8b59b1419ff80cf00eb8ee, on origin/main 93050d135ffc2592000c1d0edef82b2912935525). One mutating implementer per workstream; workstreams run serially (max_mutating_workstreams 1), so no two writers hold the worktree at once. Shared workspace: preserve other workstreams' commits and never revert unrelated work.",
+    "Write surface is closed. A task that needs a file outside its write_surface stops and returns; widening needs a supervisor amendment to the MacroPacket recorded with the reason. Stage with an explicit pathspec limited to the write_surface; never `git add -A` or `git add .`.",
+    "Forbidden paths for every workstream (plan Global Constraints): services/adhd_engine/api/routes.py, services/adhd_engine/tests/test_state_contract.py, .mcp.json, mcp_catalog.yaml, .claude/statusline.sh, scripts/dopemux_dashboard.py, and anything under plugins/. Reason: open PR #1472 (Pulse) owns routes.py and test_state_contract.py; the rest are contract-sensitive or the operator's live tooling.",
+    "No skip, xfail or --deselect to get a check green. Every new test must pass under Python 3.11 with `uv sync --frozen --extra test --extra services`. Local runs use /Users/hue/code/dopemux-mvp/.venv/bin/pytest from the worktree root.",
+    "Report every check as PASS, FAIL or NOT_RUN; never fold NOT_RUN into PASS. A failed validation stops the workstream and returns the output; do not edit tests to make them pass unless the plan step says so.",
+    "Nothing is pushed by a workstream. No PR is opened, no draft is marked ready, no merge, no signing. The draft PR is a team-lead step after freeze and needs operator approval. No intermediate model audit: the single final independent audit is operator-gated (AUDITOR_BINDING_PROPOSED.json, PROPOSED ONLY). Do not call the advisor tool.",
+    "Return contract: status, subject (commit sha), validation (PASS/FAIL/NOT_RUN per named check), proof, audit (NOT_RUN), blockers, advisor_calls (must be 0), files_written, observed_model (UNKNOWN unless a runtime receipt exists).",
+    "Executor and route (TP_ROUTE): runner=claude-code model=claude-sonnet-5-5 effort=medium. Cost-first: cheapest adequate qualified model; escalation only after a failed validation, one tier up for fix rounds 4-5, recorded with the reason (design section 7; AGENTS.md section 5). Requested model is a selector, not proof of execution identity: observed identity is UNKNOWN unless a runtime receipt exists."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-FOUNDATIONS-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-FOUNDATIONS-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/foundations-wave-1",
+    "base_branch": "main",
+    "stacked_because": "all five workstreams commit serially to the one local branch feat/foundations-wave-1 (design + plan commits at its base); the draft PR and push are separate operator-approved team-lead steps after freeze"
+  },
+  "commit": {
+    "message": "fix(adhd-engine): implement the MCP tool methods on the real engine",
+    "allowlist": [
+      "services/adhd_engine/core/engine.py",
+      "tests/arch/test_adhd_engine_mcp_parity.py"
+    ],
+    "verify": [
+      "git diff --name-only HEAD~1..HEAD | sort   # subset of the write_surface",
+      "git diff --check HEAD~1..HEAD",
+      "git log -1 --format=%B   # ends with the Co-Authored-By trailer of the model that wrote the commit"
+    ]
+  },
+  "pr": {
+    "title": "Foundations Wave 1: tests/arch in CI, ADHD engine MCP repair, dopemux adhd status, port drift test",
+    "body": "MACRO-DMX-FOUNDATIONS-001. One PR for all five workstreams, opened as a draft by the team lead after freeze and operator approval; this workstream does not open or push it.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W02-S1",
+      "task": "Plan Task 2 Step 1: write the static parity test (test_mcp_tool_engine_calls_exist_on_both_engines)",
+      "requirements": [
+        "Parse services/adhd_engine/main.py with ast; collect engine.<name>() attribute calls inside async defs decorated with mcp.tool(); collect method names of ADHDAccommodationEngine (core/engine.py) and _FallbackADHDEngine (main.py). Assertions exactly as in the plan."
+      ],
+      "commands": [],
+      "expected_files": [
+        "tests/arch/test_adhd_engine_mcp_parity.py"
+      ],
+      "validation": [
+        "file written, not yet run"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W02-S2",
+      "task": "Plan Task 2 Step 2: run it and see it fail",
+      "requirements": [
+        "Expected failure text names assess_task, get_attention_state, get_cognitive_load, get_energy_level as missing on ADHDAccommodationEngine."
+      ],
+      "commands": [
+        "pytest tests/arch/test_adhd_engine_mcp_parity.py -q --no-cov"
+      ],
+      "expected_files": [],
+      "validation": [
+        "FAIL with the expected missing-methods message"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W02-S3",
+      "task": "Plan Task 2 Step 3: write the five behavior tests",
+      "requirements": [
+        "Engine built as ADHDAccommodationEngine() with no initialize() and no Redis; seed u1 as EnergyLevel.HIGH / AttentionState.SCATTERED from services.adhd_engine.core.models. Tests: test_energy_level_reads_engine_state, test_unknown_user_gets_route_defaults, test_attention_state_reads_engine_state, test_cognitive_load_is_float_in_unit_range, test_assess_task_uses_operator_and_marks_defaults. Plain async def (asyncio_mode = auto)."
+      ],
+      "commands": [],
+      "expected_files": [
+        "tests/arch/test_adhd_engine_mcp_parity.py"
+      ],
+      "validation": [
+        "file written"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W02-S4",
+      "task": "Plan Task 2 Step 4: implement the four methods and three result types in services/adhd_engine/core/engine.py",
+      "requirements": [
+        "ENERGY_SCORE table with the 'nominal positions, not measurements' comment; frozen dataclasses EnergySnapshot, AttentionSnapshot; TaskAssessment(payload) with dict(); async get_energy_level / get_attention_state / get_cognitive_load / assess_task per the plan interfaces; assess_task passes operator_user_id and adds defaults_used [complexity_score, estimated_minutes]."
+      ],
+      "commands": [],
+      "expected_files": [
+        "services/adhd_engine/core/engine.py"
+      ],
+      "validation": [
+        "module imports cleanly"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W02-S5",
+      "task": "Plan Task 2 Step 5: run the tests",
+      "requirements": [],
+      "commands": [
+        "pytest tests/arch/test_adhd_engine_mcp_parity.py -q --no-cov"
+      ],
+      "expected_files": [],
+      "validation": [
+        "6 passed"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W02-S6",
+      "task": "Plan Task 2 Step 6: mutation check",
+      "requirements": [
+        "Rename get_cognitive_load to get_cognitive_load_x in a scratch edit, rerun Step 5, record the parity failure naming get_cognitive_load, then revert the scratch edit."
+      ],
+      "commands": [
+        "pytest tests/arch/test_adhd_engine_mcp_parity.py -q --no-cov",
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "parity failure names get_cognitive_load; git diff afterwards shows only the intended change"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W02-S7",
+      "task": "Plan Task 2 Step 7: commit (local only)",
+      "requirements": [
+        "Commit message ends with the trailer: Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+      ],
+      "commands": [
+        "git add services/adhd_engine/core/engine.py tests/arch/test_adhd_engine_mcp_parity.py",
+        "git commit -m \"fix(adhd-engine): implement the MCP tool methods on the real engine\""
+      ],
+      "expected_files": [],
+      "validation": [
+        "one commit; only the write_surface files changed"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-FOUNDATIONS-001",
+  "workstream_id": "W02",
+  "risk_lane": "L2",
+  "audit_group": "FOUNDATIONS-001-FINAL-AUDIT",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "services/adhd_engine/core/engine.py",
+    "tests/arch/test_adhd_engine_mcp_parity.py"
+  ],
+  "canonical_writers": [
+    "W02-implementer"
+  ],
+  "semantic_scope": [
+    "adhd-engine-mcp-methods"
+  ],
+  "rollback_boundary": "git revert of the W02 commit(s) on feat/foundations-wave-1 (REVERT_COMMITS); nothing is pushed by this workstream"
+}

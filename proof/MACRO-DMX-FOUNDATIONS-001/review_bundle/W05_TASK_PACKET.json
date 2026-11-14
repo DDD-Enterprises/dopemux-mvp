@@ -1,0 +1,205 @@
+{
+  "id": "TP-DMX-FOUNDATIONS-W05-DOCS-001",
+  "project": "dopemux-mvp",
+  "target": "Reference docs and agent-doc entries for the four code workstreams, derived from the committed code (names, options, exit codes, exception table), passing the docs gates.",
+  "invariants": [
+    "MACRO-DMX-FOUNDATIONS-001 invariants apply. Authority NONE: nothing here is executed by issuance. Governing documents: plan docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md (requirements and exact write sets) and design docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md (authority, non-goals, constraints). Where this packet and the plan disagree on a write set, STOP and return NEEDS_SUPERVISOR.",
+    "Custody: all mutation happens inside /Users/hue/code/dopemux-mvp/.worktrees/foundations-wave-1 on branch feat/foundations-wave-1 (HEAD at issuance 7c883d7e100e3be54b8b59b1419ff80cf00eb8ee, on origin/main 93050d135ffc2592000c1d0edef82b2912935525). One mutating implementer per workstream; workstreams run serially (max_mutating_workstreams 1), so no two writers hold the worktree at once. Shared workspace: preserve other workstreams' commits and never revert unrelated work.",
+    "Write surface is closed. A task that needs a file outside its write_surface stops and returns; widening needs a supervisor amendment to the MacroPacket recorded with the reason. Stage with an explicit pathspec limited to the write_surface; never `git add -A` or `git add .`.",
+    "Forbidden paths for every workstream (plan Global Constraints): services/adhd_engine/api/routes.py, services/adhd_engine/tests/test_state_contract.py, .mcp.json, mcp_catalog.yaml, .claude/statusline.sh, scripts/dopemux_dashboard.py, and anything under plugins/. Reason: open PR #1472 (Pulse) owns routes.py and test_state_contract.py; the rest are contract-sensitive or the operator's live tooling.",
+    "No skip, xfail or --deselect to get a check green. Every new test must pass under Python 3.11 with `uv sync --frozen --extra test --extra services`. Local runs use /Users/hue/code/dopemux-mvp/.venv/bin/pytest from the worktree root.",
+    "Report every check as PASS, FAIL or NOT_RUN; never fold NOT_RUN into PASS. A failed validation stops the workstream and returns the output; do not edit tests to make them pass unless the plan step says so.",
+    "Nothing is pushed by a workstream. No PR is opened, no draft is marked ready, no merge, no signing. The draft PR is a team-lead step after freeze and needs operator approval. No intermediate model audit: the single final independent audit is operator-gated (AUDITOR_BINDING_PROPOSED.json, PROPOSED ONLY). Do not call the advisor tool.",
+    "Return contract: status, subject (commit sha), validation (PASS/FAIL/NOT_RUN per named check), proof, audit (NOT_RUN), blockers, advisor_calls (must be 0), files_written, observed_model (UNKNOWN unless a runtime receipt exists).",
+    "Executor and route (TP_ROUTE): runner=claude-code model=claude-sonnet-5-5 effort=medium. Cost-first: cheapest adequate qualified model; escalation only after a failed validation, one tier up for fix rounds 4-5, recorded with the reason (design section 7; AGENTS.md section 5). Requested model is a selector, not proof of execution identity: observed identity is UNKNOWN unless a runtime receipt exists.",
+    "Depends on W01-W04 all committed. Docs state plainly what is not covered: per-user routes, break and focus verbs, ADHD engine test-suite health, the MCP manifest."
+  ],
+  "depends_on": [
+    "TP-DMX-FOUNDATIONS-W01-CI-001",
+    "TP-DMX-FOUNDATIONS-W02-ENGINE-001",
+    "TP-DMX-FOUNDATIONS-W03-ADHDCLI-001",
+    "TP-DMX-FOUNDATIONS-W04-PORTDRIFT-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-FOUNDATIONS-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-FOUNDATIONS-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/foundations-wave-1",
+    "base_branch": "main",
+    "stacked_because": "all five workstreams commit serially to the one local branch feat/foundations-wave-1 (design + plan commits at its base); the draft PR and push are separate operator-approved team-lead steps after freeze"
+  },
+  "commit": {
+    "message": "docs: dopemux adhd status, CI contract gates, agent guidance",
+    "allowlist": [
+      "docs/03-reference/adhd-status-cli.md",
+      "docs/03-reference/ci-contract-gates.md",
+      "docs/00-MASTER-INDEX.md",
+      "docs/docs_index.yaml",
+      ".claude/claude.md",
+      "AGENTS.md"
+    ],
+    "verify": [
+      "git diff --name-only HEAD~1..HEAD | sort   # subset of the write_surface",
+      "git diff --check HEAD~1..HEAD",
+      "git log -1 --format=%B   # ends with the Co-Authored-By trailer of the model that wrote the commit"
+    ]
+  },
+  "pr": {
+    "title": "Foundations Wave 1: tests/arch in CI, ADHD engine MCP repair, dopemux adhd status, port drift test",
+    "body": "MACRO-DMX-FOUNDATIONS-001. One PR for all five workstreams, opened as a draft by the team lead after freeze and operator approval; this workstream does not open or push it.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W05-S0",
+      "task": "Precondition: W01-W04 are committed",
+      "requirements": [
+        "`git log --oneline origin/main..HEAD` shows the four workstream commits. If not: STOP. Read the committed adhd_commands.py and test_service_port_drift.py to take names, options, exit codes and the exception table from them, not from memory."
+      ],
+      "commands": [
+        "git log --oneline origin/main..HEAD"
+      ],
+      "expected_files": [],
+      "validation": [
+        "four workstream commits present"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W05-S1",
+      "task": "Plan Task 5 Step 1: write docs/03-reference/adhd-status-cli.md",
+      "requirements": [
+        "Reference frontmatter as in docs/03-reference/filesystem-guide.md. Cover: usage, --json and --url; URL resolution order; statuses and exit codes; what degraded means; the limit that a failing /state still returns normal-looking defaults; what it does not do (no per-user routes, no break or focus verbs)."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/03-reference/adhd-status-cli.md"
+      ],
+      "validation": [
+        "file written"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W05-S2",
+      "task": "Plan Task 5 Step 2: write docs/03-reference/ci-contract-gates.md",
+      "requirements": [
+        "Cover: what tests/arch checks and that CI now runs it; how to run it locally; the four drift rules; how to add an exception (reason and follow-up required, stale entries fail); the follow-ups from design section 10."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/03-reference/ci-contract-gates.md"
+      ],
+      "validation": [
+        "file written"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W05-S3",
+      "task": "Plan Task 5 Step 3: index and agent-doc entries",
+      "requirements": [
+        "docs/00-MASTER-INDEX.md (Reference > Configuration list) and docs/docs_index.yaml (reference: block) get one entry each. .claude/claude.md (section 'Commands & Environment', two bullets) and AGENTS.md (section 3 'Default Behavior', two bullets) get the two bullets from the plan, same facts. Do not edit AGENTS.md sections 8 and 9.1 or .claude/claude.md 'Detailed Information Locations' (PR #1484 owns them)."
+      ],
+      "commands": [],
+      "expected_files": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/docs_index.yaml",
+        ".claude/claude.md",
+        "AGENTS.md"
+      ],
+      "validation": [
+        "diff limited to the named sections"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W05-S4",
+      "task": "Plan Task 5 Step 4: docs gates on every new or changed doc",
+      "requirements": [
+        "Guard and markdownlint clean; only the existing docs/runbooks/ddd-release-gate-app.md hygiene violation may remain."
+      ],
+      "commands": [
+        "python scripts/docs_frontmatter_guard.py <files>",
+        "markdownlint -c .markdownlint.jsonc <files>",
+        "python scripts/check_docs_hygiene.py --check"
+      ],
+      "expected_files": [],
+      "validation": [
+        "guard PASS, markdownlint PASS, hygiene shows only the known violation"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W05-S5",
+      "task": "Plan Task 5 Step 5: commit (local only)",
+      "requirements": [
+        "Commit message ends with the trailer: Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+      ],
+      "commands": [
+        "git add docs/03-reference/adhd-status-cli.md docs/03-reference/ci-contract-gates.md docs/00-MASTER-INDEX.md docs/docs_index.yaml .claude/claude.md AGENTS.md",
+        "git commit -m \"docs: dopemux adhd status, CI contract gates, agent guidance\""
+      ],
+      "expected_files": [],
+      "validation": [
+        "one commit; only the write_surface files changed"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-FOUNDATIONS-001",
+  "workstream_id": "W05",
+  "risk_lane": "L2",
+  "audit_group": "FOUNDATIONS-001-FINAL-AUDIT",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "docs/03-reference/adhd-status-cli.md",
+    "docs/03-reference/ci-contract-gates.md",
+    "docs/00-MASTER-INDEX.md",
+    "docs/docs_index.yaml",
+    ".claude/claude.md",
+    "AGENTS.md"
+  ],
+  "canonical_writers": [
+    "W05-implementer"
+  ],
+  "semantic_scope": [
+    "foundations-docs"
+  ],
+  "rollback_boundary": "git revert of the W05 commit(s) on feat/foundations-wave-1 (REVERT_COMMITS); nothing is pushed by this workstream"
+}

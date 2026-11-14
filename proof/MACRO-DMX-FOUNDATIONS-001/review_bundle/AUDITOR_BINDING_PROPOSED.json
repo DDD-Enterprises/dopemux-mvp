@@ -1,0 +1,127 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "macro_id": "MACRO-DMX-FOUNDATIONS-001",
+  "stage": "audit_proposed",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "task-packets/MACRO-DMX-FOUNDATIONS-001/MACRO_PACKET.json",
+    "operator_gate_refs": [
+      "operator chat 2026-10-30, verbatim: \"Foundations first\" (theme)",
+      "operator chat 2026-10-30, verbatim: \"Looks right, write design\" (scope playback)",
+      "operator chat 2026-10-30, verbatim: \"Approve\" (design docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md)",
+      "operator chat 2026-10-30, verbatim: \"Subagent-driven\" (execution method for docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md)"
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "selection": {
+    "runner": "grok-cli",
+    "runner_availability": "PROPOSED",
+    "model": "grok-4.5",
+    "effort": "high",
+    "connector": "grok.com login via the grok CLI (1.0.67 at the PULSE-001 run; re-check the version at launch)",
+    "configured_identity": "grok-4.5",
+    "response_claimed_identity": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": [
+      "REQUIRED before the verdict counts: the raw event stream with init.tools == [] and no tool_use block, copied into the review bundle and committed before it is read",
+      "recipe: reference_grok_cli_contained_audit_recipe; the R2 run reproduced it: probe 2 init.tools == [], real run init.tools == [], 0 tool_use (origin/feat/pulse-001:proof/MACRO-DMX-PULSE-002-R2/review_bundle/GROK_AUDIT_STREAM.txt)"
+    ]
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read"
+    ],
+    "forbidden_actions": [
+      "edit",
+      "write",
+      "shell",
+      "mcp",
+      "web_search",
+      "x_search",
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "commit",
+      "push"
+    ],
+    "stop_conditions": [
+      "init.tools != [] in the stream: abort without reading any verdict",
+      "raw stream not saved into the bundle: the audit is void",
+      "launch fails or quota error: STOP, report, no retry, no other route without a new operator line"
+    ],
+    "custody_constraints": [
+      "sealed empty directory holding only AUDIT_PROMPT.txt; no repository mount; no secrets"
+    ],
+    "context_constraints": [
+      "the only input is an AUDIT_PROMPT.txt built from the frozen cumulative subject after the freeze; one attempt, zero retries, no fallback"
+    ]
+  },
+  "justification": {
+    "why_runner": "the route that produced the R2 verdict with machine-evidenced containment; different family from the Anthropic implementers. PROPOSED ONLY: the operator has not authorized this audit route.",
+    "why_model": "grok-4.5, as in the PULSE-001/PULSE-003 proposals",
+    "why_effort": "high, as in the recipe",
+    "alternatives_considered": [
+      {
+        "route": "agy gemini-4-argon-high",
+        "disposition": "not proposed",
+        "reason": "was 429 RESOURCE_EXHAUSTED on 2026-10-22/23; availability now UNKNOWN; would be a second family independent of earlier Grok auditors"
+      },
+      {
+        "route": "Claude family (any)",
+        "disposition": "rejected",
+        "reason": "same family as the implementers and the lead"
+      }
+    ],
+    "cost_latency_tradeoff": "R2 audit measured: 143.6 s for the run, USD 0.0425 (USD 0.0712 with the two probes); this prompt's size is UNKNOWN until built",
+    "evidence": [
+      "origin/feat/pulse-001:proof/MACRO-DMX-PULSE-002-R2/review_bundle/GROK_RUN_RECORD.md",
+      "docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md section 5"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "PROPOSED"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "recorded_at": "2026-10-30T08:10:00Z",
+  "runner_version": "UNKNOWN",
+  "effort_requested": "high",
+  "effort_observed": "UNKNOWN",
+  "auth_profile_ref": "UNKNOWN",
+  "network_posture": "provider-only (one request to the model provider; no repository or secret access)",
+  "containment_posture": "tool-less sealed prompt",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "not triggered"
+  },
+  "response_claimed_model": "UNKNOWN",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "DIFFERENT_FAMILY",
+  "qualification_receipt_ref": "NOT_RUN",
+  "packet_id": "TP-DMX-FOUNDATIONS-AUDIT-001"
+}
