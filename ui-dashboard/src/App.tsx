@@ -102,12 +102,14 @@ function DashboardApp() {
   const readingRef = useRef<CognitiveReading>(EMPTY_READING);
   const forecastReceivedAtRef = useRef<number | null>(null);
   const forecastExpiryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Whether any snapshot since the current GET was sent carried the forecast key: then that
-  // snapshot, not the GET landing late, decides the forecast. Reset for each new GET.
+  // Whether any snapshot since the current GET was requested carried the forecast key: then that
+  // snapshot, not the GET landing late, decides the forecast. Reset with liveReadingSeenRef when
+  // Retry is clicked, not when the GET effect runs: a snapshot handled in between must count.
   const snapshotSentForecastRef = useRef(false);
 
   const handleRetry = useCallback(() => {
     liveReadingSeenRef.current = false;
+    snapshotSentForecastRef.current = false;
     setHttpError(null);
     setErrorBanner(null);
     setHttpRetry((prev) => prev + 1);
@@ -183,7 +185,6 @@ function DashboardApp() {
 
   useEffect(() => {
     let isMounted = true;
-    snapshotSentForecastRef.current = false;
 
     // Once a live state_update has landed, this GET is obsolete: neither its reading
     // nor its failure may replace what the socket already delivered. Its forecast is the
