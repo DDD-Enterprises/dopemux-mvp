@@ -180,6 +180,20 @@ def _guard_roots(file_path: str, project_root: Path) -> tuple[Path, ...]:
     return tuple(dict.fromkeys(roots))
 
 
+def _guard_readings(file_path: str, root: Path, project_root: Path) -> tuple[str, ...]:
+    """Repo-relative readings of ``file_path`` against ``root``.
+
+    A relative path is resolved by ``os.path.realpath`` against the process cwd,
+    which need not be ``project_root``; so its ``project_root``-joined form is
+    read too. Readings are only ever added.
+    """
+    readings = list(_repo_relative_candidates(file_path, root))
+    if not os.path.isabs(file_path):
+        joined = os.path.join(project_root, file_path)
+        readings.extend(_repo_relative_candidates(joined, root))
+    return tuple(dict.fromkeys(readings))
+
+
 def tool_edit_path(tool_input: dict) -> str:
     """The path an Edit/Write/NotebookEdit targets: ``file_path``, else
     ``notebook_path``, else ``""``. Only non-empty strings are read."""
@@ -229,7 +243,7 @@ def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) ->
         )
     patterns = _forbidden_patterns()
     for root in _guard_roots(file_path, project_root):
-        for rel in _repo_relative_candidates(file_path, root):
+        for rel in _guard_readings(file_path, root, project_root):
             if any(p.search(rel) for p in patterns):
                 return (
                     f"🚫 `{rel}` is protected by red lane {RED_LANE_ID} "
@@ -323,7 +337,7 @@ def surface_guard_warnings(
 
     category = None
     for root in _guard_roots(file_path, project_root):
-        for rel in _repo_relative_candidates(file_path, root):
+        for rel in _guard_readings(file_path, root, project_root):
             category = _matches_contract_surface(rel)
             if category:
                 break

@@ -10,11 +10,18 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 _HOOKS_DIR = Path(__file__).resolve().parents[3] / ".claude" / "hooks"
 if str(_HOOKS_DIR) not in sys.path:
     sys.path.insert(0, str(_HOOKS_DIR))
 
-from dcp_surface_guard import RED_LANE_ID, surface_guard_block  # noqa: E402
+from dcp_surface_guard import (  # noqa: E402
+    RED_LANE_ID,
+    file_repo_root,
+    surface_guard_block,
+    surface_guard_warnings,
+)
 
 _RED = "services/task-orchestrator/x.py"
 _EXEMPT = "services/dopecon-bridge/ddg_mcp_stdio.py"
@@ -132,3 +139,105 @@ def test_path_outside_any_repo_is_allowed(tmp_path: Path) -> None:
     target.write_text("x = 1\n")
 
     assert surface_guard_block("Edit", {"file_path": str(target)}, session_root) is None
+
+
+# ---------------------------------------------------------------------------
+# Relative paths when the process cwd is not the project root
+# ---------------------------------------------------------------------------
+
+
+def _sibling_under_project(root: Path) -> Path:
+    sibling = root / ".worktrees" / "sib"
+    sibling.mkdir(parents=True)
+    (sibling / ".git").write_text("gitdir: ../../.git/worktrees/sib\n")
+    return sibling
+
+
+def test_relative_sibling_path_is_blocked_when_cwd_is_elsewhere(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    _sibling_under_project(root)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = surface_guard_block("Write", {"file_path": f".worktrees/sib/{_RED}"}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_relative_sibling_contract_surface_is_warned_when_cwd_is_elsewhere(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    _sibling_under_project(root)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    warnings = surface_guard_warnings(
+        "Edit", {"file_path": ".worktrees/sib/schemas/dcp/x.json"}, root, "sess-rel"
+    )
+
+    assert len(warnings) == 1
+    assert "Contract-sensitive surface" in warnings[0]
+
+
+# ---------------------------------------------------------------------------
+# file_repo_root, directly
+# ---------------------------------------------------------------------------
+
+
+def test_file_repo_root_linked_worktree_returns_its_directory(tmp_path: Path) -> None:
+    sibling = _linked_worktree(tmp_path)
+    target = sibling / "pkg" / "mod.py"
+    target.parent.mkdir()
+    target.write_text("")
+
+    assert file_repo_root(str(target), tmp_path / "fallback") == sibling.resolve()
+
+
+def test_file_repo_root_missing_parents_returns_nearest_enclosing_repo(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    inner = root / "vendor" / "inner"
+    inner.mkdir(parents=True)
+    (inner / ".git").write_text("gitdir: elsewhere\n")
+    target = inner / "a" / "b" / "c.py"
+    assert not target.parent.exists()
+
+    assert file_repo_root(str(target), tmp_path / "fallback") == inner.resolve()
+
+
+def test_file_repo_root_reads_a_relative_path_against_fallback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _sibling_under_project(root)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    assert file_repo_root(".worktrees/sib/new/x.py", root) == sibling.resolve()
+    assert file_repo_root("new/x.py", root) == root.resolve()
+
+
+def test_file_repo_root_symlink_resolves_to_the_repo_holding_its_target(tmp_path: Path) -> None:
+    sibling = _linked_worktree(tmp_path)
+    real = sibling / "real.py"
+    real.write_text("")
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    link = plain / "link.py"
+    link.symlink_to(real)
+
+    assert file_repo_root(str(link), tmp_path / "fallback") == sibling.resolve()
+
+
+def test_file_repo_root_no_repository_returns_fallback(tmp_path: Path) -> None:
+    fallback = tmp_path / "fallback"
+    plain = tmp_path / "plain"
+    plain.mkdir()
+
+    assert file_repo_root(str(plain / "x" / "y.py"), fallback) == fallback
