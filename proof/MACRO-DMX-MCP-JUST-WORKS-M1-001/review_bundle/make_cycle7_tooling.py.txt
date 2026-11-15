@@ -1,0 +1,548 @@
+"""Derive the cycle-7 (merge of origin/main + ONE Grok re-audit) proof tooling from the ACTUAL cycle-6 files.
+
+Cycle-6 outputs were patched in place after make_cycle6_tooling.py ran (the generator was deliberately not re-run), so this
+generator reads the on-disk cycle-6 artifacts (cycle6-freeze-and-audit.sh, AUDIT_PROMPT.c6.template.txt, VALIDATIONS.c6.template.md,
+cycle6-meta.filled.json, pr-body-c6.filled.md, build_proof_c6.py), never the cycle-5 ones. Every replacement asserts its anchor occurs
+exactly once. Writes only cycle-7 files:
+  build_proof_c7.py, cycle7-freeze-and-audit.sh, AUDIT_PROMPT.c7.template.txt, VALIDATIONS.c7.template.md, cycle7-meta.json,
+  pr-body-c7.md, cycle7-fill-validations.py, cycle7-bots-note.template.txt, cycle7-validation-fills.template.json,
+  cycle7-gate-fills.template.json
+Idempotent: the cycle-6 inputs are never modified, so re-running overwrites the cycle-7 outputs with identical bytes.
+"""
+import json
+import re
+import subprocess
+from pathlib import Path
+
+D = Path(__file__).resolve().parent
+W = D.parents[2]  # <worktree>/.superpowers/sdd/<plan dir>
+
+MAIN = "264c97b23ec1b3e007e62079d4f6d2632ad71775"  # origin/main tip = 2nd parent of the merge commit f6a8e4401
+PREV_HEAD = "efb06f7c5a0677d5a6103cbcb86e02d199c133ba"  # cycle-6 frozen content head
+MERGE = "f6a8e44016371f54c9648f83e1a7b3673d6cb2c4"
+
+C6_OUTCOME = (
+    "Grok 4.7 PASS_WITH_RISKS (GOVERNING by owner decision; 0 findings; states the earlier Codex findings at 30b0fdec9, 3f1335e7f, 43294e99b and "
+    "fc591cba1 remain closed and that the Task H code is absent after the revert; 10 remaining risks, all pre-stated; source diff only on that route, so "
+    "the design.md line-316 wording and the item-1 test file were NOT_RUN there); Codex gpt-6-astra (advisory) NEEDS_SUPERVISOR with 0 findings (the "
+    "status came only from the agent-directed template line at plan.md:17, which it classified as benign instruction-like content; all earlier findings "
+    "confirmed closed, Task H confirmed fully reverted, the item-18 follow-ups do not reopen a closure); AGY NOT_RUN (quota 429). The cycle-6 proof was "
+    "built and pushed as proof-only commit b706fc5dd and has never been signed."
+)
+
+
+def sub(text, pairs):
+    for old, new in pairs:
+        assert text.count(old) == 1, f"anchor not unique/missing ({text.count(old)}): {old[:100]!r}"
+        text = text.replace(old, new)
+    return text
+
+
+def git_ro(*args):
+    return subprocess.run(["git", "-C", str(W), *args], capture_output=True, text=True, check=True).stdout.strip()
+
+
+# ---- read-only sanity checks of the git facts the generated text relies on (generation fails if they are false) ----
+assert git_ro("rev-parse", f"{MERGE[:9]}^2") == MAIN, "merge commit's 2nd parent is not MAIN"
+assert git_ro("rev-parse", f"{MERGE[:9]}^1")[:9] == "b706fc5dd"
+subprocess.run(["git", "-C", str(W), "merge-base", "--is-ancestor", MAIN, MERGE], check=True)
+assert git_ro("merge-tree", "--write-tree", "5742575c4", MAIN), "merge-tree(5742575c4, MAIN) failed"
+_howto_c6 = git_ro("show", f"{PREV_HEAD[:9]}:docs/02-how-to/mcp-setup-other-repos.md").split("\n")
+_howto_c7 = git_ro("show", f"{MERGE[:9]}:docs/02-how-to/mcp-setup-other-repos.md").split("\n")
+_needle = "automatic runs see it only while the runtime registry lists at least one instance"
+LINE_C6 = [i + 1 for i, l in enumerate(_howto_c6) if l.startswith(_needle)]
+LINE_C7 = [i + 1 for i, l in enumerate(_howto_c7) if l.startswith(_needle)]
+assert LINE_C6 == [287] and len(LINE_C7) == 1, (LINE_C6, LINE_C7)
+LINE_C7 = LINE_C7[0]
+
+# =============================================== 1. build_proof_c7.py
+b = (D / "build_proof_c6.py").read_text()
+
+COPIES_START = '    copies = {\n        subject / "AUDIT_PROMPT.codex.txt": "audit-prompt-codex.txt",'
+COPIES_END = "    optional = {\n"
+i0 = b.index(COPIES_START)
+i1 = b.index(COPIES_END)
+assert b.count(COPIES_START) == 1 and b.count(COPIES_END) == 1 and i0 < i1
+NEW_COPIES = '''    here = Path(__file__).parent
+    copies = {
+        # cycle 7 launches ONE route (grok); codex and agy are NOT_RUN, their markers and any prompts are optional below
+        subject / "AUDIT_PROMPT.grok.txt": "audit-prompt-grok.txt",
+        subject / "AUDIT_PROMPT.grok.full.txt": "audit-prompt-grok-full.txt",
+        subject / "COMMITS.txt": "subject-commits.txt",
+        subject / "FILES.sha256": "subject-files-sha256.txt",
+        subject / "subject.diff": "subject.diff",
+        subject / "subject-src.diff": "subject-src.diff",
+        subject / "delta-since-c6.diff": "subject-delta-since-c6.diff",
+        subject / "mcp-command-registry.txt": "subject-mcp-command-registry.txt",
+        subject / "VALIDATIONS.md": "subject-validations.md",
+        subject / "LEDGER_SUMMARY.md": "subject-ledger-summary.md",
+        subject / "BASE_TREE": "subject-base-tree.txt",
+        raw / "grok.jsonl": "raw-grok.txt",
+        raw / "grok.stderr": "raw-grok-stderr.txt",
+        raw / "started": "raw-started.txt",
+        suite_log: f"test-fast-{h8}.txt",
+        Path(__file__): "build_proof_c7.py.txt",
+        here / "cycle7-freeze-and-audit.sh": "cycle7-freeze-and-audit.sh.txt",
+        here / "AUDIT_PROMPT.c7.template.txt": "audit-prompt-c7-template.txt",
+        here / "cycle7-bots-note.txt": "cycle7-bots-note.txt",
+        here / "cycle2-codex-receipts.txt": "cycle7-codex-receipts.txt",  # re-run cycle2-bot-reviews.sh before the build (the cycle-6 copy was stale)
+        gates_path: f"cycle7-gates-{h8}.json",
+    }
+'''
+b = b[:i0] + NEW_COPIES + b[i1:]
+
+b = sub(b, [
+    # --- header / constants
+    ("Usage: build_proof_c2.py <raw_dir> <subject_dir> <suite_log> <gates.json> <meta.json> [--governing agy|grok]",
+     "Usage: build_proof_c7.py <raw_dir> <subject_dir> <suite_log> <gates.json> <meta.json> --governing grok --owner-authorized-governing-change\n"
+     "  (cycle 7: ONE grok run; codex and agy are NOT_RUN. PREV = the cycle-6 round at efb06f7c, built as proof commit b706fc5dd and unsigned;\n"
+     "   the unbuilt rounds are still cycles 3-5. Refuses on unfilled cycle-7 placeholders, on a BASE_TREE that is not merge-tree(START, MAIN),\n"
+     "   and when the sealed grok prompt does not pin the current HEAD.)"),
+    ('PREV = "3f1335e7"  # the last BUILT round (cycle 2, d4e021126); cycles 3 and 4 reached no proof build, so the bundle still holds the 3f1335e7f artifacts',
+     'PREV = "efb06f7c"  # the last BUILT round (cycle 6, proof-only commit b706fc5dd, never signed); the bundle holds its efb06f7c artifacts plus the older superseded-* generations'),
+    ('MAIN = "f16e0da2cce256096efeaacb1ade625c466dfb6c"',
+     'MAIN = "264c97b23ec1b3e007e62079d4f6d2632ad71775"  # origin/main tip merged by f6a8e4401 (2nd parent); must equal C7_MAIN of cycle7-freeze-and-audit.sh'),
+    ('SEV = {"low": "LOW", "medium": "MEDIUM", "high": "HIGH", "critical": "BLOCKING", "info": "INFO"}',
+     'SEV = {"low": "LOW", "medium": "MEDIUM", "high": "HIGH", "critical": "BLOCKING", "info": "INFO"}\n'
+     '# any cycle-7 placeholder left in the gates or meta JSON aborts the build (fills are the controller\'s job)\n'
+     'PLACEHOLDER_RE = re.compile(r"__(?:H7(?:_8)?|[A-Z0-9_]*C7[A-Z0-9_]*)__")\n'
+     '# per-cycle evidence of the unbuilt rounds (cycles 2-5) and hash-named receipts stay in place across a rebuild; the cycle-6 round\'s\n'
+     '# generic and cycle6-* names are superseded (superseded-efb06f7c-*)\n'
+     'KEEP_RE = re.compile(r"^(cycle[2-5]-|audit-prompt-c[2-5]-template|test-fast-[0-9a-f]{8}\\.txt$)")'),
+    # --- routes that were not launched
+    ('    """Runner-level failure text (e.g. agy quota 429) when a route produced no audit."""\n    if name == "agy":',
+     '    """Runner-level failure text (e.g. agy quota 429, or a route that was not launched) when a route produced no audit."""\n'
+     '    if name == "codex" and not (raw / "codex-report.md").exists() and not (raw / "codex.jsonl").exists():\n'
+     '        return _CODEX_NOT_LAUNCHED\n'
+     '    if name == "agy":'),
+    ('"not launched in cycles 4 to 6: the agy route failed on its individual quota at the cycle-3 freeze "',
+     '"not launched in cycles 4 to 7: the agy route failed on its individual quota at the cycle-3 freeze "'),
+    ('    "the owner chose Grok as the governing route on 2026-11-09"\n)\n',
+     '    "the owner chose Grok as the governing route on 2026-11-09"\n)\n'
+     '_CODEX_NOT_LAUNCHED = (\n'
+     '    "not launched in cycle 7: the owner chose ONE governing Grok 4.7 run; Codex stays advisory through the PR connector "\n'
+     '    "(a connector review is not an audit route and is recorded in the bots note, not here)"\n'
+     ')\n'),
+    # --- governing identity
+    ("# grok-4.7, which the embedded-audit schema admits once PR #1507 is on main. Do not build before then.",
+     "# grok-4.7, which the embedded-audit schema admits since PR #1507 (on main as 33497c616 and merged into this branch by f6a8e4401)."),
+    ('            "the schema enum lacks it, hence \'unknown\'; observed model UNKNOWN)"',
+     '            "admitted by the embedded-audit schema since #1507; observed model UNKNOWN)"'),
+    # --- append-only-new helper (the cumulative meta lists were re-appended on every rebuild: 11 duplicate slices, 6 routes, 8 fixes in the cycle-6 proof)
+    ("def safe_copy(src: Path, dst_name: str) -> None:",
+     "def _append_new(existing, new):\n"
+     '    """existing + the items of ``new`` not already present (exact JSON equality); the meta lists are cumulative across cycles."""\n'
+     "    out = list(existing)\n"
+     "    seen = {json.dumps(x, sort_keys=True) for x in out}\n"
+     "    for x in new:\n"
+     "        k = json.dumps(x, sort_keys=True)\n"
+     "        if k not in seen:\n"
+     "            out.append(x)\n"
+     "            seen.add(k)\n"
+     "    return out\n\n\n"
+     "def safe_copy(src: Path, dst_name: str) -> None:"),
+    # --- guards
+    ('    meta = json.loads(meta_path.read_text(encoding="utf-8"))\n',
+     '    meta = json.loads(meta_path.read_text(encoding="utf-8"))\n'
+     '    for label, p_ in (("gates", gates_path), ("meta", meta_path)):\n'
+     '        left = sorted(set(PLACEHOLDER_RE.findall(p_.read_text(encoding="utf-8"))))\n'
+     '        if left:\n'
+     '            raise SystemExit(f"refusing: unfilled cycle-7 placeholders in {label} {p_.name}: {left}")\n'
+     '    recomputed = git("merge-tree", "--write-tree", START, MAIN)\n'
+     '    if recomputed != base_tree:\n'
+     '        raise SystemExit(f"refusing: subject BASE_TREE {base_tree} != merge-tree({START}, {MAIN}) = {recomputed}")\n'
+     '    if f"Pinned HEAD SHA: {head}" not in (subject / "AUDIT_PROMPT.grok.txt").read_text(encoding="utf-8"):\n'
+     '        raise SystemExit(f"refusing: the sealed grok prompt does not pin HEAD {head}")\n'),
+    # --- supersede step
+    ("    # 1. supersede the 3f1335e7 (cycle-2) artifacts still in the bundle (cycles 3 and 4 had no proof build); hash-named cycle-2 files and the 30b0fdec9 generation stay",
+     "    # 1. supersede the efb06f7c (cycle-6) round's artifacts in the bundle (generic names and cycle6-* files); hash-named receipts, the cycle2-5 per-cycle evidence and older superseded-* generations stay"),
+    ('        if f.name in keep or f.name.startswith("superseded-") or PREV in f.name:',
+     '        if f.name in keep or f.name.startswith("superseded-") or PREV in f.name or KEEP_RE.match(f.name):'),
+    ("    # 2. cycle-6 evidence (plus the unbuilt cycle-3, cycle-4 and cycle-5 audit rounds)",
+     "    # 2. cycle-7 evidence (plus the unbuilt cycle-3, cycle-4 and cycle-5 audit rounds)"),
+    # --- optional evidence: not-launched markers and anything a codex/agy route would have produced
+    ("    optional = {\n",
+     "    optional = {\n"
+     '        raw / "codex-not-launched.txt": "raw-codex-not-launched.txt",\n'
+     '        raw / "agy-not-launched.txt": "raw-agy-not-launched.txt",\n'
+     '        raw / "codex.jsonl": "raw-codex.txt",\n'
+     '        raw / "codex.stderr": "raw-codex-stderr.txt",\n'
+     '        subject / "AUDIT_PROMPT.codex.txt": "audit-prompt-codex.txt",\n'
+     '        subject / "AUDIT_PROMPT.agy.txt": "audit-prompt-agy.txt",\n'
+     '        here / "cycle7-codex-receipt.txt": "cycle7-codex-receipt.txt",\n'
+     '        here / "cycle7-validation-fills.json": "cycle7-validation-fills.json",\n'
+     '        here / "cycle7-fill-validations.py": "cycle7-fill-validations.py.txt",\n'
+     '        here / "make_cycle7_tooling.py": "make_cycle7_tooling.py.txt",\n'
+     '        here / "make_cycle7_gates.py": "make_cycle7_gates.py.txt",\n'),
+    # --- routes / audit record
+    ('"workstream": f"independent L3 audit route — {r} (cycle 6 at {h8})"', '"workstream": f"independent L3 audit route — {r} (cycle 7 at {h8})"'),
+    ("f\"three routes at the frozen head {h8} (codex gpt-6-astra, agy gemini-4-argon-high, grok grok-4.7)\"",
+     "f\"one route launched at the frozen head {h8} (grok grok-4.7, governing by owner decision); codex (gpt-6-astra) NOT_RUN — {route_error(raw, 'codex')}\""),
+    ('"); the cycle-2 round at 3f1335e7f is superseded "',
+     '"); the cycle-6 round at efb06f7c5 (proof-only commit b706fc5dd, built and pushed but never signed) is superseded "'),
+    ("-*) and the 30b0fdec9 round as superseded-30b0fdec9-*; the cycle-3",
+     "-*), the cycle-2 round at 3f1335e7f as superseded-3f1335e7-* and the 30b0fdec9 round as superseded-30b0fdec9-*; the cycle-3"),
+    ("cycle 6 is the revert of the cycle-5 Task H change\"",
+     "cycle 7 is the merge of origin/main (264c97b23) into the branch, re-audited by ONE Grok run\""),
+    # --- cumulative meta lists: append only what is new
+    ('    proof["slices"] = list(proof.get("slices", [])) + list(meta.get("slices_added", []))',
+     '    proof["slices"] = _append_new(proof.get("slices", []), meta.get("slices_added", []))'),
+    ('    proof["routes"] = kept_routes + list(meta.get("routes_added", [])) + routes',
+     '    proof["routes"] = _append_new(kept_routes, meta.get("routes_added", [])) + routes'),
+    ('        "fixes_applied": list(ea_old.get("fixes_applied", [])) + list(meta.get("fixes_applied_added", [])),',
+     '        "fixes_applied": _append_new(ea_old.get("fixes_applied", []), meta.get("fixes_applied_added", [])),'),
+    # --- AUDIT_SUMMARY.md section
+    ('f"\\n\\n## Cycle 6 ({_dt.date.today().isoformat()}) — Task H reverted (open follow-up recorded) + re-audit, Grok governing, at {head}\\n\\n"',
+     'f"\\n\\n## Cycle 7 ({_dt.date.today().isoformat()}) — merge of origin/main (264c97b23) + one Grok re-audit (Grok governing; codex and agy not launched), at {head}\\n\\n"'),
+    ('        + meta["summary_md"].rstrip("\\n")', '        + (meta.get("summary_md_c7") or meta["summary_md"]).rstrip("\\n")'),
+    ('        + "\\n\\n### Audit (three routes at "', '        + "\\n\\n### Audit (grok launched, codex and agy NOT_RUN, at "'),
+])
+# stale-receipts warning after the copies loop
+b = sub(b, [(
+    "    for src, dst in optional.items():\n        if src.is_file():\n            safe_copy(src, dst)\n",
+    "    for src, dst in optional.items():\n        if src.is_file():\n            safe_copy(src, dst)\n"
+    '    if h8 not in (here / "cycle2-codex-receipts.txt").read_text(encoding="utf-8", errors="replace"):\n'
+    '        print(f"WARNING: no Codex connector receipt mentioning {h8} in cycle2-codex-receipts.txt (re-run cycle2-bot-reviews.sh); the bots record must say what happened at {h8}")\n',
+)])
+(D / "build_proof_c7.py").write_text(b)
+
+# =============================================== 2. cycle7-freeze-and-audit.sh
+f = (D / "cycle6-freeze-and-audit.sh").read_text()
+c6_grok_launch = [l for l in f.split("\n") if l.startswith('( cd "$A" && nohup grok -m grok-4.7')]
+assert len(c6_grok_launch) == 1
+lines = f.split("\n")
+
+
+def line_idx(prefix, ls=None):
+    ls = lines if ls is None else ls
+    hits = [i for i, l in enumerate(ls) if l.startswith(prefix)]
+    assert len(hits) == 1, f"{prefix!r}: {len(hits)}"
+    return hits[0]
+
+
+def replace_line(prefix, new):
+    lines[line_idx(prefix)] = new
+
+
+def delete_line(prefix):
+    del lines[line_idx(prefix)]
+
+
+# header comment block (lines 2-9)
+i2 = line_idx("# Cycle 6 freeze")
+i9 = line_idx("# Usage: bash cycle6-freeze-and-audit.sh")
+lines[i2:i9 + 1] = [
+    "# Cycle 7 freeze (derived from cycle6-freeze-and-audit.sh; same base rule with MAIN advanced to the origin/main tip that f6a8e4401 merged): build the sealed audit subject at the",
+    "# current HEAD of the worktree and launch ONE audit route, Grok 4.7 (the governing route, owner decision). Codex is NOT launched (it stays advisory via the PR connector)",
+    "# and AGY is NOT launched (quota 429 until ≈2026-11-14). No retry, no fallback: a second launch at the same head is refused. Differences from the cycle-6 script:",
+    "#   * MAIN = 264c97b23 (PR #1465; contains #1508, #1440, #1507) instead of f16e0da2c: the branch-authored diff is taken against the synthetic tree",
+    "#     merge-tree(5742575c4, MAIN) and excludes proof/ (evidence, not code). Override with C7_MAIN only on purpose; MAIN must be an ancestor of HEAD;",
+    "#   * two extra subject files for the grok route: delta-since-c6.diff (git diff <cycle-6 head> HEAD over the 4 conflict-resolved files and the 3 auto-merged",
+    "#     src files) and mcp-command-registry.txt (click commands registered in mcp_commands.py), because AGENTS.md, .claude/claude.md and the doctor test are not in subject-src.diff;",
+    "#   * VALIDATIONS.md is filled by cycle7-fill-validations.py from the suite log and cycle7-validation-fills.json (default NOT_RUN, never PASS by default);",
+    "#   * raw auditor streams and reports go to <workspace>/cycle7-audit/raw-<H8>/; the subject dir lives in the workspace too.",
+    "# PRE-FREEZE (NOT done by this script; do them first, at the head you freeze): CI and bot reviews settled; local `make test-fast` log; cycle2-gates.sh; docs validators;",
+    "#   full-mode `validate_change_contract.py --base <MAIN> --head HEAD` (lesson of #1507: a --proof-only run alone misses packet-schema failures); cycle7-bots-note.txt written.",
+    "# Usage: bash cycle7-freeze-and-audit.sh <path-to-verified-make-test-fast-log>  (reads $D/cycle7-bots-note.txt into __BOTS_C7__ and $D/cycle7-validation-fills.json)",
+]
+replace_line("C2=$D/cycle6-audit", "C2=$D/cycle7-audit")
+replace_line("MAIN=f16e0da2cce256096efeaacb1ade625c466dfb6c", f"MAIN=${{C7_MAIN:-{MAIN}}}   # origin/main tip merged by {MERGE[:9]} (its 2nd parent)\nPREV_HEAD={PREV_HEAD}   # cycle-6 frozen content head (audited by Grok 4.7 at that SHA)")
+i = line_idx('if [ -n "$(git status --porcelain)" ]; then')
+lines[i + 1:i + 1] = [
+    'git cat-file -e "${MAIN}^{commit}" 2>/dev/null || { echo "refusing: MAIN $MAIN is not a commit"; exit 1; }',
+    'git cat-file -e "${PREV_HEAD}^{commit}" 2>/dev/null || { echo "refusing: PREV_HEAD $PREV_HEAD is not a commit"; exit 1; }',
+    'git merge-base --is-ancestor "$MAIN" "$H" || { echo "refusing: MAIN $MAIN is not an ancestor of HEAD $H (base rule would be wrong)"; exit 1; }',
+    'git merge-base --is-ancestor "$PREV_HEAD" "$H" || { echo "refusing: PREV_HEAD $PREV_HEAD is not an ancestor of HEAD $H"; exit 1; }',
+]
+replace_line("A=$C2/subject-$H8; R=$C2/raw-$H8;",
+             'A=$C2/subject-$H8; R=$C2/raw-$H8\n'
+             '[ -e "$R/grok.jsonl" ] && { echo "refusing: $R/grok.jsonl exists (cycle 7 is ONE Grok run; no retry, no fallback, no relaunch at the same head)"; exit 1; }\n'
+             'mkdir -p "$A" "$R"')
+i = line_idx('git log --oneline "${START}..${H}" "^${MAIN}" > "$A/COMMITS.txt"')
+lines[i + 1:i + 1] = [
+    'git diff "$PREV_HEAD" "$H" -- .claude/claude.md AGENTS.md docs/02-how-to/mcp-setup-other-repos.md tests/unit/test_mcp_doctor_repo_aware.py src/dopemux/commands/mcp_commands.py src/dopemux/mcp/doctor.py src/dopemux/mcp/fleet_catalog.py > "$A/delta-since-c6.diff"',
+    '{ echo "# controller-generated data, not a verdict: click commands and groups registered in src/dopemux/commands/mcp_commands.py at ${H} (grep -nE of the decorator lines)"; git show "${H}:src/dopemux/commands/mcp_commands.py" | grep -nE \'^@[A-Za-z_]+\\.(command|group)\\(\'; } > "$A/mcp-command-registry.txt"',
+]
+i = line_idx("{ echo \"# LEDGER SUMMARY")
+lines[i] = lines[i].replace("|Cycle 6|cycle 6|REVERT|", "|Cycle 6|cycle 6|Cycle 7|cycle 7|CYCLE 7|REVERT|")
+assert "CYCLE 7" in lines[i]
+# suite summary + VALIDATIONS
+i = line_idx("SUMMARY=$(grep -E '^=+ .*passed'")
+j = line_idx("BOTS_C6=$(tr")
+assert j == i + 1
+lines[i:j + 1] = [
+    "# the pytest summary line is '=== N passed, ... in Ts ===' (make test-fast) or 'N failed, M passed, ... in Ts' (-q tail); the exit line is 'exit=N' or 'exit N'",
+    "SUMMARY=$(grep -E '^(=+ )?[0-9]+ (passed|failed)[^=]* in [0-9.]+s' \"$LOG\" | tail -1 | sed 's/=//g' | xargs); [ -n \"$SUMMARY\" ] || SUMMARY=\"UNKNOWN (no pytest summary line in $LOG)\"",
+    "SUITE_EXIT=$(grep -E '^exit[= ][0-9]+' \"$LOG\" | tail -1 | sed -E 's/^exit[= ]//'); [ -n \"$SUITE_EXIT\" ] || SUITE_EXIT=UNKNOWN",
+    "if [ \"$SUITE_EXIT\" = \"0\" ] && ! echo \"$SUMMARY\" | grep -q failed; then SUITE_BUCKET=PASS; elif [ \"$SUITE_EXIT\" = \"UNKNOWN\" ]; then SUITE_BUCKET=UNKNOWN; else SUITE_BUCKET=FAIL; fi",
+    "if [ -f \"$D/cycle7-bots-note.txt\" ] && grep -q '__[A-Z0-9_]*__' \"$D/cycle7-bots-note.txt\"; then echo \"refusing: cycle7-bots-note.txt still holds a placeholder\"; exit 1; fi",
+    "BOTS_C7=$(tr \"\\n\" \" \" < \"$D/cycle7-bots-note.txt\" 2>/dev/null || echo \"NOT_RUN at this SHA\")",
+    "H=\"$H\" SUMMARY=\"$SUMMARY\" SUITE_EXIT=\"$SUITE_EXIT\" SUITE_BUCKET=\"$SUITE_BUCKET\" BOTS_C7=\"$BOTS_C7\" python3 \"$D/cycle7-fill-validations.py\" \"$D/VALIDATIONS.c7.template.md\" \"$A/VALIDATIONS.md\" \"$D/cycle7-validation-fills.json\" || exit 1; cp \"$A/VALIDATIONS.md\" \"$C2/VALIDATIONS-$H8.md\"",
+]
+# prompts: grok only
+i = line_idx("for r in codex:gpt-6-astra agy:gemini-4-argon-high grok:grok-4.7; do")
+lines[i] = lines[i].replace("for r in codex:gpt-6-astra agy:gemini-4-argon-high grok:grok-4.7; do", "for r in grok:grok-4.7; do")
+old = '-e "s#__BASE_TREE__#${BASE_TREE}#g" "$D/AUDIT_PROMPT.c6.template.txt"'
+assert lines[i].count(old) == 1
+lines[i] = lines[i].replace(old, '-e "s#__BASE_TREE__#${BASE_TREE}#g" -e "s#__MAIN__#${MAIN}#g" "$D/AUDIT_PROMPT.c7.template.txt"')
+delete_line('{ cat "$A/AUDIT_PROMPT.codex.txt"; echo;')
+delete_line('{ cat "$A/AUDIT_PROMPT.agy.txt"; echo;')
+i = line_idx('{ echo "IMPORTANT FOR THIS ROUTE: you have NO tools')
+lines[i] = sub(lines[i], [
+    ("for f in COMMITS.txt FILES.sha256 VALIDATIONS.md LEDGER_SUMMARY.md howto-mcp-setup-other-repos.md; do",
+     "for f in COMMITS.txt FILES.sha256 VALIDATIONS.md LEDGER_SUMMARY.md howto-mcp-setup-other-repos.md mcp-command-registry.txt; do"),
+    ('cat "$A/subject-src.diff"; echo; echo "=================== END OF SUBJECT MATERIALS ==================="',
+     'cat "$A/subject-src.diff"; echo; echo "----- delta-since-c6.diff (cycle 7 only: git diff <cycle-6 frozen head> <pinned head> over the four merge-conflict files and the three auto-merged src files; AGENTS.md, .claude/claude.md and the doctor test appear only here) -----"; cat "$A/delta-since-c6.diff"; echo; echo "=================== END OF SUBJECT MATERIALS ==================="'),
+])
+# launches: codex out, agy marker + codex marker, grok launch line unchanged
+delete_line('( cd "$A" && nohup codex exec -m gpt-6-astra')
+replace_line('echo "agy route NOT launched',
+             'echo "codex route NOT launched in cycle 7 (owner decision: ONE Grok 4.7 run; Codex stays advisory via the PR connector)" > "$R/codex-not-launched.txt"\n'
+             'echo "agy route NOT launched (quota 429 until ≈2026-11-14; owner chose Grok governing)" > "$R/agy-not-launched.txt"')
+replace_line("sleep 3; echo \"pids: codex=",
+             "sleep 3; echo \"pids: codex=NOT_LAUNCHED agy=NOT_LAUNCHED grok=$(pgrep -f 'grok -m grok-4.7 --effort high' | head -1)\"")
+f7 = "\n".join(lines)
+# the Grok invocation must be byte-identical to cycle 6
+assert c6_grok_launch[0] in f7.split("\n")
+(D / "cycle7-freeze-and-audit.sh").write_text(f7)
+
+# =============================================== 3. AUDIT_PROMPT.c7.template.txt
+p = (D / "AUDIT_PROMPT.c6.template.txt").read_text()
+p = sub(p, [
+    ("cycle 6 re-audit", "cycle 7 re-audit"),
+    ("since then origin/main f16e0da2c (PR #1500, auth-only) was merged into the branch. The base is therefore the synthetic git tree merge-tree(5742575c4, f16e0da2c) = __BASE_TREE__.",
+     "since then origin/main was merged into the branch twice: f16e0da2c (PR #1500, auth-only) in cycle 2 and, in cycle 7, __MAIN__ (the second parent of merge commit f6a8e4401; it contains #1508, #1440, #1507 and #1465, all merged upstream). The base is therefore the synthetic git tree merge-tree(5742575c4, __MAIN__) = __BASE_TREE__, so upstream main content up to __MAIN__ is part of the base, not of the subject."),
+    ("The branch-authored commits are `git log 5742575c4..__HEAD__ ^f16e0da2c`", "The branch-authored commits are `git log 5742575c4..__HEAD__ ^__MAIN__`"),
+    ("(merge-tree of 5742575c4 and f16e0da2c)", "(merge-tree of 5742575c4 and __MAIN__)"),
+    ("the cycle-6 revert record (item 17) listed above, one by one (item 16 is reverted and absent).",
+     "the cycle-6 revert record (item 17) and the cycle-7 merge record (item 19) listed above, one by one (item 16 is reverted and absent)."),
+    ("LEDGER_SUMMARY.md (controller rulings, deferred items, live-check logs, gate results), VALIDATIONS.md (what was run at the pinned SHA and its exact output).",
+     "LEDGER_SUMMARY.md (controller rulings, deferred items, live-check logs, gate results), VALIDATIONS.md (what was run at the pinned SHA and its exact output), and for cycle 7 only delta-since-c6.diff and mcp-command-registry.txt (see item 19)."),
+    ("the how-to's Cleanup paragraph (line 287) describes", "the how-to's Cleanup paragraph (line 287 at efb06f7c5; line " + str(LINE_C7) + " at the cycle-7 head) describes"),
+    ("(design.md amendment; how-to line 287)", "(design.md amendment; how-to line 287 at efb06f7c5, line " + str(LINE_C7) + " after the merge)"),
+])
+pl = p.split("\n")
+hit = [i for i, l in enumerate(pl) if l.startswith("18. Two Codex PR-bot P2s raised on `fbbe95a59`")]
+assert len(hit) == 1
+C7_BLOCK = [
+    "",
+    "WHAT CHANGED SINCE THE CYCLE-6 AUDIT ROUND AT efb06f7c5 (cycle 7 — verify at path:line)",
+    "At efb06f7c5: " + C6_OUTCOME + " The merge below makes that proof stale (it names efb06f7c5), so it is superseded. In cycle 7 ONLY this route (Grok) is run: Codex and AGY are not launched (owner decision; Codex stays advisory through the PR connector).",
+    "19. Merge commit `f6a8e4401` (parents `b706fc5dd`, the cycle-6 proof-only commit, and `__MAIN__`, the tip of origin/main) merges upstream main into the branch. Since the branch's previous merge of main (`f16e0da2c`) main gained, among other commits: #1508 (pr-merge docs and skills), #1440 (`a1ed8fba8`: fleet docs corrections and a doctor next-action change), #1507 (`33497c616`: admits the `grok-cli`/`grok-4.7` embedded-audit route in `schemas/proof/embedded_audit.schema.json`) and #1465 (`264c97b23`: profile-output quarantine in `fleet_catalog.py`). All of that is UPSTREAM content and part of the BASE tree merge-tree(5742575c4, __MAIN__), not of the subject; the branch-authored content of the merge is only its conflict resolution. `src/dopemux/commands/mcp_commands.py`, `src/dopemux/mcp/doctor.py` and `src/dopemux/mcp/fleet_catalog.py` merged without a conflict; four files conflicted (#1440 overlapped this PR) and were resolved by a Sonnet implementer and checked by the controller. `delta-since-c6.diff` is `git diff efb06f7c5 __HEAD__` over those seven files (it is the only place where AGENTS.md, `.claude/claude.md` and the doctor test appear on a tool-less route); `mcp-command-registry.txt` lists the click commands registered in `mcp_commands.py` at the pinned SHA (controller-generated data, not a verdict). Claims to verify:",
+    "   (a) `.claude/claude.md` and `AGENTS.md`: the M1 text is kept, and #1440's corrections are re-applied only where the merged code supports them: a product-root paragraph (`DOPEMUX_MVP_ROOT`, alias `DOPEMUX_PRODUCT_ROOT`, else the module's parent directories; `product_root()` in `src/dopemux/mcp/docker_runtime.py`) worded for `init`, `start` and `launch`; the container count \"3N\" corrected to \"2N\" with `serena` described as one container bound to dopemux-mvp (AGENTS.md §12.6 sharing-class row and sentence; the sharing-classes paragraph of `.claude/claude.md`).",
+    "   (b) AGENTS.md §12.6 command table: the IMPLEMENTED row lists verbs registered in `mcp_commands.py` (including `launch`, `switch-project`, `reap`, `repair-config`, `status`, `restart`, `ensure`, `up`, `down`); a further row lists the groups `fleet`, `profile`, `leases`, `registry`, `control-plane`; `reconcile` is PARTIAL (it exists only as `mcp leases reconcile`, `mcp registry reconcile` and `mcp control-plane reconcile`); `adopt` and `migrate` are PLANNED. #1440's statement that `switch-project` is PLANNED was dropped because the code implements it. `.claude/claude.md` says the same in short form.",
+    "   (c) `docs/02-how-to/mcp-setup-other-repos.md`: #1440's product-root paragraph, its shared-infrastructure paragraph and its new \"Restoring Postgres\" section are carried over; the M1 text elsewhere in the how-to is unchanged by the merge (the Cleanup paragraph sentence \"automatic runs see it only while the runtime registry lists at least one instance\" moved from line 287 to line " + str(LINE_C7) + "). The shared-infrastructure paragraph and the \"Restoring Postgres\" section were NOT re-checked against the source by the implementer or the controller: say whether you can.",
+    "   (d) `tests/unit/test_mcp_doctor_repo_aware.py`: 27 base + 8 of ours + 1 from #1440 (`test_format_human_summary_skips_repair_apply_when_repair_is_noop`) = 36 test functions, none lost.",
+    "   (e) The base tree already admits the `grok-cli`/`grok-4.7` pair (#1507), so the embedded-audit record of this route is schema-valid without a branch-authored schema change.",
+    "Say explicitly whether the merge changed or lost any M1 claim (D1-D10 and items 1-17), whether the resolved docs are consistent with the code and registry visible in your materials (the §12.6 command table against `mcp-command-registry.txt`; the \"2N\" count; the product-root paragraph against `docker_runtime.py` if it is visible to you), and whether anything in `delta-since-c6.diff` is branch-authored beyond the resolutions described above. Items 1-18 are unchanged and must still hold. Upstream main content is not part of the subject: do not raise it as findings; the pre-stated open follow-ups (items 17-18) stay pre-stated.",
+]
+pl[hit[0] + 1:hit[0] + 1] = C7_BLOCK
+p = "\n".join(pl)
+(D / "AUDIT_PROMPT.c7.template.txt").write_text(p)
+
+# =============================================== 4. VALIDATIONS.c7.template.md
+v = (D / "VALIDATIONS.c6.template.md").read_text()
+v = sub(v, [
+    ("(feat/mcp-just-works-m1, cycle 6), recorded __DATE__", "(feat/mcp-just-works-m1, cycle 7 = merge of origin/main), recorded __DATE__"),
+    ("; exit 0 (controller-run at this SHA) | PASS |", "; exit __SUITE_EXIT__ (controller-run at this SHA) | __SUITE_BUCKET__ |"),
+    ("| 12 passed at the frozen head (re-run at this SHA) | PASS |", "| __HOOKS_C7_RESULT__ | __HOOKS_C7_BUCKET__ |"),
+    ("| rc=0 on both (AGENTS.md and .claude/claude.md fail both validators at the base too: no frontmatter, not docs/ pages) | PASS |", "| __DOCS_C7_RESULT__ | __DOCS_C7_BUCKET__ |"),
+    ("per-file counts on the cycle-changed .py files at this SHA vs the cycle base 0cde3a921 (main merged)", "per-file counts on the changed .py files at this SHA vs the base named in the result column"),
+    ("| ruff F/E9 new 0; flake8 F/E7/E9/W6 new 0 over the 20+ changed .py files (base side run in a real worktree of 0cde3a921) | PASS |", "| __LINT_C7_RESULT__ | __LINT_C7_BUCKET__ |"),
+    ("| 0 black / 0 isort drift on the lines cycles 2 and 3 added in cli.py, mcp_commands.py, mcp_json.py, stdio_proxy.py, reap.py, launcher.py, lifecycle.py, docker_runtime.py, locks.py (pre-existing drift elsewhere in the legacy files; 8 black-flagged lines in lifecycle.py are legacy lines moved with the preflight extraction) | PASS |", "| __FORMAT_C7_RESULT__ | __FORMAT_C7_BUCKET__ |"),
+    ("| 0 new errors in every changed src module (counts identical base vs head under the repo config: cli 1301, mcp_commands 87, launcher 17, lifecycle 17, mcp_json 9, reap 17 pre-existing) | PASS |", "| __MYPY_C7_RESULT__ | __MYPY_C7_BUCKET__ |"),
+    ("| make lint / make type-check (repo-wide) |",
+     "| CCAR-002 normalized catalog | `scripts/commandcode_router/build_normalized_catalog.py --check` | __CATALOG_C7_RESULT__ | __CATALOG_C7_BUCKET__ |\n"
+     "| merge of origin/main (cycle 7) | `git show f6a8e4401`; `git diff --stat efb06f7c5 f6a8e4401 -- src`; function count of tests/unit/test_mcp_doctor_repo_aware.py | __MERGE_C7_RESULT__ | __MERGE_C7_BUCKET__ |\n"
+     "| make lint / make type-check (repo-wide) |"),
+    ("Cycle 6 head: __BOTS_C6__ |",
+     "Cycle 6 heads: fbbe95a59 two P2s in code unchanged since cycle 2 (recorded as open follow-ups by owner decision), efb06f7c5 CLEAN (receipt 2026-11-10T03:05:39Z, reviewed commit efb06f7c5a). Cycle 7 head: __BOTS_C7__ |"),
+    ("Not repeated at this SHA: cycles 3 to 5 change only the URL-repair predicate, the proxy's error-literal match and the lifecycle preflight's doctor-finding handling, all unit-tested; the lock paths the smoke exercised are untouched | NOT_RUN (this SHA) |",
+     "Not repeated at this SHA: cycles 3 to 5 changed only the URL-repair predicate, the proxy's error-literal match and the lifecycle preflight's doctor-finding handling (unit-tested), cycle 6 was a revert plus a design/help-text edit, and cycle 7 merges upstream main (at f6a8e4401, `git diff --stat efb06f7c5 f6a8e4401 -- src` touches only mcp_commands.py, doctor.py, fleet_catalog.py and claude_autoresponder.py: no launcher, lifecycle, reap or lock module); the lock paths the smoke exercised are untouched | NOT_RUN (this SHA) |"),
+    ("T8 dry-run repeated at this SHA (see live smoke) | claim for this SHA except the repeated T8 dry-run | NOT_RUN (this SHA) |",
+     "the T8 dry-run and a cold launch were repeated only at the cycle-2 head 3f1335e7f (see live smoke); nothing is repeated at this SHA | claim for the older heads only | NOT_RUN (this SHA) |"),
+    ("each seen only as the single --maxfail stop of a run that was then repeated clean | residual risk | UNKNOWN |",
+     "each seen only as the single --maxfail stop of a run that was then repeated clean; cycle 7: tests/unit/test_docs_no_envrc_recipe.py::test_init_next_steps_do_not_tell_the_user_to_source_the_env_file also failed in the local run at f6a8e4401 while the live task orchestrator held host :7890 (log cycle7-test-fast-merge-wip.log; the other 4476 tests passed) | residual risk | UNKNOWN |"),
+])
+(D / "VALIDATIONS.c7.template.md").write_text(v)
+
+# =============================================== 5. cycle7-meta.json
+m = json.loads((D / "cycle6-meta.filled.json").read_text())
+assert "__C6_AUDIT_OUTCOME__" not in json.dumps(m)
+m["codereview_status"] = (
+    "CONTROLLER-CHECKED (cycle 7: merge of origin/main 264c97b23 into the branch as f6a8e4401; the four conflicts were resolved by a Sonnet implementer and checked by the "
+    "controller (no conflict markers; build_normalized_catalog.py --check CHECK_PASS; doctor test file 36 test functions = 27 base + 8 ours + 1 from #1440); no task reviewer "
+    "and no intermediate model audit: the single Grok audit at __H7__ is the review of the merge). " + m["codereview_status"]
+)
+m["slices_added"].append(
+    "Cycle 7 (merge of main): origin/main 264c97b23 (#1508, #1440 a1ed8fba8, #1507 33497c616, #1465) merged into the branch as f6a8e4401 after the cycle-6 proof (b706fc5dd, unsigned) had been pushed. "
+    "Conflicts in .claude/claude.md, AGENTS.md, docs/02-how-to/mcp-setup-other-repos.md and tests/unit/test_mcp_doctor_repo_aware.py resolved by a Sonnet implementer, controller-checked: M1 text kept; "
+    "#1440's corrections re-applied where the merged code supports them (product-root paragraph for init|start|launch; 3N -> 2N containers with serena one shared container; AGENTS.md §12.6 command table lists the "
+    "implemented verbs, reconcile PARTIAL (leases/registry/control-plane only), adopt/migrate PLANNED; the 'Restoring Postgres' how-to section carried unchanged); #1440's claim that switch-project is PLANNED dropped because the code "
+    "implements it. src/dopemux/commands/mcp_commands.py, src/dopemux/mcp/doctor.py and src/dopemux/mcp/fleet_catalog.py auto-merged. No branch-authored code change in the merge"
+)
+m["routes_added"].append({"workstream": "cycle 7 implementer (merge-conflict resolution in 4 files, #1440 overlap)", "runner": "claude-code Agent", "model_requested": "sonnet",
+                          "model_observed": "UNKNOWN", "effort": "UNKNOWN", "skills": []})
+m["fixes_applied_added"].append(
+    "cycle 7: conflict with #1440 (a1ed8fba8) resolved in .claude/claude.md, AGENTS.md, the how-to and tests/unit/test_mcp_doctor_repo_aware.py when origin/main (264c97b23) was merged (f6a8e4401); no audit finding was addressed in this cycle")
+m["pr_url_or_blocker"] = ("https://github.com/DDD-Enterprises/dopemux-mvp/pull/1503 (open; cycle 7 = merge of origin/main into the branch, frozen at __H7__; the cycle-6 proof b706fc5dd names efb06f7c5, "
+                          "was built and pushed but never signed, and is superseded; audit: __C7_AUDIT_OUTCOME__; Grok governs by owner decision (ONE run; codex and agy not launched); signature = owner step; merge owner-gated)")
+rr = m["residual_risks"]
+k = [i for i, x in enumerate(rr) if x.startswith("Governing route changed by owner decision (2026-11-09)")]
+assert len(k) == 1
+rr[k[0]] = ("Governing route changed by owner decision (2026-11-09): the embedded-audit record is the Grok route (grok-cli / grok-4.7, admitted by schemas/proof/embedded_audit.schema.json since #1507, "
+            "which is on main as 33497c616 and merged into this branch by f6a8e4401; observed model UNKNOWN); the AGY route was not launched in cycles 4 to 7 (quota 429 until ≈2026-11-14)")
+rr.append("Cycle 7: single-route audit. Only the Grok 4.7 route (governing by owner decision) was run at the frozen head; Codex was not launched (it stays advisory through the PR connector) and AGY was not launched (quota), so there is no second independent audit route at this head")
+rr.append("Cycle 7: #1440's shared-infrastructure paragraph and its 'Restoring Postgres' section in docs/02-how-to/mcp-setup-other-repos.md were carried over from main unchanged and were NOT re-checked against the source by the implementer or the controller")
+rr.append("Cycle 7: the Grok route is tool-less and embeds the source diff plus delta-since-c6.diff and mcp-command-registry.txt; checks that need the test suite, the full docs, the sealed hashes or the live host stay NOT_RUN on that route (see the audit outcome)")
+m["unknowns"].append("Cycle 7: Codex connector review of the frozen head and Copilot status at that head: __BOTS_C7__")
+m["summary_md_c7"] = (
+    "### Cycle 6 outcome, as recorded at the cycle-7 start\n\n" + C6_OUTCOME + "\n\n"
+    "### Cycle 7 scope\n\nAfter the cycle-6 proof (b706fc5dd, unsigned) was pushed, origin/main moved (#1508, #1440, #1507, #1465) and #1440 conflicted with this PR. `f6a8e4401` merges origin/main (264c97b23) into the branch; the four conflicting files "
+    "(.claude/claude.md, AGENTS.md, docs/02-how-to/mcp-setup-other-repos.md, tests/unit/test_mcp_doctor_repo_aware.py) were resolved by a Sonnet implementer and checked by the controller: M1 text kept; #1440's corrections re-applied where the merged code "
+    "supports them; #1440's claim that `switch-project` is PLANNED dropped because the code implements it. This is a content change after the cycle-6 audit, so the cycle-6 proof is superseded. Owner decision: ONE fresh Grok 4.7 audit of the merged head "
+    "(governing); Codex not launched (advisory via the PR connector); AGY not launched (quota until ≈2026-11-14). Re-frozen at __H7__.\n\n"
+    "### Audit outcome at __H7__\n\n__C7_AUDIT_OUTCOME__\n"
+)
+m["summary_md"] = m["summary_md"] + "\n" + m["summary_md_c7"]
+assert not [x for x in re.findall(r"__[A-Z0-9_]+__", json.dumps(m)) if x not in ("__H7__", "__C7_AUDIT_OUTCOME__", "__BOTS_C7__")]
+(D / "cycle7-meta.json").write_text(json.dumps(m, indent=2) + "\n")
+
+# =============================================== 6. pr-body-c7.md
+lines = (D / "pr-body-c6.filled.md").read_text().split("\n")
+
+
+def li(prefix):
+    hits = [i for i, l in enumerate(lines) if l.startswith(prefix)]
+    assert len(hits) == 1, f"{prefix!r}: {len(hits)}"
+    return hits[0]
+
+
+i = li("The branch carries the heads of #1439")
+lines[i] = lines[i].replace("`origin/main` (#1500) is merged in.", "`origin/main` is merged in (#1500 in cycle 2; 264c97b23 in cycle 7).")
+assert "264c97b23 in cycle 7" in lines[i]
+# the cycle-7 section goes after the Cycle 6 section, before the Validation section
+i = li("## Validation (frozen head efb06f7c5)")
+C7_SECTION = f"""## Cycle 7 (2026-11-12): merge of main
+
+After the cycle-6 audit (Grok 4.7 governing: PASS_WITH_RISKS, 0 findings; Codex advisory: NEEDS_SUPERVISOR from `plan.md:17` only; AGY NOT_RUN) the cycle-6 proof was built and pushed as proof-only commit `b706fc5dd`; it was never signed. Then main moved: #1508, #1440 (`a1ed8fba8`, which overlapped this PR), #1507 (`33497c616`, admits the `grok-cli`/`grok-4.7` embedded-audit route) and #1465 (`264c97b23`). `f6a8e4401` merges `origin/main` (`264c97b23`) into the branch. Four files conflicted — `.claude/claude.md`, `AGENTS.md`, `docs/02-how-to/mcp-setup-other-repos.md`, `tests/unit/test_mcp_doctor_repo_aware.py` — and were resolved by a Sonnet implementer and checked by the controller: the M1 text is kept; #1440's corrections are re-applied where the merged code supports them (a product-root paragraph for `init|start|launch`; "3N" → "2N" containers with `serena` one shared container; the §12.6 command table lists the implemented verbs, `reconcile` PARTIAL, `adopt`/`migrate` PLANNED; the "Restoring Postgres" how-to section is carried unchanged and was not re-checked against the source); #1440's claim that `switch-project` is PLANNED was dropped because the code implements it. The doctor test file keeps all 36 test functions (27 base + 8 ours + 1 from #1440). `mcp_commands.py`, `doctor.py` and `fleet_catalog.py` auto-merged. The merge is a content change after the cycle-6 audit, so the cycle-6 proof (`b706fc5dd`, names `efb06f7c5`) is superseded; the owner chose ONE fresh Grok 4.7 audit of the merged head (Codex not launched, AGY quota) and a new proof bundle.
+"""
+lines[i:i] = C7_SECTION.split("\n")
+i = li("## Validation (frozen head efb06f7c5)"); lines[i] = "## Validation (frozen head __H7__)"
+i = li("- [x] `pytest tests/unit --maxfail=1")
+lines[i] = ("- [ ] `pytest tests/unit --maxfail=1 --disable-warnings --no-cov` (`make test-fast`) — __SUITE_C7__ (local macOS, log in `proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/review_bundle/test-fast-__H7_8__.txt`); "
+            "CI \"🧪 Unit Tests\" (Linux): see the CI line below. (Tick the box only if the filled result is a PASS.)")
+i = li("- [x] Lint/format/type deltas vs the cycle base 0cde3a921")
+lines[i] = "- [ ] Lint/format/type deltas at __H7__ (`cycle2-gates.sh`, base named in `review_bundle/cycle7-gates-__H7_8__.json`): see that gates file; repo-wide `make lint`/`make type-check` NOT_RUN (not functional on main). (Tick only after the gates are filled.)"
+i = li("- [x] Docs validators PASS on the how-to and the design doc")
+lines[i] = "- [ ] Docs validators at __H7__ on the how-to and the design doc: see `review_bundle/cycle7-gates-__H7_8__.json` (AGENTS.md and `.claude/claude.md` have no frontmatter: pre-existing)."
+i = li("- [x] Live smoke at the cycle-2 head 3f1335e7f:")
+lines[i] = lines[i].replace("Not repeated at efb06f7c5: cycles 3 to 5 change only the URL-repair predicate, the proxy's error-literal match and the preflight's doctor-finding handling, all unit-tested; the lock paths are untouched.",
+                            "Not repeated at __H7__: cycles 3 to 5 changed only the URL-repair predicate, the proxy's error-literal match and the preflight's doctor-finding handling (unit-tested), cycle 6 was a revert plus a design/help-text edit, and cycle 7 merges upstream main (at f6a8e4401 no launcher, lifecycle, reap or lock module changed); the lock paths are untouched.")
+assert "Not repeated at __H7__" in lines[i]
+i = li("- Acceptance T1–T11 run at 30b0fdec9")
+lines[i] = lines[i].replace("nothing at 43294e99b, fc591cba1, 380c2c52c or efb06f7c5.", "nothing at 43294e99b, fc591cba1, 380c2c52c, efb06f7c5 or __H7__.")
+assert "__H7__" in lines[i]
+i = li("- Bot reviews: Codex connector reviewed every pushed head of cycles 2 to 6")
+lines[i] = ("- Bot reviews: Codex connector reviewed every pushed head of cycles 2 to 6 when triggered (clean receipts on 3f1335e7f, 43294e99bd, fc591cba1f, 380c2c52c8 and efb06f7c5a; one P2 on 83b468e71 fixed as Task F; one P2 on 192a84dc3 whose fix was reverted and is now the documented open follow-up; "
+            "on the revert head fbbe95a59 two P2s in code unchanged since cycle 2 (`mcp status` stale envrc ports after a re-lease, lifecycle.py:414; runner cancellation not forwarded to the backend, stdio_proxy.py:475), recorded as open follow-ups by owner decision); "
+            "on the cycle-7 head __H7__: __BOTS_C7__. Copilot: reviewed e49a1c8e8 only (the controller's re-request was denied → owner click in the PR UI).")
+i = li("- Pre-existing host-dependent tests seen once each")
+lines.insert(i, "- CI at __H7__: __CI_C7__.")
+lines[i + 1] = lines[i + 1].rstrip() + " Cycle 7: `test_init_next_steps` also failed in the local run at f6a8e4401 while the live task orchestrator held host :7890 (the other 4476 tests passed)."
+# audit section: new heading, table placeholder, cycle-6 table into a collapsed block
+i = li("## Independent audit (L3, codex + grok routes at the frozen head efb06f7c5;")
+lines[i] = "## Independent audit (L3, ONE grok route at the frozen head __H7__; codex and agy not launched; Grok governs by owner decision)"
+s_ = next(k for k in range(i + 1, len(lines)) if lines[k].startswith("| route | model requested / observed | effort | verdict | findings |"))
+assert s_ == i + 2, (s_, i)
+e_ = li("**Owner steps pending:**")
+c6_table = lines[s_:e_]
+while c6_table and c6_table[-1] == "":
+    c6_table.pop()
+lines[s_:e_ + 1] = (["__C7_AUDIT_TABLE__", "",
+                     "**Owner steps pending:** sign both `PROOF.json` files; post the steward release phrase for the signed head; adjudicate `plan.md:17` only if the Grok return lists it as instruction-like content. The branch now carries main's embedded-audit schema (#1507, merged by `f6a8e4401`), so `validate_audit_proof.py` accepts the `grok-cli`/`grok-4.7` record with the branch's own tooling: __C7_VALIDATE__.",
+                     "",
+                     "<details><summary>Cycle-6 audit at efb06f7c5 (proof built as b706fc5dd, never signed; superseded by the cycle-7 merge; bundle `review_bundle/superseded-efb06f7c-*`)</summary>", ""]
+                    + c6_table
+                    + ["", "The cycle-6 proof commit `b706fc5dd` names `efb06f7c5` and carries the Grok record above; it was built and pushed but never signed, and the merge of main (a content change) makes it stale. At that time `plan.md:17` adjudication was an open owner step, and the branch's schema copy still predated #1507.", "", "</details>"])
+i = li("Bundle: `proof/MACRO-DMX-MCP-JUST-WORKS-M1-001/`")
+lines[i] = sub(lines[i], [
+    ("(schema-valid `embedded_audit` = the Grok record by owner decision; all three reports; raw streams, prompts, subject diff and the 3f1335e7f and 30b0fdec9 rounds under `review_bundle/` as `superseded-3f1335e7-*` and `superseded-30b0fdec9-*`,",
+     "(schema-valid `embedded_audit` = the Grok record by owner decision; the Grok report only (Codex and AGY were not launched in cycle 7); raw streams, prompts, subject diff and the efb06f7c5, 3f1335e7f and 30b0fdec9 rounds under `review_bundle/` as `superseded-efb06f7c-*`, `superseded-3f1335e7-*` and `superseded-30b0fdec9-*`,"),
+    ("names efb06f7c5 and is unsigned until the owner signs. Cycle-6 proof commit: b706fc5dd (proof-only successor of efb06f7c5).",
+     "names __H7__ and is unsigned until the owner signs. Cycle-7 proof commit: __C7_PROOF__. The cycle-6 proof commit b706fc5dd (names efb06f7c5) was built and pushed but never signed; it is superseded by the cycle-7 merge and bundle."),
+])
+out = "\n".join(lines)
+(D / "pr-body-c7.md").write_text(out)
+c7_ph = sorted(set(re.findall(r"__[A-Z0-9_]+__", out)))
+print("pr-body-c7 placeholders:", c7_ph)
+
+# =============================================== 7. fill helpers and templates (new files)
+(D / "cycle7-fill-validations.py").write_text('''#!/usr/bin/env python3
+"""Fill VALIDATIONS.c7.template.md for the sealed cycle-7 subject.
+
+Usage (environment: H, SUMMARY, SUITE_EXIT, SUITE_BUCKET, BOTS_C7):
+    cycle7-fill-validations.py <template> <out> <fills.json (optional, may be missing)>
+Keys of fills.json: HOOKS, DOCS, LINT, FORMAT, MYPY, CATALOG, MERGE -> {"result": str, "bucket": "PASS|FAIL|NOT_RUN|UNKNOWN"}.
+A missing key defaults to NOT_RUN: nothing is ever PASS by default. Exits 1 if any cycle-7 placeholder is left.
+"""
+import datetime
+import json
+import os
+import re
+import sys
+from pathlib import Path
+
+BUCKETS = {"PASS", "FAIL", "NOT_RUN", "UNKNOWN"}
+tpl, out = Path(sys.argv[1]), Path(sys.argv[2])
+fills = {}
+if len(sys.argv) > 3 and Path(sys.argv[3]).is_file():
+    fills = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
+text = tpl.read_text(encoding="utf-8")
+sub = {
+    "__HEAD__": os.environ["H"],
+    "__DATE__": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "__SUITE_SUMMARY__": os.environ["SUMMARY"].replace("|", "\\\\|"),
+    "__SUITE_EXIT__": os.environ["SUITE_EXIT"],
+    "__SUITE_BUCKET__": os.environ["SUITE_BUCKET"],
+    "__BOTS_C7__": os.environ.get("BOTS_C7", "NOT_RUN at this SHA").replace("|", "\\\\|"),
+}
+for key in ("HOOKS", "DOCS", "LINT", "FORMAT", "MYPY", "CATALOG", "MERGE"):
+    ent = fills.get(key) or {}
+    bucket = ent.get("bucket", "NOT_RUN")
+    if bucket not in BUCKETS:
+        raise SystemExit(f"bad bucket {bucket!r} for {key}")
+    sub[f"__{key}_C7_RESULT__"] = (ent.get("result") or "NOT_RUN at this SHA (no controller receipt supplied in cycle7-validation-fills.json)").replace("|", "\\\\|")
+    sub[f"__{key}_C7_BUCKET__"] = bucket
+for k, val in sub.items():
+    text = text.replace(k, val)
+left = sorted(set(re.findall(r"__(?:[A-Z0-9_]*C7[A-Z0-9_]*|HEAD|DATE|SUITE_[A-Z]+)__", text)))
+if left:
+    raise SystemExit(f"unfilled placeholders: {left}")
+out.write_text(text, encoding="utf-8")
+print(f"wrote {out} ({len(text)} bytes)")
+''')
+
+(D / "cycle7-bots-note.template.txt").write_text(
+    "FILL THIS IN, save it as cycle7-bots-note.txt (the freeze script refuses a note that still contains a __PLACEHOLDER__):\n"
+    "Codex connector at the cycle-7 head(s): f6a8e4401 review requested 2026-11-12T07:13:32Z, result __FILL_RESULT_OR_PENDING__ (receipt timestamp and reviewed commit); "
+    "any later pushed head: __FILL__. Copilot: __FILL_STATUS__.\n"
+    "(One paragraph; newlines are folded to spaces. Delete this instruction line before saving.)\n")
+(D / "cycle7-validation-fills.template.json").write_text(json.dumps({
+    "HOOKS": {"result": "FILL: e.g. '12 passed at this SHA (cycle7-hooks-workflow-<h8>.txt)'", "bucket": "NOT_RUN"},
+    "DOCS": {"result": "FILL: docs_validator + docs_frontmatter_guard rc on the how-to and the design doc at this SHA", "bucket": "NOT_RUN"},
+    "LINT": {"result": "FILL: ruff F/E9 + flake8 F/E7/E9/W6 new findings vs the BASE you passed to cycle2-gates.sh (recommended BASE = 264c97b23)", "bucket": "NOT_RUN"},
+    "FORMAT": {"result": "FILL: black/isort drift on added lines (cycle2-gates-<h8>.txt)", "bucket": "NOT_RUN"},
+    "MYPY": {"result": "FILL: mypy new errors per changed src module (cycle2-gates-<h8>.txt)", "bucket": "NOT_RUN"},
+    "CATALOG": {"result": "FILL: build_normalized_catalog.py --check result at this SHA (CHECK_PASS reported at f6a8e4401)", "bucket": "NOT_RUN"},
+    "MERGE": {"result": "FILL: merge facts re-checked at this SHA (4 conflict files resolved, no markers, doctor test file 36 functions, src stat)", "bucket": "NOT_RUN"},
+    "_comment": "copy to cycle7-validation-fills.json; replace each FILL text and set the bucket; unknown keys are ignored; absent keys default to NOT_RUN",
+}, indent=2) + "\n")
+(D / "cycle7-gate-fills.template.json").write_text(json.dumps({
+    "__BOTS_C7_GATE__": "FILL: Codex connector / Copilot result at the frozen head(s), with receipt timestamps and reviewed commits (f6a8e4401 review requested 2026-11-12T07:13:32Z)",
+    "__BOTS_C7_BUCKET__": "NOT_RUN",
+    "__CI_C7_GATE__": "FILL: CI state at the frozen head (20 pass / 3 skipping / 2 expected-fail was reported at f6a8e4401; restate at the frozen head)",
+    "__CI_C7_BUCKET__": "NOT_RUN",
+    "_comment": "copy to cycle7-gate-fills.json; *_BUCKET values are PASS|FAIL|NOT_RUN|UNKNOWN; used by make_cycle7_gates.py --fills",
+}, indent=2) + "\n")
+print("cycle-7 tooling written")

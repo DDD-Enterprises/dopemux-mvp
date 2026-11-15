@@ -1,0 +1,378 @@
+diff --git a/claudedocs/mcp-just-works-design-2026-11-05.md b/claudedocs/mcp-just-works-design-2026-11-05.md
+index 347a31a48..ef97225dc 100644
+--- a/claudedocs/mcp-just-works-design-2026-11-05.md
++++ b/claudedocs/mcp-just-works-design-2026-11-05.md
+@@ -312,3 +312,4 @@ Appended after the final whole-branch review of Milestone 1; the approved text a
+ - **Envrc ports are re-leased on start (Task B7-2, Codex review of `71866e4d1`).** With `allocate` (start, restart, and the launcher's cold start), `_resolve_ports` trusts an env/envrc port of a leased service only when this identity holds the active lease for that variable on that very port. Otherwise the value is a preference for the locked allocation (`allocate_ports` with `existing_envrc`): an existing lease of this identity for the variable wins; with none (after `init` then `stop`) the preferred port is leased when no other lease holds it and the socket is free, a port this worktree's own running sidecar publishes counting as free, else a fresh port is leased and replaces the envrc's. `allocate=False` callers (status, doctor, stop) are unchanged. The lock is still `registry_lock`, held only for the allocate-and-save step. As a consequence the start's `LEASE_ENVRC_MISMATCH` check can no longer fire for leased services (the lease wins); `doctor` still reports a mismatching envrc.
+ - **Config repair replaces only what dopemux rendered (cycle 4, Codex audit F1 at 43294e99b).** `_url_is_repairable` accepts a templated URL only in the exact shape dopemux renders (literal local host, one of its own port variables — `CONPORT_MCP_PORT`, `DOPE_MEMORY_PORT`, `TASK_ORCHESTRATOR_HTTP_PORT`, or any name in the catalog's templates — as the only placeholder, in the port position); every other template is operator-authored and preserved, and environment values are never read, so a port variable set to `3005@remote.example` cannot make an operator endpoint look local. Hand-written URL entries in any other shape (another variable name such as `${PORT:-3005}`, a host or path placeholder, a non-numeric default) are therefore preserved, not repaired; an entry identical to a catalog template, such as the how-to's manual recipe, is dopemux's own shape and `repair-config --apply` still turns it into a launcher entry.
+ - **Doctor port findings are re-evaluated after allocation (cycle 4, Codex connector review of `83b468e71`).** The doctor preflight inspects the envrc ports before `_resolve_ports` may lease replacements, so for `start`/`restart` its port-dependent findings (`PORT_RESERVED_COLLISION`, `PORT_INTRA_CONFIG_COLLISION`, `PORT_OWNED_BY_OTHER_PROJECT`, `DOCKER_CONTAINER_WRONG_PROJECT`, `DOCKER_CONTAINER_UNLABELED_UNKNOWN`, `DOCKER_CONTAINER_PORT_COLLISION`) are no longer carried as blockers; they are recorded as `DOCTOR_PORT_FINDING_REEVALUATED` INFO entries in the preflight facts (visible on blocked results; a successful start's output lists no preflight warnings, which is pre-existing `_start_services` behaviour) and the lifecycle's own collision checks against the resolved ports (plus `PORT_ALLOCATION_BLOCKED` when no free port exists) decide. After `init` → `stop` a foreign container on the stale envrc port no longer blocks a start that re-leased a free port. `stop`/`status` keep the doctor findings as before. The lifecycle's collision check now applies the launcher's ownership rule to any managed worktree-scoped container holding a resolved port: a same-project container of another worktree (different `dopemux.worktree_hash`), or a managed container without a project id whose project root does not match, is a `DOCKER_CONTAINER_PORT_COLLISION`; containers dopemux itself labels are therefore re-checked against the resolved ports, while a managed container without dopemux's project labels (accepted on compose evidence) is not, and only `dopemux mcp doctor` reports those. A project-scoped task-orchestrator container started from another worktree of the same project is no longer blocked by the doctor's workspace mismatch (the orchestrator gate under the reserved lock decides).
++- **Cycle 5 narrows the Task F re-evaluation to one invariant (Codex audit at `fc591cba1`).** For `start`/`restart` every doctor blocker is carried except a `DOCKER_CONTAINER_*` finding whose container neither publishes a port in the resolved port map nor bears one of this run's expected container names (that one becomes a `DOCTOR_PORT_FINDING_REEVALUATED` INFO entry), and the resolved port map is validated: two selected services on one port or a sidecar on a reserved singleton port block as `PORT_INTRA_CONFIG_COLLISION` / `PORT_RESERVED_COLLISION` even when `_resolve_ports` retained existing leases. The `PORT_*` doctor codes are no longer dropped. Consequently the two behaviour changes recorded in the previous bullet — a managed container with only compose labels holding our expected name, and a project-scoped task-orchestrator container started from another worktree of the same project — block again exactly as on main; the stale-envrc-port recovery (the connector finding) is kept.
+diff --git a/src/dopemux/mcp/lifecycle.py b/src/dopemux/mcp/lifecycle.py
+index cafeb08e8..bab1c0d5b 100644
+--- a/src/dopemux/mcp/lifecycle.py
++++ b/src/dopemux/mcp/lifecycle.py
+@@ -80,20 +80,10 @@ BLOCKING_FINDING_CODES = frozenset(
+     }
+ )
+ 
+-# Doctor findings computed against the envrc ports before allocation. For
+-# start/restart the lifecycle recomputes them against the RESOLVED ports
+-# (`_collision_checks`; `_resolve_ports` raises PortAllocationBlocked when no free
+-# port exists), so they are not carried as blockers there.
+-PORT_DEPENDENT_DOCTOR_CODES = frozenset(
+-    {
+-        "PORT_RESERVED_COLLISION",
+-        "PORT_INTRA_CONFIG_COLLISION",
+-        "PORT_OWNED_BY_OTHER_PROJECT",
+-        "DOCKER_CONTAINER_WRONG_PROJECT",
+-        "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
+-        "DOCKER_CONTAINER_PORT_COLLISION",
+-    }
+-)
++# For start/restart a doctor container finding (computed against the envrc ports
++# before allocation) is carried only while its container publishes a port in the
++# RESOLVED port map; see `_split_deferred_doctor`.
++DEFERRED_DOCTOR_CODE_PREFIX = "DOCKER_CONTAINER_"
+ 
+ # Informational doctor codes that should not block (lifecycle neutralizes compose hazards)
+ NON_BLOCKING_EVEN_IF_IN_SET = frozenset(
+@@ -935,6 +925,93 @@ def _to_start_gate(
+     return blocking, warnings
+ 
+ 
++def _split_deferred_doctor(
++    findings: Sequence[Dict[str, Any]],
++    docker: di.DockerInspectResult,
++    ports: Mapping[str, int],
++    expected_names: Sequence[str] = (),
++) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
++    """``(kept, dropped)`` doctor container findings, judged against the resolved ports.
++
++    A finding is kept when docker cannot be read, when it names no container
++    (``evidence[0]`` is the container name), when that container bears one of
++    ``expected_names`` (this run's container names: it is adoptable by name
++    wherever it publishes), or when it publishes a resolved port. It is dropped
++    only when an unrelated container holds just a stale envrc port or is gone.
++    """
++    if not docker.available:
++        return list(findings), []
++    resolved = {int(p) for p in ports.values() if isinstance(p, int)}
++    kept: List[Dict[str, Any]] = []
++    dropped: List[Dict[str, Any]] = []
++    for f in findings:
++        evidence = f.get("evidence") or []
++        name = str(evidence[0]) if evidence else ""
++        ours_by_name = any(name == e or name.endswith(e) for e in expected_names if e)
++        held = any(
++            (c.name == name or c.name.endswith(name))
++            and resolved & {int(p) for p in c.published_ports}
++            for c in docker.containers
++        )
++        (kept if not name or ours_by_name or held else dropped).append(f)
++    return kept, dropped
++
++
++def _resolved_port_findings(
++    selected: Sequence[str],
++    ports: Mapping[str, int],
++    catalog: Mapping[str, Any],
++) -> List[Dict[str, Any]]:
++    """Duplicate and reserved ports in the resolved map (retained leases included)."""
++    from .port_allocator import singleton_reserved_ports
++
++    reserved = singleton_reserved_ports(catalog)
++    reserved.setdefault(7890, "task-orchestrator")
++    findings: List[Dict[str, Any]] = []
++    seen: Dict[int, Tuple[str, str]] = {}
++    for name in selected:
++        spec = (catalog.get("servers") or {}).get(name) or {}
++        if not isinstance(spec, dict):
++            continue
++        variables = [spec.get("port_var")] + [
++            e.get("var")
++            for e in (spec.get("extra_port_vars") or [])
++            if isinstance(e, dict)
++        ]
++        for var in filter(None, variables):
++            port = ports.get(str(var))
++            if not isinstance(port, int):
++                continue
++            if name != "task-orchestrator" and port in reserved:
++                findings.append(
++                    {
++                        "code": "PORT_RESERVED_COLLISION",
++                        "severity": "FAIL",
++                        "service": name,
++                        "message": (
++                            f"resolved port :{port} ({var}) is a reserved "
++                            "singleton port"
++                        ),
++                    }
++                )
++            other = seen.get(port)
++            if other is not None and other[0] != name:
++                findings.append(
++                    {
++                        "code": "PORT_INTRA_CONFIG_COLLISION",
++                        "severity": "FAIL",
++                        "service": name,
++                        "message": (
++                            f"resolved ports collide: {other[1]}={port} and "
++                            f"{var}={port}"
++                        ),
++                    }
++                )
++            else:
++                seen.setdefault(port, (name, str(var)))
++    return findings
++
++
+ @dataclass
+ class _Facts:
+     """The mutable preflight facts of a lifecycle run and the findings derived from them."""
+@@ -963,6 +1040,7 @@ def _mutable_facts(
+     worktree_root: str,
+     blocking: Sequence[Dict[str, Any]],
+     warnings: Sequence[Dict[str, Any]],
++    deferred_doctor: Sequence[Dict[str, Any]] = (),
+ ) -> _Facts:
+     """Registry, docker snapshot and ports, with their findings appended (deduplicated).
+ 
+@@ -1170,6 +1248,24 @@ def _mutable_facts(
+     )
+     if op in {"start", "restart"}:
+         blocking.extend(collision_findings)
++        blocking.extend(_resolved_port_findings(selected, ports, catalog))
++        kept, dropped = _split_deferred_doctor(
++            deferred_doctor, docker, ports, list(container_names.values())
++        )
++        blocking.extend(kept)
++        for f in dropped:
++            warnings.append(
++                {
++                    "code": "DOCTOR_PORT_FINDING_REEVALUATED",
++                    "severity": "INFO",
++                    "service": f.get("service"),
++                    "message": (
++                        f"doctor {f.get('code')} (computed against the envrc port "
++                        "before allocation) is re-evaluated against the resolved "
++                        f"ports: {f.get('message')}"
++                    ),
++                }
++            )
+ 
+     # Deduplicate blocking by code+service+message
+     seen_b = set()
+@@ -1460,25 +1556,17 @@ def run_lifecycle(
+             }
+         )
+ 
++    deferred_doctor: List[Dict[str, Any]] = []
+     if doctor:
+         doctor_blocking = _doctor_blocking_findings(
+             doctor, services=selected, strategy_neutralizes_compose=True
+         )
+         for f in doctor_blocking:
+             code = f.get("code") or ""
+-            if op in {"start", "restart"} and code in PORT_DEPENDENT_DOCTOR_CODES:
+-                warnings.append(
+-                    {
+-                        "code": "DOCTOR_PORT_FINDING_REEVALUATED",
+-                        "severity": "INFO",
+-                        "service": f.get("service"),
+-                        "message": (
+-                            f"doctor {code} (computed against the envrc port before "
+-                            "allocation) is re-evaluated against the resolved "
+-                            f"ports: {f.get('message')}"
+-                        ),
+-                    }
+-                )
++            if op in {"start", "restart"} and code.startswith(
++                DEFERRED_DOCTOR_CODE_PREFIX
++            ):
++                deferred_doctor.append(f)
+             else:
+                 blocking.append(f)
+         for f in doctor.findings:
+@@ -1550,6 +1638,7 @@ def run_lifecycle(
+         worktree_root=worktree_root,
+         blocking=list(blocking),
+         warnings=list(warnings),
++        deferred_doctor=list(deferred_doctor),
+     )
+     facts = _mutable_facts(op, orchestrator_gate=True, **facts_kw)
+     registry, docker, ports = facts.registry, facts.docker, facts.ports
+diff --git a/tests/unit/test_mcp_lifecycle_ports_from_leases.py b/tests/unit/test_mcp_lifecycle_ports_from_leases.py
+index 09b536048..d881a8936 100644
+--- a/tests/unit/test_mcp_lifecycle_ports_from_leases.py
++++ b/tests/unit/test_mcp_lifecycle_ports_from_leases.py
+@@ -728,6 +728,7 @@ def _run(op, tmp_path, repo, paths, taken, is_free=None):
+         catalog=_catalog(),
+         dry_run=True,
+         registry_path=paths.reg,
++        docker_runner=_docker_empty(),
+         product_root=product,
+         process_env={},
+         port_is_free_fn=is_free or (lambda p: p != taken),
+@@ -936,3 +937,161 @@ def test_a_worktree_hash_without_a_scope_label_is_another_worktree(
+     result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
+ 
+     _blocked_by_port_collision(result)
++
++
++# --- Task G: retained leases and the resolved port map are still validated ---------
++
++
++def _retarget_lease(paths, port_var: str, port: int) -> None:
++    reg = PortLeaseRegistry.load(paths.leases)
++    lease = next(L for L in reg.active_leases() if L["port_var"] == port_var)
++    reg.upsert_lease({**lease, "port": port})
++    reg.save()
++
++
++def _leased_start(tmp_path, paths):
++    repo = _repo(tmp_path)
++    first = _start(tmp_path, repo, paths)
++    conport = next(s for s in first.services if s["service"] == "conport")
++    return repo, conport["ports"]["CONPORT_MCP_PORT"]
++
++
++def test_two_retained_leases_on_one_port_block(tmp_path, paths):
++    repo, conport_port = _leased_start(tmp_path, paths)
++    _retarget_lease(paths, "DOPE_MEMORY_PORT", conport_port)
++
++    result = _run("start", tmp_path, repo, paths, conport_port, is_free=lambda p: True)
++
++    assert result.status == "BLOCKED", result.to_dict()
++    codes = {f["code"] for f in result.blocking_findings}
++    assert "PORT_INTRA_CONFIG_COLLISION" in codes, result.blocking_findings
++
++
++def test_a_retained_lease_on_the_reserved_orchestrator_port_blocks(tmp_path, paths):
++    repo, _ = _leased_start(tmp_path, paths)
++    _retarget_lease(paths, "CONPORT_MCP_PORT", 7890)
++
++    result = _run("start", tmp_path, repo, paths, 7890, is_free=lambda p: True)
++
++    assert result.status == "BLOCKED", result.to_dict()
++    codes = {f["code"] for f in result.blocking_findings}
++    assert "PORT_RESERVED_COLLISION" in codes, result.blocking_findings
++
++
++def test_a_same_project_container_without_hash_or_scope_and_foreign_workspace_blocks(
++    tmp_path, paths, monkeypatch
++):
++    repo, kept = _leased_start(tmp_path, paths)
++    identity = resolve_identity_view(repo)
++    leased = _active_by_var(paths, identity.worktree_root)
++    (repo / ".envrc.dopemux-mcp").write_text(
++        "".join(f"export {var}={port}\n" for var, port in leased.items())
++    )
++    legacy = _sibling_container(
++        identity,
++        kept,
++        **{"dopemux.worktree_hash": None, "dopemux.scope": None},
++    )
++    _patch_docker(monkeypatch, legacy)
++
++    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
++
++    assert result.status == "BLOCKED", result.to_dict()
++
++
++def test_split_deferred_doctor_keeps_everything_when_docker_is_unavailable():
++    from dopemux.mcp import docker_inspect as di
++
++    finding = {
++        "code": "DOCKER_CONTAINER_WRONG_PROJECT",
++        "service": "conport",
++        "evidence": ["some-container"],
++    }
++    down = di.DockerInspectResult(available=False, error="no docker")
++    kept, dropped = lc._split_deferred_doctor(
++        [finding], down, {"CONPORT_MCP_PORT": 3005}
++    )
++    assert kept == [finding] and dropped == []
++
++
++def test_split_deferred_doctor_drops_only_findings_off_the_resolved_ports():
++    from dopemux.mcp import docker_inspect as di
++
++    def container(name, port):
++        return di.DockerContainerInfo(
++            id=name, name=name, ports=[], labels={}, published_ports=[port]
++        )
++
++    on_port = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", "evidence": ["on-resolved"]}
++    off_port = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", "evidence": ["on-stale"]}
++    gone = {"code": "DOCKER_CONTAINER_PORT_COLLISION", "evidence": ["not-running"]}
++    docker = di.DockerInspectResult(
++        available=True,
++        containers=[container("on-resolved", 3005), container("on-stale", 3040)],
++    )
++    kept, dropped = lc._split_deferred_doctor(
++        [on_port, off_port, gone], docker, {"CONPORT_MCP_PORT": 3005}
++    )
++    assert kept == [on_port]
++    assert dropped == [off_port, gone]
++
++
++def test_a_container_bearing_our_expected_name_with_foreign_labels_blocks(
++    tmp_path, paths, monkeypatch
++):
++    """Probe 26: a moved worktree's leftover, off the resolved ports, same name."""
++    from dopemux.mcp import docker_runtime as dr
++
++    repo, kept = _leased_start(tmp_path, paths)
++    identity = resolve_identity_view(repo)
++    expected = dr.container_name_for(
++        dr.project_slug(Path(identity.project_root).name),
++        identity.worktree_hash,
++        "conport",
++    )
++    leftover = _sibling_container(
++        identity,
++        3999,
++        **{"dopemux.worktree_hash": None, "dopemux.scope": None},
++    )
++    leftover.name = expected
++    _patch_docker(monkeypatch, leftover)
++
++    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
++
++    assert result.status == "BLOCKED", result.to_dict()
++    codes = {f["code"] for f in result.blocking_findings}
++    assert "DOCKER_CONTAINER_WRONG_PROJECT" in codes, result.blocking_findings
++
++
++@pytest.mark.parametrize("evidence", [{"evidence": []}, {}])
++def test_split_deferred_doctor_keeps_a_finding_without_a_container_name(evidence):
++    from dopemux.mcp import docker_inspect as di
++
++    finding = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", **evidence}
++    docker = di.DockerInspectResult(available=True, containers=[])
++    kept, dropped = lc._split_deferred_doctor(
++        [finding], docker, {"CONPORT_MCP_PORT": 3005}, ["dopemux-x-conport"]
++    )
++    assert kept == [finding] and dropped == []
++
++
++def test_split_deferred_doctor_keeps_a_finding_bearing_an_expected_name():
++    from dopemux.mcp import docker_inspect as di
++
++    def container(name, port):
++        return di.DockerContainerInfo(
++            id=name, name=name, ports=[], labels={}, published_ports=[port]
++        )
++
++    ours = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", "evidence": ["dopemux-x-conport"]}
++    other = {"code": "DOCKER_CONTAINER_WRONG_PROJECT", "evidence": ["unrelated"]}
++    docker = di.DockerInspectResult(
++        available=True,
++        containers=[container("dopemux-x-conport", 3999), container("unrelated", 3998)],
++    )
++    kept, dropped = lc._split_deferred_doctor(
++        [ours, other], docker, {"CONPORT_MCP_PORT": 3005}, ["dopemux-x-conport"]
++    )
++    assert kept == [ours]
++    assert dropped == [other]

@@ -434,9 +434,11 @@ def test_copilot_proxy_config_renders_catalog_transports_and_env():
     servers = yaml.safe_load(rendered)["mcpServers"]
 
     assert servers["conport"] == {
-        "type": "sse",
-        "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
+        "type": "stdio",
+        "command": "${DOPEMUX_BIN:-dopemux}",
+        "args": ["mcp", "launch", "conport"],
     }
+    assert servers["dope-context"]["type"] == "http"
     assert servers["pal-stdio"]["command"] == "docker"
     assert servers["pal-stdio"]["env"] == {
         "GEMINI_API_KEY": "${GEMINI_API_KEY}",

@@ -4,14 +4,22 @@
 # Deferred (planned-active, no endpoint yet — deployed by MCPINT-IMP-FACADE-001): dcp-readonly-facade
 mcpServers:
   conport:
-    type: sse
-    url: http://localhost:${CONPORT_MCP_PORT:-3005}/sse
+    args:
+    - mcp
+    - launch
+    - conport
+    command: ${DOPEMUX_BIN:-dopemux}
+    type: stdio
   dope-context:
     type: http
     url: http://localhost:3010/mcp
   dope-memory:
-    type: http
-    url: http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp
+    args:
+    - mcp
+    - launch
+    - dope-memory
+    command: ${DOPEMUX_BIN:-dopemux}
+    type: stdio
   gpt-researcher:
     args:
     - exec
@@ -44,5 +52,9 @@ mcpServers:
     type: http
     url: http://localhost:3006/mcp
   task-orchestrator:
-    type: http
-    url: http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp
+    args:
+    - mcp
+    - launch
+    - task-orchestrator
+    command: ${DOPEMUX_BIN:-dopemux}
+    type: stdio

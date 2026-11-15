@@ -1,0 +1,126 @@
+diff --git a/claudedocs/mcp-just-works-design-2026-11-05.md b/claudedocs/mcp-just-works-design-2026-11-05.md
+index ef97225dc..cae965f41 100644
+--- a/claudedocs/mcp-just-works-design-2026-11-05.md
++++ b/claudedocs/mcp-just-works-design-2026-11-05.md
+@@ -313,3 +313,4 @@ Appended after the final whole-branch review of Milestone 1; the approved text a
+ - **Config repair replaces only what dopemux rendered (cycle 4, Codex audit F1 at 43294e99b).** `_url_is_repairable` accepts a templated URL only in the exact shape dopemux renders (literal local host, one of its own port variables — `CONPORT_MCP_PORT`, `DOPE_MEMORY_PORT`, `TASK_ORCHESTRATOR_HTTP_PORT`, or any name in the catalog's templates — as the only placeholder, in the port position); every other template is operator-authored and preserved, and environment values are never read, so a port variable set to `3005@remote.example` cannot make an operator endpoint look local. Hand-written URL entries in any other shape (another variable name such as `${PORT:-3005}`, a host or path placeholder, a non-numeric default) are therefore preserved, not repaired; an entry identical to a catalog template, such as the how-to's manual recipe, is dopemux's own shape and `repair-config --apply` still turns it into a launcher entry.
+ - **Doctor port findings are re-evaluated after allocation (cycle 4, Codex connector review of `83b468e71`).** The doctor preflight inspects the envrc ports before `_resolve_ports` may lease replacements, so for `start`/`restart` its port-dependent findings (`PORT_RESERVED_COLLISION`, `PORT_INTRA_CONFIG_COLLISION`, `PORT_OWNED_BY_OTHER_PROJECT`, `DOCKER_CONTAINER_WRONG_PROJECT`, `DOCKER_CONTAINER_UNLABELED_UNKNOWN`, `DOCKER_CONTAINER_PORT_COLLISION`) are no longer carried as blockers; they are recorded as `DOCTOR_PORT_FINDING_REEVALUATED` INFO entries in the preflight facts (visible on blocked results; a successful start's output lists no preflight warnings, which is pre-existing `_start_services` behaviour) and the lifecycle's own collision checks against the resolved ports (plus `PORT_ALLOCATION_BLOCKED` when no free port exists) decide. After `init` → `stop` a foreign container on the stale envrc port no longer blocks a start that re-leased a free port. `stop`/`status` keep the doctor findings as before. The lifecycle's collision check now applies the launcher's ownership rule to any managed worktree-scoped container holding a resolved port: a same-project container of another worktree (different `dopemux.worktree_hash`), or a managed container without a project id whose project root does not match, is a `DOCKER_CONTAINER_PORT_COLLISION`; containers dopemux itself labels are therefore re-checked against the resolved ports, while a managed container without dopemux's project labels (accepted on compose evidence) is not, and only `dopemux mcp doctor` reports those. A project-scoped task-orchestrator container started from another worktree of the same project is no longer blocked by the doctor's workspace mismatch (the orchestrator gate under the reserved lock decides).
+ - **Cycle 5 narrows the Task F re-evaluation to one invariant (Codex audit at `fc591cba1`).** For `start`/`restart` every doctor blocker is carried except a `DOCKER_CONTAINER_*` finding whose container neither publishes a port in the resolved port map nor bears one of this run's expected container names (that one becomes a `DOCTOR_PORT_FINDING_REEVALUATED` INFO entry), and the resolved port map is validated: two selected services on one port or a sidecar on a reserved singleton port block as `PORT_INTRA_CONFIG_COLLISION` / `PORT_RESERVED_COLLISION` even when `_resolve_ports` retained existing leases. The `PORT_*` doctor codes are no longer dropped. Consequently the two behaviour changes recorded in the previous bullet — a managed container with only compose labels holding our expected name, and a project-scoped task-orchestrator container started from another worktree of the same project — block again exactly as on main; the stale-envrc-port recovery (the connector finding) is kept.
++- **Automatic reap reaches marker-only runtime dirs on an empty registry (cycle 5, Codex connector review of `192a84dc3`).** `maybe_reap` returned before planning whenever the runtime registry had no instances, so build-only launches (`LAUNCH_IMAGE_BUILDING`) of since-removed worktrees left their `instance.json`-marked runtime dirs behind on a fresh host until an explicit `dopemux mcp reap` or an unrelated successful start created a registry entry; it now returns early only when there is also no launcher-marked runtime dir, and otherwise proceeds to `plan_reap`, whose dir-only candidates (`worktree_missing` only) handle them under the same bounds, kill switch and throttle.
+diff --git a/src/dopemux/mcp/reap.py b/src/dopemux/mcp/reap.py
+index 7651c8d21..9f3e1570b 100644
+--- a/src/dopemux/mcp/reap.py
++++ b/src/dopemux/mcp/reap.py
+@@ -535,6 +535,25 @@ def _live_build(runtime_dir: Path, now: float) -> bool:
+     return False
+ 
+ 
++def _any_marked_runtime_dir(registry: RuntimeRegistry) -> bool:
++    """True when some runtime dir next to the registry has an ``instance.json``.
++
++    One directory listing and no reads: a cheap pre-check for ``maybe_reap``. The
++    planner (``_dir_only_candidates``) keeps the authority on validity.
++    """
++    try:
++        for entry in Path(registry.path).parent.iterdir():
++            if (
++                entry.is_dir()
++                and not entry.is_symlink()
++                and (entry / INSTANCE_MARKER).is_file()
++            ):
++                return True
++    except OSError:
++        return False
++    return False
++
++
+ def _dir_only_candidates(
+     registry: RuntimeRegistry,
+     seen_pairs: Set[Tuple[str, str]],
+@@ -1263,7 +1282,9 @@ def maybe_reap(
+     Does nothing when automatic reaping is disabled (see module docstring) or when
+     ``state_file`` (default ``<runtime root>/reap.last``) was touched within
+     ``throttle_s`` seconds. Docker is only asked when the runtime registry holds
+-    instances; an unreachable docker reaps nothing. Defaults suit hooks: at most 3
++    instances or a launcher-marked runtime dir exists (build-only launches leave
++    one before any registry entry); an unreachable docker reaps nothing.
++    Defaults suit hooks: at most 3
+     candidates, ``docker stop --time 5``, 20 s per command; the Stop hook adds a 60 s
+     deadline. A launcher passes 1 candidate, ``--time 2``, 3 s per command and an 8 s
+     deadline because it runs inside Claude's connect budget; SessionEnd passes 1 / 3 /
+@@ -1303,7 +1324,7 @@ def maybe_reap(
+     if registry.parse_status == "ERROR":
+         report.errors.append(f"{registry.path}: unreadable ({registry.error})")
+         return report
+-    if not registry.instances():
++    if not registry.instances() and not _any_marked_runtime_dir(registry):
+         return report
+     inspect_timeout = min(
+         _HOOK_DOCKER_TIMEOUT_S, cmd_timeout_s or _HOOK_DOCKER_TIMEOUT_S
+diff --git a/tests/unit/test_mcp_reap.py b/tests/unit/test_mcp_reap.py
+index bd592a7a2..0fbdc4012 100644
+--- a/tests/unit/test_mcp_reap.py
++++ b/tests/unit/test_mcp_reap.py
+@@ -2365,3 +2365,62 @@ def test_a_same_root_lease_with_another_worktree_hash_is_not_the_pairs(
+     }
+     assert status["lease-conport-3100"] == "released"
+     assert status["lease-foreign-hash"] == "active"
++
++
++# --- automatic reap on an empty registry (cycle 5, Codex connector P2) ---------------
++
++
++def _auto_reap(tmp_path: Path, inspect: FakeInspect, runner: "Recorder"):
++    return reap.maybe_reap(
++        throttle_s=0,
++        state_file=tmp_path / "s",
++        now=lambda: NOW,
++        idle_s=IDLE,
++        inspector=inspect,
++        runner=runner,
++    )
++
++
++def test_maybe_reap_reaches_a_marked_dir_of_a_removed_worktree_on_an_empty_registry(
++    tmp_path: Path, runtime: Path
++):
++    _empty_runtime_registry(runtime)
++    rt = _marked_dir(runtime, tmp_path / "removed" / "proj")
++    _build_pid(rt, _dead_pid())  # the build finished
++    inspect = FakeInspect([])
++    runner = Recorder()
++
++    got = _auto_reap(tmp_path, inspect, runner)
++
++    assert got is not None and got.errors == [], got
++    assert [c.runtime_dir for c in got.reaped] == [rt]
++    assert inspect.calls == 1
++    assert not rt.exists()
++
++
++def test_maybe_reap_skips_docker_on_an_empty_registry_without_marked_dirs(
++    tmp_path: Path, runtime: Path
++):
++    _empty_runtime_registry(runtime)
++    (runtime / "scratch").mkdir()  # a dir with no instance.json is not a marker
++    inspect = FakeInspect([])
++
++    got = _auto_reap(tmp_path, inspect, Recorder())
++
++    assert got is not None and got.reaped == [] and got.errors == []
++    assert inspect.calls == 0
++
++
++def test_maybe_reap_leaves_a_marked_dir_of_an_existing_worktree_alone(
++    tmp_path: Path, runtime: Path
++):
++    _empty_runtime_registry(runtime)
++    live = tmp_path / "wt" / "proj"
++    live.mkdir(parents=True)
++    rt = _marked_dir(runtime, live)
++    runner = Recorder()
++
++    got = _auto_reap(tmp_path, FakeInspect([]), runner)
++
++    assert got is not None and got.reaped == [] and got.errors == []
++    assert rt.exists() and runner.calls == []

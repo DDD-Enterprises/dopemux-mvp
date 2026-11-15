@@ -55,12 +55,12 @@ def fixture_repo(tmp_path, monkeypatch):
         )
         + "\n"
     )
-    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: _catalog())
-    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda: None)
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *_a, **_k: _catalog())
+    monkeypatch.setattr(mcp_commands, "_catalog_path", lambda *_a, **_k: None)
     monkeypatch.setattr(
         mcp_commands,
         "get_repo_root",
-        lambda fallback_cwd=False: str(repo),
+        lambda fallback_cwd=False, **_kw: str(repo),
     )
     return repo
 
