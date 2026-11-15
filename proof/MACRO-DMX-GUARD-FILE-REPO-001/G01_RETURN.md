@@ -10,8 +10,16 @@
 |---|---|---|---|---|---|
 | First attempt | READY_FOR_AUDIT, built to T04 as issued | 77,142 ms | 71,948 | 18 | 0 |
 | Correction round (Amendment 01) | READY_FOR_AUDIT | 42,234 ms | 79,977 | 10 | 0 |
+| Retry (Copilot review on PR 1513, comments 4579227847 and 4579227872) | READY_FOR_AUDIT | 51,751 ms | 96,910 | 10 | 0 |
 
-Caps: 60 min, 600,000 tokens, 150 tool uses. The retry was not used. The supervisor found the bypass in the first attempt's review; the fault was in T04, not in the child's work (Amendment 01).
+Caps: 60 min, 600,000 tokens, 150 tool uses. The retry is now used; G01 has no attempts left. The retry's commit is `7d6be8cba`. Its named cause was two review findings, routed back through G01 under G02's T02.
+
+## Retry: relative paths and direct tests
+
+- **Relative paths (Copilot, high).** A relative path was resolved against the process working directory, so with the hook running outside the project, a relative path into a sibling worktree was allowed. The supervisor confirmed it before dispatch: the old guard allowed it too, so it was an incomplete fix, not a regression. The guard now also reads the path joined to `project_root` (`_guard_readings`); readings are only ever added.
+- **Direct `file_repo_root` tests (Copilot, medium).** Five tests pin a linked worktree, missing parents, a relative path against `fallback`, a symlink and the no-repository fallback. They passed at once, because they pin behaviour that already worked. The two new relative-path tests failed first against `3d5226e0b`.
+
+Supervisor's re-check after the retry: `tests/unit/dcp_surface_guard/` 15 passed; the guard suites 458 passed with the same 1 pre-existing failure; the native-hook and related files 96 passed; the change-contract gate PASS. The old-against-new comparison covered 40 combinations (absolute and relative paths, working directory inside and outside the project) and found 0 regressions. A relative path through a symlink into the red lane, with the working directory outside the project, was allowed by the old guard and is now blocked. The supervisor found the bypass in the first attempt's review; the fault was in T04, not in the child's work (Amendment 01).
 
 ## Team lead's checks (re-run, not taken from the child)
 
