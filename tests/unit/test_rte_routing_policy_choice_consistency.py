@@ -56,19 +56,41 @@ def test_rte_wizard_param_object_shares_the_same_routing_policy_choices() -> Non
     assert list(routing_param.type.choices) == list(ROUTING_POLICY_CHOICES)
 
 
-def test_rte_wizard_accepts_every_canonical_routing_policy_value() -> None:
+def test_rte_wizard_accepts_every_canonical_routing_policy_value(monkeypatch) -> None:
     """Cross-check the param-object inspection above against real argument
     parsing: every canonical policy must clear Click's Choice validator for
-    `rte wizard` (whatever happens after parsing -- e.g. a missing
-    `questionary` dependency -- is out of scope here)."""
+    `rte wizard` and reach the wizard unchanged.
+
+    The wizard itself is replaced with a recorder. Running the real one did a
+    full prescan of the checkout per policy (a repo walk, an AST pass and three
+    full-history `git log` calls) and wrote run directories into the checkout:
+    502 s of the CI "Unit Tests" job on its own, for a test about parsing."""
+    import dopemux.ux.wizard as wizard_package
+
+    received: list[str] = []
+
+    class RecordingWizard:
+        def __init__(self, *, routing_policy: str, **_: object) -> None:
+            received.append(routing_policy)
+
+        def run(self) -> None:
+            return None
+
+    monkeypatch.setattr(wizard_package, "WizardRunner", RecordingWizard)
+
     runner = CliRunner()
     for policy in ROUTING_POLICY_CHOICES:
         result = runner.invoke(
             dopemux_cli.cli, ["rte", "wizard", "--routing-policy", policy]
         )
+        assert result.exit_code == 0, (
+            f"{policy} rejected by `rte wizard`: {result.output}"
+        )
         assert "Invalid value for '--routing-policy'" not in result.output, (
             f"{policy} rejected by `rte wizard`: {result.output}"
         )
+
+    assert received == list(ROUTING_POLICY_CHOICES)
 
 
 def test_dead_truth_command_now_accepts_the_full_canonical_choice_set() -> None:
