@@ -1,0 +1,21 @@
+30b0fdec9 fix(mcp): reap re-evaluates eligibility under the instance lock; bounded registry lock on automatic reaps with recoverable skip
+3bf5d4f26 fix(mcp): guard the first backend session and re-verify after connect; non-blocking instance locks and bounded inspection on automatic reaps
+eb3f0624b fix(mcp): per-service build pid; launcher reap actually runs within its deadline; rebuild recipe; redact before truncate; guard binding test
+7ae26f045 fix(mcp): final review — reconnect guard, signal-safe detach, reconnect backoff, shared images, stop save under lock, fail-closed unknown history, SCRAM verifier, rollback docs, polish
+94a2a6f6a docs(mcp): retire the envrc recipe from init output, repair hints and bootstrap; attribute observed facts
+b2c6e3efa docs(mcp): one-command setup recipe; launcher, switch-project, reap; retire envrc steps
+016a9f3b8 fix(mcp): reap — lock inode re-check, attach under lock, stop under lock, orchestrator never marked stopped, bounded and recoverable automatic reaps
+859fd844d feat(mcp): reap-only cleanup of idle or removed worktree sidecars; stop releases leases
+baf8b1151 fix(mcp): proxy resends once after Streamable HTTP "Session terminated"; foreign orchestrator no longer blocks conport/dope-memory starts
+8f12edee4 fix(mcp): tenant provisioning resumes per migration; gate under provision lock; doctor skip-docker; fail-closed state read
+09606798b feat(mcp): automatic ConPort tenant resolution and provisioning; legacy shared-store warning
+7f5cb621a fix(mcp): launcher fix round 1 — proxy resend, switch-project lock scope, TO start under reserved lock, opt-in bin check, env default, cross-service lease collision
+5d04d8caa feat(mcp): dopemux mcp launch with SDK stdio proxy, orchestrator gate, switch-project
+33959c081 docs(mcp): launch root-resolution probe results
+05e5e50a0 fix(mcp): registry lock follows the registry path; pytest guard; lease identity mirrors init
+40ea89c24 feat(mcp): lifecycle resolves ports from leases; registry and instance locks; reload under lock before save
+fb8717368 feat(mcp): catalog client shape and stdio launcher render; mcp sdk in core deps
+4d90b51fb fix(mcp): identity from git only — trust-env on doctor --legacy, add, ensure; alias smoke tests
+a728a6aaa fix(mcp): identity from git only; --trust-env; init --repo; preserve tenant keys on --force
+a274a066f fix(hooks): dispatch native hooks in linked worktrees; honour payload cwd; add native-hooks run
+98e068aec docs(mcp): add MCP just-works design (approved 2026-11-05) and M1 implementation plan

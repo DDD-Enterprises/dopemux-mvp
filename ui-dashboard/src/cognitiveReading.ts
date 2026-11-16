@@ -112,6 +112,10 @@ export const FORECAST_TTL_MS = 15 * 60 * 1000;
  * previous forecast while it is under 15 minutes old; an older one is unknown. When the key
  * is present, the snapshot's own mapped value wins, even if that is `null`.
  */
+/** Whether a `state_update` says anything about the forecast: a present key counts, even `null`. */
+export const sendsForecast = (message: unknown): boolean =>
+  isMessageObject(message) && isMessageObject(message.data) && 'predicted_load_15min' in message.data;
+
 export function carryForecast(
   next: CognitiveReading,
   message: unknown,
@@ -119,7 +123,7 @@ export function carryForecast(
   forecastReceivedAt: number | null,
   now: number
 ): CognitiveReading {
-  if (!isMessageObject(message) || !isMessageObject(message.data) || 'predicted_load_15min' in message.data) {
+  if (!isMessageObject(message) || !isMessageObject(message.data) || sendsForecast(message)) {
     return next;
   }
   const isFresh = forecastReceivedAt !== null && now - forecastReceivedAt < FORECAST_TTL_MS;

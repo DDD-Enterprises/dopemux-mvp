@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+"""Fill VALIDATIONS.c7.template.md for the sealed cycle-7 subject.
+
+Usage (environment: H, SUMMARY, SUITE_EXIT, SUITE_BUCKET, BOTS_C7):
+    cycle7-fill-validations.py <template> <out> <fills.json (optional, may be missing)>
+Keys of fills.json: HOOKS, DOCS, LINT, FORMAT, MYPY, CATALOG, MERGE -> {"result": str, "bucket": "PASS|FAIL|NOT_RUN|UNKNOWN"}.
+A missing key defaults to NOT_RUN: nothing is ever PASS by default. Exits 1 if any cycle-7 placeholder is left.
+"""
+import datetime
+import json
+import os
+import re
+import sys
+from pathlib import Path
+
+BUCKETS = {"PASS", "FAIL", "NOT_RUN", "UNKNOWN"}
+tpl, out = Path(sys.argv[1]), Path(sys.argv[2])
+fills = {}
+if len(sys.argv) > 3 and Path(sys.argv[3]).is_file():
+    fills = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
+text = tpl.read_text(encoding="utf-8")
+sub = {
+    "__HEAD__": os.environ["H"],
+    "__DATE__": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "__SUITE_SUMMARY__": os.environ["SUMMARY"].replace("|", "\\|"),
+    "__SUITE_EXIT__": os.environ["SUITE_EXIT"],
+    "__SUITE_BUCKET__": os.environ["SUITE_BUCKET"],
+    "__BOTS_C7__": os.environ.get("BOTS_C7", "NOT_RUN at this SHA").replace("|", "\\|"),
+}
+for key in ("HOOKS", "DOCS", "LINT", "FORMAT", "MYPY", "CATALOG", "MERGE"):
+    ent = fills.get(key) or {}
+    bucket = ent.get("bucket", "NOT_RUN")
+    if bucket not in BUCKETS:
+        raise SystemExit(f"bad bucket {bucket!r} for {key}")
+    sub[f"__{key}_C7_RESULT__"] = (ent.get("result") or "NOT_RUN at this SHA (no controller receipt supplied in cycle7-validation-fills.json)").replace("|", "\\|")
+    sub[f"__{key}_C7_BUCKET__"] = bucket
+for k, val in sub.items():
+    text = text.replace(k, val)
+left = sorted(set(re.findall(r"__(?:[A-Z0-9_]*C7[A-Z0-9_]*|HEAD|DATE|SUITE_[A-Z]+)__", text)))
+if left:
+    raise SystemExit(f"unfilled placeholders: {left}")
+out.write_text(text, encoding="utf-8")
+print(f"wrote {out} ({len(text)} bytes)")

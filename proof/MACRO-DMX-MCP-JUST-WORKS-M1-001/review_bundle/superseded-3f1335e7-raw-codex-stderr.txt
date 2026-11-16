@@ -1,0 +1,8 @@
+Reading prompt from stdin...
+2026-11-08T23:03:03.663792Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3006/mcp)")))
+2026-11-08T23:03:03.663832Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3010/mcp)")))
+2026-11-08T23:03:03.918408Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3010/mcp)")))
+2026-11-08T23:03:03.920591Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3006/mcp)")))
+2026-11-08T23:03:04.921797Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3010/mcp)")))
+2026-11-08T23:03:04.922469Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when Client(HttpRequest(HttpRequest("http/request failed: error sending request for url (http://localhost:3006/mcp)")))
+codex exit=0

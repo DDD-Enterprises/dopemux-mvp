@@ -1,0 +1,45 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1439,
+  "head_sha": "34005d6c2967e7a1210fed682a321e16f7aab2e3",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\"  (cwd = sealed dir holding only AUDIT_PROMPT.txt built by scripts/audit/pal_clink_runner.py --build-prompt; conversation_id=97c42e1c-63e8-42f4-a796-dd5fd189c748; exact record in review_bundle/AUDIT_INVOCATION.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1439-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validation tests were not executed during this embedded audit because candidate checkout and tool execution are disabled by policy (validation_status=NOT_RUN).",
+      "Existing settings.json files that were previously written with the legacy hooks.command array key will retain that legacy key alongside the new event-keyed entries unless manually cleaned up.",
+      "Auditor model fallback: AGY ran gemini-4-argon-high (recorded as auditor_model 'gemini', the schema's generic value) under explicit operator approval; exact-model evidence for gemini-3.1-pro-high is unavailable in agy 1.4.2.",
+      "Auditor ran sandboxed with no tool or checkout access (validation_status=NOT_RUN); test and lint evidence at the audited head comes from CI and the local runs recorded in the packet PROOF.json validations."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "agy",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runtime_family": "agy",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}

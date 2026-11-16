@@ -1,0 +1,44 @@
+#!/bin/bash
+# Owner-run cleanup after the M1 acceptance (2026-11-07). The controller could not run the
+# container-stopping steps: the Claude Code auto-mode classifier denied `dopemux mcp reap --apply`
+# ("Interfere With Workloads"). Everything here is idempotent; re-run until it reports clean.
+#
+# Order matters: reap first (stops the acceptance/probe containers and releases their leases),
+# then drop the two throwaway tenants (DROP DATABASE needs no live connections), then delete the
+# throwaway dirs, then re-enable automatic reaps by deleting the kill switch LAST (that turns the
+# Stop/SessionEnd-hook reaper back on in every live dopemux-mvp session).
+set -euo pipefail
+
+DOPEMUX_BIN="${DOPEMUX_BIN:-/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1/.venv/bin/dopemux}"
+RUNTIME="$HOME/.dopemux/mcp/runtime"
+PROJECTS="$HOME/.dopemux/mcp/projects"
+
+step() { printf '\n== %s\n' "$*"; }
+
+step "1. make the throwaway repos disappear so their sidecars become reap candidates"
+rm -rf "$HOME/code/.accept-m1-t4" "$HOME/code/.tenant-probe-m1"
+
+step "2. reap (explicit --apply ignores the kill switch); expect 55ab (accept-m1-t1), accept-m1-t4, tenant-probe-m1, and the stale 6a4f entry"
+"$DOPEMUX_BIN" mcp reap --dry-run
+"$DOPEMUX_BIN" mcp reap --apply --json | tee /tmp/m1-cleanup-reap.json | head -c 2000; echo
+docker ps -a --format '{{.Names}}' | grep -E '55ab|accept-m1-t4|tenant-probe-m1' && echo "WARNING: containers still present (see reap output)" || echo "containers gone"
+
+step "3. drop the two throwaway ConPort tenants (database + role)"
+docker exec dopemux-postgres-age sh -c 'psql -U "${POSTGRES_USER:-postgres}" -d postgres -v ON_ERROR_STOP=1 \
+  -c "DROP DATABASE IF EXISTS conport_accept_m1_t4_747a8534" \
+  -c "DROP ROLE IF EXISTS conport_accept_m1_t4_747a8534" \
+  -c "DROP DATABASE IF EXISTS conport_tenant_probe_m1_84fc294a" \
+  -c "DROP ROLE IF EXISTS conport_tenant_probe_m1_84fc294a"'
+docker exec dopemux-postgres-age sh -c 'psql -U "${POSTGRES_USER:-postgres}" -d postgres -tAc "select datname from pg_database where datname like '"'"'conport_%accept%'"'"' or datname like '"'"'conport_tenant_probe%'"'"'"' | sed 's/^/still present: /'
+
+step "4. delete throwaway project + runtime state (incl. the build-only worktree 2271 that reap never saw: it has no registry entry)"
+rm -rf "$PROJECTS"/.accept-m1-t4-* "$PROJECTS"/.tenant-probe-m1-* \
+       "$RUNTIME"/accept-m1-t4-* "$RUNTIME"/tenant-probe-m1-* "$RUNTIME"/dopemux-mvp-2271 "$RUNTIME"/dopemux-mvp-55ab
+"$DOPEMUX_BIN" mcp leases reconcile 2>/dev/null || true   # releases leases whose instance/worktree is gone
+
+step "5. LAST: re-enable automatic reaps (Stop/SessionEnd hooks + launcher starts) in every session"
+rm -f "$RUNTIME/reap.disabled"
+ls "$RUNTIME/reap.disabled" 2>/dev/null && echo "kill switch still present" || echo "kill switch removed: automatic reaps are live"
+
+step "6. remaining dopemux-mvp sidecars (should be only the live worktrees' sets, e.g. afda = M1 worktree, dcd6 = main)"
+docker ps --format '{{.Names}}|{{.Status}}' | grep -E 'dopemux-mvp|accept|probe' || true

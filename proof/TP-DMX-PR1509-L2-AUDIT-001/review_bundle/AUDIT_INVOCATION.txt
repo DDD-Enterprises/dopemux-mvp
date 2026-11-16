@@ -1,0 +1,17 @@
+PR #1509 audit (packet TP-DMX-PR1509-L2-AUDIT-001), head eb5b6a1dd2f6d0927b19046818aecd389dd5b5fe, base 264c97b23ec1b3e007e62079d4f6d2632ad71775 (main = merge-base)
+
+Prompt: scripts.audit.pal_clink_runner --build-prompt over the whole PR diff `git diff 264c97b23 eb5b6a1dd` (UNIFIED_DIFF.diff).
+Prompt sha256 78dd2cafe4663f1c521302d972d1e35b1c92e4f1ffb7e54a88a8573810a377ad, 19785 bytes. The run used a sealed dir holding only
+AUDIT_PROMPT.txt, under ~/.local/share/dopemux/evidence/pr1509/r2/. The wrapper recorded `grok exit=$?` and the UTC end time.
+The bundle stores the stream written as GROK_OUTPUT_RAW.jsonl under the name GROK_OUTPUT_RAW.txt (see REDACTIONS.md).
+
+GOVERNING: grok grok 1.0.77 (50ca579fa996) [stable] -m grok-4.7 --effort high contained ; head=eb5b6a1dd2f6d0927b19046818aecd389dd5b5fe ; started=2026-11-12T13:20:34Z
+  grok -m grok-4.7 --effort high --sandbox workspace --cwd <sealed grok dir> --system-prompt-override "$(cat GROK_SYSTEM_PROMPT.txt)" --disallowed-tools "$(cat GROK_DISALLOWED_TOOLS.txt)" --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources" --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt > GROK_OUTPUT_RAW.jsonl 2> GROK_STDERR.txt
+  wrapper: grok exit=0 2026-11-12T13:27:15Z   session_id=01a1cfea-d073-79e1-bf66-3919fa82afff
+  Tool probe before the run (content-free prompt, same denylist): init.tools == [] (GROK_INIT_TOOLS.json).
+
+EARLIER, at a2ca0ee4b (superseded; see PRIOR_ATTEMPTS.md):
+  grok grok 1.0.77 (50ca579fa996) [stable] -m grok-4.7 --effort high contained ; head=a2ca0ee4bf2ee1b673a479f38cdbb4f3fe52f6d6 ; started=2026-11-12T12:41:26Z
+    wrapper: grok exit=0 2026-11-12T12:47:32Z   session_id=01a1cfc6-fe25-7331-b116-671502e090d1   verdict PASS_WITH_RISKS
+  agy 1.5.6 --model gemini-4-argon-high ; head=a2ca0ee4bf2ee1b673a479f38cdbb4f3fe52f6d6 ; started=2026-11-12T12:41:26Z
+    wrapper: agy exit=3 2026-11-12T12:51:38Z   conversation_id=0f4d08f9-504c-4ba6-bb40-b05caee866c1   no verdict: error: Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 37h43m16s.

@@ -1,0 +1,447 @@
+diff --git a/claudedocs/mcp-just-works-design-2026-11-05.md b/claudedocs/mcp-just-works-design-2026-11-05.md
+index 5a6da45c2..347a31a48 100644
+--- a/claudedocs/mcp-just-works-design-2026-11-05.md
++++ b/claudedocs/mcp-just-works-design-2026-11-05.md
+@@ -311,3 +311,4 @@ Appended after the final whole-branch review of Milestone 1; the approved text a
+ - **Reap matches leases by the lease registry's identity rule (Task B7-1, Codex review of `2e08a3b7c`).** `allocate_ports()` (`init`, the launcher) writes the project directory's name as a lease's `project_id`, while a reap candidate carries the hashed `ProjectIdentity.project_id`, so reap's exact `project_id` comparison kept a reaped worktree's leases active and hid them from state-only recovery. `_release_leases` and `_has_active_leases` now take a worktree-scope lease of the same worktree root and decide with `PortLeaseRegistry.identity_matches` (the allocator's and the lifecycle's rule: the same worktree root decides, a different `worktree_hash` excludes). `ReapCandidate` carries the pair's `project_root` (from the registry entry, or the marker for a dir-only candidate). The scope, orchestrator and `_owned_by` rules are unchanged.
+ - **Envrc ports are re-leased on start (Task B7-2, Codex review of `71866e4d1`).** With `allocate` (start, restart, and the launcher's cold start), `_resolve_ports` trusts an env/envrc port of a leased service only when this identity holds the active lease for that variable on that very port. Otherwise the value is a preference for the locked allocation (`allocate_ports` with `existing_envrc`): an existing lease of this identity for the variable wins; with none (after `init` then `stop`) the preferred port is leased when no other lease holds it and the socket is free, a port this worktree's own running sidecar publishes counting as free, else a fresh port is leased and replaces the envrc's. `allocate=False` callers (status, doctor, stop) are unchanged. The lock is still `registry_lock`, held only for the allocate-and-save step. As a consequence the start's `LEASE_ENVRC_MISMATCH` check can no longer fire for leased services (the lease wins); `doctor` still reports a mismatching envrc.
+ - **Config repair replaces only what dopemux rendered (cycle 4, Codex audit F1 at 43294e99b).** `_url_is_repairable` accepts a templated URL only in the exact shape dopemux renders (literal local host, one of its own port variables — `CONPORT_MCP_PORT`, `DOPE_MEMORY_PORT`, `TASK_ORCHESTRATOR_HTTP_PORT`, or any name in the catalog's templates — as the only placeholder, in the port position); every other template is operator-authored and preserved, and environment values are never read, so a port variable set to `3005@remote.example` cannot make an operator endpoint look local. Hand-written URL entries in any other shape (another variable name such as `${PORT:-3005}`, a host or path placeholder, a non-numeric default) are therefore preserved, not repaired; an entry identical to a catalog template, such as the how-to's manual recipe, is dopemux's own shape and `repair-config --apply` still turns it into a launcher entry.
++- **Doctor port findings are re-evaluated after allocation (cycle 4, Codex connector review of `83b468e71`).** The doctor preflight inspects the envrc ports before `_resolve_ports` may lease replacements, so for `start`/`restart` its port-dependent findings (`PORT_RESERVED_COLLISION`, `PORT_INTRA_CONFIG_COLLISION`, `PORT_OWNED_BY_OTHER_PROJECT`, `DOCKER_CONTAINER_WRONG_PROJECT`, `DOCKER_CONTAINER_UNLABELED_UNKNOWN`, `DOCKER_CONTAINER_PORT_COLLISION`) are no longer carried as blockers; they are recorded as `DOCTOR_PORT_FINDING_REEVALUATED` INFO entries in the preflight facts (visible on blocked results; a successful start's output lists no preflight warnings, which is pre-existing `_start_services` behaviour) and the lifecycle's own collision checks against the resolved ports (plus `PORT_ALLOCATION_BLOCKED` when no free port exists) decide. After `init` → `stop` a foreign container on the stale envrc port no longer blocks a start that re-leased a free port. `stop`/`status` keep the doctor findings as before. The lifecycle's collision check now applies the launcher's ownership rule to any managed worktree-scoped container holding a resolved port: a same-project container of another worktree (different `dopemux.worktree_hash`), or a managed container without a project id whose project root does not match, is a `DOCKER_CONTAINER_PORT_COLLISION`; containers dopemux itself labels are therefore re-checked against the resolved ports, while a managed container without dopemux's project labels (accepted on compose evidence) is not, and only `dopemux mcp doctor` reports those. A project-scoped task-orchestrator container started from another worktree of the same project is no longer blocked by the doctor's workspace mismatch (the orchestrator gate under the reserved lock decides).
+diff --git a/src/dopemux/mcp/lifecycle.py b/src/dopemux/mcp/lifecycle.py
+index 709cdd60a..cafeb08e8 100644
+--- a/src/dopemux/mcp/lifecycle.py
++++ b/src/dopemux/mcp/lifecycle.py
+@@ -80,6 +80,21 @@ BLOCKING_FINDING_CODES = frozenset(
+     }
+ )
+ 
++# Doctor findings computed against the envrc ports before allocation. For
++# start/restart the lifecycle recomputes them against the RESOLVED ports
++# (`_collision_checks`; `_resolve_ports` raises PortAllocationBlocked when no free
++# port exists), so they are not carried as blockers there.
++PORT_DEPENDENT_DOCTOR_CODES = frozenset(
++    {
++        "PORT_RESERVED_COLLISION",
++        "PORT_INTRA_CONFIG_COLLISION",
++        "PORT_OWNED_BY_OTHER_PROJECT",
++        "DOCKER_CONTAINER_WRONG_PROJECT",
++        "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
++        "DOCKER_CONTAINER_PORT_COLLISION",
++    }
++)
++
+ # Informational doctor codes that should not block (lifecycle neutralizes compose hazards)
+ NON_BLOCKING_EVEN_IF_IN_SET = frozenset(
+     {
+@@ -560,6 +575,7 @@ def _collision_checks(
+     docker: di.DockerInspectResult,
+     project_id: str,
+     worktree_root: str,
++    worktree_hash: str,
+     catalog: Optional[Mapping[str, Any]] = None,
+ ) -> List[Dict[str, Any]]:
+     findings: List[Dict[str, Any]] = []
+@@ -677,6 +693,46 @@ def _collision_checks(
+                 }
+             )
+             continue
++        # The launcher's owner rule (`_check_sidecar_owner`) for same-project
++        # containers: a worktree-scoped sidecar is ours only with our worktree hash.
++        # Another project's owner falls through to PORT_OWNED_BY_OTHER_PROJECT below.
++        owner_hash = labels.get("dopemux.worktree_hash")
++        if (
++            managed
++            and labels.get("dopemux.project_id") == project_id
++            and labels.get("dopemux.scope", "worktree") == "worktree"
++            and owner_hash
++            and owner_hash != worktree_hash
++        ):
++            findings.append(
++                {
++                    "code": "DOCKER_CONTAINER_PORT_COLLISION",
++                    "severity": "FAIL",
++                    "service": expected_svc,
++                    "message": (
++                        f"Port :{port} ({var}) held by same-project container "
++                        f"{owner.name} of another worktree ({owner_hash})"
++                    ),
++                }
++            )
++            continue
++        if (
++            managed
++            and not labels.get("dopemux.project_id")
++            and ownership == "WRONG_PROJECT"
++        ):
++            findings.append(
++                {
++                    "code": "DOCKER_CONTAINER_PORT_COLLISION",
++                    "severity": "FAIL",
++                    "service": expected_svc,
++                    "message": (
++                        f"Port :{port} ({var}) held by managed container "
++                        f"{owner.name} whose project root does not match"
++                    ),
++                }
++            )
++            continue
+         if ownership in {"MATCH", "COMPOSE_MATCH"}:
+             # Require that COMPOSE_MATCH is not just port+slug with wrong service name
+             if ownership == "COMPOSE_MATCH" and expected_name_substrings:
+@@ -1109,6 +1165,7 @@ def _mutable_facts(
+         docker=docker,
+         project_id=project_id,
+         worktree_root=worktree_root,
++        worktree_hash=identity.worktree_hash or instance_id_for_path(worktree_root),
+         catalog=catalog,
+     )
+     if op in {"start", "restart"}:
+@@ -1404,9 +1461,26 @@ def run_lifecycle(
+         )
+ 
+     if doctor:
+-        blocking.extend(
+-            _doctor_blocking_findings(doctor, services=selected, strategy_neutralizes_compose=True)
++        doctor_blocking = _doctor_blocking_findings(
++            doctor, services=selected, strategy_neutralizes_compose=True
+         )
++        for f in doctor_blocking:
++            code = f.get("code") or ""
++            if op in {"start", "restart"} and code in PORT_DEPENDENT_DOCTOR_CODES:
++                warnings.append(
++                    {
++                        "code": "DOCTOR_PORT_FINDING_REEVALUATED",
++                        "severity": "INFO",
++                        "service": f.get("service"),
++                        "message": (
++                            f"doctor {code} (computed against the envrc port before "
++                            "allocation) is re-evaluated against the resolved "
++                            f"ports: {f.get('message')}"
++                        ),
++                    }
++                )
++            else:
++                blocking.append(f)
+         for f in doctor.findings:
+             if f.get("severity") == "WARN":
+                 warnings.append(f)
+diff --git a/tests/unit/test_mcp_lifecycle.py b/tests/unit/test_mcp_lifecycle.py
+index c223f20da..6d91bc40b 100644
+--- a/tests/unit/test_mcp_lifecycle.py
++++ b/tests/unit/test_mcp_lifecycle.py
+@@ -376,7 +376,7 @@ def test_start_blocks_transport_mismatch(tmp_path: Path):
+     assert "TRANSPORT_MISMATCH" in codes
+ 
+ 
+-def test_start_blocks_unlabeled_port_owner(tmp_path: Path):
++def _start_with_unlabeled_owner_of_configured_port(tmp_path: Path, **kwargs):
+     repo = _fixture_repo(tmp_path)
+     reg = tmp_path / "instances.json"
+     product = tmp_path / "product"
+@@ -394,7 +394,7 @@ def test_start_blocks_unlabeled_port_owner(tmp_path: Path):
+         }
+         return SimpleNamespace(returncode=0, stdout=json.dumps(row) + "\n", stderr="")
+ 
+-    result = run_lifecycle(
++    return run_lifecycle(
+         "start",
+         repo=repo,
+         services=["conport"],
+@@ -404,10 +404,34 @@ def test_start_blocks_unlabeled_port_owner(tmp_path: Path):
+         docker_runner=docker_ps,
+         product_root=product,
+         process_env={},
++        **kwargs,
++    )
++
++
++def test_start_blocks_when_no_free_port_can_replace_an_unlabeled_owner(tmp_path: Path):
++    result = _start_with_unlabeled_owner_of_configured_port(
++        tmp_path, port_is_free_fn=lambda p: False
+     )
+     assert result.status == "BLOCKED"
+     codes = {f.get("code") for f in result.blocking_findings}
+-    assert "DOCKER_CONTAINER_PORT_COLLISION" in codes or "DOCKER_CONTAINER_UNLABELED_UNKNOWN" in codes
++    assert codes & {"PORT_ALLOCATION_BLOCKED", "DOCKER_CONTAINER_PORT_COLLISION"}
++
++
++def test_start_re_leases_around_an_unlabeled_container_on_the_configured_port(
++    tmp_path: Path,
++):
++    # The unlabeled container really holds 3041; every other port is free.
++    result = _start_with_unlabeled_owner_of_configured_port(
++        tmp_path, port_is_free_fn=lambda p: p != 3041
++    )
++    assert result.status != "BLOCKED", result.blocking_findings
++    codes = {f.get("code") for f in result.blocking_findings}
++    assert not codes & {
++        "DOCKER_CONTAINER_UNLABELED_UNKNOWN",
++        "DOCKER_CONTAINER_PORT_COLLISION",
++    }
++    conport = next(s for s in result.services if s["service"] == "conport")
++    assert conport["ports"]["CONPORT_MCP_PORT"] != 3041
+ 
+ 
+ def test_stop_refuses_unlabeled(tmp_path: Path):
+diff --git a/tests/unit/test_mcp_lifecycle_ports_from_leases.py b/tests/unit/test_mcp_lifecycle_ports_from_leases.py
+index c4f620568..09b536048 100644
+--- a/tests/unit/test_mcp_lifecycle_ports_from_leases.py
++++ b/tests/unit/test_mcp_lifecycle_ports_from_leases.py
+@@ -682,3 +682,257 @@ def test_a_port_another_worktrees_container_publishes_is_not_adopted(tmp_path, p
+     ours = _active_by_var(paths, identity.worktree_root)
+     assert ours["CONPORT_MCP_PORT"] == ports["CONPORT_MCP_PORT"]
+     assert ours["CONPORT_HTTP_PORT"] == envrc_ports["CONPORT_HTTP_PORT"]
++
++
++# --- Task F: doctor port findings are re-evaluated after allocation ----------------
++
++
++def _foreign_conport_on_stale_envrc_port(tmp_path, paths, monkeypatch):
++    """`init` then `stop`; another project's conport sidecar holds the envrc port.
++
++    The doctor and the lifecycle both read docker through
++    ``docker_inspect.inspect_running_containers``, so patching it feeds both.
++    """
++    from dopemux.mcp import docker_inspect as di
++
++    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
++    taken = envrc_ports["CONPORT_MCP_PORT"]
++    foreign = di.DockerContainerInfo(
++        id="c0ffee000004",
++        name="dopemux-other-project-conport",
++        ports=[f"127.0.0.1:{taken}->3004/tcp"],
++        labels={
++            "dopemux.managed": "true",
++            "dopemux.service": "conport",
++            "dopemux.project_id": "another-project",
++            "dopemux.worktree_hash": "eeee",
++        },
++        published_ports=[taken],
++    )
++    monkeypatch.setattr(
++        di,
++        "inspect_running_containers",
++        lambda **_k: di.DockerInspectResult(available=True, containers=[foreign]),
++    )
++    return repo, identity, taken
++
++
++def _run(op, tmp_path, repo, paths, taken, is_free=None):
++    product = tmp_path / "product"
++    if not product.exists():
++        product = _product(tmp_path)
++    return run_lifecycle(
++        op,
++        repo=repo,
++        services=["conport", "dope-memory"],
++        catalog=_catalog(),
++        dry_run=True,
++        registry_path=paths.reg,
++        product_root=product,
++        process_env={},
++        port_is_free_fn=is_free or (lambda p: p != taken),
++    )
++
++
++def test_start_after_init_and_stop_ignores_a_foreign_container_on_the_stale_port(
++    tmp_path, paths, monkeypatch
++):
++    repo, identity, taken = _foreign_conport_on_stale_envrc_port(
++        tmp_path, paths, monkeypatch
++    )
++    result = _run("start", tmp_path, repo, paths, taken)
++
++    assert result.status != "BLOCKED", result.blocking_findings
++    codes = {f["code"] for f in result.blocking_findings}
++    assert "DOCKER_CONTAINER_WRONG_PROJECT" not in codes, result.blocking_findings
++    conport = next(s for s in result.services if s["service"] == "conport")
++    assert conport["ports"]["CONPORT_MCP_PORT"] != taken
++
++
++def test_stop_does_not_re_evaluate_doctor_port_findings(tmp_path, paths, monkeypatch):
++    """Control: only start/restart re-evaluate port findings; other ops are unchanged.
++
++    A stop result's warnings are always empty, so the registry is made unreadable:
++    REGISTRY_PARSE_ERROR makes ``_stop_blocking`` return every finding, and the
++    doctor's container finding must still be among them.
++    """
++    repo, identity, taken = _foreign_conport_on_stale_envrc_port(
++        tmp_path, paths, monkeypatch
++    )
++    paths.reg.parent.mkdir(parents=True, exist_ok=True)
++    paths.reg.write_text("{not json")
++    result = _run("stop", tmp_path, repo, paths, taken)
++
++    assert result.operation == "stop"
++    codes = {f["code"] for f in result.blocking_findings}
++    assert "DOCKER_CONTAINER_WRONG_PROJECT" in codes, result.blocking_findings
++    assert not [
++        w for w in result.warnings if w.get("code") == "DOCTOR_PORT_FINDING_REEVALUATED"
++    ]
++
++
++def test_start_still_carries_a_port_independent_doctor_blocker(
++    tmp_path, paths, monkeypatch
++):
++    """Control: a doctor blocker that does not depend on ports stays a blocker."""
++    repo, identity, taken = _foreign_conport_on_stale_envrc_port(
++        tmp_path, paths, monkeypatch
++    )
++    (repo / ".mcp.json").write_text("{not json")
++    result = _run("start", tmp_path, repo, paths, taken)
++
++    assert result.status == "BLOCKED"
++    codes = {f["code"] for f in result.blocking_findings}
++    assert "MCP_JSON_PARSE_ERROR" in codes, result.blocking_findings
++
++
++def test_a_re_evaluated_port_finding_is_recorded_as_an_info_warning(
++    tmp_path, paths, monkeypatch
++):
++    """A successful start result carries no preflight warnings (pre-existing), so
++    the entry is observed on a result that is blocked for another reason."""
++    repo, identity, taken = _foreign_conport_on_stale_envrc_port(
++        tmp_path, paths, monkeypatch
++    )
++    (repo / ".mcp.json").write_text("{not json")
++    result = _run("start", tmp_path, repo, paths, taken)
++
++    codes = {f["code"] for f in result.blocking_findings}
++    assert "DOCKER_CONTAINER_WRONG_PROJECT" not in codes, result.blocking_findings
++    reevaluated = [
++        w for w in result.warnings if w.get("code") == "DOCTOR_PORT_FINDING_REEVALUATED"
++    ]
++    assert len(reevaluated) == 1, result.warnings
++    assert reevaluated[0]["service"] == "conport"
++    assert reevaluated[0]["severity"] == "INFO"
++    assert "DOCKER_CONTAINER_WRONG_PROJECT" in reevaluated[0]["message"]
++
++
++def _sibling_container(identity, port: int, **label_overrides):
++    """A managed conport sidecar publishing ``port`` that is not this worktree's."""
++    from dopemux.mcp import docker_inspect as di
++
++    labels = {
++        "dopemux.managed": "true",
++        "dopemux.service": "conport",
++        "dopemux.scope": "worktree",
++        "dopemux.project_id": identity.project_id,
++        "dopemux.worktree_hash": "ffff",
++        "dopemux.workspace_id": "/elsewhere/sibling",
++        "dopemux.worktree_root": "/elsewhere/sibling",
++        "dopemux.project_root": "/elsewhere/sibling",
++    }
++    labels.update(label_overrides)
++    labels = {k: v for k, v in labels.items() if v is not None}
++    return di.DockerContainerInfo(
++        id="c0ffee000005",
++        name="dopemux-sibling-conport",
++        ports=[f"127.0.0.1:{port}->3004/tcp"],
++        labels=labels,
++        published_ports=[port],
++    )
++
++
++def _patch_docker(monkeypatch, container):
++    from dopemux.mcp import docker_inspect as di
++
++    monkeypatch.setattr(
++        di,
++        "inspect_running_containers",
++        lambda **_k: di.DockerInspectResult(available=True, containers=[container]),
++    )
++
++
++def _blocked_by_port_collision(result):
++    assert result.status == "BLOCKED", result.to_dict()
++    codes = {f["code"] for f in result.blocking_findings}
++    assert "DOCKER_CONTAINER_PORT_COLLISION" in codes, result.blocking_findings
++
++
++def test_a_sibling_worktrees_container_on_the_port_our_lease_keeps_blocks(
++    tmp_path, paths, monkeypatch
++):
++    repo = _repo(tmp_path)
++    first = _start(tmp_path, repo, paths)
++    conport = next(s for s in first.services if s["service"] == "conport")
++    kept = conport["ports"]["CONPORT_MCP_PORT"]
++    identity = resolve_identity_view(repo)
++    _patch_docker(monkeypatch, _sibling_container(identity, kept))
++
++    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
++
++    _blocked_by_port_collision(result)
++
++
++def test_a_sibling_worktrees_container_on_a_re_leased_stale_port_blocks(
++    tmp_path, paths, monkeypatch
++):
++    repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
++    taken = envrc_ports["CONPORT_MCP_PORT"]
++    _patch_docker(monkeypatch, _sibling_container(identity, taken))
++
++    # The connect probe misses the published port, so the same port is re-leased.
++    result = _run("start", tmp_path, repo, paths, taken, is_free=lambda p: True)
++
++    _blocked_by_port_collision(result)
++
++
++def test_a_managed_container_without_project_id_of_another_root_blocks(
++    tmp_path, paths, monkeypatch
++):
++    repo = _repo(tmp_path)
++    first = _start(tmp_path, repo, paths)
++    conport = next(s for s in first.services if s["service"] == "conport")
++    kept = conport["ports"]["CONPORT_MCP_PORT"]
++    identity = resolve_identity_view(repo)
++    legacy = _sibling_container(
++        identity,
++        kept,
++        **{
++            "dopemux.project_id": None,
++            "dopemux.worktree_hash": None,
++            "dopemux.scope": None,
++        },
++    )
++    _patch_docker(monkeypatch, legacy)
++
++    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
++
++    _blocked_by_port_collision(result)
++
++
++def test_another_projects_container_on_a_kept_port_is_not_called_same_project(
++    tmp_path, paths, monkeypatch
++):
++    repo = _repo(tmp_path)
++    first = _start(tmp_path, repo, paths)
++    conport = next(s for s in first.services if s["service"] == "conport")
++    kept = conport["ports"]["CONPORT_MCP_PORT"]
++    identity = resolve_identity_view(repo)
++    other = _sibling_container(identity, kept, **{"dopemux.project_id": "other-proj"})
++    _patch_docker(monkeypatch, other)
++
++    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
++
++    assert result.status == "BLOCKED", result.to_dict()
++    codes = {f["code"] for f in result.blocking_findings}
++    assert "PORT_OWNED_BY_OTHER_PROJECT" in codes, result.blocking_findings
++    assert not [
++        f for f in result.blocking_findings if "same-project" in f.get("message", "")
++    ]
++
++
++def test_a_worktree_hash_without_a_scope_label_is_another_worktree(
++    tmp_path, paths, monkeypatch
++):
++    repo = _repo(tmp_path)
++    first = _start(tmp_path, repo, paths)
++    conport = next(s for s in first.services if s["service"] == "conport")
++    kept = conport["ports"]["CONPORT_MCP_PORT"]
++    identity = resolve_identity_view(repo)
++    unscoped = _sibling_container(identity, kept, **{"dopemux.scope": None})
++    _patch_docker(monkeypatch, unscoped)
++
++    result = _run("start", tmp_path, repo, paths, kept, is_free=lambda p: True)
++
++    _blocked_by_port_collision(result)

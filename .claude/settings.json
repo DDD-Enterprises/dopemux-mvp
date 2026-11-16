@@ -109,7 +109,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/run_native_hooks.sh\"",
+            "timeout": 60
           }
         ]
       }

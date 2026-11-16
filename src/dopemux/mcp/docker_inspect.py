@@ -180,6 +180,53 @@ def inspect_running_containers(
     return DockerInspectResult(available=True, containers=containers)
 
 
+def inspect_all_managed_containers(
+    *,
+    runner: Optional[Runner] = None,
+    timeout: float = 25.0,
+) -> DockerInspectResult:
+    """List every dopemux-managed container, stopped ones included (read-only).
+
+    ``docker ps -a --filter label=dopemux.managed=true``: reap must see exited
+    containers too, so a stopped sidecar does not keep a removed worktree's
+    leases alive.
+    """
+    run = runner or subprocess.run
+    if runner is None and shutil.which("docker") is None:
+        return DockerInspectResult(available=False, error="docker binary not found on PATH")
+
+    try:
+        result = run(
+            [
+                "docker",
+                "ps",
+                "-a",
+                "--filter",
+                "label=dopemux.managed=true",
+                "--format",
+                "{{json .}}",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except FileNotFoundError:
+        return DockerInspectResult(available=False, error="docker binary not found")
+    except subprocess.TimeoutExpired:
+        return DockerInspectResult(available=False, error="docker ps -a timed out")
+    except OSError as exc:
+        return DockerInspectResult(available=False, error=f"docker ps -a failed: {exc}")
+
+    if result.returncode != 0:
+        err = (result.stderr or result.stdout or "docker ps -a failed").strip()
+        return DockerInspectResult(available=False, error=err[:500])
+
+    return DockerInspectResult(
+        available=True, containers=parse_docker_ps_json_lines(result.stdout or "")
+    )
+
+
 def classify_container_ownership(
     container: DockerContainerInfo,
     *,

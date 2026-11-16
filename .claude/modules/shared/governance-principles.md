@@ -424,7 +424,7 @@ Never run destructive commands without explicit authorization:
 * force-push
 * destructive migrations
 
-Never overwrite user work silently. See also: `.claude/WORKTREE_MCP_SETUP.md` and global worktree guidance in `~/.claude/CLAUDE.md`.
+Never overwrite user work silently. See also: `docs/02-how-to/mcp-setup-other-repos.md` and global worktree guidance in `~/.claude/CLAUDE.md`.
 
 ---
 

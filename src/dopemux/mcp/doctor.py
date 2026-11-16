@@ -8,7 +8,9 @@ where labels exist. Never starts/stops containers or mutates config.
 from __future__ import annotations
 
 import json
+import shutil
 import socket
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
@@ -127,6 +129,77 @@ def _add(
     )
 
 
+_SPEC_ORIGIN_CODE = (
+    "import importlib.util as u; s = u.find_spec('dopemux'); "
+    "print(s.origin if s and s.origin else '')"
+)
+
+
+def _probe_dopemux_file(bin_path: str) -> Optional[str]:
+    """``dopemux.__file__`` as the interpreter behind the ``bin_path`` script sees it.
+
+    Reads the script's shebang and asks that interpreter (isolated mode, no
+    package import) where ``dopemux`` resolves. None when unknown.
+    """
+    try:
+        with open(bin_path, "rb") as fh:
+            first = fh.readline(1024)
+    except OSError:
+        return None
+    if not first.startswith(b"#!"):
+        return None
+    parts = first[2:].decode("utf-8", "replace").split()
+    if not parts:
+        return None
+    interpreter = parts[0]
+    if Path(interpreter).name == "env" and len(parts) > 1:
+        interpreter = shutil.which(parts[-1]) or parts[-1]
+    try:
+        proc = subprocess.run(
+            [interpreter, "-I", "-c", _SPEC_ORIGIN_CODE],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    origin = proc.stdout.strip()
+    return origin if proc.returncode == 0 and origin else None
+
+
+def _check_dopemux_bin(findings: List[Finding]) -> None:
+    """D1: launcher entries run ``${DOPEMUX_BIN:-dopemux}``; PATH's copy must be this product."""
+    bin_path = shutil.which("dopemux")
+    if not bin_path:
+        return
+    origin = _probe_dopemux_file(bin_path)
+    if not origin:
+        return
+    from .docker_runtime import product_root
+
+    try:
+        product = product_root().resolve()
+    except FileNotFoundError:
+        return
+    try:
+        Path(origin).resolve().relative_to(product)
+        return
+    except ValueError:
+        pass
+    _add(
+        findings,
+        "DOPEMUX_BIN_NOT_EDITABLE",
+        "WARN",
+        (
+            f"`dopemux` on PATH ({bin_path}) loads dopemux from {origin}, not from this "
+            f"checkout {product}; .mcp.json launcher entries would run that copy"
+        ),
+        evidence=[bin_path, origin],
+        recommendation=f"uv tool install --editable {product}",
+    )
+
+
 def _expected_container_name_for_service(
     service_name: str,
     *,
@@ -185,6 +258,86 @@ def _is_non_colliding_peer_instance(
     return True
 
 
+TENANT_SOURCE_PREFIX = "tenant_source="
+
+
+def _check_conport_tenant(
+    findings: List[Finding],
+    identity: Any,
+    envrc_values: Mapping[str, str],
+    psql: Optional[Callable[[str, str], Any]],
+) -> None:
+    """D5, read-only: which ConPort tenant a start would use (never writes, never provisions)."""
+    from . import conport_tenant as ct
+
+    if not getattr(identity, "project_id", None):
+        return
+    try:
+        creds = ct.resolve_tenant(
+            identity,
+            envrc_values=envrc_values,
+            psql=psql or ct.default_psql_runner(),
+            provision=False,
+        )
+    except ct.TenantError as exc:
+        if exc.code == ct.UNKNOWN_HISTORY:
+            _add(
+                findings,
+                "CONPORT_TENANT_UNVERIFIED",
+                "INFO",
+                f"conport tenant not determined: {exc.detail}",
+                service="conport",
+                evidence=[f"{TENANT_SOURCE_PREFIX}unverified"],
+                recommendation=(
+                    "Postgres did not answer, so the tenant is unknown. A start in this "
+                    f"state refuses conport with {ct.UNKNOWN_HISTORY} and changes nothing; "
+                    "check that dopemux-postgres-age is running and re-run the doctor."
+                ),
+            )
+            return
+        _add(
+            findings,
+            exc.code,
+            "FAIL",
+            exc.detail or exc.code,
+            service="conport",
+            recommendation=(
+                "Restore the ConPort tenant file named above from backup, or ask the operator."
+            ),
+        )
+        return
+    except (OSError, ValueError):
+        return
+    if creds is None:  # a start would provision a fresh tenant (R1: no finding)
+        return
+    if creds.source == "legacy_shared":
+        _add(
+            findings,
+            "CONPORT_LEGACY_SHARED_STORE",
+            "WARN",
+            (
+                f"conport for this project uses the shared {ct.SHARED_DB} store "
+                f"({creds.evidence}); it has no project wall yet"
+            ),
+            service="conport",
+            evidence=[f"{TENANT_SOURCE_PREFIX}legacy_shared", creds.evidence],
+            recommendation=(
+                f"No action needed now: this project keeps the shared {ct.SHARED_DB} "
+                "store; migrating its rows to a project tenant is M2."
+            ),
+        )
+        return
+    pending = " (migration gate pending)" if creds.gate_pending else ""
+    _add(
+        findings,
+        "CONPORT_TENANT_SOURCE",
+        "INFO",
+        f"conport tenant source: {creds.source}{pending}",
+        service="conport",
+        evidence=[f"{TENANT_SOURCE_PREFIX}{creds.source}{pending}"],
+    )
+
+
 def _summarize_status(findings: List[Finding]) -> tuple[str, int]:
     """Return (status, exit_code)."""
     sevs = {f.severity for f in findings}
@@ -233,11 +386,20 @@ def run_mcp_doctor(
     skip_docker: bool = False,
     skip_port_probe: bool = False,
     process_env: Optional[Mapping[str, str]] = None,
+    trust_env: bool = False,
+    check_dopemux_bin: bool = False,
+    psql: Optional[Callable[[str, str], Any]] = None,
+    check_conport_tenant: bool = False,
 ) -> DoctorReport:
     """
     Run the full read-only doctor against ``repo``.
 
     Parameters allow injection of catalog/docker/port probes for unit tests.
+    ``check_dopemux_bin`` adds ``DOPEMUX_BIN_NOT_EDITABLE`` (probes PATH's
+    ``dopemux`` with a subprocess); only the ``mcp doctor`` command asks for it.
+    ``check_conport_tenant`` (or an injected ``psql``) reports the ConPort
+    tenant a start would use, read-only; ``CONPORT_LEGACY_SHARED_STORE`` is a
+    WARN. The lifecycle preflight leaves it off and records the finding itself.
     """
     repo_path = Path(repo).expanduser().resolve()
     repo_arg = str(repo)
@@ -320,7 +482,7 @@ def run_mcp_doctor(
     doctor_env = merge_envrc_into_environ(base_env, envrc, override=True)
 
     # --- Identity ---
-    identity = resolve_identity_view(repo_path, envrc_values=doctor_env)
+    identity = resolve_identity_view(repo_path, envrc_values=doctor_env, trust_env=trust_env)
     if identity.identity_confidence in {"HIGH", "MEDIUM"} and identity.project_id:
         _add(
             findings,
@@ -395,6 +557,8 @@ def run_mcp_doctor(
     )
 
     # --- Transport validation ---
+    from .fleet_catalog import expected_client_type  # lazy: pulls in the CLI module
+
     for svc in desired:
         cat_t = (svc.catalog_transport or "unknown").lower()
         mcp_t = (
@@ -423,6 +587,8 @@ def run_mcp_doctor(
             continue
         if mcp_t is None:
             continue
+        # A launcher entry is stdio in .mcp.json whatever the sidecar speaks.
+        cat_t = expected_client_type({**catalog["servers"][svc.name], "transport": cat_t})
         if mcp_t == cat_t:
             _add(
                 findings,
@@ -691,6 +857,26 @@ def run_mcp_doctor(
                             )
                 except Exception:  # noqa: BLE001
                     pass
+
+    # --- ConPort tenant (D5; opt-in like the dopemux bin check, read-only) ---
+    if (check_conport_tenant or psql is not None) and (
+        "conport" in (mcp_servers or {}) or any(d.name == "conport" for d in desired)
+    ):
+        if skip_docker:  # the check is a `docker exec ... psql`
+            _add(
+                findings,
+                "CONPORT_TENANT_UNVERIFIED",
+                "INFO",
+                "conport tenant not checked: docker was skipped",
+                service="conport",
+                evidence=[f"{TENANT_SOURCE_PREFIX}unverified (docker skipped)"],
+                recommendation=(
+                    "Run `dopemux mcp doctor` without --skip-docker to see which ConPort "
+                    "tenant a start would use."
+                ),
+            )
+        else:
+            _check_conport_tenant(findings, identity, envrc.values, psql)
 
     # --- Compose lifecycle ---
     # Prefer explicit compose_path only when it belongs to the target repo.
@@ -1294,6 +1480,10 @@ def run_mcp_doctor(
                     service="task-orchestrator",
                 )
 
+    # --- dopemux on PATH (D1; opt-in, host-dependent) ---
+    if check_dopemux_bin:
+        _check_dopemux_bin(findings)
+
     # --- Status summary findings ---
     status, exit_code = _summarize_status(findings)
     if status == "PASS":
@@ -1377,6 +1567,18 @@ def format_human_summary(
     """
     repo_name = Path(report.repo_arg).name or report.repo_arg
     lines = [f"MCP Doctor for {repo_name}: {report.status}"]
+    for finding in report.findings:
+        tenant = next(
+            (
+                e[len(TENANT_SOURCE_PREFIX) :]
+                for e in finding.get("evidence") or []
+                if str(e).startswith(TENANT_SOURCE_PREFIX)
+            ),
+            None,
+        )
+        if tenant:
+            lines.append(f"ConPort tenant: {tenant}")
+            break
     # Prioritize FAIL then WARN then UNKNOWN
     priority = {"FAIL": 0, "WARN": 1, "UNKNOWN": 2, "INFO": 3}
     sorted_findings = sorted(

@@ -1,0 +1,324 @@
+diff --git a/claudedocs/mcp-just-works-design-2026-11-05.md b/claudedocs/mcp-just-works-design-2026-11-05.md
+index 610ec9811..5a6da45c2 100644
+--- a/claudedocs/mcp-just-works-design-2026-11-05.md
++++ b/claudedocs/mcp-just-works-design-2026-11-05.md
+@@ -310,3 +310,4 @@ Appended after the final whole-branch review of Milestone 1; the approved text a
+ - **Every candidate re-inspects its pair under the lock (Task B6, Codex connector review of `2e08a3b7c`).** The read-only `docker ps -a` of round 2 (`dopemux.managed=true`, `dopemux.scope=worktree` as the planner groups, the pair's project id and worktree hash, bounded like every docker call of the run; no time left, a failed or timed-out call, or an exception means unknown) now runs for container candidates too, after the eligibility re-check and before `_stop_and_remove`. A listed container the plan did not list (for example a sidecar a CLI `restart` recreated between plan and lock, which keeps `last_detach`, so the idle re-check still passes) makes the plan outdated: the candidate is `stale`, with no stop, no state change and the runtime dir kept, and the next run plans it afresh. Planned containers that are already gone are fine: the reap proceeds as before, since nothing else is alive. This supersedes the round-2 bullet's limit of the inspection to state-only and dir-only candidates; one inspection per candidate.
+ - **Reap matches leases by the lease registry's identity rule (Task B7-1, Codex review of `2e08a3b7c`).** `allocate_ports()` (`init`, the launcher) writes the project directory's name as a lease's `project_id`, while a reap candidate carries the hashed `ProjectIdentity.project_id`, so reap's exact `project_id` comparison kept a reaped worktree's leases active and hid them from state-only recovery. `_release_leases` and `_has_active_leases` now take a worktree-scope lease of the same worktree root and decide with `PortLeaseRegistry.identity_matches` (the allocator's and the lifecycle's rule: the same worktree root decides, a different `worktree_hash` excludes). `ReapCandidate` carries the pair's `project_root` (from the registry entry, or the marker for a dir-only candidate). The scope, orchestrator and `_owned_by` rules are unchanged.
+ - **Envrc ports are re-leased on start (Task B7-2, Codex review of `71866e4d1`).** With `allocate` (start, restart, and the launcher's cold start), `_resolve_ports` trusts an env/envrc port of a leased service only when this identity holds the active lease for that variable on that very port. Otherwise the value is a preference for the locked allocation (`allocate_ports` with `existing_envrc`): an existing lease of this identity for the variable wins; with none (after `init` then `stop`) the preferred port is leased when no other lease holds it and the socket is free, a port this worktree's own running sidecar publishes counting as free, else a fresh port is leased and replaces the envrc's. `allocate=False` callers (status, doctor, stop) are unchanged. The lock is still `registry_lock`, held only for the allocate-and-save step. As a consequence the start's `LEASE_ENVRC_MISMATCH` check can no longer fire for leased services (the lease wins); `doctor` still reports a mismatching envrc.
++- **Config repair replaces only what dopemux rendered (cycle 4, Codex audit F1 at 43294e99b).** `_url_is_repairable` accepts a templated URL only in the exact shape dopemux renders (literal local host, one of its own port variables — `CONPORT_MCP_PORT`, `DOPE_MEMORY_PORT`, `TASK_ORCHESTRATOR_HTTP_PORT`, or any name in the catalog's templates — as the only placeholder, in the port position); every other template is operator-authored and preserved, and environment values are never read, so a port variable set to `3005@remote.example` cannot make an operator endpoint look local. Hand-written URL entries in any other shape (another variable name such as `${PORT:-3005}`, a host or path placeholder, a non-numeric default) are therefore preserved, not repaired; an entry identical to a catalog template, such as the how-to's manual recipe, is dopemux's own shape and `repair-config --apply` still turns it into a launcher entry.
+diff --git a/src/dopemux/mcp/mcp_json.py b/src/dopemux/mcp/mcp_json.py
+index 4512aa0c6..e2e903ee9 100644
+--- a/src/dopemux/mcp/mcp_json.py
++++ b/src/dopemux/mcp/mcp_json.py
+@@ -118,16 +118,17 @@ _LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1"})
+ _PLACEHOLDER = re.compile(r"\$\{[^}:$]*(?::-([^}$]*))?\}")
+ _LITERAL_SCHEME = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://")
+ 
+-
+-def _neutralize_placeholders(url: str) -> str:
+-    """Replace ``${NAME:-default}`` with ``default`` and bare ``${NAME}`` with ``placeholder``.
+-
+-    The literal token is never a local host, so an unresolved placeholder can
+-    never make a URL look provably local.
+-    """
+-    return _PLACEHOLDER.sub(
+-        lambda m: m.group(1) if m.group(1) is not None else "placeholder", url
+-    )
++#: The only port variables dopemux has rendered into a ``url_template``.
++_DOPEMUX_PORT_VARS = frozenset(
++    {"CONPORT_MCP_PORT", "DOPE_MEMORY_PORT", "TASK_ORCHESTRATOR_HTTP_PORT"}
++)
++_PLACEHOLDER_NAME = re.compile(r"\$\{([A-Z][A-Z0-9_]*)")
++#: Exactly the shape dopemux renders: literal http(s) scheme, literal local host,
++#: one port variable (numeric or absent default), then a literal remainder.
++_SELF_RENDERED = re.compile(
++    r"https?://(?:localhost|127\.0\.0\.1)"
++    r":\$\{([A-Z][A-Z0-9_]*)(?::-[0-9]+)?\}(?:[/?#][^${}\s]*)?"
++)
+ 
+ 
+ def _placeholder_in_userinfo_or_host(url: str) -> bool:
+@@ -171,30 +172,59 @@ def _placeholder_in_userinfo_or_host(url: str) -> bool:
+     return "\x00" in host
+ 
+ 
+-def _url_is_repairable(url: Optional[str]) -> bool:
+-    """True when the catalog may replace ``url``: missing, or provably local with no credentials.
++def _catalog_port_vars(catalog: Mapping[str, Any]) -> frozenset[str]:
++    """Variable names used in the catalog's ``url``/``url_template`` values."""
++    names: set[str] = set()
++    for spec in (catalog.get("servers") or {}).values():
++        if not isinstance(spec, Mapping):
++            continue
++        for key in ("url", "url_template"):
++            value = spec.get(key)
++            if isinstance(value, str):
++                names.update(_PLACEHOLDER_NAME.findall(value))
++    return frozenset(names)
++
++
++def _self_rendered_template(url: str, port_vars: frozenset[str]) -> bool:
++    """True when ``url`` has exactly the shape dopemux renders into a ``.mcp.json``.
+ 
+-    Port, path and query placeholders are neutralized and the same host/userinfo
+-    rules as for literal URLs then apply; a placeholder in the userinfo or host
+-    position is never repairable, whatever its default.
++    That is a literal ``http(s)://``, a literal ``localhost`` or ``127.0.0.1``,
++    and one port variable named in ``port_vars`` as the only placeholder, with a
++    numeric or absent default, then a literal remainder. A variable's value is
++    unknown at repair time, so only this provenance is judged, never the value.
++    """
++    match = _SELF_RENDERED.fullmatch(url)
++    return match is not None and match.group(1) in port_vars
++
++
++def _url_is_repairable(
++    url: Optional[str], port_vars: Optional[frozenset[str]] = None
++) -> bool:
++    """True when the catalog may replace ``url``.
++
++    That is when it is missing; or a literal URL on localhost/127.0.0.1 with no
++    credentials; or a templated URL of exactly the shape dopemux renders itself
++    (literal http(s) scheme, literal local host, one of dopemux's own port
++    variables as the only placeholder in the port position, numeric or absent
++    default, literal remainder). Any other template is operator-authored and
++    preserved. Environment values are never inspected: a variable's value is
++    unknown at repair time, so only the template's provenance is judged.
+     """
+     if not url or not isinstance(url, str):
+         return True  # missing → can set template
+-    templated = "${" in url
+-    if templated and _placeholder_in_userinfo_or_host(url):
+-        return False
+-    candidate = _neutralize_placeholders(url) if templated else url
++    if "${" in url:
++        return not _placeholder_in_userinfo_or_host(url) and _self_rendered_template(
++            url, port_vars or _DOPEMUX_PORT_VARS
++        )
+     try:
+-        parsed = urlparse(candidate)
++        parsed = urlparse(url)
+         host = (parsed.hostname or "").lower()
+     except ValueError:
+         return False
+     if any(ch in parsed.netloc for ch in "${}"):
+-        return False  # unresolved or malformed placeholder: not provably local
++        return False  # malformed placeholder characters: not provably local
+     if host and host not in _LOCAL_HOSTS:
+         return False
+-    if templated and not host:
+-        return False  # e.g. a fully templated URL: nothing proves it is local
+     # userinfo credentials → never rewrite
+     if parsed.username or parsed.password or "@" in parsed.netloc:
+         return False
+@@ -283,18 +313,24 @@ def plan_mcp_json_repairs(
+             )
+             continue
+ 
+-        # Non-localhost / credential URLs: preserve URL, only repair type if safe
++        # Operator-authored or non-local URL: preserve the URL, only repair type if safe
+         current_url = current.get("url")
+-        url_ok = _url_is_repairable(current_url if isinstance(current_url, str) else None)
++        url_ok = _url_is_repairable(
++            current_url if isinstance(current_url, str) else None,
++            _DOPEMUX_PORT_VARS | _catalog_port_vars(catalog),
++        )
+ 
+         is_launcher = _catalog_is_launcher(catalog, name)
+         if is_launcher and current_url and not url_ok:
+-            # An operator-pointed remote/credential URL is not ours to replace with a launcher.
++            # An operator-authored or non-local URL is not ours to replace.
+             preserved.append(
+                 {
+                     "path": mcp_json_path,
+                     "service": name,
+-                    "reason": "non-localhost or credential URL preserved",
++                    "reason": (
++                        "operator URL preserved "
++                        "(not a literal local URL and not a dopemux-rendered template)"
++                    ),
+                 }
+             )
+             continue
+@@ -311,12 +347,15 @@ def plan_mcp_json_repairs(
+             new_entry["url"] = desired["url"]
+             change_reasons.append("URL_MISMATCH")
+         elif not url_ok and desired.get("url") and current.get("url") != desired.get("url"):
+-            # Explicitly do not change non-local URLs
++            # Explicitly do not change operator-authored or non-local URLs
+             preserved.append(
+                 {
+                     "path": mcp_json_path,
+                     "service": name,
+-                    "reason": "non-localhost or credential URL preserved",
++                    "reason": (
++                        "operator URL preserved "
++                        "(not a literal local URL and not a dopemux-rendered template)"
++                    ),
+                 }
+             )
+ 
+diff --git a/tests/unit/test_mcp_config_repair.py b/tests/unit/test_mcp_config_repair.py
+index 2a3241f5a..e3706de2d 100644
+--- a/tests/unit/test_mcp_config_repair.py
++++ b/tests/unit/test_mcp_config_repair.py
+@@ -351,9 +351,13 @@ def test_json_schema_shape(tmp_path: Path):
+         ("http://127.0.0.1:7890/mcp", True),
+         ("https://remote.example/sse", False),
+         ("http://user:secret@localhost:3005/sse", False),
+-        # Templated URLs: neutralize the placeholders, then apply the host rules.
+-        ("http://localhost:${CONPORT_PORT:-3005}/sse", True),
+-        ("http://127.0.0.1:${PORT}/mcp", True),
++        # A template is repairable only in the exact shape dopemux renders. The
++        # variable's value is unknown at repair time (PORT=3005@remote.example
++        # expands to host remote.example), so a generic or unknown port variable
++        # never proves the endpoint local.
++        ("http://localhost:${PORT:-3005}/sse", False),
++        ("http://localhost:${CONPORT_PORT:-3005}/sse", False),
++        ("http://127.0.0.1:${PORT}/mcp", False),
+         # A host/userinfo placeholder is operator-selected whatever its default.
+         ("http://${CONPORT_HOST:-localhost}:3005/sse", False),
+         ("http://${HOST:-127.0.0.1}:3005/sse", False),
+@@ -366,8 +370,7 @@ def test_json_schema_shape(tmp_path: Path):
+         ("${CONPORT_URL}", False),
+         ("http://${REMOTE_HOST:-remote.example}:3005/sse", False),
+         ("http://${USER_INFO:-me@}localhost:3005/sse", False),
+-        # A placeholder only in the port position cannot change the (local) host.
+-        ("http://localhost:${PORT-3005}/sse", True),
++        ("http://localhost:${PORT-3005}/sse", False),
+         ("http://${HOST-localhost}:3005/sse", False),
+         ("http://localhost:${A${B}}/sse", False),
+         ("http://localhost:${UNCLOSED/sse", False),
+@@ -387,14 +390,25 @@ def test_json_schema_shape(tmp_path: Path):
+         ("http${X:-}://localhost:3005/sse", False),
+         ("http:${X:-}//localhost:3005/sse", False),
+         ("http://localhost:3005/sse?next=http://remote.example", True),
+-        ("http://localhost:${PORT:-3005}/sse?u=ws://x", True),
+-        # Placeholders only in the port, path or query stay repairable.
+-        ("http://localhost:${PORT:-3005}/${P:-a/b}", True),
+-        ("http://localhost:3005/sse?x=${Q:-a/b}", True),
++        # Generic port variables: an unknown value, so not provably ours (cycle 4).
++        ("http://localhost:${PORT:-3005}/sse?u=ws://x", False),
++        ("http://localhost:${PORT:-3005}/${P:-a/b}", False),
++        # No dopemux port variable at all: operator-authored.
++        ("http://localhost:3005/sse?x=${Q:-a/b}", False),
+         # Every URL the catalog itself renders must stay repairable.
+         ("http://localhost:${CONPORT_MCP_PORT:-3005}/sse", True),
+         ("http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp", True),
+         ("http://127.0.0.1:${TASK_ORCHESTRATOR_HTTP_PORT:-7890}/mcp", True),
++        ("http://localhost:${CONPORT_MCP_PORT}/sse", True),
++        ("https://127.0.0.1:${DOPE_MEMORY_PORT:-3020}/mcp", True),
++        ("http://localhost:${CONPORT_MCP_PORT:-3005}/sse?x=1", True),
++        # Anything else shaped like a dopemux template is operator-authored.
++        ("http://localhost:${CONPORT_MCP_PORT:-abc}/sse", False),
++        ("http://localhost:${CONPORT_MCP_PORT:-3005}/${P:-x}", False),
++        ("http://localhost:${CONPORT_MCP_PORT:-3005}${X:-}/sse", False),
++        ("http://remote.example:${CONPORT_MCP_PORT:-3005}/sse", False),
++        ("http://user@localhost:${CONPORT_MCP_PORT:-3005}/sse", False),
++        ("http://localhost:${CONPORT_MCP_PORT:-3005}@remote.example/sse", False),
+     ],
+ )
+ def test_url_is_repairable_templated_and_literal(url: Any, expected: bool) -> None:
+@@ -430,6 +444,87 @@ def test_placeholder_in_userinfo_or_host_masks_before_splitting(
+     assert mj._placeholder_in_userinfo_or_host(url) is expected
+ 
+ 
++def test_catalog_port_vars_from_default_catalog() -> None:
++    from dopemux.mcp import fleet_catalog
++
++    repo_root = Path(__file__).resolve().parents[2]
++    catalog = fleet_catalog.load_root_catalog(repo_root)
++    assert mj._catalog_port_vars(catalog) >= {
++        "CONPORT_MCP_PORT",
++        "DOPE_MEMORY_PORT",
++        "TASK_ORCHESTRATOR_HTTP_PORT",
++    }
++
++
++def test_catalog_port_vars_reads_names_only_from_url_values() -> None:
++    catalog = {
++        "servers": {
++            "a": {"url_template": "http://localhost:${A_PORT:-1}/x", "port_var": "B"},
++            "b": {"url": "http://localhost:${C_PORT}/y"},
++            "c": {"transport": "sse"},
++        }
++    }
++    assert mj._catalog_port_vars(catalog) == {"A_PORT", "C_PORT"}
++
++
++def test_self_rendered_template_rejects_generic_port_variable() -> None:
++    url = "http://localhost:${PORT:-3005}/sse"
++    assert mj._self_rendered_template(url, mj._DOPEMUX_PORT_VARS) is False
++    assert mj._self_rendered_template(url, frozenset({"PORT"})) is True
++    ours = "http://localhost:${CONPORT_MCP_PORT:-3005}/sse"
++    assert mj._self_rendered_template(ours, mj._DOPEMUX_PORT_VARS) is True
++
++
++def _launcher_catalog() -> Dict[str, Any]:
++    catalog = _catalog()
++    catalog["servers"]["conport"]["client"] = "launcher"
++    return catalog
++
++
++def _launcher_entry(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
++    return {"type": "stdio", "command": "dopemux", "args": ["mcp", "launch", name]}
++
++
++def test_planner_preserves_generic_port_template_and_repairs_dopemux_template() -> None:
++    catalog = _launcher_catalog()
++    operator = {"type": "sse", "url": "http://localhost:${PORT:-3005}/sse"}
++    merged, planned, preserved = mj.plan_mcp_json_repairs(
++        {"conport": operator},
++        catalog,
++        mcp_json_path="x/.mcp.json",
++        include_defaults=False,
++        render_fn=_launcher_entry,
++    )
++    assert merged["conport"] == operator
++    assert planned == []
++    assert preserved == [
++        {
++            "path": "x/.mcp.json",
++            "service": "conport",
++            "reason": (
++                "operator URL preserved "
++                "(not a literal local URL and not a dopemux-rendered template)"
++            ),
++        }
++    ]
++
++    rendered = {
++        "type": "sse",
++        "url": "http://localhost:${CONPORT_MCP_PORT:-3005}/sse",
++    }
++    merged, planned, preserved = mj.plan_mcp_json_repairs(
++        {"conport": rendered},
++        catalog,
++        mcp_json_path="x/.mcp.json",
++        include_defaults=False,
++        render_fn=_launcher_entry,
++    )
++    assert merged["conport"]["type"] == "stdio"
++    assert "url" not in merged["conport"]
++    assert [c["service"] for c in planned] == ["conport"]
++    assert preserved == []
++
++
+ def test_templated_remote_launcher_url_is_preserved_not_replaced(tmp_path: Path):
+     repo = tmp_path / "proj"
+     repo.mkdir()
+@@ -443,8 +538,11 @@ def test_templated_remote_launcher_url_is_preserved_not_replaced(tmp_path: Path)
+         c.get("service") == "conport" and c.get("reason") == "URL_MISMATCH"
+         for c in plan.planned_changes
+     )
++    reason = (
++        "operator URL preserved "
++        "(not a literal local URL and not a dopemux-rendered template)"
++    )
+     assert any(
+-        p.get("service") == "conport"
+-        and p.get("reason") == "non-localhost or credential URL preserved"
++        p.get("service") == "conport" and p.get("reason") == reason
+         for p in plan.preserved_entries
+     )

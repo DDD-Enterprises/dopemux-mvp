@@ -23,7 +23,7 @@ def catalog() -> dict:
 def test_doctor_profile_core_code_json(catalog, monkeypatch):
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
     monkeypatch.setattr(
-        mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(REPO_ROOT)
+        mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(REPO_ROOT)
     )
     result = CliRunner().invoke(
         mcp_commands.mcp_doctor_cmd,
@@ -43,7 +43,7 @@ def test_doctor_profile_core_code_json(catalog, monkeypatch):
 def test_doctor_profile_ui_audit_human(catalog, monkeypatch):
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
     monkeypatch.setattr(
-        mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(REPO_ROOT)
+        mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(REPO_ROOT)
     )
     result = CliRunner().invoke(
         mcp_commands.mcp_doctor_cmd,
@@ -58,7 +58,7 @@ def test_doctor_profile_ui_audit_human(catalog, monkeypatch):
 def test_doctor_unknown_profile_fails(catalog, monkeypatch):
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
     monkeypatch.setattr(
-        mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(REPO_ROOT)
+        mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(REPO_ROOT)
     )
     result = CliRunner().invoke(
         mcp_commands.mcp_doctor_cmd,
@@ -71,7 +71,7 @@ def test_doctor_unknown_profile_fails(catalog, monkeypatch):
 def test_doctor_rejects_implicit_all(catalog, monkeypatch):
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
     monkeypatch.setattr(
-        mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(REPO_ROOT)
+        mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(REPO_ROOT)
     )
     result = CliRunner().invoke(
         mcp_commands.mcp_doctor_cmd,
@@ -84,7 +84,7 @@ def test_doctor_rejects_implicit_all(catalog, monkeypatch):
 def test_profile_list_and_show(catalog, monkeypatch):
     monkeypatch.setattr(mcp_commands, "_load_catalog", lambda: catalog)
     monkeypatch.setattr(
-        mcp_commands, "get_repo_root", lambda fallback_cwd=False: str(REPO_ROOT)
+        mcp_commands, "get_repo_root", lambda fallback_cwd=False, **_kw: str(REPO_ROOT)
     )
     listed = CliRunner().invoke(mcp_commands.mcp_profile_list_cmd, [])
     assert listed.exit_code == 0, listed.output

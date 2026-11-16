@@ -1,0 +1,7 @@
+claudedocs/design/ui-dashboard-audit-2026-10-30.md
+ui-dashboard/src/App.test.tsx
+ui-dashboard/src/App.tsx
+ui-dashboard/src/cognitiveReading.ts
+ui-dashboard/src/components/TaskSequencer.tsx
+ui-dashboard/src/components/__tests__/Accessibility.test.tsx
+ui-dashboard/src/time.test.ts
