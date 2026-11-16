@@ -1,0 +1,80 @@
+diff --git a/tests/conftest.py b/tests/conftest.py
+index a7f1e070f..5af53a463 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -200,6 +200,25 @@ def _no_real_keychain(monkeypatch):
+     monkeypatch.setattr(keychain, "SECURITY_BIN", "/nonexistent/security")
+ 
+ 
++@pytest.fixture(autouse=True)
++def _reset_sse_starlette_shutdown_latch():
++    """Clear sse_starlette's process-wide "server is exiting" flag before each test.
++
++    ``sse_starlette.sse.AppStatus.should_exit`` is a class attribute that a
++    background watcher sets once it sees a uvicorn server shutting down, and
++    nothing ever clears it. While it is set, every ``EventSourceResponse`` ends
++    at once, and both MCP HTTP transports answer through one. The runner-memory
++    MCP tests start and stop a uvicorn server per test in the same xdist worker
++    (``serve()`` in tests/unit/runner_memory_2a_r2_w02/test_mcp_surfaces.py), so
++    when one shutdown set the flag, every later MCP test in that worker waited
++    for its ``initialize`` reply forever. That was the CI "Unit Tests" hang.
++    Does nothing until sse_starlette has been imported.
++    """
++    sse = sys.modules.get("sse_starlette.sse")
++    if sse is not None:
++        sse.AppStatus.should_exit = False
++
++
+ def pytest_collection_modifyitems(config, items):
+     """Skip @pytest.mark.database tests unless explicitly opted in.
+ 
+diff --git a/tests/unit/test_rte_routing_policy_choice_consistency.py b/tests/unit/test_rte_routing_policy_choice_consistency.py
+index cb70e7525..0543f6299 100644
+--- a/tests/unit/test_rte_routing_policy_choice_consistency.py
++++ b/tests/unit/test_rte_routing_policy_choice_consistency.py
+@@ -56,20 +56,42 @@ def test_rte_wizard_param_object_shares_the_same_routing_policy_choices() -> Non
+     assert list(routing_param.type.choices) == list(ROUTING_POLICY_CHOICES)
+ 
+ 
+-def test_rte_wizard_accepts_every_canonical_routing_policy_value() -> None:
++def test_rte_wizard_accepts_every_canonical_routing_policy_value(monkeypatch) -> None:
+     """Cross-check the param-object inspection above against real argument
+     parsing: every canonical policy must clear Click's Choice validator for
+-    `rte wizard` (whatever happens after parsing -- e.g. a missing
+-    `questionary` dependency -- is out of scope here)."""
++    `rte wizard` and reach the wizard unchanged.
++
++    The wizard itself is replaced with a recorder. Running the real one did a
++    full prescan of the checkout per policy (a repo walk, an AST pass and three
++    full-history `git log` calls) and wrote run directories into the checkout:
++    502 s of the CI "Unit Tests" job on its own, for a test about parsing."""
++    import dopemux.ux.wizard as wizard_package
++
++    received: list[str] = []
++
++    class RecordingWizard:
++        def __init__(self, *, routing_policy: str, **_: object) -> None:
++            received.append(routing_policy)
++
++        def run(self) -> None:
++            return None
++
++    monkeypatch.setattr(wizard_package, "WizardRunner", RecordingWizard)
++
+     runner = CliRunner()
+     for policy in ROUTING_POLICY_CHOICES:
+         result = runner.invoke(
+             dopemux_cli.cli, ["rte", "wizard", "--routing-policy", policy]
+         )
++        assert result.exit_code == 0, (
++            f"{policy} rejected by `rte wizard`: {result.output}"
++        )
+         assert "Invalid value for '--routing-policy'" not in result.output, (
+             f"{policy} rejected by `rte wizard`: {result.output}"
+         )
+ 
++    assert received == list(ROUTING_POLICY_CHOICES)
++
+ 
+ def test_dead_truth_command_now_accepts_the_full_canonical_choice_set() -> None:
+     """Before F-43, `dopemux truth --routing-policy openrouter` was REJECTED
