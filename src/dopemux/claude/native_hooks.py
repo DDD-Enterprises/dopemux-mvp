@@ -81,7 +81,7 @@ except ImportError:
 try:
     from dopemux.claude.dispatch_gate import check as _desk_gate_check
 except ImportError:
-    def _desk_gate_check(_root, _by, task=None): return None  # type: ignore[misc]
+    def _desk_gate_check(_r, _b, task=None): return None  # type: ignore[misc]
 
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
@@ -400,17 +400,16 @@ class NativeHookAdapter:
             task = os.environ.get("DISPATCH_DESK_TASK") or None
             result = _desk_gate_check(self.project_root, "native-hook", task)
             state = getattr(result, "state", None)
-            message = getattr(result, "message", "") or ""
             if state == "UNKNOWN":
                 return "Dispatch desk gate state is UNKNOWN; work is allowed."
             if state == "PAUSE_REQUESTED":
-                reason = "the operator requested a pause on the Dispatch desk"
+                reason = "the operator requested a pause on the Dispatch desk."
             elif state == "UNAPPROVED":
-                reason = "no operator approval recorded on the Dispatch desk"
+                reason = "no operator approval recorded on the Dispatch desk."
             else:
                 return None
             return (
-                f"[DISPATCH DESK ADVISORY] {reason}. Gate says: {message}\n"
+                f"[DISPATCH DESK ADVISORY] {reason}\n"
                 "Stop, change nothing further, and report to the operator."
             )
         except Exception:
