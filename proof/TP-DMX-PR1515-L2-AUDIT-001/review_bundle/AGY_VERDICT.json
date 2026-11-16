@@ -1,0 +1,23 @@
+{
+  "status": "ok",
+  "verdict": "PASS",
+  "findings": [],
+  "risks": [
+    "Candidate test suite was not executed within this embedded audit session because tools and code execution are disabled by audit policy; verification of runtime test execution relies on CI for head SHA 7e1b129347efa21540bca4feacb3aa8120b4487f."
+  ],
+  "rationale": "Audited PR #1515 in DDD-Enterprises/dopemux-mvp comparing base SHA 589bb0519424b84338ca2fcb7ae68f8607ef8b74 to head SHA 7e1b129347efa21540bca4feacb3aa8120b4487f. In ui-dashboard/src/App.tsx, snapshotSentForecastRef.current was previously reset to false inside the GET useEffect rather than synchronously in handleRetry alongside liveReadingSeenRef.current. If a WebSocket state_update message carrying predicted_load_15min (including null) arrived after the Retry click handler ran but before the resulting GET useEffect executed, the useEffect reset snapshotSentForecastRef.current back to false and allowed a late-resolving GET forecast to overwrite the newer WebSocket snapshot state. Moving snapshotSentForecastRef.current = false into handleRetry (while relying on useRef(false) for initial mount) aligns its lifecycle with liveReadingSeenRef.current and closes this race condition. ui-dashboard/src/App.test.tsx adds a targeted regression test reproducing a state_update with predicted_load_15min: null between the Retry click and GET effect execution and asserting that a subsequent forecastGet(0.5) resolution does not overwrite the 'unknown' forecast state.",
+  "inspected_paths": [
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/App.test.tsx"
+  ],
+  "evidence_refs": [
+    "repo:DDD-Enterprises/dopemux-mvp#1515",
+    "base_sha:589bb0519424b84338ca2fcb7ae68f8607ef8b74",
+    "head_sha:7e1b129347efa21540bca4feacb3aa8120b4487f",
+    "ui-dashboard/src/App.tsx:105-115",
+    "ui-dashboard/src/App.tsx:185-190",
+    "ui-dashboard/src/App.test.tsx:502-529",
+    "instruction_like_scan_summary:detected=false,match_count=0"
+  ],
+  "validation_status": "NOT_RUN"
+}
