@@ -32,22 +32,29 @@ class GateResult:
     message: str = ""
 
 
-def resolve_project(root: "str | Path") -> str:
-    """Return the MAIN checkout folder name, even from a linked worktree."""
+def _clean(text: str) -> str:
+    """First line only, printable characters only, at most 200 chars."""
+    lines = (text or "").strip().splitlines()
+    first = lines[0] if lines else ""
+    return "".join(c for c in first if c.isprintable()).strip()[:200]
+
+
+def resolve_project(root: "str | Path", timeout: float = 2.0) -> Optional[str]:
+    """Return the MAIN checkout folder name, or None when git cannot say."""
     try:
         proc = subprocess.run(
             ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
             cwd=str(root),
             capture_output=True,
             text=True,
-            timeout=5,
+            timeout=timeout,
         )
         common = proc.stdout.strip()
         if proc.returncode == 0 and common:
-            return Path(common).parent.name or Path(root).resolve().name
+            return Path(common).parent.name or None
     except (OSError, subprocess.SubprocessError):
         pass
-    return Path(root).resolve().name
+    return None
 
 
 def resolve_gate() -> Optional[Path]:
@@ -72,20 +79,23 @@ def check(
         gate = resolve_gate()
         if gate is None:
             return GateResult(NOT_INSTALLED)
+        project = resolve_project(root, timeout)
+        if project is None:
+            return GateResult(UNKNOWN, "project key unresolved")
         argv = [
             sys.executable or "python3",
             "-I",
             str(gate),
             "check",
             "--project",
-            resolve_project(root),
+            project,
         ]
         if task:
             argv += ["--task", task]
         argv += ["--by", by]
         run_kw = {"capture_output": True, "text": True, "timeout": timeout}
         proc = subprocess.run(argv, **run_kw)
-        message = (proc.stdout or proc.stderr or "").strip()
+        message = _clean(proc.stdout or proc.stderr or "")
         return GateResult(_EXIT_STATES.get(proc.returncode, UNKNOWN), message)
     except subprocess.TimeoutExpired:
         return GateResult(UNKNOWN, "gate timed out")
