@@ -1,0 +1,215 @@
+{
+  "id": "TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001",
+  "project": "dopemux-mvp",
+  "target": "Risk lane L2 (runtime behaviour change in the MCP lifecycle, launcher and stdio proxy; independent audit required before merge). Close the four follow-ups that MACRO-DMX-MCP-JUST-WORKS-M1-001 (PR #1503, merged to main as 365f70ce2edc907d14356d82d2843104dbdaa434) left open, each with a test that fails on the base and passes after the fix: (A) `dopemux mcp status` reports the ports this worktree's active leases hold instead of stale envrc ports; (B) `dopemux mcp start --dry-run` and `restart --dry-run` write nothing to the port lease registry; (C) an image build that outlives DOPEMUX_MCP_BUILD_TIMEOUT_SECS is terminated before its PID is replaced, so reconnects cannot stack concurrent builds, and the reaper keeps protecting the runtime dir while that build is alive; (D) when a runner cancels an in-flight tool call, the stdio proxy forwards the cancellation to the backend request. No other behaviour changes.",
+  "invariants": [
+    "Base is origin/main at 365f70ce2edc907d14356d82d2843104dbdaa434. Work only in the worktree .worktrees/mcp-just-works-m1-followups on branch fix/mcp-just-works-m1-followups. Never edit, commit in, pull into or stash in the main checkout /Users/hue/code/dopemux-mvp (it holds other sessions' uncommitted work).",
+    "Edit only paths in commit.allowlist. A defect or required change outside it is recorded in PROOF.json residual_risks and reported as NEEDS_SUPERVISOR; it is not edited.",
+    "Sealed paths, never edited: docker/mcp-servers-source/conport/ and scripts/migration/provision_conport_project_db.sh.",
+    "Tests are hermetic: temporary lease/runtime registries, fake clocks, fake process tables and in-memory MCP sessions. No test or validation step may start, stop or remove a real container, signal a real process it did not spawn itself, or read or write ~/.dopemux.",
+    "Never run on the host: `dopemux mcp reap --apply`, `dopemux mcp switch-project`, `docker stop`, `docker rm`, `docker compose down`, or any command that stops another project's or worktree's containers. The acceptance leftovers on this host (containers dopemux-*-55ab-*, *-570c-*, *-d79c-*, accept-m1-t4, tenant-probe-m1 and the kill switch ~/.dopemux/mcp/runtime/reap.disabled) belong to the owner and are out of scope.",
+    "(A) is read-only: status, doctor and stop must not allocate, release or save leases and must not create the lease registry file. With no active lease of this identity for a variable, the existing envrc value is still returned.",
+    "(B) A dry run must leave the lease registry byte-identical, and absent if it was absent. The plan a dry run prints must still show the ports a real start would use, computed without persisting. Non-dry start/restart behaviour, including cross-service collision repair, is unchanged.",
+    "(C) Never signal a PID whose identity is unverified. The build pid file must carry enough to prove the live process is the build this launcher spawned (for example its process start time or session id recorded at spawn); on mismatch, unreadable data or a pid file in the old one-line format, treat it as stale and replace it without sending any signal. Termination targets only the build's own session/process group (builds are spawned with start_new_session=True), SIGTERM first, a bounded wait, then SIGKILL.",
+    "(C) A build younger than the budget still yields LAUNCH_IMAGE_BUILDING with no second build. launcher.py and reap.py must agree on when a build counts as live; reap.py keeps its own copy of the rule (it does not import the launcher), so both copies change together and a test pins their agreement.",
+    "(D) The cancellation is sent to the backend with the backend's own request id, not the runner's, under a shielded and time-bounded cleanup scope. A failure or timeout while sending it must not mask or delay the cancellation returned to the runner, and must not drop a healthy backend session. Requests that already completed are not cancelled. The existing resend-once behaviour on a terminated Streamable HTTP session is unchanged.",
+    "No new dependencies. No changes to .mcp.json, compose files, the catalog, port numbers, CI workflows, schemas/ or scripts/audit/.",
+    "GitHub: pushing the branch fix/mcp-just-works-m1-followups and opening ONE draft PR against main are authorized. MERGE_AUTHORIZED=NO. Not authorized: merging, enabling auto-merge, enqueueing, force-pushing, signing any PROOF.json, resolving review threads, posting the steward release phrase, editing rulesets or branch protection. Those stay with the owner.",
+    "The implementer (Codex) must not audit its own work. The controlling independent audit is a non-Codex route and runs only after the content head is frozen; any content commit after the freeze voids the audit.",
+    "Report status as exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE. Buckets for every validation are PASS, FAIL, NOT_RUN or UNKNOWN; a tool that is missing or cannot run is NOT_RUN with a reason, never PASS."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-MCP-JUST-WORKS-M1-FOLLOWUPS",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/mcp-just-works-m1-followups",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(mcp): close M1 follow-ups — status lease ports, dry-run leases, expired build PIDs, proxy cancel forwarding",
+    "allowlist": [
+      "src/dopemux/mcp/lifecycle.py",
+      "src/dopemux/mcp/port_allocator.py",
+      "src/dopemux/mcp/launcher.py",
+      "src/dopemux/mcp/reap.py",
+      "src/dopemux/mcp/stdio_proxy.py",
+      "tests/unit/test_mcp_lifecycle.py",
+      "tests/unit/test_mcp_lifecycle_ports_from_leases.py",
+      "tests/unit/test_mcp_launcher.py",
+      "tests/unit/test_mcp_reap.py",
+      "tests/unit/test_mcp_stdio_proxy.py",
+      "claudedocs/mcp-just-works-design-2026-11-05.md",
+      "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json",
+      "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md",
+      "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/**",
+      "proof/pr_merge/embedded-audit/**"
+    ],
+    "verify": [
+      "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py tests/unit/test_mcp_launcher.py tests/unit/test_mcp_reap.py tests/unit/test_mcp_stdio_proxy.py",
+      "make test-fast"
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): close MCP just-works M1 follow-ups (status ports, dry-run leases, build PID, cancel forwarding)",
+    "body": "Packet: task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json. Base: main at 365f70ce2edc907d14356d82d2843104dbdaa434 (merge of #1503).\n\nCloses the four follow-ups recorded as open when #1503 merged:\n- A. `dopemux mcp status` preferred stale envrc ports over this worktree's active leases (Codex P2, lifecycle.py `_resolve_ports`).\n- B. `start --dry-run` / `restart --dry-run` persisted port leases (Codex P2, lifecycle.py `_mutable_facts`).\n- C. A detached image build older than DOPEMUX_MCP_BUILD_TIMEOUT_SECS had its PID discarded while still alive, so reconnects could stack builds (Codex P2, launcher.py `_live_build_pid`; same rule copied in reap.py).\n- D. Runner cancellation of an in-flight tool call was not forwarded to the backend (Codex P2, stdio_proxy.py `forward`).\n\nEvidence: proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/PROOF.json (red-then-green test per item, gates, routes). Independent audit: see proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md.\n\nNot authorized by the packet: merge, signing, thread resolution, steward phrase. Owner actions.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "codereview",
+      "precommit"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Intake. Confirm repo identity, branch and base, then prepare a virtualenv inside this worktree (the worktree has none; do not use the main checkout's). Record the facts in PROOF.json.",
+      "commands": [
+        "git rev-parse --show-toplevel",
+        "git rev-parse --abbrev-ref HEAD",
+        "git rev-parse HEAD",
+        "git remote get-url origin",
+        "git status --porcelain",
+        "git merge-base --is-ancestor 365f70ce2edc907d14356d82d2843104dbdaa434 HEAD",
+        "uv sync"
+      ],
+      "validation": [
+        "test \"$(git rev-parse --abbrev-ref HEAD)\" = fix/mcp-just-works-m1-followups",
+        "git merge-base --is-ancestor 365f70ce2edc907d14356d82d2843104dbdaa434 HEAD",
+        "test -f .dopetaskroot"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Reproduce all four defects on the base before changing any source file. For each of A-D add a test that fails for the stated reason, run it, and save the failing output. If any defect does not reproduce on the base, stop that item, record why, and report NEEDS_SUPERVISOR rather than changing code for it.",
+      "requirements": [
+        "A: init writes envrc ports; stop releases leases; another identity takes the old port; start leases replacements; status must then report the replacement ports and probe them. On the base it reports the envrc ports.",
+        "B: with a temporary lease registry path that does not exist, a dry-run start leaves the file absent; with an existing registry, its bytes are unchanged after dry-run start and dry-run restart. On the base the file is created with active leases.",
+        "C: a pid file older than the build budget whose process is still alive: the next launch must not leave two builds running. On the base `_live_build_pid` returns None and a second build is spawned while the first lives.",
+        "D: using the real proxy and SDK sessions in memory, cancel a forwarded request mid-flight; the backend must observe a cancellation for its request id. On the base the backend completes the operation."
+      ],
+      "context_files": [
+        "src/dopemux/mcp/lifecycle.py",
+        "src/dopemux/mcp/port_allocator.py",
+        "src/dopemux/mcp/launcher.py",
+        "src/dopemux/mcp/reap.py",
+        "src/dopemux/mcp/stdio_proxy.py",
+        "claudedocs/mcp-just-works-design-2026-11-05.md",
+        "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md"
+      ],
+      "expected_files": [
+        "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE.txt"
+      ],
+      "validation": [
+        "test -s proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE.txt",
+        "grep -c -E '^(A|B|C|D): (REPRODUCED|NOT_REPRODUCED)' proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE.txt | grep -qx 4"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Fix A (status ports). In lifecycle.py `_resolve_ports`, when `allocate` is false, prefer for each lease-managed variable the port held by an active lease of this identity (`_leased_ports`) over the envrc value, reading the registry without allocating, releasing or saving.",
+      "requirements": [
+        "No registry file is created by status, doctor or stop.",
+        "A variable with no active lease of this identity keeps its envrc value.",
+        "task-orchestrator stays excluded from lease-managed variables, as in the allocate branch."
+      ],
+      "validation": [
+        "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Fix B (dry-run leases). Thread the dry-run flag from `_mutable_facts` into `_resolve_ports` and the allocator so that a dry run computes the same port plan with no release, no save and `persist=False`/`dry_run=True` on allocate_ports. Rewrite the tests in tests/unit/test_mcp_lifecycle_ports_from_leases.py that assert a dry run creates or replaces leases (five were identified at f6a8e4401, including `test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked`; the `_start` helper there defaults to dry_run=True) so that they assert either non-dry behaviour or the planned ports of a dry run.",
+      "requirements": [
+        "Every rewritten test keeps the intent it had (allocation, replacement, not blocked) by moving it to a non-dry run or to a plan-only assertion; none is deleted to make the suite pass.",
+        "List each rewritten test with its old and new assertion in PROOF.json slices."
+      ],
+      "validation": [
+        "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Fix C (expired build PID). In launcher.py, record build identity in the pid file at spawn; when a recorded build is past `build_timeout_secs()` and still verifiably the same live process, terminate its process group (SIGTERM, bounded wait, SIGKILL) before the pid file is replaced and a new build starts. Apply the same liveness rule to reap.py's copy so the runtime dir stays protected for exactly as long as the launcher treats the build as live.",
+      "requirements": [
+        "Unverifiable identity, legacy one-line pid files and dead PIDs: no signal is sent; the file is treated as stale.",
+        "A build within budget: LAUNCH_IMAGE_BUILDING, no second spawn, no signal.",
+        "Tests inject the clock, the process-liveness/identity probe and the kill function; no real process outside the test's own children is signalled.",
+        "Keep the atomic pid-file write (`_write_build_pid` tmp + os.replace)."
+      ],
+      "validation": [
+        "python -m pytest -q --no-cov tests/unit/test_mcp_launcher.py tests/unit/test_mcp_reap.py"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Fix D (cancel forwarding). In stdio_proxy.py `forward`, track the backend request id of the in-flight send and, when the forwarding coroutine is cancelled by the runner, send the MCP cancellation notification for that id to the backend session inside a shielded, time-bounded scope, then let the cancellation propagate.",
+      "requirements": [
+        "If the SDK's ClientSession does not expose the request id of a pending send, do not reach into private attributes without recording it: note the SDK version and the attribute used in PROOF.json unknowns, and add a test that fails if that attribute disappears.",
+        "Cancellation caused by the proxy's own shutdown or by a dropped backend session does not send a notification to a dead session and does not raise.",
+        "The `_inflight` bookkeeping is cleaned up on every exit path."
+      ],
+      "validation": [
+        "python -m pytest -q --no-cov tests/unit/test_mcp_stdio_proxy.py"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Update the design record: in claudedocs/mcp-just-works-design-2026-11-05.md mark the cycle 7 dry-run follow-up as closed by this packet and append one bullet each for A, C and D stating the behaviour now implemented. Append-only apart from the status change of the existing follow-up bullet.",
+      "validation": [
+        "python scripts/docs_validator.py claudedocs/mcp-just-works-design-2026-11-05.md",
+        "git diff --stat 365f70ce2edc907d14356d82d2843104dbdaa434 -- claudedocs/mcp-just-works-design-2026-11-05.md"
+      ]
+    },
+    {
+      "id": "S7",
+      "task": "Gates. Run the five touched test files, the full fast suite, and lint/type checks on the touched source files, comparing ruff, flake8 and mypy counts against the base in a real worktree (not a temp copy). Commit by explicit paths only, then confirm nothing outside the allowlist changed.",
+      "commands": [
+        "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py tests/unit/test_mcp_launcher.py tests/unit/test_mcp_reap.py tests/unit/test_mcp_stdio_proxy.py",
+        "make test-fast",
+        "ruff check src/dopemux/mcp/lifecycle.py src/dopemux/mcp/port_allocator.py src/dopemux/mcp/launcher.py src/dopemux/mcp/reap.py src/dopemux/mcp/stdio_proxy.py",
+        "mypy src/dopemux/mcp/lifecycle.py src/dopemux/mcp/port_allocator.py src/dopemux/mcp/launcher.py src/dopemux/mcp/reap.py src/dopemux/mcp/stdio_proxy.py"
+      ],
+      "validation": [
+        "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py tests/unit/test_mcp_launcher.py tests/unit/test_mcp_reap.py tests/unit/test_mcp_stdio_proxy.py",
+        "make test-fast",
+        "test -z \"$(git diff --name-only 365f70ce2edc907d14356d82d2843104dbdaa434 HEAD | grep -v -E '^(src/dopemux/mcp/(lifecycle|port_allocator|launcher|reap|stdio_proxy)\\.py|tests/unit/test_mcp_(lifecycle|lifecycle_ports_from_leases|launcher|reap|stdio_proxy)\\.py|claudedocs/mcp-just-works-design-2026-11-05\\.md|task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001\\.(json|md)|proof/)')\"",
+        "test -z \"$(git status --porcelain)\""
+      ]
+    },
+    {
+      "id": "S8",
+      "task": "Proof bundle and draft PR. Write PROOF.json with every key of the fixed key set (tp_id, tp_path, worktree_path, branch, repo_identity, head_sha, commit_sha, routes, slices, files_changed, validations, codereview_status, precommit_status, audit, pr_url_or_blocker, residual_risks, unknowns, cleanup_status) and no others. Push the branch and open one draft PR with the title and body above. Stop with status READY_FOR_AUDIT.",
+      "expected_files": [
+        "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/PROOF.json"
+      ],
+      "validation": [
+        "python3 -m json.tool proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/PROOF.json",
+        "python3 scripts/audit/validate_audit_proof.py --help"
+      ]
+    },
+    {
+      "id": "S9",
+      "task": "Independent controlling audit of the frozen content head by a non-Codex route (see the TP_ROUTE block in the companion .md). Held until S8 reports READY_FOR_AUDIT. The auditor receives the diff against the base, this packet, RED_BASELINE.txt and the gate outputs, and returns a verdict with findings. Codex does not run, prompt-edit or summarize this audit. A FAIL or findings above low severity return to the owner; no fix starts without the owner's decision.",
+      "expected_files": [
+        "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "test -f proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md"
+      ]
+    }
+  ]
+}
