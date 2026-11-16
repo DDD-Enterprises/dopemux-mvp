@@ -43,7 +43,7 @@ Worktree `/Users/hue/code/dopemux-mvp/.worktrees/desk-gate-001`, branch `feat/de
 | `pr-steward gate --audit-proof` | | NOT_RUN (no PR) |
 
 ## Audit
-Formal: `../AUDITOR_REPORT.md`, `GROK_AUDIT_PROMPT.txt`, `GROK_AUDIT_RESPONSE.txt`, `GROK_frozen.diff`. Status `PASS`, no findings, no auditor-listed risks. The residual risks in `PROOF.json` are the coordinator's, not the auditor's. Independence is by requested route (xAI vs Anthropic); observed identities are UNKNOWN and the operator attests it.
+Formal: `../AUDITOR_REPORT.md`, `GROK_AUDIT_PROMPT.txt`, `GROK_AUDIT_RESPONSE.txt`, `GROK_frozen.diff`. Status `PASS`, no findings, no auditor-listed risks. The residual risks in `PROOF.json` are the coordinator's, not the auditor's. Independence is by requested route (xAI vs Anthropic); observed identities are UNKNOWN. **Operator attestation (chat, 2026-11-16, "Yes, I attest both")**: auditor model `grok-4.7` and independence `PROVEN`. At the operator's instruction ("do it for me") the supervisor session ran the signing script with the operator's audit signing key; the attestation is the operator's, the keystroke was the session's.
 
 ## What this does and does not change
 The code is on an unpushed local branch. Until it is merged and a session starts from a checkout that has it, nothing in dopemux-mvp calls the Dispatch desk gate. After merge the check is advisory, at session start only.

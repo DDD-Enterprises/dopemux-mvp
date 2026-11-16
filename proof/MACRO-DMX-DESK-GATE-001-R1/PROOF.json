@@ -227,7 +227,7 @@
    "reason": "1/1 PASS"
   }
  ],
- "codereview_status": "Independent final audit PASS (grok-cli, grok-4.7 requested, operator-selected). An earlier advisory Codex review of 508a0418b returned FAIL (F1, F2 medium; F3 low); all three were repaired before the freeze.",
+ "codereview_status": "Independent final audit PASS (grok-cli, grok-4.7 requested, operator-selected). An earlier advisory Codex review of 508a0418b returned FAIL (F1, F2 medium; F3 low); all three were repaired before the freeze. Independence and auditor model are operator-attested (2026-11-16).",
  "precommit_status": "NOT_RUN",
  "audit": {
   "required": true,
@@ -245,11 +245,11 @@
   "No live proof: no real session was run against a real pause request."
  ],
  "unknowns": [
-  "Observed model identity of the implementer children, the coordinator and the auditor: no provider receipts.",
   "Cost of every route: no price evidence recorded.",
   "DCP route, Task Orchestrator state: NOT_RUN.",
   "Full test suite (make test): NOT_RUN; only the two changed test files and four neighbouring hook test files were run.",
-  "pre-commit (full): NOT_RUN; the change-contract hook was run directly instead."
+  "pre-commit (full): NOT_RUN; the change-contract hook was run directly instead.",
+  "Observed model identity of the implementer children, the coordinator and the auditor: no provider receipts. Operator attestation, chat 2026-11-16 (\"Yes, I attest both\"): auditor model grok-4.7 and auditor independence PROVEN. Basis: the audit ran through the xAI Grok CLI with -m grok-4.7 and the implementation ran through Claude Code; no per-call provider receipt exists for either side, so these are attested by the operator, not machine-proven."
  ],
  "cleanup_status": "Worktree and branch retained; no running processes; no stash entries; nothing pushed; sealed audit copy is in a session scratch folder",
  "audit_evidence": {
@@ -264,7 +264,7 @@
  "audit_identity": {
   "auditor": {
    "effort": "runner default (not set)",
-   "model": "grok-4.7 (requested; observed UNKNOWN)",
+   "model": "grok-4.7",
    "model_family": "xai-grok",
    "runner": "grok-cli",
    "runtime_family": "xai-grok-cli"
@@ -275,7 +275,7 @@
    "runner": "claude-code-desktop",
    "runtime_family": "anthropic-claude-code"
   },
-  "independence": "DIFFERENT_FAMILY by requested route; observed identities UNKNOWN"
+  "independence": "PROVEN"
  },
  "embedded_audit": {
   "required": true,
