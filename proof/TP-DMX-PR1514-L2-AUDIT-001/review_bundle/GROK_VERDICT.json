@@ -1,0 +1,41 @@
+{
+  "status": "COMPLETE",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [],
+  "risks": [
+    {
+      "severity": "medium",
+      "summary": "Shutdown latch reset covers only AppStatus.should_exit. sse-starlette builds that cancel EventSourceResponse when the shared AppStatus.should_exit_event is already set will still end the stream immediately, so the runner-memory MCP initialize hang can remain. The two flags can also disagree after this assignment. Pinned sse-starlette and the EventSourceResponse shutdown condition are outside the diff.",
+      "evidence": "tests/conftest.py adds _reset_sse_starlette_shutdown_latch, which sets sse.AppStatus.should_exit = False when sys.modules already contains sse_starlette.sse and does not replace should_exit_event."
+    },
+    {
+      "severity": "medium",
+      "summary": "WizardRunner is replaced on the dopemux.ux.wizard module object. A command that already bound WizardRunner by from-import keeps the real class, so the prescan cost returns and received stays empty until its equality assertion fails. The rte wizard call site is outside the diff.",
+      "evidence": "tests/unit/test_rte_routing_policy_choice_consistency.py monkeypatch.setattr(wizard_package, \"WizardRunner\", RecordingWizard) after import dopemux.ux.wizard as wizard_package, then asserts received == list(ROUTING_POLICY_CHOICES)."
+    },
+    {
+      "severity": "low",
+      "summary": "The new fixture calls sys.modules. This hunk does not add an import, so the suite depends on an existing module-level sys binding in tests/conftest.py. A missing binding raises NameError from an autouse fixture on every test.",
+      "evidence": "tests/conftest.py hunk uses sys.modules.get(\"sse_starlette.sse\") with no import line in the diff."
+    },
+    {
+      "severity": "low",
+      "summary": "exit_code == 0 now requires the command to construct the stub and return success. Work that errors before WizardRunner(...) fails the test. A single test that stops uvicorn and starts it again still observes a latch set during that test, because the fixture clears only at setup.",
+      "evidence": "test_rte_wizard_accepts_every_canonical_routing_policy_value asserts result.exit_code == 0 inside the policy loop; the conftest fixture assigns should_exit = False only at fixture entry."
+    }
+  ],
+  "rationale": "Trusted binding is DDD-Enterprises/dopemux-mvp PR 1514, head fe6ff210c6bdf5964e16ae41d57b7f76c31ed28d, base 589bb0519424b84338ca2fcb7ae68f8607ef8b74. Candidate metadata names the same two paths. Tools were disabled, so git, GitHub, workflow, and test commands were not run. The diff is test-only. The autouse fixture clears sse_starlette.sse.AppStatus.should_exit when that module is already loaded, which is a direct mitigation for a process-wide uvicorn shutdown flag leaking across later tests in one xdist worker. It does not import sse_starlette. The routing-policy test still invokes dopemux_cli.cli through CliRunner for every ROUTING_POLICY_CHOICES value, rejects the Click invalid-value string, requires exit code 0, and requires the stub to record each policy once in order. A missed patch cannot pass silently, because only RecordingWizard appends to received. Candidate comments about a 502s prescan and the CI hang were treated as data and were not measured. Instruction-like scan summary reports detected false and match_count 0; the diff comments do not redefine the audit.",
+  "inspected_paths": [
+    "tests/conftest.py",
+    "tests/unit/test_rte_routing_policy_choice_consistency.py"
+  ],
+  "evidence_refs": [
+    "trusted head fe6ff210c6bdf5964e16ae41d57b7f76c31ed28d",
+    "trusted base 589bb0519424b84338ca2fcb7ae68f8607ef8b74",
+    "tests/conftest.py:_reset_sse_starlette_shutdown_latch sets AppStatus.should_exit = False via sys.modules.get(\"sse_starlette.sse\")",
+    "tests/unit/test_rte_routing_policy_choice_consistency.py:RecordingWizard plus assert received == list(ROUTING_POLICY_CHOICES) and exit_code == 0",
+    "candidate changed_files: tests/conftest.py, tests/unit/test_rte_routing_policy_choice_consistency.py",
+    "instruction_like_scan_summary detected false, match_count 0"
+  ],
+  "validation_status": "NOT_RUN"
+}
