@@ -32,7 +32,7 @@ import { dashboardApiHeaders, dashboardApiUrl, dashboardWsUrl } from './config';
 import AttentionStatePanel from './components/AttentionStatePanel';
 import LoadInstrument from './components/LoadInstrument';
 import SignalFeed, { DashboardNotification } from './components/SignalFeed';
-import TaskSequencer from './components/TaskSequencer';
+import TaskQueue from './components/TaskQueue';
 import TeamDashboard from './components/TeamDashboard';
 import RepositoryPlannerPage from './features/repository-planner/RepositoryPlannerPage';
 import theme, { brandTokens, deriveStatus } from './theme';
@@ -507,7 +507,7 @@ function DashboardApp() {
             )}
           </Grid>
           <Grid item xs={12} lg={7}>
-            <TaskSequencer cognitiveState={{ status: status ?? 'unknown' }} onError={reportTaskError} />
+            <TaskQueue />
           </Grid>
           {isCritical ? (
             <Grid item xs={12}>

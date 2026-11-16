@@ -5,6 +5,10 @@ import '@testing-library/jest-dom/vitest';
 
 import App from './App';
 
+// The task queue panel makes its own request on mount. These tests script the order of the state
+// requests, so the panel is stubbed here; App.taskQueue.test.tsx covers the real panel in App.
+vi.mock('./components/TaskQueue', () => ({ default: () => null }));
+
 class FakeSocket {
   static instances: FakeSocket[] = [];
   onopen: (() => void) | null = null;
@@ -61,8 +65,6 @@ test('backend unreachable: shows unknown state and a precise failure, never inve
   expect(screen.queryByText('70%')).not.toBeInTheDocument();
   expect(screen.queryByText('60%')).not.toBeInTheDocument();
   expect(screen.getByText(/Socket ws:\/\/localhost:8097\/ws\/state is closed/)).toBeInTheDocument();
-  expect(screen.getByText('Load unknown. Sequence order is not adjusted.')).toBeInTheDocument();
-  expect(screen.queryByText(/calibrated for OPTIMAL/)).not.toBeInTheDocument();
 });
 
 test('state request fails while the socket is open: still explains the failure', async () => {
