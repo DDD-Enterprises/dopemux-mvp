@@ -188,7 +188,7 @@
    "command": "pre-commit run --from-ref origin/main --to-ref HEAD",
    "exit_code": null,
    "bucket": "NOT_RUN",
-   "reason": "not run; no hook installed in the worktree"
+   "reason": "not run: no hook installed in the worktree; hook cache empty (remote hooks would be downloaded); some hooks auto-fix files"
   },
   {
    "command": "make test (full suite)",
@@ -201,6 +201,30 @@
    "exit_code": 1,
    "bucket": "FAIL",
    "reason": "additional properties (the v2 fields); identical to issued MACRO-DMX-PULSE-001 children; task_packet.v2 schema PASS"
+  },
+  {
+   "command": "python3 scripts/governance/validate_change_contract.py --base 365f70ce2 --head 79799cade",
+   "exit_code": 0,
+   "bucket": "PASS",
+   "reason": "status=PASS, max_lane=L2, 4 paths"
+  },
+  {
+   "command": "python3 scripts/governance/validate_change_contract.py --base 365f70ce2 --head f90f999f8",
+   "exit_code": 0,
+   "bucket": "PASS",
+   "reason": "status=PASS, 18 paths"
+  },
+  {
+   "command": "python3 scripts/governance/validate_change_contract.py --base 79799cade --head f90f999f8 --proof-only --content-head 79799cade --audited-head 79799cade",
+   "exit_code": 1,
+   "bucket": "FAIL",
+   "reason": "proof_only_missing_signature: PROOF.json.sig absent; signing is an operator gate and was not done. All changed paths are within the proof-only allowlist."
+  },
+  {
+   "command": "python3 scripts/audit/validate_audit_proof.py proof/MACRO-DMX-DESK-GATE-001-R1/PROOF.json",
+   "exit_code": 0,
+   "bucket": "PASS",
+   "reason": "1/1 PASS"
   }
  ],
  "codereview_status": "Independent final audit PASS (grok-cli, grok-4.7 requested, operator-selected). An earlier advisory Codex review of 508a0418b returned FAIL (F1, F2 medium; F3 low); all three were repaired before the freeze.",
@@ -210,7 +234,7 @@
   "status": "PASS",
   "route": "grok-cli grok-4.7"
  },
- "pr_url_or_blocker": "NO PR: push, PR publication, signing and merge are operator gates and were not authorized",
+ "pr_url_or_blocker": "NO PR: push, PR publication, signing and merge are operator gates and were not authorized. Proof-only closure check FAILS until the operator signs PROOF.json (proof_only_missing_signature).",
  "residual_risks": [
   "Advisory only: a runner that ignores the session-start advisory is not stopped, and a session already running does not see a later pause request.",
   "On a pause request the external gate appends an acknowledgement to ~/.dispatch-desk/ledger.jsonl (or $DISPATCH_DESK_LEDGER), outside this repository.",
@@ -224,8 +248,8 @@
   "Observed model identity of the implementer children, the coordinator and the auditor: no provider receipts.",
   "Cost of every route: no price evidence recorded.",
   "DCP route, Task Orchestrator state: NOT_RUN.",
-  "pre-commit: NOT_RUN (no hook installed in this worktree; not run manually to avoid formatters altering the audited head).",
-  "Full test suite (make test): NOT_RUN; only the two changed test files and four neighbouring hook test files were run."
+  "Full test suite (make test): NOT_RUN; only the two changed test files and four neighbouring hook test files were run.",
+  "pre-commit (full): NOT_RUN; the change-contract hook was run directly instead."
  ],
  "cleanup_status": "Worktree and branch retained; no running processes; no stash entries; nothing pushed; sealed audit copy is in a session scratch folder",
  "audit_evidence": {
