@@ -15,7 +15,7 @@ import asyncio
 import logging
 import aiohttp
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 import os
 import sys
 from pathlib import Path
@@ -171,14 +171,21 @@ class TaskRecommender:
         try:
             # Get current ADHD state
             async with aiohttp.ClientSession(headers=self._headers) as session:
-                async with session.get(f"{self.adhd_engine_url}/api/v1/energy-level/{self.user_id}") as response:
-                    energy_data = await response.json() if response.status == 200 else {}
+                energy, energy_problem = await self._read_engine_field(
+                    session, f"/api/v1/energy-level/{self.user_id}", "energy_level"
+                )
+                attention, attention_problem = await self._read_engine_field(
+                    session, f"/api/v1/attention-state/{self.user_id}", "attention_state"
+                )
 
-                async with session.get(f"{self.adhd_engine_url}/api/v1/attention-state/{self.user_id}") as response:
-                    attention_data = await response.json() if response.status == 200 else {}
-
-            energy = energy_data.get("energy_level", "unknown")
-            attention = attention_data.get("attention_state", "unknown")
+            # The engine never reports "unknown": an unreadable state is a failure, not a
+            # state to advise on. Advice built from it would be invented and stamped LIVE.
+            if energy is None or attention is None:
+                error = "; ".join(
+                    problem for problem in (energy_problem, attention_problem) if problem
+                )
+                logger.error(brand_log(f"Engine state unreadable: {error}", chip=StatusChip.BLOCKER))
+                return {"error": error}
 
             # Generate recommendation
             recommendation = self._generate_recommendation(energy, attention)
@@ -196,6 +203,29 @@ class TaskRecommender:
         except Exception as e:
             logger.error(brand_log(f"Failed to get recommendation: {e}", chip=StatusChip.BLOCKER))
             return {"error": str(e)}
+
+    async def _read_engine_field(
+        self,
+        session: aiohttp.ClientSession,
+        path: str,
+        field: str,
+    ) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Read one state field from the ADHD Engine.
+
+        Returns:
+            (value, None) when the engine supplied the field, otherwise
+            (None, problem) where problem names the endpoint and what went wrong.
+        """
+        async with session.get(f"{self.adhd_engine_url}{path}") as response:
+            if response.status != 200:
+                return None, f"adhd-engine {path} returned HTTP {response.status}"
+            payload = await response.json()
+
+        value = payload.get(field) if isinstance(payload, dict) else None
+        if not isinstance(value, str) or not value:
+            return None, f"adhd-engine {path} returned no {field}"
+        return value, None
 
     def _generate_recommendation(self, energy: str, attention: str) -> Dict[str, Any]:
         """
