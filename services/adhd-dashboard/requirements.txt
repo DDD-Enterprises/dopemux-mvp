@@ -4,3 +4,5 @@ aiohttp>=3.9.0
 pydantic>=2.0.0
 redis>=5.0.0
 prometheus-client>=0.20.0
+# dopemux.mcp identity modules (orchestrator_tasks) import yaml at package import.
+pyyaml>=6.0

@@ -37,6 +37,7 @@ def _configure_import_paths() -> Path:
 REPO_ROOT = _configure_import_paths()
 
 from services.shared.brand_voice import StatusChip, brand_log, brand_error, brand_payload, voice_header
+from orchestrator_tasks import read_task_queue
 from task_recommender import TaskRecommender
 
 try:
@@ -392,6 +393,7 @@ async def root():
             "/api/adhd-state",
             "/api/cognitive-load",
             "/api/task-recommendations",
+            "/api/tasks",
             "/api/sessions/today",
             "/metrics",
             "/health",
@@ -444,6 +446,20 @@ async def get_task_recommendations(api_key: str = Security(verify_api_key)):
     except Exception as exc:
         _record_request("/api/task-recommendations", "error", start_time)
         raise HTTPException(status_code=502, detail=brand_error(str(exc))) from exc
+
+
+@app.get("/api/tasks")
+async def get_tasks(api_key: str = Security(verify_api_key)):
+    """Work and queue items from the Task Orchestrator, only when it is serving this project.
+
+    Always HTTP 200: the payload's status says ok, empty, unavailable or wrong_project.
+    """
+    del api_key
+    start_time = time.time()
+    payload = await read_task_queue(REPO_ROOT)
+    outcome = "success" if payload.get("status") in ("ok", "empty") else "error"
+    _record_request("/api/tasks", outcome, start_time)
+    return payload
 
 
 @app.get("/api/cognitive-load")
