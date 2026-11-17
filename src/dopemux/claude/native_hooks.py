@@ -78,6 +78,11 @@ try:
 except ImportError:
     def on_facade_edit(_root, _fp, _sid=None): return None  # type: ignore[misc]
 
+try:
+    from dopemux.claude.dispatch_gate import check as _desk_gate_check
+except ImportError:
+    def _desk_gate_check(_r, _b, task=None): return None  # type: ignore[misc]
+
 from dopemux.workflow import WorkflowStatus, contains_completion_token, parse_workflow_checkpoint  # noqa: E402
 from dopemux.workflow.service import WorkflowKernel  # noqa: E402
 from dopemux.memory.capture_client import PRINCIPAL_HOOKS, try_emit_promotable_capture_event  # noqa: E402
@@ -388,11 +393,36 @@ class NativeHookAdapter:
             return self._allow(system_message=f"Dopemux hook fallback: {type(exc).__name__}")
         return self._allow()
 
+    def _desk_gate_context(self) -> Optional[str]:
+        """Advisory Dispatch desk gate text; never raises, never denies."""
+        try:
+            # The dispatcher cannot tell Claude Code from Codex: generic `by`.
+            task = os.environ.get("DISPATCH_DESK_TASK") or None
+            result = _desk_gate_check(self.project_root, "native-hook", task)
+            state = getattr(result, "state", None)
+            if state == "UNKNOWN":
+                return "Dispatch desk gate state is UNKNOWN; work is allowed."
+            if state == "PAUSE_REQUESTED":
+                reason = "the operator requested a pause on the Dispatch desk."
+            elif state == "UNAPPROVED":
+                reason = "no operator approval recorded on the Dispatch desk."
+            else:
+                return None
+            return (
+                f"[DISPATCH DESK ADVISORY] {reason}\n"
+                "Stop, change nothing further, and report to the operator."
+            )
+        except Exception:
+            return None
+
     def _on_session_start(self) -> Tuple[int, Dict[str, Any]]:
         reset_edit_counter(self.project_root, self.session_id)
         mcp_health = emit_mcp_health(self.project_root)
         orch_ctx = emit_session_context(self.project_root)
         untracked_ctx = emit_untracked_work_advisory(self.project_root, self.session_id)
+        desk_ctx = self._desk_gate_context()
+        extra = [untracked_ctx, desk_ctx]
+        untracked_ctx = "\n\n".join(filter(None, extra)) or None
         state = self._active_state()
         if not state:
             combined = "\n\n".join(filter(None, [mcp_health, orch_ctx, untracked_ctx]))

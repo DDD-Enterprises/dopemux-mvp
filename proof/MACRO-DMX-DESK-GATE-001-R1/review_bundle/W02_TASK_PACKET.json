@@ -1,0 +1,143 @@
+{
+ "id": "TP-DMX-DESK-GATE-W02-HOOK-WIRE-001",
+ "project": "dopemux-mvp",
+ "target": "Call the W01 client from the native hook dispatcher on SessionStart only, and add the advisory context on PAUSE_REQUESTED. One call site; removal of that call is the rollback.",
+ "invariants": [
+  "MACRO I01-I08 apply (MACRO-DMX-DESK-GATE-001-R1).",
+  "I01 Gate contract is pinned to dispatch-desk a025bb5 (tools/gate.py, tools/ledger.py): `gate.py check --project <P> [--task <T>] --by <who>`; exit 0 GO, 3 pause requested, 4 unapproved (only with --require-approval), 2 bad usage.",
+  "I02 The gate is an external, optional tool. Gate path is `$DISPATCH_DESK_HOME/tools/gate.py`, default `~/code/dispatch-desk/tools/gate.py`. If the file is absent the hook does nothing and prints nothing.",
+  "I03 Project key is the MAIN checkout folder name (`dopemux-mvp`), derived from `git rev-parse --path-format=absolute --git-common-dir`, never the worktree folder name. It must equal the ledger key the desk uses.",
+  "I04 Declared effect outside the repo: when a pause is requested the gate appends `pause_acknowledged` to `~/.dispatch-desk/ledger.jsonl` (or `$DISPATCH_DESK_LEDGER`). This repo writes nothing else outside itself and never writes the ledger directly.",
+  "I05 Advisory only (owner decision D2): on exit 3 the hook adds context telling the runner a pause is requested and to stop and report. It never denies a tool call and never exits non-zero because of the gate.",
+  "I06 Fail open (owner decision D1): gate missing, timeout (2 s), exit 2 or any unexpected exit lets work continue; at most one line of context says the gate state is UNKNOWN.",
+  "I07 `--require-approval` is not passed. With an empty ledger it would return 4 for every task.",
+  "I08 Existing hook behaviour is unchanged when the gate is absent: the existing native-hook tests pass unmodified apart from added cases.",
+  "`.claude/settings.json`, `.codex/hooks.json` and `.claude/hooks/run_native_hooks.sh` are not edited."
+ ],
+ "depends_on": [
+  "TP-DMX-DESK-GATE-W01-CLIENT-001"
+ ],
+ "repo_binding": {
+  "project_id": "dopemux-mvp",
+  "repo_marker": ".dopetaskroot",
+  "origin_hint": "DDD-Enterprises/dopemux-mvp",
+  "require_identity_match": true
+ },
+ "series": {
+  "id": "MACRO-DMX-DESK-GATE-001-R1",
+  "base_branch": "main",
+  "parent_tp_id": "MACRO-DMX-DESK-GATE-001-R1",
+  "final_packet": false
+ },
+ "execution": {
+  "agent": "claude",
+  "branch": "feat/desk-gate-001",
+  "base_branch": "main"
+ },
+ "commit": {
+  "message": "feat(hooks): advisory Dispatch desk gate check at session start",
+  "allowlist": [
+   "src/dopemux/claude/native_hooks.py",
+   "tests/test_native_hooks_workflow.py"
+  ],
+  "verify": [
+   ".venv/bin/python -m pytest -q tests/test_native_hooks_workflow.py tests/unit/test_dispatch_gate.py",
+   ".venv/bin/flake8 src/dopemux/claude/native_hooks.py",
+   "git diff --name-only | sort   # equals the allowlist"
+  ]
+ },
+ "pr": {
+  "title": "feat(hooks): advisory Dispatch desk gate check at session start",
+  "body": "Implements MACRO-DMX-DESK-GATE-001-R1 (W01-W02). Draft until the final independent L2 audit and operator review.",
+  "base": "main"
+ },
+ "steps": [
+  {
+   "id": "W02-S1",
+   "task": "Read the SessionStart path in the dispatcher",
+   "requirements": [
+    "Derive the call site from code. At the base commit both `.claude/settings.json` and `.codex/hooks.json` register SessionStart and route it to this dispatcher, so one call site covers Claude Code and Codex sessions. Confirm that from the files; neither config file is edited."
+   ],
+   "commands": [],
+   "expected_files": [],
+   "validation": [
+    "call site named with file:line in the return"
+   ],
+   "context_files": [
+    "src/dopemux/claude/native_hooks.py",
+    ".claude/settings.json",
+    ".codex/hooks.json",
+    "src/dopemux/claude/dispatch_gate.py"
+   ]
+  },
+  {
+   "id": "W02-S2",
+   "task": "Wire the call and add tests",
+   "requirements": [
+    "SessionStart only (owner decision D3). Not UserPromptSubmit and not PreToolUse: per-call Python has a latency cost, and a check that passes a task id still appends one `gate_checked` line each time. (Acknowledgements are de-duplicated at the pinned commit: one per asker per pause request.)",
+    "Import of the client is guarded like the other optional helpers in this file: an import failure leaves the hook working.",
+    "`--by` is `claude-hook` or `codex-hook` when the dispatcher can tell, else `native-hook`. Task id comes from `DISPATCH_DESK_TASK` if set, else it is omitted (project and global pauses still apply).",
+    "Tests: gate absent -> output identical to today; PAUSE_REQUESTED -> advisory text present and exit code unchanged; UNKNOWN -> single UNKNOWN line; client raising -> hook still succeeds."
+   ],
+   "commands": [
+    ".venv/bin/python -m pytest -q tests/test_native_hooks_workflow.py"
+   ],
+   "expected_files": [
+    "src/dopemux/claude/native_hooks.py",
+    "tests/test_native_hooks_workflow.py"
+   ],
+   "validation": [
+    "new cases pass",
+    "pre-existing cases in tests/test_native_hooks_workflow.py pass unmodified"
+   ],
+   "context_files": [
+    "src/dopemux/claude/native_hooks.py",
+    "tests/test_native_hooks_workflow.py"
+   ]
+  },
+  {
+   "id": "W02-S3",
+   "task": "Return",
+   "requirements": [
+    "Summary, test output, exit codes, advisor_calls, files_written, observed_model."
+   ],
+   "commands": [
+    "git diff --stat"
+   ],
+   "expected_files": [],
+   "validation": [
+    "diff limited to the allowlist"
+   ],
+   "context_files": []
+  }
+ ],
+ "schema_version": "dopemux.governed_execution.task_packet.v2",
+ "macro_id": "MACRO-DMX-DESK-GATE-001-R1",
+ "workstream_id": "W02",
+ "risk_lane": "L2",
+ "audit_group": "AUDIT-DESK-GATE-001",
+ "execution_requirements": {
+  "preferred_route": {
+   "runner": "claude-code-agent",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium"
+  },
+  "allowed_fallbacks": [],
+  "binding": "LIVE_PROOF_REQUIRED",
+  "auditor_independence": "DIFFERENT_FAMILY"
+ },
+ "write_surface": [
+  "src/dopemux/claude/native_hooks.py",
+  "tests/test_native_hooks_workflow.py"
+ ],
+ "canonical_writers": [
+  "W02-implementer"
+ ],
+ "semantic_scope": [
+  "native-hook-dispatch"
+ ],
+ "rollback_boundary": "git revert <W02 commit> on feat/desk-gate-001 (REVERT_COMMITS); base 365f70ce2edc907d14356d82d2843104dbdaa434",
+ "operator_gate_required": true,
+ "receipt_refs": {},
+ "authority": "NONE"
+}
