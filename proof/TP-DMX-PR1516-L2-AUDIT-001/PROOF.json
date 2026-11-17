@@ -1,0 +1,169 @@
+{
+  "packet_id": "TP-DMX-PR1516-L2-AUDIT-001",
+  "tp_id": "TP-DMX-PR1516-L2-AUDIT-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1516,
+  "branch": "fix/task-recommender-unknown-state",
+  "base": "main",
+  "base_sha": "8edff9b52480681d5eb7b420a3efcdf42ab4c36c",
+  "head_sha": "074606f397741a23c2d762c8600da9a0add91cd3",
+  "audited_head_sha": "074606f397741a23c2d762c8600da9a0add91cd3",
+  "kind": "fix",
+  "risk_lane": "L2",
+  "implementer": "Claude Code linked desktop session local_06ecd46b (claude-fable-5-2 requested) wrote the one code commit, 074606f39. The supervising session d3cf0485 read the diff and ran this audit harness; it wrote no code.",
+  "audited_files": [
+    "services/adhd-dashboard/task_recommender.py",
+    "services/adhd-dashboard/tests/test_task_recommender.py"
+  ],
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "claude-fable-5-2 requested (Co-Authored-By: Claude Fable 5.2 trailer on the one code commit, 074606f39); observed model UNKNOWN; self-reported, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "fallback_auditor_approval": {
+    "approved_by": "operator",
+    "approval_text": "let's audit with agy argon 4, codex astra, and grok too",
+    "approved_at": "2026-10-30T10:37:01Z",
+    "audit_approval_text": "Yes, audit #1516",
+    "audit_approved_at": "2026-11-16T23:33:28Z",
+    "audit_approval_context": "answer to the supervisor's question 'Run the independent audit on PR #1516 now?', whose first choice read 'I freeze it at 074606f39, run the AGY and Grok audits and prepare the proof for you to sign'",
+    "work_request_text": "sure do cleanup then do backend and g2",
+    "work_requested_at": "2026-11-16T04:26:19Z",
+    "model_pin_text": "run with fable",
+    "model_pinned_at": "2026-11-16T04:36:34Z",
+    "ready_approval_text": "Yes, mark it ready",
+    "ready_approved_at": "2026-11-16T09:33:31Z",
+    "approval_source": "user messages in Claude Code session d3cf0485 (~/.claude/projects/-Users-hue-code-dopemux-mvp/d3cf0485-7bed-42f2-bab3-e34e07536645.jsonl)",
+    "exact_model": "gemini-4-argon-high",
+    "recorded_auditor_model": "gemini",
+    "bounded_input": "trusted prompt only (task, output contract, delimited untrusted metadata and the unified diff base..head); no checkout, no repository access",
+    "no_secret_constraints": "prompt built from git diff only; review_bundle scanned with scripts/audit/build_evidence_bundle.py secret patterns plus an email pattern (clean after redaction)"
+  },
+  "auditor_run": {
+    "agy_cli_version": "1.5.9",
+    "conversation_id": "fea26bbf-fb3a-422d-8713-69c121491877",
+    "launched": "2026-11-16T23:35:05Z",
+    "wrapper_end": "2026-11-16T23:35:53Z",
+    "attempts": 1,
+    "verdict": "PASS",
+    "validation_status": "NOT_RUN",
+    "prompt_sha256": "3394be845c3209056450a769a2b3ade6447b8d2b8d8ce1e27f534cd3b330cb0b",
+    "raw_stream_sha256": "ccc09bbd0f095b3d30947ac7def114408f5a051adee6328ec3e58d25213a847c",
+    "conversation_store_sha256": "01049cbf32dbe1f97ae7ba1b0526a7c0b9b245488a25dde25ae8a38c7061d8e8"
+  },
+  "corroborating_audits": {
+    "grok": {
+      "verdict": "PASS_WITH_RISKS",
+      "model_receipt": "grok-4.7-build",
+      "governing": false,
+      "session_id": "01a1e6b6-fd2f-7b70-81c0-182768727c02",
+      "launched": "2026-11-16T23:35:14Z",
+      "record": "review_bundle/GROK_CORROBORATION.md"
+    },
+    "codex": {
+      "role": "advisory only",
+      "result": "GitHub review of 074606f39: no findings"
+    },
+    "copilot": {
+      "role": "advisory only",
+      "result": "GitHub review of 074606f39: no open issues; asked for human governance review of the missing MacroPacket and the audit"
+    }
+  },
+  "evidence": {
+    "label": "AUDITOR_WRITTEN_RAW_RETAINED",
+    "custody": "~/.local/share/dopemux/evidence/pr1516/r1"
+  },
+  "validations": [
+    {
+      "name": "📊 CI Pipeline Summary",
+      "result": "PASS",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/43805863435/job/133099409285"
+    },
+    {
+      "name": "🧪 Unit Tests",
+      "result": "PASS",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/43805863435/job/133096381068"
+    },
+    {
+      "name": "independent embedded audit",
+      "result": "FAIL",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/43805863374/job/133096383246"
+    },
+    {
+      "name": "PR Steward / final readiness",
+      "result": "FAIL",
+      "link": "https://github.com/DDD-Enterprises/dopemux-mvp/actions/runs/43805917492"
+    },
+    {
+      "name": "local: pytest tests (services/adhd-dashboard)",
+      "result": "PASS",
+      "detail": "18 passed, exit 0 at 074606f39 (LOCAL_VALIDATION.txt)"
+    },
+    {
+      "name": "local: the new tests detect the defect on the base implementation",
+      "result": "PASS",
+      "detail": "with task_recommender.py from 8edff9b52 the same test file gives 8 failed, 7 passed, exit 1, as expected (LOCAL_VALIDATION.txt)"
+    },
+    {
+      "name": "live ADHD Engine request",
+      "result": "NOT_RUN",
+      "detail": "no live engine was queried; the tests use a fake aiohttp session"
+    },
+    {
+      "name": "audit: validation inside the sealed AGY session",
+      "result": "NOT_RUN",
+      "detail": "auditor reported NOT_RUN"
+    }
+  ],
+  "operator_decisions": [
+    "2026-11-16T04:26:19Z: operator asked for the backend and G-2 work ('sure do cleanup then do backend and g2'); 04:36:34Z pinned the model ('run with fable').",
+    "2026-11-16T09:33:31Z: operator approved marking PR #1516 ready ('Yes, mark it ready'); Codex reviewed 074606f39 with no findings and Copilot reported no open issues.",
+    "2026-11-16T23:33:28Z: operator approved this audit ('Yes, audit #1516').",
+    "No supervisor-issued MacroPacket exists for this work; recorded as an exception, not as a packet.",
+    "Findings are OPEN; none is ACCEPTED_RISK. Independence attestation and signatures: operator."
+  ],
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1516; signing, push and merge are operator gates",
+  "generated_at": "2026-11-16T23:41:30Z",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print=\"$(cat AUDIT_PROMPT.txt)\" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt (cwd = sealed dir holding only AUDIT_PROMPT.txt from scripts.audit.pal_clink_runner --build-prompt; AGY CLI 1.5.9; conversation_id=fea26bbf-fb3a-422d-8713-69c121491877; launched 2026-11-16T23:35:05Z, wrapper end 2026-11-16T23:35:53Z; one attempt; raw stream retained in review_bundle/AGY_OUTPUT_RAW.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1516-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validation was not run inside the sealed audit sessions (validation_status=NOT_RUN); local pytest in services/adhd-dashboard passes at the audited head (18 passed). No CI job runs that directory's tests: pytest.ini has testpaths = tests, the unit gate collects tests/unit plus two files, and the workflows name adhd-dashboard only for container builds.",
+      "Supervisor check of the shared AGY and Grok risk (a whitespace-only string, or the literal string 'unknown', still counts as readable state and reaches the default advice): accurate and OPEN. It is reachable at this head through the engine's prediction-override route: services/adhd_engine/api/routes.py writes request.override_value, typed Any in api/schemas.py, into current_energy_levels and current_attention_states for a user with a profile, and the two GET handlers return `value.value if hasattr(value, 'value') else str(value)`. The other writers (engine.py, core/engine.py) were not traced to their sources. The dashboard guard checks presence, not membership in the engine's EnergyLevel and AttentionState values; validating override_value in the engine, or membership in the dashboard, is a follow-up. OPERATOR: decision pending.",
+      "Out of this PR's scope, seen during that check: the engine answers MEDIUM and FOCUSED for a user it has no reading for (routes.py, current_energy_levels.get(user_id, EnergyLevel.MEDIUM) and current_attention_states.get(user_id, AttentionState.FOCUSED)), so advice built on engine defaults can still be stamped LIVE. Not changed here.",
+      "Grok's first risk is about what the sealed audit could not run: the service tests were run locally at the audited head (18 passed) and the new tests fail on the base implementation (8 failed, 7 passed); see LOCAL_VALIDATION.txt. CI state is in CI_EVIDENCE.json.",
+      "The raw AGY stream (1 line) and the AGY CLI log copy (5 lines) contain the operator's home directory path, as in earlier bundles. Only the account email address was redacted (REDACTIONS.md).",
+      "Audit scope: the whole PR diff, merge-base 8edff9b52 to 074606f39; main was still at the merge-base when the bundle was built.",
+      "Auditor model identity: requested gemini-4-argon-high; provider-attested identity UNKNOWN; recorded as the schema family value 'gemini'.",
+      "AGY tool permissions were always-proceed; containment rests on the observed absence of tool steps.",
+      "Codex (advisory GitHub review) reviewed 074606f39 with no findings. Copilot reported no open issues and asked for human governance review of the missing MacroPacket and the audit, which was NOT_RUN at that time; they are not embedded auditors.",
+      "No supervisor-issued MacroPacket exists for this work. Authority is the operator's requests recorded under fallback_auditor_approval and operator_decisions.",
+      "The fix was not exercised against a live ADHD Engine."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  }
+}

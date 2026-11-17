@@ -1,0 +1,41 @@
+{
+  "status": "COMPLETE",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [],
+  "risks": [
+    {
+      "severity": "medium",
+      "summary": "Pytest and GitHub PR/head/CI checks were not executed. The trusted prompt pins head 074606f397741a23c2d762c8600da9a0add91cd3 and base 8edff9b52480681d5eb7b420a3efcdf42ab4c36c; candidate metadata repeats those SHAs. Diff-to-commit binding and workflow status stay unverified.",
+      "evidence": "Tools disabled by the audit contract; validation_status NOT_RUN."
+    },
+    {
+      "severity": "low",
+      "summary": "A whitespace-only string still counts as a present field and can reach _generate_recommendation and the LIVE success payload.",
+      "evidence": "task_recommender.py _read_engine_field accepts any truthy str (`if not isinstance(value, str) or not value`)."
+    },
+    {
+      "severity": "low",
+      "summary": "The literal engine string unknown is still treated as readable state. The new guard covers failed or empty reads only.",
+      "evidence": "_read_engine_field returns (value, None) for any non-empty str."
+    },
+    {
+      "severity": "low",
+      "summary": "Non-string JSON values, including numbers, fail closed as unreadable. That matches the string states used by the new tests; a numeric engine contract would surface as errors.",
+      "evidence": "isinstance(value, str) required; tests cover null, missing keys, and a JSON list."
+    }
+  ],
+  "rationale": "The diff removes the old energy_data.get(\"energy_level\", \"unknown\") and attention_data.get(\"attention_state\", \"unknown\") defaults. get_current_recommendation now reads both fields with _read_engine_field, which returns the string only after HTTP 200 and a non-empty str field, and otherwise returns a problem naming the path plus HTTP status or the missing field. If either value is absent, the method logs StatusChip.BLOCKER and returns {\"error\": joined problems} before _generate_recommendation, so the LIVE success object is not built. Both problems remain when both reads fail. TestUnreadableEngineState matches that behavior: 401 on both endpoints, attention HTTP 500, energy HTTP 404, empty objects, null attention_state, a JSON list, the combined HTTP 401 and HTTP 503 message, and high plus focused still expecting status_chip LIVE with recommendation.work_type complex_coding. The happy-path mapping sits outside the hunk and was reviewed only as an unchanged call. The supplied instruction-like scan summary reports detected false and match_count 0; the diff comments are ordinary code comments. This pass does not claim prompt-injection immunity.",
+  "inspected_paths": [
+    "services/adhd-dashboard/task_recommender.py",
+    "services/adhd-dashboard/tests/test_task_recommender.py"
+  ],
+  "evidence_refs": [
+    "services/adhd-dashboard/task_recommender.py get_current_recommendation early return {\"error\": error} before _generate_recommendation",
+    "services/adhd-dashboard/task_recommender.py _read_engine_field: non-200, non-dict payload, and empty or non-str field return (None, problem); success returns (value, None)",
+    "services/adhd-dashboard/tests/test_task_recommender.py TestUnreadableEngineState.test_unreadable_state_returns_error_not_live_advice (7 parametrized cases)",
+    "services/adhd-dashboard/tests/test_task_recommender.py TestUnreadableEngineState.test_both_failures_are_named",
+    "services/adhd-dashboard/tests/test_task_recommender.py TestUnreadableEngineState.test_readable_state_still_returns_live_advice",
+    "candidate instruction_like_scan_summary detected=false match_count=0"
+  ],
+  "validation_status": "NOT_RUN"
+}

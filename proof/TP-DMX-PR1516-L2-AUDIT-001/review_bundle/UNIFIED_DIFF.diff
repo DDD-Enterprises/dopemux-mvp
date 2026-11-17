@@ -1,0 +1,176 @@
+diff --git a/services/adhd-dashboard/task_recommender.py b/services/adhd-dashboard/task_recommender.py
+index 271e69b22..72ebd1577 100644
+--- a/services/adhd-dashboard/task_recommender.py
++++ b/services/adhd-dashboard/task_recommender.py
+@@ -15,7 +15,7 @@ import asyncio
+ import logging
+ import aiohttp
+ from datetime import datetime
+-from typing import Dict, Any, List, Optional
++from typing import Dict, Any, List, Optional, Tuple
+ import os
+ import sys
+ from pathlib import Path
+@@ -171,14 +171,21 @@ class TaskRecommender:
+         try:
+             # Get current ADHD state
+             async with aiohttp.ClientSession(headers=self._headers) as session:
+-                async with session.get(f"{self.adhd_engine_url}/api/v1/energy-level/{self.user_id}") as response:
+-                    energy_data = await response.json() if response.status == 200 else {}
+-
+-                async with session.get(f"{self.adhd_engine_url}/api/v1/attention-state/{self.user_id}") as response:
+-                    attention_data = await response.json() if response.status == 200 else {}
+-
+-            energy = energy_data.get("energy_level", "unknown")
+-            attention = attention_data.get("attention_state", "unknown")
++                energy, energy_problem = await self._read_engine_field(
++                    session, f"/api/v1/energy-level/{self.user_id}", "energy_level"
++                )
++                attention, attention_problem = await self._read_engine_field(
++                    session, f"/api/v1/attention-state/{self.user_id}", "attention_state"
++                )
++
++            # The engine never reports "unknown": an unreadable state is a failure, not a
++            # state to advise on. Advice built from it would be invented and stamped LIVE.
++            if energy is None or attention is None:
++                error = "; ".join(
++                    problem for problem in (energy_problem, attention_problem) if problem
++                )
++                logger.error(brand_log(f"Engine state unreadable: {error}", chip=StatusChip.BLOCKER))
++                return {"error": error}
+ 
+             # Generate recommendation
+             recommendation = self._generate_recommendation(energy, attention)
+@@ -197,6 +204,29 @@ class TaskRecommender:
+             logger.error(brand_log(f"Failed to get recommendation: {e}", chip=StatusChip.BLOCKER))
+             return {"error": str(e)}
+ 
++    async def _read_engine_field(
++        self,
++        session: aiohttp.ClientSession,
++        path: str,
++        field: str,
++    ) -> Tuple[Optional[str], Optional[str]]:
++        """
++        Read one state field from the ADHD Engine.
++
++        Returns:
++            (value, None) when the engine supplied the field, otherwise
++            (None, problem) where problem names the endpoint and what went wrong.
++        """
++        async with session.get(f"{self.adhd_engine_url}{path}") as response:
++            if response.status != 200:
++                return None, f"adhd-engine {path} returned HTTP {response.status}"
++            payload = await response.json()
++
++        value = payload.get(field) if isinstance(payload, dict) else None
++        if not isinstance(value, str) or not value:
++            return None, f"adhd-engine {path} returned no {field}"
++        return value, None
++
+     def _generate_recommendation(self, energy: str, attention: str) -> Dict[str, Any]:
+         """
+         Generate task recommendation based on ADHD state.
+diff --git a/services/adhd-dashboard/tests/test_task_recommender.py b/services/adhd-dashboard/tests/test_task_recommender.py
+index 0241e05ed..a6478319b 100644
+--- a/services/adhd-dashboard/tests/test_task_recommender.py
++++ b/services/adhd-dashboard/tests/test_task_recommender.py
+@@ -90,3 +90,98 @@ class TestTaskRecommender:
+         assert captured_headers == [{"X-API-Key": "expected-key"}]
+         assert result["energy"] == "medium"
+         assert result["attention"] == "focused"
++
++
++class _FakeEngineResponse:
++    def __init__(self, status, payload):
++        self.status = status
++        self._payload = payload
++
++    async def __aenter__(self):
++        return self
++
++    async def __aexit__(self, exc_type, exc, tb):
++        return None
++
++    async def json(self):
++        return self._payload
++
++
++def _fake_engine_session(energy, attention):
++    """Build a ClientSession stand-in answering the two engine reads with (status, payload)."""
++
++    class FakeSession:
++        def __init__(self, **_kwargs):
++            pass
++
++        async def __aenter__(self):
++            return self
++
++        async def __aexit__(self, exc_type, exc, tb):
++            return None
++
++        def get(self, url):
++            status, payload = energy if "energy-level" in url else attention
++            return _FakeEngineResponse(status, payload)
++
++    return FakeSession
++
++
++ENERGY_PATH = "/api/v1/energy-level/test"
++ATTENTION_PATH = "/api/v1/attention-state/test"
++UNAUTHORIZED = (401, {"detail": "Invalid API key"})
++HIGH_ENERGY = (200, {"energy_level": "high"})
++FOCUSED = (200, {"attention_state": "focused"})
++
++
++class TestUnreadableEngineState:
++    """The engine never reports "unknown"; an unreadable state must not become live advice."""
++
++    @pytest.mark.asyncio
++    @pytest.mark.parametrize(
++        "energy, attention, failing_endpoint, failing_detail",
++        [
++            (UNAUTHORIZED, UNAUTHORIZED, ENERGY_PATH, "HTTP 401"),
++            (HIGH_ENERGY, (500, {}), ATTENTION_PATH, "HTTP 500"),
++            ((404, {}), FOCUSED, ENERGY_PATH, "HTTP 404"),
++            ((200, {}), FOCUSED, ENERGY_PATH, "no energy_level"),
++            (HIGH_ENERGY, (200, {}), ATTENTION_PATH, "no attention_state"),
++            (HIGH_ENERGY, (200, {"attention_state": None}), ATTENTION_PATH, "no attention_state"),
++            ((200, ["not", "an", "object"]), FOCUSED, ENERGY_PATH, "no energy_level"),
++        ],
++    )
++    async def test_unreadable_state_returns_error_not_live_advice(
++        self, energy, attention, failing_endpoint, failing_detail
++    ):
++        recommender = TaskRecommender(user_id="test")
++
++        with patch("task_recommender.aiohttp.ClientSession", _fake_engine_session(energy, attention)):
++            result = await recommender.get_current_recommendation()
++
++        assert "recommendation" not in result
++        assert result.get("status_chip") != "LIVE"
++        assert failing_endpoint in result["error"]
++        assert failing_detail in result["error"]
++
++    @pytest.mark.asyncio
++    async def test_both_failures_are_named(self):
++        recommender = TaskRecommender(user_id="test")
++        session = _fake_engine_session((401, {}), (503, {}))
++
++        with patch("task_recommender.aiohttp.ClientSession", session):
++            result = await recommender.get_current_recommendation()
++
++        assert "/api/v1/energy-level/test returned HTTP 401" in result["error"]
++        assert "/api/v1/attention-state/test returned HTTP 503" in result["error"]
++
++    @pytest.mark.asyncio
++    async def test_readable_state_still_returns_live_advice(self):
++        recommender = TaskRecommender(user_id="test")
++        session = _fake_engine_session((200, {"energy_level": "high"}), (200, {"attention_state": "focused"}))
++
++        with patch("task_recommender.aiohttp.ClientSession", session):
++            result = await recommender.get_current_recommendation()
++
++        assert "error" not in result
++        assert result["status_chip"] == "LIVE"
++        assert result["recommendation"]["work_type"] == "complex_coding"
