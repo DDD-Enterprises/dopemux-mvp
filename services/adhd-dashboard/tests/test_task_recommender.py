@@ -90,3 +90,98 @@ class TestTaskRecommender:
         assert captured_headers == [{"X-API-Key": "expected-key"}]
         assert result["energy"] == "medium"
         assert result["attention"] == "focused"
+
+
+class _FakeEngineResponse:
+    def __init__(self, status, payload):
+        self.status = status
+        self._payload = payload
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return None
+
+    async def json(self):
+        return self._payload
+
+
+def _fake_engine_session(energy, attention):
+    """Build a ClientSession stand-in answering the two engine reads with (status, payload)."""
+
+    class FakeSession:
+        def __init__(self, **_kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return None
+
+        def get(self, url):
+            status, payload = energy if "energy-level" in url else attention
+            return _FakeEngineResponse(status, payload)
+
+    return FakeSession
+
+
+ENERGY_PATH = "/api/v1/energy-level/test"
+ATTENTION_PATH = "/api/v1/attention-state/test"
+UNAUTHORIZED = (401, {"detail": "Invalid API key"})
+HIGH_ENERGY = (200, {"energy_level": "high"})
+FOCUSED = (200, {"attention_state": "focused"})
+
+
+class TestUnreadableEngineState:
+    """The engine never reports "unknown"; an unreadable state must not become live advice."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "energy, attention, failing_endpoint, failing_detail",
+        [
+            (UNAUTHORIZED, UNAUTHORIZED, ENERGY_PATH, "HTTP 401"),
+            (HIGH_ENERGY, (500, {}), ATTENTION_PATH, "HTTP 500"),
+            ((404, {}), FOCUSED, ENERGY_PATH, "HTTP 404"),
+            ((200, {}), FOCUSED, ENERGY_PATH, "no energy_level"),
+            (HIGH_ENERGY, (200, {}), ATTENTION_PATH, "no attention_state"),
+            (HIGH_ENERGY, (200, {"attention_state": None}), ATTENTION_PATH, "no attention_state"),
+            ((200, ["not", "an", "object"]), FOCUSED, ENERGY_PATH, "no energy_level"),
+        ],
+    )
+    async def test_unreadable_state_returns_error_not_live_advice(
+        self, energy, attention, failing_endpoint, failing_detail
+    ):
+        recommender = TaskRecommender(user_id="test")
+
+        with patch("task_recommender.aiohttp.ClientSession", _fake_engine_session(energy, attention)):
+            result = await recommender.get_current_recommendation()
+
+        assert "recommendation" not in result
+        assert result.get("status_chip") != "LIVE"
+        assert failing_endpoint in result["error"]
+        assert failing_detail in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_both_failures_are_named(self):
+        recommender = TaskRecommender(user_id="test")
+        session = _fake_engine_session((401, {}), (503, {}))
+
+        with patch("task_recommender.aiohttp.ClientSession", session):
+            result = await recommender.get_current_recommendation()
+
+        assert "/api/v1/energy-level/test returned HTTP 401" in result["error"]
+        assert "/api/v1/attention-state/test returned HTTP 503" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_readable_state_still_returns_live_advice(self):
+        recommender = TaskRecommender(user_id="test")
+        session = _fake_engine_session((200, {"energy_level": "high"}), (200, {"attention_state": "focused"}))
+
+        with patch("task_recommender.aiohttp.ClientSession", session):
+            result = await recommender.get_current_recommendation()
+
+        assert "error" not in result
+        assert result["status_chip"] == "LIVE"
+        assert result["recommendation"]["work_type"] == "complex_coding"

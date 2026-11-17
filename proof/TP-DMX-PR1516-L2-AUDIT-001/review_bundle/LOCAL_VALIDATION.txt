@@ -1,0 +1,10 @@
+services/adhd-dashboard local validation at 074606f397741a23c2d762c8600da9a0add91cd3 (2026-11-16T23:35:05Z), Python 3.12.13
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+18 passed, 1 warning in 0.65s
+pytest tests exit=0
+
+Same tests with task_recommender.py from the base 8edff9b52 (copy outside the worktree, 2026-11-16T23:35:18Z):
+8 failed, 7 passed in 0.11s
+pytest tests/test_task_recommender.py (base implementation) exit=1
