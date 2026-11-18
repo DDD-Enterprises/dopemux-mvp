@@ -204,6 +204,19 @@ def tool_edit_path(tool_input: dict) -> str:
     return ""
 
 
+def tool_edit_paths(tool_input: dict) -> list[str]:
+    """Every path an Edit/Write/NotebookEdit names: ``file_path`` then
+    ``notebook_path``, each only when it is a non-empty string, without
+    repeats. Amendment 02: the guard checks all of them, so a harmless
+    ``file_path`` cannot hide a ``notebook_path``."""
+    paths: list[str] = []
+    for key in ("file_path", "notebook_path"):
+        value = (tool_input or {}).get(key)
+        if isinstance(value, str) and value and value not in paths:
+            paths.append(value)
+    return paths
+
+
 def _repo_relative(file_path: str, project_root: Path) -> str:
     """Normalize file_path to forward-slash repo-relative string (primary reading)."""
     return _repo_relative_candidates(file_path, project_root)[0]
@@ -221,9 +234,17 @@ def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) ->
     """Return a block reason when an edit targets a red-lane seam file, else None."""
     if tool_name not in {"Edit", "Write", "NotebookEdit"}:
         return None
-    file_path = tool_edit_path(tool_input)
-    if not file_path:
-        return None
+    # Amendment 02: check every path the call names (file_path and
+    # notebook_path); the first one that is blocked wins.
+    for file_path in tool_edit_paths(tool_input):
+        reason = _block_reason_for_path(file_path, project_root)
+        if reason:
+            return reason
+    return None
+
+
+def _block_reason_for_path(file_path: str, project_root: Path) -> str | None:
+    """Return a block reason when one edit path is a red-lane seam file, else None."""
     # TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001: a control character (most
     # notably a newline) embedded in file_path can make an `^`-anchored,
     # `.*`-tailed forbidden pattern fail to match anywhere in the string — the
@@ -318,6 +339,16 @@ def _save_warn_cache(project_root: Path, cache: dict) -> None:
         pass
 
 
+def _contract_surface_for_path(file_path: str, project_root: Path) -> str | None:
+    """Return the contract-surface label any reading of one path matches, else None."""
+    for root in _guard_roots(file_path, project_root):
+        for rel in _guard_readings(file_path, root, project_root):
+            category = _matches_contract_surface(rel)
+            if category:
+                return category
+    return None
+
+
 def surface_guard_warnings(
     tool_name: str,
     tool_input: dict,
@@ -327,21 +358,18 @@ def surface_guard_warnings(
     """Return once-per-(session, path) advisory when editing a contract surface."""
     if tool_name not in {"Edit", "Write", "NotebookEdit"}:
         return []
-    file_path = tool_edit_path(tool_input)
-    if not file_path:
-        return []
 
-    # Don't warn on new proof/*/PROOF.json writes (that's the scaffold flow)
-    if _proof_json_is_new(file_path):
-        return []
-
+    # Amendment 02: check every path the call names (file_path and
+    # notebook_path); the first contract surface found is the one reported.
+    file_path = ""
     category = None
-    for root in _guard_roots(file_path, project_root):
-        for rel in _guard_readings(file_path, root, project_root):
-            category = _matches_contract_surface(rel)
-            if category:
-                break
+    for candidate in tool_edit_paths(tool_input):
+        # Don't warn on new proof/*/PROOF.json writes (that's the scaffold flow)
+        if _proof_json_is_new(candidate):
+            continue
+        category = _contract_surface_for_path(candidate, project_root)
         if category:
+            file_path = candidate
             break
     if not category:
         return []

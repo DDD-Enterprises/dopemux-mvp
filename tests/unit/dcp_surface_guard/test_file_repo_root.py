@@ -1,5 +1,5 @@
 """
-file_repo_root / tool_edit_path behaviour of .claude/hooks/dcp_surface_guard.py.
+file_repo_root / tool_edit_path(s) behaviour of .claude/hooks/dcp_surface_guard.py.
 
 Fake checkouts are built under tmp_path: a directory holding a ``.git``
 directory is a main checkout, a directory holding a ``.git`` file with a
@@ -21,6 +21,8 @@ from dcp_surface_guard import (  # noqa: E402
     file_repo_root,
     surface_guard_block,
     surface_guard_warnings,
+    tool_edit_path,
+    tool_edit_paths,
 )
 
 _RED = "services/task-orchestrator/x.py"
@@ -74,6 +76,54 @@ def test_notebook_path_is_read(tmp_path: Path) -> None:
 
     assert result is not None
     assert RED_LANE_ID in result
+
+
+def test_notebook_path_is_read_when_file_path_is_also_set(tmp_path: Path) -> None:
+    # Amendment 02: a harmless file_path must not hide a red-lane notebook_path.
+    session_root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    harmless = sibling / "docs" / "ok.ipynb"
+    target = sibling / "services" / "task-orchestrator" / "nb.ipynb"
+
+    result = surface_guard_block(
+        "NotebookEdit",
+        {"file_path": str(harmless), "notebook_path": str(target)},
+        session_root,
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_notebook_path_contract_surface_is_warned_when_file_path_is_also_set(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+
+    warnings = surface_guard_warnings(
+        "NotebookEdit",
+        {
+            "file_path": str(root / "docs" / "ok.ipynb"),
+            "notebook_path": str(root / "schemas" / "dcp" / "x.ipynb"),
+        },
+        root,
+        "sess-dual",
+    )
+
+    assert len(warnings) == 1
+    assert "Contract-sensitive surface" in warnings[0]
+
+
+def test_tool_edit_path_keeps_t03_and_tool_edit_paths_reads_both() -> None:
+    # T01/T03 interface stays as issued; Amendment 02 adds tool_edit_paths.
+    both = {"file_path": "a.ipynb", "notebook_path": "b.ipynb"}
+    assert tool_edit_path(both) == "a.ipynb"
+    assert tool_edit_path({"file_path": "", "notebook_path": "b.ipynb"}) == "b.ipynb"
+    assert tool_edit_path({"file_path": 3}) == ""
+    assert tool_edit_paths(both) == ["a.ipynb", "b.ipynb"]
+    assert tool_edit_paths({"file_path": "a", "notebook_path": "a"}) == ["a"]
+    assert tool_edit_paths({"file_path": None, "notebook_path": ""}) == []
+    assert tool_edit_paths({}) == []
 
 
 def test_symlink_into_red_lane_is_blocked(tmp_path: Path) -> None:
