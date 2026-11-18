@@ -158,26 +158,49 @@ def _guard_roots(file_path: str, project_root: Path) -> tuple[Path, ...]:
     raises.
     """
     roots = [Path(project_root)]
+    for start in _guard_starts(file_path, project_root):
+        try:
+            cur = start
+            while not os.path.lexists(cur):
+                parent = os.path.dirname(cur)
+                if parent == cur:
+                    break
+                cur = parent
+            if not os.path.isdir(cur):
+                cur = os.path.dirname(cur)
+            while True:
+                if os.path.lexists(os.path.join(cur, ".git")):
+                    roots.append(Path(cur))
+                parent = os.path.dirname(cur)
+                if parent == cur:
+                    break
+                cur = parent
+        except (OSError, ValueError):
+            continue
+    return tuple(dict.fromkeys(roots))
+
+
+def _guard_starts(file_path: str, project_root: Path) -> tuple[str, ...]:
+    """Absolute forms of ``file_path`` that root discovery walks up from.
+
+    Amendment 03. A relative path is read both against ``project_root`` and
+    against the process cwd, since either may be where the edit lands. Each
+    form is taken lexically (``..`` collapsed, symlinks kept) and resolved
+    (``os.path.realpath``): a symlink inside a sibling checkout must not move
+    discovery out of that checkout. Forms are only ever added. Never raises.
+    """
+    starts: list[str] = []
     try:
-        joined = file_path if os.path.isabs(file_path) else os.path.join(project_root, file_path)
-        cur = os.path.realpath(joined)
-        while not os.path.lexists(cur):
-            parent = os.path.dirname(cur)
-            if parent == cur:
-                break
-            cur = parent
-        if not os.path.isdir(cur):
-            cur = os.path.dirname(cur)
-        while True:
-            if os.path.lexists(os.path.join(cur, ".git")):
-                roots.append(Path(cur))
-            parent = os.path.dirname(cur)
-            if parent == cur:
-                break
-            cur = parent
+        if os.path.isabs(file_path):
+            bases = [file_path]
+        else:
+            bases = [os.path.join(project_root, file_path), os.path.abspath(file_path)]
+        for base in bases:
+            starts.append(os.path.normpath(base))
+            starts.append(os.path.realpath(base))
     except (OSError, ValueError):
         pass
-    return tuple(dict.fromkeys(roots))
+    return tuple(dict.fromkeys(starts))
 
 
 def _guard_readings(file_path: str, root: Path, project_root: Path) -> tuple[str, ...]:
@@ -191,6 +214,12 @@ def _guard_readings(file_path: str, root: Path, project_root: Path) -> tuple[str
     if not os.path.isabs(file_path):
         joined = os.path.join(project_root, file_path)
         readings.extend(_repo_relative_candidates(joined, root))
+        # Amendment 03: the cwd-absolute lexical form too, so a symlink on the
+        # way cannot leave only its resolved target to be read.
+        try:
+            readings.extend(_repo_relative_candidates(os.path.abspath(file_path), root))
+        except (OSError, ValueError):
+            pass
     return tuple(dict.fromkeys(readings))
 
 
@@ -360,24 +389,29 @@ def surface_guard_warnings(
         return []
 
     # Amendment 02: check every path the call names (file_path and
-    # notebook_path); the first contract surface found is the one reported.
-    file_path = ""
+    # notebook_path). Amendment 03: the warn cache is checked per path, so an
+    # already-warned first path cannot hide a new second one; the first
+    # contract surface not yet warned in this session is the one reported.
+    session_key = session_id or "no-session"
+    cache: dict | None = None
     category = None
+    cache_key = ""
     for candidate in tool_edit_paths(tool_input):
         # Don't warn on new proof/*/PROOF.json writes (that's the scaffold flow)
         if _proof_json_is_new(candidate):
             continue
-        category = _contract_surface_for_path(candidate, project_root)
-        if category:
-            file_path = candidate
-            break
-    if not category:
-        return []
-
-    session_key = session_id or "no-session"
-    cache_key = f"{session_key}:{file_path}"
-    cache = _load_warn_cache(project_root)
-    if cache.get(cache_key):
+        found = _contract_surface_for_path(candidate, project_root)
+        if not found:
+            continue
+        if cache is None:
+            cache = _load_warn_cache(project_root)
+        key = f"{session_key}:{candidate}"
+        if cache.get(key):
+            continue
+        category = found
+        cache_key = key
+        break
+    if not category or cache is None:
         return []
 
     cache[cache_key] = True

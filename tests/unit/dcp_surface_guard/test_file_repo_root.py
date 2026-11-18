@@ -291,3 +291,91 @@ def test_file_repo_root_no_repository_returns_fallback(tmp_path: Path) -> None:
     plain.mkdir()
 
     assert file_repo_root(str(plain / "x" / "y.py"), fallback) == fallback
+
+
+# ---------------------------------------------------------------------------
+# Amendment 03: both relative readings, lexical roots, per-path warn cache
+# ---------------------------------------------------------------------------
+
+
+def test_cwd_relative_sibling_path_is_blocked_when_project_root_is_elsewhere(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    cwd = tmp_path / "cwd"
+    sibling = cwd / "sibling"
+    (sibling / ".git").mkdir(parents=True)
+    monkeypatch.chdir(cwd)
+
+    result = surface_guard_block("Write", {"file_path": f"sibling/{_RED}"}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_cwd_relative_sibling_contract_surface_is_warned(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    cwd = tmp_path / "cwd"
+    sibling = cwd / "sibling"
+    (sibling / ".git").mkdir(parents=True)
+    monkeypatch.chdir(cwd)
+
+    warnings = surface_guard_warnings(
+        "Edit", {"file_path": "sibling/schemas/dcp/x.json"}, root, "sess-cwd"
+    )
+
+    assert len(warnings) == 1
+    assert "Contract-sensitive surface" in warnings[0]
+
+
+def test_symlinked_red_lane_dir_in_sibling_checkout_is_blocked(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (sibling / "services").mkdir()
+    (sibling / "services" / "task-orchestrator").symlink_to(outside)
+
+    result = surface_guard_block("Write", {"file_path": str(sibling / _RED)}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_symlinked_file_in_sibling_red_lane_is_blocked(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "plain.py").write_text("x = 1\n")
+    target = sibling / _RED
+    target.parent.mkdir(parents=True)
+    target.symlink_to(outside / "plain.py")
+
+    result = surface_guard_block("Edit", {"file_path": str(target)}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_cached_first_path_does_not_hide_new_second_contract_surface(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    (root / ".claude").mkdir()
+    catalog = str(root / "schemas" / "dcp" / "a.json")
+    notebook = str(root / "schemas" / "dcp" / "x.ipynb")
+
+    first = surface_guard_warnings("Write", {"file_path": catalog}, root, "sess-c")
+    second = surface_guard_warnings(
+        "NotebookEdit", {"file_path": catalog, "notebook_path": notebook}, root, "sess-c"
+    )
+    third = surface_guard_warnings(
+        "NotebookEdit", {"file_path": catalog, "notebook_path": notebook}, root, "sess-c"
+    )
+
+    assert len(first) == 1
+    assert len(second) == 1
+    assert third == []
