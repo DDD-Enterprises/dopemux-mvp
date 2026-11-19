@@ -16,6 +16,7 @@ The compose container has neither, so there every answer is ``unavailable``.
 from __future__ import annotations
 
 import asyncio
+import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -77,7 +78,12 @@ def _display_name(project_root: Optional[str]) -> Optional[str]:
 
 def resolve_expected_project(checkout: Path) -> Optional[ExpectedProject]:
     """The project this backend runs from, by git only. None when it cannot be proven."""
-    view = resolve_identity_view(Path(checkout), trust_env=False)
+    try:
+        view = resolve_identity_view(Path(checkout), trust_env=False)
+    except (OSError, subprocess.SubprocessError):
+        # The resolver runs git and only handles git's own refusals. No git binary (the slim
+        # service image has none) or a git that hangs means the identity cannot be proven.
+        return None
     if not view.project_id or not view.project_root or view.identity_confidence == "UNKNOWN":
         return None
     return ExpectedProject(project_id=view.project_id, project_root=view.project_root)

@@ -8,6 +8,7 @@ has been read.
 """
 import asyncio
 import json
+import subprocess
 
 import pytest
 
@@ -199,6 +200,45 @@ class TestPortOwner:
 
 def test_expected_project_is_unknown_outside_a_git_checkout(tmp_path):
     assert ot.resolve_expected_project(tmp_path) is None
+
+
+def _git_fails_with(monkeypatch, error):
+    """Make every git call of the identity resolver fail the way a host without git does."""
+    from dopemux.mcp import project_identity
+
+    def run(*_args, **_kwargs):
+        raise error
+
+    monkeypatch.setattr(project_identity.subprocess, "run", run)
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        FileNotFoundError(2, "No such file or directory", "git"),
+        PermissionError(13, "Permission denied", "git"),
+        subprocess.TimeoutExpired(cmd=["git", "rev-parse"], timeout=5),
+    ],
+)
+def test_expected_project_is_unknown_when_git_cannot_run(monkeypatch, tmp_path, error):
+    _git_fails_with(monkeypatch, error)
+    assert ot.resolve_expected_project(tmp_path) is None
+
+
+def test_missing_git_is_unavailable_not_an_exception(monkeypatch, tmp_path):
+    """The slim service image has no git: /api/tasks must still answer, with unavailable."""
+    _git_fails_with(monkeypatch, FileNotFoundError(2, "No such file or directory", "git"))
+    owner_checks = []
+    lister = _lister()
+
+    result = asyncio.run(
+        ot.read_task_queue(tmp_path, check_owner=lambda expected: owner_checks.append(expected), list_role=lister)
+    )
+
+    assert result["status"] == "unavailable"
+    assert result["project"] == {"expected": None, "owner": None, "verdict": "NOT_CHECKED"}
+    assert result["items"] == []
+    assert owner_checks == [] and lister.calls == []
 
 
 # --- the gate ------------------------------------------------------------------------------
