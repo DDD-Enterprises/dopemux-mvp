@@ -1,3 +1,16 @@
+---
+id: TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001
+title: MCP Just-Works M1 Follow-ups (status lease ports, dry-run leases, expired build PID, cancel forwarding)
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-11-19'
+last_review: '2026-11-19'
+next_review: '2027-02-17'
+prelude: Companion to the L2 packet that closes the four follow-ups left open when
+  PR 1503 merged. Covers routing, code anchors and the hand-off shape; the JSON
+  packet is the authority.
+---
 # TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001
 
 Companion to `task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json`. The JSON is the authority; this file adds routing, code anchors and the hand-off shape.
