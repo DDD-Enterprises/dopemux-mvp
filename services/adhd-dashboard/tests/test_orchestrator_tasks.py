@@ -128,11 +128,23 @@ class TestParsing:
             ot.extract_tool_payload(rpc)
 
     def test_jsonrpc_error_and_tool_error_are_errors(self):
-        with pytest.raises(ot.McpReadError, match="JSON-RPC error"):
-            ot.extract_tool_payload({"error": {"code": -32000, "message": "boom"}})
+        with pytest.raises(ot.McpReadError) as rpc_error:
+            ot.extract_tool_payload({"error": {"code": -32000, "message": "boom at /synthetic/home/db"}})
+        assert str(rpc_error.value) == "orchestrator returned a JSON-RPC error"
+        assert rpc_error.value.detail == "boom at /synthetic/home/db"
+
         tool_error = {"result": {"isError": True, "content": [{"type": "text", "text": "Query failed: Invalid role"}]}}
-        with pytest.raises(ot.McpReadError, match="Query failed: Invalid role"):
+        with pytest.raises(ot.McpReadError) as reported:
             ot.extract_tool_payload(tool_error)
+        assert str(reported.value) == "orchestrator tool reported an error"
+        assert reported.value.detail == "Query failed: Invalid role"
+
+    def test_role_text_from_the_server_is_not_forwarded(self):
+        payload = {"items": [{"id": "x1", "title": "Odd", "role": "/synthetic/home/role"}]}
+        with pytest.raises(ot.McpReadError) as mismatch:
+            ot.parse_item_list(payload, "queue")
+        assert str(mismatch.value) == "asked for role queue, got an item in another role"
+        assert "/synthetic" in mismatch.value.detail
 
     @pytest.mark.parametrize(
         "payload",
@@ -160,6 +172,7 @@ class TestPortOwner:
         check = ot.check_port_owner(EXPECTED, inspect=inspect)
         assert check.verdict == "OK"
         assert (check.project_id, check.name) == ("alpha", "alpha")
+        assert check.container_id == "id-to-alpha"
         assert inspect.calls == [ot.OWNER_CHECK_TIMEOUT_S]
         assert ot.OWNER_CHECK_TIMEOUT_S <= 5.0
 
@@ -183,11 +196,38 @@ class TestPortOwner:
         )
         assert ot.check_port_owner(EXPECTED, inspect=inspect).verdict == "UNKNOWN"
 
-    def test_docker_unavailable_is_unknown_and_named(self):
-        inspect = _inspect(available=False, error="docker ps timed out")
-        check = ot.check_port_owner(EXPECTED, inspect=inspect)
+    @pytest.mark.parametrize(
+        "docker_error, public",
+        [
+            ("docker ps timed out", "docker ps timed out"),
+            ("docker binary not found on PATH", "docker binary not found"),
+            ("docker binary not found", "docker binary not found"),
+            ("Cannot connect to the Docker daemon at unix:///synthetic/home/.docker/run/docker.sock.", "docker is not reachable"),
+            ("docker ps failed: [Errno 13] Permission denied: '/synthetic/home/bin/docker'", "docker is not reachable"),
+            (None, "docker is not reachable"),
+        ],
+    )
+    def test_docker_failures_map_to_fixed_messages(self, docker_error, public):
+        check = ot.check_port_owner(EXPECTED, inspect=_inspect(available=False, error=docker_error))
         assert check.verdict == "UNKNOWN"
-        assert "docker ps timed out" in check.detail
+        assert check.detail == f"docker ps unavailable: {public}"
+        assert check.container_id is None
+
+    def test_a_path_in_the_project_id_label_is_not_passed_on(self):
+        odd = _container("to-odd", "/synthetic/home/code/beta", "/synthetic/home/code/beta")
+        check = ot.check_port_owner(EXPECTED, inspect=_inspect(odd))
+        assert check.verdict == "WRONG_PROJECT"
+        assert check.project_id is None and check.name == "beta"
+        assert "/synthetic" not in json.dumps(check.__dict__)
+
+    def test_owner_without_a_container_id_is_unknown(self):
+        nameless = DockerContainerInfo(
+            id="", name="to-alpha", published_ports=[7890],
+            labels={"dopemux.project_id": "alpha", "dopemux.project_root": "/synthetic/alpha"},
+        )
+        check = ot.check_port_owner(EXPECTED, inspect=_inspect(nameless))
+        assert check.verdict == "UNKNOWN"
+        assert "no container id" in check.detail
 
     def test_unlabelled_container_is_unknown(self):
         bare = DockerContainerInfo(id="id", name="mystery", labels={}, published_ports=[7890])
@@ -244,7 +284,9 @@ def test_missing_git_is_unavailable_not_an_exception(monkeypatch, tmp_path):
 # --- the gate ------------------------------------------------------------------------------
 
 
-OK = ot.OwnerCheck(verdict="OK", project_id="alpha", name="alpha", detail="to-alpha")
+OK = ot.OwnerCheck(verdict="OK", project_id="alpha", name="alpha", detail="to-alpha", container_id="c-alpha-1")
+OK_RECREATED = ot.OwnerCheck(verdict="OK", project_id="alpha", name="alpha", detail="to-alpha", container_id="c-alpha-2")
+OK_NO_ID = ot.OwnerCheck(verdict="OK", project_id="alpha", name="alpha", detail="to-alpha")
 WRONG = ot.OwnerCheck(verdict="WRONG_PROJECT", project_id="beta", name="beta", detail="to-beta")
 UNKNOWN = ot.OwnerCheck(verdict="UNKNOWN", project_id=None, name=None, detail="docker ps timed out")
 CONFLICT = ot.OwnerCheck(verdict="CONFLICT", project_id="beta", name="alpha", detail="to-odd")
@@ -369,6 +411,48 @@ class TestReadTaskQueue:
         assert result["status"] == "unavailable"
         assert result["items"] == []
 
+    def test_owner_recreated_during_the_read_discards_the_items(self):
+        """A -> B -> A: both proofs say OK, but the container that answered may not be the first one."""
+        lister = _lister({"work": ([_item("w1", "work")], 1)})
+        result, _ = _read(check_owner=_owner_sequence(OK, OK_RECREATED), list_role=lister)
+
+        assert lister.calls == ["work", "queue"]
+        assert result["status"] == "unavailable"
+        assert result["items"] == [] and result["total"] is None
+        assert "replaced during the read" in result["reason"]
+        assert result["project"]["verdict"] == "OK"
+
+    def test_same_container_before_and_after_is_served(self):
+        lister = _lister({"work": ([_item("w1", "work")], 1)})
+        result, _ = _read(check_owner=_owner_sequence(OK, OK), list_role=lister)
+        assert result["status"] == "ok" and [item["id"] for item in result["items"]] == ["w1"]
+
+    def test_ok_without_a_container_id_is_never_read(self):
+        result, used = _read(check_owner=_owner_sequence(OK_NO_ID))
+        assert result["status"] == "unavailable"
+        assert used["list_role"].calls == []
+
+    def test_container_ids_never_leave_the_reader(self):
+        for sequence in ((OK,), (OK, OK_RECREATED), (WRONG,)):
+            result, _ = _read(check_owner=_owner_sequence(*sequence))
+            assert "c-alpha" not in json.dumps(result)
+
+    def test_docker_stderr_never_reaches_the_response(self):
+        stderr = "Cannot connect to the Docker daemon at unix:///synthetic/home/.docker/run/docker.sock."
+        inspect = _inspect(available=False, error=stderr)
+        result, _ = _read(check_owner=lambda expected: ot.check_port_owner(expected, inspect=inspect))
+
+        assert result["status"] == "unavailable"
+        assert result["reason"] == "port 7890 owner could not be proven (UNKNOWN): docker ps unavailable: docker is not reachable"
+        assert "/synthetic" not in json.dumps(result) and "docker.sock" not in json.dumps(result)
+
+    def test_read_error_detail_never_reaches_the_response(self):
+        error = ot.McpReadError("orchestrator tool reported an error", detail="failed at /synthetic/home/data.db")
+        result, _ = _read(list_role=_lister(error=error))
+
+        assert result["reason"] == f"{MCP_URL} read failed: orchestrator tool reported an error"
+        assert "/synthetic" not in json.dumps(result)
+
     def test_no_host_paths_leave_the_reader(self):
         for check in (OK, WRONG, UNKNOWN):
             result, _ = _read(check_owner=_owner_sequence(check))
@@ -465,8 +549,10 @@ class TestMcpClient:
             async def __aexit__(self, exc_type, exc, tb):
                 return None
 
-        with pytest.raises(ot.McpReadError, match="connection refused"):
+        with pytest.raises(ot.McpReadError) as failure:
             asyncio.run(ot.list_role_items("queue", session_factory=Exploding))
+        assert str(failure.value) == "connection failed (OSError)"
+        assert failure.value.detail == "connection refused"
 
     def test_timeout_is_a_read_error(self):
         class Slow:

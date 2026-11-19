@@ -16,6 +16,7 @@ The compose container has neither, so there every answer is ``unavailable``.
 from __future__ import annotations
 
 import asyncio
+import logging
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -42,6 +43,8 @@ OWNER_CHECK_TIMEOUT_S = 5.0
 MCP_TIMEOUT_S = 5.0
 MCP_PROTOCOL_VERSION = "2024-11-05"
 
+logger = logging.getLogger(__name__)
+
 _JSON_HEADERS = {
     "Content-Type": "application/json",
     "Accept": "application/json, text/event-stream",
@@ -49,7 +52,16 @@ _JSON_HEADERS = {
 
 
 class McpReadError(Exception):
-    """The orchestrator could not be read, or answered in a shape this reader does not know."""
+    """The orchestrator could not be read, or answered in a shape this reader does not know.
+
+    The message is fixed text and goes into the API response. ``detail`` holds whatever the
+    server or the operating system said; it is logged and never returned, because that text
+    can carry host paths.
+    """
+
+    def __init__(self, message: str, *, detail: Optional[str] = None) -> None:
+        super().__init__(message)
+        self.detail = detail
 
 
 @dataclass(frozen=True)
@@ -64,6 +76,8 @@ class OwnerCheck:
     project_id: Optional[str]
     name: Optional[str]
     detail: str
+    # Compared before and after a read to notice a replaced container. Never returned.
+    container_id: Optional[str] = None
 
 
 def _display_name(project_root: Optional[str]) -> Optional[str]:
@@ -71,6 +85,13 @@ def _display_name(project_root: Optional[str]) -> Optional[str]:
     if not project_root:
         return None
     return PurePosixPath(str(project_root).rstrip("/")).name or None
+
+
+def _public_id(project_id: Optional[str]) -> Optional[str]:
+    """A project id as it may be shown. A label that holds a path is not shown at all."""
+    if not project_id or "/" in project_id or "\\" in project_id:
+        return None
+    return project_id
 
 
 # --- identity ------------------------------------------------------------------------------
@@ -89,6 +110,17 @@ def resolve_expected_project(checkout: Path) -> Optional[ExpectedProject]:
     return ExpectedProject(project_id=view.project_id, project_root=view.project_root)
 
 
+def _docker_problem(error: Optional[str]) -> str:
+    """A fixed description of why docker ps gave nothing. Docker's own text is never forwarded:
+    a connection failure names the socket path, which includes the home directory."""
+    text = error or ""
+    if text.startswith("docker binary not found"):
+        return "docker binary not found"
+    if text == "docker ps timed out":
+        return "docker ps timed out"
+    return "docker is not reachable"
+
+
 def check_port_owner(
     expected: ExpectedProject,
     *,
@@ -101,7 +133,8 @@ def check_port_owner(
     """
     state = inspect(timeout=OWNER_CHECK_TIMEOUT_S)
     if not state.available:
-        return OwnerCheck("UNKNOWN", None, None, f"docker ps unavailable: {state.error or 'no detail'}")
+        logger.warning("docker ps unavailable: %s", state.error)
+        return OwnerCheck("UNKNOWN", None, None, f"docker ps unavailable: {_docker_problem(state.error)}")
 
     owners = [c for c in state.containers if DEFAULT_TO_PORT in (c.published_ports or [])]
     if not owners:
@@ -113,11 +146,15 @@ def check_port_owner(
     owner = owners[0]
     observed = identity_from_docker_labels(owner.labels or {}, port=DEFAULT_TO_PORT, container_name=owner.name)
     verdict = match_target(observed, project_id=expected.project_id, project_root=expected.project_root)
+    name = _display_name(observed.project_root)
     if not observed.has_project_proof():
         detail = f"container {owner.name} publishes port {DEFAULT_TO_PORT} without dopemux project labels"
     else:
         detail = f"container {owner.name}"
-    return OwnerCheck(verdict, observed.project_id, _display_name(observed.project_root), detail)
+    if verdict == "OK" and not owner.id:
+        # Without an id a replaced container cannot be told from the original.
+        return OwnerCheck("UNKNOWN", _public_id(observed.project_id), name, f"container {owner.name} reported no container id")
+    return OwnerCheck(verdict, _public_id(observed.project_id), name, detail, container_id=owner.id or None)
 
 
 # --- parsing -------------------------------------------------------------------------------
@@ -130,12 +167,12 @@ def extract_tool_payload(rpc: Any) -> Dict[str, Any]:
     if rpc.get("error") is not None:
         error = rpc["error"]
         message = error.get("message") if isinstance(error, dict) else error
-        raise McpReadError(f"JSON-RPC error: {str(message)[:200]}")
+        raise McpReadError("orchestrator returned a JSON-RPC error", detail=str(message)[:500])
     result = rpc.get("result")
     if not isinstance(result, dict):
         raise McpReadError("reply has no result object")
     if result.get("isError"):
-        raise McpReadError(f"tool reported an error: {_first_text(result)[:200]}")
+        raise McpReadError("orchestrator tool reported an error", detail=_first_text(result)[:500])
     payload = result.get("structuredContent")
     if not isinstance(payload, dict):
         raise McpReadError("reply has no structuredContent object")
@@ -187,7 +224,7 @@ def parse_item_list(payload: Dict[str, Any], role: str) -> Tuple[List[Dict[str, 
             raise McpReadError("an item has no id or no title")
         item_role = raw.get("role", role)
         if item_role != role:
-            raise McpReadError(f"asked for role {role}, got an item in role {str(item_role)[:40]}")
+            raise McpReadError(f"asked for role {role}, got an item in another role", detail=str(item_role)[:200])
         items.append(
             {
                 "id": item_id,
@@ -260,7 +297,7 @@ async def list_role_items(
     except asyncio.TimeoutError as exc:
         raise McpReadError(f"timed out after {MCP_TIMEOUT_S:g} s") from exc
     except (aiohttp.ClientError, OSError) as exc:
-        raise McpReadError(str(exc)[:200] or type(exc).__name__) from exc
+        raise McpReadError(f"connection failed ({type(exc).__name__})", detail=str(exc)[:500]) from exc
 
     return parse_item_list(extract_tool_payload(parse_mcp_response_body(body)), role)
 
@@ -336,6 +373,9 @@ async def read_task_queue(
     owner = await asyncio.to_thread(check_owner, expected)
     if owner.verdict != "OK":
         return _refusal(expected, owner)
+    if not owner.container_id:
+        reason = f"port {DEFAULT_TO_PORT} owner has no container id, so a replaced container could not be noticed"
+        return _response("unavailable", reason=reason, expected=expected, owner=owner)
 
     items: List[Dict[str, Any]] = []
     totals: List[Optional[int]] = []
@@ -345,6 +385,7 @@ async def read_task_queue(
             items.extend(role_items)
             totals.append(role_total)
     except McpReadError as exc:
+        logger.warning("task queue read failed: %s (%s)", exc, exc.detail)
         return _response("unavailable", reason=f"{MCP_URL} read failed: {exc}", expected=expected, owner=owner)
 
     # The port can change hands between the proof and the read; never serve what may be another
@@ -352,6 +393,11 @@ async def read_task_queue(
     owner_after = await asyncio.to_thread(check_owner, expected)
     if owner_after.verdict != "OK":
         return _refusal(expected, owner_after, changed=True)
+    if owner_after.container_id != owner.container_id:
+        # Same project before and after, but not the same container: the port was switched away
+        # and back while the read ran, so the items may have come from the project in between.
+        reason = f"port {DEFAULT_TO_PORT} owner was replaced during the read; the items were discarded"
+        return _response("unavailable", reason=reason, expected=expected, owner=owner_after)
 
     total = sum(t for t in totals if t is not None) if all(t is not None for t in totals) else None
     return _response("ok" if items else "empty", reason=None, expected=expected, owner=owner_after, items=items, total=total)
