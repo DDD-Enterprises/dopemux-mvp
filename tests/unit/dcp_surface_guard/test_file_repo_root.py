@@ -379,3 +379,58 @@ def test_cached_first_path_does_not_hide_new_second_contract_surface(
     assert len(first) == 1
     assert len(second) == 1
     assert third == []
+
+
+# Amendment 04: a ``..`` hop in front of a symlinked red-lane directory.
+
+
+def _symlinked_red_dir(checkout: Path, outside: Path) -> None:
+    outside.mkdir(exist_ok=True)
+    (checkout / "services").mkdir()
+    (checkout / "services" / "task-orchestrator").symlink_to(outside)
+
+
+def test_traversal_prefix_to_symlinked_sibling_red_lane_is_blocked(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    (tmp_path / "transit").mkdir()
+    _symlinked_red_dir(sibling, tmp_path / "outside")
+    path = f"{tmp_path}/transit/../{sibling.name}/{_RED}"
+
+    result = surface_guard_block("Write", {"file_path": path}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_traversal_prefix_to_symlinked_project_root_red_lane_is_blocked(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    (tmp_path / "transit").mkdir()
+    _symlinked_red_dir(root, tmp_path / "outside")
+    path = f"{tmp_path}/transit/../{root.name}/{_RED}"
+
+    result = surface_guard_block("Write", {"file_path": path}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_traversal_prefix_to_symlinked_sibling_contract_surface_is_warned(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    (tmp_path / "transit").mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (sibling / "schemas").symlink_to(outside)
+    path = f"{tmp_path}/transit/../{sibling.name}/schemas/dcp/x.json"
+
+    warnings = surface_guard_warnings("Write", {"file_path": path}, root, "sess-t")
+
+    assert len(warnings) == 1
+    assert "Contract-sensitive surface" in warnings[0]

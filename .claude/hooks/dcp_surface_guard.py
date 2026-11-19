@@ -68,9 +68,20 @@ def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, 
     """
     raw = Path(file_path)
     candidates = [raw]
+    # Amendment 04: also read the ``..``-collapsed lexical spelling. A hop such
+    # as ``<x>/../<root>/services/<symlink>/f`` is the same file as the plain
+    # spelling, but raw does not sit under the root lexically and realpath
+    # follows the symlink out of it, so neither reading matched. This only
+    # adds a candidate; the raw form (in-tree ``..`` kept) is still read.
+    try:
+        norm = Path(os.path.normpath(file_path))
+        if norm != raw:
+            candidates.append(norm)
+    except (OSError, ValueError):
+        pass
     try:
         real = Path(os.path.realpath(file_path))
-        if real != raw:
+        if real not in candidates:
             candidates.append(real)
     except (OSError, ValueError):
         pass
