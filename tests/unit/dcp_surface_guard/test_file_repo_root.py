@@ -474,3 +474,43 @@ def test_dotdot_after_symlink_into_red_lane_is_blocked(tmp_path: Path) -> None:
 
     assert result is not None
     assert RED_LANE_ID in result
+
+
+# Amendment 06: root discovery reads the filesystem-resolved ``..`` spelling
+
+
+def test_dotdot_after_symlink_reaches_sibling_symlinked_red_lane_is_blocked(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    _symlinked_red_dir(sibling, tmp_path / "outside")
+    (sibling.parent / "sub").mkdir()
+    (tmp_path / "far").mkdir()
+    (tmp_path / "far" / "link").symlink_to(sibling.parent / "sub")
+    # far/link/.. is the sibling's parent, so this is the sibling's red-lane file
+    path = f"{tmp_path}/far/link/../{sibling.name}/{_RED}"
+
+    result = surface_guard_block("Write", {"file_path": path}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_dotdot_after_symlink_reaches_sibling_contract_surface_is_warned(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (sibling / "schemas").symlink_to(outside)
+    (sibling.parent / "sub").mkdir()
+    (tmp_path / "far").mkdir()
+    (tmp_path / "far" / "link").symlink_to(sibling.parent / "sub")
+    path = f"{tmp_path}/far/link/../{sibling.name}/schemas/dcp/x.json"
+
+    warnings = surface_guard_warnings("Write", {"file_path": path}, root, "sess-hop")
+
+    assert len(warnings) == 1
+    assert "Contract-sensitive surface" in warnings[0]

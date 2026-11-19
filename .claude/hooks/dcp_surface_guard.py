@@ -42,6 +42,25 @@ def _forbidden_patterns() -> tuple[re.Pattern, ...]:
         return _FALLBACK_COMPILED
 
 
+def _hop_resolved(path: str) -> str | None:
+    """``path`` with the part up to its last ``..`` resolved on the filesystem.
+
+    Amendment 05/06. ``<symlink>/..`` is the parent of the symlink's target,
+    so a lexical collapse would name a different file. The part after the
+    last ``..`` is kept as typed, symlinks included. Returns None when the
+    path has no ``..`` or cannot be read. Never raises.
+    """
+    try:
+        parts = Path(path).parts
+        last = max((i for i, part in enumerate(parts) if part == ".."), default=-1)
+        if last < 0:
+            return None
+        head = os.path.realpath(os.path.join(*parts[: last + 1]))
+        return str(Path(head, *parts[last + 1:]))
+    except (OSError, ValueError):
+        return None
+
+
 def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, ...]:
     """Every repo-relative reading of ``file_path`` that lands inside the root.
 
@@ -76,16 +95,9 @@ def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, 
     # ``<symlink>/..`` is the parent of the symlink's target and a lexical
     # collapse would name a different file; the part after it is kept as
     # typed. This only adds a candidate; the raw form is still read.
-    try:
-        parts = raw.parts
-        last = max((i for i, part in enumerate(parts) if part == ".."), default=-1)
-        if last >= 0:
-            head = os.path.realpath(os.path.join(*parts[: last + 1]))
-            hopped = Path(head, *parts[last + 1:])
-            if hopped != raw:
-                candidates.append(hopped)
-    except (OSError, ValueError):
-        pass
+    hop = _hop_resolved(file_path)
+    if hop is not None and Path(hop) != raw:
+        candidates.append(Path(hop))
     try:
         real = Path(os.path.realpath(file_path))
         if real not in candidates:
@@ -216,6 +228,13 @@ def _guard_starts(file_path: str, project_root: Path) -> tuple[str, ...]:
         for base in bases:
             starts.append(os.path.normpath(base))
             starts.append(os.path.realpath(base))
+            # Amendment 06: also walk up from the filesystem-resolved ``..``
+            # spelling. ``<symlink>/../<sibling>/<symlinked dir>/f`` collapses
+            # lexically to a path outside the sibling and realpath follows
+            # the inner symlink out of it, so neither start found its root.
+            hop = _hop_resolved(base)
+            if hop is not None:
+                starts.append(hop)
     except (OSError, ValueError):
         pass
     return tuple(dict.fromkeys(starts))
