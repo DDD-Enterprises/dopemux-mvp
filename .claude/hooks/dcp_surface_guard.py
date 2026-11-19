@@ -48,6 +48,21 @@ _MAX_SYMLINK_HOPS = 40
 _Form = tuple[tuple[str, bool], ...]
 
 
+class _AliasLimitExceeded(Exception):
+    """A path has more spellings than ``_MAX_ALIAS_FORMS``."""
+
+
+def _within_alias_limit(forms: list[_Form]) -> list[_Form]:
+    """Return ``forms`` unchanged, or raise when the list is over the limit.
+
+    Amendment 09: the list is never cut short. A dropped spelling could be the
+    one that names a red-lane file, so the caller must fail closed instead.
+    """
+    if len(forms) > _MAX_ALIAS_FORMS:
+        raise _AliasLimitExceeded(f"more than {_MAX_ALIAS_FORMS} spellings")
+    return forms
+
+
 def _walk_alias_forms(
     path: str, hops: int, known: dict[_Form, list[_Form]]
 ) -> list[_Form]:
@@ -57,7 +72,8 @@ def _walk_alias_forms(
     ``(name, is_symlink_name)``. ``known`` remembers every spelling seen for
     each resolved directory, so ``..`` out of a symlink's target gets back the
     spellings of the directory it lands in. Raises OSError past
-    ``_MAX_SYMLINK_HOPS``.
+    ``_MAX_SYMLINK_HOPS`` and ``_AliasLimitExceeded`` past
+    ``_MAX_ALIAS_FORMS``.
     """
     if hops > _MAX_SYMLINK_HOPS:
         raise OSError("too many levels of symbolic links")
@@ -72,7 +88,7 @@ def _walk_alias_forms(
             real = real[:-1]
             kept = [f[:-1] for f in forms if f and not f[-1][1]]
             forms = list(dict.fromkeys([real, *kept, *known.get(real, [])]))
-            forms = forms[:_MAX_ALIAS_FORMS]
+            forms = _within_alias_limit(forms)
             continue
         parent = os.path.join(anchor, *(n for n, _ in real))
         entry = os.path.join(parent, name)
@@ -88,7 +104,7 @@ def _walk_alias_forms(
             real = real + ((name, False),)
             forms = [f + ((name, False),) for f in forms]
             forms = list(dict.fromkeys([real, *forms]))
-        forms = forms[:_MAX_ALIAS_FORMS]
+        forms = _within_alias_limit(forms)
         seen = known.setdefault(real, [])
         seen.extend(f for f in forms if f not in seen)
     return forms
@@ -108,8 +124,9 @@ def _alias_forms(path: str) -> tuple[str, ...]:
     Components that do not exist yet are kept as typed.
 
     Each returned spelling resolves to the same file as ``path``. Returns ()
-    for a relative path, a symlink loop, or a path that cannot be read. Never
-    raises.
+    for a relative path, a symlink loop, a path that cannot be read, or a path
+    with more spellings than ``_MAX_ALIAS_FORMS`` (the block tier refuses that
+    last case first, see ``_alias_limit_exceeded``). Never raises.
     """
     try:
         if not os.path.isabs(path):
@@ -119,7 +136,7 @@ def _alias_forms(path: str) -> tuple[str, ...]:
         return tuple(
             dict.fromkeys(os.path.join(anchor, *(n for n, _ in f)) for f in forms)
         )
-    except (OSError, ValueError, RecursionError):
+    except (OSError, ValueError, RecursionError, _AliasLimitExceeded):
         return ()
 
 
@@ -285,6 +302,20 @@ def _absolute_bases(file_path: str, project_root: Path) -> tuple[str, ...]:
     return tuple(dict.fromkeys(bases))
 
 
+def _alias_limit_exceeded(file_path: str, project_root: Path) -> bool:
+    """True when any absolute form of ``file_path`` has more spellings than
+    ``_MAX_ALIAS_FORMS``, so the guard cannot check all of them. Never raises.
+    """
+    for base in _absolute_bases(file_path, project_root):
+        try:
+            _walk_alias_forms(base, 0, {})
+        except _AliasLimitExceeded:
+            return True
+        except (OSError, ValueError, RecursionError):
+            continue
+    return False
+
+
 def _guard_starts(file_path: str, project_root: Path) -> tuple[str, ...]:
     """Absolute forms of ``file_path`` that root discovery walks up from.
 
@@ -392,6 +423,16 @@ def _block_reason_for_path(file_path: str, project_root: Path) -> str | None:
             f"and is hard-blocked by red lane {RED_LANE_ID} as a precaution — "
             f"no legitimate edit target has one. If this is unexpected, inspect "
             f"the literal tool_input.file_path value."
+        )
+    # Amendment 09: a path with more symlink spellings than the guard can list
+    # is refused outright. Checking only the first _MAX_ALIAS_FORMS of them
+    # would let an unchecked spelling name a red-lane file.
+    if _alias_limit_exceeded(file_path, project_root):
+        return (
+            f"🚫 file_path goes through so many symlinks that it has more than "
+            f"{_MAX_ALIAS_FORMS} spellings, and the guard cannot check them "
+            f"all. It is hard-blocked by red lane {RED_LANE_ID} as a "
+            f"precaution. Use the file's real path instead."
         )
     patterns = _forbidden_patterns()
     for root in _guard_roots(file_path, project_root):

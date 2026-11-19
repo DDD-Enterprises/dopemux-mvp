@@ -684,3 +684,93 @@ def test_dotdot_out_of_second_symlink_keeps_red_lane_spelling(tmp_path: Path) ->
 
     assert result is not None
     assert RED_LANE_ID in result
+
+
+# Amendment 09: more spellings than the guard can list fails closed.
+
+
+def _stacked_links(outside: Path, count: int) -> Path:
+    """``outside/l0/l1/...``: every link is ``outside`` again, so each one
+    doubles the number of spellings of the path."""
+    (outside / "sub").mkdir(parents=True)
+    for i in range(count):
+        (outside / f"l{i}").symlink_to("sub/..")
+    return outside.joinpath(*[f"l{i}" for i in range(count)])
+
+
+def _red_lane_behind_stacked_links(tmp_path: Path, count: int) -> Path:
+    """Main checkout whose ``docs/link`` is a sibling's red-lane directory,
+    itself reached through ``count`` stacked links."""
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    (sibling / "services").mkdir()
+    (sibling / "services" / "task-orchestrator").symlink_to(
+        _stacked_links(tmp_path / "outside", count)
+    )
+    (root / "docs").mkdir()
+    (root / "docs" / "link").symlink_to(sibling / "services" / "task-orchestrator")
+    return root
+
+
+def test_red_lane_behind_more_spellings_than_the_cap_is_blocked(
+    tmp_path: Path,
+) -> None:
+    root = _red_lane_behind_stacked_links(tmp_path, 7)
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "link" / "x.py")}, root
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_relative_path_with_more_spellings_than_the_cap_is_blocked(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _red_lane_behind_stacked_links(tmp_path, 7)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    result = surface_guard_block("Write", {"file_path": "docs/link/x.py"}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_ordinary_file_with_more_spellings_than_the_cap_is_blocked(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "docs").mkdir()
+    (root / "docs" / "deep").symlink_to(_stacked_links(tmp_path / "outside", 7))
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "deep" / "plain.py")}, root
+    )
+
+    assert result is not None
+    assert "symlink" in result
+
+
+def test_ordinary_file_under_the_cap_is_allowed(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "docs").mkdir()
+    (root / "docs" / "deep").symlink_to(_stacked_links(tmp_path / "outside", 5))
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "deep" / "plain.py")}, root
+    )
+
+    assert result is None
+
+
+def test_warnings_do_not_raise_past_the_cap(tmp_path: Path) -> None:
+    root = _red_lane_behind_stacked_links(tmp_path, 7)
+
+    warnings = surface_guard_warnings(
+        "Write", {"file_path": str(root / "docs" / "link" / "x.py")}, root, "sess-cap"
+    )
+
+    assert warnings == []
