@@ -42,23 +42,58 @@ def _forbidden_patterns() -> tuple[re.Pattern, ...]:
         return _FALLBACK_COMPILED
 
 
-def _hop_resolved(path: str) -> str | None:
-    """``path`` with the part up to its last ``..`` resolved on the filesystem.
+_MAX_ALIAS_FORMS = 64
 
-    Amendment 05/06. ``<symlink>/..`` is the parent of the symlink's target,
-    so a lexical collapse would name a different file. The part after the
-    last ``..`` is kept as typed, symlinks included. Returns None when the
-    path has no ``..`` or cannot be read. Never raises.
+
+def _alias_forms(path: str) -> tuple[str, ...]:
+    """Every spelling of absolute ``path`` that names the same file.
+
+    Amendment 07, replacing the Amendment 04-06 "resolve up to the last ``..``"
+    reading. The path is walked one component at a time, the way the
+    filesystem resolves it. At a symlink both spellings are carried on: the
+    link's resolved target, and the link's own name. ``..`` steps to the
+    parent of where the walk really is, so a spelling whose last component is
+    a symlink name is dropped there (its lexical parent is a different
+    directory). Components that do not exist yet are kept as typed.
+
+    The result therefore holds the fully resolved path, the path with every
+    ``..`` resolved and every symlink name kept, and each mix in between, for
+    any number of hops. Each one resolves to the same file as ``path``.
+    Returns () for a relative path or one that cannot be read. Never raises.
     """
     try:
+        if not os.path.isabs(path):
+            return ()
         parts = Path(path).parts
-        last = max((i for i, part in enumerate(parts) if part == ".."), default=-1)
-        if last < 0:
-            return None
-        head = os.path.realpath(os.path.join(*parts[: last + 1]))
-        return str(Path(head, *parts[last + 1:]))
+        # each form: components after the anchor, as (name, is_symlink_name)
+        real: tuple[tuple[str, bool], ...] = ()
+        forms: list[tuple[tuple[str, bool], ...]] = [real]
+        anchor = parts[0]
+
+        def spell(form: tuple[tuple[str, bool], ...]) -> str:
+            return os.path.join(anchor, *(name for name, _ in form))
+
+        for name in parts[1:]:
+            if name == ".":
+                continue
+            if name == "..":
+                real = real[:-1]
+                kept = [f[:-1] for f in forms if f and not f[-1][1]]
+                forms = list(dict.fromkeys([real, *kept]))
+                continue
+            entry = os.path.join(spell(real), name)
+            named = [f + ((name, False),) for f in forms]
+            if os.path.islink(entry):
+                target = Path(os.path.realpath(entry))
+                real = tuple((p, False) for p in target.parts[1:])
+                named = [f[:-1] + ((name, True),) for f in named]
+                forms = list(dict.fromkeys([real, *named]))[:_MAX_ALIAS_FORMS]
+            else:
+                real = real + ((name, False),)
+                forms = list(dict.fromkeys([real, *named]))
+        return tuple(dict.fromkeys(spell(f) for f in forms))
     except (OSError, ValueError):
-        return None
+        return ()
 
 
 def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, ...]:
@@ -87,17 +122,14 @@ def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, 
     """
     raw = Path(file_path)
     candidates = [raw]
-    # Amendment 04/05: also read the spelling with ``..`` hops resolved. A hop
+    # Amendment 07: also read every alias spelling of the path. A spelling
     # such as ``<x>/../<root>/services/<symlink>/f`` is the same file as the
-    # plain spelling, but raw does not sit under the root lexically and
-    # realpath follows the symlink out of it, so neither reading matched.
-    # The part up to the last ``..`` is resolved through the filesystem, since
-    # ``<symlink>/..`` is the parent of the symlink's target and a lexical
-    # collapse would name a different file; the part after it is kept as
-    # typed. This only adds a candidate; the raw form is still read.
-    hop = _hop_resolved(file_path)
-    if hop is not None and Path(hop) != raw:
-        candidates.append(Path(hop))
+    # plain one, but raw does not sit under the root lexically and realpath
+    # follows the symlink out of it, so neither reading matched. This only
+    # adds candidates; the raw form is still read.
+    for form in _alias_forms(file_path):
+        if Path(form) not in candidates:
+            candidates.append(Path(form))
     try:
         real = Path(os.path.realpath(file_path))
         if real not in candidates:
@@ -210,6 +242,22 @@ def _guard_roots(file_path: str, project_root: Path) -> tuple[Path, ...]:
     return tuple(dict.fromkeys(roots))
 
 
+def _absolute_bases(file_path: str, project_root: Path) -> tuple[str, ...]:
+    """``file_path`` as absolute path(s), with ``..`` and symlinks left as typed.
+
+    A relative path is joined to ``project_root`` and to the process cwd,
+    since either may be where the edit lands. Never raises.
+    """
+    if os.path.isabs(file_path):
+        return (file_path,)
+    bases = [os.path.join(project_root, file_path)]
+    try:
+        bases.append(os.path.join(os.getcwd(), file_path))
+    except OSError:
+        pass
+    return tuple(dict.fromkeys(bases))
+
+
 def _guard_starts(file_path: str, project_root: Path) -> tuple[str, ...]:
     """Absolute forms of ``file_path`` that root discovery walks up from.
 
@@ -221,20 +269,14 @@ def _guard_starts(file_path: str, project_root: Path) -> tuple[str, ...]:
     """
     starts: list[str] = []
     try:
-        if os.path.isabs(file_path):
-            bases = [file_path]
-        else:
-            bases = [os.path.join(project_root, file_path), os.path.abspath(file_path)]
-        for base in bases:
+        for base in _absolute_bases(file_path, project_root):
             starts.append(os.path.normpath(base))
             starts.append(os.path.realpath(base))
-            # Amendment 06: also walk up from the filesystem-resolved ``..``
-            # spelling. ``<symlink>/../<sibling>/<symlinked dir>/f`` collapses
-            # lexically to a path outside the sibling and realpath follows
-            # the inner symlink out of it, so neither start found its root.
-            hop = _hop_resolved(base)
-            if hop is not None:
-                starts.append(hop)
+            # Amendment 07: also walk up from every alias spelling.
+            # ``<symlink>/../<sibling>/<symlinked dir>/f`` collapses lexically
+            # to a path outside the sibling and realpath follows the inner
+            # symlink out of it, so neither start found its root.
+            starts.extend(_alias_forms(base))
     except (OSError, ValueError):
         pass
     return tuple(dict.fromkeys(starts))
@@ -249,14 +291,10 @@ def _guard_readings(file_path: str, root: Path, project_root: Path) -> tuple[str
     """
     readings = list(_repo_relative_candidates(file_path, root))
     if not os.path.isabs(file_path):
-        joined = os.path.join(project_root, file_path)
-        readings.extend(_repo_relative_candidates(joined, root))
-        # Amendment 03: the cwd-absolute lexical form too, so a symlink on the
-        # way cannot leave only its resolved target to be read.
-        try:
-            readings.extend(_repo_relative_candidates(os.path.abspath(file_path), root))
-        except (OSError, ValueError):
-            pass
+        # Amendment 03/07: the project-root and cwd forms, joined without
+        # collapsing ``..`` so a symlink before it is still followed.
+        for base in _absolute_bases(file_path, project_root):
+            readings.extend(_repo_relative_candidates(base, root))
     return tuple(dict.fromkeys(readings))
 
 

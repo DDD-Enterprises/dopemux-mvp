@@ -514,3 +514,85 @@ def test_dotdot_after_symlink_reaches_sibling_contract_surface_is_warned(
 
     assert len(warnings) == 1
     assert "Contract-sensitive surface" in warnings[0]
+
+
+# Amendment 07: one filesystem walk yields every alias spelling of the path
+
+
+def _far_link_to_sibling_parent(tmp_path: Path, sibling: Path, at: str) -> None:
+    (sibling.parent / "sub").mkdir()
+    (tmp_path / at).mkdir()
+    (tmp_path / at / "link").symlink_to(sibling.parent / "sub")
+
+
+def test_second_dotdot_after_symlinked_sibling_red_lane_is_blocked(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    outside = tmp_path / "outside"
+    _symlinked_red_dir(sibling, outside)
+    (outside / "dir").mkdir()
+    _far_link_to_sibling_parent(tmp_path, sibling, "far")
+    # a second hop follows the sibling's symlinked red-lane directory
+    path = (
+        f"{tmp_path}/far/link/../{sibling.name}"
+        "/services/task-orchestrator/dir/../x.py"
+    )
+
+    result = surface_guard_block("Write", {"file_path": path}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_cwd_relative_dotdot_after_symlink_reaches_sibling_red_lane_is_blocked(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    _symlinked_red_dir(sibling, tmp_path / "outside")
+    _far_link_to_sibling_parent(tmp_path, sibling, "cwd")
+    monkeypatch.chdir(tmp_path / "cwd")
+    # cwd is outside project_root; link/.. is the sibling's parent
+    path = f"link/../{sibling.name}/{_RED}"
+
+    result = surface_guard_block("Write", {"file_path": path}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_cwd_relative_dotdot_after_symlink_reaches_sibling_contract_surface_is_warned(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (sibling / "schemas").symlink_to(outside)
+    _far_link_to_sibling_parent(tmp_path, sibling, "cwd")
+    monkeypatch.chdir(tmp_path / "cwd")
+    path = f"link/../{sibling.name}/schemas/dcp/x.json"
+
+    warnings = surface_guard_warnings("Write", {"file_path": path}, root, "sess-cwd-hop")
+
+    assert len(warnings) == 1
+    assert "Contract-sensitive surface" in warnings[0]
+
+
+def test_symlink_below_symlinked_sibling_red_lane_is_blocked(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    outside = tmp_path / "outside"
+    _symlinked_red_dir(sibling, outside)
+    (tmp_path / "third").mkdir()
+    (outside / "inner").symlink_to(tmp_path / "third")
+    # two symlinks in a row: the file is in third/, named through the red lane
+    path = f"{sibling}/services/task-orchestrator/inner/x.py"
+
+    result = surface_guard_block("Write", {"file_path": path}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
