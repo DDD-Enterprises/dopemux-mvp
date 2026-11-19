@@ -432,7 +432,8 @@ def _block_reason_for_path(file_path: str, project_root: Path) -> str | None:
             f"🚫 file_path goes through so many symlinks that it has more than "
             f"{_MAX_ALIAS_FORMS} spellings, and the guard cannot check them "
             f"all. It is hard-blocked by red lane {RED_LANE_ID} as a "
-            f"precaution. Use the file's real path instead."
+            f"precaution. Do not retry it under a different spelling: ask "
+            f"the operator to review where the path leads first."
         )
     patterns = _forbidden_patterns()
     for root in _guard_roots(file_path, project_root):
@@ -487,11 +488,17 @@ def _matches_contract_surface(rel: str) -> str | None:
     return None
 
 
-def _proof_json_is_new(file_path: str) -> bool:
+def _proof_json_is_new(file_path: str, project_root: Path) -> bool:
     """True when the target path is proof/**/PROOF.json and the file doesn't
-    exist yet (scaffold flow) — suppress the warn-tier in that case."""
+    exist yet (scaffold flow) — suppress the warn-tier in that case.
+
+    Amendment 10: a relative path is looked up where the guard reads it
+    (``project_root`` and the process cwd). It is new only when neither has it.
+    """
     if "proof" in file_path and file_path.endswith("PROOF.json"):
-        return not Path(file_path).exists()
+        return not any(
+            os.path.lexists(base) for base in _absolute_bases(file_path, project_root)
+        )
     return False
 
 
@@ -541,7 +548,7 @@ def surface_guard_warnings(
     cache_key = ""
     for candidate in tool_edit_paths(tool_input):
         # Don't warn on new proof/*/PROOF.json writes (that's the scaffold flow)
-        if _proof_json_is_new(candidate):
+        if _proof_json_is_new(candidate, project_root):
             continue
         found = _contract_surface_for_path(candidate, project_root)
         if not found:

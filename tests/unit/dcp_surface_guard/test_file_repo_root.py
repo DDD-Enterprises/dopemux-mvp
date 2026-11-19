@@ -774,3 +774,73 @@ def test_warnings_do_not_raise_past_the_cap(tmp_path: Path) -> None:
     )
 
     assert warnings == []
+
+
+# Amendment 10: the spelling-limit block must not point at another spelling,
+# and the new-PROOF.json exemption reads a relative path where the guard does.
+
+
+def test_spelling_limit_block_does_not_advise_another_path(tmp_path: Path) -> None:
+    root = _red_lane_behind_stacked_links(tmp_path, 7)
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "link" / "x.py")}, root
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+    assert "real path" not in result
+    assert "instead" not in result
+
+
+def _existing_proof_json(root: Path) -> str:
+    """Create ``schemas/proof/TP-X/PROOF.json`` under ``root``; return it
+    repo-relative."""
+    rel = "schemas/proof/TP-X/PROOF.json"
+    (root / rel).parent.mkdir(parents=True)
+    (root / rel).write_text("{}\n")
+    return rel
+
+
+def test_existing_relative_proof_json_is_warned_when_cwd_is_elsewhere(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    rel = _existing_proof_json(root)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    warnings = surface_guard_warnings("Edit", {"file_path": rel}, root, "sess-proof")
+
+    assert len(warnings) == 1
+    assert "Contract-sensitive surface" in warnings[0]
+
+
+def test_existing_relative_proof_json_is_warned_when_only_cwd_has_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    monkeypatch.chdir(root)
+    rel = _existing_proof_json(root)
+    other_root = tmp_path / "other-root"
+    other_root.mkdir()
+
+    warnings = surface_guard_warnings("Edit", {"file_path": rel}, other_root, "sess-p2")
+
+    assert len(warnings) == 1
+
+
+def test_new_relative_proof_json_is_not_warned(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    warnings = surface_guard_warnings(
+        "Write", {"file_path": "schemas/proof/TP-X/PROOF.json"}, root, "sess-p3"
+    )
+
+    assert warnings == []
