@@ -43,56 +43,83 @@ def _forbidden_patterns() -> tuple[re.Pattern, ...]:
 
 
 _MAX_ALIAS_FORMS = 64
+_MAX_SYMLINK_HOPS = 40
+
+_Form = tuple[tuple[str, bool], ...]
+
+
+def _walk_alias_forms(
+    path: str, hops: int, known: dict[_Form, list[_Form]]
+) -> list[_Form]:
+    """Forms of absolute ``path``; the first one is the fully resolved form.
+
+    Each form lists the components after the anchor as
+    ``(name, is_symlink_name)``. ``known`` remembers every spelling seen for
+    each resolved directory, so ``..`` out of a symlink's target gets back the
+    spellings of the directory it lands in. Raises OSError past
+    ``_MAX_SYMLINK_HOPS``.
+    """
+    if hops > _MAX_SYMLINK_HOPS:
+        raise OSError("too many levels of symbolic links")
+    parts = Path(path).parts
+    anchor = parts[0]
+    real: _Form = ()
+    forms: list[_Form] = [real]
+    for name in parts[1:]:
+        if name == ".":
+            continue
+        if name == "..":
+            real = real[:-1]
+            kept = [f[:-1] for f in forms if f and not f[-1][1]]
+            forms = list(dict.fromkeys([real, *kept, *known.get(real, [])]))
+            forms = forms[:_MAX_ALIAS_FORMS]
+            continue
+        parent = os.path.join(anchor, *(n for n, _ in real))
+        entry = os.path.join(parent, name)
+        if os.path.islink(entry):
+            # Amendment 08: one hop, then walk the target as written, so a
+            # name that appears only in the middle of a chain is kept too.
+            target = os.path.join(parent, os.readlink(entry))
+            reached = _walk_alias_forms(target, hops + 1, known)
+            named = [f + ((name, True),) for f in forms]
+            real = reached[0]
+            forms = list(dict.fromkeys([*reached, *named]))
+        else:
+            real = real + ((name, False),)
+            forms = [f + ((name, False),) for f in forms]
+            forms = list(dict.fromkeys([real, *forms]))
+        forms = forms[:_MAX_ALIAS_FORMS]
+        seen = known.setdefault(real, [])
+        seen.extend(f for f in forms if f not in seen)
+    return forms
 
 
 def _alias_forms(path: str) -> tuple[str, ...]:
     """Every spelling of absolute ``path`` that names the same file.
 
-    Amendment 07, replacing the Amendment 04-06 "resolve up to the last ``..``"
-    reading. The path is walked one component at a time, the way the
-    filesystem resolves it. At a symlink both spellings are carried on: the
-    link's resolved target, and the link's own name. ``..`` steps to the
-    parent of where the walk really is, so a spelling whose last component is
-    a symlink name is dropped there (its lexical parent is a different
-    directory). Components that do not exist yet are kept as typed.
+    The path is walked one component at a time, the way the filesystem
+    resolves it. At a symlink both spellings are carried on: the link's own
+    name, and every spelling of the link's target. The target is read one hop
+    at a time (Amendment 08), so each link in a chain, and each symlink inside
+    a target path, contributes its own spelling. ``..`` steps to the parent of
+    where the walk really is, so a spelling whose last component is a symlink
+    name is dropped there (its lexical parent is a different directory), and
+    the spellings already seen for the directory it lands in are picked up.
+    Components that do not exist yet are kept as typed.
 
-    The result therefore holds the fully resolved path, the path with every
-    ``..`` resolved and every symlink name kept, and each mix in between, for
-    any number of hops. Each one resolves to the same file as ``path``.
-    Returns () for a relative path or one that cannot be read. Never raises.
+    Each returned spelling resolves to the same file as ``path``. Returns ()
+    for a relative path, a symlink loop, or a path that cannot be read. Never
+    raises.
     """
     try:
         if not os.path.isabs(path):
             return ()
-        parts = Path(path).parts
-        # each form: components after the anchor, as (name, is_symlink_name)
-        real: tuple[tuple[str, bool], ...] = ()
-        forms: list[tuple[tuple[str, bool], ...]] = [real]
-        anchor = parts[0]
-
-        def spell(form: tuple[tuple[str, bool], ...]) -> str:
-            return os.path.join(anchor, *(name for name, _ in form))
-
-        for name in parts[1:]:
-            if name == ".":
-                continue
-            if name == "..":
-                real = real[:-1]
-                kept = [f[:-1] for f in forms if f and not f[-1][1]]
-                forms = list(dict.fromkeys([real, *kept]))
-                continue
-            entry = os.path.join(spell(real), name)
-            named = [f + ((name, False),) for f in forms]
-            if os.path.islink(entry):
-                target = Path(os.path.realpath(entry))
-                real = tuple((p, False) for p in target.parts[1:])
-                named = [f[:-1] + ((name, True),) for f in named]
-                forms = list(dict.fromkeys([real, *named]))[:_MAX_ALIAS_FORMS]
-            else:
-                real = real + ((name, False),)
-                forms = list(dict.fromkeys([real, *named]))
-        return tuple(dict.fromkeys(spell(f) for f in forms))
-    except (OSError, ValueError):
+        anchor = Path(path).parts[0]
+        forms = _walk_alias_forms(path, 0, {})
+        return tuple(
+            dict.fromkeys(os.path.join(anchor, *(n for n, _ in f)) for f in forms)
+        )
+    except (OSError, ValueError, RecursionError):
         return ()
 
 

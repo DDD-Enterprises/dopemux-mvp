@@ -596,3 +596,91 @@ def test_symlink_below_symlinked_sibling_red_lane_is_blocked(tmp_path: Path) -> 
     assert result is not None
     assert RED_LANE_ID in result
 
+
+
+# Amendment 08: a symlink is followed one hop at a time, so a red-lane name
+# that appears only in the middle of a chain is still read.
+
+
+def test_symlink_chain_through_red_lane_name_is_blocked(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "plain.py").write_text("x = 1\n")
+    (root / "services" / "task-orchestrator").mkdir(parents=True)
+    (root / _RED).symlink_to(outside / "plain.py")
+    (root / "docs").mkdir()
+    (root / "docs" / "innocent.py").symlink_to(root / _RED)
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "innocent.py")}, root
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_symlink_target_spelled_through_symlinked_red_lane_is_blocked(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    _symlinked_red_dir(sibling, tmp_path / "outside")
+    (root / "docs").mkdir()
+    (root / "docs" / "link").symlink_to(sibling / "services" / "task-orchestrator")
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "link" / "x.py")}, root
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_relative_symlink_target_through_symlinked_red_lane_is_blocked(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    _symlinked_red_dir(root, tmp_path / "outside")
+    (root / "docs").mkdir()
+    (root / "docs" / "rel").symlink_to("../services/task-orchestrator")
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "rel" / "x.py")}, root
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_symlink_loop_does_not_raise(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "docs").mkdir()
+    (root / "docs" / "a").symlink_to(root / "docs" / "b")
+    (root / "docs" / "b").symlink_to(root / "docs" / "a")
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "a" / "x.py")}, root
+    )
+
+    assert result is None
+
+
+def test_dotdot_out_of_second_symlink_keeps_red_lane_spelling(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    outside = tmp_path / "outside"
+    _symlinked_red_dir(sibling, outside)
+    (outside / "sub").mkdir()
+    (outside / "sym2").symlink_to(outside / "sub")
+    _far_link_to_sibling_parent(tmp_path, sibling, "far")
+    # far/link/.. is the sibling's parent; sym2/.. is the red-lane directory
+    path = (
+        f"{tmp_path}/far/link/../{sibling.name}"
+        "/services/task-orchestrator/sym2/../x.py"
+    )
+
+    result = surface_guard_block("Write", {"file_path": path}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
