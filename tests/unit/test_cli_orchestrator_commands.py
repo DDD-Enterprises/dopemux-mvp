@@ -1,6 +1,10 @@
 import ast
+import json
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
+
+import pytest
 
 from click.testing import CliRunner
 
@@ -160,6 +164,95 @@ def test_orchestrator_daily_surfaces_partial_failures(monkeypatch):
     assert "workflow_state: available" in result.output
     assert "blockers: ERROR task-orchestrator timeout" in result.output
     assert "partial_failures: 1" in result.output
+
+
+@pytest.mark.parametrize(
+    ("command", "reader", "make_result", "empty_line"),
+    [
+        ("queue", "pm_get_priority_queue", _queue_result, "queue: empty"),
+        ("blockers", "pm_get_blockers", _blockers_result, "blockers: empty"),
+        ("status", "pm_get_workflow_state", _workflow_result, "state: empty"),
+    ],
+)
+@pytest.mark.parametrize(
+    ("legality", "error", "available"),
+    [
+        ("allowed", None, True),
+        ("available", None, True),
+        ("unavailable", None, False),
+        ("held", "ownership required", False),
+        ("available", "timeout", False),
+        (None, None, False),
+    ],
+)
+def test_orchestrator_empty_requires_successful_read(
+    monkeypatch, command, reader, make_result, empty_line, legality, error, available
+):
+    payload = make_result(error=error).model_dump()
+    if legality is None:
+        del payload["legality_result"]
+    else:
+        payload["legality_result"] = legality
+    monkeypatch.setattr(
+        f"src.dopemux.commands.orchestrator_commands.{reader}",
+        AsyncMock(return_value=payload),
+    )
+
+    runner = CliRunner()
+    args = ["orchestrator", command]
+    result = runner.invoke(cli, args)
+    assert result.exit_code == 0, result.output
+    assert (empty_line in result.output.splitlines()) == available
+    if not available:
+        assert "unavailable" in result.output
+        assert "next_token:" not in result.output
+        assert "more_count:" not in result.output
+        assert "allowed_transitions:" not in result.output
+    if error:
+        assert error in result.output
+
+    structured = runner.invoke(cli, [*args, "--json-output"])
+    assert structured.exit_code == 0, structured.output
+    assert json.loads(structured.output) == payload
+
+
+@pytest.mark.parametrize(
+    ("queue_ok", "blockers_ok", "state_ok"), [(False, False, False), (True, False, True)]
+)
+def test_daily_counts_unavailable_reads_without_error_strings(
+    monkeypatch, queue_ok, blockers_ok, state_ok
+):
+    sections = [
+        ("queue", "pm_get_priority_queue", _queue_result(), queue_ok),
+        ("blockers", "pm_get_blockers", _blockers_result(), blockers_ok),
+        ("workflow_state", "pm_get_workflow_state", _workflow_result(), state_ok),
+    ]
+    payloads = {}
+    for key, reader, result, ok in sections:
+        result.legality_result = "allowed" if ok else "unavailable"
+        payloads[key] = result.model_dump()
+        monkeypatch.setattr(
+            f"src.dopemux.commands.orchestrator_commands.{reader}",
+            AsyncMock(return_value=payloads[key]),
+        )
+
+    runner = CliRunner()
+    args = ["orchestrator", "daily"]
+    result = runner.invoke(cli, args)
+    assert result.exit_code == 0, result.output
+    lines = result.output.splitlines()
+    assert f"partial_failures: {3 - sum((queue_ok, blockers_ok, state_ok))}" in lines
+    assert ("queue: empty" in lines) == queue_ok
+    assert ("blockers: empty" in lines) == blockers_ok
+    assert ("state: empty" in lines) == state_ok
+    assert any(line.startswith("queue_next_token:") for line in lines) == queue_ok
+    for key, _, _, ok in sections:
+        if not ok:
+            assert f"{key}: unavailable" in lines
+
+    structured = runner.invoke(cli, [*args, "--json-output"])
+    assert structured.exit_code == 0, structured.output
+    assert json.loads(structured.output) == payloads
 
 
 def test_orchestrator_commands_do_not_call_write_capable_helpers():

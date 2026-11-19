@@ -93,6 +93,10 @@ def _error_text(payload: Dict[str, Any]) -> Optional[str]:
     return str(error) if error else None
 
 
+def _read_available(payload: Dict[str, Any]) -> bool:
+    return payload.get("legality_result") in ("available", "allowed") and not _error_text(payload)
+
+
 def _authority(payload: Dict[str, Any]) -> str:
     provenance = payload.get("provenance") or {}
     if isinstance(provenance, dict):
@@ -955,16 +959,20 @@ def orchestrator_queue(project_id: str, json_output: bool):
         click.echo(json.dumps(payload, indent=2, sort_keys=True))
         return
 
-    items = list(payload.get("queue_items") or [])
     error = _error_text(payload)
     lines = [
         "Task Orchestrator Queue",
         f"project: {project_id}",
         f"authority: {_authority(payload)}",
-        f"legality_result: {payload.get('legality_result', 'unavailable')}",
+        f"legality_result: {payload.get('legality_result') or 'unavailable'}",
     ]
     if error:
         lines.append(f"error: {error}")
+    if not _read_available(payload):
+        _emit_lines([*lines, "queue: unavailable"])
+        return
+
+    items = list(payload.get("queue_items") or [])
     if items:
         lines.extend(_render_top_items(items))
     else:
@@ -984,16 +992,20 @@ def orchestrator_blockers(project_id: str, json_output: bool):
         click.echo(json.dumps(payload, indent=2, sort_keys=True))
         return
 
-    blockers = list(payload.get("active_blockers") or [])
     error = _error_text(payload)
     lines = [
         "Task Orchestrator Blockers",
         f"project: {project_id}",
         f"authority: {_authority(payload)}",
-        f"legality_result: {payload.get('legality_result', 'unavailable')}",
+        f"legality_result: {payload.get('legality_result') or 'unavailable'}",
     ]
     if error:
         lines.append(f"error: {error}")
+    if not _read_available(payload):
+        _emit_lines([*lines, "blockers: unavailable"])
+        return
+
+    blockers = list(payload.get("active_blockers") or [])
     if blockers:
         lines.extend(_render_top_items(blockers))
     else:
@@ -1013,17 +1025,21 @@ def orchestrator_status(project_id: str, json_output: bool):
         click.echo(json.dumps(payload, indent=2, sort_keys=True))
         return
 
-    state = payload.get("state") or {}
-    allowed = payload.get("allowed_transitions") or []
     error = _error_text(payload)
     lines = [
         "Task Orchestrator Status",
         f"project: {project_id}",
         f"authority: {_authority(payload)}",
-        f"legality_result: {payload.get('legality_result', 'unavailable')}",
+        f"legality_result: {payload.get('legality_result') or 'unavailable'}",
     ]
     if error:
         lines.append(f"error: {error}")
+    if not _read_available(payload):
+        _emit_lines([*lines, "state: unavailable"])
+        return
+
+    state = payload.get("state") or {}
+    allowed = payload.get("allowed_transitions") or []
     if state:
         for key, value in state.items():
             lines.append(f"{key}: {value}")
@@ -1050,14 +1066,7 @@ def orchestrator_daily(project_id: str, json_output: bool):
         click.echo(json.dumps(payloads, indent=2, sort_keys=True))
         return
 
-    failures = {
-        name: _error_text(payload)
-        for name, payload in payloads.items()
-        if _error_text(payload)
-    }
-    queue_items = list(queue_payload.get("queue_items") or [])
-    blocker_items = list(blockers_payload.get("active_blockers") or [])
-    workflow_state = workflow_payload.get("state") or {}
+    failures = {name for name, payload in payloads.items() if not _read_available(payload)}
     lines = [
         "Task Orchestrator Daily",
         f"project: {project_id}",
@@ -1068,19 +1077,25 @@ def orchestrator_daily(project_id: str, json_output: bool):
         if error:
             lines.append(f"{name}: ERROR {error}")
         else:
-            lines.append(f"{name}: {payload.get('legality_result', 'available')}")
+            lines.append(f"{name}: {payload.get('legality_result') or 'unavailable'}")
     lines.append(f"partial_failures: {len(failures)}")
-    lines.append("queue_top:")
-    lines.extend(_render_top_items(queue_items) or ["queue: empty"])
-    lines.append(f"queue_more_count: {max(len(queue_items) - 3, 0)}")
-    lines.append(f"queue_next_token: {_next_token(queue_payload, queue_items)}")
-    lines.append("blockers_top:")
-    lines.extend(_render_top_items(blocker_items) or ["blockers: empty"])
-    if workflow_state:
-        for key, value in workflow_state.items():
-            lines.append(f"{key}: {value}")
-    else:
-        lines.append("state: empty")
+    if "queue" not in failures:
+        queue_items = list(queue_payload.get("queue_items") or [])
+        lines.append("queue_top:")
+        lines.extend(_render_top_items(queue_items) or ["queue: empty"])
+        lines.append(f"queue_more_count: {max(len(queue_items) - 3, 0)}")
+        lines.append(f"queue_next_token: {_next_token(queue_payload, queue_items)}")
+    if "blockers" not in failures:
+        blocker_items = list(blockers_payload.get("active_blockers") or [])
+        lines.append("blockers_top:")
+        lines.extend(_render_top_items(blocker_items) or ["blockers: empty"])
+    if "workflow_state" not in failures:
+        workflow_state = workflow_payload.get("state") or {}
+        if workflow_state:
+            for key, value in workflow_state.items():
+                lines.append(f"{key}: {value}")
+        else:
+            lines.append("state: empty")
     _emit_lines(lines)
 
 
