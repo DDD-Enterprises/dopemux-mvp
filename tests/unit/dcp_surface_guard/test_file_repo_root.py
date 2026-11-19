@@ -434,3 +434,43 @@ def test_traversal_prefix_to_symlinked_sibling_contract_surface_is_warned(
 
     assert len(warnings) == 1
     assert "Contract-sensitive surface" in warnings[0]
+
+
+# Amendment 05: ``..`` after a symlink is resolved the way the filesystem does
+
+
+def test_dotdot_after_symlink_to_ordinary_file_is_allowed(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "other" / "sub").mkdir(parents=True)
+    (root / "other" / "services" / "task-orchestrator").mkdir(parents=True)
+    (root / "link").symlink_to(root / "other" / "sub")
+    # link/.. is other/, so this is other/services/..., an ordinary file
+    path = f"{root}/link/../{_RED}"
+
+    assert surface_guard_block("Write", {"file_path": path}, root) is None
+
+
+def test_dotdot_after_symlink_to_ordinary_file_is_not_warned(
+    tmp_path: Path,
+) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "other" / "sub").mkdir(parents=True)
+    (root / "link").symlink_to(root / "other" / "sub")
+    path = f"{root}/link/../schemas/dcp/x.json"
+
+    warnings = surface_guard_warnings("Write", {"file_path": path}, root, "sess-u")
+
+    assert warnings == []
+
+
+def test_dotdot_after_symlink_into_red_lane_is_blocked(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "services" / "sub").mkdir(parents=True)
+    (root / "link").symlink_to(root / "services" / "sub")
+    # link/.. is services/, so this is the red-lane file itself
+    path = f"{root}/link/../task-orchestrator/x.py"
+
+    result = surface_guard_block("Write", {"file_path": path}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
