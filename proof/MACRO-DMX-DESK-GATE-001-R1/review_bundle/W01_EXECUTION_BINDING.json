@@ -1,0 +1,115 @@
+{
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2"
+    ],
+    "selected_auditor_binding": "NOT_RUN",
+    "upstream_obligations": []
+  },
+  "auth_profile_ref": "UNKNOWN",
+  "authority": "NONE",
+  "authority_refs": {
+    "operator_gate_refs": [
+      "operator chat 2026-11-15: typed 'AUTHORIZE_MACRO_DMX_DESK_GATE_001_EXECUTION=YES'",
+      "operator chat 2026-11-15: 'Reissue and execute' in answer to 'Reissue the macro pinned to the new origin/main (365f70c) and then execute it?' (base drift; the base pin is the only change from MACRO-DMX-DESK-GATE-001)"
+    ],
+    "task_packet_ref": "task-packets/MACRO-DMX-DESK-GATE-001-R1/WORKSTREAMS/W01/TASK_PACKET.json"
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read",
+      "edit",
+      "validate"
+    ],
+    "context_constraints": [
+      "children receive only their TASK_PACKET plus cited context_files"
+    ],
+    "custody_constraints": [
+      "mutation only inside .worktrees/desk-gate-001, files: src/dopemux/claude/dispatch_gate.py, tests/unit/test_dispatch_gate.py"
+    ],
+    "forbidden_actions": [
+      "activate",
+      "commit",
+      "force_push",
+      "history_rewrite",
+      "mark_ready",
+      "merge",
+      "push"
+    ],
+    "stop_conditions": [
+      "operator gate absent",
+      "authority conflict",
+      "parallel write overlap"
+    ]
+  },
+  "containment_posture": "worktree-scoped",
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "effort_observed": "UNKNOWN",
+  "effort_requested": "medium",
+  "fallback": {
+    "allowed": false,
+    "binding": {
+      "effort": "NOT_RUN",
+      "model": "NOT_RUN",
+      "runner": "NOT_RUN"
+    },
+    "trigger": "NOT_RUN"
+  },
+  "fallback_outcome": {
+    "fallback_reason": "not triggered",
+    "fallback_used": false
+  },
+  "independence_class": "UNKNOWN",
+  "justification": {
+    "alternatives_considered": [
+      {
+        "disposition": "rejected",
+        "reason": "allowed_fallbacks is empty; escalation needs a recorded operator decision",
+        "route": "claude-opus-5-5"
+      }
+    ],
+    "cost_latency_tradeoff": "UNKNOWN (no current price evidence recorded)",
+    "evidence": [
+      "dispatch-desk commit a025bb5 tools/gate.py",
+      "src/dopemux/claude/native_hooks.py",
+      ".claude/settings.json",
+      ".codex/hooks.json"
+    ],
+    "why_effort": "medium requested for the child; not observable from the coordinator",
+    "why_model": "bounded implementation with a stated test matrix; route named by the packet and the session skill router",
+    "why_runner": "subagent of the coordinator session via the Agent tool"
+  },
+  "macro_id": "MACRO-DMX-DESK-GATE-001-R1",
+  "network_posture": "no-network-mutation",
+  "packet_id": "TP-DMX-DESK-GATE-W01-CLIENT-001",
+  "policy_refs": {
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN"
+  },
+  "provider_attested_model": "UNKNOWN",
+  "qualification_receipt_ref": "NOT_RUN",
+  "recorded_at": "2026-11-16T03:28:50Z",
+  "response_claimed_model": "UNKNOWN",
+  "runner_version": "UNKNOWN",
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "selection": {
+    "configured_identity": "claude-sonnet-5-5",
+    "connector": "agent-tool",
+    "containment_evidence": [],
+    "effort": "medium",
+    "model": "claude-sonnet-5-5",
+    "provider_attested_identity": "UNKNOWN",
+    "response_claimed_identity": "UNKNOWN",
+    "runner": "claude-code-agent",
+    "runner_availability": "PROVEN"
+  },
+  "stage": "implementation"
+}

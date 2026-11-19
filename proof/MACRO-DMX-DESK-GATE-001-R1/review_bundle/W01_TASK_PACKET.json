@@ -1,0 +1,139 @@
+{
+ "id": "TP-DMX-DESK-GATE-W01-CLIENT-001",
+ "project": "dopemux-mvp",
+ "target": "Add a small, dependency-free gate client (`src/dopemux/claude/dispatch_gate.py`) that resolves the project key and gate path, runs the gate with a timeout, and maps its exit code to a typed result. No hook wiring.",
+ "invariants": [
+  "MACRO I01-I08 apply (MACRO-DMX-DESK-GATE-001-R1).",
+  "I01 Gate contract is pinned to dispatch-desk a025bb5 (tools/gate.py, tools/ledger.py): `gate.py check --project <P> [--task <T>] --by <who>`; exit 0 GO, 3 pause requested, 4 unapproved (only with --require-approval), 2 bad usage.",
+  "I02 The gate is an external, optional tool. Gate path is `$DISPATCH_DESK_HOME/tools/gate.py`, default `~/code/dispatch-desk/tools/gate.py`. If the file is absent the hook does nothing and prints nothing.",
+  "I03 Project key is the MAIN checkout folder name (`dopemux-mvp`), derived from `git rev-parse --path-format=absolute --git-common-dir`, never the worktree folder name. It must equal the ledger key the desk uses.",
+  "I04 Declared effect outside the repo: when a pause is requested the gate appends `pause_acknowledged` to `~/.dispatch-desk/ledger.jsonl` (or `$DISPATCH_DESK_LEDGER`). This repo writes nothing else outside itself and never writes the ledger directly.",
+  "I05 Advisory only (owner decision D2): on exit 3 the hook adds context telling the runner a pause is requested and to stop and report. It never denies a tool call and never exits non-zero because of the gate.",
+  "I06 Fail open (owner decision D1): gate missing, timeout (2 s), exit 2 or any unexpected exit lets work continue; at most one line of context says the gate state is UNKNOWN.",
+  "I07 `--require-approval` is not passed. With an empty ledger it would return 4 for every task.",
+  "I08 Existing hook behaviour is unchanged when the gate is absent: the existing native-hook tests pass unmodified apart from added cases.",
+  "The client has no import-time side effects and does not import anything outside the standard library."
+ ],
+ "depends_on": [],
+ "repo_binding": {
+  "project_id": "dopemux-mvp",
+  "repo_marker": ".dopetaskroot",
+  "origin_hint": "DDD-Enterprises/dopemux-mvp",
+  "require_identity_match": true
+ },
+ "series": {
+  "id": "MACRO-DMX-DESK-GATE-001-R1",
+  "base_branch": "main",
+  "parent_tp_id": "MACRO-DMX-DESK-GATE-001-R1",
+  "final_packet": false
+ },
+ "execution": {
+  "agent": "claude",
+  "branch": "feat/desk-gate-001",
+  "base_branch": "main"
+ },
+ "commit": {
+  "message": "feat(hooks): Dispatch desk gate client with exit-code mapping",
+  "allowlist": [
+   "src/dopemux/claude/dispatch_gate.py",
+   "tests/unit/test_dispatch_gate.py"
+  ],
+  "verify": [
+   ".venv/bin/python -m pytest -q tests/unit/test_dispatch_gate.py",
+   ".venv/bin/flake8 src/dopemux/claude/dispatch_gate.py tests/unit/test_dispatch_gate.py",
+   "git diff --name-only | sort   # equals the allowlist"
+  ]
+ },
+ "pr": {
+  "title": "feat(hooks): advisory Dispatch desk gate check at session start",
+  "body": "Implements MACRO-DMX-DESK-GATE-001-R1 (W01-W02). Draft until the final independent L2 audit and operator review.",
+  "base": "main"
+ },
+ "steps": [
+  {
+   "id": "W01-S1",
+   "task": "Read the gate contract and the existing hook helpers",
+   "requirements": [
+    "Read only. Do not edit dispatch-desk."
+   ],
+   "commands": [],
+   "expected_files": [],
+   "validation": [
+    "contract facts in the return match the pinned gate source"
+   ],
+   "context_files": [
+    "src/dopemux/claude/native_hooks.py",
+    ".claude/hooks/run_native_hooks.sh"
+   ]
+  },
+  {
+   "id": "W01-S2",
+   "task": "Write the client and its tests",
+   "requirements": [
+    "Public surface: `resolve_project(root) -> str`, `resolve_gate() -> Path | None`, `check(root, by, task=None, timeout=2.0) -> GateResult` with state in {GO, PAUSE_REQUESTED, UNAPPROVED, NOT_INSTALLED, UNKNOWN} and the gate message.",
+    "Standard library only. Run the gate as `python3 -I <gate> check ...` via subprocess with a list argv; never a shell string.",
+    "Tests use a fake gate script in a temp dir selected through DISPATCH_DESK_HOME, and a temp ledger through DISPATCH_DESK_LEDGER. Tests never touch `~/.dispatch-desk`.",
+    "Test matrix: exit 0, 3, 4, 2, unexpected exit, timeout, gate absent, project key from a linked worktree equals the main checkout name."
+   ],
+   "commands": [
+    ".venv/bin/python -m pytest -q tests/unit/test_dispatch_gate.py"
+   ],
+   "expected_files": [
+    "src/dopemux/claude/dispatch_gate.py",
+    "tests/unit/test_dispatch_gate.py"
+   ],
+   "validation": [
+    "all matrix rows pass",
+    "no write outside the temp dir (assert the real ledger path is untouched or absent)"
+   ],
+   "context_files": [
+    "src/dopemux/claude/dispatch_gate.py",
+    "tests/unit/test_dispatch_gate.py"
+   ]
+  },
+  {
+   "id": "W01-S3",
+   "task": "Return",
+   "requirements": [
+    "Summary, test output, exit codes, advisor_calls, files_written, observed_model."
+   ],
+   "commands": [
+    "git diff --stat"
+   ],
+   "expected_files": [],
+   "validation": [
+    "diff limited to the allowlist"
+   ],
+   "context_files": []
+  }
+ ],
+ "schema_version": "dopemux.governed_execution.task_packet.v2",
+ "macro_id": "MACRO-DMX-DESK-GATE-001-R1",
+ "workstream_id": "W01",
+ "risk_lane": "L2",
+ "audit_group": "AUDIT-DESK-GATE-001",
+ "execution_requirements": {
+  "preferred_route": {
+   "runner": "claude-code-agent",
+   "model": "claude-sonnet-5-5",
+   "effort": "medium"
+  },
+  "allowed_fallbacks": [],
+  "binding": "LIVE_PROOF_REQUIRED",
+  "auditor_independence": "DIFFERENT_FAMILY"
+ },
+ "write_surface": [
+  "src/dopemux/claude/dispatch_gate.py",
+  "tests/unit/test_dispatch_gate.py"
+ ],
+ "canonical_writers": [
+  "W01-implementer"
+ ],
+ "semantic_scope": [
+  "dispatch-gate-client"
+ ],
+ "rollback_boundary": "git revert <W01 commit> on feat/desk-gate-001 (REVERT_COMMITS); base 365f70ce2edc907d14356d82d2843104dbdaa434",
+ "operator_gate_required": true,
+ "receipt_refs": {},
+ "authority": "NONE"
+}

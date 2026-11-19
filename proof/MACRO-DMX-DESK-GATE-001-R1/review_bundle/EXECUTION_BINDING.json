@@ -1,0 +1,112 @@
+{
+ "schema_version": "dopemux.governed_execution.execution_binding.v2",
+ "macro_id": "MACRO-DMX-DESK-GATE-001-R1",
+ "stage": "issuance",
+ "authority": "NONE",
+ "authority_refs": {
+  "task_packet_ref": "task-packets/MACRO-DMX-DESK-GATE-001-R1/MACRO_PACKET.json",
+  "operator_gate_refs": [
+   "operator chat 2026-11-15: typed 'AUTHORIZE_MACRO_DMX_DESK_GATE_001_EXECUTION=YES'",
+   "operator chat 2026-11-15: 'Reissue and execute' in answer to 'Reissue the macro pinned to the new origin/main (365f70c) and then execute it?' (base drift; the base pin is the only change from MACRO-DMX-DESK-GATE-001)"
+  ]
+ },
+ "policy_refs": {
+  "dcp_route_decision_ref": "NOT_RUN",
+  "dcp_status": "NOT_RUN",
+  "dcp_risk_class": "NOT_RUN",
+  "task_orchestrator_state_ref": "NOT_RUN",
+  "universal_router_recommendation_ref": "NOT_RUN",
+  "audit_broker_certification_ref": "NOT_RUN",
+  "context_packet_ref": "NOT_RUN"
+ },
+ "delivery": {
+  "risk_lane": "L2"
+ },
+ "selection": {
+  "runner": "claude-code-desktop",
+  "runner_availability": "PROVEN",
+  "model": "claude-fable-5-2",
+  "effort": "medium",
+  "connector": "desktop-app",
+  "configured_identity": "claude-fable-5-2",
+  "response_claimed_identity": "claude-fable-5-2",
+  "provider_attested_identity": "UNKNOWN",
+  "containment_evidence": []
+ },
+ "constraints": {
+  "allowed_actions": [
+   "read",
+   "edit",
+   "validate"
+  ],
+  "forbidden_actions": [
+   "merge",
+   "activate",
+   "force_push",
+   "history_rewrite",
+   "mark_ready"
+  ],
+  "stop_conditions": [
+   "operator gate absent",
+   "authority conflict",
+   "parallel write overlap"
+  ],
+  "custody_constraints": [
+   "mutation only inside .worktrees/desk-gate-001"
+  ],
+  "context_constraints": [
+   "children receive only their TASK_PACKET plus cited context_files"
+  ]
+ },
+ "justification": {
+  "why_runner": "issuing supervisor session (Claude Code desktop)",
+  "why_model": "session model as configured for the issuing session (claude-fable-5-2, from the session configuration; no provider receipt); packet authoring and coordination of a two-workstream macro on a hook surface",
+  "why_effort": "session effort observed via $CLAUDE_EFFORT=medium",
+  "alternatives_considered": [
+   {
+    "route": "claude-sonnet-5-5 coordinator",
+    "disposition": "rejected",
+    "reason": "the issuing session is the coordinator at issuance; a different coordinator at execution needs its own binding"
+   }
+  ],
+  "cost_latency_tradeoff": "UNKNOWN (no current price evidence recorded)",
+  "evidence": [
+   "dispatch-desk commit a025bb5 tools/gate.py",
+   "src/dopemux/claude/native_hooks.py",
+   ".claude/settings.json",
+   ".codex/hooks.json"
+  ]
+ },
+ "audit": {
+  "effective_required": true,
+  "effective_requirement_sources": [
+   "delivery:L2"
+  ],
+  "upstream_obligations": [],
+  "selected_auditor_binding": "NOT_RUN"
+ },
+ "fallback": {
+  "allowed": false,
+  "trigger": "NOT_RUN",
+  "binding": {
+   "runner": "NOT_RUN",
+   "model": "NOT_RUN",
+   "effort": "NOT_RUN"
+  }
+ },
+ "recorded_at": "2026-11-16T03:28:06Z",
+ "runner_version": "UNKNOWN",
+ "effort_requested": "medium",
+ "effort_observed": "medium",
+ "auth_profile_ref": "UNKNOWN",
+ "network_posture": "no-network-mutation",
+ "containment_posture": "worktree-scoped",
+ "fallback_outcome": {
+  "fallback_used": false,
+  "fallback_reason": "not triggered"
+ },
+ "response_claimed_model": "claude-fable-5-2",
+ "provider_attested_model": "UNKNOWN",
+ "independence_class": "UNKNOWN",
+ "qualification_receipt_ref": "NOT_RUN"
+}

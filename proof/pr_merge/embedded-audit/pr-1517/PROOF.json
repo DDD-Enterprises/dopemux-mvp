@@ -1,0 +1,52 @@
+{
+ "repo": "DDD-Enterprises/dopemux-mvp",
+ "pr_number": 1517,
+ "head_sha": "79799cade6f2b73e98b5bc30889699a117fac979",
+ "packet_id": "MACRO-DMX-DESK-GATE-001-R1",
+ "generated_at": "2026-11-16T12:01:13.778748+00:00",
+ "mutation_performed": false,
+ "github_mutation_route_added": false,
+ "audit_identity": {
+  "auditor": {
+   "effort": "runner default (not set)",
+   "model": "grok-4.7",
+   "model_family": "xai-grok",
+   "runner": "grok-cli",
+   "runtime_family": "xai-grok-cli"
+  },
+  "implementer": {
+   "model": "claude-fable-5-2 (supervisor session, configured); children claude-sonnet-5-5 requested (W01, W02, repair)",
+   "model_family": "anthropic-claude",
+   "runner": "claude-code-desktop",
+   "runtime_family": "anthropic-claude-code"
+  },
+  "independence": "PROVEN"
+ },
+ "embedded_audit": {
+  "required": true,
+  "status": "PASS",
+  "auditor_tool": "grok-cli",
+  "auditor_model": "grok-4.7",
+  "invocation": "grok --cwd <sealed git-archive export of 79799cade with packets, DIFF.patch and gate reference> -m grok-4.7 --always-approve --disable-web-search --no-subagents --max-turns 80 --output-format plain --prompt-file AUDIT_PROMPT.md; grok CLI 1.0.77; run 2026-11-16T04:24:03Z to 04:37:11Z; tools were enabled so the auditor could re-run the tests in the export",
+  "exit_code": 0,
+  "report_path": "proof/MACRO-DMX-DESK-GATE-001-R1/AUDITOR_REPORT.md",
+  "findings": [],
+  "fixes_applied": [],
+  "remaining_risks": [
+   "Advisory only: a runner that ignores the session-start advisory is not stopped, and a session already running does not see a later pause request.",
+   "On a pause request the external gate appends an acknowledgement to ~/.dispatch-desk/ledger.jsonl (or $DISPATCH_DESK_LEDGER), outside this repository.",
+   "DISPATCH_DESK_HOME selects Python source that is executed (with -I, list argv). The override and the selected directory are trusted inputs; no provenance check.",
+   "Session start can wait up to 2.0 s for the git lookup and 2.0 s for the gate when the gate is installed; end-to-end latency was not measured.",
+   "Other test modules that exercise SessionStart are not isolated from a real gate by this change; static review found no path that reaches it, but that was not executed evidence.",
+   "by is always native-hook: the dispatcher cannot tell Claude Code from Codex, so acknowledgements do not distinguish them.",
+   "No live proof: no real session was run against a real pause request."
+  ],
+  "skip_reason": null,
+  "instruction_like_content": {
+   "detected": false,
+   "match_count": 0,
+   "truncated": false,
+   "matches": []
+  }
+ }
+}
