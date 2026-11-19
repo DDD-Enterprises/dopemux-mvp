@@ -501,13 +501,34 @@ def _read_instance_marker(runtime_dir: Path) -> Optional[Dict[str, str]]:
     return fields
 
 
-def _live_build(runtime_dir: Path, now: float) -> bool:
-    """Whether a detached image build may still write into ``runtime_dir``.
+def _build_process_identity(pid: int) -> Optional[Dict[str, Any]]:
+    """Birth time and private process group of a live build session leader."""
+    if type(pid) is not int or pid <= 0:
+        return None
+    import psutil  # type: ignore[import-untyped]
 
-    The launcher's rule (``launcher._live_build_pid``, not imported: the launcher
-    imports this module): a ``build-<service>.pid`` whose pid is alive and whose
-    file is at most ``build_timeout_secs()`` old. A dir or pid file that cannot be
-    read counts as live (never delete under a build); a non-numeric pid does not.
+    try:
+        process = psutil.Process(pid)
+        if not process.is_running():
+            return None
+        if process.status() == psutil.STATUS_ZOMBIE:
+            return None
+        created = process.create_time()
+        group = os.getpgid(pid)
+        if group != pid or created <= 0:
+            return None
+        return {"pid": pid, "create_time": created, "pgid": group}
+    except (OSError, psutil.Error):
+        return None
+
+
+def _live_build(runtime_dir: Path, now: float) -> bool:
+    """Protect a verified build until exit, even while timeout cleanup runs.
+
+    Same identity rule as launcher._live_build_pid, kept local to avoid imports
+    in the opposite direction. Age alone never proves a process has stopped.
+    An unreadable directory/file is protected conservatively; malformed/legacy
+    records and mismatching process identities are stale and never signalled.
     """
     try:
         entries = list(Path(runtime_dir).iterdir())
@@ -515,22 +536,19 @@ def _live_build(runtime_dir: Path, now: float) -> bool:
         return False
     except OSError:
         return True
-    budget = dr.build_timeout_secs()
     for entry in entries:
         if not (entry.name.startswith("build-") and entry.name.endswith(".pid")):
             continue
         try:
-            text = entry.read_text(encoding="utf-8").strip()
-            age = now - entry.stat().st_mtime
+            record = json.loads(entry.read_text(encoding="utf-8"))
         except FileNotFoundError:
             continue
         except OSError:
             return True
-        except ValueError:  # not text: not a pid the launcher wrote
+        except (ValueError, TypeError):
             continue
-        if not _is_pid_text(text):
-            continue
-        if age <= budget and _pid_alive(int(text)):
+        if (isinstance(record, dict) and type(record.get("pid")) is int
+                and record == _build_process_identity(record["pid"])):
             return True
     return False
 

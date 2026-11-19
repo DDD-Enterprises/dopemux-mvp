@@ -12,6 +12,7 @@ import socket
 import time
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List
+from types import SimpleNamespace
 
 import anyio
 import pytest
@@ -467,6 +468,7 @@ async def test_proxy_fails_fast_and_exits_one_when_reconnect_cannot_answer(monke
     assert backend.calls == []
 
 
+@pytest.mark.usefixtures("m1_proxy_effect_fence")
 async def test_proxy_bounds_a_request_with_a_read_timeout(monkeypatch):
     monkeypatch.setattr(stdio_proxy, "REQUEST_TIMEOUT_S", 0.3)
     backend = _Backend()
@@ -485,6 +487,7 @@ async def test_proxy_bounds_a_request_with_a_read_timeout(monkeypatch):
 # --- Streamable HTTP "Session terminated" (fix round 2) ---------------------
 
 
+@pytest.mark.usefixtures("m1_proxy_effect_fence")
 async def test_proxy_reconnects_and_resends_after_streamable_session_terminated():
     backend = _Backend("terminated", "ok")
     async with _runner_via(backend) as (runner, box):
@@ -515,6 +518,7 @@ def test_session_terminated_is_exact_code_and_message(
     assert stdio_proxy._session_terminated(error) is expected
 
 
+@pytest.mark.usefixtures("m1_proxy_effect_fence")
 async def test_proxy_does_not_resend_a_lookalike_error_that_may_have_committed():
     backend = _Backend("terminated_lookalike", "ok")
     async with _runner_via(backend) as (runner, box):
@@ -960,3 +964,193 @@ async def test_own_backend_heals_through_both_checkpoints():
     assert served == ["A"] and connects == ["A-terminated", "A"]
     assert calls == ["A", "A", "A", "A"]  # before/after the first and the reconnect
     assert code is None  # still serving
+
+
+@pytest.mark.usefixtures("m1_proxy_effect_fence")
+async def test_m1_followup_runner_cancel_reaches_backend_request_id():
+    """Real proxy/SDK, in-memory streams; backend cancellation is observable."""
+    backend = Server("cancellable-backend")
+    entered = anyio.Event()
+    cancelled = anyio.Event()
+    completed = anyio.Event()
+    ids = []
+    @backend.call_tool()
+    async def call(name, arguments):
+        ids.append(backend.request_context.request_id)
+        entered.set()
+        try:
+            await anyio.sleep(0.4)
+            completed.set()
+            return [types.TextContent(type="text", text="completed")]
+        except anyio.get_cancelled_exc_class():
+            cancelled.set()
+            raise
+    with anyio.fail_after(5):
+        async with _runner_via_proxy(backend) as (runner, _box):
+            # Backend initializes with id0; runner id900 is deliberately distinct.
+            # Distinct id on runner enforced directly by actual SDK state.
+            assert isinstance(runner._request_id, int)
+            runner._request_id = 900
+            with anyio.CancelScope() as scope:
+                async def cancel_when_entered():
+                    await entered.wait()
+                    await runner.send_notification(types.ClientNotification(
+                        types.CancelledNotification(method="notifications/cancelled",
+                            params=types.CancelledNotificationParams(requestId=900))))
+                    await anyio.sleep(0.05)
+                    scope.cancel()
+                async with anyio.create_task_group() as tg:
+                    tg.start_soon(cancel_when_entered)
+                    try:
+                        await runner.call_tool("wait", {})
+                    except McpError as exc:
+                        assert exc.error.message == "Request cancelled"
+            with anyio.move_on_after(1):
+                await cancelled.wait()
+            assert cancelled.is_set(), "backend completed instead of receiving cancellation"
+            assert not completed.is_set()
+            assert ids and ids[0] != 900
+
+
+@asynccontextmanager
+async def _m1_live_link(*, notification_mode="ok"):
+    """Real proxy core/SDK in memory; no network, children or live providers."""
+    server=Server("m1-cancel-contract")
+    seen={}
+    entered=anyio.Event()
+    notifications=[]
+    @server.call_tool()
+    async def call(name, arguments):
+        seen[name]=server.request_context.request_id
+        if name.startswith("wait"):
+            entered.set()
+            await anyio.sleep_forever()
+        return [types.TextContent(type="text",text=name)]
+    link=stdio_proxy._BackendLink(SPEC,_factory(server))
+    with anyio.fail_after(5):
+        async with _factory(server)(**link.client_kwargs()) as session:
+            await session.initialize()
+            original=session.send_notification
+            async def notify(message,*args,**kwargs):
+                if isinstance(message.root,types.CancelledNotification):
+                    notifications.append(message.root.params.requestId)
+                    if notification_mode=="failure":
+                        raise OSError("synthetic cleanup-send failure")
+                    if notification_mode=="timeout":
+                        await anyio.sleep_forever()
+                return await original(message,*args,**kwargs)
+            session.send_notification=notify
+            link.session=session
+            link._connected.set()
+            try:
+                yield SimpleNamespace(link=link,session=session,seen=seen,entered=entered,
+                                      notifications=notifications)
+            finally:
+                link.closing=True
+
+
+def _m1_tool(name):
+    return types.CallToolRequest(method="tools/call",
+        params=types.CallToolRequestParams(name=name,arguments={}))
+
+
+@pytest.mark.parametrize("notification_mode",["ok","failure","timeout"])
+@pytest.mark.usefixtures("m1_proxy_effect_fence")
+async def test_m1_followup_cancel_cleanup_preserves_caller_and_healthy_session(
+    notification_mode,monkeypatch
+):
+    monkeypatch.setattr(stdio_proxy,"CANCEL_CLEANUP_TIMEOUT_S",0.02)
+    async with _m1_live_link(notification_mode=notification_mode) as state:
+        scope=anyio.CancelScope()
+        caller_cancelled=[]
+        async def pending():
+            with scope:
+                try:
+                    await state.link.forward(_m1_tool("wait-A"),types.CallToolResult)
+                except anyio.get_cancelled_exc_class():
+                    caller_cancelled.append(True)
+                    raise
+        async with anyio.create_task_group() as group:
+            group.start_soon(pending)
+            await state.entered.wait()
+            # Another real SDK request completes while A is still pending.
+            result=await state.link.forward(_m1_tool("echo-B"),types.CallToolResult)
+            assert result.content[0].text=="echo-B"
+            assert state.seen["wait-A"] != state.seen["echo-B"]
+            cancelling_at=anyio.current_time()
+            scope.cancel()
+        assert anyio.current_time()-cancelling_at < 0.5
+        assert caller_cancelled==[True]
+        assert state.notifications==[state.seen["wait-A"]]
+        assert state.link._inflight=={}
+        assert state.link.session is state.session
+        result=await state.link.forward(_m1_tool("echo-C"),types.CallToolResult)
+        assert result.content[0].text=="echo-C"
+        assert len(state.notifications)==1
+
+
+@pytest.mark.usefixtures("m1_proxy_effect_fence")
+async def test_m1_followup_completed_request_is_not_cancelled():
+    async with _m1_live_link() as state:
+        with anyio.CancelScope() as scope:
+            result=await state.link.forward(_m1_tool("done"),types.CallToolResult)
+            scope.cancel()
+        assert result.content[0].text=="done"
+        assert state.notifications==[]
+        assert state.link._inflight=={}
+
+
+@pytest.mark.parametrize("reason",["shutdown","dead_session"])
+@pytest.mark.usefixtures("m1_proxy_effect_fence")
+async def test_m1_followup_shutdown_and_dead_session_send_no_cancel(reason):
+    async with _m1_live_link() as state:
+        scope=anyio.CancelScope()
+        outcomes=[]
+        async def pending():
+            with scope:
+                try:
+                    await state.link.forward(_m1_tool("wait-shutdown"),types.CallToolResult)
+                except McpError as exc:
+                    outcomes.append(exc.error.code)
+        async with anyio.create_task_group() as group:
+            group.start_soon(pending)
+            await state.entered.wait()
+            if reason=="shutdown":
+                state.link.closing=True
+                scope.cancel()
+            else:
+                state.link._end_session(state.session)
+        assert state.notifications==[]
+        assert state.link._inflight=={}
+        if reason=="dead_session":
+            assert outcomes==[types.CONNECTION_CLOSED]
+
+
+@pytest.mark.usefixtures("m1_proxy_effect_fence")
+async def test_m1_followup_sdk_request_id_contract_fails_closed_if_missing():
+    async with _m1_live_link() as state:
+        saved=state.session._request_id
+        del state.session._request_id
+        try:
+            with pytest.raises(McpError,match="unsupported SDK request-id contract"):
+                await state.link.forward(_m1_tool("must-not-execute"),types.CallToolResult)
+            assert state.seen=={}
+            assert state.link._inflight=={}
+            assert state.notifications==[]
+        finally:
+            state.session._request_id=saved
+        result=await state.link.forward(_m1_tool("healthy"),types.CallToolResult)
+        assert result.content[0].text=="healthy"
+
+
+@pytest.fixture
+def m1_proxy_effect_fence(monkeypatch):
+    import subprocess
+    import os
+    def refused(*a,**k):
+        raise AssertionError("M1 proxy qualification cannot use real sockets/children/signals")
+    monkeypatch.setattr(subprocess,"Popen",refused)
+    monkeypatch.setattr(socket.socket,"connect",refused)
+    monkeypatch.setattr(socket.socket,"bind",refused)
+    monkeypatch.setattr(os,"kill",refused)
+    monkeypatch.setattr(os,"killpg",refused)

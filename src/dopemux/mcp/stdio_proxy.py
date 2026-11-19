@@ -119,6 +119,8 @@ GUARD_FAILED_CODE = "LAUNCH_RECONNECT_GUARD_FAILED"
 REFUSAL_LINGER_S = 10.0
 #: Upper bound on one forwarded request (slow tools included).
 REQUEST_TIMEOUT_S = 300.0
+#: Cancellation cleanup cannot hold a runner open indefinitely.
+CANCEL_CLEANUP_TIMEOUT_S = 0.25
 #: Upper bound on a backend ``initialize`` (first connect and the reconnect).
 INITIALIZE_TIMEOUT_S = 10.0
 #: How long a failed proxy waits for runner requests to receive their errors.
@@ -278,6 +280,7 @@ class _BackendLink:
         self._last_reconnect: Optional[float] = None
         #: Runner requests currently inside ``forward``.
         self.active = 0
+        self.closing = False
 
     def client_kwargs(self) -> Dict[str, Any]:
         return {
@@ -469,7 +472,20 @@ class _BackendLink:
             session = await self._live_session()
             with anyio.CancelScope() as scope:
                 self._inflight[scope] = session
+                # SDK 1.29 allocates this integer synchronously before its
+                # first await. Record it without yielding, so concurrent calls
+                # cannot steal the id. Fail closed if this SDK contract
+                # disappears.
+                backend_id = getattr(session, "_request_id", None)
                 try:
+                    if type(backend_id) is not int:
+                        raise McpError(types.ErrorData(
+                            code=types.INTERNAL_ERROR,
+                            message=(
+                                "dopemux proxy: unsupported SDK "
+                                "request-id contract"
+                            ),
+                        ))
                     return await session.send_request(
                         types.ClientRequest(request),
                         result_type,
@@ -477,6 +493,29 @@ class _BackendLink:
                             seconds=REQUEST_TIMEOUT_S
                         ),
                     )
+                except anyio.get_cancelled_exc_class():
+                    if (not scope.cancel_called and not self.closing
+                            and self.session is session
+                            and _can_receive(session)):
+                        with anyio.move_on_after(
+                            CANCEL_CLEANUP_TIMEOUT_S, shield=True
+                        ):
+                            try:
+                                params = types.CancelledNotificationParams(
+                                    requestId=backend_id
+                                )
+                                await session.send_notification(
+                                    types.ClientNotification(
+                                        types.CancelledNotification(
+                                            method="notifications/cancelled",
+                                            params=params,
+                                        )
+                                    )
+                                )
+                            except Exception:
+                                # cleanup failure must not mask cancellation
+                                pass
+                    raise
                 except McpError as exc:
                     if _session_terminated(exc.error):
                         # Streamable HTTP restart: unprocessed, so resend once on
@@ -598,13 +637,17 @@ async def serve(
 
         async def serve_runner() -> None:
             nonlocal exit_code
-            await server.run(read_stream, write_stream, options)
-            exit_code = 0
-            tg.cancel_scope.cancel()
+            try:
+                await server.run(read_stream, write_stream, options)
+                exit_code = 0
+            finally:
+                link.closing = True
+                tg.cancel_scope.cancel()
 
         async def watch_backend() -> None:
             nonlocal exit_code
             await link.failed.wait()
+            link.closing = True
             exit_code = 1
             # Waiting runner requests fail with "unavailable"; let those errors go
             # out before the server stops.

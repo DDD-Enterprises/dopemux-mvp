@@ -6,12 +6,14 @@ lock files live under tmp_path. No real docker call is made.
 
 from __future__ import annotations
 
+import importlib
 import json
 import os
 import subprocess
+import sys
 import threading
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 from typing import Any, Dict, List
 
 import pytest
@@ -95,6 +97,20 @@ def _git_repo(tmp_path: Path, servers: Dict[str, Any] | None = None) -> Path:
 def _no_real_reap(monkeypatch):
     """`launch` reaps by default; keep these tests away from docker and real registries."""
     monkeypatch.setattr(launcher, "maybe_reap", lambda **kw: None)
+
+
+@pytest.fixture(autouse=True)
+def _real_psutil(monkeypatch):
+    """Build liveness is tested against the real psutil.
+
+    ``tests/unit/test_health.py`` leaves a ``MagicMock`` in ``sys.modules["psutil"]``
+    for the rest of the run, and with it ``psutil.Error`` is not an exception
+    class. Each test here gets the real module; the stand-in returns afterwards.
+    """
+    if isinstance(sys.modules.get("psutil"), ModuleType):
+        return
+    monkeypatch.delitem(sys.modules, "psutil", raising=False)
+    importlib.import_module("psutil")
 
 
 @pytest.fixture
@@ -315,6 +331,23 @@ def test_ensure_backend_wait_exceeded(tmp_path: Path, registry, no_image_build):
     assert info.value.remedy == "run /mcp reconnect all"
 
 
+def _own_pid_is_a_verified_build(monkeypatch) -> Dict[str, Any]:
+    """Give the test process a build identity; every other pid is probed for real.
+
+    Tests whose fake ``Popen`` returns ``os.getpid()`` use the test process as the
+    live build. It is not the leader of its own session, so the real probe would
+    record it as unverified and the next launch would treat the file as stale.
+    """
+    identity = {"pid": os.getpid(), "create_time": 1.0, "pgid": os.getpid()}
+    real = launcher._build_process_identity
+    monkeypatch.setattr(
+        launcher,
+        "_build_process_identity",
+        lambda pid: identity if pid == os.getpid() else real(pid),
+    )
+    return identity
+
+
 def test_ensure_backend_image_missing_spawns_build_and_exits(
     tmp_path: Path, registry, monkeypatch
 ):
@@ -348,7 +381,9 @@ def test_ensure_backend_image_missing_spawns_build_and_exits(
     # the build tags the one shared image
     image = dr.compose_image_name("conport", product=dr.product_root())
     assert f"image: {image}" in (target.runtime_dir / "compose.build.yml").read_text()
-    assert (target.runtime_dir / "build-conport.pid").read_text().strip() == "4242"
+    # a JSON identity record, not the old one-line pid
+    record = json.loads((target.runtime_dir / "build-conport.pid").read_text())
+    assert record["pid"] == 4242
 
 
 def test_two_launchers_one_start(tmp_path: Path, registry, no_image_build):
@@ -960,6 +995,7 @@ def test_second_launch_during_a_live_build_spawns_nothing(
         return SimpleNamespace(pid=os.getpid())  # alive for the whole test
 
     monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    _own_pid_is_a_verified_build(monkeypatch)
     for _ in range(2):
         with pytest.raises(LaunchError) as info:
             launcher._build_image_if_missing(target)
@@ -974,6 +1010,7 @@ def test_a_stale_build_pid_file_is_replaced(tmp_path: Path, registry, monkeypatc
     target.runtime_dir.mkdir(parents=True, exist_ok=True)
     dead = subprocess.Popen(["true"])
     dead.wait()
+    # the old one-line format, and of a dead pid: stale on both counts
     (target.runtime_dir / "build-conport.pid").write_text(
         f"{dead.pid}\n", encoding="utf-8"
     )
@@ -987,7 +1024,8 @@ def test_a_stale_build_pid_file_is_replaced(tmp_path: Path, registry, monkeypatc
     with pytest.raises(LaunchError):
         launcher._build_image_if_missing(target)
     assert len(spawned) == 1
-    assert (target.runtime_dir / "build-conport.pid").read_text().strip() == "4243"
+    record = json.loads((target.runtime_dir / "build-conport.pid").read_text())
+    assert record["pid"] == 4243
 
 
 # --- M3: a record without the port never resolves to the template default ---------
@@ -1065,6 +1103,7 @@ def test_one_services_build_never_blocks_the_others(
         return SimpleNamespace(pid=os.getpid())  # conport's build is still running
 
     monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    identity = _own_pid_is_a_verified_build(monkeypatch)
     for target in (conport, memory):
         with pytest.raises(LaunchError) as info:
             launcher._build_image_if_missing(target)
@@ -1073,7 +1112,7 @@ def test_one_services_build_never_blocks_the_others(
     assert "still building" not in capsys.readouterr().err
     for svc in ("conport", "dope-memory"):
         pid_file = conport.runtime_dir / f"build-{svc}.pid"
-        assert pid_file.read_text().strip() == str(os.getpid())
+        assert json.loads(pid_file.read_text()) == identity
     # a second conport launch is still held off by conport's own build
     with pytest.raises(LaunchError):
         launcher._build_image_if_missing(conport)
@@ -1084,25 +1123,22 @@ def test_one_services_build_never_blocks_the_others(
 # --- residual fix B5: a build pid is stale after the build budget, not the up budget ---
 
 
-def test_build_pid_goes_stale_after_the_build_budget(tmp_path: Path, monkeypatch):
-    import time
+def test_build_pid_budget_retains_ownership_until_verified_exit(
+    tmp_path, monkeypatch, m1_owned_build_table
+):
+    table=m1_owned_build_table
+    table.processes[43001]=dict(table.identity)
+    table.record(age=200)  # beyond up budget, still within build budget
+    assert launcher._live_build_pid(table.pid_file)==43001
+    assert table.signals==[]
+    table.behavior="denied"
+    table.record(age=dr.DEFAULT_BUILD_TIMEOUT_SECS+60)
+    assert launcher._live_build_pid(table.pid_file)==43001  # alive stays tracked
+    monkeypatch.setenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS","100")
+    table.behavior="term_exit"
+    table.record(age=200)
+    assert launcher._live_build_pid(table.pid_file) is None  # verified exit only
 
-    monkeypatch.delenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS", raising=False)
-    pid_file = tmp_path / "build-conport.pid"
-    pid_file.write_text(f"{os.getpid()}\n", encoding="utf-8")
-
-    def aged(seconds: float) -> None:
-        then = time.time() - seconds
-        os.utime(pid_file, (then, then))
-
-    aged(200)  # past the 180 s `up` budget, well inside the 1800 s build budget
-    assert launcher._live_build_pid(pid_file) == os.getpid()
-    aged(dr.DEFAULT_BUILD_TIMEOUT_SECS + 60)
-    assert launcher._live_build_pid(pid_file) is None
-    # the budget follows the env
-    monkeypatch.setenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS", "100")
-    aged(200)
-    assert launcher._live_build_pid(pid_file) is None
 
 
 # --- residual fix B4: launch hands the proxy the real guard ---------------------------
@@ -1412,6 +1448,7 @@ def _build_only_setup(tmp_path: Path, monkeypatch):
         return real_popen(cmd, *a, **kw)
 
     monkeypatch.setattr(subprocess, "Popen", fake_popen)
+    _own_pid_is_a_verified_build(monkeypatch)
     target = launcher.build_target(repo, "conport", catalog=CATALOG)
     return target, spawned
 
@@ -1555,3 +1592,180 @@ def test_the_marker_is_written_while_the_instance_lock_is_held(
     assert events == ["lock", "marker(held=True)", "unlock"]
     target = launcher.build_target(repo, "conport", catalog=CATALOG)
     assert (target.runtime_dir / "instance.json").is_file()
+
+
+def test_m1_followup_expired_owned_build_never_stacks(tmp_path, monkeypatch):
+    """Ages a synthetic build; no OS child, signal, Docker or live registry."""
+    import signal
+    target = launcher.LaunchTarget(root=tmp_path, identity=SimpleNamespace(),
+        service="conport", spec={"management_model": "compose-service"},
+        runtime_dir=tmp_path, compose_project="synthetic")
+    now = [10_000.0]
+    alive = {}
+    spawned = []
+    signals = []
+    def popen(command, **kwargs):
+        assert kwargs["start_new_session"] is True
+        pid = 43_001 + len(spawned)
+        alive[pid] = {"pid": pid, "create_time": now[0], "pgid": pid}
+        spawned.append(pid)
+        return SimpleNamespace(pid=pid)
+    def killpg(pgid, signum):
+        signals.append((pgid, signum))
+        assert pgid in alive
+        del alive[pgid]
+    monkeypatch.setattr(launcher.time, "time", lambda: now[0])
+    monkeypatch.setattr(launcher, "_build_process_identity", lambda pid: alive.get(pid), raising=False)
+    monkeypatch.setattr(launcher.os, "killpg", killpg)
+    monkeypatch.setattr(subprocess, "Popen", popen)
+    monkeypatch.setattr(dr, "product_root", lambda: tmp_path)
+    monkeypatch.setattr(dr, "env_with_compose_interpolation", lambda **k: {})
+    monkeypatch.setattr(dr, "compose_image_name", lambda *a, **k: "synthetic-image")
+    monkeypatch.setattr(dr, "docker_image_exists", lambda *a, **k: False)
+    monkeypatch.setattr(dr, "compose_build_inputs", lambda *a, **k: (tmp_path/"override", tmp_path/"env"))
+    monkeypatch.setattr(dr, "compose_build_command", lambda **k: ["synthetic-build"])
+    for _ in range(2):
+        with pytest.raises(LaunchError, match="LAUNCH_IMAGE_BUILDING"):
+            launcher._build_image_if_missing(target)
+        now[0] += dr.build_timeout_secs() + 60
+        pid_file = launcher.build_pid_path(tmp_path, "conport")
+        import os
+        os.utime(pid_file, (now[0]-dr.build_timeout_secs()-60,)*2)
+    assert len(alive) == 1, "expired still-live build was orphaned while another started"
+    assert signals == [(43_001, signal.SIGTERM)]
+
+
+@pytest.fixture
+def m1_owned_build_table(tmp_path, monkeypatch):
+    """OS process identity, clock and signals are synthetic for every C matrix row."""
+    import psutil
+    from dopemux.mcp import reap
+    state = SimpleNamespace(now=10_000.0, processes={}, signals=[], behavior="term_exit")
+    class Process:
+        def __init__(self, pid):
+            if pid not in state.processes:
+                raise psutil.NoSuchProcess(pid)
+            self.pid = pid
+        def is_running(self):
+            return self.pid in state.processes
+        def status(self):
+            data = state.processes[self.pid]
+            if data.get("unknown"):
+                raise psutil.AccessDenied(self.pid)
+            return data.get("status", "running")
+        def create_time(self):
+            return state.processes[self.pid]["create_time"]
+    def no_effect(*a, **k):
+        raise AssertionError("C matrix cannot create children, sockets or real signals")
+    def killpg(pid, signum):
+        import signal
+        state.signals.append((pid, signum))
+        assert pid in state.processes and state.processes[pid]["pgid"] == pid
+        if state.behavior == "denied":
+            raise PermissionError("synthetic signal denied")
+        if state.behavior == "term_exit" or (state.behavior == "kill_exit" and signum == signal.SIGKILL):
+            del state.processes[pid]
+        elif state.behavior == "recycled":
+            state.processes[pid] = {"pid":pid,"pgid":pid,"create_time":999.0}
+    monkeypatch.setattr(psutil, "Process", Process)
+    monkeypatch.setattr(launcher.os, "getpgid", lambda pid:state.processes[pid]["pgid"])
+    monkeypatch.setattr(launcher.os, "killpg", killpg)
+    monkeypatch.setattr(launcher.os, "kill", no_effect)
+    monkeypatch.setattr(subprocess, "Popen", no_effect)
+    monkeypatch.setattr(launcher.time, "time", lambda:state.now)
+    monkeypatch.setattr(launcher.time, "monotonic", lambda:state.now)
+    monkeypatch.setattr(launcher.time, "sleep", lambda seconds:setattr(state,"now",state.now+seconds))
+    state.reap = reap
+    state.pid_file = tmp_path/"build-conport.pid"
+    state.identity = {"pid":43001,"pgid":43001,"create_time":123.0}
+    def record(age=10):
+        state.pid_file.write_text(json.dumps(state.identity))
+        os.utime(state.pid_file,(state.now-age,)*2)
+    state.record=record
+    return state
+
+
+@pytest.mark.parametrize("kind", ["legacy", "malformed", "negative", "zero", "bool",
+    "string", "dead", "recycled", "unknown", "wrong_group", "zombie"])
+def test_m1_followup_build_stale_identity_never_signalled(kind, tmp_path, m1_owned_build_table):
+    table=m1_owned_build_table
+    table.processes[43001]=dict(table.identity)
+    table.record(age=2000)
+    if kind == "legacy":
+        table.pid_file.write_text("43001\n")
+    elif kind == "malformed":
+        table.pid_file.write_text("{bad")
+    elif kind in {"negative","zero","bool","string"}:
+        data=dict(table.identity,pid={"negative":-1,"zero":0,"bool":True,"string":"43001"}[kind])
+        table.pid_file.write_text(json.dumps(data))
+    elif kind == "dead":
+        table.processes.clear()
+    elif kind == "recycled":
+        table.processes[43001]["create_time"]=999.0
+    elif kind == "unknown":
+        table.processes[43001]["unknown"]=True
+    elif kind == "wrong_group":
+        table.processes[43001]["pgid"]=43000
+    elif kind == "zombie":
+        table.processes[43001]["status"]="zombie"
+    assert launcher._live_build_pid(table.pid_file) is None
+    assert table.reap._live_build(tmp_path,table.now) is False
+    assert table.signals == []
+
+
+@pytest.mark.parametrize("behavior,expected_live", [("term_exit",False),("kill_exit",False),
+    ("denied",True),("never_exits",True),("recycled",False)])
+def test_m1_followup_expiry_signal_rules_and_reaper_agreement(
+    behavior,expected_live,tmp_path,m1_owned_build_table
+):
+    import signal
+    table=m1_owned_build_table
+    table.behavior=behavior
+    table.processes[43001]=dict(table.identity)
+    table.record(age=dr.build_timeout_secs()+1)
+    assert table.reap._live_build(tmp_path,table.now) is True
+    started=table.now
+    assert (launcher._live_build_pid(table.pid_file) is not None) is expected_live
+    assert table.reap._live_build(tmp_path,table.now) is expected_live
+    assert table.now-started <= 4.2
+    assert table.signals[0] == (43001,signal.SIGTERM)
+    if behavior in {"kill_exit","never_exits"}:
+        assert table.signals == [(43001,signal.SIGTERM),(43001,signal.SIGKILL)]
+    else:
+        assert len(table.signals) == 1
+
+
+def test_m1_followup_young_build_keeps_ownership_then_clean_exit_recovers(
+    tmp_path,m1_owned_build_table,monkeypatch
+):
+    table=m1_owned_build_table
+    table.processes[43001]=dict(table.identity)
+    launcher._write_build_pid(table.pid_file,43001)
+    assert json.loads(table.pid_file.read_text()) == table.identity
+    assert not list(tmp_path.glob(".*.tmp"))
+    assert launcher._live_build_pid(table.pid_file) == 43001
+    assert table.reap._live_build(tmp_path,table.now) is True
+    target=launcher.LaunchTarget(root=tmp_path,identity=SimpleNamespace(),service="conport",
+        spec={"management_model":"compose-service"},runtime_dir=tmp_path,compose_project="fake")
+    monkeypatch.setattr(dr,"product_root",lambda:tmp_path)
+    monkeypatch.setattr(dr,"env_with_compose_interpolation",lambda **k:{})
+    monkeypatch.setattr(dr,"compose_image_name",lambda *a,**k:"fake")
+    monkeypatch.setattr(dr,"docker_image_exists",lambda *a,**k:False)
+    with pytest.raises(LaunchError,match="LAUNCH_IMAGE_BUILDING"):
+        launcher._build_image_if_missing(target)
+    assert table.signals == []
+    table.processes.clear()
+    assert launcher._live_build_pid(table.pid_file) is None
+    assert table.reap._live_build(tmp_path,table.now) is False
+
+
+@pytest.mark.parametrize("module_name",["launcher","reap"])
+@pytest.mark.parametrize("pid",[-1,0,True,"43001",None])
+def test_m1_followup_invalid_pid_is_rejected_before_psutil(module_name,pid,monkeypatch):
+    import psutil
+    from dopemux.mcp import reap
+    def no_probe(value):
+        raise AssertionError("invalid PID reached process probe")
+    monkeypatch.setattr(psutil,"Process",no_probe)
+    module=launcher if module_name=="launcher" else reap
+    assert module._build_process_identity(pid) is None
