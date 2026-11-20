@@ -1,0 +1,568 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-FOUNDATIONS-001",
+  "objective": "Foundations Wave 1: make the repo's contract tests run in CI, make the ADHD engine's MCP tools work on the real engine, add a read-only `dopemux adhd status`, catch service port drift, and document all four. Governing documents: design docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md (approved by the operator) and plan docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md. Pins: origin/main = 93050d135ffc2592000c1d0edef82b2912935525; working branch feat/foundations-wave-1 in /Users/hue/code/dopemux-mvp/.worktrees/foundations-wave-1, HEAD at issuance 7c883d7e100e3be54b8b59b1419ff80cf00eb8ee (the design and plan commits on top of that main). Workstreams map 1:1 to plan Tasks 1-5 and run serially, one mutating implementer each: W01 CI step (claude-haiku-5-5), W02 engine MCP methods plus parity test, W03 dopemux adhd status, W04 port drift test (needs W03 for DEFAULT_ADHD_ENGINE_PORT), W05 docs (needs W01-W04), the last four on claude-sonnet-5-5. Plan Task 6 (freeze checks) belongs to the team lead. Non-goals (design section 3): no edits to services/adhd_engine/api/routes.py or services/adhd_engine/tests/test_state_contract.py (open PR #1472 owns them), no MCP manifest changes (.mcp.json, mcp_catalog.yaml), no fix to the ADHD engine's own test suite, no task-orchestrator unification, no change to .claude/statusline.sh or scripts/dopemux_dashboard.py, no proof-only closure change, nothing under plugins/. Risk lane L2 (validate_change_contract classifies all paths L2, model_audit_required=True). Exactly one final independent audit after the freeze; the PROPOSED route is grok-cli / grok-4.5, tool-less, one attempt, no fallback, and the operator has NOT authorized it. Per design section 5 it runs after PRs #1482, #1472 and #1483 merge unless the operator decides otherwise. Push, the draft PR, signing, merge and the audit remain operator gates; workstreams commit locally only.",
+  "repository": "dopemux-mvp",
+  "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; plan Global Constraints apply to every child",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "operator chat 2026-10-30, verbatim: \"Foundations first\" (theme)",
+      "operator chat 2026-10-30, verbatim: \"Looks right, write design\" (scope playback)",
+      "operator chat 2026-10-30, verbatim: \"Approve\" (design docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md)",
+      "operator chat 2026-10-30, verbatim: \"Subagent-driven\" (execution method for docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md)"
+    ],
+    "global_allowed_actions": [
+      "read",
+      "validate",
+      "edit_within_write_surface",
+      "commit_within_write_surface"
+    ],
+    "global_forbidden_actions": [
+      "merge_pr",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "rebase",
+      "mark_ready",
+      "sign_proof",
+      "admin_merge",
+      "auto_merge",
+      "push",
+      "open_pr",
+      "edit:services/adhd_engine/api/routes.py",
+      "edit:services/adhd_engine/tests/test_state_contract.py",
+      "edit:.mcp.json",
+      "edit:mcp_catalog.yaml",
+      "edit:.claude/statusline.sh",
+      "edit:scripts/dopemux_dashboard.py",
+      "edit:plugins/"
+    ],
+    "global_stop_conditions": [
+      "execution authorization: SATISFIED 2026-10-30 by the operator's chat reply \"Subagent-driven\", given in direct answer to the question which execution approach the approved plan should use (supervisor ruling AMENDMENT-01, ISSUANCE.md); no literal AUTHORIZE token exists. Execution stops at once if the operator withdraws it. This authorizes local commits on feat/foundations-wave-1 only: no push, PR, merge or audit.",
+      "origin/main != 93050d135ffc2592000c1d0edef82b2912935525 or HEAD of feat/foundations-wave-1 does not descend from the issuance HEAD 7c883d7e100e3be54b8b59b1419ff80cf00eb8ee at start: return NEEDS_SUPERVISOR for re-pinning, do not adapt",
+      "any write outside a workstream write_surface, or any edit of a forbidden path (routes.py, test_state_contract.py, .mcp.json, mcp_catalog.yaml, .claude/statusline.sh, scripts/dopemux_dashboard.py, plugins/): that workstream stops and returns; widening needs a supervisor amendment",
+      "a join validation fails (named test or command): the next workstream does not start",
+      "a plan step's stated expectation is not met (for example W04 Step 2 fails on anything beyond the listed differences): stop and return the output",
+      "any skip, xfail or --deselect introduced to get a check green",
+      "final audit route not authorized by a literal operator line: the audit is not started; the route in AUDITOR_BINDING_PROPOSED.json is PROPOSED ONLY",
+      "final audit FAIL or NEEDS_SUPERVISOR"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "a9be7f4af3550ec42f6b3858a60d7198276f11eaac6fe6140da79ee6b2dd4251"
+    },
+    "authority_ceiling": "Child-specific intersection only; implementers and the team lead commit locally on feat/foundations-wave-1 in /Users/hue/code/dopemux-mvp/.worktrees/foundations-wave-1 with explicit pathspecs inside each write_surface. The team lead runs plan Task 6 freeze checks, a per-task reviewer (claude-sonnet-5-5) reviews each workstream, and a final whole-branch review (claude-opus-5-5) is advisory only, never the audit. Push, the draft PR, signing, independence attestation, merge, mark-ready, admin or auto merge, rebase and the audit are operator gates not granted.",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record per child before dispatch"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "61bc2d89f1dab4bd0e730886f517cbe9fb64a3a4dc56437f933dac48c77b4a84"
+      },
+      "objective": "Plan Task 1: prove tests/arch passes in a CI-equivalent environment (Python 3.11), then add the 'Run arch contract gate' step to the Unit Tests job of ci-complete.yml after the dope-memory MCP endpoint gate, and validate the workflow syntax.",
+      "dependencies": [],
+      "parallel_group": "P1",
+      "mutating": true,
+      "write_surface": [
+        ".github/workflows/ci-complete.yml"
+      ],
+      "canonical_writers": [
+        "W01-implementer"
+      ],
+      "semantic_scope": [
+        "ci-arch-gate"
+      ],
+      "allowed_actions": [
+        "read",
+        "validate",
+        "edit_within_write_surface",
+        "commit_within_write_surface"
+      ],
+      "forbidden_actions": [
+        "merge_pr",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "rebase",
+        "mark_ready",
+        "sign_proof",
+        "push",
+        "open_pr",
+        "edit:services/adhd_engine/api/routes.py",
+        "edit:services/adhd_engine/tests/test_state_contract.py",
+        "edit:.mcp.json",
+        "edit:mcp_catalog.yaml",
+        "edit:.claude/statusline.sh",
+        "edit:scripts/dopemux_dashboard.py",
+        "edit:plugins/"
+      ],
+      "rollback_boundary": "git revert of the W01 commit(s) on feat/foundations-wave-1 (REVERT_COMMITS); nothing is pushed by this workstream",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code",
+          "model": "claude-haiku-5-5",
+          "effort": "low"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "FOUNDATIONS-001-FINAL-AUDIT",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "92b31dfefba305c8b7310b977877d59076f8db65fe9517b0b46fda2c00a89888"
+      },
+      "objective": "Plan Task 2: implement get_energy_level, get_attention_state, get_cognitive_load and assess_task (plus ENERGY_SCORE, EnergySnapshot, AttentionSnapshot, TaskAssessment) on ADHDAccommodationEngine, test-first, with a static AST parity test that fails if an MCP tool calls an engine method the real or fallback engine lacks.",
+      "dependencies": [],
+      "parallel_group": "P2",
+      "mutating": true,
+      "write_surface": [
+        "services/adhd_engine/core/engine.py",
+        "tests/arch/test_adhd_engine_mcp_parity.py"
+      ],
+      "canonical_writers": [
+        "W02-implementer"
+      ],
+      "semantic_scope": [
+        "adhd-engine-mcp-methods"
+      ],
+      "allowed_actions": [
+        "read",
+        "validate",
+        "edit_within_write_surface",
+        "commit_within_write_surface"
+      ],
+      "forbidden_actions": [
+        "merge_pr",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "rebase",
+        "mark_ready",
+        "sign_proof",
+        "push",
+        "open_pr",
+        "edit:services/adhd_engine/api/routes.py",
+        "edit:services/adhd_engine/tests/test_state_contract.py",
+        "edit:.mcp.json",
+        "edit:mcp_catalog.yaml",
+        "edit:.claude/statusline.sh",
+        "edit:scripts/dopemux_dashboard.py",
+        "edit:plugins/"
+      ],
+      "rollback_boundary": "git revert of the W02 commit(s) on feat/foundations-wave-1 (REVERT_COMMITS); nothing is pushed by this workstream",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code",
+          "model": "claude-sonnet-5-5",
+          "effort": "medium"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "FOUNDATIONS-001-FINAL-AUDIT",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "04b2082d367fc1037df8cdca49fa6b5814ffa7538db06baa15d694ab138ca173"
+      },
+      "objective": "Plan Task 3: add the read-only `dopemux adhd status` click group (resolve_engine_url, fetch_status, StatusResult, EXIT_CODES, DEFAULT_ADHD_ENGINE_PORT=3025) test-first, register it in cli.py, and cover the five Review Focus cases.",
+      "dependencies": [],
+      "parallel_group": "P3",
+      "mutating": true,
+      "write_surface": [
+        "src/dopemux/commands/adhd_commands.py",
+        "src/dopemux/cli.py",
+        "tests/unit/test_adhd_commands.py"
+      ],
+      "canonical_writers": [
+        "W03-implementer"
+      ],
+      "semantic_scope": [
+        "adhd-status-cli"
+      ],
+      "allowed_actions": [
+        "read",
+        "validate",
+        "edit_within_write_surface",
+        "commit_within_write_surface"
+      ],
+      "forbidden_actions": [
+        "merge_pr",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "rebase",
+        "mark_ready",
+        "sign_proof",
+        "push",
+        "open_pr",
+        "edit:services/adhd_engine/api/routes.py",
+        "edit:services/adhd_engine/tests/test_state_contract.py",
+        "edit:.mcp.json",
+        "edit:mcp_catalog.yaml",
+        "edit:.claude/statusline.sh",
+        "edit:scripts/dopemux_dashboard.py",
+        "edit:plugins/"
+      ],
+      "rollback_boundary": "git revert of the W03 commit(s) on feat/foundations-wave-1 (REVERT_COMMITS); nothing is pushed by this workstream",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code",
+          "model": "claude-sonnet-5-5",
+          "effort": "medium"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "FOUNDATIONS-001-FINAL-AUDIT",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W04",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W04/TASK_PACKET.json",
+        "sha256": "eacc061c573497cdb956a4070d94b69bd7fee85b1cfd50d0c854b5833ff869cd"
+      },
+      "objective": "Plan Task 4: add tests/arch/test_service_port_drift.py (registry vs catalog vs compose vs hard-coded literals vs named defaults vs DEFAULT_ADHD_ENGINE_PORT, with a reasoned exception table and stale-exception check) and fix the stale Dope layout defaults in src/dopemux/config/manager.py.",
+      "dependencies": [
+        "W03"
+      ],
+      "parallel_group": "P4",
+      "mutating": true,
+      "write_surface": [
+        "tests/arch/test_service_port_drift.py",
+        "src/dopemux/config/manager.py"
+      ],
+      "canonical_writers": [
+        "W04-implementer"
+      ],
+      "semantic_scope": [
+        "service-port-drift"
+      ],
+      "allowed_actions": [
+        "read",
+        "validate",
+        "edit_within_write_surface",
+        "commit_within_write_surface"
+      ],
+      "forbidden_actions": [
+        "merge_pr",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "rebase",
+        "mark_ready",
+        "sign_proof",
+        "push",
+        "open_pr",
+        "edit:services/adhd_engine/api/routes.py",
+        "edit:services/adhd_engine/tests/test_state_contract.py",
+        "edit:.mcp.json",
+        "edit:mcp_catalog.yaml",
+        "edit:.claude/statusline.sh",
+        "edit:scripts/dopemux_dashboard.py",
+        "edit:plugins/"
+      ],
+      "rollback_boundary": "git revert of the W04 commit(s) on feat/foundations-wave-1 (REVERT_COMMITS); nothing is pushed by this workstream",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code",
+          "model": "claude-sonnet-5-5",
+          "effort": "medium"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "FOUNDATIONS-001-FINAL-AUDIT",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    },
+    {
+      "workstream_id": "W05",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W05/TASK_PACKET.json",
+        "sha256": "2f33afbba6b6f1d704f47200972c3d8632e60d84463ee1d67a45b4135f6a43da"
+      },
+      "objective": "Plan Task 5: document `dopemux adhd status` and the CI contract gates, index both, and add two agent-doc bullets to .claude/claude.md and AGENTS.md in sections PR #1484 does not touch. Starts only after W01-W04 are committed.",
+      "dependencies": [
+        "W01",
+        "W02",
+        "W03",
+        "W04"
+      ],
+      "parallel_group": "P5",
+      "mutating": true,
+      "write_surface": [
+        "docs/03-reference/adhd-status-cli.md",
+        "docs/03-reference/ci-contract-gates.md",
+        "docs/00-MASTER-INDEX.md",
+        "docs/docs_index.yaml",
+        ".claude/claude.md",
+        "AGENTS.md"
+      ],
+      "canonical_writers": [
+        "W05-implementer"
+      ],
+      "semantic_scope": [
+        "foundations-docs"
+      ],
+      "allowed_actions": [
+        "read",
+        "validate",
+        "edit_within_write_surface",
+        "commit_within_write_surface"
+      ],
+      "forbidden_actions": [
+        "merge_pr",
+        "activate",
+        "force_push",
+        "history_rewrite",
+        "rebase",
+        "mark_ready",
+        "sign_proof",
+        "push",
+        "open_pr",
+        "edit:services/adhd_engine/api/routes.py",
+        "edit:services/adhd_engine/tests/test_state_contract.py",
+        "edit:.mcp.json",
+        "edit:mcp_catalog.yaml",
+        "edit:.claude/statusline.sh",
+        "edit:scripts/dopemux_dashboard.py",
+        "edit:plugins/"
+      ],
+      "rollback_boundary": "git revert of the W05 commit(s) on feat/foundations-wave-1 (REVERT_COMMITS); nothing is pushed by this workstream",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN",
+      "execution_route": {
+        "preferred": {
+          "runner": "claude-code",
+          "model": "claude-sonnet-5-5",
+          "effort": "medium"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "NOT_RUN"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "FOUNDATIONS-001-FINAL-AUDIT",
+      "return_contract": [
+        "status",
+        "subject",
+        "validation",
+        "proof",
+        "audit",
+        "blockers",
+        "advisor_calls",
+        "files_written",
+        "observed_model"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "J01-W01-VALIDATED",
+      "requires": [
+        "W01"
+      ],
+      "condition": "Step 1 CI-equivalent `pytest tests/arch` PASS (184 passed expected), workflow-syntax hook PASS, one commit touching only .github/workflows/ci-complete.yml. The next workstream does not start until this join holds.",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J02-W02-VALIDATED",
+      "requires": [
+        "W02"
+      ],
+      "condition": "parity test and behavior tests: 6 passed; mutation check recorded and reverted (git diff shows only intended change); one commit touching only the two write_surface files. The next workstream does not start until this join holds.",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J03-W03-VALIDATED",
+      "requires": [
+        "W03"
+      ],
+      "condition": "tests/unit/test_adhd_commands.py all passed; `python -m dopemux adhd status --url http://127.0.0.1:9` prints one unreachable line with exit=1; flake8 and mypy show no new findings; one commit touching only the three write_surface files. DEFAULT_ADHD_ENGINE_PORT exists for W04. The next workstream does not start until this join holds.",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J04-W04-VALIDATED",
+      "requires": [
+        "W04"
+      ],
+      "condition": "drift tests pass after the manager.py fix; the pre-fix run failed only on the 3007/3008 literals and the adhd_engine_url / leantime_url / serena_url defaults; grep for localhost:(3007|3008|3010) in src and tests finds nothing; the three mutation checks recorded and reverted; one commit touching only the two write_surface files. The next workstream does not start until this join holds.",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J05-W05-VALIDATED",
+      "requires": [
+        "W05"
+      ],
+      "condition": "frontmatter guard and markdownlint clean on every new or changed doc; check_docs_hygiene reports only the pre-existing docs/runbooks/ddd-release-gate-app.md violation; one commit touching only the six write_surface files; facts match the committed code of W01-W04.",
+      "join_type": "ALL_REQUIRED"
+    },
+    {
+      "join_id": "J06-FREEZE",
+      "requires": [
+        "W01",
+        "W02",
+        "W03",
+        "W04",
+        "W05"
+      ],
+      "condition": "plan Task 6 (team lead, not a workstream): CI-equivalent tests/arch on Python 3.11 PASS including the new tests; `pytest tests/unit -n auto -q --no-cov` shows no new failures against origin/main; `scripts/governance/validate_change_contract.py --base origin/main --head HEAD` reports status=PASS and max_lane=L2; then STOP. Push, the draft PR and the single final audit are operator gates.",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "Exactly one independent final audit of the frozen cumulative subject after freeze, one route, one attempt, zero retries, no fallback route; PROPOSED route grok-cli grok-4.5 (AUDITOR_BINDING_PROPOSED.json), operator-gated and not authorized. Per-task reviews (claude-sonnet-5-5) and the final whole-branch review (claude-opus-5-5) are advisory, not audits.",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop",
+      "semantic_out_of_allowlist",
+      "final_audit_fail_or_needs_supervisor",
+      "stale_pin",
+      "join_validation_failed"
+    ]
+  }
+}
