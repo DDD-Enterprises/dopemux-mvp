@@ -1,0 +1,58 @@
+{
+  "status": "OK",
+  "verdict": "PASS",
+  "findings": [],
+  "risks": [
+    {
+      "severity": "low",
+      "path": "src/dopemux/mcp/stdio_proxy.py",
+      "lines": "475-488",
+      "summary": "Relies on MCP Python SDK private attribute ClientSession._request_id to capture the backend request ID before send_request awaits.",
+      "mitigation": "Explicitly permitted by packet step S5; fails closed with McpError(INTERNAL_ERROR) if _request_id is missing or non-int, and is pinned by test_m1_followup_sdk_request_id_contract_fails_closed_if_missing."
+    },
+    {
+      "severity": "low",
+      "path": "src/dopemux/mcp/launcher.py",
+      "lines": "440-457",
+      "summary": "Synchronous termination loop in _live_build_pid can block up to 4.0s (2.0s SIGTERM wait + 2.0s SIGKILL wait) when reaping an expired build that ignores SIGTERM.",
+      "mitigation": "Bounded to 4.0s total and only triggers when a build exceeds DOPEMUX_MCP_BUILD_TIMEOUT_SECS (default 1800s)."
+    },
+    {
+      "severity": "low",
+      "path": "src/dopemux/mcp/launcher.py",
+      "lines": "399-418",
+      "summary": "_build_process_identity is duplicated across launcher.py and reap.py to avoid circular imports.",
+      "mitigation": "Required by packet invariant C; parity between both modules is directly tested by test_m1_followup_build_stale_identity_never_signalled and test_m1_followup_expiry_signal_rules_and_reaper_agreement."
+    }
+  ],
+  "rationale": "Audited PR #1521 at head SHA cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf against base SHA ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7 for DDD-Enterprises/dopemux-mvp. All 11 changed files fall within the packet commit.allowlist and no sealed paths were touched. (A) In src/dopemux/mcp/lifecycle.py (_resolve_ports), read-only calls (allocate=False) now overlay active worktree leases onto extracted envrc ports while excluding task-orchestrator, preserving unleased envrc values, and avoiding any registry writes or lock creation. (B) Dry-run start/restart threads dry_run=True from run_lifecycle through _mutable_facts into _resolve_ports and allocate_ports using nullcontext() instead of registry_lock, persist=False, and an in-memory planned_leases registry for downstream preflight validation so on-disk lease files remain absent or byte-identical. (C) src/dopemux/mcp/launcher.py and src/dopemux/mcp/reap.py record and verify JSON process identity (pid, create_time, pgid == pid, non-zombie) via psutil before considering a build live or signalling it; legacy one-line, malformed, unverified, or mismatched records are treated as stale without signalling, and expired verified builds are terminated via os.killpg (SIGTERM then SIGKILL after a 2.0s wait) while retaining ownership if termination fails. (D) src/dopemux/mcp/stdio_proxy.py captures the backend session's request ID prior to send_request, fails closed if the SDK attribute contract is absent, and forwards notifications/cancelled under a shielded 0.25s timeout only when cancelled by the runner while the session is live and not closing. Comprehensive hermetic unit tests cover all four fixes and failure modes.",
+  "inspected_paths": [
+    "claudedocs/mcp-just-works-design-2026-11-05.md",
+    "src/dopemux/mcp/launcher.py",
+    "src/dopemux/mcp/lifecycle.py",
+    "src/dopemux/mcp/reap.py",
+    "src/dopemux/mcp/stdio_proxy.py",
+    "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json",
+    "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md",
+    "tests/unit/test_mcp_launcher.py",
+    "tests/unit/test_mcp_lifecycle_ports_from_leases.py",
+    "tests/unit/test_mcp_reap.py",
+    "tests/unit/test_mcp_stdio_proxy.py"
+  ],
+  "evidence_refs": [
+    "repo:DDD-Enterprises/dopemux-mvp#1521",
+    "base_sha:ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7",
+    "head_sha:cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf",
+    "src/dopemux/mcp/lifecycle.py:383-531 (_resolve_ports allocate=False lease preference and dry_run in-memory planning)",
+    "src/dopemux/mcp/lifecycle.py:1053-1156 (_mutable_facts dry_run propagation and planned_leases inspection)",
+    "src/dopemux/mcp/lifecycle.py:1661-1667 (run_lifecycle facts_kw dry_run forwarding)",
+    "src/dopemux/mcp/launcher.py:399-468 (_build_process_identity, _live_build_pid process-group termination, _write_build_pid atomic JSON record)",
+    "src/dopemux/mcp/reap.py:504-553 (_build_process_identity and _live_build identity parity with launcher)",
+    "src/dopemux/mcp/stdio_proxy.py:122-123,283,472-519,640-651 (CANCEL_CLEANUP_TIMEOUT_S, closing flag, backend_id capture, shielded CancelledNotification forwarding)",
+    "tests/unit/test_mcp_lifecycle_ports_from_leases.py:131-180,520-610,974-988,1131-1297 (rewritten dry-run tests and M1 follow-up A/B regression tests)",
+    "tests/unit/test_mcp_launcher.py:102-114,334-349,1126-1140,1597-1771 (M1 follow-up C synthetic process table and signal verification tests)",
+    "tests/unit/test_mcp_reap.py:47-59,1645-1673,1713-1719,2043-2056,2413-2423 (M1 follow-up C reaper liveness and negative PID tests)",
+    "tests/unit/test_mcp_stdio_proxy.py:969-1156 (M1 follow-up D in-memory SDK session cancellation forwarding and contract tests)"
+  ],
+  "validation_status": "NOT_RUN"
+}

@@ -1,5 +1,9 @@
 {
   "tp_id": "TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001",
+  "packet_id": "TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1521,
+  "risk_lane": "L2",
   "tp_path": "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json",
   "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups",
   "branch": "fix/mcp-just-works-m1-followups",
@@ -14,7 +18,7 @@
     "companion_sha256": "b08899767b27c252cb962681f97ec84580fc81739f5175489a185d19c58918f9",
     "note": "packet_sha256 is unchanged from the hand-back record. companion_sha256 differs because commit 54ec77f76 added YAML frontmatter to the companion."
   },
-  "head_sha": "29fb004ee174c27ff6358ba9d0052b9667050594",
+  "head_sha": "cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf",
   "commit_sha": "ec3430c6328894b997a5c8b9d2de6ff107d59d89",
   "routes": {
     "implementation": {
@@ -42,9 +46,15 @@
       "effort": "NONE"
     },
     "independent_audit": {
-      "status": "NOT_RUN",
-      "planned_route": "agy (Gemini), chosen by the owner on 2026-11-19",
-      "reason": "Dispatched only after this bundle is committed, so the audited head includes it."
+      "status": "PASS",
+      "route": "agy",
+      "model_requested": "gemini-4-argon-high",
+      "provider_attested_model": "UNKNOWN",
+      "route_chosen_by": "owner",
+      "route_chosen_text": "1 yes, 2 agy, 3 yes",
+      "route_chosen_at": "2026-11-20T03:00:37.260Z",
+      "model_chosen_by": "supervising session, reusing the model the owner approved for the PR #1516 audit",
+      "attempts": 1
     }
   },
   "slices": [
@@ -197,25 +207,38 @@
       "result": "kept verbatim in PROOF_CODEX_HANDBACK.json; they describe the uncommitted hand-back tree, not this head"
     }
   ],
-  "codereview_status": "NOT_RUN as an independent review. Codex recorded a deterministic self-review at hand-back; the Claude session then changed the diff and is a co-author, so it is not a reviewer either.",
+  "codereview_status": "Independent audit by agy (gemini-4-argon-high requested) at cf3b262a7: PASS, no findings, 3 low risks. See AUDITOR_REPORT.md. Codex's hand-back self-review and the Claude session's own checks are not reviews.",
   "precommit_status": "PASS_WITH_EXCEPTION: all hooks passed on the fix commit except markdownlint, which was skipped because its node environment fails to build on this machine (nodeenv cannot parse the installed node version). markdownlint-cli was run by hand on the changed markdown instead, exit 0.",
   "audit": {
-    "status": "NOT_RUN",
-    "reason": "Independent audit is dispatched after this bundle is committed. Route chosen by the owner: agy. Neither Codex nor Claude may audit, since both wrote parts of the diff."
+    "status": "PASS",
+    "route": "agy",
+    "report": "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md",
+    "audited_head_sha": "cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf",
+    "signed": false,
+    "signature_note": "proof/pr_merge/embedded-audit/pr-1521/PROOF.json is written and awaits the owner's signature."
   },
-  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1521 (draft). Blocked on the independent audit, then the owner's signature on the audit proof.",
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1521 (draft). Audit passed. Blocked on the owner's signature on proof/pr_merge/embedded-audit/pr-1521/PROOF.json, then PR Steward.",
   "residual_risks": [
-    "No independent audit has run on this diff.",
-    "Reversed expectation: a live build older than DOPEMUX_MCP_BUILD_TIMEOUT_SECS no longer blocks a reap, because fix C terminates it. test_dead_or_stale_build_pid_does_not_block_a_reap asserts the new behaviour; the auditor should confirm the packet intends it.",
-    "Process identity, clocks and signals in the build-PID tests are synthetic; no real over-budget build was terminated in a test.",
     "Cancel forwarding was exercised against in-memory SDK sessions with MCP SDK 1.29, which exposes the request id only through a private attribute. An SDK that drops it makes the proxy fail closed with INTERNAL_ERROR rather than forward a wrong id.",
     "The 4 ruff F841 findings and 2 mypy errors in the five files exist on the base and were left alone as out of scope.",
-    "markdownlint did not run as a pre-commit hook locally; CI Documentation Check passed on the pushed head."
+    "markdownlint did not run as a pre-commit hook locally; CI Documentation Check passed on the pushed head.",
+    "Auditor risk (low), src/dopemux/mcp/stdio_proxy.py lines 475-488: Relies on MCP Python SDK private attribute ClientSession._request_id to capture the backend request ID before send_request awaits. Auditor's mitigation note: Explicitly permitted by packet step S5; fails closed with McpError(INTERNAL_ERROR) if _request_id is missing or non-int, and is pinned by test_m1_followup_sdk_request_id_contract_fails_closed_if_missing.",
+    "Auditor risk (low), src/dopemux/mcp/launcher.py lines 440-457: Synchronous termination loop in _live_build_pid can block up to 4.0s (2.0s SIGTERM wait + 2.0s SIGKILL wait) when reaping an expired build that ignores SIGTERM. Auditor's mitigation note: Bounded to 4.0s total and only triggers when a build exceeds DOPEMUX_MCP_BUILD_TIMEOUT_SECS (default 1800s).",
+    "Auditor risk (low), src/dopemux/mcp/launcher.py lines 399-418: _build_process_identity is duplicated across launcher.py and reap.py to avoid circular imports. Auditor's mitigation note: Required by packet invariant C; parity between both modules is directly tested by test_m1_followup_build_stale_identity_never_signalled and test_m1_followup_expiry_signal_rules_and_reaper_agreement.",
+    "Validation was not run inside the sealed audit session (validation_status=NOT_RUN). The session had no repository and took no tool steps; it read the diff in the prompt. Local results are in review_bundle/LOCAL_VALIDATION.txt.",
+    "The auditor was not asked about the reversed test expectation by name. The prompt carries the diff without the proof files, so REROUTE_TO_CLAUDE_RESULT.md, which flags the reversal, was not in front of it. test_dead_or_stale_build_pid_does_not_block_a_reap now asserts that a live build older than DOPEMUX_MCP_BUILD_TIMEOUT_SECS does not block a reap. The auditor described fix C's termination of expired verified builds and returned PASS, but did not comment on that test change specifically. OPERATOR: decision pending on whether that is enough.",
+    "One auditor governs and there is no corroborating second audit. The PR #1516 packet carried a Grok corroboration; this one does not.",
+    "The diff has two authors, Codex and a Claude Code session. Independence rests on the auditor's model family (google-gemini) differing from both. All three model identities are requested or self-reported; none is provider-attested.",
+    "The owner chose the route (agy) and did not name a model. The session used gemini-4-argon-high, the model the owner approved for the PR #1516 audit.",
+    "AGY ran with tool permissions on always-proceed. Containment rests on the sealed directory and on the observed absence of tool steps in the stream, not on an enforced sandbox.",
+    "The audited head contains a merge of main. Earlier audited PRs were linear, and whether PR Steward accepts this shape is unknown until it runs on the signed proof.",
+    "Process identity, clocks and signals in the build-PID tests are synthetic. No real over-budget build was terminated, and no real MCP client cancel was sent to a running backend.",
+    "The raw AGY stream and the AGY CLI log contain the operator's home directory path, as in earlier bundles. Only the account email address was redacted (REDACTIONS.md)."
   ],
   "unknowns": [
     "Provider-attested model and effort for the Codex run (requested gpt-6.1-sol/high per its hand-back).",
-    "CI result on the merged head and on this bundle.",
-    "Whether PR Steward accepts an audit bound to a head that contains a merge of main; earlier audited PRs were linear."
+    "CI on the audited head cf3b262a7 is 2 FAILURE, 3 SKIPPED, 20 SUCCESS; the two failures are the audit gates. CI on the proof-only commits that follow has not run.",
+    "Provider-attested model for the AGY run."
   ],
   "cleanup_status": {
     "running_operation": null,
@@ -231,21 +254,75 @@
     "removed": [
       "WORKING_DIFF_AT_REROUTE_TO_CLAUDE.patch (byte-identical duplicate of WORKING_DIFF.patch)"
     ],
-    "nothing_else_deleted": true
+    "nothing_else_deleted": true,
+    "audit_bundle_committed": "this commit",
+    "signed_proof_committed": false
   },
   "embedded_audit": {
     "required": true,
-    "status": "SKIPPED",
-    "auditor_tool": "none",
-    "auditor_model": "unknown",
-    "invocation": null,
-    "exit_code": null,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print=\"$(cat AUDIT_PROMPT.txt)\" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt (cwd = sealed dir holding only AUDIT_PROMPT.txt from scripts.audit.pal_clink_runner --build-prompt; AGY CLI 1.5.13; conversation_id=fe89e363-4bab-47da-88ef-05dee1a81345; launched 2026-11-20T03:09:39Z; wrapper end 2026-11-20T03:10:57Z; one attempt; raw stream retained in review_bundle/AGY_OUTPUT_RAW.txt)",
+    "exit_code": 0,
     "report_path": "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md",
     "findings": [],
     "fixes_applied": [],
     "remaining_risks": [
-      "The independent audit has not run. This blocks readiness and merge."
+      "Auditor risk (low), src/dopemux/mcp/stdio_proxy.py lines 475-488: Relies on MCP Python SDK private attribute ClientSession._request_id to capture the backend request ID before send_request awaits. Auditor's mitigation note: Explicitly permitted by packet step S5; fails closed with McpError(INTERNAL_ERROR) if _request_id is missing or non-int, and is pinned by test_m1_followup_sdk_request_id_contract_fails_closed_if_missing.",
+      "Auditor risk (low), src/dopemux/mcp/launcher.py lines 440-457: Synchronous termination loop in _live_build_pid can block up to 4.0s (2.0s SIGTERM wait + 2.0s SIGKILL wait) when reaping an expired build that ignores SIGTERM. Auditor's mitigation note: Bounded to 4.0s total and only triggers when a build exceeds DOPEMUX_MCP_BUILD_TIMEOUT_SECS (default 1800s).",
+      "Auditor risk (low), src/dopemux/mcp/launcher.py lines 399-418: _build_process_identity is duplicated across launcher.py and reap.py to avoid circular imports. Auditor's mitigation note: Required by packet invariant C; parity between both modules is directly tested by test_m1_followup_build_stale_identity_never_signalled and test_m1_followup_expiry_signal_rules_and_reaper_agreement.",
+      "Validation was not run inside the sealed audit session (validation_status=NOT_RUN). The session had no repository and took no tool steps; it read the diff in the prompt. Local results are in review_bundle/LOCAL_VALIDATION.txt.",
+      "The auditor was not asked about the reversed test expectation by name. The prompt carries the diff without the proof files, so REROUTE_TO_CLAUDE_RESULT.md, which flags the reversal, was not in front of it. test_dead_or_stale_build_pid_does_not_block_a_reap now asserts that a live build older than DOPEMUX_MCP_BUILD_TIMEOUT_SECS does not block a reap. The auditor described fix C's termination of expired verified builds and returned PASS, but did not comment on that test change specifically. OPERATOR: decision pending on whether that is enough.",
+      "One auditor governs and there is no corroborating second audit. The PR #1516 packet carried a Grok corroboration; this one does not.",
+      "The diff has two authors, Codex and a Claude Code session. Independence rests on the auditor's model family (google-gemini) differing from both. All three model identities are requested or self-reported; none is provider-attested.",
+      "The owner chose the route (agy) and did not name a model. The session used gemini-4-argon-high, the model the owner approved for the PR #1516 audit.",
+      "AGY ran with tool permissions on always-proceed. Containment rests on the sealed directory and on the observed absence of tool steps in the stream, not on an enforced sandbox.",
+      "The audited head contains a merge of main. Earlier audited PRs were linear, and whether PR Steward accepts this shape is unknown until it runs on the signed proof.",
+      "Process identity, clocks and signals in the build-PID tests are synthetic. No real over-budget build was terminated, and no real MCP client cancel was sent to a running backend.",
+      "The raw AGY stream and the AGY CLI log contain the operator's home directory path, as in earlier bundles. Only the account email address was redacted (REDACTIONS.md)."
     ],
-    "skip_reason": "PENDING, not waived: the independent audit (route agy, chosen by the owner) is dispatched after this bundle is committed. AUDITOR_REPORT.md does not exist yet and this block is replaced when it does."
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  },
+  "gates_run_at_sha": "29fb004ee174c27ff6358ba9d0052b9667050594",
+  "audited_head_sha": "cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf",
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "gpt-6.1-sol requested for the Codex run (provider-attested model UNKNOWN); claude-fable-5-2 for the Claude Code session that finished the work (session environment; self-reported, not provider-attested)",
+      "model_family": "openai-gpt+anthropic-claude",
+      "runner": "codex (first author); claude-code (completion after the owner's reroute)",
+      "runtime_family": "openai-codex+anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "auditor_run": {
+    "agy_cli_version": "1.5.13",
+    "conversation_id": "fe89e363-4bab-47da-88ef-05dee1a81345",
+    "launched": "2026-11-20T03:09:39Z",
+    "wrapper_end": "2026-11-20T03:10:57Z",
+    "exit_code": 0,
+    "verdict": "PASS",
+    "validation_status": "NOT_RUN",
+    "findings": 0,
+    "risks": 3,
+    "tool_steps": 0,
+    "prompt_sha256": "d6d65522314d8846b2d0e8d183894fb69cb201faa5cc634c3ba1a87c4a0500f0",
+    "diff_sha256": "dd6c0a94fa4d58516be334d32470332e6d687acf864020b40302a8755d816a7a",
+    "raw_stream_sha256": "bc08de6c2c94acb2eaa79c953c06bd733a6da0cb17e9c7e6be2d54d1d6dafcb6",
+    "evidence_label": "AUDITOR_WRITTEN_RAW_RETAINED",
+    "custody": "~/.local/share/dopemux/evidence/pr1521/r1/"
   }
 }
