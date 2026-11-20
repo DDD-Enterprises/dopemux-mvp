@@ -1,0 +1,91 @@
+{
+  "status": "COMPLETED",
+  "verdict": "FAIL",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "HIGH",
+      "category": "security_bypass",
+      "path": ".claude/hooks/dcp_surface_guard.py",
+      "lines": "66-110",
+      "title": "Alias spellings in `known` are not propagated into subdirectory components during recursive symlink target walks in `_walk_alias_forms`, allowing red-lane hard-deny bypasses",
+      "detail": "In `_walk_alias_forms` (.claude/hooks/dcp_surface_guard.py:66-110), `known.get(real, [])` is only merged into `forms` inside `if name == \"..\":` (line 90), and is never merged when a recursive symlink walk (`_walk_alias_forms(target, hops + 1, known)` at line 99) traverses an already-seen resolved directory `real` via normal component steps (`else:` at lines 104-107) or symlink steps (`if os.path.islink(entry):` at lines 95-103). Consequently, whenever a symlink target crosses a resolved directory `real` that already has red-lane or repo-rooted alias spellings in `known[real]` and descends into child components, those child components do not inherit the alias spellings of `real`. This yields at least two reproducible hard-deny bypasses where `surface_guard_block` returns `None` on a red-lane edit:\n\n1. Multi-level symlink target followed by `..` (direct bypass of Amendment 08 Shape 3 / `test_dotdot_out_of_second_symlink_keeps_red_lane_spelling`): In the exact fixture of `test_dotdot_out_of_second_symlink_keeps_red_lane_spelling` (tests/unit/dcp_surface_guard/test_file_repo_root.py:687-704), `<sibling>/services/task-orchestrator` is a symlink to `outside`. If `outside/sym2` points two levels deep (`outside/a/b` or relative `a/b`) instead of one level (`outside/sub`), and the edit path is `f\"{tmp_path}/far/link/../{sibling.name}/services/task-orchestrator/sym2/../x.py\"` (or `f\"{root}/docs/link/sym2/../x.py\"` where `docs/link -> sibling/services/task-orchestrator`), the path resolves in the filesystem to `outside/a/x.py`, which is the red-lane path `<sibling>/services/task-orchestrator/a/x.py`. During `_walk_alias_forms(target, hops + 1, known)` on `outside/a/b`, step `outside` does not load `known[('...', 'outside')]`, so step `a` records only `[('...', 'outside', 'a')]` in `known[('...', 'outside', 'a')]` without `<sibling>/services/task-orchestrator/a`. Then at `..` in the outer walk, `real` becomes `('...', 'outside', 'a')`, `kept = [f[:-1] for f in forms if f and not f[-1][1]]` drops every form ending in `('sym2', True)`, and `known.get(real, [])` returns only `[('...', 'outside', 'a')]`. The red-lane spelling is lost, `_alias_forms` returns only `('/.../outside/a/x.py',)`, and `surface_guard_block` returns `None`.\n\n2. Relative symlink inside a symlinked ancestor directory: When `<checkout>/services` is a symlink to an external directory `outside_services`, and `outside_services/entry_link` is a relative symlink to `task-orchestrator` (where `outside_services/task-orchestrator` is a real directory or symlink), editing `<checkout>/services/task-orchestrator/x.py` is hard-blocked, but editing `<checkout>/services/entry_link/x.py` (the exact same file) returns `None` (allowed). At `entry_link`, `target = os.path.join(parent, os.readlink(entry))` uses only `real` (`outside_services/task-orchestrator`), and the recursive walk of `target` does not pick up `known[('...', 'outside_services')]` (`<checkout>/services`) at step `outside_services`, so `<checkout>/services/task-orchestrator/x.py` is never produced."
+    },
+    {
+      "id": "F2",
+      "severity": "LOW",
+      "category": "proof_inconsistency",
+      "path": "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md",
+      "lines": "123-127",
+      "title": "`G02_RETURN.md` inaccurately claims that symlink chains longer than 40 hops (`_MAX_SYMLINK_HOPS = 40`) are hard-blocked",
+      "detail": "`G02_RETURN.md` (lines 124-126) states: \"A path with more than 64 spellings (`_MAX_ALIAS_FORMS = 64`; six stacked symlinks are enough) is hard-blocked, and so is a symlink chain longer than 40 hops (`_MAX_SYMLINK_HOPS = 40`).\" In `.claude/hooks/dcp_surface_guard.py`, exceeding `_MAX_SYMLINK_HOPS` raises `OSError(\"too many levels of symbolic links\")` (lines 78-79), which both `_alias_limit_exceeded` (lines 312-313) and `_alias_forms` (lines 139-140) catch and ignore (returning `False` and `()`, respectively). This is confirmed by `AMENDMENT_08.md` (lines 52-54) and `test_symlink_loop_does_not_raise` (`tests/unit/dcp_surface_guard/test_file_repo_root.py:676-685`), which asserts `result is None`."
+    },
+    {
+      "id": "F3",
+      "severity": "MEDIUM",
+      "category": "governance_compliance",
+      "path": "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json",
+      "lines": "32-41,72-74,145-150,235-250",
+      "title": "Repeated supervisor code mutations and proof files outside issued packet allowlists and retry/audit budgets",
+      "detail": "`MACRO_PACKET.json` and `WORKSTREAMS/G01/TASK_PACKET.json` restrict code writes on `.claude/hooks/dcp_surface_guard.py` and `tests/unit/dcp_surface_guard/test_file_repo_root.py` to `canonical_writers: [\"G01-implementer\"]`, cap G01 at 1 attempt + 1 retry + 1 correction round, cap the macro at 2 team-lead correction rounds, forbid code edits in G02 (`WORKSTREAMS/G02/TASK_PACKET.json` invariant `T02`), and set `final_audit_fail_or_needs_supervisor` and `allowance_exceeded` as global stop conditions. After G01 exhausted its retry (`G01_RETURN.md:15`) and two frozen heads failed audit (`0dfc7220a` NEEDS_SUPERVISOR, `ee43f9914` FAIL), the supervisor session directly authored 9 code/test amendments (Amendments 02-10) under chat-level one-off operator exceptions and committed 10 `AMENDMENT_*.md` files outside the workstream `write_surface` lists without re-issuing the governed packet."
+    }
+  ],
+  "risks": [
+    {
+      "id": "R1",
+      "severity": "MEDIUM",
+      "title": "Direct external realpath edits bypass red-lane matching when a checkout symlinks a red-lane directory outside all git repositories",
+      "detail": "Documented in `AMENDMENT_10.md` (lines 114-123) and `G02_RETURN.md` (lines 116-122): if a checkout's red-lane directory is a symlink to an external directory outside any git repository, addressing the edit directly via `<outside>/x.py` has no `.git` ancestor and no red-lane path components, so the guard allows it."
+    },
+    {
+      "id": "R2",
+      "severity": "LOW",
+      "title": "Trusted audit prompt omits explicit `git rev-list` / `git diff --name-only` proof between `G02_RETURN.md` frozen content head and audited head SHA",
+      "detail": "`G02_RETURN.md` names frozen content head `dc5aac697bbbc4c752e685fbb93baee7b11cfd50`, whereas the head SHA under audit is `e95187bb242748de7dfbabccdb98b5f419baa5be`. Although `AMENDMENT_02.md` (step 4, line 55) specified including `git rev-list` and `git diff --name-only <content-head>..<audited-head>` in the trusted section of the audit prompt, that range proof is absent from the trusted prompt section (though the full cumulative diff `ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7..e95187bb242748de7dfbabccdb98b5f419baa5be` is present and audited)."
+    },
+    {
+      "id": "R3",
+      "severity": "LOW",
+      "title": "Candidate diff contains governance packet directives and `TP_ROUTE` blocks treated strictly as untrusted data",
+      "detail": "Deterministic scanner reported `detected: false` (`match_count: 0`), but candidate files under `proof/MACRO-DMX-GUARD-FILE-REPO-001/` contain task-packet instructions, `TP_ROUTE` blocks, and status claims (`READY_FOR_AUDIT`). All candidate content was treated strictly as untrusted data under the trusted authority order."
+    }
+  ],
+  "rationale": "Audited PR 1513 in repository DDD-Enterprises/dopemux-mvp at head SHA e95187bb242748de7dfbabccdb98b5f419baa5be against trusted base SHA ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7 across all 23 changed files without checking out or executing candidate code. While the candidate changes add multi-root discovery (`_guard_roots`, `file_repo_root`), dual path-key extraction (`tool_edit_paths`), spelling-cap blocking (`_alias_limit_exceeded`), and relative `PROOF.json` existence checks (`_proof_json_is_new`), the core symlink/alias walker `_walk_alias_forms` (.claude/hooks/dcp_surface_guard.py:66-110) contains a flaw in how `known` directory alias spellings are propagated. Specifically, `known.get(real, [])` is only consulted on `name == \"..\"` (line 90) and is never merged into `forms` when a recursive symlink walk (`_walk_alias_forms(target, hops + 1, known)`) traverses a known resolved directory `real` and descends into child components. As a result, when a second symlink inside a symlinked red-lane target points two or more directory levels deep (`sym2 -> outside/a/b`) and is followed by `..` (`sym2/../x.py`), `known[('...', 'outside', 'a')]` never receives the `<checkout>/services/task-orchestrator/a` spelling, `kept` drops all forms ending in `('sym2', True)`, and `surface_guard_block` returns `None` (allowing a red-lane write). Similarly, a relative symlink inside a symlinked ancestor directory (`<checkout>/services -> outside_services` with `outside_services/entry_link -> task-orchestrator`) resolves `target` only against `real` (`outside_services`) and never merges `known[('...', 'outside_services')]` during the recursive walk, failing to generate `<checkout>/services/task-orchestrator/x.py` and allowing the edit. Because a concrete hard-deny security bypass remains in the guard's symlink alias resolution logic, the audit verdict is FAIL.",
+  "inspected_paths": [
+    ".claude/hooks/dcp_surface_guard.py",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_01.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_02.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_03.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_04.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_05.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_06.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_07.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_08.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_09.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_10.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AUTHORIZATION.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/ISSUANCE.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/SHA256SUMS.txt",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G02/TASK_PACKET.json",
+    "tests/unit/dcp_surface_guard/__init__.py",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py"
+  ],
+  "evidence_refs": [
+    ".claude/hooks/dcp_surface_guard.py:66-110 (_walk_alias_forms only consults known.get(real, []) on `name == '..'` at line 90 and does not merge known[real] at lines 95-107 during recursive target walks)",
+    ".claude/hooks/dcp_surface_guard.py:78-79,139-140,307-314 (_MAX_SYMLINK_HOPS raises OSError, which is caught and ignored by _alias_limit_exceeded and _alias_forms)",
+    ".claude/hooks/dcp_surface_guard.py:396-450 (surface_guard_block and _block_reason_for_path rely on _guard_roots and _guard_readings derived from _alias_forms)",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py:676-704 (test_symlink_loop_does_not_raise asserts result is None; test_dotdot_out_of_second_symlink_keeps_red_lane_spelling tests only a 1-level sym2 target `outside/sub` where `sym2/..` lands directly on `outside`)",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md:6-16,123-127 (records frozen content head dc5aac697bbbc4c752e685fbb93baee7b11cfd50 and inaccurately states chains >40 hops are hard-blocked)",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json:32-41,72-74,145-150,235-250 (canonical_writers, allowlists, and global stop conditions)",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_08.md:44-57 (documents one-hop target walk and known dictionary design)",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_10.md:114-123 (documents open external real-path gap)"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true
+}
