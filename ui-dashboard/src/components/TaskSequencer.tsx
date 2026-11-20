@@ -601,7 +601,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState, onError }
                   },
                 }}
               >
-                {isTaskTitleCopied ? <Check size={16} /> : <Copy size={16} />}
+                {isTaskTitleCopied ? (
+                  <Check size={16} aria-hidden="true" />
+                ) : (
+                  <Copy size={16} aria-hidden="true" />
+                )}
               </IconButton>
             </Tooltip>
           </Box>
