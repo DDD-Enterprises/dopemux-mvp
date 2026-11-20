@@ -1,0 +1,26 @@
+PR #1518 local validation at df8b6bc5d9f5de26041e5247c3c2b24380ab29f6 (2026-11-20T04:09:07Z), Python 3.12.13, node v25.9.0
+
+== services/adhd-dashboard: audit worktree HEAD df8b6bc5d9f5de26041e5247c3c2b24380ab29f6, tracked changes 0
+dopemux imported from ~/code/dopemux-mvp/.worktrees/pr1518-audit/src/dopemux/__init__.py
+orchestrator_tasks imported from ~/code/dopemux-mvp/.worktrees/pr1518-audit/services/adhd-dashboard/orchestrator_tasks.py
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 76 passed, 1 warning in 0.61s =========================
+pytest tests exit=0
+67 passed in 0.48s
+pytest tests/test_orchestrator_tasks.py exit=0
+
+== ui-dashboard: G-2 worktree HEAD df8b6bc5d9f5de26041e5247c3c2b24380ab29f6, changes before 0
+npx tsc --noEmit exit=0
+ Test Files  14 passed (14)
+      Tests  150 passed (150)
+npx vitest run exit=0
+✓ built in 697ms
+npx vite build (out-of-tree outDir) exit=0
+npx eslint src (head) exit=1
+G-2 worktree changes after: 0
+
+== eslint at the base 8edff9b52480681d5eb7b420a3efcdf42ab4c36c (git archive of ui-dashboard into a scratch dir, node_modules linked from the G-2 worktree)
+npx eslint src (base) exit=1
+eslint head: 16 errors, 2 warnings; base: 16 errors, 2 warnings
+problems at head that the base does not have (file, rule, message): 0; base problems gone at head: 0
