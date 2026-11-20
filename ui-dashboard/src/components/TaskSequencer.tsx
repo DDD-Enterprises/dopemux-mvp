@@ -1,3 +1,6 @@
+// Not mounted. The cockpit shows the orchestrator's real queue in TaskQueue.tsx, read-only. This
+// seeded sequencer and its local Start, Finish and Skip controls are kept for the write path, which
+// has to wire those controls to orchestrator transitions before they return to the screen.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Paper,

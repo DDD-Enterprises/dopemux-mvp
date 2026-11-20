@@ -1,0 +1,82 @@
+{
+  "status": "COMPLETE",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "low",
+      "location": "services/adhd-dashboard/orchestrator_tasks.py:read_task_queue",
+      "summary": "The post-read owner check treats an unchanged container id as proof the publisher stayed the same. Docker keeps that id across stop and start, so the same container can pass both checks while another publisher holds port 7890 during list_role_items.",
+      "impact": "A local stop/start interleaved with one GET /api/tasks can return the interloper's work or queue titles under status ok. A container recreate changes the id and is discarded. A holder of the Docker socket can also spoof dopemux labels, which is a stronger local bypass of the same trust boundary."
+    },
+    {
+      "id": "F2",
+      "severity": "low",
+      "location": "services/adhd-dashboard/backend.py:get_tasks",
+      "summary": "The route and README state that GET /api/tasks always returns HTTP 200 with status ok, empty, unavailable, or wrong_project. get_tasks does not catch exceptions. resolve_expected_project catches only OSError and SubprocessError, and list_role_items parses the MCP body outside the transport try.",
+      "impact": "An unexpected error from resolve_identity_view or parse_mcp_response_body becomes a FastAPI 500. The UI treats non-200 as a panel failure and shows no items, so the cross-project gate still fails closed on that path."
+    }
+  ],
+  "risks": [
+    {
+      "id": "R1",
+      "severity": "medium",
+      "summary": "In the compose container the new route is specified to always return unavailable, because the proof needs docker ps and a git checkout. The mounted TaskSequencer is replaced by that panel, so a containerized cockpit shows a permanent unavailable queue until the backend is run on the host."
+    },
+    {
+      "id": "R2",
+      "severity": "low",
+      "summary": "Owner project ids that contain a slash or backslash are dropped by _public_id, and docker stderr is reduced to a fixed phrase. Expected project_id from resolve_identity_view is copied into project.expected without _public_id. A path-shaped git project id would leave the process in the JSON body. Container names are also embedded in owner.detail and can appear in reason."
+    },
+    {
+      "id": "R3",
+      "severity": "medium",
+      "summary": "OK versus WRONG_PROJECT versus CONFLICT is entirely the result of match_target and identity_from_docker_labels. Port matching assumes DEFAULT_TO_PORT has the same type as DockerContainerInfo.published_ports. SSE and JSON-RPC acceptance depend on parse_mcp_response_body raising McpReadError for bodies this reader rejects. Those modules are outside the diff and were not re-read. The new tests encode the intended verdicts and were not executed."
+    },
+    {
+      "id": "R4",
+      "severity": "low",
+      "summary": "backend.py now imports orchestrator_tasks at process start, which imports dopemux.mcp and requires PyYAML. A missing module or an import-time failure in those packages takes down every adhd-dashboard route, not only /api/tasks. requirements.txt adds pyyaml>=6.0; the image or lockfile must actually install it."
+    },
+    {
+      "id": "R5",
+      "severity": "medium",
+      "summary": "Provenance and workflow checks were not completed. Trusted head df8b6bc5d9f5de26041e5247c3c2b24380ab29f6 and base 8edff9b52480681d5eb7b420a3efcdf42ab4c36c match the untrusted metadata strings. The diff was not bound to a git object, the PR was not queried, and CI was not read. Tools, MCP, checkout, and delegation were disabled by the audit contract."
+    }
+  ],
+  "rationale": "The audit surface is the supplied unified diff for DDD-Enterprises/dopemux-mvp PR 1518. Trusted head df8b6bc5d9f5de26041e5247c3c2b24380ab29f6 matches the untrusted metadata SHA. The tree was not checked out and candidate code was not executed. Delegation was prohibited by this audit contract.\n\nread_task_queue resolves the checkout with resolve_identity_view(..., trust_env=False), skips docker and MCP when that identity is missing, and calls the lister only after check_port_owner returns OK with a container id. list_role_items posts only initialize, notifications/initialized, and tools/call query_items with operation search, role work then queue, and limit 20, to http://127.0.0.1:{DEFAULT_TO_PORT}/mcp. A second owner check withholds items unless the verdict is still OK and the container id is unchanged. Docker failures go through _docker_problem. McpReadError.detail is logged and omitted from reason. The route keeps Security(verify_api_key). parseTaskQueue keeps items only when status is ok, and TaskQueue renders item text as React children. App mounts TaskQueue in place of TaskSequencer and the new UI tests keep queue failures out of the state alert. The diff's tests cover wrong_project, CONFLICT, label-free containers, container recreate, path strings in docker errors, and a source scan for named write tools.\n\nThat is enough evidence that the patch implements a read-only, fail-closed queue for the host-run case it documents. F1 and F2 are residual holes inside that design, not a remote item-injection path. R1 is an accepted deployment limit written into the README and the design note. Scanner instruction_like_scan_summary was detected=false, match_count=0, truncated=false. The diff's comments describe the reader and the unmounted sequencer. They do not change this verdict. Validation was not run.",
+  "inspected_paths": [
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "services/adhd-dashboard/README.md",
+    "services/adhd-dashboard/backend.py",
+    "services/adhd-dashboard/orchestrator_tasks.py",
+    "services/adhd-dashboard/requirements.txt",
+    "services/adhd-dashboard/tests/test_orchestrator_tasks.py",
+    "ui-dashboard/src/App.taskQueue.test.tsx",
+    "ui-dashboard/src/App.test.tsx",
+    "ui-dashboard/src/App.tsx",
+    "ui-dashboard/src/components/TaskQueue.tsx",
+    "ui-dashboard/src/components/TaskSequencer.tsx",
+    "ui-dashboard/src/components/__tests__/TaskQueue.test.tsx",
+    "ui-dashboard/src/taskQueue.test.ts",
+    "ui-dashboard/src/taskQueue.ts"
+  ],
+  "evidence_refs": [
+    "trusted head df8b6bc5d9f5de26041e5247c3c2b24380ab29f6",
+    "trusted base 8edff9b52480681d5eb7b420a3efcdf42ab4c36c",
+    "untrusted metadata SHA matches trusted head; instruction_like_scan_summary detected=false match_count=0 truncated=false",
+    "orchestrator_tasks.py read_task_queue: owner check, list_role for LISTED_ROLES, second owner check, container_id inequality discards items",
+    "orchestrator_tasks.py list_role_items: MCP_URL 127.0.0.1, tools/call name query_items arguments operation search role limit ROLE_LIMIT",
+    "orchestrator_tasks.py check_port_owner: single publisher of DEFAULT_TO_PORT, match_target, UNKNOWN when id missing or docker unavailable",
+    "orchestrator_tasks.py _public_id _display_name _docker_problem McpReadError.detail",
+    "backend.py get_tasks: Security(verify_api_key), always-return docstring, _record_request outcome error unless ok or empty",
+    "README.md Task queue: host-run uvicorn proof, compose always unavailable, status ok empty wrong_project unavailable",
+    "requirements.txt pyyaml>=6.0",
+    "taskQueue.ts parseTaskQueue: items only for ok, other statuses force items []",
+    "TaskQueue.tsx fetch GET /api/tasks, latestRequest generation, text rendering, read-only caption",
+    "App.tsx Grid swap TaskSequencer to TaskQueue",
+    "tests/test_orchestrator_tasks.py TestReadTaskQueue and TestMcpClient.test_the_module_names_no_write_tool",
+    "ui-dashboard TaskQueue.test.tsx and App.taskQueue.test.tsx status chips and failure isolation"
+  ],
+  "validation_status": "NOT_RUN"
+}

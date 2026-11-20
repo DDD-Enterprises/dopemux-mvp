@@ -1,0 +1,12 @@
+{
+  "head": {
+    "errors": 16,
+    "warnings": 2
+  },
+  "base": {
+    "errors": 16,
+    "warnings": 2
+  },
+  "new_at_head": [],
+  "gone_at_head": []
+}

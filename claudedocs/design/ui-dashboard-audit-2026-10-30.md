@@ -147,7 +147,10 @@ add the forecast to the engine's `state_update` payload if a live forecast is wa
 
 **Follow-up (not in this branch):**
 
-- Wire TaskSequencer to `/api/task-recommendations` and TeamDashboard to a real source (2).
+- Task queue (2): show the Task Orchestrator's real queue in a read-only `TaskQueue` panel fed by
+  `GET /api/tasks`, which reads the orchestrator MCP on :7890. `/api/task-recommendations` is not a
+  task list: it returns work-type advice, which the load instrument already shows.
+- TeamDashboard still needs a real source (2).
 - TaskSequencer timer, skip and finish-time defects from the component pass.
 - Tab-stop cleanup in TaskSequencer and TeamDashboard (13, 14).
 - Gremlin pink as status in TaskSequencer (11) and the notification palette (15).

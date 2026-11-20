@@ -1,0 +1,64 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "claude-fable-5-2 requested (Co-Authored-By: Claude Fable 5.2 trailer on all six commits, 379c9a213 to df8b6bc5d); observed model UNKNOWN; self-reported, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print=\"$(cat AUDIT_PROMPT.txt)\" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt (cwd = sealed dir holding only AUDIT_PROMPT.txt from scripts.audit.pal_clink_runner --build-prompt; AGY CLI 1.5.13; conversation_id=e16290c6-dd8a-4697-9c13-914f5dca4b2a; launched 2026-11-20T04:08:03Z, wrapper end 2026-11-20T04:09:27Z; one attempt; raw stream retained in review_bundle/AGY_OUTPUT_RAW.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1518-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validation was not run inside the sealed audit sessions (validation_status=NOT_RUN); local pytest in services/adhd-dashboard (76 passed), tsc, vitest (150/150) and vite build pass at the audited head. No CI job runs services/adhd-dashboard/tests: pytest.ini has testpaths = tests, the unit gate collects tests/unit plus two files, and the workflows name adhd-dashboard only for container builds.",
+      "Corroborating Grok G-1 (LOW, OPEN): The post-read owner check treats an unchanged container id as proof the publisher stayed the same. Docker keeps that id across stop and start, so the same container can pass both checks while another publisher holds port 7890 during list_role_items.",
+      "Corroborating Grok G-2 (LOW, OPEN): The route and README state that GET /api/tasks always returns HTTP 200 with status ok, empty, unavailable, or wrong_project. get_tasks does not catch exceptions. resolve_expected_project catches only OSError and SubprocessError, and list_role_items parses the MCP body outside the transport try.",
+      "Supervisor check of AGY RISK-1 (App.tsx: reportTaskError might be left unused, which noUnusedLocals would reject): not a defect at this head. reportTaskError is still passed to TeamDashboard in App.tsx, and `npx tsc --noEmit` exits 0 at the audited head (LOCAL_VALIDATION.txt).",
+      "Supervisor check of AGY RISK-2 (worst-case latency of one /api/tasks request): accurate and OPEN. OWNER_CHECK_TIMEOUT_S and MCP_TIMEOUT_S are 5.0 s each in orchestrator_tasks.py; one request makes two owner checks and reads two roles, so a hung Docker and a hung MCP could hold it for about 20 s. Not measured live; the two live reads at the audited head took under 1 s. OPERATOR: decision pending.",
+      "Supervisor check of Grok G-1 (same container id after stop and start): accurate and OPEN. read_task_queue compares the owner's container id before and after the read, and `docker stop` followed by `docker start` keeps that id. The repo's switch-project removes and recreates the container, which changes the id and is caught; stopping and restarting the same container around another publisher, inside one request, is not. It needs local Docker access. Not exercised. OPERATOR: decision pending.",
+      "Supervisor check of Grok G-2 (HTTP 500 where the README says always 200): partly accurate and OPEN. get_tasks has no catch-all and resolve_expected_project catches only OSError and SubprocessError, so an unexpected exception becomes HTTP 500. The parse path Grok names is not one of them at this head: dopemux.mcp.tool_snapshot.parse_mcp_response_body returns None for a body it cannot parse, and extract_tool_payload and parse_item_list raise McpReadError for every shape they do not accept, which read_task_queue answers as unavailable. Both functions were read in full, and 33 malformed or unusual replies were run through that expression for both roles in the audit worktree: none raised anything other than McpReadError (PARSE_PROBE.txt). On a 500 the panel shows a failure and no items. OPERATOR: decision pending.",
+      "Supervisor check of Grok's risks R1 and R4 (compose container): accurate and OPEN. backend.py imports orchestrator_tasks at import time, which imports dopemux.mcp; the Dockerfile copies src/dopemux and this PR adds pyyaml to requirements.txt. No image was built or run for this audit, so the README's statement that the compose container always answers unavailable is NOT_RUN, and a failed import there would take down every route of the service. The cockpit's task panel needs a host-run backend to show items.",
+      "Supervisor check of Grok's risk R2 (what the response can carry): accurate and OPEN, low. The expected project id is returned without _public_id; the ids seen from resolve_identity_view are a directory name plus a hash, not a path. Container names appear in the reason of a refusal; they carry a project name, not a path. The route keeps the dashboard's API-key check.",
+      "Supervisor check of Grok's risk R3 (modules outside the diff, tests not executed in the audit): DEFAULT_TO_PORT is the int 7890 and DockerContainerInfo.published_ports is List[int] at this head; the tests were run locally (76 passed); live requests gave the verdicts OK (after the switch) and WRONG_PROJECT (before it). match_target and identity_from_docker_labels are outside this diff and were not re-audited.",
+      "Grok's risk R5 (provenance not checked inside the sealed audit): the supervising session built the diff from git objects in a worktree at the audited head, read the PR's head and review threads from GitHub, and recorded CI in CI_EVIDENCE.json.",
+      "The raw AGY stream (1 line) and the AGY CLI log copy (6 lines) contain the operator's home directory path, as in earlier bundles. Only the account email address was redacted (REDACTIONS.md). LOCAL_VALIDATION.txt shows the home directory as ~.",
+      "Audit scope: the whole PR diff, merge-base 8edff9b52 to df8b6bc5d; when this bundle was built main had moved to ba5c3e07b (#1514, #1517, #1516) without touching this PR's files, scripts/audit, scripts/governance, schemas/proof, config/audit or .github/workflows. The PR branch is behind main and was not merged or rebased.",
+      "Auditor model identity: requested gemini-4-argon-high; provider-attested identity UNKNOWN; recorded as the schema family value 'gemini'.",
+      "AGY tool permissions were always-proceed; containment rests on the observed absence of tool steps.",
+      "Advisory GitHub reviews, not embedded auditors: Codex and Copilot each reviewed dd0c809ef (Codex 1 P2 finding, Copilot 3 findings, all in services/adhd-dashboard/orchestrator_tasks.py). The fixes are 3dda9ec38 and df8b6bc5d and all 4 threads are resolved. Codex's review-summary comment records a completed code review of df8b6bc5d with has_any_findings=false (2026-11-19T21:54:38Z) and Codex added a thumbs-up reaction; there is no Codex review object on that commit. Copilot did not review 3dda9ec38 or df8b6bc5d.",
+      "No supervisor-issued MacroPacket exists for this work. Authority is the operator's requests recorded under fallback_auditor_approval and operator_decisions.",
+      "Live reads of GET /api/tasks from a host-run backend returned status ok (40 items, total 528): the supervising session at aaa5a31d3 (2026-11-19) and at the audited head (2026-11-20T04:11:01Z), the implementing session at the audited head (2026-11-19T21:52:34Z). Before the port was switched the same request answered wrong_project (supervising session, aaa5a31d3). The responses, metadata and the browser screenshot hold real task titles and host paths; they stay in custody.",
+      "Not exercised: the unavailable, empty and wrong_project panel states in a browser (vitest only); a container replacement during a live read (pytest only); the backend inside the compose container. Port ownership is read from Docker labels, so /api/tasks works only for a host-run backend; the service README says so.",
+      "Panel limits seen in the live reads, not defects against this PR's claims: the store's newest modified_at is 2026-10-07 and the panel shows the read time, not item age; every row says 'complexity unknown' because the orchestrator's list mode does not return complexity; review-role items are not listed (the roles read are work and queue).",
+      "Port 7890 was switched from another project to dopemux-mvp for the live reads, on the operator's approval ('Yes, switch it', 2026-11-19T21:23:28Z). It still serves dopemux-mvp. OPERATOR: decide whether to switch it back."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  },
+  "generated_at": "2026-11-20T04:20:39Z",
+  "head_sha": "df8b6bc5d9f5de26041e5247c3c2b24380ab29f6",
+  "packet_id": "TP-DMX-PR1518-L2-AUDIT-001",
+  "pr_number": 1518,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

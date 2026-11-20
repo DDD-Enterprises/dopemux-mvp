@@ -1,0 +1,70 @@
+Malformed MCP replies through parse_item_list(extract_tool_payload(parse_mcp_response_body(body)), role), the expression
+list_role_items runs outside its try block. Audit worktree at df8b6bc5d9f5de26041e5247c3c2b24380ab29f6, 2026-11-20T04:20:26Z. Script: tools/parse_probe.py (custody).
+
+empty                      work   -> McpReadError: reply is not a JSON-RPC object
+empty                      queue  -> McpReadError: reply is not a JSON-RPC object
+none                       work   -> McpReadError: reply is not a JSON-RPC object
+none                       queue  -> McpReadError: reply is not a JSON-RPC object
+not json                   work   -> McpReadError: reply is not a JSON-RPC object
+not json                   queue  -> McpReadError: reply is not a JSON-RPC object
+sse garbage                work   -> McpReadError: reply is not a JSON-RPC object
+sse garbage                queue  -> McpReadError: reply is not a JSON-RPC object
+sse done                   work   -> McpReadError: reply is not a JSON-RPC object
+sse done                   queue  -> McpReadError: reply is not a JSON-RPC object
+json list                  work   -> McpReadError: reply is not a JSON-RPC object
+json list                  queue  -> McpReadError: reply is not a JSON-RPC object
+json string                work   -> McpReadError: reply is not a JSON-RPC object
+json string                queue  -> McpReadError: reply is not a JSON-RPC object
+json number                work   -> McpReadError: reply is not a JSON-RPC object
+json number                queue  -> McpReadError: reply is not a JSON-RPC object
+json null                  work   -> McpReadError: reply is not a JSON-RPC object
+json null                  queue  -> McpReadError: reply is not a JSON-RPC object
+error str                  work   -> McpReadError: orchestrator returned a JSON-RPC error
+error str                  queue  -> McpReadError: orchestrator returned a JSON-RPC error
+error dict                 work   -> McpReadError: orchestrator returned a JSON-RPC error
+error dict                 queue  -> McpReadError: orchestrator returned a JSON-RPC error
+error list                 work   -> McpReadError: orchestrator returned a JSON-RPC error
+error list                 queue  -> McpReadError: orchestrator returned a JSON-RPC error
+result list                work   -> McpReadError: reply has no result object
+result list                queue  -> McpReadError: reply has no result object
+isError no content         work   -> McpReadError: orchestrator tool reported an error
+isError no content         queue  -> McpReadError: orchestrator tool reported an error
+isError content str        work   -> McpReadError: orchestrator tool reported an error
+isError content str        queue  -> McpReadError: orchestrator tool reported an error
+isError content ints       work   -> McpReadError: orchestrator tool reported an error
+isError content ints       queue  -> McpReadError: orchestrator tool reported an error
+isError content text int   work   -> McpReadError: orchestrator tool reported an error
+isError content text int   queue  -> McpReadError: orchestrator tool reported an error
+sc list                    work   -> McpReadError: reply has no structuredContent object
+sc list                    queue  -> McpReadError: reply has no structuredContent object
+items missing              work   -> McpReadError: result has no items array
+items missing              queue  -> McpReadError: result has no items array
+items none                 work   -> McpReadError: result has no items array
+items none                 queue  -> McpReadError: result has no items array
+items str                  work   -> McpReadError: result has no items array
+items str                  queue  -> McpReadError: result has no items array
+items dict                 work   -> McpReadError: result has no items array
+items dict                 queue  -> McpReadError: result has no items array
+items int                  work   -> McpReadError: result has no items array
+items int                  queue  -> McpReadError: result has no items array
+items non-dicts            work   -> McpReadError: an item is not an object
+items non-dicts            queue  -> McpReadError: an item is not an object
+item fields wrong types    work   -> McpReadError: an item has no id or no title
+item fields wrong types    queue  -> McpReadError: an item has no id or no title
+item tags mixed            work   -> returned 1 items, total None
+item tags mixed            queue  -> returned 1 items, total None
+item tags str              work   -> returned 1 items, total None
+item tags str              queue  -> returned 1 items, total None
+total str                  work   -> returned 0 items, total None
+total str                  queue  -> returned 0 items, total None
+total dict                 work   -> returned 0 items, total None
+total dict                 queue  -> returned 0 items, total None
+total bool                 work   -> returned 0 items, total None
+total bool                 queue  -> returned 0 items, total None
+total float                work   -> returned 0 items, total None
+total float                queue  -> returned 0 items, total None
+nested deep                work   -> returned 1 items, total None
+nested deep                queue  -> McpReadError: asked for role queue, got an item in another role
+sse valid                  work   -> returned 1 items, total 1
+sse valid                  queue  -> McpReadError: asked for role queue, got an item in another role
+cases: 33 bodies x 2 roles; exceptions other than McpReadError: 0
