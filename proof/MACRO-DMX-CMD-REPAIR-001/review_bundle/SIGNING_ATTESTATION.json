@@ -1,0 +1,89 @@
+{
+  "accepted": true,
+  "audit_identity": {
+    "auditor": {
+      "effort": "high (model variant gemini-4-argon-high; effort not set separately)",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "google-antigravity"
+    },
+    "implementer": {
+      "model": "claude-haiku-5-5 and claude-sonnet-5-5 (workers); coordinator claude-opus-5-5 then claude-sonnet-5-5",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-agent",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "audited_sha": "7c6cfc0370092c6076d227e7eaaf05203d379303",
+  "embedded_audit": {
+    "auditor_model": "gemini",
+    "auditor_tool": "agy",
+    "exit_code": 0,
+    "findings": [
+      {
+        "body": "check_mcp_tool_refs and check_mcp_servers (lines 48-51, 97-133) only scan the 'mcp__<server>__<tool>' token form. As a result, 4 W01 files (bootstrap.md:5, doc-pull.md:5, mem/summarize.md:8, and search-decisions.md:2 '/mcp conport search_content') and 2 W03 files (plan.md:1 and plan-tasks.md:2) have zero matches under _mcp_refs. Instead of scanning '/mcp <server> <tool>' with an explicit exemption set for pre-existing 'zen' (analogous to UNVERIFIED_SERVERS), omitting the scan leaves search-decisions.md and the W03 repoints in plan.md and plan-tasks.md unverified against mcp_tool_surfaces.json. | COORDINATOR ADJUDICATION: see proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_ADJUDICATION.md",
+        "id": "F1",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "title": "6 of 23 command files modified in W01/W03 use prose or '/mcp <server> <tool>' syntax and are completely unguarded by the drift gate"
+      },
+      {
+        "body": "Authority Facts claim F4 ('pal vs pal-stdio naming in dx/implement.md and dx/note.md') is pre-existing, but plan.md:1 was modified in W03 to say 'Use the PAL `planner` tool (MCP server `pal-stdio`)', whereas dx/implement.md:8-9 and test_claude_command_references.py:30 (UNVERIFIED_SERVERS) use 'pal'. Similarly, plan-tasks.md:2 was changed from '/mcp task-master-ai create_tasks' to prose 'Call the `create_work_tree` MCP tool on the `task-orchestrator` server'; had these been written as mcp__pal-stdio__planner and mcp__task-orchestrator__create_work_tree, check_mcp_servers and check_mcp_tool_refs would have enforced server/tool verification. | COORDINATOR ADJUDICATION: see proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_ADJUDICATION.md",
+        "id": "F2",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "W03 introduces 'pal-stdio' server name in plan.md while dx/implement.md and UNVERIFIED_SERVERS use 'pal', and plan-tasks.md repoints to 'create_work_tree' in prose without surface verification"
+      },
+      {
+        "body": "At line 47-48, _MCP_TOOL = r'(\\*|[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*)' and _MCP_REF = re.compile(r'mcp__([A-Za-z0-9-]+)__' + _MCP_TOOL). Unlike src/dopemux/mcp/fleet_catalog.py:31 (r'\\bmcp__([A-Za-z0-9_-]+)__([A-Za-z0-9_-]+|\\*)'), _MCP_REF does not match server names containing underscores (e.g. mcp__some_server__tool is silently ignored), and because _MCP_TOOL has no trailing boundary, malformed tool tokens like 'mcp__conport__get_context--bad' or 'mcp__conport__*bad' match the valid prefix ('get_context' or '*') and falsely pass. | COORDINATOR ADJUDICATION: see proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_ADJUDICATION.md",
+        "id": "F3",
+        "severity": "LOW",
+        "status": "OPEN",
+        "title": "_MCP_REF omits underscores in server names and lacks a trailing token boundary on _MCP_TOOL"
+      },
+      {
+        "body": "(1) bootstrap.md:5, caveat.md:14, mem-query.md:10-12, mem-search.md:8-9, and mem/summarize.md:8 replace FTS custom_data queries with get_custom_data(workspace_id, category='caveats'|'mem'|'scratch'), which returns all entries in the category without server-side query filtering or result limits. (2) search_content has no server-side limit parameter, shifting top-N truncation to the prompt. (3) dx/implement.md:131,283 and research-deep.md:16 pass context_data={...} to update_context instead of patch_content={...}; if the live server replaces rather than merges the context dict, partial updates will overwrite other keys in active context. | COORDINATOR ADJUDICATION: see proof/MACRO-DMX-CMD-REPAIR-001/review_bundle/AUDIT02_ADJUDICATION.md",
+        "id": "F4",
+        "severity": "INFO",
+        "status": "OPEN",
+        "title": "Disclosed ConPort SSE semantic limitations: category-wide custom_data fetches, client-side search truncation, and unverified update_context merge vs overwrite behavior"
+      }
+    ],
+    "fixes_applied": [
+      "AUDIT-01 (FAIL on 70eb50363) F1: mem-search.md and mem-query.md now read caveats via get_custom_data (commit 7c6cfc037)",
+      "AUDIT-01 F2: _SCRIPT_REF now matches ./scripts/ paths, with negative control (7c6cfc037)",
+      "AUDIT-01 F3 (wildcards, hyphenated tool suffix): _MCP_REF full tool token and wildcard server refs (7c6cfc037)",
+      "AUDIT-01 F5: stale search_content limit advice removed (7c6cfc037)"
+    ],
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    },
+    "invocation": "cd <sealed dir with only AUDIT_PROMPT.txt and frozen.diff> && /Users/hue/.local/bin/agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 10m --print=\"$(cat AUDIT_PROMPT.txt)\" (agy 1.3.6). OPERATOR-APPROVED PACKET-SPECIFIC FALLBACK: exact model gemini-3.1-pro-high is absent from `agy models`; exact-model evidence is unavailable; auditor_model recorded as generic gemini.",
+    "remaining_risks": [
+      "Exact audit model gemini-3.1-pro-high unavailable; operator-approved fallback gemini-4-argon-high; provider-attested model UNKNOWN",
+      "Drift gate does not scan the '/mcp <server> <tool>' prose form or prose tool names (6 command files unguarded); zen.md and zen-continue.md reference a nonexistent zen server (follow-up packet)",
+      "pal vs pal-stdio naming inconsistency (plan.md vs dx/implement.md, dx/note.md) is pre-existing and out of scope",
+      "_MCP_REF ignores server names containing underscores and lacks a trailing token boundary (malformed tokens truncate to a valid prefix); only MCP_DOCKER has an underscore and no command references it",
+      "get_custom_data fetches whole categories and search_content has no limit (client-side truncation only); update_context merge-vs-replace UNKNOWN",
+      "AGY global MCP servers (desktop-commander, serena, dope-context) were reachable during the run; containment was verified from the event stream only (no tool steps), not enforced"
+    ],
+    "report_path": "proof/MACRO-DMX-CMD-REPAIR-001/AUDITOR_REPORT.md",
+    "required": true,
+    "skip_reason": null,
+    "status": "PASS_WITH_RISKS"
+  },
+  "head_sha": "865da9aabf7195e5645f7c5adaa5cfe14137c68e",
+  "packet_id": "MACRO-DMX-CMD-REPAIR-001",
+  "pr_number": 1445,
+  "principal": "hue@local",
+  "proof_path": "proof/pr_merge/embedded-audit/pr-1445/PROOF.json",
+  "reasons": [],
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "risk_lane": "L2",
+  "signature_namespace": "dopemux-embedded-audit"
+}

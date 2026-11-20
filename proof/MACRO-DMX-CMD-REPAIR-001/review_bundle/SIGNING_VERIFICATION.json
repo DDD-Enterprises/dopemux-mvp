@@ -1,0 +1,24 @@
+{
+  "verified_head": "865da9aabf7195e5645f7c5adaa5cfe14137c68e",
+  "signatures": [
+    {
+      "proof": "proof/MACRO-DMX-CMD-REPAIR-001/PROOF.json",
+      "sha256": "378e834531a5c5abc9964ffc4cc2aa96c9def489423634b1b3f2c52810e22109",
+      "signature_exit": 0,
+      "principal": "hue@local",
+      "trusted_signers_ref": "origin/main"
+    },
+    {
+      "proof": "proof/pr_merge/embedded-audit/pr-1445/PROOF.json",
+      "sha256": "25b21634bc8edbb2d29a491d458554af219185c79338b62095d0f3ab8a0e4801",
+      "signature_exit": 0,
+      "principal": "hue@local",
+      "trusted_signers_ref": "origin/main"
+    }
+  ],
+  "authority": "NONE",
+  "route": "local-shell",
+  "model": "NONE",
+  "effort": "NOT_REQUIRED",
+  "operator_instruction": "Sign the proof using the approved signing workflow, verify proof closure, and update the supervisor handoff. No push."
+}

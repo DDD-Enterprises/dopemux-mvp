@@ -1,0 +1,108 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "macro_id": "MACRO-DMX-CMD-REPAIR-001",
+  "stage": "issuance",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "task-packets/MACRO-DMX-CMD-REPAIR-001/MACRO_PACKET.json",
+    "operator_gate_refs": [
+      "operator chat 2026-10-16: 'Issue the next packet for the dopemux-commands plugin repair first.'"
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "selection": {
+    "runner": "claude-code-desktop",
+    "runner_availability": "PROVEN",
+    "model": "claude-opus-5-5",
+    "effort": "xhigh",
+    "connector": "desktop-app",
+    "configured_identity": "claude-opus-5-5",
+    "response_claimed_identity": "claude-opus-5-5",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": []
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read",
+      "edit",
+      "validate"
+    ],
+    "forbidden_actions": [
+      "merge",
+      "activate",
+      "force_push",
+      "history_rewrite",
+      "mark_ready"
+    ],
+    "stop_conditions": [
+      "operator gate absent",
+      "authority conflict",
+      "parallel write overlap"
+    ],
+    "custody_constraints": [
+      "mutation only inside .worktrees/cmd-repair-001"
+    ],
+    "context_constraints": [
+      "children receive only their TASK_PACKET plus cited context_files"
+    ]
+  },
+  "justification": {
+    "why_runner": "issuing supervisor session (Claude Code desktop)",
+    "why_model": "coordination, packet authoring and acceptance require judgment tier",
+    "why_effort": "session effort observed via $CLAUDE_EFFORT=xhigh; not lowered for issuance",
+    "alternatives_considered": [
+      {
+        "route": "claude-sonnet-5-5 coordinator",
+        "disposition": "rejected",
+        "reason": "acceptance and synthesis stay with supervisor tier per AGENTS.md section 5"
+      }
+    ],
+    "cost_latency_tradeoff": "UNKNOWN (no current price evidence recorded)",
+    "evidence": [
+      "claudedocs/dopemux-mods-plugins-opportunity-map-2026-10-16.md"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "NOT_RUN"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "recorded_at": "2026-10-16T19:35:57Z",
+  "runner_version": "UNKNOWN",
+  "effort_requested": "xhigh",
+  "effort_observed": "xhigh",
+  "auth_profile_ref": "UNKNOWN",
+  "network_posture": "no-network-mutation",
+  "containment_posture": "worktree-scoped",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "not triggered"
+  },
+  "response_claimed_model": "claude-opus-5-5",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "UNKNOWN",
+  "qualification_receipt_ref": "NOT_RUN"
+}

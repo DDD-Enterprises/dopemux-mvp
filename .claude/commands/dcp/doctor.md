@@ -2,7 +2,7 @@
 description: "DCP read-only facade preflight: registry contract, backend probes, ConPort auto-fork hazard, facade test suite"
 arguments: "[--live] [--project <id>]"
 allowed-tools: ["Bash", "Read", "Grep", "Glob"]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dcp:doctor — DCP Facade Preflight
