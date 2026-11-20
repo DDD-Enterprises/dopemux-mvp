@@ -1,0 +1,42 @@
+# Independent L2 audit for PR 1520
+
+**PASS_WITH_RISKS**
+
+Audited commit `1c6ec7dc117b63f2e0303d05af8d172e44731bca` against `ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7`. Claude Code 2.1.328 returned the following rationale, observations and risks after a one-turn, tools-disabled review.
+
+## Rationale
+
+The diff is small and confined to a read-only CLI presentation layer and its unit tests. It fixes a real correctness problem: 'empty' or default-'available' was shown when a read had failed or was unavailable, which could mislead an operator into thinking there was no queue or no blockers. The fix gates all rendering on a single `_read_available` predicate and applies it consistently to queue, blockers, status and daily. The new tests exercise the failure matrix directly, and JSON output is unchanged. The verdict is PASS_WITH_RISKS rather than PASS because validation was not executed, some surrounding code is outside the diff context (the daily loop and any other uses of `failures`), and the legality allowlist and repository-side provenance and workflow checks could not be verified in this tool-less audit. No evidence of write-path additions, scope creep beyond the two listed files, or injection attempts was found.
+
+## Findings
+
+- Correct fail-closed change: orchestrator_queue, orchestrator_blockers and orchestrator_status no longer render 'empty' when the read was unavailable. A new helper `_read_available` (orchestrator_commands.py, added near `_error_text`) treats a payload as readable only if legality_result is 'available' or 'allowed' and there is no error text. Otherwise the commands print 'queue: unavailable', 'blockers: unavailable' or 'state: unavailable' and return before rendering items, tokens, counts or transitions.
+- orchestrator_daily now builds `failures` as the set of sections where `_read_available` is false. Previously it was a dict of sections with error strings, so payloads with legality 'unavailable' and no error string were not counted. Queue, blockers and workflow_state sections are now rendered only if the section is not in `failures`. This prevents the old behavior of printing 'queue: empty' or 'queue_next_token' for a failed read.
+- The missing-legality fallback changed from 'unavailable' for the single commands and 'available' for daily to a uniform `payload.get('legality_result') or 'unavailable'`. This is the safer default, and it also covers empty-string values.
+- JSON output paths (`--json-output`) are untouched. The new tests assert that the JSON output equals the raw payload, so machine-readable output is preserved.
+- The change is read-only. No write-capable helpers were added, and the existing AST test `test_orchestrator_commands_do_not_call_write_capable_helpers` stays in place.
+- New tests are meaningful, not trivial. A parametrized matrix covers 3 commands x 6 legality/error combinations (allowed, available, unavailable, held with an error, available with an error, missing legality). They assert that 'empty' lines, next_token, more_count and allowed_transitions appear only when the read succeeded, and that error text is surfaced. A daily test covers all-failed and mixed-failure cases, including the partial_failures count.
+- No instruction-like content was found in the candidate metadata or diff. The deterministic scanner reported zero matches, and my manual read of the diff found none.
+
+## Remaining risks
+
+- Validation was not run. Tools are disabled and the candidate is not checked out, so test and lint results are unknown. The tests rely on helpers (`_queue_result`, `_blockers_result`, `_workflow_result`, `cli`) and default payload shapes that are not visible in the diff. In particular, the 'empty' assertions assume the default helper results have empty item lists and a legality value that the new gate accepts.
+- The existing test `test_orchestrator_daily_surfaces_partial_failures` is not shown. The new rule counts failures by legality as well as by error, so its `partial_failures: 1` expectation could change if its fixtures use a legality value outside {'available', 'allowed'}. This needs confirmation by running the suite.
+- The daily rendering loop body between the `lines = [` header and the per-section `if error:` branch is outside the diff context. I could not confirm that `error` is still defined there, or that nothing else uses `failures` as a dict (for example `.items()` or key lookup) now that it is a set. Only `len(failures)` and `in failures` are visible.
+- The allowlist is a behavior change: any legality_result outside {'available', 'allowed'} (for example other success-like states the orchestrator might emit) now suppresses the data and counts as a failure. Fail-closed is consistent with policy, but I could not verify the full set of legitimate legality values against repository schemas.
+- Daily output for a failed section now prints the legality_result (for example 'queue: unavailable') where it previously could print 'available' by default. Downstream scripts that parse the human-readable text could notice. This is low risk and the JSON output is unchanged.
+- Provenance and workflow checks could not be independently verified. The candidate metadata (repo, PR 1520, head SHA 1c6ec7dc..., base SHA ba5c3e07...) matches the trusted values in the prompt, but without tools I could not confirm the head SHA against the repository, confirm that the diff matches the real commit range, or check CI workflow status.
+
+## Evidence
+
+- orchestrator_commands.py: new `_read_available` helper added after `_error_text` (hunk @@ -93,6 +93,10 @@)
+- orchestrator_commands.py: orchestrator_queue hunk (@@ -955,16 +959,20 @@) moves `items` extraction after the `_read_available` gate and emits 'queue: unavailable'
+- orchestrator_commands.py: orchestrator_blockers hunk (@@ -984,16 +992,20 @@) emits 'blockers: unavailable' before reading `active_blockers`
+- orchestrator_commands.py: orchestrator_status hunk (@@ -1013,17 +1025,21 @@) emits 'state: unavailable' before reading state and allowed_transitions
+- orchestrator_commands.py: orchestrator_daily hunk (@@ -1050,14 +1066,7 @@ and @@ -1068,19 +1077,25 @@) changes `failures` to a set of unavailable section names and guards each section with `not in failures`
+- tests/unit/test_cli_orchestrator_commands.py: `test_orchestrator_empty_requires_successful_read` (3 commands x 6 legality/error cases, plus a JSON passthrough assertion)
+- tests/unit/test_cli_orchestrator_commands.py: `test_daily_counts_unavailable_reads_without_error_strings` (partial_failures count, per-section 'unavailable' lines, JSON passthrough)
+- tests/unit/test_cli_orchestrator_commands.py: existing `test_orchestrator_commands_do_not_call_write_capable_helpers` AST guard remains unchanged in the diff context
+- Prompt metadata: instruction_like_scan_summary reports detected=false and match_count=0
+
+The auditor reported test execution as `NOT_RUN`. The local implementer’s test results are separately recorded in the pull request.
