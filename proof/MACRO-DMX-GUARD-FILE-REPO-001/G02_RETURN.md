@@ -17,7 +17,7 @@ The commit that adds this file changes only proof files, so it sits on top of th
 | third | `dc5aac697` | Grok: FAIL; AGY: FAIL |
 | fourth (this file) | `72aa9c902` | NOT_RUN |
 
-Amendment 11 (`72aa9c902`) answers the third freeze's audits: AGY found two more symlink shapes (a two-level link target followed by `..`; a link beside a symlinked red-lane ancestor), Grok found that an aborted walk let the path through. The third freeze record also said a chain longer than 40 links is hard-blocked. At that head it was not; since Amendment 11 it is. The operator's ruling set a stop rule: if the audits of this head FAIL on another symlink shape, there is no Amendment 12 and the supervisor brings the descope choice.
+Amendment 11 (`72aa9c902`) answers the third freeze's audits: two more symlink shapes (AGY), an aborted walk letting the path through (Grok), and the third record's claim that chains over 40 links are blocked, which was untrue then and is true now. The operator's stop rule: if the audits of this head FAIL on another symlink shape, there is no Amendment 12 and the supervisor brings the descope choice.
 
 Verdicts and evidence of the earlier rounds are in `~/.local/share/dopemux/evidence/pr1513/r1` to `r3`, outside the repo. Amendments 02-11 each have a record (`AMENDMENT_02.md` to `AMENDMENT_11.md`) with the operator's words, the reason and the validation at that edit.
 
@@ -46,7 +46,6 @@ Clean env (`env -i`, `PATH=/usr/bin:/bin`, `PYTHONPATH=<worktree>/src`), repo `.
 | Check | Result |
 |---|---|
 | Guard tests (`tests/unit/dcp_surface_guard`) | PASS: 59 passed |
-| Same tests against the guard at `e95187bb2` | 9 failed, 50 passed (measured at the Amendment 11 edit) |
 | 32 test files that mention the guard, native hooks or red lane | 1049 passed, 1 failed |
 | `flake8 --select=E9,F,W` | PASS |
 | `black --check` | FAIL: not reformatted; the files already failed it before Amendment 11 |
@@ -73,7 +72,7 @@ The one failure is `tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_f
 
 | Blocker | Action that clears it |
 |---|---|
-| Audit NOT_RUN | Grok governs and AGY gives a second look, both on the audited head. The sealed prompt is near AGY's size limit; the operator decides how to fit it. |
+| Audit NOT_RUN | Grok governs, AGY gives a second look, same sealed prompt for both. To fit AGY's size limit (about 192 KB) the operator ruled that `AMENDMENT_11.md` be condensed: proof-only commit, operator's words unchanged, long text at `72aa9c902`. |
 | Copilot review of this head NOT_RUN | A later review may add findings and would void an audit run before it. |
 | Signing, steward release phrase, merge | The operator's, after the audit. |
 
