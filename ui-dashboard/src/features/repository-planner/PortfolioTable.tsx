@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Chip, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
-import { Check, AlertTriangle } from 'lucide-react';
+import { Check, AlertTriangle, Copy } from 'lucide-react';
 
 import type { PlannerLane } from './extensionTypes';
 import { brandTokens } from '../../theme';
@@ -36,16 +36,23 @@ export function CandidateShaChip({ sha, onError }: CandidateShaChipProps) {
     };
   }, [sha]);
 
+  const dismissFeedback = useCallback(() => {
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = null;
+    }
+    setIsCopied(false);
+    setCopyFailed(false);
+  }, []);
+
   const handleCopy = useCallback(async () => {
     const currentSha = activeShaRef.current;
     if (!navigator.clipboard?.writeText) {
+      setIsCopied(false);
       setCopyFailed(true);
       onError?.('Clipboard API is not supported in this browser or context.');
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-      copyTimeoutRef.current = setTimeout(() => {
-        setCopyFailed(false);
-        copyTimeoutRef.current = null;
-      }, 2000);
+      copyTimeoutRef.current = setTimeout(dismissFeedback, 2000);
       return;
     }
 
@@ -55,22 +62,17 @@ export function CandidateShaChip({ sha, onError }: CandidateShaChipProps) {
       setIsCopied(true);
       setCopyFailed(false);
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-      copyTimeoutRef.current = setTimeout(() => {
-        setIsCopied(false);
-        copyTimeoutRef.current = null;
-      }, 2000);
+      copyTimeoutRef.current = setTimeout(dismissFeedback, 2000);
     } catch (err) {
       if (activeShaRef.current !== currentSha) return;
       const errorMsg = err instanceof Error ? err.message : String(err);
+      setIsCopied(false);
       setCopyFailed(true);
       onError?.(`Failed to copy candidate SHA: ${errorMsg}`);
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-      copyTimeoutRef.current = setTimeout(() => {
-        setCopyFailed(false);
-        copyTimeoutRef.current = null;
-      }, 2000);
+      copyTimeoutRef.current = setTimeout(dismissFeedback, 2000);
     }
-  }, [onError]);
+  }, [onError, dismissFeedback]);
 
   const tooltipTitle = isCopied
     ? 'SHA copied!'
@@ -96,7 +98,21 @@ export function CandidateShaChip({ sha, onError }: CandidateShaChipProps) {
         size="small"
         variant="outlined"
         onClick={handleCopy}
-        icon={isCopied ? <Check size={14} aria-hidden="true" /> : copyFailed ? <AlertTriangle size={14} aria-hidden="true" /> : undefined}
+        onKeyDown={(e) => {
+          if ((isCopied || copyFailed) && e.key === 'Escape') {
+            e.preventDefault();
+            dismissFeedback();
+          }
+        }}
+        icon={
+          isCopied ? (
+            <Check size={14} aria-hidden="true" />
+          ) : copyFailed ? (
+            <AlertTriangle size={14} aria-hidden="true" />
+          ) : (
+            <Copy size={14} aria-hidden="true" />
+          )
+        }
         label={chipLabel}
         aria-label={ariaLabel}
         color={isCopied ? 'success' : copyFailed ? 'error' : 'default'}
