@@ -1,0 +1,2 @@
+M	scripts/check_docs_filename_hygiene.py
+A	tests/scripts/test_docs_filename_hygiene_apply.py
