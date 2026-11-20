@@ -1,0 +1,41 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_m1_followup_negative_build_pid_is_stale_without_process_probe ______
+
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-15/test_m1_followup_negative_buil0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x110bf8380>
+
+    def test_m1_followup_negative_build_pid_is_stale_without_process_probe(tmp_path, monkeypatch):
+        """psutil rejects negative PIDs with ValueError; malformed registry stays inert."""
+        import psutil
+        def fake_process(pid):
+            if pid < 0:
+                raise ValueError("pid must be a positive integer")
+            raise AssertionError("no actual process probe permitted")
+        monkeypatch.setattr(psutil, "Process", fake_process)
+        (tmp_path / "build-conport.pid").write_text(json.dumps(
+            {"pid": -1, "create_time": 123.0, "pgid": -1}))
+>       assert reap._live_build(tmp_path, NOW) is False
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_mcp_reap.py:2380: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/dopemux/mcp/reap.py:547: in _live_build
+    and record == _build_process_identity(record["pid"])):
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/dopemux/mcp/reap.py:509: in _build_process_identity
+    process = psutil.Process(pid)
+              ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+pid = -1
+
+    def fake_process(pid):
+        if pid < 0:
+>           raise ValueError("pid must be a positive integer")
+E           ValueError: pid must be a positive integer
+
+tests/unit/test_mcp_reap.py:2375: ValueError
+=========================== short test summary info ============================
+FAILED tests/unit/test_mcp_reap.py::test_m1_followup_negative_build_pid_is_stale_without_process_probe
+1 failed in 0.36s

@@ -1,0 +1,13 @@
+{
+  "command": "uv sync --offline --frozen --extra test",
+  "workdir": "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups",
+  "session_id": 74447,
+  "exit_code": 1,
+  "bucket": "FAIL",
+  "output_file": "ENVIRONMENT_SYNC.txt",
+  "python": "3.12.13",
+  "uv": "0.11.19",
+  "uv_lock_sha256": "92069428a66d2261dec5a47965de2b983fc5f3c22100a5b0811d82a9237c0cee",
+  "no_network": true,
+  "no_retry": true
+}

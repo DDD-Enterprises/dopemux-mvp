@@ -1,0 +1,20 @@
+ct validate-macro --file <governance>/SUPERVISOR_MACRO_PACKET.json
+{"authority": "NONE", "errors": [], "status": "STATIC_VALID"}
+exit: 0
+ct validate-binding --file <governance>/IMPLEMENT_A_D_EXECUTION_BINDING.json
+PASS: GEC v2 ExecutionBinding valid; execution authority NONE
+exit: 0
+ct validate-binding --file <governance>/QUALIFY_AND_HAND_BACK_EXECUTION_BINDING.json
+PASS: GEC v2 ExecutionBinding valid; execution authority NONE
+exit: 0
+Local-only jsonschema validation, Registry(retrieve=reject_network).with_resources(local schema $id resources):
+IMPLEMENT_A_D_TASK_PACKET.json PASS []
+QUALIFY_AND_HAND_BACK_TASK_PACKET.json PASS []
+Network retrieval fail-closed; all resources local.
+exit: 0
+ct bind-record --file <governance>/IMPLEMENT_A_D_EXECUTION_BINDING.json
+.control-tower/state/bindings/TP-DMX-MCP-M1-IMPLEMENT-A-D-001.json
+exit: 0
+ct bind-record --file <governance>/QUALIFY_AND_HAND_BACK_EXECUTION_BINDING.json
+.control-tower/state/bindings/TP-DMX-MCP-M1-QUALIFY-AND-HAND-BACK-001.json
+exit: 0

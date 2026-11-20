@@ -1,0 +1,334 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+_______ test_m1_followup_status_uses_reallocated_leases_and_probes_them ________
+
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_status_uses_r0')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_fol...rs/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_status_uses_r0/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_status_...ct', project_hash='synthetic', worktree_hash='2d2d', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    def test_m1_followup_status_uses_reallocated_leases_and_probes_them(
+        tmp_path, paths, m1_offline_lifecycle
+    ):
+        repo, identity = m1_offline_lifecycle
+        selected = ["conport", "dope-memory"]
+        old = lc._resolve_ports(identity, selected, _catalog(), lease_path=paths.leases,
+                                is_free_fn=lambda p: True)
+        (repo / ".envrc.dopemux-mcp").write_text(
+            "".join(f"export {var}={port}\n" for var, port in old.items())
+        )
+        reg = PortLeaseRegistry.load(paths.leases)
+        for lease in list(reg.active_leases()):
+            reg.mark_released(lease_id=lease["lease_id"])
+            foreign = dict(lease, lease_id="foreign-"+lease["lease_id"], status="active",
+                           worktree_root="/synthetic/foreign", project_root="/synthetic/foreign",
+                           worktree_hash="foreign", project_id="foreign")
+            reg.leases().append(foreign)
+        reg.save()
+        replacement = lc._resolve_ports(identity, selected, _catalog(), lease_path=paths.leases,
+                                        env={k: str(v) for k, v in old.items()},
+                                        is_free_fn=lambda p: True)
+>       assert all(replacement[k] != old[k] for k in old)
+E       assert False
+E        +  where False = all(<generator object test_m1_followup_status_uses_reallocated_leases_and_probes_them.<locals>.<genexpr> at 0x10e1c2ce0>)
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1148: AssertionError
+________ test_m1_followup_dry_run_does_not_persist_leases[False-start] _________
+
+operation = 'start', existing = False
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run_does_0')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_fol...rs/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run_does_0/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run...ct', project_hash='synthetic', worktree_hash='7d9f', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    @pytest.mark.parametrize("operation", ["start", "restart"])
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_m1_followup_dry_run_does_not_persist_leases(
+        operation, existing, tmp_path, paths, m1_offline_lifecycle
+    ):
+        repo, identity = m1_offline_lifecycle
+        if existing:
+            reg = PortLeaseRegistry.load(paths.leases)
+            reg.save()
+        before = paths.leases.read_bytes() if existing else None
+>       result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
+                               catalog=_catalog(), dry_run=True, registry_path=paths.reg,
+                               docker_runner=_docker_empty(), skip_doctor=True, process_env={},
+                               port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/dopemux/mcp/lifecycle.py:2037: in run_lifecycle
+    _start_services(selected=inside, prebuilt=prebuilt, **{**start_kw, **fresh})
+src/dopemux/mcp/lifecycle.py:2568: in _start_services
+    step = prebuilt.get(svc) or _plan_image(
+src/dopemux/mcp/lifecycle.py:2287: in _plan_image
+    present = dr.docker_image_exists(image_name, runner=cmd_runner, env=env)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/dopemux/mcp/docker_runtime.py:596: in docker_image_exists
+    result = run_cmd(
+src/dopemux/mcp/docker_runtime.py:450: in run_cmd
+    result = run(
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = (['docker', 'image', 'inspect', 'dopemux-conport:3adea02a2765', '--format', '{{.Id}}'],)
+k = {'cwd': None, 'env': {'ANDROID_HOME': '/opt/homebrew/share/android-commandlinetools', 'ANDROID_SDK_ROOT': '/opt/homebr...ARGO_HOME': '/Users/hue/.cargo', 'CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS': '1', ...}, 'stderr': -1, 'stdout': -1, ...}
+
+    def no_child(*a, **k):
+>       raise AssertionError("M1 regression must not spawn a real child")
+E       AssertionError: M1 regression must not spawn a real child
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1122: AssertionError
+_______ test_m1_followup_dry_run_does_not_persist_leases[False-restart] ________
+
+operation = 'restart', existing = False
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run_does_1')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_fol...rs/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run_does_1/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run...ct', project_hash='synthetic', worktree_hash='742e', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    @pytest.mark.parametrize("operation", ["start", "restart"])
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_m1_followup_dry_run_does_not_persist_leases(
+        operation, existing, tmp_path, paths, m1_offline_lifecycle
+    ):
+        repo, identity = m1_offline_lifecycle
+        if existing:
+            reg = PortLeaseRegistry.load(paths.leases)
+            reg.save()
+        before = paths.leases.read_bytes() if existing else None
+>       result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
+                               catalog=_catalog(), dry_run=True, registry_path=paths.reg,
+                               docker_runner=_docker_empty(), skip_doctor=True, process_env={},
+                               port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/dopemux/mcp/lifecycle.py:1966: in run_lifecycle
+    _start_services(
+src/dopemux/mcp/lifecycle.py:2568: in _start_services
+    step = prebuilt.get(svc) or _plan_image(
+src/dopemux/mcp/lifecycle.py:2287: in _plan_image
+    present = dr.docker_image_exists(image_name, runner=cmd_runner, env=env)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/dopemux/mcp/docker_runtime.py:596: in docker_image_exists
+    result = run_cmd(
+src/dopemux/mcp/docker_runtime.py:450: in run_cmd
+    result = run(
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = (['docker', 'image', 'inspect', 'dopemux-conport:ba5d48f67c35', '--format', '{{.Id}}'],)
+k = {'cwd': None, 'env': {'ANDROID_HOME': '/opt/homebrew/share/android-commandlinetools', 'ANDROID_SDK_ROOT': '/opt/homebr...ARGO_HOME': '/Users/hue/.cargo', 'CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS': '1', ...}, 'stderr': -1, 'stdout': -1, ...}
+
+    def no_child(*a, **k):
+>       raise AssertionError("M1 regression must not spawn a real child")
+E       AssertionError: M1 regression must not spawn a real child
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1122: AssertionError
+_________ test_m1_followup_dry_run_does_not_persist_leases[True-start] _________
+
+operation = 'start', existing = True
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run_does_2')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_fol...rs/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run_does_2/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run...ct', project_hash='synthetic', worktree_hash='c100', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    @pytest.mark.parametrize("operation", ["start", "restart"])
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_m1_followup_dry_run_does_not_persist_leases(
+        operation, existing, tmp_path, paths, m1_offline_lifecycle
+    ):
+        repo, identity = m1_offline_lifecycle
+        if existing:
+            reg = PortLeaseRegistry.load(paths.leases)
+            reg.save()
+        before = paths.leases.read_bytes() if existing else None
+>       result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
+                               catalog=_catalog(), dry_run=True, registry_path=paths.reg,
+                               docker_runner=_docker_empty(), skip_doctor=True, process_env={},
+                               port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/dopemux/mcp/lifecycle.py:2037: in run_lifecycle
+    _start_services(selected=inside, prebuilt=prebuilt, **{**start_kw, **fresh})
+src/dopemux/mcp/lifecycle.py:2568: in _start_services
+    step = prebuilt.get(svc) or _plan_image(
+src/dopemux/mcp/lifecycle.py:2287: in _plan_image
+    present = dr.docker_image_exists(image_name, runner=cmd_runner, env=env)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/dopemux/mcp/docker_runtime.py:596: in docker_image_exists
+    result = run_cmd(
+src/dopemux/mcp/docker_runtime.py:450: in run_cmd
+    result = run(
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = (['docker', 'image', 'inspect', 'dopemux-conport:a9e3ae023924', '--format', '{{.Id}}'],)
+k = {'cwd': None, 'env': {'ANDROID_HOME': '/opt/homebrew/share/android-commandlinetools', 'ANDROID_SDK_ROOT': '/opt/homebr...ARGO_HOME': '/Users/hue/.cargo', 'CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS': '1', ...}, 'stderr': -1, 'stdout': -1, ...}
+
+    def no_child(*a, **k):
+>       raise AssertionError("M1 regression must not spawn a real child")
+E       AssertionError: M1 regression must not spawn a real child
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1122: AssertionError
+________ test_m1_followup_dry_run_does_not_persist_leases[True-restart] ________
+
+operation = 'restart', existing = True
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run_does_3')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_fol...rs/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run_does_3/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_dry_run...ct', project_hash='synthetic', worktree_hash='9d53', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    @pytest.mark.parametrize("operation", ["start", "restart"])
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_m1_followup_dry_run_does_not_persist_leases(
+        operation, existing, tmp_path, paths, m1_offline_lifecycle
+    ):
+        repo, identity = m1_offline_lifecycle
+        if existing:
+            reg = PortLeaseRegistry.load(paths.leases)
+            reg.save()
+        before = paths.leases.read_bytes() if existing else None
+>       result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
+                               catalog=_catalog(), dry_run=True, registry_path=paths.reg,
+                               docker_runner=_docker_empty(), skip_doctor=True, process_env={},
+                               port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/dopemux/mcp/lifecycle.py:1966: in run_lifecycle
+    _start_services(
+src/dopemux/mcp/lifecycle.py:2568: in _start_services
+    step = prebuilt.get(svc) or _plan_image(
+src/dopemux/mcp/lifecycle.py:2287: in _plan_image
+    present = dr.docker_image_exists(image_name, runner=cmd_runner, env=env)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/dopemux/mcp/docker_runtime.py:596: in docker_image_exists
+    result = run_cmd(
+src/dopemux/mcp/docker_runtime.py:450: in run_cmd
+    result = run(
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = (['docker', 'image', 'inspect', 'dopemux-conport:cfeddfaa95aa', '--format', '{{.Id}}'],)
+k = {'cwd': None, 'env': {'ANDROID_HOME': '/opt/homebrew/share/android-commandlinetools', 'ANDROID_SDK_ROOT': '/opt/homebr...ARGO_HOME': '/Users/hue/.cargo', 'CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS': '1', ...}, 'stderr': -1, 'stdout': -1, ...}
+
+    def no_child(*a, **k):
+>       raise AssertionError("M1 regression must not spawn a real child")
+E       AssertionError: M1 regression must not spawn a real child
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1122: AssertionError
+______________ test_m1_followup_expired_owned_build_never_stacks _______________
+
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_expired_owned0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10e21cb00>
+
+    def test_m1_followup_expired_owned_build_never_stacks(tmp_path, monkeypatch):
+        """Ages a synthetic build; no OS child, signal, Docker or live registry."""
+        import signal
+        target = launcher.LaunchTarget(root=tmp_path, identity=SimpleNamespace(),
+            service="conport", spec={"management_model": "compose-service"},
+            runtime_dir=tmp_path, compose_project="synthetic")
+        now = [10_000.0]
+        alive = {}
+        spawned = []
+        signals = []
+        def popen(command, **kwargs):
+            assert kwargs["start_new_session"] is True
+            pid = 43_001 + len(spawned)
+            alive[pid] = {"pid": pid, "create_time": now[0], "pgid": pid}
+            spawned.append(pid)
+            return SimpleNamespace(pid=pid)
+        def killpg(pgid, signum):
+            signals.append((pgid, signum))
+            assert pgid in alive
+            del alive[pgid]
+        monkeypatch.setattr(launcher.time, "time", lambda: now[0])
+        monkeypatch.setattr(launcher, "_pid_alive", lambda pid: pid in alive)
+        monkeypatch.setattr(launcher, "_build_process_identity", lambda pid: alive.get(pid), raising=False)
+        monkeypatch.setattr(launcher.os, "killpg", killpg)
+        monkeypatch.setattr(subprocess, "Popen", popen)
+        monkeypatch.setattr(dr, "product_root", lambda: tmp_path)
+        monkeypatch.setattr(dr, "env_with_compose_interpolation", lambda **k: {})
+        monkeypatch.setattr(dr, "compose_image_name", lambda *a, **k: "synthetic-image")
+        monkeypatch.setattr(dr, "docker_image_exists", lambda *a, **k: False)
+        monkeypatch.setattr(dr, "compose_build_inputs", lambda *a, **k: (tmp_path/"override", tmp_path/"env"))
+        monkeypatch.setattr(dr, "compose_build_command", lambda **k: ["synthetic-build"])
+        for _ in range(2):
+            with pytest.raises(LaunchError, match="LAUNCH_IMAGE_BUILDING"):
+                launcher._build_image_if_missing(target)
+            now[0] += dr.build_timeout_secs() + 60
+            pid_file = launcher.build_pid_path(tmp_path, "conport")
+            import os
+            os.utime(pid_file, (now[0]-dr.build_timeout_secs()-60,)*2)
+>       assert len(alive) == 1, "expired still-live build was orphaned while another started"
+E       AssertionError: expired still-live build was orphaned while another started
+E       assert 2 == 1
+E        +  where 2 = len({43001: {'create_time': 10000.0, 'pgid': 43001, 'pid': 43001}, 43002: {'create_time': 11860.0, 'pgid': 43002, 'pid': 43002}})
+
+tests/unit/test_mcp_launcher.py:1598: AssertionError
+----------------------------- Captured stderr call -----------------------------
+dopemux mcp launch: building synthetic-image; log /private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_expired_owned0/build.log
+dopemux mcp launch: building synthetic-image; log /private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-134/test_m1_followup_expired_owned0/build.log
+__________ test_m1_followup_runner_cancel_reaches_backend_request_id ___________
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 983, in test_m1_followup_runner_cancel_reaches_backend_request_id
+  |     async with _runner_via_proxy(backend) as (runner, _box):
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/contextlib.py", line 231, in __aexit__
+  |     await self.gen.athrow(value)
+  |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 125, in _runner_via_proxy
+  |     async with anyio.create_task_group() as tg:
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 815, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Exception Group Traceback (most recent call last):
+    |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 136, in _runner_via_proxy
+    |     async with ClientSession(
+    |                ^^^^^^^^^^^^^^
+    |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/mcp/shared/session.py", line 238, in __aexit__
+    |     return await self._task_group.__aexit__(exc_type, exc_val, exc_tb)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 815, in __aexit__
+    |     raise BaseExceptionGroup(
+    | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+    +-+---------------- 1 ----------------
+      | Exception Group Traceback (most recent call last):
+      |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 141, in _runner_via_proxy
+      |     yield runner, box
+      |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 996, in test_m1_followup_runner_cancel_reaches_backend_request_id
+      |     async with anyio.create_task_group() as tg:
+      |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+      |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 815, in __aexit__
+      |     raise BaseExceptionGroup(
+      | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+      +-+---------------- 1 ----------------
+        | Traceback (most recent call last):
+        |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 998, in test_m1_followup_runner_cancel_reaches_backend_request_id
+        |     await runner.call_tool("wait", {})
+        |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/mcp/client/session.py", line 401, in call_tool
+        |     result = await self.send_request(
+        |              ^^^^^^^^^^^^^^^^^^^^^^^^
+        |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/mcp/shared/session.py", line 306, in send_request
+        |     raise McpError(response_or_error.error)
+        | mcp.shared.exceptions.McpError: Request cancelled
+        +------------------------------------
+------------------------------ Captured log call -------------------------------
+WARNING  mcp.server.lowlevel.server:server.py:494 Tool 'wait' not listed, no validation will be performed
+=========================== short test summary info ============================
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_m1_followup_status_uses_reallocated_leases_and_probes_them
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_m1_followup_dry_run_does_not_persist_leases[False-start]
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_m1_followup_dry_run_does_not_persist_leases[False-restart]
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_m1_followup_dry_run_does_not_persist_leases[True-start]
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_m1_followup_dry_run_does_not_persist_leases[True-restart]
+FAILED tests/unit/test_mcp_launcher.py::test_m1_followup_expired_owned_build_never_stacks
+FAILED tests/unit/test_mcp_stdio_proxy.py::test_m1_followup_runner_cancel_reaches_backend_request_id
+7 failed, 117 deselected in 3.09s

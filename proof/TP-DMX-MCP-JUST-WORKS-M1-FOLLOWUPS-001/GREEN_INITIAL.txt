@@ -1,0 +1,122 @@
+.FFFF..                                                                  [100%]
+=================================== FAILURES ===================================
+________ test_m1_followup_dry_run_does_not_persist_leases[False-start] _________
+
+operation = 'start', existing = False
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_does_0')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_follo...ders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_does_0/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_d...ct', project_hash='synthetic', worktree_hash='8f2f', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    @pytest.mark.parametrize("operation", ["start", "restart"])
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_m1_followup_dry_run_does_not_persist_leases(
+        operation, existing, tmp_path, paths, m1_offline_lifecycle
+    ):
+        repo, identity = m1_offline_lifecycle
+        if existing:
+            reg = PortLeaseRegistry.load(paths.leases)
+            reg.save()
+        before = paths.leases.read_bytes() if existing else None
+        result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
+                               catalog=_catalog(), dry_run=True, registry_path=paths.reg,
+                               docker_runner=_docker_empty(), skip_doctor=True, process_env={},
+                               port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
+        assert result.status == "PLANNED", result.blocking_findings
+        assert all(s["ports"] for s in result.services)
+>       assert (paths.leases.read_bytes() if paths.leases.exists() else None) == before
+E       assert b'{\n  "schema_version": "1.0",\n  "updated_at": "2026-11-16T04:11:55Z",\n  "allocator_version": "1",\n  "leases": [\n...7890,\n      "service": "task-orchestrator",\n      "source": "catalog",\n      "reason": "singleton"\n    }\n  ]\n}\n' == None
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1179: AssertionError
+_______ test_m1_followup_dry_run_does_not_persist_leases[False-restart] ________
+
+operation = 'restart', existing = False
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_does_1')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_follo...ders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_does_1/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_d...ct', project_hash='synthetic', worktree_hash='540a', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    @pytest.mark.parametrize("operation", ["start", "restart"])
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_m1_followup_dry_run_does_not_persist_leases(
+        operation, existing, tmp_path, paths, m1_offline_lifecycle
+    ):
+        repo, identity = m1_offline_lifecycle
+        if existing:
+            reg = PortLeaseRegistry.load(paths.leases)
+            reg.save()
+        before = paths.leases.read_bytes() if existing else None
+        result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
+                               catalog=_catalog(), dry_run=True, registry_path=paths.reg,
+                               docker_runner=_docker_empty(), skip_doctor=True, process_env={},
+                               port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
+        assert result.status == "PLANNED", result.blocking_findings
+        assert all(s["ports"] for s in result.services)
+>       assert (paths.leases.read_bytes() if paths.leases.exists() else None) == before
+E       assert b'{\n  "schema_version": "1.0",\n  "updated_at": "2026-11-16T04:11:55Z",\n  "allocator_version": "1",\n  "leases": [\n...7890,\n      "service": "task-orchestrator",\n      "source": "catalog",\n      "reason": "singleton"\n    }\n  ]\n}\n' == None
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1179: AssertionError
+_________ test_m1_followup_dry_run_does_not_persist_leases[True-start] _________
+
+operation = 'start', existing = True
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_does_2')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_follo...ders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_does_2/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_d...ct', project_hash='synthetic', worktree_hash='36fa', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    @pytest.mark.parametrize("operation", ["start", "restart"])
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_m1_followup_dry_run_does_not_persist_leases(
+        operation, existing, tmp_path, paths, m1_offline_lifecycle
+    ):
+        repo, identity = m1_offline_lifecycle
+        if existing:
+            reg = PortLeaseRegistry.load(paths.leases)
+            reg.save()
+        before = paths.leases.read_bytes() if existing else None
+        result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
+                               catalog=_catalog(), dry_run=True, registry_path=paths.reg,
+                               docker_runner=_docker_empty(), skip_doctor=True, process_env={},
+                               port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
+        assert result.status == "PLANNED", result.blocking_findings
+        assert all(s["ports"] for s in result.services)
+>       assert (paths.leases.read_bytes() if paths.leases.exists() else None) == before
+E       assert b'{\n  "schem...  }\n  ]\n}\n' == b'{\n  "schem...rts": []\n}\n'
+E         
+E         At index 110 diff: b'\n' != b']'
+E         Use -v to get more diff
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1179: AssertionError
+________ test_m1_followup_dry_run_does_not_persist_leases[True-restart] ________
+
+operation = 'restart', existing = True
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_does_3')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_follo...ders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_does_3/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-3/test_m1_followup_dry_run_d...ct', project_hash='synthetic', worktree_hash='99cf', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    @pytest.mark.parametrize("operation", ["start", "restart"])
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_m1_followup_dry_run_does_not_persist_leases(
+        operation, existing, tmp_path, paths, m1_offline_lifecycle
+    ):
+        repo, identity = m1_offline_lifecycle
+        if existing:
+            reg = PortLeaseRegistry.load(paths.leases)
+            reg.save()
+        before = paths.leases.read_bytes() if existing else None
+        result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
+                               catalog=_catalog(), dry_run=True, registry_path=paths.reg,
+                               docker_runner=_docker_empty(), skip_doctor=True, process_env={},
+                               port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
+        assert result.status == "PLANNED", result.blocking_findings
+        assert all(s["ports"] for s in result.services)
+>       assert (paths.leases.read_bytes() if paths.leases.exists() else None) == before
+E       assert b'{\n  "schem...  }\n  ]\n}\n' == b'{\n  "schem...rts": []\n}\n'
+E         
+E         At index 110 diff: b'\n' != b']'
+E         Use -v to get more diff
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1179: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_m1_followup_dry_run_does_not_persist_leases[False-start]
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_m1_followup_dry_run_does_not_persist_leases[False-restart]
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_m1_followup_dry_run_does_not_persist_leases[True-start]
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_m1_followup_dry_run_does_not_persist_leases[True-restart]
+4 failed, 3 passed, 117 deselected in 0.71s

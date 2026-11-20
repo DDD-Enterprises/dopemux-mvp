@@ -1,0 +1,431 @@
+{
+  "tp_id": "TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001",
+  "tp_path": "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups",
+  "branch": "fix/mcp-just-works-m1-followups",
+  "repo_identity": {
+    "status": "PASS",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "base_sha": "365f70ce2edc907d14356d82d2843104dbdaa434",
+    "base_is_ancestor": true,
+    "initial_head": "4029f6fea371df313ededcbd6f37ad0ecd90e08d",
+    "initial_tree": "5d5954292b317a011b94f89f193584635f3bb5c3",
+    "packet_sha256": "cecefd441ebfae39cfb695c0a45da9126a17402737d1683702d75d4785164851",
+    "companion_sha256": "3dc5a4ff48cbd6fed5fbf72adcafd12e37eee9edf9eb774c7cfa094451d4013f"
+  },
+  "head_sha": "4029f6fea371df313ededcbd6f37ad0ecd90e08d",
+  "commit_sha": "NOT_RUN_PRIVATE_UNCOMMITTED_CANDIDATE",
+  "routes": {
+    "implementation": {
+      "requested_runner": "codex",
+      "requested_model": "gpt-6.1-sol",
+      "requested_effort": "high",
+      "task": "/root/mcp_m1_four_followups",
+      "configured_model": "gpt-6.1-sol",
+      "provider_attested_model": "UNKNOWN",
+      "observed_effort": "UNKNOWN",
+      "actual_start": "Source intake; binding records; offline sync sessions74447(exit1) and14980(exit0 with compatible existing client); baseline48567(exit1); initial green94346(exit1); localized correction/final green19521(exit0). Sole writer/task unchanged.",
+      "fallback_used": false
+    },
+    "gates": {
+      "runner": "local-shell",
+      "model": "NONE",
+      "effort": "NONE"
+    },
+    "independent_audit": {
+      "status": "NOT_RUN",
+      "reason": "S9 HELD, no authority"
+    }
+  },
+  "slices": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "binding": "Validated GECv2 macro and both serialized child bindings; recorded technical state; immutable copies retained.",
+      "runtime": "Python3.12.13; existing uv0.12.11 offline frozen extra test sync,140 packages; original uv0.11.19 cache-index failure preserved. MCP1.29.0<2.",
+      "dev_tools": "Separate dev extra inspected only; incomplete exact cache closure, NOT_RUN installation."
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "subject": "4029f6fea371df313ededcbd6f37ad0ecd90e08d",
+      "source_base": "365f70ce2edc907d14356d82d2843104dbdaa434",
+      "receipt": "RED_BASELINE_FINAL.txt",
+      "exit": 1,
+      "failures": 7,
+      "meaning": "All four stated defects reproduced on unchanged production source. Initial fixture gaps/raw failures retained."
+    },
+    {
+      "id": "A",
+      "status": "PASS",
+      "scope": "Temporary-registry lifecycle/allocator replacement ports and canonical aliases/probe targets; actual doctor read-only, status and stop-preview no lease writes; env fallback, foreign identity exclusion and reserved orchestrator exclusion."
+    },
+    {
+      "id": "B",
+      "status": "PASS",
+      "scope": "Start/restart dryrun preserve absent registry or exact existing bytes and lock files; accurate preview matches real temporary-registry allocation including cross-service collision repair. Five defect-encoding tests retained/reworked; actual non-dry lifecycle case separately passed.",
+      "mapping": "TEST_ASSERTION_MAPPING.json",
+      "old_failure": "GREEN_INITIAL.txt,4failed3passed",
+      "caller_fix": "facts_kw dry_run propagation included in final source."
+    },
+    {
+      "id": "C",
+      "status": "PASS",
+      "scope": "Synthetic identities/clocks/process tables/signals only. Legacy/malformed/negative/zero/bool/string/dead/recycled/unverifiable/wrong-group/zombie cases; TERM, bounded KILL, signal failure, retained ownership, young-build no duplicate, clean exit, launcher/reaper agreement and atomic identity record.",
+      "additional_red": "C_NEGATIVE_PID_RED.txt,1failed; installed psutil source raises ValueError for negative PID, reproduced without real probe.",
+      "fix": "Both identity helpers reject noninteger/nonpositive PID before psutil."
+    },
+    {
+      "id": "D",
+      "status": "PASS",
+      "scope": "Real MCP1.29 sessions and proxy core in memory. Runner backend-ID forwarding; concurrent request IDs; completed/shutdown/dead cases; cleanup failure/timeout preserve cancellation and healthy session; missing private-ID contract fails closed; adjacent request timeout, resend-once and lookalike nonresend.",
+      "additional_failure": "SAFE_COMPLETION_INITIAL.txt,51passed1failed; unsupported-ID error initially dropped healthy backend.",
+      "fix": "Unsupported SDK contract uses INTERNAL_ERROR, preserving healthy session; final matrix passes."
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "scope": "Design record status update plus append-only A-D candidate behavior bullets.",
+      "validation": "DOCS_VALIDATION.txt,exit0"
+    },
+    {
+      "id": "S7",
+      "status": "BLOCKED",
+      "safe_tests": "56matrix+1retained real-start,57unique; case inventory in SAFE_EXECUTED_CASE_LIST.txt and SAFE_CASE_RESULTS.json.",
+      "remaining": "Ruff cache-write denial stays stopped; full suites effects ceiling; dev artifacts incomplete; exact-base lint comparison unavailable; precommit NOT_RUN."
+    },
+    {
+      "id": "S8",
+      "status": "BLOCKED",
+      "scope": "Proof and exact private patch retained; no commit/push/draft through unmet gates.",
+      "publication": "Explicitly HELD; no paid-provider effect qualification and current-main integration remain unmet."
+    },
+    {
+      "id": "S9",
+      "status": "NOT_RUN",
+      "reason": "HELD; no audit, auditor worker, signature or Steward action dispatched."
+    }
+  ],
+  "files_changed": [
+    "claudedocs/mcp-just-works-design-2026-11-05.md",
+    "src/dopemux/mcp/launcher.py",
+    "src/dopemux/mcp/lifecycle.py",
+    "src/dopemux/mcp/reap.py",
+    "src/dopemux/mcp/stdio_proxy.py",
+    "tests/unit/test_mcp_launcher.py",
+    "tests/unit/test_mcp_lifecycle_ports_from_leases.py",
+    "tests/unit/test_mcp_reap.py",
+    "tests/unit/test_mcp_stdio_proxy.py",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/BINDING_VALIDATION.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/CANDIDATE_FILES.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/C_NEGATIVE_PID_RED.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/DEV_TOOL_PREREQUISITES.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/DOCS_VALIDATION.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/ENVIRONMENT_COMMAND.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/ENVIRONMENT_RECOVERY.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/ENVIRONMENT_SYNC.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/GREEN_B_PROPAGATION.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/GREEN_INITIAL.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/HANDOFF.md",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/PROOF.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/PROOF_HASHES.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/REAL_START_COMPATIBILITY.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/REAL_START_COMPATIBILITY_FINAL.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE_FINAL.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE_QUALIFIED.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE_RAW.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RUFF_DENIAL.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/SAFE_CASE_RESULTS.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/SAFE_COMPLETION_FINAL.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/SAFE_COMPLETION_INITIAL.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/SAFE_EXECUTED_CASE_LIST.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/SCHEMA_LOADER_FAILURE.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/TEST_ASSERTION_MAPPING.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/WORKING_DIFF.patch",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/WORKING_DIFF_D29B604B_BEFORE_SAFE_COMPLETION.patch",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/WORKTREE_CHANGE_CONTRACT.txt",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/governance/COORDINATOR_EXECUTION_BINDING.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/governance/IMPLEMENT_A_D_EXECUTION_BINDING.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/governance/IMPLEMENT_A_D_TASK_PACKET.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/governance/QUALIFY_AND_HAND_BACK_EXECUTION_BINDING.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/governance/QUALIFY_AND_HAND_BACK_TASK_PACKET.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/governance/SUPERVISOR_MACRO_PACKET.json",
+    "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/governance/original_operator_packet.json"
+  ],
+  "validations": [
+    {
+      "command": "Original child packet jsonschema validation",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "schema": "docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "errors": 0
+    },
+    {
+      "command": "Extra derived-child schema harness with incomplete local reference store",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "historical": true,
+      "evidence": "SCHEMA_LOADER_FAILURE.txt",
+      "no_acquired_bytes": true
+    },
+    {
+      "command": "Corrected Registry-with-local-resources and fail-closed retrieval validator",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "errors": 0
+    },
+    {
+      "command": "ct validate-macro / validate-binding / bind-record",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "BINDING_VALIDATION.txt",
+      "authority": "NONE"
+    },
+    {
+      "command": "uv0.11.19 sync --offline --frozen --extra test",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "historical": true,
+      "evidence": "ENVIRONMENT_SYNC.txt",
+      "reason": "simple-v21 client/index incompatibility; payload absence NOT proven"
+    },
+    {
+      "command": "Existing uv0.12.11 sync --offline --frozen --extra test --link-mode copy",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "session": 14980,
+      "installed_packages": 140,
+      "evidence": "ENVIRONMENT_RECOVERY.json"
+    },
+    {
+      "command": "New A-D selector, initial fixture baseline",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "historical": true,
+      "evidence": "RED_BASELINE_RAW.txt",
+      "failed": 7
+    },
+    {
+      "command": "New A-D selector, qualified baseline",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "historical": true,
+      "evidence": "RED_BASELINE_QUALIFIED.txt",
+      "failed": 7
+    },
+    {
+      "command": "New A-D selector, final production baseline",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "expected_red": true,
+      "evidence": "RED_BASELINE_FINAL.txt",
+      "failed": 7,
+      "deselected": 117
+    },
+    {
+      "command": "Initial A-D fixed selector",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "evidence": "GREEN_INITIAL.txt",
+      "passed": 3,
+      "failed": 4
+    },
+    {
+      "command": "A-D selector after facts_kw correction",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "session": 19521,
+      "evidence": "GREEN_B_PROPAGATION.txt",
+      "passed": 7,
+      "deselected": 117
+    },
+    {
+      "command": "Synthetic negative-PID regression before guard fix",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "expected_red": true,
+      "session": 67608,
+      "evidence": "C_NEGATIVE_PID_RED.txt",
+      "failed": 1
+    },
+    {
+      "command": "Finite remaining safe compatibility matrix, initial",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "session": 5174,
+      "evidence": "SAFE_COMPLETION_INITIAL.txt",
+      "passed": 51,
+      "failed": 1,
+      "deselected": 221
+    },
+    {
+      "command": "Finite remaining safe compatibility matrix, corrected",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "session": 75698,
+      "evidence": "SAFE_COMPLETION_FINAL.txt",
+      "passed": 56,
+      "deselected": 217,
+      "seconds": 1.39
+    },
+    {
+      "command": "Retained real-start case, initial fixture",
+      "exit_code": 1,
+      "bucket": "FAIL",
+      "session": 42886,
+      "evidence": "REAL_START_COMPATIBILITY.txt",
+      "failed": 1,
+      "reason": "No-child guard caught unmocked git-worktree identity discovery; no child executed"
+    },
+    {
+      "command": "Retained real-start case, corrected identity fixture",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "session": 16005,
+      "evidence": "REAL_START_COMPATIBILITY_FINAL.txt",
+      "passed": 1,
+      "seconds": 0.2
+    },
+    {
+      "command": "Explicit safe selector --collect-only",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "session": 29602,
+      "evidence": "SAFE_EXECUTED_CASE_LIST.txt",
+      "collected": 57,
+      "total": 273,
+      "deselected": 216,
+      "execution": false
+    },
+    {
+      "command": ".venv/bin/python -B scripts/docs_validator.py claudedocs/mcp-just-works-design-2026-11-05.md",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "DOCS_VALIDATION.txt"
+    },
+    {
+      "command": ".venv/bin/python -B scripts/governance/validate_change_contract.py --format text",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "WORKTREE_CHANGE_CONTRACT.txt",
+      "max_lane": "L2",
+      "model_audit_required": true,
+      "paths": 9,
+      "scope": "Actual uncommitted worktree; no committed-head finality claim"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "ast.parse eight changed Python files",
+      "exit_code": 0,
+      "bucket": "PASS"
+    },
+    {
+      "command": "Original packet/companion integrity, changed-path allowlist, frozen uv.lock hash",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "uv_lock_sha256": "92069428a66d2261dec5a47965de2b983fc5f3c22100a5b0811d82a9237c0cee"
+    },
+    {
+      "command": ".venv/bin/ruff check src/dopemux/mcp/lifecycle.py src/dopemux/mcp/launcher.py src/dopemux/mcp/reap.py src/dopemux/mcp/stdio_proxy.py --output-format concise",
+      "exit_code": 2,
+      "bucket": "FAIL",
+      "evidence": "RUFF_DENIAL.txt",
+      "reason": "Ruff executable ran; default .ruff_cache temporary-file creation denied. No retry/workaround/escalation of this action."
+    },
+    {
+      "command": "python -m pytest -q --no-cov all five packet test files",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "Existing tests spawn/signals real children and probe localhost; no full-suite success claimed from selectors."
+    },
+    {
+      "command": "make test-fast",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "Same forbidden existing child/signal/probe effects; no exclusions/coverage assertions suppressed to claim PASS."
+    },
+    {
+      "command": "flake8 / mypy / pre-commit and declared dev environment sync",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "Declared dev group has incomplete exact cached artifacts; see DEV_TOOL_PREREQUISITES.json. No acquisition/substitution."
+    },
+    {
+      "command": "Required real exact-base lint/type comparison",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "No admitted exact-base worktree route; no new checkout/main mutation allowed. No temp-copy substitute."
+    },
+    {
+      "command": "Committed exact-head change-contract gate",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "No candidate commit; actual worktree preflight PASS recorded separately."
+    },
+    {
+      "command": "ct return-pack",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "Configured export ~/Downloads/RETURN is outside packet proof/write surface and tool exposes no output override; supervisor aggregate return owns packaging disposition. No export/guard alteration attempted."
+    },
+    {
+      "command": "Independent audit / signing / Steward / merge / deployment",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "Held/out of author authority."
+    }
+  ],
+  "codereview_status": "DETERMINISTIC_REVIEW_PERFORMED; negative-PID and SDK-error findings reproduced/fixed; no independent audit.",
+  "precommit_status": "NOT_RUN: exact declared tool closure unavailable; no unsafe/unqualified hooks executed.",
+  "audit": {
+    "status": "NOT_RUN",
+    "reason": "S9 HELD; required final independent audit remains before readiness/merge; no AUDITOR_REPORT fabricated."
+  },
+  "pr_url_or_blocker": "No commit/push/draft. Required lint/type/full-suite/base-comparison gates unmet; original Ruff cache-write denial unretried; publication effects and later main integration HELD.",
+  "residual_risks": [
+    "FINAL STATUS BLOCKED.57unique hermetic cases pass across two completed commands; this does not qualify full five-file or fast suites.",
+    "Exact private patch SHA256 f3d523e012cda019b2bedb8e46cfefa8560436adef62d38d69aba736822a51ee; HEAD remains packet-only 4029f6fea371df313ededcbd6f37ad0ecd90e08d; no candidate commit/tree exists.",
+    "Full older suites remain NOT_RUN under stricter effects ceiling. Older fake-build/current-PID or legacy-format fixtures outside selected matrix may require identity-aware migration when full qualification is admitted; no broad-suite PASS inferred.",
+    "Ruff failed only when writing its default cache; denied action remains stopped. Declared locked dev tools have incomplete known-cache closure, and no exact-base worktree comparison route was admitted.",
+    "MCP1.29 private ClientSession._request_id is relied on synchronously before first await. Real in-memory concurrency and missing-field drift tests pass; later SDK versions still require contract qualification below major2.",
+    "Process identity is verified from live non-zombie leader birth time and own group. Termination tests use synthetic tables only; live OS/group/descendant semantics require independent audit, no live signals were tested.",
+    "Reaper retains conservative protection when a directory or pid file is unreadable; launcher treats unreadable/unverifiable records as stale without signalling. Verified-identity/age agreement is tested; conservative unreadable-state behavior is not evidence of a live owned build.",
+    "Approved local base remains365f70ce; coordinator reported later main8edff9b52480681d5eb7b420a3efcdf42ab4c36c. Current-main integration/combined-hook qualification NOT_RUN; no branch update or retarget.",
+    "Draft workflow security-review.yml may use ANTHROPIC_API_KEY without draft exclusion; no positive fail-closed no-paid effect evidence. No publication attempted.",
+    "Formal audit, signing, Steward, main merge, deploy/install, host cleanup and live activation NOT_RUN."
+  ],
+  "unknowns": [
+    "Requested/configured gpt-6.1-sol/high; provider-attested model and observed effort UNKNOWN. No fallback/extra model/worker.",
+    "No final lint/type baseline comparison or full-suite result; no coverage figure fabricated.",
+    "No current-main integration or publication effect qualification.",
+    "Cached wheel metadata/RECORD checks are not reconstruction of original wheel bytes.",
+    "Legacy broader-fixture compatibility remains unexecuted; exact potential differences are preserved for next admitted qualification."
+  ],
+  "cleanup_status": {
+    "running_operation": null,
+    "sync_session": 14980,
+    "sync_terminal_exit": 0,
+    "partial_environment": ".venv now fully installed from frozen lock using existing uv0.12.11; retained",
+    "source_changes": true,
+    "host_or_main_checkout_mutation": false,
+    "branch_push": false,
+    "draft_created": false,
+    "technical_binding_state": "Two validated local CT binding records retained; authority NONE",
+    "retention": "Dedicated worktree, fully prepared test .venv, technical bindings,9-file private patch and all failed/pass receipts retained; no reset/delete.",
+    "last_test_session": 19521,
+    "last_test_exit": 0,
+    "stop_boundary": "Ruff cache write remains stopped; independently authorized finite safe source/test/doc/proof work completed.",
+    "last_matrix_session": 75698,
+    "last_matrix_exit": 0,
+    "last_single_case_session": 16005,
+    "last_single_case_exit": 0,
+    "metadata_collection_session": 29602,
+    "metadata_collection_exit": 0
+  }
+}

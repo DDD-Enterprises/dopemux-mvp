@@ -1,0 +1,23 @@
+{
+  "status": "BLOCKED",
+  "base_sha": "365f70ce2edc907d14356d82d2843104dbdaa434",
+  "head_sha": "4029f6fea371df313ededcbd6f37ad0ecd90e08d",
+  "head_tree": "5d5954292b317a011b94f89f193584635f3bb5c3",
+  "candidate_commit": null,
+  "working_diff_sha256": "f3d523e012cda019b2bedb8e46cfefa8560436adef62d38d69aba736822a51ee",
+  "source_and_tests": {
+    "claudedocs/mcp-just-works-design-2026-11-05.md": "8e38e22ade7d83ac4780aa7be7de3b7b632ab742b96485995bf1a33fb0b5b22e",
+    "src/dopemux/mcp/launcher.py": "521a4fdbe909a130d73a4789fe02e13a996ac7eafce091daf591f3986ae329ef",
+    "src/dopemux/mcp/lifecycle.py": "04f1e0e2e972d56020c1d30657eee491f175d1a1bee329c9e5d0a8f3bf7089ae",
+    "src/dopemux/mcp/reap.py": "4fc34d3ada09929ed594d6b894c2c73a5865f2bbd9af7c16c3d0e339d687f150",
+    "src/dopemux/mcp/stdio_proxy.py": "1a15848761106ae232e35abde1eb6726cbb995939c3b7a00100f1e56026140b8",
+    "tests/unit/test_mcp_launcher.py": "a4106999db89bccf4f0091c79c598c27f31907036fd9d12548da88ec8c7f9965",
+    "tests/unit/test_mcp_lifecycle_ports_from_leases.py": "b17db1b0f6ac714ee3a4ff0a01580c30fe023bfcf553b6f4cd41fbe8367a1747",
+    "tests/unit/test_mcp_reap.py": "4d1c02374dfdfbb4e8438668c0e098bc57c2853de0823d8372cf8bfbbf774919",
+    "tests/unit/test_mcp_stdio_proxy.py": "61d598f068978cde7009e0045c8250bdd92de2b74b1e88084c35580389618f85"
+  },
+  "uv_lock_sha256": "92069428a66d2261dec5a47965de2b983fc5f3c22100a5b0811d82a9237c0cee",
+  "matrix_passed": 56,
+  "separate_real_start_passed": 1,
+  "unique_safe_cases": 57
+}

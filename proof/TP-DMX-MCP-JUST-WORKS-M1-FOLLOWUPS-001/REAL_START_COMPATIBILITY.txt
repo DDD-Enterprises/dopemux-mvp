@@ -1,0 +1,63 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_the_launcher_cold_start_shape_re_leases_too _______________
+
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-24/test_the_launcher_cold_start_s0')
+paths = namespace(reg=PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-24/test_the_lau...ers/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-24/test_the_launcher_cold_start_s0/reg/port-leases.json'))
+m1_offline_lifecycle = (PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-24/test_the_launcher_cold_st...ct', project_hash='synthetic', worktree_hash='e5f9', instance_id='synthetic', identity_confidence='HIGH', evidence=[]))
+
+    def test_the_launcher_cold_start_shape_re_leases_too(
+        tmp_path, paths, m1_offline_lifecycle
+    ):
+        """ensure_backend calls run_lifecycle("start", services=[svc],
+        hold_instance_lock=False) with port vars scrubbed from the process env."""
+        repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+>       result = run_lifecycle(
+            "start",
+            repo=repo,
+            services=["conport"],
+            catalog=_catalog(),
+            dry_run=False,
+            registry_path=paths.reg,
+            docker_runner=_docker_empty(),
+            cmd_runner=lambda cmd, **kw: SimpleNamespace(
+                returncode=0,
+                stdout="DPMX_TABLES=decisions\nDPMX_COUNT=3\n" if kw.get("input") else "",
+                stderr="",
+            ),
+            product_root=_product(tmp_path),
+            process_env={},
+            port_is_free_fn=lambda p: True,
+            trust_env=False,
+            hold_instance_lock=False,
+        )
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:601: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/dopemux/mcp/lifecycle.py:2053: in run_lifecycle
+    _start_services(selected=inside, prebuilt=prebuilt, **{**start_kw, **fresh})
+src/dopemux/mcp/lifecycle.py:2663: in _start_services
+    tenant, tenant_findings = _resolve_conport_tenant(
+src/dopemux/mcp/lifecycle.py:2179: in _resolve_conport_tenant
+    creds = ct.resolve_tenant(
+src/dopemux/mcp/conport_tenant.py:1022: in resolve_tenant
+    count = count_legacy_rows(legacy_workspace_aliases(identity), psql=psql)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/dopemux/mcp/conport_tenant.py:485: in legacy_workspace_aliases
+    proc = subprocess.run(
+/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+a = (['git', '-C', '/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-24/test_the_launcher_cold_start_s0/offline-project', 'worktree', 'list', '--porcelain'],)
+k = {'stderr': -1, 'stdout': -1, 'text': True}
+
+    def no_child(*a, **k):
+>       raise AssertionError("M1 regression must not spawn a real child")
+E       AssertionError: M1 regression must not spawn a real child
+
+tests/unit/test_mcp_lifecycle_ports_from_leases.py:1142: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/test_mcp_lifecycle_ports_from_leases.py::test_the_launcher_cold_start_shape_re_leases_too
+1 failed in 0.37s
