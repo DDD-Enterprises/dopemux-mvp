@@ -1,0 +1,44 @@
+{
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1460,
+  "head_sha": "7ea96e052ea78354f18edb523f6c22ba9b080ca1",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.5",
+    "invocation": "grok -m grok-4.5 --effort high --sandbox workspace --cwd <scratch>/grok-cwd --always-approve --disallowed-tools \"search_replace,web_search,web_fetch,Agent\" --max-turns 80 --output-format json --prompt-file AUDIT_INPUT.md; exact invocation record in review_bundle/AUDIT_INVOCATION.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1460-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "validation_status=NOT_RUN: trusted policy forbids checking out or executing candidate code; the two unit tests were not re-run in this audit.",
+      "Remote GitHub PR #1460 headRefOid was not independently confirmed (gh API HTTP 401). Audit is pinned to local freeze artifacts and local git objects for head 7ea96e052ea78354f18edb523f6c22ba9b080ca1 / base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496.",
+      "test_task_orchestrator_http_singleton.py asserts exactly one identity file under isolated HOME; correct for current launcher write-once paths, but brittle if write_identity_metadata later writes additional workspace_id directories on the reuse/recreate paths."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "claude-code-cli",
+      "model": "UNKNOWN_NOT_PROVIDER_ATTESTED",
+      "model_family": "Anthropic Claude",
+      "runtime_family": "Claude Code CLI"
+    },
+    "auditor": {
+      "runner": "grok-cli",
+      "model": "grok-4.5",
+      "model_family": "xai-grok",
+      "runtime_family": "grok-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  }
+}

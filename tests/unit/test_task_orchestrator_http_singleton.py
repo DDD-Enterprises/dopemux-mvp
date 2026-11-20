@@ -83,6 +83,9 @@ def _run(tmp_path: Path, *, env_ok: bool):
             "DOPEMUX_WORKSPACE_ROOT": str(REPO_ROOT),
             "TASK_ORCHESTRATOR_PROJECT_ROOT": str(REPO_ROOT),
             "XDG_DATA_HOME": str(tmp_path / "xdg-data"),
+            # write_identity_metadata writes ${HOME}/.dopemux/mcp/runtime/...;
+            # isolate HOME so the test never touches the real runtime registry.
+            "HOME": str(tmp_path / "home"),
             "EXPECTED_IMAGE": _image_ref(),
             "STUB_ENV_OK": "1" if env_ok else "0",
             "DOCKER_RUN_MARKER": str(run_marker),
@@ -101,6 +104,12 @@ def _run(tmp_path: Path, *, env_ok: bool):
     return result, run_marker
 
 
+def _identity_files(home: Path) -> list:
+    """Identity files written by write_identity_metadata under ``$HOME``."""
+    runtime = home / ".dopemux" / "mcp" / "runtime"
+    return sorted(runtime.glob("*/task-orchestrator.identity.json"))
+
+
 def test_reuses_running_singleton_with_http_env(tmp_path):
     """Healthy singleton (MCP_HTTP_PORT/HOST set) is reused, not recreated."""
     result, run_marker = _run(tmp_path, env_ok=True)
@@ -109,6 +118,9 @@ def test_reuses_running_singleton_with_http_env(tmp_path):
     assert (
         not run_marker.exists()
     ), "recreated a healthy singleton instead of reusing it"
+    # The launcher's identity metadata must land in the test's isolated HOME,
+    # never in the operator's real ~/.dopemux/mcp/runtime registry.
+    assert len(_identity_files(tmp_path / "home")) == 1
 
 
 def test_recreates_running_singleton_missing_http_env(tmp_path):
@@ -118,3 +130,4 @@ def test_recreates_running_singleton_missing_http_env(tmp_path):
     assert result.returncode == 0, result.stderr
     assert "already running" not in result.stderr
     assert run_marker.exists(), "did not recreate a stale pre-fix singleton"
+    assert len(_identity_files(tmp_path / "home")) == 1
