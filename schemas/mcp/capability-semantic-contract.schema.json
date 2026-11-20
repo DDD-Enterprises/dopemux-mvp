@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.local/schemas/mcp/capability-semantic-contract.schema.json",
+  "title": "Dopemux MCP capability shadow policy",
+  "description": "Closed T0 semantic contract for deterministic, non-activating capability compilation across five supported clients.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mode",
+    "client_order",
+    "lifecycle_decisions",
+    "transport_decisions",
+    "clients"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mcp-capability-policy.v1"
+    },
+    "mode": {
+      "const": "shadow"
+    },
+    "client_order": {
+      "const": [
+        "claude",
+        "codex",
+        "opencode",
+        "gemini",
+        "copilot"
+      ]
+    },
+    "lifecycle_decisions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active",
+        "operator-managed",
+        "planned-active",
+        "decision-required"
+      ],
+      "properties": {
+        "active": {
+          "const": "evaluate"
+        },
+        "operator-managed": {
+          "const": "evaluate"
+        },
+        "planned-active": {
+          "const": "deferred"
+        },
+        "decision-required": {
+          "const": "blocked"
+        }
+      }
+    },
+    "transport_decisions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "http",
+        "sse",
+        "stdio",
+        "external"
+      ],
+      "properties": {
+        "http": {
+          "const": "evaluate"
+        },
+        "sse": {
+          "const": "evaluate"
+        },
+        "stdio": {
+          "const": "evaluate"
+        },
+        "external": {
+          "const": "deferred"
+        }
+      }
+    },
+    "clients": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claude",
+        "codex",
+        "opencode",
+        "gemini",
+        "copilot"
+      ],
+      "properties": {
+        "claude": {
+          "$ref": "#/definitions/clientPolicy"
+        },
+        "codex": {
+          "$ref": "#/definitions/clientPolicy"
+        },
+        "opencode": {
+          "$ref": "#/definitions/clientPolicy"
+        },
+        "gemini": {
+          "$ref": "#/definitions/clientPolicy"
+        },
+        "copilot": {
+          "$ref": "#/definitions/clientPolicy"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "clientPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exposure_decisions"
+      ],
+      "properties": {
+        "exposure_decisions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "full",
+            "full-sequenced",
+            "read-plane",
+            "facade",
+            "none"
+          ],
+          "properties": {
+            "full": {
+              "const": "direct"
+            },
+            "full-sequenced": {
+              "const": "sequenced"
+            },
+            "read-plane": {
+              "const": "facade"
+            },
+            "facade": {
+              "const": "facade"
+            },
+            "none": {
+              "const": "omitted"
+            }
+          }
+        }
+      }
+    }
+  }
+}
