@@ -126,7 +126,7 @@ describe('RepositoryPlannerPage', () => {
     expect(screen.getByRole('button', { name: /Inspect dopemux-mvp pcp-planner-foundation b{40}/ })).toBeVisible();
   });
 
-  test('CandidateShaChip copies full candidate SHA to clipboard on click with visual feedback', async () => {
+  test('CandidateShaChip renders Copy icon affordance when idle and copies full candidate SHA', async () => {
     const fullSha = dopemuxFixture.lanes[0].candidate_sha;
     const shortSha = fullSha.slice(0, 12);
     const writeTextMock = vi.fn().mockResolvedValue(undefined);
@@ -141,11 +141,18 @@ describe('RepositoryPlannerPage', () => {
 
       const chip = screen.getByRole('button', { name: new RegExp(`Copy candidate SHA ${shortSha}`) });
       expect(chip).toBeVisible();
+      expect(chip.querySelector('.lucide-copy')).toBeInTheDocument();
 
       fireEvent.click(chip);
 
       expect(writeTextMock).toHaveBeenCalledWith(fullSha);
       expect(await screen.findByText(`Candidate SHA ${shortSha} copied`)).toBeVisible();
+      expect(chip.querySelector('.lucide-check')).toBeInTheDocument();
+
+      // Pressing Escape immediately resets the copied state
+      fireEvent.keyDown(chip, { key: 'Escape' });
+      expect(chip).toHaveTextContent(shortSha);
+      expect(chip.querySelector('.lucide-copy')).toBeInTheDocument();
     } finally {
       Object.defineProperty(navigator, 'clipboard', {
         value: originalClipboard,
@@ -154,7 +161,7 @@ describe('RepositoryPlannerPage', () => {
     }
   });
 
-  test('CandidateShaChip surfaces copy failure to onError and updates aria-label', async () => {
+  test('CandidateShaChip surfaces copy failure to onError and dismisses error with Escape', async () => {
     const fullSha = dopemuxFixture.lanes[0].candidate_sha;
     const shortSha = fullSha.slice(0, 12);
     const writeTextMock = vi.fn().mockRejectedValue(new Error('Permission denied'));
@@ -172,6 +179,12 @@ describe('RepositoryPlannerPage', () => {
 
       expect(await screen.findByRole('button', { name: `Failed to copy candidate SHA ${shortSha}` })).toBeVisible();
       expect(await screen.findByText(/Failed to copy candidate SHA: Permission denied/)).toBeVisible();
+      expect(chip.querySelector('.lucide-alert-triangle')).toBeInTheDocument();
+
+      // Pressing Escape immediately resets the copyFailed state
+      fireEvent.keyDown(chip, { key: 'Escape' });
+      expect(chip).toHaveTextContent(shortSha);
+      expect(chip.querySelector('.lucide-copy')).toBeInTheDocument();
     } finally {
       Object.defineProperty(navigator, 'clipboard', {
         value: originalClipboard,
