@@ -176,3 +176,7 @@
 ## 2026-07-19 - [Keyboard Dismissal for Soft Confirmations]
 **Learning:** For transient 'Soft Confirmation' patterns (like 3-second 'Confirm Skip' or 'Confirm Reset' states), keyboard users need an immediate, explicit way to cancel the pending destructive state without waiting out the timeout or risking an accidental second activation. Binding the `Escape` key (`onKeyDown`) to reset confirmation states provides an intuitive safety hatch for keyboard navigation.
 **Action:** Always attach an `onKeyDown` handler listening for `Escape` to reset confirmation states on soft confirmation buttons.
+
+## 2026-07-20 - [Copyable Surfaces in Sequence Lists]
+**Learning:** In task sequence views, users often need to copy task titles to share, reference in commits, or search in external tools. Making pending non-active task titles interactive copy surfaces (`role="button"`, `tabIndex={0}`) with 3-tier tactile confirmation (icon swap, tooltip update, aria-label update) improves utility without adding visual clutter.
+**Action:** Extend the 'Copyable Surface' pattern to non-current list item titles in sequential workflows to streamline quick context sharing.
