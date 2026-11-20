@@ -1,156 +1,82 @@
-# G02 return — PR 1513 reviews settled, head frozen (third freeze)
+# G02 return — PR 1513 head frozen (fourth freeze)
 
-**Status**: READY_FOR_AUDIT (the team lead's word; acceptance belongs to the
-auditor and the operator).
+**Status**: READY_FOR_AUDIT (the team lead's word; acceptance belongs to the auditor and the operator).
 
-**Subject (frozen content head)**: `dc5aac697bbbc4c752e685fbb93baee7b11cfd50` on
-`fix/guard-file-repo-root`, PR
-https://github.com/DDD-Enterprises/dopemux-mvp/pull/1513, base `main` at
-`ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7` (merge base; `origin/main` unchanged
-at freeze, so the PR is 0 commits behind).
+**Subject (frozen content head)**: `72aa9c902ceec12a705f6993f98b7eb86e61c6ba` on `fix/guard-file-repo-root`, PR https://github.com/DDD-Enterprises/dopemux-mvp/pull/1513, base `main` at `ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7` (merge base; `origin/main` unchanged, PR 0 commits behind).
 
-**Audit**: NOT_RUN on this head. No audit has been run on any head that contains
-Amendments 08-10.
+**Audit**: NOT_RUN on this head. No audit has been run on any head that contains Amendment 11.
 
-The commit that adds this version of the file changes only this file, so it sits
-on top of the frozen head as a proof-only commit.
+The commit that adds this file changes only proof files, so it sits on top of the frozen head. The audit prompt carries git's own list of that range in its trusted section.
 
-## This record replaces the first two freezes
+## Earlier freezes (all spent)
 
-| Freeze | Content head | Record commit | Audit result |
-|---|---|---|---|
-| first | `6212c8db4ac325c86e55c040fbefd3234c7ea83d` | `0dfc7220a` | Grok: NEEDS_SUPERVISOR |
-| second | `7a469cb21d185b45d8e10fe0013e7f5d860b68f6` | `ee43f9914` | Grok: FAIL; AGY: FAIL |
-| third (this file) | `dc5aac697bbbc4c752e685fbb93baee7b11cfd50` | the commit that adds this version | NOT_RUN |
-
-The first audit's findings led to Amendment 02, and Copilot's reviews of each
-later head led to Amendments 03-07. Both audits of the second freeze found that
-the Amendment 07 walk resolved a symlink chain in one jump, so a red-lane name in
-the middle of a chain was never checked. The supervisor reproduced those findings
-before changing code; they led to Amendment 08. Copilot's reviews of the two
-heads after that led to Amendments 09 and 10.
-
-The first two freezes and their audit attempts are spent. They are kept in git
-history and in the evidence folder
-(`~/.local/share/dopemux/evidence/pr1513/r1` and `r2`); they say nothing about
-the head named above.
-
-## What changed since the second frozen head
-
-`7a469cb21..dc5aac697`, in order:
-
-| Commit | What |
-|---|---|
-| `ee43f9914` | second freeze record (this file, earlier version) |
-| `29f77aa0c` | Amendment 08: follow symlinks one hop at a time |
-| `07ab70d2d` | Amendment 09: block when a path has more spellings than the limit |
-| `dc5aac697` | Amendment 10: spelling-limit message and new-`PROOF.json` check |
-
-Each amendment has its own record (`AMENDMENT_08.md` to `AMENDMENT_10.md`) with
-the operator's words, the reason, and the validation at that edit. Amendments
-02-10 were written by the supervisor session directly under a one-off writer
-exception the operator granted for each; no child was dispatched for them.
-
-Against `main`, the PR changes 23 files: `.claude/hooks/dcp_surface_guard.py`,
-`tests/unit/dcp_surface_guard/__init__.py`,
-`tests/unit/dcp_surface_guard/test_file_repo_root.py`, and 20 files under
-`proof/MACRO-DMX-GUARD-FILE-REPO-001/`. It touches no workflow file.
-
-SHA-256 of the three non-proof files at the frozen head:
-
-| File | SHA-256 |
-|---|---|
-| `.claude/hooks/dcp_surface_guard.py` | `d6e5554a008b9660782b2950548ac01a53cb5c40a80a9f135b1896e0f489a275` |
-| `tests/unit/dcp_surface_guard/test_file_repo_root.py` | `a940b736a52863db6d507dbd9408a611ce8d2fdce8863e73e8b7bacca13046c3` |
-| `tests/unit/dcp_surface_guard/__init__.py` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
-
-## State at freeze (observed 2026-11-19, 21:58Z)
-
-| Item | Result | Evidence |
+| Freeze | Content head | Audit result |
 |---|---|---|
-| Local head equals remote head | PASS | both `dc5aac697bbbc4c752e685fbb93baee7b11cfd50`; worktree clean |
-| PR up to date with `main` | PASS | 0 behind, 19 ahead; merge base `ba5c3e07b` |
-| PR out of draft | PASS | `isDraft=false` |
-| Review threads | PASS | 0 unresolved of 10 |
-| Copilot review of the frozen head | PASS | submitted 2026-11-19T21:55:46Z: "No open issues", both findings from the review of `07ab70d2d` marked resolved, no inline comment raised on this head |
-| CI on the frozen head | 20 pass, 2 fail, 3 skipped | see below |
+| first | `6212c8db4` | Grok: NEEDS_SUPERVISOR |
+| second | `7a469cb21` | Grok: FAIL; AGY: FAIL |
+| third | `dc5aac697` | Grok: FAIL; AGY: FAIL |
+| fourth (this file) | `72aa9c902` | NOT_RUN |
 
-The two failing checks are `independent embedded audit` and
-`PR Steward / final readiness`. Both wait for the audit and have failed on every
-head of this PR. The three skipped checks are Installer Smoke, Integration Tests
-and Scoped Coverage. `mergeStateStatus` is `BLOCKED` for the same reason.
+Amendment 11 (`72aa9c902`) answers the third freeze's audits: AGY found two more symlink shapes (a two-level link target followed by `..`; a link beside a symlinked red-lane ancestor), Grok found that an aborted walk let the path through. The third freeze record also said a chain longer than 40 links is hard-blocked. At that head it was not; since Amendment 11 it is. The operator's ruling set a stop rule: if the audits of this head FAIL on another symlink shape, there is no Amendment 12 and the supervisor brings the descope choice.
 
-Copilot's review is headed "Needs a closer look" and says the symlink traversal
-and path aliasing "have security and performance implications that warrant human
-assessment". That assessment is the audit's and the operator's; this record does
-not answer it.
+Verdicts and evidence of the earlier rounds are in `~/.local/share/dopemux/evidence/pr1513/r1` to `r3`, outside the repo. Amendments 02-11 each have a record (`AMENDMENT_02.md` to `AMENDMENT_11.md`) with the operator's words, the reason and the validation at that edit.
+
+Against `main` the PR changes 24 files: the guard (`.claude/hooks/dcp_surface_guard.py`), its tests (`tests/unit/dcp_surface_guard/`, 2 files) and 21 files under `proof/MACRO-DMX-GUARD-FILE-REPO-001/`. No workflow file is touched.
+
+| File at the frozen head | SHA-256 |
+|---|---|
+| `.claude/hooks/dcp_surface_guard.py` | `d81692f3562c2a5fd3d5925fe92c81356613e21bd363c69c1a4ef45f6da55765` |
+| `tests/unit/dcp_surface_guard/test_file_repo_root.py` | `69cafe14d7537a3567dbd76140fbae74fdeaac8cc1cc5c748a79ca67b7d824c4` |
+
+## State at freeze (observed 2026-11-20 about 04:10Z)
+
+| Item | Result |
+|---|---|
+| Local head equals remote head | PASS: both `72aa9c902`; worktree clean |
+| PR up to date with `main` | PASS: 0 behind, 21 ahead |
+| PR out of draft | PASS |
+| Review threads | PASS: 0 unresolved of 10 |
+| Copilot review of the frozen head | NOT_RUN: two requests (the CLI one did not register; the REST one returned 201 Created), no review or work-started event in about 28 minutes. The last Copilot review, of `dc5aac697`, listed no open issues. |
+| CI on the frozen head | 20 pass, 2 fail, 3 skipped. The failures are `independent embedded audit` and `PR Steward / final readiness`, which wait for the audit and have failed on every head. |
 
 ## Local validation on the frozen head
 
-Clean env (`env -i`, `HOME`, `PATH=/usr/bin:/bin`, `PYTHONPATH=<worktree>/src`),
-repo `.venv` Python. Run on the worktree at `dc5aac697` with a clean tree:
+Clean env (`env -i`, `PATH=/usr/bin:/bin`, `PYTHONPATH=<worktree>/src`), repo `.venv` Python, clean worktree.
 
 | Check | Result |
 |---|---|
-| `tests/unit/dcp_surface_guard/test_file_repo_root.py` | PASS — 49 passed |
-| Same test file against the guard at `7a469cb21` (second frozen head) | 9 failed, 40 passed (the tests added by Amendments 08-10) |
-| Same test file against the guard at `07ab70d2d` | 2 failed, 47 passed (the two Amendment 10 tests) |
-| Every test file under `tests/` that mentions `dcp_surface_guard`, `native_hooks` or `red_lane` (32 files) | 1039 passed, 1 failed |
-| `flake8 --select=E9,F,W` on the guard and its test file | PASS — 0 findings |
-| `black --check` on the guard and its test file | FAIL — both would be reformatted; the guard on `main` fails the same check; not reformatted, to keep the diff to the fix |
-| Probe for the two audit findings on the second freeze (`agy_f1_f2_probe.py`) | PASS — all seven shapes blocked |
-| Probe for Copilot's finding on `29f77aa0c` (`copilot_a08_cap_probe.py`) | PASS — 2, 5, 6 and 7 stacked links all blocked by plain path and through the link |
-| Probe for Copilot's two findings on `07ab70d2d` (`copilot_a09_probe_a10.py`) | PASS on both findings; one known gap stays open, see below |
+| Guard tests (`tests/unit/dcp_surface_guard`) | PASS: 59 passed |
+| Same tests against the guard at `e95187bb2` | 9 failed, 50 passed (measured at the Amendment 11 edit) |
+| 32 test files that mention the guard, native hooks or red lane | 1049 passed, 1 failed |
+| `flake8 --select=E9,F,W` | PASS |
+| `black --check` | FAIL: not reformatted; the files already failed it before Amendment 11 |
+| Saved reproduction probes (AGY r2, Copilot x3, AGY r3, Grok r3) | PASS: every red-lane shape blocked; outputs `*.after_a11.out` in `r2/repro` and `r3/repro` |
+| 14 ordinary paths on this machine (`/tmp`, `/var/folders`, repo, `~/.claude`, sibling projects) | PASS: none blocked, no walk abort |
 | Full `make test` | NOT_RUN |
 
-The one test failure is
-`tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified`.
-It fails the same way on `main` and on every earlier head of this branch: it flags
-`.github/workflows/` changes that come from `main`'s history.
-
-The probe scripts and their outputs are in
-`~/.local/share/dopemux/evidence/pr1513/r2/repro/`, outside the repo.
+The one failure is `tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified`; it fails the same way on `main` and on every earlier head of this branch.
 
 ## Known limits carried into the audit
 
-- **Open gap, same on `main`.** When a sibling checkout's red-lane directory is a
-  symlink to a folder outside every repo, an edit addressed by that folder's own
-  path is allowed. Nothing in that path names a red-lane location, and the guard
-  does not search other checkouts for links that point at it. Amendment 10 only
-  stops the guard's own message from suggesting that path. Closing the gap needs a
-  design decision and belongs in a follow-up. (Recorded in `AMENDMENT_10.md`;
-  probe key `f1_real_path_blocked` is false.)
-- **Fail-closed cost.** A path with more than 64 spellings
-  (`_MAX_ALIAS_FORMS = 64`; six stacked symlinks are enough) is hard-blocked, and
-  so is a symlink chain longer than 40 hops (`_MAX_SYMLINK_HOPS = 40`). This also
-  blocks ordinary files that sit behind that many links. (Recorded in
-  `AMENDMENT_09.md`.)
-- Copilot and the two auditors have repeatedly found new variants of the
-  symlink / `..` gap on earlier heads of this PR; Amendments 03-09 each answer
-  one. The claim that the walk now closes the family is untested beyond the cases
-  in the test file and the three probes.
+- **Open gap, same on `main`.** When a sibling checkout's red-lane folder is a symlink to a folder outside every repo, an edit addressed by that folder's own path is allowed. The guard does not search other checkouts for links that point at it. Needs a design decision; belongs in a follow-up (`AMENDMENT_10.md`, `AMENDMENT_11.md`).
+- **Fail-closed cost.** A path is hard-blocked when its symlink walk cannot finish: more than 64 spellings (six stacked links), a loop, a chain past 40 links, or an unreadable link. That also blocks ordinary files behind that many links. The kernel refuses chains over about 32 links.
+- **`file_repo_root`.** The exported helper returns the first `.git` above the realpath. The guard does not use it; a Wave 2B caller that blocks from it alone would miss a root the guard keeps.
+- **Writer exception.** Amendments 02-11 were written by this supervisor session under one-off operator exceptions, outside the packet's named writer and attempt limits. Each is recorded with the operator's words. An auditor rated this a governance finding.
+- **Family not closed by proof.** Reviews and audits found a new symlink / `..` variant on every earlier head. That the walk now closes the family is untested beyond the test file and the saved probes.
 
 ## Route
 
-- Session model: requested `claude-fable-5-2`. Provider-attested model: UNKNOWN.
-- Effort: `$CLAUDE_EFFORT` read `high` when this record was written.
+- Amendments 02-10 were written while the session model was `claude-fable-5-2`; Amendment 11 and this record under `claude-sonnet-5-5`, set by the operator with `/model`. Provider-attested model: UNKNOWN. `$CLAUDE_EFFORT` read `high`.
 - Subagents spawned for this record: 0.
 
 ## Blockers
 
 | Blocker | Action that clears it |
 |---|---|
-| Audit NOT_RUN | The operator chose Grok as the governing audit and AGY as corroboration, both on the frozen head. They run next. |
+| Audit NOT_RUN | Grok governs and AGY gives a second look, both on the audited head. The sealed prompt is near AGY's size limit; the operator decides how to fit it. |
+| Copilot review of this head NOT_RUN | A later review may add findings and would void an audit run before it. |
 | Signing, steward release phrase, merge | The operator's, after the audit. |
 
-If any commit that changes code or tests lands after this record, this freeze is
-void and a new one is needed.
+If any commit that changes code or tests lands after this record, this freeze is void.
 
-## Files written
-
-- `proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md` (this file)
-
-Rollback: `git revert` of this file's commit restores the second freeze record.
-Closing the PR unmerged and deleting the remote branch is the operator's.
-
-Authority: NONE. This return grants nothing.
+Files written: `proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md`. Rollback: `git revert` of this file's commit restores the third freeze record. Closing the PR and deleting the branch is the operator's. Authority: NONE.
