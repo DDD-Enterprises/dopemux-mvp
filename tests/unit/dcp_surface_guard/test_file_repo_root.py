@@ -7,6 +7,7 @@ directory is a main checkout, a directory holding a ``.git`` file with a
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -16,6 +17,7 @@ _HOOKS_DIR = Path(__file__).resolve().parents[3] / ".claude" / "hooks"
 if str(_HOOKS_DIR) not in sys.path:
     sys.path.insert(0, str(_HOOKS_DIR))
 
+import dcp_surface_guard as guard  # noqa: E402
 from dcp_surface_guard import (  # noqa: E402
     RED_LANE_ID,
     file_repo_root,
@@ -653,7 +655,9 @@ def test_relative_symlink_target_through_symlinked_red_lane_is_blocked(
     assert RED_LANE_ID in result
 
 
-def test_symlink_loop_does_not_raise(tmp_path: Path) -> None:
+def test_symlink_loop_is_blocked_and_does_not_raise(tmp_path: Path) -> None:
+    # Amendment 11: a walk that cannot finish fails closed, it is no longer
+    # allowed. (The kernel cannot open a loop either: ELOOP.)
     root = _main_checkout(tmp_path)
     (root / "docs").mkdir()
     (root / "docs" / "a").symlink_to(root / "docs" / "b")
@@ -663,7 +667,8 @@ def test_symlink_loop_does_not_raise(tmp_path: Path) -> None:
         "Write", {"file_path": str(root / "docs" / "a" / "x.py")}, root
     )
 
-    assert result is None
+    assert result is not None
+    assert RED_LANE_ID in result
 
 
 def test_dotdot_out_of_second_symlink_keeps_red_lane_spelling(tmp_path: Path) -> None:
@@ -844,3 +849,150 @@ def test_new_relative_proof_json_is_not_warned(
     )
 
     assert warnings == []
+
+
+# Amendment 11: one set of spellings per real folder, used at every step; a walk
+# that cannot finish fails closed.
+
+
+@pytest.mark.parametrize("target", ["abs", "rel"])
+def test_second_link_two_levels_deep_then_dotdot_keeps_red_lane_spelling(
+    tmp_path: Path, target: str
+) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    outside = tmp_path / "outside"
+    _symlinked_red_dir(sibling, outside)
+    (outside / "a" / "b").mkdir(parents=True)
+    (outside / "sym2").symlink_to(outside / "a" / "b" if target == "abs" else "a/b")
+    _far_link_to_sibling_parent(tmp_path, sibling, "far")
+    # sym2/.. is outside/a, which is <sibling>/services/task-orchestrator/a
+    path = (
+        f"{tmp_path}/far/link/../{sibling.name}"
+        "/services/task-orchestrator/sym2/../x.py"
+    )
+
+    result = surface_guard_block("Write", {"file_path": path}, root)
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_two_level_link_below_a_link_to_the_red_lane_is_blocked(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    sibling = _linked_worktree(tmp_path)
+    outside = tmp_path / "outside"
+    _symlinked_red_dir(sibling, outside)
+    (outside / "a" / "b").mkdir(parents=True)
+    (outside / "sym2").symlink_to("a/b")
+    (root / "docs").mkdir()
+    (root / "docs" / "link").symlink_to(sibling / "services" / "task-orchestrator")
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "link" / "sym2" / ".." / "x.py")}, root
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+@pytest.mark.parametrize("target", ["abs", "rel"])
+def test_link_beside_a_symlinked_red_lane_ancestor_is_blocked(
+    tmp_path: Path, target: str
+) -> None:
+    root = _main_checkout(tmp_path)
+    outside_services = tmp_path / "outside_services"
+    (outside_services / "task-orchestrator").mkdir(parents=True)
+    (root / "services").symlink_to(outside_services)
+    entry = outside_services / "entry"
+    entry.symlink_to(
+        outside_services / "task-orchestrator" if target == "abs" else "task-orchestrator"
+    )
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "services" / "entry" / "x.py")}, root
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_symlink_chain_past_the_hop_limit_is_blocked(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "docs" / "real").mkdir(parents=True)
+    count = guard._MAX_SYMLINK_HOPS + 1
+    for i in range(count):
+        target = root / "docs" / (f"c{i + 1}" if i < count - 1 else "real")
+        (root / "docs" / f"c{i}").symlink_to(target)
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "c0" / "x.py")}, root
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_chain_just_under_the_hop_limit_is_allowed(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "docs" / "real").mkdir(parents=True)
+    count = guard._MAX_SYMLINK_HOPS - 5
+    for i in range(count):
+        target = root / "docs" / (f"c{i + 1}" if i < count - 1 else "real")
+        (root / "docs" / f"c{i}").symlink_to(target)
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "c0" / "x.py")}, root
+    )
+
+    assert result is None
+
+
+def test_unreadable_link_is_blocked_not_allowed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "docs" / "real").mkdir(parents=True)
+    (root / "docs" / "l").symlink_to(root / "docs" / "real")
+    real_readlink = os.readlink
+
+    def flaky_readlink(path, *args, **kwargs):
+        if str(path).endswith("/docs/l"):
+            raise OSError(5, "Input/output error")
+        return real_readlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(guard.os, "readlink", flaky_readlink)
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "l" / "x.py")}, root
+    )
+
+    assert result is not None
+    assert RED_LANE_ID in result
+
+
+def test_blocked_walk_does_not_advise_another_path(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "docs").mkdir()
+    (root / "docs" / "a").symlink_to(root / "docs" / "b")
+    (root / "docs" / "b").symlink_to(root / "docs" / "a")
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "a" / "x.py")}, root
+    )
+
+    assert result is not None
+    assert "real path" not in result
+    assert "instead" not in result
+
+
+def test_ordinary_symlinked_path_is_still_allowed(tmp_path: Path) -> None:
+    root = _main_checkout(tmp_path)
+    (root / "docs" / "real").mkdir(parents=True)
+    (root / "docs" / "l").symlink_to(root / "docs" / "real")
+
+    result = surface_guard_block(
+        "Write", {"file_path": str(root / "docs" / "l" / "x.py")}, root
+    )
+
+    assert result is None
