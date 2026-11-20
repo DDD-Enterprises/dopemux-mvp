@@ -1,0 +1,508 @@
+{
+  "schema_version": "1.0.0",
+  "source_runtime": "services/task-orchestrator/app/main.py CreateEpicRequest",
+  "endpoint": "POST /api/workflow/epics",
+  "root_epic": {
+    "client_ref": "LTAIP-SERIES-ROOT",
+    "packet_id": "LTAIP-SERIES-ROOT",
+    "stage08_epic_id": "STAGE-08-SERIES",
+    "depends_on": [],
+    "load_status": "READY",
+    "request": {
+      "title": "LTAIP: Leantime AI parity validation and conditional delivery series",
+      "description": "Evidence-gated series derived from Stage 08 VALIDATE_WITH_PROTOTYPE. Packets 001-008 are Horizon 0 validation; 009-012 remain conditional until base selection and explicit authorization.",
+      "business_value": "Prevent premature architecture adoption while preserving a deterministic, auditable route from buyer/workflow validation through base selection and bounded post-selection delivery.",
+      "acceptance_criteria": [
+        "TP-LTAIP-H0-008 selects one release-pinned base/variant or rejects all.",
+        "No conditional packet starts without its explicit gate.",
+        "Every packet has current proof, embedded audit, and PR Steward disposition."
+      ],
+      "priority": "critical",
+      "status": "ready",
+      "tags": [
+        "program:LTAIP",
+        "campaign:LT-AI-PARITY-DR-2026-07",
+        "verdict:VALIDATE_WITH_PROTOTYPE",
+        "series-root"
+      ],
+      "adhd_metadata": {
+        "estimated_complexity": 1.0,
+        "required_energy_level": "high",
+        "can_work_parallel": false
+      },
+      "idempotency_key": "ltaip-series-root-v1"
+    }
+  },
+  "epics": [
+    {
+      "client_ref": "TP-LTAIP-H0-001",
+      "packet_id": "TP-LTAIP-H0-001",
+      "stage08_epic_id": "EPIC-08-001",
+      "depends_on": [],
+      "load_status": "READY",
+      "request": {
+        "title": "TP-LTAIP-H0-001: Economic buyer, persona, and workflow lock",
+        "description": "Lock one economic buyer, two primary personas, and three must-win workflows. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-H0-001.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness.",
+          "One economic buyer, two personas, and three workflows are evidence-locked."
+        ],
+        "priority": "critical",
+        "status": "ready",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-H0-VALIDATION-001",
+          "packet:TP-LTAIP-H0-001",
+          "stage08:EPIC-08-001",
+          "authorization:HORIZON_0_PROTOTYPE",
+          "risk:HIGH"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.8,
+          "required_energy_level": "high",
+          "can_work_parallel": false
+        },
+        "idempotency_key": "tp-ltaip-h0-001-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-H0-002",
+      "packet_id": "TP-LTAIP-H0-002",
+      "stage08_epic_id": "EPIC-08-002",
+      "depends_on": [
+        "TP-LTAIP-H0-001"
+      ],
+      "load_status": "BLOCKED",
+      "request": {
+        "title": "TP-LTAIP-H0-002: Equivalent-edition Leantime and OpenProject workflow trial",
+        "description": "Run identical Community-edition workflows, accessibility, mobile, administration, backup, and restore trials. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-H0-002.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "critical",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-H0-VALIDATION-001",
+          "packet:TP-LTAIP-H0-002",
+          "stage08:EPIC-08-002",
+          "authorization:HORIZON_0_PROTOTYPE",
+          "risk:HIGH",
+          "depends:TP-LTAIP-H0-001"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.8,
+          "required_energy_level": "high",
+          "can_work_parallel": false
+        },
+        "idempotency_key": "tp-ltaip-h0-002-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-H0-003",
+      "packet_id": "TP-LTAIP-H0-003",
+      "stage08_epic_id": "EPIC-08-003",
+      "depends_on": [
+        "TP-LTAIP-H0-002"
+      ],
+      "load_status": "BLOCKED",
+      "request": {
+        "title": "TP-LTAIP-H0-003: Release-pinned exposure and blocking authorization manifests",
+        "description": "Generate complete exposure manifests and prove blocking authorization with zero P0/P1 bypasses. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "critical",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-H0-VALIDATION-001",
+          "packet:TP-LTAIP-H0-003",
+          "stage08:EPIC-08-003",
+          "authorization:HORIZON_0_PROTOTYPE",
+          "risk:CRITICAL",
+          "depends:TP-LTAIP-H0-002",
+          "redlane"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.95,
+          "required_energy_level": "high",
+          "can_work_parallel": false
+        },
+        "idempotency_key": "tp-ltaip-h0-003-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-H0-004",
+      "packet_id": "TP-LTAIP-H0-004",
+      "stage08_epic_id": "EPIC-08-004",
+      "depends_on": [
+        "TP-LTAIP-H0-003"
+      ],
+      "load_status": "BLOCKED",
+      "request": {
+        "title": "TP-LTAIP-H0-004: Leantime mutation atomicity and event-path spike",
+        "description": "Prove or disprove atomic event capture for representative Leantime mutations, document honest fallback semantics, and measure the maintenance tax of any core-patch alternative. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "critical",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-H0-VALIDATION-001",
+          "packet:TP-LTAIP-H0-004",
+          "stage08:EPIC-08-004",
+          "authorization:HORIZON_0_PROTOTYPE",
+          "risk:CRITICAL",
+          "depends:TP-LTAIP-H0-003",
+          "redlane"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.95,
+          "required_energy_level": "high",
+          "can_work_parallel": true
+        },
+        "idempotency_key": "tp-ltaip-h0-004-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-H0-005",
+      "packet_id": "TP-LTAIP-H0-005",
+      "stage08_epic_id": "EPIC-08-005",
+      "depends_on": [
+        "TP-LTAIP-H0-003"
+      ],
+      "load_status": "BLOCKED",
+      "request": {
+        "title": "TP-LTAIP-H0-005: Derived-data authorization, deletion, and injection laboratory",
+        "description": "Prove that a destroyable derived-data index can preserve project authorization, deletion, freshness, citations, and hostile-content isolation under synthetic multi-project changes. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-H0-005.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "critical",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-H0-VALIDATION-001",
+          "packet:TP-LTAIP-H0-005",
+          "stage08:EPIC-08-005",
+          "authorization:HORIZON_0_SYNTHETIC_ONLY",
+          "risk:CRITICAL",
+          "depends:TP-LTAIP-H0-003",
+          "redlane"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.95,
+          "required_energy_level": "high",
+          "can_work_parallel": true
+        },
+        "idempotency_key": "tp-ltaip-h0-005-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-H0-006",
+      "packet_id": "TP-LTAIP-H0-006",
+      "stage08_epic_id": "EPIC-08-006",
+      "depends_on": [
+        "TP-LTAIP-H0-001",
+        "TP-LTAIP-H0-002"
+      ],
+      "load_status": "BLOCKED",
+      "request": {
+        "title": "TP-LTAIP-H0-006: Official plugin package qualification",
+        "description": "Qualify authorized official plugin packages as distinct licensed components using exact hashes, license/support terms, workflow evidence, ACL tests, sequential upgrades, export, backup, restore, rollback, and equivalent-scope cost. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-H0-006.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "high",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-H0-VALIDATION-001",
+          "packet:TP-LTAIP-H0-006",
+          "stage08:EPIC-08-006",
+          "authorization:HORIZON_0_PACKAGE_REVIEW",
+          "risk:HIGH",
+          "depends:TP-LTAIP-H0-001",
+          "depends:TP-LTAIP-H0-002",
+          "redlane"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.8,
+          "required_energy_level": "high",
+          "can_work_parallel": true
+        },
+        "idempotency_key": "tp-ltaip-h0-006-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-H0-007",
+      "packet_id": "TP-LTAIP-H0-007",
+      "stage08_epic_id": "EPIC-08-007",
+      "depends_on": [
+        "TP-LTAIP-H0-002",
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-006"
+      ],
+      "load_status": "BLOCKED",
+      "request": {
+        "title": "TP-LTAIP-H0-007: Equivalent-scope probabilistic TCO and team operating model",
+        "description": "Produce equivalent-scope expected and downside TCO distributions plus a named-skill, ownership, on-call, and bus-factor operating model using actual prototype evidence and explicit uncertainty. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-H0-007.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "high",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-H0-VALIDATION-001",
+          "packet:TP-LTAIP-H0-007",
+          "stage08:EPIC-08-007",
+          "authorization:HORIZON_0_ANALYSIS",
+          "risk:HIGH",
+          "depends:TP-LTAIP-H0-002",
+          "depends:TP-LTAIP-H0-003",
+          "depends:TP-LTAIP-H0-004",
+          "depends:TP-LTAIP-H0-006"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.8,
+          "required_energy_level": "high",
+          "can_work_parallel": false
+        },
+        "idempotency_key": "tp-ltaip-h0-007-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-H0-008",
+      "packet_id": "TP-LTAIP-H0-008",
+      "stage08_epic_id": "EPIC-08-008",
+      "depends_on": [
+        "TP-LTAIP-H0-001",
+        "TP-LTAIP-H0-002",
+        "TP-LTAIP-H0-003",
+        "TP-LTAIP-H0-004",
+        "TP-LTAIP-H0-005",
+        "TP-LTAIP-H0-006",
+        "TP-LTAIP-H0-007"
+      ],
+      "load_status": "BLOCKED",
+      "request": {
+        "title": "TP-LTAIP-H0-008: Independent base-selection gate",
+        "description": "Independently adjudicate all Horizon 0 evidence and emit one evidence-current result: select one release-pinned base/variant, reject all candidates, or return to prototype with named missing evidence. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-H0-008.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness.",
+          "One base/variant is selected, all are rejected, or named evidence returns the program to prototype."
+        ],
+        "priority": "critical",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-H0-VALIDATION-001",
+          "packet:TP-LTAIP-H0-008",
+          "stage08:EPIC-08-008",
+          "authorization:HORIZON_0_DECISION_GATE",
+          "risk:CRITICAL",
+          "depends:TP-LTAIP-H0-001",
+          "depends:TP-LTAIP-H0-002",
+          "depends:TP-LTAIP-H0-003",
+          "depends:TP-LTAIP-H0-004",
+          "depends:TP-LTAIP-H0-005",
+          "depends:TP-LTAIP-H0-006",
+          "depends:TP-LTAIP-H0-007",
+          "redlane"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.95,
+          "required_energy_level": "high",
+          "can_work_parallel": false
+        },
+        "idempotency_key": "tp-ltaip-h0-008-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-POST-009",
+      "packet_id": "TP-LTAIP-POST-009",
+      "stage08_epic_id": "EPIC-08-009",
+      "depends_on": [
+        "TP-LTAIP-H0-008"
+      ],
+      "load_status": "CONDITIONAL",
+      "request": {
+        "title": "TP-LTAIP-POST-009: Read-only policy gateway and selected-base adapter",
+        "description": "Implement one release-pinned, deny-by-default, read-only gateway for the selected base with project/identity allowlists, response filtering, audit receipts, rate limits, token rotation, and kill switch. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-POST-009.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "high",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-POST-SELECTION-001",
+          "packet:TP-LTAIP-POST-009",
+          "stage08:EPIC-08-009",
+          "authorization:CONDITIONAL_AFTER_BASE_SELECTION",
+          "risk:HIGH",
+          "depends:TP-LTAIP-H0-008",
+          "redlane",
+          "conditional"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.8,
+          "required_energy_level": "high",
+          "can_work_parallel": true
+        },
+        "idempotency_key": "tp-ltaip-post-009-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-POST-010",
+      "packet_id": "TP-LTAIP-POST-010",
+      "stage08_epic_id": "EPIC-08-010",
+      "depends_on": [
+        "TP-LTAIP-H0-008",
+        "TP-LTAIP-H0-006"
+      ],
+      "load_status": "CONDITIONAL",
+      "request": {
+        "title": "TP-LTAIP-POST-010: Deterministic parity foundation child-series generator",
+        "description": "Select at most three deterministic must-win gaps proven by H0, resolve configure/buy/upstream/build disposition, and generate exact base-specific implementation child packets with permission, accessibility, mobile, upgrade, rollback, and proof gates. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-POST-010.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "high",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-POST-SELECTION-001",
+          "packet:TP-LTAIP-POST-010",
+          "stage08:EPIC-08-010",
+          "authorization:CONDITIONAL_AFTER_BASE_SELECTION",
+          "risk:HIGH",
+          "depends:TP-LTAIP-H0-008",
+          "depends:TP-LTAIP-H0-006",
+          "redlane",
+          "conditional"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.8,
+          "required_energy_level": "high",
+          "can_work_parallel": true
+        },
+        "idempotency_key": "tp-ltaip-post-010-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-POST-011",
+      "packet_id": "TP-LTAIP-POST-011",
+      "stage08_epic_id": "EPIC-08-011",
+      "depends_on": [
+        "TP-LTAIP-POST-009",
+        "TP-LTAIP-POST-010",
+        "TP-LTAIP-H0-005"
+      ],
+      "load_status": "CONDITIONAL",
+      "request": {
+        "title": "TP-LTAIP-POST-011: Bounded read/draft AI pilot",
+        "description": "Implement exactly two selected read/draft AI features with cited outputs, human approval, deterministic fallback, data-class routing, redaction, budget ceilings, task-specific evaluation, and instant disablement. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-POST-011.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "critical",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-POST-SELECTION-001",
+          "packet:TP-LTAIP-POST-011",
+          "stage08:EPIC-08-011",
+          "authorization:CONDITIONAL_AFTER_DETERMINISTIC_AND_RETRIEVAL_GATES",
+          "risk:CRITICAL",
+          "depends:TP-LTAIP-POST-009",
+          "depends:TP-LTAIP-POST-010",
+          "depends:TP-LTAIP-H0-005",
+          "redlane",
+          "conditional"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.95,
+          "required_energy_level": "high",
+          "can_work_parallel": false
+        },
+        "idempotency_key": "tp-ltaip-post-011-v1"
+      }
+    },
+    {
+      "client_ref": "TP-LTAIP-POST-012",
+      "packet_id": "TP-LTAIP-POST-012",
+      "stage08_epic_id": "EPIC-08-012",
+      "depends_on": [
+        "TP-LTAIP-H0-008"
+      ],
+      "load_status": "CONDITIONAL",
+      "request": {
+        "title": "TP-LTAIP-POST-012: Parallel upstream contribution stream",
+        "description": "Prepare bounded, generic, maintainer-aligned upstream contribution bundles for exposure manifests, permission tests, documentation, or transaction-aware event primitives proven by H0, while preserving a bounded local fallback and avoiding a fork. Dependencies and authorization remain governed by the packet and content-addressed DAG.",
+        "business_value": "Advance the Stage 08 decision without bypassing deterministic, security, experience, or evidence gates.",
+        "acceptance_criteria": [
+          "Packet file validates: task-packets/leantime-ai-parity/TP-LTAIP-POST-012.json",
+          "Embedded audit is non-blocking and proof is current to PR head.",
+          "PR Steward classifies every review item and emits merge readiness."
+        ],
+        "priority": "medium",
+        "status": "planned",
+        "tags": [
+          "program:LTAIP",
+          "series:LTAIP-POST-SELECTION-001",
+          "packet:TP-LTAIP-POST-012",
+          "stage08:EPIC-08-012",
+          "authorization:CONDITIONAL_AFTER_BASE_SELECTION",
+          "risk:MEDIUM",
+          "depends:TP-LTAIP-H0-008",
+          "redlane",
+          "conditional"
+        ],
+        "adhd_metadata": {
+          "estimated_complexity": 0.6,
+          "required_energy_level": "medium",
+          "can_work_parallel": true
+        },
+        "idempotency_key": "tp-ltaip-post-012-v1"
+      }
+    }
+  ]
+}
