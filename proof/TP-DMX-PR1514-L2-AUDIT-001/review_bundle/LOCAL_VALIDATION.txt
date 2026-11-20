@@ -1,0 +1,22 @@
+PR 1514 local validation at fe6ff210c6bdf5964e16ae41d57b7f76c31ed28d (2026-11-16T12:13:12Z), Python 3.12.13
+$ PYTHONPATH=src ../../.venv/bin/python -m pytest tests/unit tests/test_voice_core.py tests/test_brand_voice.py -n auto --maxfail=1 --disable-warnings --no-cov -p no:cacheprovider -q (the CI fast unit gate selection)
+SKIPPED [5] tests/unit/runner_memory_2a_r2_w12/test_dope_memory_defaults.py:262: could not import 'fastmcp': No module named 'fastmcp'
+SKIPPED [1] tests/unit/runner_memory_2a_r2_w12/test_dope_memory_defaults.py:275: could not import 'fastmcp': No module named 'fastmcp'
+FAILED tests/unit/test_extract_local_smoke.py::test_extract_pipeline_auto_embeddings_skip_without_credentials
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+1 failed, 3827 passed, 29 skipped, 15 warnings in 77.10s (0:01:17)
+pytest exit=2
+git status after run: 0 changed paths
+
+== isolated re-run of the one failure (2026-11-16T12:15:49Z)
+$ PYTHONPATH=src ../../.venv/bin/python -m pytest tests/unit/test_extract_local_smoke.py::test_extract_pipeline_auto_embeddings_skip_without_credentials -q --no-cov -p no:cacheprovider
+1 passed in 2.77s
+
+== run 2 of the same gate selection (2026-11-16T12:15:49Z)
+SKIPPED [5] tests/unit/runner_memory_2a_r2_w12/test_dope_memory_defaults.py:251: could not import 'fastmcp': No module named 'fastmcp'
+SKIPPED [5] tests/unit/runner_memory_2a_r2_w12/test_dope_memory_defaults.py:262: could not import 'fastmcp': No module named 'fastmcp'
+SKIPPED [1] tests/unit/runner_memory_2a_r2_w12/test_dope_memory_defaults.py:275: could not import 'fastmcp': No module named 'fastmcp'
+3853 passed, 29 skipped, 15 warnings in 61.22s (0:01:01)
+pytest exit=0
+git status after run: 0 changed paths

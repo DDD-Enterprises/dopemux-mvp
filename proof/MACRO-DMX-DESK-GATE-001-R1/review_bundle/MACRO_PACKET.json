@@ -1,0 +1,234 @@
+{
+ "schema_version": "dopemux.governed_execution.macro_packet.v2",
+ "macro_id": "MACRO-DMX-DESK-GATE-001-R1",
+ "objective": "Make an operator pause request recorded on the Dispatch desk visible to runners in this repo: add a gate client and call it, advisory and fail-open, from the native hook dispatcher at session start. Gate contract pinned to dispatch-desk a025bb5 (tools/gate.py, tools/ledger.py).",
+ "repository": "dopemux-mvp",
+ "base_policy": "AGENTS.md + .claude/modules/shared/governance-principles.md + child TASK_PACKETs; invariants I01-I08 in each child",
+ "issued_by": "control_tower_supervisor",
+ "authority": {
+  "operator_refs": [
+   "operator chat 2026-11-15: 'draft the task packets for the gate hooks' (drafting)",
+   "operator chat 2026-11-15: 'issue the dopemux-mvp macropacket' (issuance only; no execution)",
+   "operator chat 2026-11-15: 'Keep defaults' (D1 fail open, D2 advisory, D3 SessionStart only, D4 no --require-approval)",
+   "operator chat 2026-11-15: typed 'AUTHORIZE_MACRO_DMX_DESK_GATE_001_EXECUTION=YES'",
+   "operator chat 2026-11-15: 'Reissue and execute' in answer to 'Reissue the macro pinned to the new origin/main (365f70c) and then execute it?' (base drift; the base pin is the only change from MACRO-DMX-DESK-GATE-001)"
+  ],
+  "global_allowed_actions": [
+   "read",
+   "edit",
+   "validate",
+   "commit",
+   "push_branch",
+   "open_draft_pr"
+  ],
+  "global_forbidden_actions": [
+   "merge",
+   "activate",
+   "force_push",
+   "history_rewrite",
+   "mark_ready"
+  ],
+  "global_stop_conditions": [
+   "operator gate absent (recorded as given: see authority.operator_refs and ISSUANCE.md)",
+   "owner decisions D1-D4 (ISSUANCE.md, decided 2026-11-15) changed without a reissued package",
+   "worktree HEAD != fresh origin/main at start",
+   "any write outside a child allowlist",
+   "any write to dispatch-desk or to the ledger other than through the pinned gate",
+   "gate source at $DISPATCH_DESK_HOME lacks the pinned commit a025bb5 as an ancestor",
+   "final audit FAIL or NEEDS_SUPERVISOR"
+  ]
+ },
+ "execution_authority": "NONE",
+ "team_lead": {
+  "execution_binding_ref": {
+   "path": "EXECUTION_BINDING.json",
+   "sha256": "5fc6a01df99781a26e96e1f1a8bb77dab1cfbdb24f545b3c79b6999c8d67755d"
+  },
+  "authority_ceiling": "Child-specific intersection only; team lead alone commits (one commit per workstream, explicit pathspec) and may push the branch / open a draft PR only after the final audit returns and the operator confirms",
+  "may_delegate": true,
+  "may_create_canonical_packets": false,
+  "may_merge": false,
+  "may_activate": false,
+  "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants; ct bind-record per child before dispatch"
+ },
+ "workstreams": [
+  {
+   "workstream_id": "W01",
+   "task_packet_ref": {
+    "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+    "sha256": "aa2377e0ce94484034d6ab282882d850d610c5695215cdb08669340938c13686"
+   },
+   "objective": "Add a small, dependency-free gate client (`src/dopemux/claude/dispatch_gate.py`) that resolves the project key and gate path, runs the gate with a timeout, and maps its exit code to a typed result. No hook wiring.",
+   "dependencies": [],
+   "parallel_group": "P1",
+   "mutating": true,
+   "write_surface": [
+    "src/dopemux/claude/dispatch_gate.py",
+    "tests/unit/test_dispatch_gate.py"
+   ],
+   "canonical_writers": [
+    "W01-implementer"
+   ],
+   "semantic_scope": [
+    "dispatch-gate-client"
+   ],
+   "allowed_actions": [
+    "read",
+    "edit",
+    "validate"
+   ],
+   "forbidden_actions": [
+    "merge",
+    "activate",
+    "force_push",
+    "history_rewrite",
+    "mark_ready",
+    "commit",
+    "push"
+   ],
+   "rollback_boundary": "git revert <W01 commit> on feat/desk-gate-001 (REVERT_COMMITS); base 365f70ce2edc907d14356d82d2843104dbdaa434",
+   "delivery_risk_lane": "L2",
+   "dcp_route_ref": "NOT_RUN",
+   "dcp_status": "NOT_RUN",
+   "dcp_risk_class": "NOT_RUN",
+   "task_orchestrator_ref": "NOT_RUN",
+   "execution_route": {
+    "preferred": {
+     "runner": "claude-code-agent",
+     "model": "claude-sonnet-5-5",
+     "effort": "medium"
+    },
+    "allowed_fallbacks": []
+   },
+   "audit": {
+    "required": true,
+    "final_subject": "NOT_RUN"
+   },
+   "return_fields": [
+    "status",
+    "subject",
+    "validation",
+    "proof",
+    "audit",
+    "blockers"
+   ],
+   "audit_group": "AUDIT-DESK-GATE-001",
+   "return_contract": [
+    "status",
+    "subject",
+    "validation",
+    "proof",
+    "audit",
+    "blockers",
+    "advisor_calls",
+    "files_written",
+    "observed_model"
+   ]
+  },
+  {
+   "workstream_id": "W02",
+   "task_packet_ref": {
+    "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+    "sha256": "21a08387be3482f3de5f53d39808644ffdf1a13e9a15ef2d0c6cd8b9167cdf7c"
+   },
+   "objective": "Call the W01 client from the native hook dispatcher on SessionStart only, and add the advisory context on PAUSE_REQUESTED. One call site; removal of that call is the rollback.",
+   "dependencies": [
+    "W01"
+   ],
+   "parallel_group": "P2",
+   "mutating": true,
+   "write_surface": [
+    "src/dopemux/claude/native_hooks.py",
+    "tests/test_native_hooks_workflow.py"
+   ],
+   "canonical_writers": [
+    "W02-implementer"
+   ],
+   "semantic_scope": [
+    "native-hook-dispatch"
+   ],
+   "allowed_actions": [
+    "read",
+    "edit",
+    "validate"
+   ],
+   "forbidden_actions": [
+    "merge",
+    "activate",
+    "force_push",
+    "history_rewrite",
+    "mark_ready",
+    "commit",
+    "push"
+   ],
+   "rollback_boundary": "git revert <W02 commit> on feat/desk-gate-001 (REVERT_COMMITS); base 365f70ce2edc907d14356d82d2843104dbdaa434",
+   "delivery_risk_lane": "L2",
+   "dcp_route_ref": "NOT_RUN",
+   "dcp_status": "NOT_RUN",
+   "dcp_risk_class": "NOT_RUN",
+   "task_orchestrator_ref": "NOT_RUN",
+   "execution_route": {
+    "preferred": {
+     "runner": "claude-code-agent",
+     "model": "claude-sonnet-5-5",
+     "effort": "medium"
+    },
+    "allowed_fallbacks": []
+   },
+   "audit": {
+    "required": true,
+    "final_subject": "NOT_RUN"
+   },
+   "return_fields": [
+    "status",
+    "subject",
+    "validation",
+    "proof",
+    "audit",
+    "blockers"
+   ],
+   "audit_group": "AUDIT-DESK-GATE-001",
+   "return_contract": [
+    "status",
+    "subject",
+    "validation",
+    "proof",
+    "audit",
+    "blockers",
+    "advisor_calls",
+    "files_written",
+    "observed_model"
+   ]
+  }
+ ],
+ "joins": [
+  {
+   "join_id": "J01-FREEZE",
+   "requires": [
+    "W01",
+    "W02"
+   ],
+   "condition": "client and hook tests pass with diffs inside allowlists; freeze subject for the single final L2 audit",
+   "join_type": "ALL_REQUIRED"
+  }
+ ],
+ "parallelism": {
+  "max_mutating_workstreams": 1,
+  "one_mutating_implementer_per_workstream": true,
+  "overlap_policy": "fail_closed"
+ },
+ "evidence_budget": {
+  "intermediate_model_audits": 0,
+  "final_audit_policy": "One independent final audit per frozen L2/L3 subject",
+  "proof_transport": "sanitized"
+ },
+ "return_contract": {
+  "aggregate_return_required": true,
+  "immediate_return_triggers": [
+   "authority_conflict",
+   "global_stop",
+   "semantic_out_of_allowlist",
+   "final_audit_fail_or_needs_supervisor"
+  ]
+ }
+}

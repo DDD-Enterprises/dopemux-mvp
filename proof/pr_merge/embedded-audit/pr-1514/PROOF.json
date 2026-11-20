@@ -1,0 +1,56 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.7",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-opus-5-5 (Co-Authored-By trailer on all four commits; session effort xhigh); self-reported, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.7",
+    "invocation": "grok -m grok-4.7 --effort high (contained: init.tools == [], see review_bundle/AUDIT_INVOCATION.txt); grok CLI 1.0.77; session_id=01a1e43e-d934-72c0-ae9a-2dd32c6d3197; grok exit=0 2026-11-16T12:11:52Z; launched 2026-11-16T12:04:45Z; one attempt at this head; raw stream retained in review_bundle/GROK_OUTPUT_RAW.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1514-L2-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validation was not run inside the sealed audit session (validation_status=NOT_RUN). CI Unit Tests passed in 5 of 5 attempts on the PR (4530 passed each, per the implementing session). Local run 1 at the audited head stopped at one failure, test_extract_local_smoke.py::test_extract_pipeline_auto_embeddings_skip_without_credentials, which passed when re-run alone and in local run 2 (3853 passed, 0 failed); the PR does not touch it, so it is recorded as an order-dependent flake outside this PR, not fixed here. The local venv lacks fastmcp, so 11 w12 MCP tests skip locally; CI runs them.",
+      "Grok risk (medium): Shutdown latch reset covers only AppStatus.should_exit. sse-starlette builds that cancel EventSourceResponse when the shared AppStatus.should_exit_event is already set will still end the stream immediately, so the runner-memory MCP initialize hang can remain. The two flags can also disagree after this assignment. Pinned sse-starlette and the EventSourceResponse shutdown condition are outside the diff.",
+      "Grok risk (medium): WizardRunner is replaced on the dopemux.ux.wizard module object. A command that already bound WizardRunner by from-import keeps the real class, so the prescan cost returns and received stays empty until its equality assertion fails. The rte wizard call site is outside the diff.",
+      "Grok risk (low): The new fixture calls sys.modules. This hunk does not add an import, so the suite depends on an existing module-level sys binding in tests/conftest.py. A missing binding raises NameError from an autouse fixture on every test.",
+      "Grok risk (low): exit_code == 0 now requires the command to construct the stub and return success. Work that errors before WizardRunner(...) fails the test. A single test that stops uvicorn and starts it again still observes a latch set during that test, because the fixture clears only at setup.",
+      "Supervisor check of Grok risk 1 (should_exit_event): not reachable with the pinned sse-starlette 3.3.4 (uv.lock). That version has no should_exit_event; AppStatus.should_exit (sse.py:137) is the only process-wide latch, and the per-response anyio events are created and discarded per call (sse.py:351-360). It would matter only after an sse-starlette upgrade that adds another latch.",
+      "Supervisor check of Grok risk 2 (from-import bypass): not reachable today. The rte wizard command imports WizardRunner inside its function at call time (src/dopemux/commands/audit_commands.py:116), so the module-attribute patch applies; the test's received == ROUTING_POLICY_CHOICES assertion would fail loudly otherwise, and it passes in CI and locally.",
+      "Supervisor check of Grok risk 3 (missing sys import): not reachable. tests/conftest.py imports sys at line 3.",
+      "Grok risk 4 is an accurate description of the design: the latch is cleared at fixture setup only, so a single test that stops and restarts uvicorn would still see a latch set inside that test. The supervisor did not check whether any test does this.",
+      "Audit scope: the whole PR diff, merge-base 589bb0519 to fe6ff210c; main has since moved without touching this PR's two files.",
+      "Auditor model identity: requested grok-4.7; receipt grok-4.7-build; provider-attested identity beyond the receipt UNKNOWN.",
+      "No second auditor ran: the operator chose a Grok audit only.",
+      "Copilot and Codex (advisory) reviewed the audited head on GitHub with no findings and no review threads; they are not embedded auditors."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  },
+  "generated_at": "2026-11-16T12:18:20Z",
+  "head_sha": "fe6ff210c6bdf5964e16ae41d57b7f76c31ed28d",
+  "packet_id": "TP-DMX-PR1514-L2-AUDIT-001",
+  "pr_number": 1514,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

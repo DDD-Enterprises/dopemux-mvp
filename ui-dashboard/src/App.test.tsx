@@ -499,6 +499,35 @@ test('Retry after a failed GET keeps an open socket', async () => {
   expect(screen.getByText('[LIVE]')).toBeInTheDocument();
 });
 
+test('a snapshot between the Retry click and its GET still blocks an older forecast', async () => {
+  let resolveSecond: (value: unknown) => void = () => {};
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValueOnce(upstreamGet())
+    .mockReturnValueOnce(new Promise((resolve) => (resolveSecond = resolve)));
+  vi.stubGlobal('fetch', fetchMock);
+  await renderApp();
+  await act(async () => {
+    FakeSocket.instances[0].onopen?.();
+  });
+  await sendStateUpdate({ cognitive_load: 0.45 });
+
+  // The snapshot lands after the click but before the retried GET's effect runs.
+  await act(async () => {
+    fireEvent.click(within(screen.getByRole('alert')).getByRole('button', { name: 'Retry' }));
+    FakeSocket.instances[0].onmessage?.({
+      data: JSON.stringify({ type: 'state_update', data: { cognitive_load: 0.46, predicted_load_15min: null } }),
+    });
+  });
+  await act(async () => {
+    resolveSecond(forecastGet(0.5));
+  });
+
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(screen.getByText('46%')).toBeInTheDocument();
+  expect(screen.getByTestId('forecast-value')).toHaveTextContent('unknown');
+});
+
 test('Retry reopens a closed socket', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(forecastGet(0.5)));
   await renderApp();

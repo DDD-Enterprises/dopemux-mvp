@@ -1,0 +1,12 @@
+PR #1514 audit (packet TP-DMX-PR1514-L2-AUDIT-001), head fe6ff210c6bdf5964e16ae41d57b7f76c31ed28d, base 589bb0519424b84338ca2fcb7ae68f8607ef8b74 (the merge-base with main)
+
+Prompt: scripts.audit.pal_clink_runner --build-prompt over the whole PR diff `git diff 589bb0519 fe6ff210c` (UNIFIED_DIFF.diff).
+Prompt sha256 44394e6de435d0a4cdfdda6b933b968f33a0902eb7a169ab6a96201631d6ae05, 6624 bytes. The run used a sealed dir holding only
+AUDIT_PROMPT.txt, under ~/.local/share/dopemux/evidence/pr1514/r1/. The wrapper recorded `grok exit=$?` and the UTC end time.
+The bundle stores the stream written as GROK_OUTPUT_RAW.jsonl under the name GROK_OUTPUT_RAW.txt (see REDACTIONS.md).
+
+GOVERNING: grok grok 1.0.77 (50ca579fa996) [stable] -m grok-4.7 --effort high contained ; head=fe6ff210c6bdf5964e16ae41d57b7f76c31ed28d ; started=2026-11-16T12:04:45Z
+  grok -m grok-4.7 --effort high --sandbox workspace --cwd <sealed grok dir> --system-prompt-override "$(cat GROK_SYSTEM_PROMPT.txt)" --disallowed-tools "$(cat GROK_DISALLOWED_TOOLS.txt)" --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources" --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt > GROK_OUTPUT_RAW.jsonl 2> GROK_STDERR.txt
+  wrapper: grok exit=0 2026-11-16T12:11:52Z   session_id=01a1e43e-d934-72c0-ae9a-2dd32c6d3197
+  Tool probe before the run (content-free prompt, same denylist): init.tools == [] (GROK_INIT_TOOLS.json).
+  One attempt at this head; no other auditor ran.

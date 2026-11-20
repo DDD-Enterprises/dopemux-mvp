@@ -200,6 +200,25 @@ def _no_real_keychain(monkeypatch):
     monkeypatch.setattr(keychain, "SECURITY_BIN", "/nonexistent/security")
 
 
+@pytest.fixture(autouse=True)
+def _reset_sse_starlette_shutdown_latch():
+    """Clear sse_starlette's process-wide "server is exiting" flag before each test.
+
+    ``sse_starlette.sse.AppStatus.should_exit`` is a class attribute that a
+    background watcher sets once it sees a uvicorn server shutting down, and
+    nothing ever clears it. While it is set, every ``EventSourceResponse`` ends
+    at once, and both MCP HTTP transports answer through one. The runner-memory
+    MCP tests start and stop a uvicorn server per test in the same xdist worker
+    (``serve()`` in tests/unit/runner_memory_2a_r2_w02/test_mcp_surfaces.py), so
+    when one shutdown set the flag, every later MCP test in that worker waited
+    for its ``initialize`` reply forever. That was the CI "Unit Tests" hang.
+    Does nothing until sse_starlette has been imported.
+    """
+    sse = sys.modules.get("sse_starlette.sse")
+    if sse is not None:
+        sse.AppStatus.should_exit = False
+
+
 def pytest_collection_modifyitems(config, items):
     """Skip @pytest.mark.database tests unless explicitly opted in.
 

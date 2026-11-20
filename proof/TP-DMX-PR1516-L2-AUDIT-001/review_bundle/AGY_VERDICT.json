@@ -1,0 +1,25 @@
+{
+  "status": "ok",
+  "verdict": "PASS",
+  "findings": [],
+  "risks": [
+    "Validation tests were not executed by the embedded auditor because candidate checkout, execution, and tool usage are disabled by audit policy (validation_status=NOT_RUN).",
+    "In _read_engine_field, a whitespace-only string value from the upstream engine would pass the `not isinstance(value, str) or not value` check, and non-JSON payloads on HTTP 200 responses rely on the outer exception handler in get_current_recommendation() rather than returning an endpoint-specific message."
+  ],
+  "rationale": "Verified repository (DDD-Enterprises/dopemux-mvp), pull request (1516), base SHA (8edff9b52480681d5eb7b420a3efcdf42ab4c36c), and head SHA (074606f397741a23c2d762c8600da9a0add91cd3) match the trusted audit parameters, and deterministic instruction-like content scan reported no matches (detected=false, match_count=0). In services/adhd-dashboard/task_recommender.py, TaskRecommender.get_current_recommendation() previously defaulted non-200 responses to {} and missing fields to 'unknown', allowing fabricated state advice to be stamped with StatusChip.LIVE. The diff introduces _read_engine_field() to validate HTTP 200 status, dict JSON payload structure, and non-empty string values for both /api/v1/energy-level/{user_id} and /api/v1/attention-state/{user_id}. When either field is unreadable, get_current_recommendation() now logs a StatusChip.BLOCKER error and returns {'error': ...} naming the failing endpoint(s) without generating a LIVE recommendation. Corresponding unit tests in services/adhd-dashboard/tests/test_task_recommender.py cover HTTP error statuses (401, 404, 500, 503), missing keys, None values, non-dict JSON payloads, combined endpoint failures, and valid readable state behavior. Delegation and tool calls were omitted per explicit trusted audit policy disabling tools and MCP.",
+  "inspected_paths": [
+    "services/adhd-dashboard/task_recommender.py",
+    "services/adhd-dashboard/tests/test_task_recommender.py"
+  ],
+  "evidence_refs": [
+    "repo:DDD-Enterprises/dopemux-mvp",
+    "pr:1516",
+    "base_sha:8edff9b52480681d5eb7b420a3efcdf42ab4c36c",
+    "head_sha:074606f397741a23c2d762c8600da9a0add91cd3",
+    "services/adhd-dashboard/task_recommender.py:L18",
+    "services/adhd-dashboard/task_recommender.py:L171-L229",
+    "services/adhd-dashboard/tests/test_task_recommender.py:L95-L187",
+    "instruction_like_scan_summary:detected=false,match_count=0"
+  ],
+  "validation_status": "NOT_RUN"
+}
