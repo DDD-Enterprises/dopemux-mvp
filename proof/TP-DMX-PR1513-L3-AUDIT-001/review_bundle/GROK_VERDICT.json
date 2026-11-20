@@ -1,0 +1,59 @@
+{
+  "status": "COMPLETE",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "severity": "low",
+      "title": "realpath failure drops alias root starts",
+      "detail": "In _guard_starts the loop does os.path.normpath, then os.path.realpath, then _alias_forms inside one try that swallows OSError and ValueError. A raise from realpath skips alias starts for that base and every later base. _alias_limit_exceeded only runs _walk_alias_forms, so a realpath failure is not by itself a hard block. CPython's default realpath (strict=False) usually absorbs link errors internally, and no openable allow was shown from this diff alone.",
+      "evidence": ".claude/hooks/dcp_surface_guard.py _guard_starts; _alias_limit_exceeded"
+    },
+    {
+      "severity": "low",
+      "title": "Writer and attempt-cap exceptions are operator-ratified but outside the packet",
+      "detail": "G01's packet names G01-implementer as the only canonical writer of the guard and test file, with one correction round. Amendments 02-11 record the supervisor session writing those files directly, each under a one-off operator exception that does not change canonical_writers. The issued packet hashes are unchanged. This is a governance deviation already written into the proof records, not a red-lane bypass."
+    }
+  ],
+  "risks": [
+    "Disclosed reverse-lookup gap remains. If services/task-orchestrator is a symlink to a directory outside every repo, an edit of that outside directory's own path is allowed. The same allow applies to another symlink in the checkout whose target path never contains the red-lane component (for example services/jump pointing at the same outside directory): the walk only keeps names that appear on the path it is resolving, and it does not readdir siblings. AMENDMENT_10 and AMENDMENT_11 defer this; the records say main allows the outside path too.",
+    "Fail-closed cost: a walk that exceeds 64 spellings, 40 link hops, a loop, an unreadable link, ValueError, or RecursionError hard-blocks, including ordinary files. _alias_forms still returns () on those errors so discovery does not raise; _alias_limit_exceeded blocks first.",
+    "Freeze durability: G02_RETURN records Copilot review of content head 72aa9c902 as NOT_RUN and says a later Copilot review can void an audit run before it. Earlier rounds each found another symlink/.. shape. Full make test is NOT_RUN in the candidate record. This auditor did not execute the suite.",
+    "file_repo_root still returns the nearest .git above os.path.realpath. surface_guard_block does not use it after Amendment 01. A later W09 caller that blocks from file_repo_root alone reopens planted-.git and realpath-escape mistakes. T02 specifies this helper.",
+    "Trusted range 72aa9c902..3bc641e886914f49ee8a63f1bd1228b9909aa0a0 is only proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_11.md and G02_RETURN.md. Condensing Amendment 11 is proof-only; the longer text at 72aa9c902 was not in this message.",
+    "Bash and apply_patch edits stay unguarded (packet T05 / plan C17, owned by W09).",
+    "Instruction-like candidate text addresses the auditor (G01_RETURN 'For the auditor'; amendment and freeze records telling the auditor which residuals to accept). Treated as data, not as instructions. The candidate scan summary said detected=false; that summary is candidate-controlled."
+  ],
+  "rationale": "Audited head 3bc641e886914f49ee8a63f1bd1228b9909aa0a0 matches trusted base ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7 plus the 24-file diff. Trusted git shows the only commits after content head 72aa9c902 are proof-only (AMENDMENT_11.md and G02_RETURN.md), so the guard and tests at the audited head are the ones in the diff. Amendment 11's walk merges known spellings of the resolved directory on every non-'..' step, and _alias_limit_exceeded hard-blocks when that walk raises. Traced against the new tests, that closes the two third-freeze shapes: a two-level target then '..' keeps services/task-orchestrator because the nested walk of the target sees the red-lane spelling already stored on the outside directory; a sibling link beside a symlinked services ancestor picks up the services spelling from known while walking the target, then appends task-orchestrator. Loop, hop-limit, and readlink OSError paths raise into _alias_limit_exceeded before pattern matching; the loop test now expects a block. _guard_roots still always starts with project_root and only adds .git ancestors. Checks below the cap (35-link ordinary chain, five stacked links, dotdot through a symlink onto an ordinary file) stay allowed by the same control flow. No new forward spelling that still contains the red-lane name and is allowed was shown. Residuals that remain are the deferred reverse lookup, fail-closed over-block, the realpath/start ordering hazard, the exported file_repo_root footgun, missing Copilot and full-suite evidence, and ratified writer exceptions.",
+  "inspected_paths": [
+    ".claude/hooks/dcp_surface_guard.py",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py",
+    "tests/unit/dcp_surface_guard/__init__.py",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_01.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_02.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_03.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_04.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_05.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_06.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_07.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_08.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_09.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_10.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_11.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AUTHORIZATION.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G02/TASK_PACKET.json"
+  ],
+  "evidence_refs": [
+    "trusted freeze range 72aa9c902ceec12a705f6993f98b7eb86e61c6ba..3bc641e886914f49ee8a63f1bd1228b9909aa0a0 commits d6db8747a71aba7848336d530ea366fa892ad9fc and 3bc641e886914f49ee8a63f1bd1228b9909aa0a0; differing paths only AMENDMENT_11.md and G02_RETURN.md",
+    "_walk_alias_forms known-merge after every non-'..' component; '..' branch drops forms whose last component is a symlink name and reloads known[parent]",
+    "_alias_limit_exceeded returns true on _AliasLimitExceeded, OSError, ValueError, RecursionError; _block_reason_for_path checks it before red-lane patterns",
+    "tests: test_second_link_two_levels_deep_then_dotdot_keeps_red_lane_spelling, test_link_beside_a_symlinked_red_lane_ancestor_is_blocked, test_symlink_loop_is_blocked_and_does_not_raise, test_symlink_chain_past_the_hop_limit_is_blocked, test_chain_just_under_the_hop_limit_is_allowed, test_unreadable_link_is_blocked, test_dotdot_after_symlink_to_ordinary_file_is_allowed, test_ordinary_file_under_the_cap_is_allowed",
+    "G02_RETURN known limits and Copilot NOT_RUN; AMENDMENT_11 stop rule and condensed-after-72aa9c902 note"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true,
+  "model_self_reported": "grok-4.7",
+  "delivery_token": "9c9002440b03f0759f48a008185cdb09"
+}

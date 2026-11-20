@@ -1,0 +1,1 @@
+grok grok 1.0.77 (50ca579fa996) [stable] -m grok-4.7 --effort high contained ; head=3bc641e886914f49ee8a63f1bd1228b9909aa0a0 ; started=2026-11-20T04:50:18Z

@@ -1,0 +1,20 @@
+PR #1513 final L3 audit (packet TP-DMX-PR1513-L3-AUDIT-001), audited head 3bc641e886914f49ee8a63f1bd1228b9909aa0a0, content head 72aa9c902ceec12a705f6993f98b7eb86e61c6ba, base ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7 (main = merge-base)
+
+Round 4 of 4. Both runs were one attempt from a sealed dir holding only the prompt, under ~/.local/share/dopemux/evidence/pr1513/r4/.
+Both read byte-identical input: prompt sha256 8ee369de1c329643813d4f1c1bf4a1495c216fbbca2847b4b85bd03390841a47, 187,822 bytes, all 24 changed files, with a trusted brief carrying the git-computed commit range 72aa9c902..3bc641e88.
+Each wrapper recorded `<runner> exit=$?` and the UTC end time.
+
+GOVERNING: grok grok 1.0.77 (50ca579fa996) [stable] -m grok-4.7 --effort high contained ; head=3bc641e886914f49ee8a63f1bd1228b9909aa0a0 ; started=2026-11-20T04:50:18Z
+  cd <sealed grok dir>
+  grok -m grok-4.7 --effort high --sandbox workspace --cwd <sealed grok dir> --system-prompt-override "$(cat GROK_SYSTEM_PROMPT.txt)"
+    --disallowed-tools "$(cat GROK_DISALLOWED_TOOLS.txt)" --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources"
+    --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim
+    --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt > GROK_AUDIT_STREAM.txt 2> GROK_AUDIT_STDERR.txt
+  wrapper: grok exit=0 2026-11-20T05:07:25Z   session_id=01a1f74a-890d-7971-a17e-55398b65c01e
+
+CORROBORATING: agy 1.5.13 --model gemini-4-argon-high ; prompt=agy/AUDIT_PROMPT.txt ; started=2026-11-20T04:50:24Z
+  cd <sealed agy dir>; see AGY_WRAPPER.txt
+  agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 1500s --print="$(cat AUDIT_PROMPT.txt)"
+  wrapper: agy exit=0 2026-11-20T04:53:49Z   conversation_id=a9308992-d6d7-4097-85ff-c6f3a27a993d
+
+No content-free probe ran before the audit this round; the recipe and the delivery check were reused from rounds 2 and 3.

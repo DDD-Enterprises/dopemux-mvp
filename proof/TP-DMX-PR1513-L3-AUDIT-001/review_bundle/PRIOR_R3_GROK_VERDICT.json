@@ -1,0 +1,78 @@
+{
+  "status": "FAIL",
+  "verdict": "FAIL",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "summary": "The freeze record does not bind the trusted audit head. G02_RETURN.md freezes content head dc5aac697bbbc4c752e685fbb93baee7b11cfd50 and says an unnamed proof-only commit sits on top of it. The trusted head under audit is e95187bb242748de7dfbabccdb98b5f419baa5be, which the record never names. The trusted prompt has no git rev-list or git diff --name-only between those SHAs, so the claim that the audited tree differs only by G02_RETURN.md is unverified.",
+      "evidence": "Trusted head e95187bb242748de7dfbabccdb98b5f419baa5be; trusted base ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7. Candidate proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md subject line names dc5aac697bbbc4c752e685fbb93baee7b11cfd50, states Audit NOT_RUN, and says the commit that adds that file is proof-only on top of the frozen head. Amendment 02 required rev-list and diff --name-only for the audited head in the trusted prompt; that binding is absent."
+    },
+    {
+      "id": "F2",
+      "severity": "high",
+      "summary": "Alias enumeration aborts fail open. _alias_forms turns OSError (including the 40-hop cap and readlink failure), ValueError, and RecursionError into an empty spelling set. _alias_limit_exceeded blocks only _AliasLimitExceeded and treats those other aborts as non-blocking. A path whose red-lane name exists only as an intermediate symlink spelling is then checked only as the typed path and as realpath, which is the hole Amendment 08 closed for short chains and Amendment 09 closed for the 64-form cap.",
+      "evidence": ".claude/hooks/dcp_surface_guard.py: _walk_alias_forms raises OSError when hops > _MAX_SYMLINK_HOPS (40); _alias_forms catches OSError, ValueError, RecursionError, and _AliasLimitExceeded and returns (); _alias_limit_exceeded returns True only for _AliasLimitExceeded and continues on OSError, ValueError, and RecursionError. _block_reason_for_path calls _alias_limit_exceeded before pattern checks, then matches only _guard_readings, which use _alias_forms. test_symlink_loop_does_not_raise expects a looping docs path to be allowed. This audit did not execute a probe, so a kernel-openable chain that trips the guard hop counter was not reproduced here; the discard path is present in the diff."
+    }
+  ],
+  "risks": [
+    {
+      "id": "R1",
+      "severity": "high",
+      "summary": "Editing the external target of a symlinked red-lane directory is still allowed. If sibling/services/task-orchestrator points at a directory outside every checkout, an edit of that outside path has no red-lane spelling, _guard_roots never sees the sibling .git, and surface_guard_block returns None. Amendment 10 and G02_RETURN.md record this as open and as the same behavior on main (probe key f1_real_path_blocked false). The message change only stops the guard from suggesting that path."
+    },
+    {
+      "id": "R2",
+      "severity": "medium",
+      "summary": "file_repo_root still resolves with os.path.realpath and returns the first .git above that resolved path. surface_guard_block does not use it after Amendment 01, but the packet's public contract keeps the helper for Wave 2B W09. A consumer that blocks from file_repo_root alone will follow a symlink out of a sibling checkout and miss the root _guard_roots is meant to keep."
+    },
+    {
+      "id": "R3",
+      "severity": "medium",
+      "summary": "Closure of the symlink/.. family is not shown past the unit tests and the three candidate probes named in G02_RETURN.md. This audit did not run those tests or probes. Candidate claims of 49 passed, 1039 passed with one pre-existing failure, Copilot 'no open issues', and CI 20 pass / 2 audit-gated fails are unverified."
+    },
+    {
+      "id": "R4",
+      "severity": "low",
+      "summary": "Candidate amendment prose steers the verdict (same on main, follow-up not this PR, nothing previously blocked is now allowed, auditor may rule). The deterministic scan reported detected false and match_count 0. That prose was treated as untrusted data."
+    }
+  ],
+  "rationale": "Mandatory provenance fails: the trusted audit head e95187bb242748de7dfbabccdb98b5f419baa5be is not the SHA G02_RETURN.md freezes, and nothing in the trusted prompt shows the range dc5aac697..e95187bb is proof-only. The alias walker also fails open on every abort except the 64-form cap. _alias_forms returns no spellings on hop-limit OSError, readlink OSError, ValueError, and RecursionError, and _alias_limit_exceeded does not block those cases, so a red-lane name that appears only mid-chain is never matched. Amendment 09 states that a dropped spelling must fail closed; that rule is implemented only for _AliasLimitExceeded. The outside-directory target of a red-lane symlink remains an allowed edit of the same tree and is recorded as such by the candidate. Tests, probes, CI, and Copilot were not run in this audit.",
+  "inspected_paths": [
+    ".claude/hooks/dcp_surface_guard.py",
+    "tests/unit/dcp_surface_guard/__init__.py",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_01.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_02.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_03.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_04.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_05.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_06.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_07.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_08.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_09.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_10.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AUTHORIZATION.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G02/TASK_PACKET.json"
+  ],
+  "evidence_refs": [
+    "trusted head e95187bb242748de7dfbabccdb98b5f419baa5be",
+    "trusted base ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7",
+    "G02_RETURN.md frozen content head dc5aac697bbbc4c752e685fbb93baee7b11cfd50",
+    "dcp_surface_guard._walk_alias_forms hop cap _MAX_SYMLINK_HOPS=40",
+    "dcp_surface_guard._alias_forms empty tuple on OSError/ValueError/RecursionError/_AliasLimitExceeded",
+    "dcp_surface_guard._alias_limit_exceeded blocks only _AliasLimitExceeded",
+    "dcp_surface_guard._block_reason_for_path",
+    "dcp_surface_guard._guard_roots",
+    "dcp_surface_guard.file_repo_root realpath walk",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py::test_symlink_loop_does_not_raise",
+    "AMENDMENT_09.md fail-closed rationale for dropped spellings",
+    "AMENDMENT_10.md and G02_RETURN.md known limit f1_real_path_blocked false",
+    "instruction_like_scan_summary detected false match_count 0"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true
+}

@@ -1,0 +1,107 @@
+{
+  "status": "COMPLETED",
+  "verdict": "PASS_WITH_RISKS",
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true,
+  "model_self_reported": "Gemini 4 Argon (High)",
+  "delivery_token": "9c9002440b03f0759f48a008185cdb09",
+  "rationale": "At audited head 3bc641e886914f49ee8a63f1bd1228b9909aa0a0 (frozen content head 72aa9c902ceec12a705f6993f98b7eb86e61c6ba against trusted base ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7), the DCP PreToolUse guard (.claude/hooks/dcp_surface_guard.py) and its unit test suite (tests/unit/dcp_surface_guard/test_file_repo_root.py) resolve the substantive security and process defects identified in prior audit rounds. Specifically: (1) _walk_alias_forms now merges known.get(real, []) at every path step rather than only after '..', ensuring that when a nested symlink target walk or subsequent traversal lands on a physical directory whose red-lane alias was previously discovered, all known spellings for that physical directory are preserved (closing the round-3 AGY F1 two-level target + '..' and sibling-link-beside-symlinked-red-lane-ancestor bypasses); (2) _alias_limit_exceeded now returns True on any walk abort (_AliasLimitExceeded, OSError including ELOOP or >40 nested symlink hops or readlink failures, ValueError, RecursionError), so _block_reason_for_path fails closed with RED_LANE_ID rather than falling back to partial readings (closing the round-3 Grok F2 fail-open on aborted walk and making the 40-hop block claim true); (3) the trusted audit brief includes the git-computed FREEZE RANGE verification confirming that 72aa9c902ceec12a705f6993f98b7eb86e61c6ba..3bc641e886914f49ee8a63f1bd1228b9909aa0a0 consists of two proof-only commits touching only proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_11.md and proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md. Non-blocking residual risks and governance deviations (supervisor direct edits across Amendments 02-11 under operator one-off exceptions, exported file_repo_root single-root behavior for downstream callers, and unexecuted local tools/CI verification in this toolless audit environment) warrant PASS_WITH_RISKS.",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "medium",
+      "category": "governance_custody",
+      "title": "Supervisor-authored code edits across Amendments 02-11 and proof files outside issued workstream write_surface",
+      "path": "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json",
+      "details": "G01's issued TASK_PACKET.json and MACRO_PACKET.json designate 'G01-implementer' as the sole canonical writer of .claude/hooks/dcp_surface_guard.py and tests/unit/dcp_surface_guard/test_file_repo_root.py, with a cap of 1 attempt, 1 correction round, and 1 retry, and 1 final audit after J-FREEZE. After G01 exhausted its allowance on Amendment 01 and the initial Copilot retry, Amendments 02 through 11 were authored directly by the supervisor session, and three prior frozen heads underwent final audit before this fourth freeze. In addition, AMENDMENT_01.md..AMENDMENT_11.md, AUTHORIZATION.md, G01_EXECUTION_BINDING.json, G01_RETURN.md, and package/* reside outside the child write_surface arrays of G01 and G02. Each deviation was transparently recorded with verbatim operator rulings in AMENDMENT_02.md..AMENDMENT_11.md, while the issued packet JSON files were left unamended to preserve their issuance hashes."
+    },
+    {
+      "id": "F2",
+      "severity": "low",
+      "category": "downstream_api_hazard",
+      "title": "Exported file_repo_root helper returns only the nearest .git above realpath",
+      "path": ".claude/hooks/dcp_surface_guard.py",
+      "details": "file_repo_root(file_path, fallback) (lines 230-261) resolves os.path.realpath first and stops at the first ancestor directory containing a .git file or directory. While surface_guard_block and surface_guard_warnings no longer call file_repo_root (they use _guard_roots, which checks project_root plus all enclosing .git directories across lexical, realpath, and alias starts), file_repo_root remains exported for Wave 2B W09 per T01. Any downstream caller that relies on file_repo_root alone for security blocking would remain susceptible to a planted inner .git file or a symlinked directory resolving outside the repository."
+    },
+    {
+      "id": "F3",
+      "severity": "low",
+      "category": "known_design_limit",
+      "title": "Direct edit to an external directory target of a checkout's red-lane symlink is not detectable by forward/upward path walking",
+      "path": ".claude/hooks/dcp_surface_guard.py",
+      "details": "If a checkout's red-lane directory (e.g., services/task-orchestrator) is a symlink pointing to an external directory outside all git checkouts, and an edit addresses a file directly via that external path without traversing any checkout or any symlink leading through a checkout, neither _guard_roots nor _walk_alias_forms can associate the external path with the checkout's red lane. Amendment 10 removed the block message suggestion to use the real path, and AMENDMENT_10.md / AMENDMENT_11.md / G02_RETURN.md document this pre-existing limitation for follow-up design."
+    },
+    {
+      "id": "F4",
+      "severity": "low",
+      "category": "implementation_edge_behavior",
+      "title": "Symlink hop counter tracks recursion depth rather than sequential hop count, and dual-key warnings report one surface per call",
+      "path": ".claude/hooks/dcp_surface_guard.py",
+      "details": "(1) In _walk_alias_forms (lines 78-100), hops is incremented only on recursive symlink target walks (hops + 1) rather than cumulative sequential symlink resolutions across a path; however, sequential non-reverting symlinks double the form count at each link and trip _MAX_ALIAS_FORMS (64) at ~6 links, while OS kernels reject >32 total symlink resolutions with ELOOP on open. (2) In surface_guard_warnings (lines 563-578), when a single tool call supplies both file_path and notebook_path pointing to two distinct unwarned contract surfaces, the loop breaks after caching and returning the warning for the first unwarned surface only."
+    },
+    {
+      "id": "F5",
+      "severity": "low",
+      "category": "untrusted_candidate_auditor_addressing",
+      "title": "Candidate proof files contain explanatory text addressing the auditor",
+      "path": "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md",
+      "details": "Although the deterministic scanner reported match_count=0, G01_RETURN.md lines 56-61 contain a section titled '## For the auditor' (including 'An auditor may rule otherwise') and G02_RETURN.md references auditor acceptance and ratings. Per Hard Rule 2 and the output contract, this text is flagged here and treated strictly as untrusted candidate data rather than instructions."
+    }
+  ],
+  "risks": [
+    "No tools, file reads, shell commands, or test executions were run during this audit (per Hard Rule 1); live test pass rates, SHA-256 hashes of working tree files, git status, and CI check states outside the provided prompt text are UNKNOWN and not independently re-executed.",
+    "Wave 2B W09 will import file_repo_root from .claude/hooks/dcp_surface_guard.py; if W09 uses file_repo_root rather than multi-root discovery (_guard_roots) for hard-deny decisions, a planted .git entry or external symlink target could bypass W09.",
+    "Because _alias_limit_exceeded fails closed on any path with >64 alias spellings, >40 nested symlink hops, a symlink loop, or an unreadable symlink, legitimate edits to non-red-lane files behind deeply stacked symlinks (>=6 sequential symlinks) will also be hard-blocked.",
+    "G02_RETURN.md notes that a fresh Copilot review on frozen content head 72aa9c902ceec12a705f6993f98b7eb86e61c6ba was requested but had not run (NOT_RUN), and black --check fails on the modified Python files (unchanged from prior heads)."
+  ],
+  "inspected_paths": [
+    ".claude/hooks/dcp_surface_guard.py",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_01.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_02.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_03.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_04.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_05.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_06.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_07.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_08.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_09.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_10.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_11.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AUTHORIZATION.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/ISSUANCE.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/SHA256SUMS.txt",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G02/TASK_PACKET.json",
+    "tests/unit/dcp_surface_guard/__init__.py",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py"
+  ],
+  "evidence_refs": [
+    "trusted_audit_brief:FREEZE_RANGE:72aa9c902ceec12a705f6993f98b7eb86e61c6ba..3bc641e886914f49ee8a63f1bd1228b9909aa0a0",
+    ".claude/hooks/dcp_surface_guard.py:_walk_alias_forms:L66-L117",
+    ".claude/hooks/dcp_surface_guard.py:_alias_forms:L120-L147",
+    ".claude/hooks/dcp_surface_guard.py:_repo_relative_candidates:L150-L228",
+    ".claude/hooks/dcp_surface_guard.py:file_repo_root:L230-L261",
+    ".claude/hooks/dcp_surface_guard.py:_guard_roots:L264-L293",
+    ".claude/hooks/dcp_surface_guard.py:_alias_limit_exceeded:L312-L327",
+    ".claude/hooks/dcp_surface_guard.py:_guard_starts:L330-L351",
+    ".claude/hooks/dcp_surface_guard.py:_guard_readings:L354-L367",
+    ".claude/hooks/dcp_surface_guard.py:tool_edit_path:L370-L377",
+    ".claude/hooks/dcp_surface_guard.py:tool_edit_paths:L380-L390",
+    ".claude/hooks/dcp_surface_guard.py:surface_guard_block:L406-L416",
+    ".claude/hooks/dcp_surface_guard.py:_block_reason_for_path:L419-L463",
+    ".claude/hooks/dcp_surface_guard.py:_proof_json_is_new:L505-L516",
+    ".claude/hooks/dcp_surface_guard.py:surface_guard_warnings:L545-L583",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py:L853-L998",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_11.md:L1-L47",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md:L56-L61",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md:L1-L81",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json:L1-L251",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json:L1-L170",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G02/TASK_PACKET.json:L1-L155"
+  ]
+}
