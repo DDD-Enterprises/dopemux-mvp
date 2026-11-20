@@ -1,0 +1,128 @@
+{
+  "id": "TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001",
+  "project": "dopemux-mvp",
+  "target": "L2 whole-system architecture synthesis from frozen live recon + external research; select optimal end-state architecture, dataflows, contracts, convergence DAG, and falsification plan without implementation",
+  "invariants": [
+    "Current runtime/source/config/tests and live Git/GitHub state outrank uploaded snapshots, historical handoffs, plans, and architecture prose",
+    "Use OBSERVED, INFERRED, PROPOSED, CLAIMED, CONFLICTING, UNKNOWN, and NOT_RUN; every UNKNOWN names missing evidence",
+    "Preserve system boundaries: Dopemux coordinates; DCP controls policy/context; Dopetask executes only separately authorized work; Task Orchestrator owns workflow legality; canonical systems retain domain authority",
+    "No merge, mark-ready, activation, credential/permission change, production mutation, destructive action, history rewrite, or automatic execution authority is granted",
+    "No secrets, tokens, cookies, private keys, raw credentials, or sensitive provider payloads may enter research/proof artifacts",
+    "Ordinary main movement triggers affected-fact reharvest rather than blanket restart; exact SHA equality is required only where subject provenance requires it",
+    "S0 is the sole architecture-authoring judgment pass for this series",
+    "Preferred synthesis route is the strongest live-proven ChatGPT/OpenAI architecture reasoning selector available at dispatch; operator candidate GPT-5.6 Pro is not treated as proven until live-discovered",
+    "S0 may propose architecture but cannot ratify it, issue component implementation authority, or satisfy its own independent audit",
+    "A0 is the one formal independent exact-subject audit of S0; no second architecture audit is added unless S0 changes substantively after failure"
+  ],
+  "depends_on": [
+    "TP-DMX-WSAC-R1A-MCP-SERVICE-FLEET-001",
+    "TP-DMX-WSAC-R1B-RUNNER-AGENT-INTEGRATION-001",
+    "TP-DMX-WSAC-R1C-DCP-UAG-CONTEXT-ROUTING-001",
+    "TP-DMX-WSAC-R1D-CANONICAL-SYSTEMS-DATAFLOW-001",
+    "TP-DMX-WSAC-R1E-GOVERNANCE-EVIDENCE-FINALITY-001",
+    "TP-DMX-WSAC-R1F-SECURITY-IDENTITY-MULTIPROJECT-001",
+    "TP-DMX-WSAC-R1G-DEVELOPER-EXPERIENCE-ECONOMY-001",
+    "TP-DMX-WSAC-R2-EXTERNAL-CAPABILITY-RESEARCH-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-WHOLE-SYSTEM-ARCH-CONVERGENCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-WSAC-R0-LIVE-TRUTH-CENSUS-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(wsac): freeze whole-system target architecture",
+    "allowlist": [
+      "docs/06-research/2026-09-04-whole-system-architecture-convergence/architecture/S0_WHOLE_SYSTEM_TARGET_ARCHITECTURE.md",
+      "docs/06-research/2026-09-04-whole-system-architecture-convergence/architecture/S0_DECISION_REGISTER.json",
+      "docs/06-research/2026-09-04-whole-system-architecture-convergence/architecture/S0_COMPONENT_CONVERGENCE_DAG.md",
+      "docs/06-research/2026-09-04-whole-system-architecture-convergence/architecture/S0_FALSIFICATION_PLAN.md",
+      "task-packets/TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001.json",
+      "proof/TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001.json",
+      "python -m jsonschema -i task-packets/TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --files \"docs/06-research/2026-09-04-whole-system-architecture-convergence/architecture/S0_WHOLE_SYSTEM_TARGET_ARCHITECTURE.md\" \"docs/06-research/2026-09-04-whole-system-architecture-convergence/architecture/S0_DECISION_REGISTER.json\" \"docs/06-research/2026-09-04-whole-system-architecture-convergence/architecture/S0_COMPONENT_CONVERGENCE_DAG.md\" \"docs/06-research/2026-09-04-whole-system-architecture-convergence/architecture/S0_FALSIFICATION_PLAN.md\" \"task-packets/TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001.json\"",
+      "python -m json.tool docs/06-research/2026-09-04-whole-system-architecture-convergence/architecture/S0_DECISION_REGISTER.json"
+    ]
+  },
+  "pr": {
+    "title": "docs(wsac): whole-system target architecture synthesis",
+    "body": "Whole-system architecture convergence evidence. No merge, activation, production, credential, or runtime mutation authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Verify completeness, hashes, lineage, and freshness of R0/R1A-G/R2 synthesis subject; reject silent omissions.",
+      "validation": [
+        "Every required recon/research artifact is present and content-frozen",
+        "Source/head drift since each recon is classified and materially affected facts are refreshed before synthesis",
+        "No packet, open PR, architecture report, or vendor doc is silently promoted above its authority class"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Synthesize the target authority model, component responsibility map, system/service/plane boundaries, and canonical-writer matrix.",
+      "validation": [
+        "Exactly one canonical writer is identified per writable domain or UNKNOWN is explicit",
+        "Dopemux/DCP/UAG/Dopetask/Task Orchestrator/Audit Broker/MCP/canonical-memory boundaries remain non-overlapping in authority",
+        "Keep/merge/absorb/retire/defer decisions include rationale, migration consequence, and rollback/compatibility considerations"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Design target request, context, tool, model, execution, evidence, workflow, and handoff dataflows.",
+      "validation": [
+        "End-to-end flows cover operator request -> supervisor -> team lead/implementer -> context/capability -> model/tool -> execution -> results -> workflow/evidence -> audit/readiness -> operator decision",
+        "Runner-specific adapters render common semantics without becoming canonical state",
+        "Implicit integration uses generated minimal capability surfaces and progressive disclosure rather than universal tool exposure"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Freeze common semantic contract inventory and runner/MCP integration architecture without implementing it.",
+      "validation": [
+        "Contract inventory addresses WorkspaceIdentity, RunnerCapabilityProfile, AgentRoleSpec, CapabilityRequirement, SessionCapabilityPlan, RouteDecision, ContextPlan, RunContextPacket, WorkRequest/Result, findings/receipts, ToolIntent/execution receipts, model policy, compatibility, MCP surfaces, audit, and readiness",
+        "Existing canonical contracts are referenced/reused where possible; duplicate schema families are rejected",
+        "Exact model names remain dispatch-time facts, not durable architecture semantics"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Produce the minimum component convergence DAG and safe parallel implementation tranches.",
+      "validation": [
+        "Every tranche has authority owner, risk lane, dependency/parallel edges, migration/rollback boundary, required tests, and audit requirement",
+        "Open existing work is classified IDENTICAL/SUBSET/SUPERSET/COMPATIBLE/CONFLICTING/UNKNOWN against the target",
+        "No new implementation Task Packets are issued beyond the already-authored blocked P0 contract-freeze gate"
+      ]
+    },
+    {
+      "id": "S5",
+      "task": "Define falsification, benchmark, and degraded-state criteria for architecture acceptance.",
+      "validation": [
+        "Zero-tolerance safety failures include cross-project leakage, authority laundering, wrong tool-result association, hidden model/route substitution, stale-current claims, unsupported execution, and duplicate writers",
+        "Utility metrics include time-to-first-correct-change, setup effort, tool count, context tokens, repeated reads, runner-switch effort, relay count, cycle time, repair loops, audit churn, and developer cognitive burden",
+        "No performance or correctness improvement is claimed before measurement"
+      ]
+    },
+    {
+      "id": "S6",
+      "task": "Freeze exact S0 architecture subject for one final independent A0 audit.",
+      "validation": [
+        "All four S0 artifacts are content-frozen and hash-manifested",
+        "No intermediate architecture audit is run",
+        "IMPLEMENTATION_AUTHORIZED remains NO; operator ratification is not implied"
+      ]
+    }
+  ]
+}
