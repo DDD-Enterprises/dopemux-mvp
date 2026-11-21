@@ -1,0 +1,6 @@
+FAILED EXTRA VALIDATION HARNESS: exit 1 for Python component (following prescribed ct read-only validators in same shell returned 0).
+Command: python3 -B, jsonschema.Draft7Validator with RefResolver(s.as_uri(), schema), iter_errors(IMPLEMENT_A_D_TASK_PACKET.json).
+Harness omitted local $id reference store. It attempted https://dopemux.dev/schemas/governed_execution/enums.v1.schema.json. DNS failed; no acquired bytes or local mutations.
+Captured terminal exception excerpt (full traceback remains in execution tool transcript dd587a):
+jsonschema.exceptions._RefResolutionError: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+Coordinator disposition: one localized correction using strictly local resources and fail-closed no-network retrieval; never request failed URL again. Corrected Registry(retrieve=reject_network).with_resources(local_resources) validated both derived task packets PASS, exit 0.

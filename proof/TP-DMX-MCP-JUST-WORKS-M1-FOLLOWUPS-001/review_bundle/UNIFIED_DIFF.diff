@@ -1,0 +1,1778 @@
+diff --git a/claudedocs/mcp-just-works-design-2026-11-05.md b/claudedocs/mcp-just-works-design-2026-11-05.md
+index e68300771..e54659762 100644
+--- a/claudedocs/mcp-just-works-design-2026-11-05.md
++++ b/claudedocs/mcp-just-works-design-2026-11-05.md
+@@ -314,4 +314,9 @@ Appended after the final whole-branch review of Milestone 1; the approved text a
+ - **Doctor port findings are re-evaluated after allocation (cycle 4, Codex connector review of `83b468e71`).** The doctor preflight inspects the envrc ports before `_resolve_ports` may lease replacements, so for `start`/`restart` its port-dependent findings (`PORT_RESERVED_COLLISION`, `PORT_INTRA_CONFIG_COLLISION`, `PORT_OWNED_BY_OTHER_PROJECT`, `DOCKER_CONTAINER_WRONG_PROJECT`, `DOCKER_CONTAINER_UNLABELED_UNKNOWN`, `DOCKER_CONTAINER_PORT_COLLISION`) are no longer carried as blockers; they are recorded as `DOCTOR_PORT_FINDING_REEVALUATED` INFO entries in the preflight facts (visible on blocked results; a successful start's output lists no preflight warnings, which is pre-existing `_start_services` behaviour) and the lifecycle's own collision checks against the resolved ports (plus `PORT_ALLOCATION_BLOCKED` when no free port exists) decide. After `init` → `stop` a foreign container on the stale envrc port no longer blocks a start that re-leased a free port. `stop`/`status` keep the doctor findings as before. The lifecycle's collision check now applies the launcher's ownership rule to any managed worktree-scoped container holding a resolved port: a same-project container of another worktree (different `dopemux.worktree_hash`), or a managed container without a project id whose project root does not match, is a `DOCKER_CONTAINER_PORT_COLLISION`; containers dopemux itself labels are therefore re-checked against the resolved ports, while a managed container without dopemux's project labels (accepted on compose evidence) is not, and only `dopemux mcp doctor` reports those. A project-scoped task-orchestrator container started from another worktree of the same project is no longer blocked by the doctor's workspace mismatch (the orchestrator gate under the reserved lock decides).
+ - **Cycle 5 narrows the Task F re-evaluation to one invariant (Codex audit at `fc591cba1`).** For `start`/`restart` every doctor blocker is carried except a `DOCKER_CONTAINER_*` finding whose container neither publishes a port in the resolved port map nor bears one of this run's expected container names (that one becomes a `DOCTOR_PORT_FINDING_REEVALUATED` INFO entry), and the resolved port map is validated: two selected services on one port or a sidecar on a reserved singleton port block as `PORT_INTRA_CONFIG_COLLISION` / `PORT_RESERVED_COLLISION` even when `_resolve_ports` retained existing leases. The `PORT_*` doctor codes are no longer dropped. Consequently the two behaviour changes recorded in the previous bullet — a managed container with only compose labels holding our expected name, and a project-scoped task-orchestrator container started from another worktree of the same project — block again exactly as on main; the stale-envrc-port recovery (the connector finding) is kept.
+ - **Cycle 5 revert: the automatic-reap change for marker-only runtime dirs on an empty registry (`380c2c52c`) was reverted (`2bbf08f65`).** The independent audit found that it covered an empty registry file but not an absent one (on a fresh host `RuntimeRegistry.load()` reports MISSING and `plan_reap` plans nothing unless the registry is OK), so the Codex PR bot's scenario — launcher-marked runtime dirs of removed worktrees left by build-only launches never reaching the automatic reap while the registry lists no instance — stayed open, and that marker discovery ran unbounded by the automatic reap's deadline or a count cap. Rather than a fourth change to the reap preflight in this PR, the owner chose the revert; the finding is an open follow-up outside this packet. The explicit `dopemux mcp reap` reaches those dirs only once the runtime registry file exists (a non-dry-run `start`, including a launcher's cold start, creates it); on a host where only build-only launches ran there is no such file, so it plans nothing either, as the how-to's Cleanup paragraph says ("no run sees it while that registry file is missing or unreadable").
+-- **Cycle 7 open follow-up: `start --dry-run` and `restart --dry-run` persist port leases (Codex connector review of `f6a8e4401`, `lifecycle.py:1081`).** `_mutable_facts` resolves ports with `allocate=True` for `start` and `restart` whether or not the run is a dry run, and `_resolve_ports` then releases conflicting leases, saves the lease registry and calls the allocator with persistence on. A plan-only run therefore creates the lease registry file if it is absent and leaves active leases for the selected lease-managed services, and it can replace an envrc port that another worktree has leased. The behaviour predates the merge of main (the code is unchanged since `40ea89c24`), and five tests in `tests/unit/test_mcp_lifecycle_ports_from_leases.py` exercise allocation through dry runs and assert on the persisted leases, so changing it means threading the dry-run flag into port resolution, computing a non-persisting preview and rewriting those tests. The owner chose not to make that change in this PR; it is an open follow-up outside this packet. Until then a dry run reserves the ports the real start would take; what later releases a lease that only a dry run created was not examined.
++- **Cycle 7 follow-up implemented by TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001 (private candidate; final gates pending): the original `start --dry-run` and `restart --dry-run` port-lease persistence finding (Codex connector review of `f6a8e4401`, `lifecycle.py:1081`).** `_mutable_facts` resolves ports with `allocate=True` for `start` and `restart` whether or not the run is a dry run, and `_resolve_ports` then releases conflicting leases, saves the lease registry and calls the allocator with persistence on. A plan-only run therefore creates the lease registry file if it is absent and leaves active leases for the selected lease-managed services, and it can replace an envrc port that another worktree has leased. The behaviour predates the merge of main (the code is unchanged since `40ea89c24`), and five tests in `tests/unit/test_mcp_lifecycle_ports_from_leases.py` exercise allocation through dry runs and assert on the persisted leases, so changing it means threading the dry-run flag into port resolution, computing a non-persisting preview and rewriting those tests. The owner chose not to make that change in this PR; it is an open follow-up outside this packet. Until then a dry run reserves the ports the real start would take; what later releases a lease that only a dry run created was not examined.
++
++- **M1 follow-up A, candidate implementation:** lifecycle status uses this worktree's active lease ports ahead of informational envrc values, including canonical service aliases and probe targets. Variables without an active matching lease retain their envrc value; reserved task-orchestrator ports remain excluded. Port resolution is read-only for status/doctor/stop paths.
++- **M1 follow-up B, candidate implementation:** dry-run start/restart propagates the preview flag through every mutable-facts calculation. Collision repair and allocation operate on a temporary in-memory registry without saving, releasing persisted leases or taking a lease lock; absent registries remain absent and existing bytes remain unchanged. Five retained allocation scenarios now distinguish preview assertions from actual temporary-registry allocation.
++- **M1 follow-up C, candidate implementation:** build PID files atomically record the live session leader's PID, birth time and process group. Expiry sends TERM, waits a bounded interval, then KILL only after re-verifying that identity; failed or incomplete termination keeps ownership and blocks another build. Reaper protection uses the same identity and lasts until verified exit. Legacy, malformed, invalid, recycled or unverifiable identities are stale and never signalled. Qualification uses synthetic process tables, clocks and signals only.
++- **M1 follow-up D, candidate implementation:** runner cancellation forwards the backend's own request ID under shielded, time-bounded cleanup. Cleanup failure or timeout preserves caller cancellation and a healthy session; completed requests, proxy shutdown and dead sessions do not send cancellation. MCP SDK 1.29's private request-ID allocation contract is exercised with real in-memory sessions and fails closed if unavailable. Independent audit, signing, full verification and publication remain separate unmet gates.
+diff --git a/src/dopemux/mcp/launcher.py b/src/dopemux/mcp/launcher.py
+index 4c58840e6..949ed0c2d 100644
+--- a/src/dopemux/mcp/launcher.py
++++ b/src/dopemux/mcp/launcher.py
+@@ -51,7 +51,6 @@ from .port_diagnostics import instance_id_for_path
+ from .reap import (
+     INSTANCE_MARKER,
+     INSTANCE_MARKER_FIELDS,
+-    _pid_alive,
+     _utc_stamp,
+     attach,
+     detach,
+@@ -397,25 +396,74 @@ def build_pid_path(runtime_dir: Path, service: str) -> Path:
+     return Path(runtime_dir) / f"build-{service}.pid"
+ 
+ 
++def _build_process_identity(pid: int) -> Optional[Dict[str, Any]]:
++    """Birth time and private process group of a live build session leader."""
++    if type(pid) is not int or pid <= 0:
++        return None
++    import psutil  # type: ignore[import-untyped]
++
++    try:
++        process = psutil.Process(pid)
++        if not process.is_running():
++            return None
++        if process.status() == psutil.STATUS_ZOMBIE:
++            return None
++        created = process.create_time()
++        group = os.getpgid(pid)
++        if group != pid or created <= 0:
++            return None
++        return {"pid": pid, "create_time": created, "pgid": group}
++    except (OSError, psutil.Error):
++        return None
++
++
+ def _live_build_pid(pid_file: Path) -> Optional[int]:
+-    """The pid of a build still running, or None (absent, dead, or older than the build budget).
++    """Keep ownership until a verified expired build exits; never stack builds.
+ 
+-    The age limit is ``build_timeout_secs()`` (``DOPEMUX_MCP_BUILD_TIMEOUT_SECS``,
+-    default 1800 s), the budget a build gets, never the shorter ``up`` budget.
++    Legacy/unverifiable records are stale and never signalled. Re-check birth
++    time and group immediately before each signal so recycled PIDs are
++    excluded. A failed termination remains tracked, and the reaper protects
++    it meanwhile.
+     """
+     try:
+-        pid = int(pid_file.read_text(encoding="utf-8").strip())
++        record = json.loads(pid_file.read_text(encoding="utf-8"))
+         age = time.time() - pid_file.stat().st_mtime
+-    except (OSError, ValueError):
++        if not isinstance(record, dict) or type(record.get("pid")) is not int:
++            return None
++        pid: int = record["pid"]
++        if record != _build_process_identity(pid):
++            return None
++    except (OSError, ValueError, TypeError):
+         return None
+-    if pid <= 0 or age > dr.build_timeout_secs() or not _pid_alive(pid):
+-        return None  # stale: replaced by the next build
+-    return pid
++    if age <= dr.build_timeout_secs():
++        return pid
++    for signum in (signal.SIGTERM, signal.SIGKILL):
++        if record != _build_process_identity(pid):
++            return None
++        try:
++            os.killpg(pid, signum)
++        except ProcessLookupError:
++            return None
++        except OSError:
++            # cannot terminate safely: retain ownership, no new build
++            return pid
++        deadline = time.monotonic() + 2.0
++        while record == _build_process_identity(pid):
++            if time.monotonic() >= deadline:
++                break
++            time.sleep(0.05)
++        if record != _build_process_identity(pid):
++            return None
++    return pid  # even SIGKILL has not been observed to finish: still tracked
+ 
+ 
+ def _write_build_pid(pid_file: Path, pid: int) -> None:
+     tmp = pid_file.with_name(f".{pid_file.name}.{os.getpid()}.tmp")
+-    tmp.write_text(f"{pid}\n", encoding="utf-8")
++    record = _build_process_identity(pid) or {
++        "pid": pid,
++        "identity": "unverified",
++    }
++    tmp.write_text(json.dumps(record) + "\n", encoding="utf-8")
+     os.replace(tmp, pid_file)
+ 
+ 
+diff --git a/src/dopemux/mcp/lifecycle.py b/src/dopemux/mcp/lifecycle.py
+index bab1c0d5b..9f55280d8 100644
+--- a/src/dopemux/mcp/lifecycle.py
++++ b/src/dopemux/mcp/lifecycle.py
+@@ -383,13 +383,16 @@ def _resolve_ports(
+     source: str = "dopemux mcp start",
+     env: Optional[Mapping[str, str]] = None,
+     allocate: bool = True,
++    dry_run: bool = False,
++    planned: Optional[List[PortLeaseRegistry]] = None,
+     is_free_fn: Optional[Callable[[int], bool]] = None,
+     docker: Optional[di.DockerInspectResult] = None,
+ ) -> Dict[str, int]:
+     """Port map ``{port_env_var: port}`` for ``selected`` services.
+ 
+-    Order without ``allocate``: ports an envrc/process env already names win;
+-    otherwise the active leases bound to this project/worktree. With ``allocate``
++    Order without ``allocate``: active leases bound to this project/worktree
++    win over informational envrc/process ports; variables without leases retain
++    their env values. With ``allocate``
+     the next paragraph decides which env ports count, and the rest are allocated
+     and persisted as new leases under ``registry_lock``. The lock is held
+     only for the release/allocate-and-save step. Task Orchestrator is a reserved
+@@ -403,7 +406,13 @@ def _resolve_ports(
+     port is leased when no other lease holds it and the socket is free (a port this
+     worktree's own running sidecar publishes counts as free), else a fresh one, and
+     the returned port replaces the envrc's (the envrc is informational). Without
+-    ``allocate`` (status, doctor, stop) env ports are returned as before.
++    ``allocate`` (status, doctor, stop) no registry mutation is performed.
++    A dry run calculates the real allocation plan against an in-memory registry
++    and never creates a lease lock file, releases persisted leases or saves.
++    When a dry run allocates and ``planned`` is given, that in-memory registry
++    (stale leases released, planned leases added) is appended to it, so the
++    caller validates the plan against the state a real start would leave and
++    not against the untouched file.
+ 
+     With ``docker`` and ``allocate``, a leased port that a same-project container
+     of another service publishes (a cross-service collision an older
+@@ -411,7 +420,17 @@ def _resolve_ports(
+     instead of failing the start.
+     """
+     ports = _extract_ports(env or {}, selected, catalog)
+-    if allocate and identity.worktree_root and identity.project_root:
++    if not allocate:
++        if identity.worktree_root and identity.project_root:
++            lease_vars = [v for n in selected if n != "task-orchestrator"
++                          for v in _port_vars_for(n, catalog)]
++            ports.update(
++                _leased_ports(
++                    PortLeaseRegistry.load(lease_path), identity, lease_vars
++                )
++            )
++        return ports
++    if identity.worktree_root and identity.project_root:
+         lease_vars = [
+             v
+             for n in selected
+@@ -438,15 +457,13 @@ def _resolve_ports(
+     current = _leased_ports(PortLeaseRegistry.load(lease_path), identity, wanted)
+     leased = {var: port for var, port in current.items() if var not in ports}
+     stale = _leases_held_by_other_service(leased, catalog, docker, identity.project_id)
+-    if not allocate:
+-        stale = {}
+     for var, port in leased.items():
+         if var not in stale:
+             ports.setdefault(var, port)
+     lease_services = [
+         n for n in lease_services if any(v not in ports for v in _port_vars_for(n, catalog))
+     ]
+-    if not lease_services or not allocate:
++    if not lease_services:
+         return ports
+ 
+     from .port_allocator import allocate_ports, port_is_free
+@@ -465,9 +482,11 @@ def _resolve_ports(
+ 
+     # Exactly the call `mcp_commands._allocate_ports` makes (allocate_ports_map):
+     # no `identity=`, so the allocator derives the same lease identity as `init`.
+-    with registry_lock(lease_path):
++    from contextlib import nullcontext
++
++    with (nullcontext() if dry_run else registry_lock(lease_path)):
++        leases = PortLeaseRegistry.load(lease_path)
+         if stale:
+-            leases = PortLeaseRegistry.load(lease_path)
+             for lease in leases.active_leases():
+                 var = str(lease.get("port_var") or "")
+                 if (
+@@ -482,16 +501,17 @@ def _resolve_ports(
+                     )
+                 ):
+                     leases.mark_released(lease_id=str(lease.get("lease_id")))
+-            leases.save()
++            if not dry_run:
++                leases.save()
+         result = allocate_ports(
+             lease_services,
+             catalog,
+             worktree=identity.worktree_root,
+             project_root=identity.project_root,
+             existing_envrc=env,
+-            registry_path=lease_path,
+-            persist=True,
+-            dry_run=False,
++            registry=leases,
++            persist=not dry_run,
++            dry_run=dry_run,
+             source=source,
+             is_free_fn=alloc_is_free,
+         )
+@@ -500,6 +520,12 @@ def _resolve_ports(
+         raise PortAllocationBlocked(
+             msgs or "Port allocation blocked", result.blocking_findings
+         )
++    if dry_run and planned is not None:
++        # The allocator skips registry writes in a dry run but still reports
++        # the leases it would create; apply them to the in-memory copy only.
++        for entry in result.leases:
++            leases.upsert_lease(entry)
++        planned.append(leases)
+     for var, port in result.ports.items():
+         ports.setdefault(str(var), int(port))
+     return ports
+@@ -1027,6 +1053,7 @@ def _mutable_facts(
+     op: str,
+     *,
+     orchestrator_gate: bool,
++    dry_run: bool = False,
+     identity: ProjectIdentityView,
+     target: Path,
+     selected: Sequence[str],
+@@ -1071,6 +1098,7 @@ def _mutable_facts(
+ 
+     docker = di.inspect_running_containers(runner=docker_runner)
+ 
++    planned_leases: List[PortLeaseRegistry] = []
+     try:
+         ports = _resolve_ports(
+             identity,
+@@ -1079,6 +1107,8 @@ def _mutable_facts(
+             lease_path=default_lease_registry_path(),
+             env=doctor_env,
+             allocate=op in {"start", "restart"},
++            dry_run=dry_run,
++            planned=planned_leases,
+             is_free_fn=is_free,
+             docker=docker,
+         )
+@@ -1117,7 +1147,13 @@ def _mutable_facts(
+         try:
+             from .port_leases import PortLeaseRegistry
+ 
+-            lease_reg = PortLeaseRegistry.load()
++            # A dry run that planned an allocation is checked against that
++            # plan: the file still holds the leases the plan releases or
++            # replaces.
++            if planned_leases:
++                lease_reg = planned_leases[0]
++            else:
++                lease_reg = PortLeaseRegistry.load()
+             if lease_reg.parse_status == "ERROR":
+                 blocking.append(
+                     {
+@@ -1625,6 +1661,7 @@ def run_lifecycle(
+     # from them. A start/restart re-takes them under the instance lock before its
+     # worktree part runs (B2 fix round 1), so a reap that finished in between is seen.
+     facts_kw: Dict[str, Any] = dict(
++        dry_run=dry_run,
+         identity=identity,
+         target=target,
+         selected=selected,
+diff --git a/src/dopemux/mcp/reap.py b/src/dopemux/mcp/reap.py
+index 7651c8d21..f32d4d523 100644
+--- a/src/dopemux/mcp/reap.py
++++ b/src/dopemux/mcp/reap.py
+@@ -501,13 +501,34 @@ def _read_instance_marker(runtime_dir: Path) -> Optional[Dict[str, str]]:
+     return fields
+ 
+ 
++def _build_process_identity(pid: int) -> Optional[Dict[str, Any]]:
++    """Birth time and private process group of a live build session leader."""
++    if type(pid) is not int or pid <= 0:
++        return None
++    import psutil  # type: ignore[import-untyped]
++
++    try:
++        process = psutil.Process(pid)
++        if not process.is_running():
++            return None
++        if process.status() == psutil.STATUS_ZOMBIE:
++            return None
++        created = process.create_time()
++        group = os.getpgid(pid)
++        if group != pid or created <= 0:
++            return None
++        return {"pid": pid, "create_time": created, "pgid": group}
++    except (OSError, psutil.Error):
++        return None
++
++
+ def _live_build(runtime_dir: Path, now: float) -> bool:
+-    """Whether a detached image build may still write into ``runtime_dir``.
++    """Protect a verified build until exit, even while timeout cleanup runs.
+ 
+-    The launcher's rule (``launcher._live_build_pid``, not imported: the launcher
+-    imports this module): a ``build-<service>.pid`` whose pid is alive and whose
+-    file is at most ``build_timeout_secs()`` old. A dir or pid file that cannot be
+-    read counts as live (never delete under a build); a non-numeric pid does not.
++    Same identity rule as launcher._live_build_pid, kept local to avoid imports
++    in the opposite direction. Age alone never proves a process has stopped.
++    An unreadable directory/file is protected conservatively; malformed/legacy
++    records and mismatching process identities are stale and never signalled.
+     """
+     try:
+         entries = list(Path(runtime_dir).iterdir())
+@@ -515,22 +536,19 @@ def _live_build(runtime_dir: Path, now: float) -> bool:
+         return False
+     except OSError:
+         return True
+-    budget = dr.build_timeout_secs()
+     for entry in entries:
+         if not (entry.name.startswith("build-") and entry.name.endswith(".pid")):
+             continue
+         try:
+-            text = entry.read_text(encoding="utf-8").strip()
+-            age = now - entry.stat().st_mtime
++            record = json.loads(entry.read_text(encoding="utf-8"))
+         except FileNotFoundError:
+             continue
+         except OSError:
+             return True
+-        except ValueError:  # not text: not a pid the launcher wrote
+-            continue
+-        if not _is_pid_text(text):
++        except (ValueError, TypeError):
+             continue
+-        if age <= budget and _pid_alive(int(text)):
++        if (isinstance(record, dict) and type(record.get("pid")) is int
++                and record == _build_process_identity(record["pid"])):
+             return True
+     return False
+ 
+diff --git a/src/dopemux/mcp/stdio_proxy.py b/src/dopemux/mcp/stdio_proxy.py
+index 0d48a9bb4..8cb57faca 100644
+--- a/src/dopemux/mcp/stdio_proxy.py
++++ b/src/dopemux/mcp/stdio_proxy.py
+@@ -119,6 +119,8 @@ GUARD_FAILED_CODE = "LAUNCH_RECONNECT_GUARD_FAILED"
+ REFUSAL_LINGER_S = 10.0
+ #: Upper bound on one forwarded request (slow tools included).
+ REQUEST_TIMEOUT_S = 300.0
++#: Cancellation cleanup cannot hold a runner open indefinitely.
++CANCEL_CLEANUP_TIMEOUT_S = 0.25
+ #: Upper bound on a backend ``initialize`` (first connect and the reconnect).
+ INITIALIZE_TIMEOUT_S = 10.0
+ #: How long a failed proxy waits for runner requests to receive their errors.
+@@ -278,6 +280,7 @@ class _BackendLink:
+         self._last_reconnect: Optional[float] = None
+         #: Runner requests currently inside ``forward``.
+         self.active = 0
++        self.closing = False
+ 
+     def client_kwargs(self) -> Dict[str, Any]:
+         return {
+@@ -469,7 +472,20 @@ class _BackendLink:
+             session = await self._live_session()
+             with anyio.CancelScope() as scope:
+                 self._inflight[scope] = session
++                # SDK 1.29 allocates this integer synchronously before its
++                # first await. Record it without yielding, so concurrent calls
++                # cannot steal the id. Fail closed if this SDK contract
++                # disappears.
++                backend_id = getattr(session, "_request_id", None)
+                 try:
++                    if type(backend_id) is not int:
++                        raise McpError(types.ErrorData(
++                            code=types.INTERNAL_ERROR,
++                            message=(
++                                "dopemux proxy: unsupported SDK "
++                                "request-id contract"
++                            ),
++                        ))
+                     return await session.send_request(
+                         types.ClientRequest(request),
+                         result_type,
+@@ -477,6 +493,29 @@ class _BackendLink:
+                             seconds=REQUEST_TIMEOUT_S
+                         ),
+                     )
++                except anyio.get_cancelled_exc_class():
++                    if (not scope.cancel_called and not self.closing
++                            and self.session is session
++                            and _can_receive(session)):
++                        with anyio.move_on_after(
++                            CANCEL_CLEANUP_TIMEOUT_S, shield=True
++                        ):
++                            try:
++                                params = types.CancelledNotificationParams(
++                                    requestId=backend_id
++                                )
++                                await session.send_notification(
++                                    types.ClientNotification(
++                                        types.CancelledNotification(
++                                            method="notifications/cancelled",
++                                            params=params,
++                                        )
++                                    )
++                                )
++                            except Exception:
++                                # cleanup failure must not mask cancellation
++                                pass
++                    raise
+                 except McpError as exc:
+                     if _session_terminated(exc.error):
+                         # Streamable HTTP restart: unprocessed, so resend once on
+@@ -598,13 +637,17 @@ async def serve(
+ 
+         async def serve_runner() -> None:
+             nonlocal exit_code
+-            await server.run(read_stream, write_stream, options)
+-            exit_code = 0
+-            tg.cancel_scope.cancel()
++            try:
++                await server.run(read_stream, write_stream, options)
++                exit_code = 0
++            finally:
++                link.closing = True
++                tg.cancel_scope.cancel()
+ 
+         async def watch_backend() -> None:
+             nonlocal exit_code
+             await link.failed.wait()
++            link.closing = True
+             exit_code = 1
+             # Waiting runner requests fail with "unavailable"; let those errors go
+             # out before the server stops.
+diff --git a/task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json b/task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json
+new file mode 100644
+index 000000000..905163b98
+--- /dev/null
++++ b/task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json
+@@ -0,0 +1,215 @@
++{
++  "id": "TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001",
++  "project": "dopemux-mvp",
++  "target": "Risk lane L2 (runtime behaviour change in the MCP lifecycle, launcher and stdio proxy; independent audit required before merge). Close the four follow-ups that MACRO-DMX-MCP-JUST-WORKS-M1-001 (PR #1503, merged to main as 365f70ce2edc907d14356d82d2843104dbdaa434) left open, each with a test that fails on the base and passes after the fix: (A) `dopemux mcp status` reports the ports this worktree's active leases hold instead of stale envrc ports; (B) `dopemux mcp start --dry-run` and `restart --dry-run` write nothing to the port lease registry; (C) an image build that outlives DOPEMUX_MCP_BUILD_TIMEOUT_SECS is terminated before its PID is replaced, so reconnects cannot stack concurrent builds, and the reaper keeps protecting the runtime dir while that build is alive; (D) when a runner cancels an in-flight tool call, the stdio proxy forwards the cancellation to the backend request. No other behaviour changes.",
++  "invariants": [
++    "Base is origin/main at 365f70ce2edc907d14356d82d2843104dbdaa434. Work only in the worktree .worktrees/mcp-just-works-m1-followups on branch fix/mcp-just-works-m1-followups. Never edit, commit in, pull into or stash in the main checkout /Users/hue/code/dopemux-mvp (it holds other sessions' uncommitted work).",
++    "Edit only paths in commit.allowlist. A defect or required change outside it is recorded in PROOF.json residual_risks and reported as NEEDS_SUPERVISOR; it is not edited.",
++    "Sealed paths, never edited: docker/mcp-servers-source/conport/ and scripts/migration/provision_conport_project_db.sh.",
++    "Tests are hermetic: temporary lease/runtime registries, fake clocks, fake process tables and in-memory MCP sessions. No test or validation step may start, stop or remove a real container, signal a real process it did not spawn itself, or read or write ~/.dopemux.",
++    "Never run on the host: `dopemux mcp reap --apply`, `dopemux mcp switch-project`, `docker stop`, `docker rm`, `docker compose down`, or any command that stops another project's or worktree's containers. The acceptance leftovers on this host (containers dopemux-*-55ab-*, *-570c-*, *-d79c-*, accept-m1-t4, tenant-probe-m1 and the kill switch ~/.dopemux/mcp/runtime/reap.disabled) belong to the owner and are out of scope.",
++    "(A) is read-only: status, doctor and stop must not allocate, release or save leases and must not create the lease registry file. With no active lease of this identity for a variable, the existing envrc value is still returned.",
++    "(B) A dry run must leave the lease registry byte-identical, and absent if it was absent. The plan a dry run prints must still show the ports a real start would use, computed without persisting. Non-dry start/restart behaviour, including cross-service collision repair, is unchanged.",
++    "(C) Never signal a PID whose identity is unverified. The build pid file must carry enough to prove the live process is the build this launcher spawned (for example its process start time or session id recorded at spawn); on mismatch, unreadable data or a pid file in the old one-line format, treat it as stale and replace it without sending any signal. Termination targets only the build's own session/process group (builds are spawned with start_new_session=True), SIGTERM first, a bounded wait, then SIGKILL.",
++    "(C) A build younger than the budget still yields LAUNCH_IMAGE_BUILDING with no second build. launcher.py and reap.py must agree on when a build counts as live; reap.py keeps its own copy of the rule (it does not import the launcher), so both copies change together and a test pins their agreement.",
++    "(D) The cancellation is sent to the backend with the backend's own request id, not the runner's, under a shielded and time-bounded cleanup scope. A failure or timeout while sending it must not mask or delay the cancellation returned to the runner, and must not drop a healthy backend session. Requests that already completed are not cancelled. The existing resend-once behaviour on a terminated Streamable HTTP session is unchanged.",
++    "No new dependencies. No changes to .mcp.json, compose files, the catalog, port numbers, CI workflows, schemas/ or scripts/audit/.",
++    "GitHub: pushing the branch fix/mcp-just-works-m1-followups and opening ONE draft PR against main are authorized. MERGE_AUTHORIZED=NO. Not authorized: merging, enabling auto-merge, enqueueing, force-pushing, signing any PROOF.json, resolving review threads, posting the steward release phrase, editing rulesets or branch protection. Those stay with the owner.",
++    "The implementer (Codex) must not audit its own work. The controlling independent audit is a non-Codex route and runs only after the content head is frozen; any content commit after the freeze voids the audit.",
++    "Report status as exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE. Buckets for every validation are PASS, FAIL, NOT_RUN or UNKNOWN; a tool that is missing or cannot run is NOT_RUN with a reason, never PASS."
++  ],
++  "depends_on": [],
++  "repo_binding": {
++    "project_id": "dopemux-mvp",
++    "repo_marker": ".dopetaskroot",
++    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
++    "require_identity_match": true
++  },
++  "series": {
++    "id": "DMX-MCP-JUST-WORKS-M1-FOLLOWUPS",
++    "base_branch": "main",
++    "parent_tp_id": null,
++    "final_packet": true
++  },
++  "execution": {
++    "agent": "codex",
++    "branch": "fix/mcp-just-works-m1-followups",
++    "base_branch": "main"
++  },
++  "commit": {
++    "message": "fix(mcp): close M1 follow-ups — status lease ports, dry-run leases, expired build PIDs, proxy cancel forwarding",
++    "allowlist": [
++      "src/dopemux/mcp/lifecycle.py",
++      "src/dopemux/mcp/port_allocator.py",
++      "src/dopemux/mcp/launcher.py",
++      "src/dopemux/mcp/reap.py",
++      "src/dopemux/mcp/stdio_proxy.py",
++      "tests/unit/test_mcp_lifecycle.py",
++      "tests/unit/test_mcp_lifecycle_ports_from_leases.py",
++      "tests/unit/test_mcp_launcher.py",
++      "tests/unit/test_mcp_reap.py",
++      "tests/unit/test_mcp_stdio_proxy.py",
++      "claudedocs/mcp-just-works-design-2026-11-05.md",
++      "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json",
++      "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md",
++      "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/**",
++      "proof/pr_merge/embedded-audit/**"
++    ],
++    "verify": [
++      "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py tests/unit/test_mcp_launcher.py tests/unit/test_mcp_reap.py tests/unit/test_mcp_stdio_proxy.py",
++      "make test-fast"
++    ]
++  },
++  "pr": {
++    "title": "fix(mcp): close MCP just-works M1 follow-ups (status ports, dry-run leases, build PID, cancel forwarding)",
++    "body": "Packet: task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json. Base: main at 365f70ce2edc907d14356d82d2843104dbdaa434 (merge of #1503).\n\nCloses the four follow-ups recorded as open when #1503 merged:\n- A. `dopemux mcp status` preferred stale envrc ports over this worktree's active leases (Codex P2, lifecycle.py `_resolve_ports`).\n- B. `start --dry-run` / `restart --dry-run` persisted port leases (Codex P2, lifecycle.py `_mutable_facts`).\n- C. A detached image build older than DOPEMUX_MCP_BUILD_TIMEOUT_SECS had its PID discarded while still alive, so reconnects could stack builds (Codex P2, launcher.py `_live_build_pid`; same rule copied in reap.py).\n- D. Runner cancellation of an in-flight tool call was not forwarded to the backend (Codex P2, stdio_proxy.py `forward`).\n\nEvidence: proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/PROOF.json (red-then-green test per item, gates, routes). Independent audit: see proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md.\n\nNot authorized by the packet: merge, signing, thread resolution, steward phrase. Owner actions.",
++    "base": "main"
++  },
++  "pal_chain": {
++    "enabled": true,
++    "steps": [
++      "analyze",
++      "codereview",
++      "precommit"
++    ]
++  },
++  "steps": [
++    {
++      "id": "S0",
++      "task": "Intake. Confirm repo identity, branch and base, then prepare a virtualenv inside this worktree (the worktree has none; do not use the main checkout's). Record the facts in PROOF.json.",
++      "commands": [
++        "git rev-parse --show-toplevel",
++        "git rev-parse --abbrev-ref HEAD",
++        "git rev-parse HEAD",
++        "git remote get-url origin",
++        "git status --porcelain",
++        "git merge-base --is-ancestor 365f70ce2edc907d14356d82d2843104dbdaa434 HEAD",
++        "uv sync"
++      ],
++      "validation": [
++        "test \"$(git rev-parse --abbrev-ref HEAD)\" = fix/mcp-just-works-m1-followups",
++        "git merge-base --is-ancestor 365f70ce2edc907d14356d82d2843104dbdaa434 HEAD",
++        "test -f .dopetaskroot"
++      ]
++    },
++    {
++      "id": "S1",
++      "task": "Reproduce all four defects on the base before changing any source file. For each of A-D add a test that fails for the stated reason, run it, and save the failing output. If any defect does not reproduce on the base, stop that item, record why, and report NEEDS_SUPERVISOR rather than changing code for it.",
++      "requirements": [
++        "A: init writes envrc ports; stop releases leases; another identity takes the old port; start leases replacements; status must then report the replacement ports and probe them. On the base it reports the envrc ports.",
++        "B: with a temporary lease registry path that does not exist, a dry-run start leaves the file absent; with an existing registry, its bytes are unchanged after dry-run start and dry-run restart. On the base the file is created with active leases.",
++        "C: a pid file older than the build budget whose process is still alive: the next launch must not leave two builds running. On the base `_live_build_pid` returns None and a second build is spawned while the first lives.",
++        "D: using the real proxy and SDK sessions in memory, cancel a forwarded request mid-flight; the backend must observe a cancellation for its request id. On the base the backend completes the operation."
++      ],
++      "context_files": [
++        "src/dopemux/mcp/lifecycle.py",
++        "src/dopemux/mcp/port_allocator.py",
++        "src/dopemux/mcp/launcher.py",
++        "src/dopemux/mcp/reap.py",
++        "src/dopemux/mcp/stdio_proxy.py",
++        "claudedocs/mcp-just-works-design-2026-11-05.md",
++        "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md"
++      ],
++      "expected_files": [
++        "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE.txt"
++      ],
++      "validation": [
++        "test -s proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE.txt",
++        "grep -c -E '^(A|B|C|D): (REPRODUCED|NOT_REPRODUCED)' proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/RED_BASELINE.txt | grep -qx 4"
++      ]
++    },
++    {
++      "id": "S2",
++      "task": "Fix A (status ports). In lifecycle.py `_resolve_ports`, when `allocate` is false, prefer for each lease-managed variable the port held by an active lease of this identity (`_leased_ports`) over the envrc value, reading the registry without allocating, releasing or saving.",
++      "requirements": [
++        "No registry file is created by status, doctor or stop.",
++        "A variable with no active lease of this identity keeps its envrc value.",
++        "task-orchestrator stays excluded from lease-managed variables, as in the allocate branch."
++      ],
++      "validation": [
++        "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py"
++      ]
++    },
++    {
++      "id": "S3",
++      "task": "Fix B (dry-run leases). Thread the dry-run flag from `_mutable_facts` into `_resolve_ports` and the allocator so that a dry run computes the same port plan with no release, no save and `persist=False`/`dry_run=True` on allocate_ports. Rewrite the tests in tests/unit/test_mcp_lifecycle_ports_from_leases.py that assert a dry run creates or replaces leases (five were identified at f6a8e4401, including `test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked`; the `_start` helper there defaults to dry_run=True) so that they assert either non-dry behaviour or the planned ports of a dry run.",
++      "requirements": [
++        "Every rewritten test keeps the intent it had (allocation, replacement, not blocked) by moving it to a non-dry run or to a plan-only assertion; none is deleted to make the suite pass.",
++        "List each rewritten test with its old and new assertion in PROOF.json slices."
++      ],
++      "validation": [
++        "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py"
++      ]
++    },
++    {
++      "id": "S4",
++      "task": "Fix C (expired build PID). In launcher.py, record build identity in the pid file at spawn; when a recorded build is past `build_timeout_secs()` and still verifiably the same live process, terminate its process group (SIGTERM, bounded wait, SIGKILL) before the pid file is replaced and a new build starts. Apply the same liveness rule to reap.py's copy so the runtime dir stays protected for exactly as long as the launcher treats the build as live.",
++      "requirements": [
++        "Unverifiable identity, legacy one-line pid files and dead PIDs: no signal is sent; the file is treated as stale.",
++        "A build within budget: LAUNCH_IMAGE_BUILDING, no second spawn, no signal.",
++        "Tests inject the clock, the process-liveness/identity probe and the kill function; no real process outside the test's own children is signalled.",
++        "Keep the atomic pid-file write (`_write_build_pid` tmp + os.replace)."
++      ],
++      "validation": [
++        "python -m pytest -q --no-cov tests/unit/test_mcp_launcher.py tests/unit/test_mcp_reap.py"
++      ]
++    },
++    {
++      "id": "S5",
++      "task": "Fix D (cancel forwarding). In stdio_proxy.py `forward`, track the backend request id of the in-flight send and, when the forwarding coroutine is cancelled by the runner, send the MCP cancellation notification for that id to the backend session inside a shielded, time-bounded scope, then let the cancellation propagate.",
++      "requirements": [
++        "If the SDK's ClientSession does not expose the request id of a pending send, do not reach into private attributes without recording it: note the SDK version and the attribute used in PROOF.json unknowns, and add a test that fails if that attribute disappears.",
++        "Cancellation caused by the proxy's own shutdown or by a dropped backend session does not send a notification to a dead session and does not raise.",
++        "The `_inflight` bookkeeping is cleaned up on every exit path."
++      ],
++      "validation": [
++        "python -m pytest -q --no-cov tests/unit/test_mcp_stdio_proxy.py"
++      ]
++    },
++    {
++      "id": "S6",
++      "task": "Update the design record: in claudedocs/mcp-just-works-design-2026-11-05.md mark the cycle 7 dry-run follow-up as closed by this packet and append one bullet each for A, C and D stating the behaviour now implemented. Append-only apart from the status change of the existing follow-up bullet.",
++      "validation": [
++        "python scripts/docs_validator.py claudedocs/mcp-just-works-design-2026-11-05.md",
++        "git diff --stat 365f70ce2edc907d14356d82d2843104dbdaa434 -- claudedocs/mcp-just-works-design-2026-11-05.md"
++      ]
++    },
++    {
++      "id": "S7",
++      "task": "Gates. Run the five touched test files, the full fast suite, and lint/type checks on the touched source files, comparing ruff, flake8 and mypy counts against the base in a real worktree (not a temp copy). Commit by explicit paths only, then confirm nothing outside the allowlist changed.",
++      "commands": [
++        "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py tests/unit/test_mcp_launcher.py tests/unit/test_mcp_reap.py tests/unit/test_mcp_stdio_proxy.py",
++        "make test-fast",
++        "ruff check src/dopemux/mcp/lifecycle.py src/dopemux/mcp/port_allocator.py src/dopemux/mcp/launcher.py src/dopemux/mcp/reap.py src/dopemux/mcp/stdio_proxy.py",
++        "mypy src/dopemux/mcp/lifecycle.py src/dopemux/mcp/port_allocator.py src/dopemux/mcp/launcher.py src/dopemux/mcp/reap.py src/dopemux/mcp/stdio_proxy.py"
++      ],
++      "validation": [
++        "python -m pytest -q --no-cov tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py tests/unit/test_mcp_launcher.py tests/unit/test_mcp_reap.py tests/unit/test_mcp_stdio_proxy.py",
++        "make test-fast",
++        "test -z \"$(git diff --name-only 365f70ce2edc907d14356d82d2843104dbdaa434 HEAD | grep -v -E '^(src/dopemux/mcp/(lifecycle|port_allocator|launcher|reap|stdio_proxy)\\.py|tests/unit/test_mcp_(lifecycle|lifecycle_ports_from_leases|launcher|reap|stdio_proxy)\\.py|claudedocs/mcp-just-works-design-2026-11-05\\.md|task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001\\.(json|md)|proof/)')\"",
++        "test -z \"$(git status --porcelain)\""
++      ]
++    },
++    {
++      "id": "S8",
++      "task": "Proof bundle and draft PR. Write PROOF.json with every key of the fixed key set (tp_id, tp_path, worktree_path, branch, repo_identity, head_sha, commit_sha, routes, slices, files_changed, validations, codereview_status, precommit_status, audit, pr_url_or_blocker, residual_risks, unknowns, cleanup_status) and no others. Push the branch and open one draft PR with the title and body above. Stop with status READY_FOR_AUDIT.",
++      "expected_files": [
++        "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/PROOF.json"
++      ],
++      "validation": [
++        "python3 -m json.tool proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/PROOF.json",
++        "python3 scripts/audit/validate_audit_proof.py --help"
++      ]
++    },
++    {
++      "id": "S9",
++      "task": "Independent controlling audit of the frozen content head by a non-Codex route (see the TP_ROUTE block in the companion .md). Held until S8 reports READY_FOR_AUDIT. The auditor receives the diff against the base, this packet, RED_BASELINE.txt and the gate outputs, and returns a verdict with findings. Codex does not run, prompt-edit or summarize this audit. A FAIL or findings above low severity return to the owner; no fix starts without the owner's decision.",
++      "expected_files": [
++        "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md"
++      ],
++      "validation": [
++        "test -f proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md"
++      ]
++    }
++  ]
++}
+diff --git a/task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md b/task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md
+new file mode 100644
+index 000000000..f88bed29f
+--- /dev/null
++++ b/task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md
+@@ -0,0 +1,82 @@
++---
++id: TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001
++title: MCP Just-Works M1 Follow-ups (status lease ports, dry-run leases, expired build PID, cancel forwarding)
++type: explanation
++owner: '@hu3mann'
++author: '@hu3mann'
++date: '2026-11-19'
++last_review: '2026-11-19'
++next_review: '2027-02-17'
++prelude: Companion to the L2 packet that closes the four follow-ups left open when
++  PR 1503 merged. Covers routing, code anchors and the hand-off shape; the JSON
++  packet is the authority.
++---
++# TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001
++
++Companion to `task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json`. The JSON is the authority; this file adds routing, code anchors and the hand-off shape.
++
++- Base: `main` at `365f70ce2edc907d14356d82d2843104dbdaa434` (merge of PR #1503, MACRO-DMX-MCP-JUST-WORKS-M1-001)
++- Worktree: `/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups`
++- Branch: `fix/mcp-just-works-m1-followups`
++- Lane: L2. `MERGE_AUTHORIZED=NO`. Branch push and one draft PR are authorized; nothing else on GitHub is.
++
++## Routes
++
++```
++TP_ROUTE
++workstream=implement (S0-S8)
++runner=codex
++model=UNKNOWN
++effort=UNKNOWN
++skills=NONE
++why=Owner asked for a Codex-executed packet; no model or effort pin was given, so the owner sets both at launch.
++```
++
++```
++TP_ROUTE
++workstream=gates (commands inside S0, S7)
++runner=local-shell
++model=NONE
++effort=UNKNOWN
++skills=NONE
++why=Deterministic test, lint and diff-scope commands.
++```
++
++```
++TP_ROUTE
++workstream=independent-audit (S9, held until head freeze)
++runner=grok
++model=UNKNOWN
++effort=UNKNOWN
++skills=independent-audit
++why=The implementer is Codex, so the controlling audit must be a non-Codex route; Grok governed the PR #1503 audits. The owner confirms the exact model at launch.
++```
++
++## The four items and where they live (line numbers at the base commit)
++
++| Item | Defect | Anchor |
++|---|---|---|
++| A | `dopemux mcp status` shows envrc ports after a start leased replacements | `src/dopemux/mcp/lifecycle.py` `_resolve_ports` (377), `_leased_ports` (293), `_status_result` (3219) |
++| B | `start --dry-run` / `restart --dry-run` write port leases | `src/dopemux/mcp/lifecycle.py` `_mutable_facts` (1026) calls `_resolve_ports(..., allocate=True)`; `src/dopemux/mcp/port_allocator.py` `allocate_ports` (274) already accepts `persist` and `dry_run` |
++| C | A build older than `DOPEMUX_MCP_BUILD_TIMEOUT_SECS` loses its PID while alive, so reconnects can stack builds | `src/dopemux/mcp/launcher.py` `_live_build_pid` (400, age test at 411), caller at 440; rule copied in `src/dopemux/mcp/reap.py` (507-518) |
++| D | Runner cancel of an in-flight tool call is not forwarded to the backend | `src/dopemux/mcp/stdio_proxy.py` `forward` and its `_inflight` cancel scopes |
++
++Background for B: a first attempt on 2026-11-12 was stopped before any edit because five tests in `tests/unit/test_mcp_lifecycle_ports_from_leases.py` assert that a dry run allocates leases, and the `_start` helper there defaults to `dry_run=True`. Those tests encode the defect. S3 rewrites them; it does not delete them.
++
++Background for C: the owner chose "fix in a follow-up" on 2026-11-15 rather than hold PR #1503. The Codex review asked for the expired build to be terminated before its PID is discarded, or kept tracked until it exits. This packet takes the first option, with a PID-identity check so a recycled PID is never signalled.
++
++## Host state Codex must leave alone
++
++About 20 containers from the M1 acceptance run are still up (`dopemux-*-55ab-*`, `*-570c-*`, `*-d79c-*`), plus two throwaway repos and the automatic-reap kill switch `~/.dopemux/mcp/runtime/reap.disabled`. Cleanup is a separate owner decision. All tests in this packet are hermetic and need none of it.
++
++## Hand-off message (in this order)
++
++1. **Status:** exactly one of `READY_FOR_AUDIT`, `BLOCKED`, `NEEDS_SUPERVISOR`, `INCOMPLETE`.
++2. Gates table: each command, its exit code, its bucket (`PASS`, `FAIL`, `NOT_RUN`, `UNKNOWN`).
++3. Blockers, each with the exact action that clears it.
++4. Proof path, plus requested vs observed route per workstream.
++5. What this packet did not authorize: merge, signing, thread resolution, steward phrase, host cleanup.
++
++## Auditor verdict contract (S9)
++
++The auditor returns `PASS`, `PASS_WITH_RISKS` or `FAIL`, the audited head SHA, and findings each with severity, file:line and a failing scenario. It checks in particular: each of A-D has a test that failed on the base for the stated reason; no read-only command writes the lease registry; no code path signals a PID without the identity check; the cancel notification uses the backend request id; nothing outside the allowlist changed.
+diff --git a/tests/unit/test_mcp_launcher.py b/tests/unit/test_mcp_launcher.py
+index 4719e6a13..48d8e3ed9 100644
+--- a/tests/unit/test_mcp_launcher.py
++++ b/tests/unit/test_mcp_launcher.py
+@@ -6,12 +6,14 @@ lock files live under tmp_path. No real docker call is made.
+ 
+ from __future__ import annotations
+ 
++import importlib
+ import json
+ import os
+ import subprocess
++import sys
+ import threading
+ from pathlib import Path
+-from types import SimpleNamespace
++from types import ModuleType, SimpleNamespace
+ from typing import Any, Dict, List
+ 
+ import pytest
+@@ -97,6 +99,20 @@ def _no_real_reap(monkeypatch):
+     monkeypatch.setattr(launcher, "maybe_reap", lambda **kw: None)
+ 
+ 
++@pytest.fixture(autouse=True)
++def _real_psutil(monkeypatch):
++    """Build liveness is tested against the real psutil.
++
++    ``tests/unit/test_health.py`` leaves a ``MagicMock`` in ``sys.modules["psutil"]``
++    for the rest of the run, and with it ``psutil.Error`` is not an exception
++    class. Each test here gets the real module; the stand-in returns afterwards.
++    """
++    if isinstance(sys.modules.get("psutil"), ModuleType):
++        return
++    monkeypatch.delitem(sys.modules, "psutil", raising=False)
++    importlib.import_module("psutil")
++
++
+ @pytest.fixture
+ def registry(tmp_path: Path, monkeypatch) -> Path:
+     path = tmp_path / "runtime" / "instances.json"
+@@ -315,6 +331,23 @@ def test_ensure_backend_wait_exceeded(tmp_path: Path, registry, no_image_build):
+     assert info.value.remedy == "run /mcp reconnect all"
+ 
+ 
++def _own_pid_is_a_verified_build(monkeypatch) -> Dict[str, Any]:
++    """Give the test process a build identity; every other pid is probed for real.
++
++    Tests whose fake ``Popen`` returns ``os.getpid()`` use the test process as the
++    live build. It is not the leader of its own session, so the real probe would
++    record it as unverified and the next launch would treat the file as stale.
++    """
++    identity = {"pid": os.getpid(), "create_time": 1.0, "pgid": os.getpid()}
++    real = launcher._build_process_identity
++    monkeypatch.setattr(
++        launcher,
++        "_build_process_identity",
++        lambda pid: identity if pid == os.getpid() else real(pid),
++    )
++    return identity
++
++
+ def test_ensure_backend_image_missing_spawns_build_and_exits(
+     tmp_path: Path, registry, monkeypatch
+ ):
+@@ -348,7 +381,9 @@ def test_ensure_backend_image_missing_spawns_build_and_exits(
+     # the build tags the one shared image
+     image = dr.compose_image_name("conport", product=dr.product_root())
+     assert f"image: {image}" in (target.runtime_dir / "compose.build.yml").read_text()
+-    assert (target.runtime_dir / "build-conport.pid").read_text().strip() == "4242"
++    # a JSON identity record, not the old one-line pid
++    record = json.loads((target.runtime_dir / "build-conport.pid").read_text())
++    assert record["pid"] == 4242
+ 
+ 
+ def test_two_launchers_one_start(tmp_path: Path, registry, no_image_build):
+@@ -960,6 +995,7 @@ def test_second_launch_during_a_live_build_spawns_nothing(
+         return SimpleNamespace(pid=os.getpid())  # alive for the whole test
+ 
+     monkeypatch.setattr(subprocess, "Popen", fake_popen)
++    _own_pid_is_a_verified_build(monkeypatch)
+     for _ in range(2):
+         with pytest.raises(LaunchError) as info:
+             launcher._build_image_if_missing(target)
+@@ -974,6 +1010,7 @@ def test_a_stale_build_pid_file_is_replaced(tmp_path: Path, registry, monkeypatc
+     target.runtime_dir.mkdir(parents=True, exist_ok=True)
+     dead = subprocess.Popen(["true"])
+     dead.wait()
++    # the old one-line format, and of a dead pid: stale on both counts
+     (target.runtime_dir / "build-conport.pid").write_text(
+         f"{dead.pid}\n", encoding="utf-8"
+     )
+@@ -987,7 +1024,8 @@ def test_a_stale_build_pid_file_is_replaced(tmp_path: Path, registry, monkeypatc
+     with pytest.raises(LaunchError):
+         launcher._build_image_if_missing(target)
+     assert len(spawned) == 1
+-    assert (target.runtime_dir / "build-conport.pid").read_text().strip() == "4243"
++    record = json.loads((target.runtime_dir / "build-conport.pid").read_text())
++    assert record["pid"] == 4243
+ 
+ 
+ # --- M3: a record without the port never resolves to the template default ---------
+@@ -1065,6 +1103,7 @@ def test_one_services_build_never_blocks_the_others(
+         return SimpleNamespace(pid=os.getpid())  # conport's build is still running
+ 
+     monkeypatch.setattr(subprocess, "Popen", fake_popen)
++    identity = _own_pid_is_a_verified_build(monkeypatch)
+     for target in (conport, memory):
+         with pytest.raises(LaunchError) as info:
+             launcher._build_image_if_missing(target)
+@@ -1073,7 +1112,7 @@ def test_one_services_build_never_blocks_the_others(
+     assert "still building" not in capsys.readouterr().err
+     for svc in ("conport", "dope-memory"):
+         pid_file = conport.runtime_dir / f"build-{svc}.pid"
+-        assert pid_file.read_text().strip() == str(os.getpid())
++        assert json.loads(pid_file.read_text()) == identity
+     # a second conport launch is still held off by conport's own build
+     with pytest.raises(LaunchError):
+         launcher._build_image_if_missing(conport)
+@@ -1084,25 +1123,22 @@ def test_one_services_build_never_blocks_the_others(
+ # --- residual fix B5: a build pid is stale after the build budget, not the up budget ---
+ 
+ 
+-def test_build_pid_goes_stale_after_the_build_budget(tmp_path: Path, monkeypatch):
+-    import time
+-
+-    monkeypatch.delenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS", raising=False)
+-    pid_file = tmp_path / "build-conport.pid"
+-    pid_file.write_text(f"{os.getpid()}\n", encoding="utf-8")
+-
+-    def aged(seconds: float) -> None:
+-        then = time.time() - seconds
+-        os.utime(pid_file, (then, then))
++def test_build_pid_budget_retains_ownership_until_verified_exit(
++    tmp_path, monkeypatch, m1_owned_build_table
++):
++    table=m1_owned_build_table
++    table.processes[43001]=dict(table.identity)
++    table.record(age=200)  # beyond up budget, still within build budget
++    assert launcher._live_build_pid(table.pid_file)==43001
++    assert table.signals==[]
++    table.behavior="denied"
++    table.record(age=dr.DEFAULT_BUILD_TIMEOUT_SECS+60)
++    assert launcher._live_build_pid(table.pid_file)==43001  # alive stays tracked
++    monkeypatch.setenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS","100")
++    table.behavior="term_exit"
++    table.record(age=200)
++    assert launcher._live_build_pid(table.pid_file) is None  # verified exit only
+ 
+-    aged(200)  # past the 180 s `up` budget, well inside the 1800 s build budget
+-    assert launcher._live_build_pid(pid_file) == os.getpid()
+-    aged(dr.DEFAULT_BUILD_TIMEOUT_SECS + 60)
+-    assert launcher._live_build_pid(pid_file) is None
+-    # the budget follows the env
+-    monkeypatch.setenv("DOPEMUX_MCP_BUILD_TIMEOUT_SECS", "100")
+-    aged(200)
+-    assert launcher._live_build_pid(pid_file) is None
+ 
+ 
+ # --- residual fix B4: launch hands the proxy the real guard ---------------------------
+@@ -1412,6 +1448,7 @@ def _build_only_setup(tmp_path: Path, monkeypatch):
+         return real_popen(cmd, *a, **kw)
+ 
+     monkeypatch.setattr(subprocess, "Popen", fake_popen)
++    _own_pid_is_a_verified_build(monkeypatch)
+     target = launcher.build_target(repo, "conport", catalog=CATALOG)
+     return target, spawned
+ 
+@@ -1555,3 +1592,180 @@ def test_the_marker_is_written_while_the_instance_lock_is_held(
+     assert events == ["lock", "marker(held=True)", "unlock"]
+     target = launcher.build_target(repo, "conport", catalog=CATALOG)
+     assert (target.runtime_dir / "instance.json").is_file()
++
++
++def test_m1_followup_expired_owned_build_never_stacks(tmp_path, monkeypatch):
++    """Ages a synthetic build; no OS child, signal, Docker or live registry."""
++    import signal
++    target = launcher.LaunchTarget(root=tmp_path, identity=SimpleNamespace(),
++        service="conport", spec={"management_model": "compose-service"},
++        runtime_dir=tmp_path, compose_project="synthetic")
++    now = [10_000.0]
++    alive = {}
++    spawned = []
++    signals = []
++    def popen(command, **kwargs):
++        assert kwargs["start_new_session"] is True
++        pid = 43_001 + len(spawned)
++        alive[pid] = {"pid": pid, "create_time": now[0], "pgid": pid}
++        spawned.append(pid)
++        return SimpleNamespace(pid=pid)
++    def killpg(pgid, signum):
++        signals.append((pgid, signum))
++        assert pgid in alive
++        del alive[pgid]
++    monkeypatch.setattr(launcher.time, "time", lambda: now[0])
++    monkeypatch.setattr(launcher, "_build_process_identity", lambda pid: alive.get(pid), raising=False)
++    monkeypatch.setattr(launcher.os, "killpg", killpg)
++    monkeypatch.setattr(subprocess, "Popen", popen)
++    monkeypatch.setattr(dr, "product_root", lambda: tmp_path)
++    monkeypatch.setattr(dr, "env_with_compose_interpolation", lambda **k: {})
++    monkeypatch.setattr(dr, "compose_image_name", lambda *a, **k: "synthetic-image")
++    monkeypatch.setattr(dr, "docker_image_exists", lambda *a, **k: False)
++    monkeypatch.setattr(dr, "compose_build_inputs", lambda *a, **k: (tmp_path/"override", tmp_path/"env"))
++    monkeypatch.setattr(dr, "compose_build_command", lambda **k: ["synthetic-build"])
++    for _ in range(2):
++        with pytest.raises(LaunchError, match="LAUNCH_IMAGE_BUILDING"):
++            launcher._build_image_if_missing(target)
++        now[0] += dr.build_timeout_secs() + 60
++        pid_file = launcher.build_pid_path(tmp_path, "conport")
++        import os
++        os.utime(pid_file, (now[0]-dr.build_timeout_secs()-60,)*2)
++    assert len(alive) == 1, "expired still-live build was orphaned while another started"
++    assert signals == [(43_001, signal.SIGTERM)]
++
++
++@pytest.fixture
++def m1_owned_build_table(tmp_path, monkeypatch):
++    """OS process identity, clock and signals are synthetic for every C matrix row."""
++    import psutil
++    from dopemux.mcp import reap
++    state = SimpleNamespace(now=10_000.0, processes={}, signals=[], behavior="term_exit")
++    class Process:
++        def __init__(self, pid):
++            if pid not in state.processes:
++                raise psutil.NoSuchProcess(pid)
++            self.pid = pid
++        def is_running(self):
++            return self.pid in state.processes
++        def status(self):
++            data = state.processes[self.pid]
++            if data.get("unknown"):
++                raise psutil.AccessDenied(self.pid)
++            return data.get("status", "running")
++        def create_time(self):
++            return state.processes[self.pid]["create_time"]
++    def no_effect(*a, **k):
++        raise AssertionError("C matrix cannot create children, sockets or real signals")
++    def killpg(pid, signum):
++        import signal
++        state.signals.append((pid, signum))
++        assert pid in state.processes and state.processes[pid]["pgid"] == pid
++        if state.behavior == "denied":
++            raise PermissionError("synthetic signal denied")
++        if state.behavior == "term_exit" or (state.behavior == "kill_exit" and signum == signal.SIGKILL):
++            del state.processes[pid]
++        elif state.behavior == "recycled":
++            state.processes[pid] = {"pid":pid,"pgid":pid,"create_time":999.0}
++    monkeypatch.setattr(psutil, "Process", Process)
++    monkeypatch.setattr(launcher.os, "getpgid", lambda pid:state.processes[pid]["pgid"])
++    monkeypatch.setattr(launcher.os, "killpg", killpg)
++    monkeypatch.setattr(launcher.os, "kill", no_effect)
++    monkeypatch.setattr(subprocess, "Popen", no_effect)
++    monkeypatch.setattr(launcher.time, "time", lambda:state.now)
++    monkeypatch.setattr(launcher.time, "monotonic", lambda:state.now)
++    monkeypatch.setattr(launcher.time, "sleep", lambda seconds:setattr(state,"now",state.now+seconds))
++    state.reap = reap
++    state.pid_file = tmp_path/"build-conport.pid"
++    state.identity = {"pid":43001,"pgid":43001,"create_time":123.0}
++    def record(age=10):
++        state.pid_file.write_text(json.dumps(state.identity))
++        os.utime(state.pid_file,(state.now-age,)*2)
++    state.record=record
++    return state
++
++
++@pytest.mark.parametrize("kind", ["legacy", "malformed", "negative", "zero", "bool",
++    "string", "dead", "recycled", "unknown", "wrong_group", "zombie"])
++def test_m1_followup_build_stale_identity_never_signalled(kind, tmp_path, m1_owned_build_table):
++    table=m1_owned_build_table
++    table.processes[43001]=dict(table.identity)
++    table.record(age=2000)
++    if kind == "legacy":
++        table.pid_file.write_text("43001\n")
++    elif kind == "malformed":
++        table.pid_file.write_text("{bad")
++    elif kind in {"negative","zero","bool","string"}:
++        data=dict(table.identity,pid={"negative":-1,"zero":0,"bool":True,"string":"43001"}[kind])
++        table.pid_file.write_text(json.dumps(data))
++    elif kind == "dead":
++        table.processes.clear()
++    elif kind == "recycled":
++        table.processes[43001]["create_time"]=999.0
++    elif kind == "unknown":
++        table.processes[43001]["unknown"]=True
++    elif kind == "wrong_group":
++        table.processes[43001]["pgid"]=43000
++    elif kind == "zombie":
++        table.processes[43001]["status"]="zombie"
++    assert launcher._live_build_pid(table.pid_file) is None
++    assert table.reap._live_build(tmp_path,table.now) is False
++    assert table.signals == []
++
++
++@pytest.mark.parametrize("behavior,expected_live", [("term_exit",False),("kill_exit",False),
++    ("denied",True),("never_exits",True),("recycled",False)])
++def test_m1_followup_expiry_signal_rules_and_reaper_agreement(
++    behavior,expected_live,tmp_path,m1_owned_build_table
++):
++    import signal
++    table=m1_owned_build_table
++    table.behavior=behavior
++    table.processes[43001]=dict(table.identity)
++    table.record(age=dr.build_timeout_secs()+1)
++    assert table.reap._live_build(tmp_path,table.now) is True
++    started=table.now
++    assert (launcher._live_build_pid(table.pid_file) is not None) is expected_live
++    assert table.reap._live_build(tmp_path,table.now) is expected_live
++    assert table.now-started <= 4.2
++    assert table.signals[0] == (43001,signal.SIGTERM)
++    if behavior in {"kill_exit","never_exits"}:
++        assert table.signals == [(43001,signal.SIGTERM),(43001,signal.SIGKILL)]
++    else:
++        assert len(table.signals) == 1
++
++
++def test_m1_followup_young_build_keeps_ownership_then_clean_exit_recovers(
++    tmp_path,m1_owned_build_table,monkeypatch
++):
++    table=m1_owned_build_table
++    table.processes[43001]=dict(table.identity)
++    launcher._write_build_pid(table.pid_file,43001)
++    assert json.loads(table.pid_file.read_text()) == table.identity
++    assert not list(tmp_path.glob(".*.tmp"))
++    assert launcher._live_build_pid(table.pid_file) == 43001
++    assert table.reap._live_build(tmp_path,table.now) is True
++    target=launcher.LaunchTarget(root=tmp_path,identity=SimpleNamespace(),service="conport",
++        spec={"management_model":"compose-service"},runtime_dir=tmp_path,compose_project="fake")
++    monkeypatch.setattr(dr,"product_root",lambda:tmp_path)
++    monkeypatch.setattr(dr,"env_with_compose_interpolation",lambda **k:{})
++    monkeypatch.setattr(dr,"compose_image_name",lambda *a,**k:"fake")
++    monkeypatch.setattr(dr,"docker_image_exists",lambda *a,**k:False)
++    with pytest.raises(LaunchError,match="LAUNCH_IMAGE_BUILDING"):
++        launcher._build_image_if_missing(target)
++    assert table.signals == []
++    table.processes.clear()
++    assert launcher._live_build_pid(table.pid_file) is None
++    assert table.reap._live_build(tmp_path,table.now) is False
++
++
++@pytest.mark.parametrize("module_name",["launcher","reap"])
++@pytest.mark.parametrize("pid",[-1,0,True,"43001",None])
++def test_m1_followup_invalid_pid_is_rejected_before_psutil(module_name,pid,monkeypatch):
++    import psutil
++    from dopemux.mcp import reap
++    def no_probe(value):
++        raise AssertionError("invalid PID reached process probe")
++    monkeypatch.setattr(psutil,"Process",no_probe)
++    module=launcher if module_name=="launcher" else reap
++    assert module._build_process_identity(pid) is None
+diff --git a/tests/unit/test_mcp_lifecycle_ports_from_leases.py b/tests/unit/test_mcp_lifecycle_ports_from_leases.py
+index d881a8936..fcfeda9bf 100644
+--- a/tests/unit/test_mcp_lifecycle_ports_from_leases.py
++++ b/tests/unit/test_mcp_lifecycle_ports_from_leases.py
+@@ -128,8 +128,8 @@ def _active(paths) -> List[Dict[str, Any]]:
+     return PortLeaseRegistry.load(paths.leases).active_leases()
+ 
+ 
+-def test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked(
+-    tmp_path, paths
++def test_start_dry_run_without_envrc_plans_ports_and_is_not_blocked(
++    tmp_path, paths, m1_offline_lifecycle
+ ):
+     repo = _repo(tmp_path)
+     result = _start(tmp_path, repo, paths)
+@@ -140,24 +140,18 @@ def test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked(
+     ), result.blocking_findings
+     assert result.status == "PLANNED", result.blocking_findings
+ 
+-    worktree_root = result.project_identity["worktree_root"]
+-    by_service = {}
+-    for lease in _active(paths):
+-        by_service.setdefault(lease["service"], []).append(lease)
+-        assert lease["worktree_root"] == worktree_root
+-    assert {"conport", "dope-memory"} <= set(by_service)
+-    # The planned services use the leased ports.
+-    leased_vars = {
+-        lease["port_var"]: lease["port"] for ls in by_service.values() for lease in ls
+-    }
+-    conport = next(s for s in result.services if s["service"] == "conport")
+-    assert conport["ports"]["CONPORT_MCP_PORT"] == leased_vars["CONPORT_MCP_PORT"]
+-    # Dry run still must not create the instance registry.
++    planned = {key: port for svc in result.services for key, port in svc["ports"].items()}
++    assert set(_LEASE_VARS) <= set(planned)
++    assert all(planned[key] > 0 for key in _LEASE_VARS)
++    assert _active(paths) == []
++    assert not paths.leases.exists()
+     assert not paths.reg.exists()
+ 
+ 
+-def test_start_reuses_existing_active_leases(tmp_path, paths):
+-    repo = _repo(tmp_path)
++def test_start_reuses_existing_active_leases(tmp_path, paths, m1_offline_lifecycle):
++    repo, identity = m1_offline_lifecycle
++    lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
++                      lease_path=paths.leases, is_free_fn=lambda p: True)
+     first = _start(tmp_path, repo, paths)
+     leases_before = _active(paths)
+     assert len(leases_before) == 4  # 3 conport roles + dope-memory
+@@ -171,8 +165,10 @@ def test_start_reuses_existing_active_leases(tmp_path, paths):
+     assert len(_active(paths)) == len(leases_before)
+ 
+ 
+-def test_envrc_ports_still_win_when_present_and_leased(tmp_path, paths):
+-    repo = _repo(tmp_path)
++def test_envrc_ports_still_win_when_present_and_leased(tmp_path, paths, m1_offline_lifecycle):
++    repo, identity = m1_offline_lifecycle
++    lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
++                      lease_path=paths.leases, is_free_fn=lambda p: True)
+     # First pass has no envrc and allocates; then the envrc names those same ports.
+     first = _start(tmp_path, repo, paths)
+     leased = {s["service"]: s["ports"] for s in first.services}
+@@ -521,16 +517,28 @@ def _active_by_var(paths, worktree_root: str) -> Dict[str, int]:
+     }
+ 
+ 
+-def test_a_start_after_init_and_stop_re_leases_the_envrc_ports(tmp_path, paths):
++def test_a_start_after_init_and_stop_re_leases_the_envrc_ports(
++    tmp_path, paths, m1_offline_lifecycle
++):
+     repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
++    before = paths.leases.read_bytes()
+     result = _start(tmp_path, repo, paths)
++    assert paths.leases.read_bytes() == before
++    # A real allocation still persists exactly the previewed service ports.
++    real = lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
++                             lease_path=paths.leases,
++                             env={k: str(v) for k, v in envrc_ports.items()},
++                             is_free_fn=lambda p: True)
+     assert not result.blocking_findings, result.blocking_findings
+     assert _active_by_var(paths, identity.worktree_root) == envrc_ports
+     planned = {v: p for s in result.services for v, p in s["ports"].items()}
++    assert all(real[v] == planned[v] for v in _LEASE_VARS)
+     assert {v: planned[v] for v in _LEASE_VARS} == envrc_ports
+ 
+ 
+-def test_an_envrc_port_another_worktree_leased_is_replaced(tmp_path, paths):
++def test_an_envrc_port_another_worktree_leased_is_replaced(
++    tmp_path, paths, m1_offline_lifecycle
++):
+     repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+     taken = envrc_ports["CONPORT_MCP_PORT"]
+     reg = PortLeaseRegistry.load(paths.leases)
+@@ -550,10 +558,19 @@ def test_an_envrc_port_another_worktree_leased_is_replaced(tmp_path, paths):
+         }
+     )
+     reg.save()
++    before = paths.leases.read_bytes()
+     result = _start(tmp_path, repo, paths)
++    assert paths.leases.read_bytes() == before
++    # A real allocation still persists exactly the previewed service ports.
++    real = lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
++                             lease_path=paths.leases,
++                             env={k: str(v) for k, v in envrc_ports.items()},
++                             is_free_fn=lambda p: True)
+     assert not result.blocking_findings, result.blocking_findings
+     ours = _active_by_var(paths, identity.worktree_root)
+     assert ours["CONPORT_MCP_PORT"] != taken
++    planned = {v: p for s in result.services for v, p in s["ports"].items()}
++    assert all(real[v] == planned[v] for v in _LEASE_VARS)
+     conport = next(s for s in result.services if s["service"] == "conport")
+     assert conport["ports"]["CONPORT_MCP_PORT"] == ours["CONPORT_MCP_PORT"]
+     # the other ports were free and are leased exactly as the envrc names them
+@@ -577,9 +594,14 @@ def test_allocate_false_still_returns_the_envrc_ports_unleased(tmp_path, paths):
+     assert _active(paths) == []  # status/doctor/stop never lease
+ 
+ 
+-def test_the_launcher_cold_start_shape_re_leases_too(tmp_path, paths):
++def test_the_launcher_cold_start_shape_re_leases_too(
++    tmp_path, paths, m1_offline_lifecycle, monkeypatch
++):
+     """ensure_backend calls run_lifecycle("start", services=[svc],
+     hold_instance_lock=False) with port vars scrubbed from the process env."""
++    # Git worktree discovery is an external identity seam, not tenant behavior.
++    monkeypatch.setattr(lc.ct, "legacy_workspace_aliases",
++                        lambda identity: [identity.project_root])
+     repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+     result = run_lifecycle(
+         "start",
+@@ -951,6 +973,15 @@ def _retarget_lease(paths, port_var: str, port: int) -> None:
+ 
+ def _leased_start(tmp_path, paths):
+     repo = _repo(tmp_path)
++    # A dry run plans without persisting, so the leases these tests retarget come
++    # from a real allocation first.
++    lc._resolve_ports(
++        resolve_identity_view(repo),
++        ["conport", "dope-memory"],
++        _catalog(),
++        lease_path=paths.leases,
++        is_free_fn=lambda p: True,
++    )
+     first = _start(tmp_path, repo, paths)
+     conport = next(s for s in first.services if s["service"] == "conport")
+     return repo, conport["ports"]["CONPORT_MCP_PORT"]
+@@ -1095,3 +1126,172 @@ def test_split_deferred_doctor_keeps_a_finding_bearing_an_expected_name():
+     )
+     assert kept == [ours]
+     assert dropped == [other]
++
++
++# M1 follow-ups: real lifecycle/allocator with synthetic identity and Docker only.
++@pytest.fixture
++def m1_offline_lifecycle(tmp_path, paths, monkeypatch):
++    from dopemux.mcp.runtime_state import ProjectIdentityView
++    from dopemux.mcp.port_diagnostics import instance_id_for_path
++
++    repo = tmp_path / "offline-project"
++    repo.mkdir()
++    (repo / ".mcp.json").write_text(json.dumps({"mcpServers": {
++        "conport": {"type": "sse", "url": "http://localhost:3005/sse"},
++        "dope-memory": {"type": "http", "url": "http://localhost:3020/mcp"},
++    }}))
++    identity = ProjectIdentityView(
++        project_id=repo.name, workspace_id=str(repo), project_root=str(repo),
++        worktree_root=str(repo), project_hash="synthetic",
++        worktree_hash=instance_id_for_path(str(repo)), instance_id="synthetic",
++        identity_confidence="HIGH",
++    )
++    monkeypatch.setattr(__import__("sys").modules[__name__], "_repo", lambda *a, **k: repo)
++    monkeypatch.setattr(__import__("sys").modules[__name__], "resolve_identity_view", lambda *a, **k: identity)
++    monkeypatch.setattr(lc, "resolve_target_repo", lambda value: Path(value))
++    monkeypatch.setattr(lc, "resolve_identity_view", lambda *a, **k: identity)
++    monkeypatch.setattr(lc, "run_mcp_doctor", lambda *a, **k: SimpleNamespace(findings=[]))
++    monkeypatch.setattr(lc.dr, "docker_image_exists", lambda *a, **k: True)
++    def no_child(*a, **k):
++        raise AssertionError("M1 regression must not spawn a real child")
++    monkeypatch.setattr(subprocess, "Popen", no_child)
++    return repo, identity
++
++
++def test_m1_followup_status_uses_reallocated_leases_and_probes_them(
++    tmp_path, paths, m1_offline_lifecycle
++):
++    repo, identity = m1_offline_lifecycle
++    selected = ["conport", "dope-memory"]
++    old = lc._resolve_ports(identity, selected, _catalog(), lease_path=paths.leases,
++                            is_free_fn=lambda p: True)
++    (repo / ".envrc.dopemux-mcp").write_text(
++        "".join(f"export {var}={port}\n" for var, port in old.items())
++    )
++    reg = PortLeaseRegistry.load(paths.leases)
++    for lease in list(reg.active_leases()):
++        reg.mark_released(lease_id=lease["lease_id"])
++        foreign = dict(lease, lease_id="foreign-"+lease["lease_id"], status="active",
++                       worktree_root="/synthetic/foreign", project_root="/synthetic/foreign",
++                       worktree_hash="foreign", project_id="foreign")
++        reg.upsert_lease(foreign)
++    reg.save()
++    replacement = lc._resolve_ports(identity, selected, _catalog(), lease_path=paths.leases,
++                                    env={k: str(v) for k, v in old.items()},
++                                    is_free_fn=lambda p: True)
++    assert all(replacement[k] != old[k] for k in old)
++    before = paths.leases.read_bytes()
++    probes = []
++    result = run_lifecycle("status", repo=repo, services=selected, catalog=_catalog(),
++                           registry_path=paths.reg, docker_runner=_docker_empty(),
++                           process_env={}, port_is_free_fn=lambda p: probes.append(p) or True)
++    reported = {k: v for s in result.services for k, v in s["desired"]["ports"].items()
++                if k in replacement}
++    assert reported == replacement
++    conport = next(s for s in result.services if s["service"] == "conport")
++    assert conport["desired"]["ports"]["sse"] == replacement["CONPORT_MCP_PORT"]
++    assert conport["desired"]["ports"]["http"] == replacement["CONPORT_HTTP_PORT"]
++    assert replacement["CONPORT_HTTP_PORT"] in probes
++    assert replacement["DOPE_MEMORY_PORT"] in probes
++    assert paths.leases.read_bytes() == before
++
++
++@pytest.mark.parametrize("operation", ["start", "restart"])
++@pytest.mark.parametrize("existing", [False, True])
++def test_m1_followup_dry_run_does_not_persist_leases(
++    operation, existing, tmp_path, paths, m1_offline_lifecycle
++):
++    repo, identity = m1_offline_lifecycle
++    if existing:
++        reg = PortLeaseRegistry.load(paths.leases)
++        reg.save()
++    before = paths.leases.read_bytes() if existing else None
++    locks_before = {p.name:p.read_bytes() for p in paths.reg.parent.glob("*.lock")}
++    result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
++                           catalog=_catalog(), dry_run=True, registry_path=paths.reg,
++                           docker_runner=_docker_empty(), skip_doctor=True, process_env={},
++                           port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
++    assert result.status == "PLANNED", result.blocking_findings
++    assert all(s["ports"] for s in result.services)
++    assert (paths.leases.read_bytes() if paths.leases.exists() else None) == before
++    assert not paths.reg.exists()
++    assert {p.name:p.read_bytes() for p in paths.reg.parent.glob("*.lock")} == locks_before
++
++
++@pytest.mark.parametrize("existing", [False, True])
++def test_m1_followup_status_doctor_stop_never_write_leases(
++    existing, tmp_path, paths, m1_offline_lifecycle, monkeypatch
++):
++    from dopemux.mcp import doctor
++    repo, identity = m1_offline_lifecycle
++    if existing:
++        lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
++                          lease_path=paths.leases, is_free_fn=lambda p: True)
++    before = paths.leases.read_bytes() if existing else None
++    monkeypatch.setattr(doctor, "resolve_identity_view", lambda *a, **k: identity)
++    report = doctor.run_mcp_doctor(repo, catalog=_catalog(), skip_docker=True,
++        skip_port_probe=True, port_is_free_fn=lambda p: True, process_env={},
++        global_claude_path=tmp_path/"absent-global.json")
++    assert report is not None
++    for op in ("status", "stop"):
++        result = run_lifecycle(op, repo=repo, services=["conport", "dope-memory"],
++            catalog=_catalog(), dry_run=op == "stop", registry_path=paths.reg, docker_runner=_docker_empty(),
++            cmd_runner=_docker_empty(), skip_doctor=True, process_env={},
++            port_is_free_fn=lambda p: True, product_root=_product(tmp_path)
++            if not (tmp_path/"product").exists() else tmp_path/"product")
++        assert not result.blocking_findings, result.blocking_findings
++        assert (paths.leases.read_bytes() if paths.leases.exists() else None) == before
++
++
++def test_m1_followup_read_only_fallback_identity_and_reserved_exclusion(
++    tmp_path, paths, m1_offline_lifecycle
++):
++    _, identity = m1_offline_lifecycle
++    reg = PortLeaseRegistry.load(paths.leases)
++    for var, port, service, root in [("CONPORT_MCP_PORT", 3305, "conport", identity.worktree_root),
++        ("CONPORT_HTTP_PORT", 3304, "conport", "/synthetic/foreign"),
++        ("TASK_ORCHESTRATOR_HTTP_PORT", 8890, "task-orchestrator", identity.worktree_root)]:
++        reg.upsert_lease(dict(lease_id=var, service=service, port_role=var, port_var=var,
++            port=port, worktree_root=root, project_root=root, status="active", scope="worktree"))
++    reg.save()
++    before = paths.leases.read_bytes()
++    ports = lc._resolve_ports(identity, ["conport", "task-orchestrator"], _catalog(),
++        lease_path=paths.leases, allocate=False, env={"CONPORT_MCP_PORT": "3005",
++        "CONPORT_HTTP_PORT": "3004", "TASK_ORCHESTRATOR_HTTP_PORT": "7890"})
++    assert ports == {"CONPORT_MCP_PORT":3305,"CONPORT_HTTP_PORT":3004,
++                     "TASK_ORCHESTRATOR_HTTP_PORT":7890}
++    assert paths.leases.read_bytes() == before
++
++
++def test_m1_followup_dry_plan_matches_real_collision_repair_without_lock(
++    tmp_path, paths, m1_offline_lifecycle, monkeypatch
++):
++    from dopemux.mcp import docker_inspect as di
++    _, identity = m1_offline_lifecycle
++    collided = _seed_collision(paths, identity)
++    docker = di.DockerInspectResult(available=True, containers=[_conport_container(identity, collided)])
++    before = paths.leases.read_bytes()
++    def no_lock(*a, **k):
++        raise AssertionError("dry allocation must not take/create a lease lock")
++    with monkeypatch.context() as planning:
++        planning.setattr(lc, "registry_lock", no_lock)
++        plan = lc._resolve_ports(identity, ["dope-memory"], _catalog(),
++            lease_path=paths.leases, dry_run=True, is_free_fn=lambda p:p!=collided, docker=docker)
++    assert plan["DOPE_MEMORY_PORT"] != collided
++    assert paths.leases.read_bytes() == before
++    real = lc._resolve_ports(identity, ["dope-memory"], _catalog(),
++        lease_path=paths.leases, is_free_fn=lambda p:p!=collided, docker=docker)
++    assert real == plan
++    assert _active_by_var(paths, identity.worktree_root)["DOPE_MEMORY_PORT"] == plan["DOPE_MEMORY_PORT"]
++
++
++def test_m1_followup_reserved_port_preview_blocks_without_writes(
++    tmp_path, paths, m1_offline_lifecycle
++):
++    _, identity = m1_offline_lifecycle
++    catalog = _catalog()
++    catalog["servers"]["dope-memory"]["default_port_base"] = 7890
++    plan = lc._resolve_ports(identity, ["dope-memory"], catalog, lease_path=paths.leases,
++        env={"DOPE_MEMORY_PORT":"7890"}, dry_run=True, is_free_fn=lambda p:True)
++    assert plan["DOPE_MEMORY_PORT"] != 7890
++    assert not paths.leases.exists()
+diff --git a/tests/unit/test_mcp_reap.py b/tests/unit/test_mcp_reap.py
+index bd592a7a2..06ce3afde 100644
+--- a/tests/unit/test_mcp_reap.py
++++ b/tests/unit/test_mcp_reap.py
+@@ -6,11 +6,13 @@ and nothing under ``~/.dopemux`` is read or written.
+ 
+ from __future__ import annotations
+ 
++import importlib
+ import json
+ import os
+ import subprocess
++import sys
+ from pathlib import Path
+-from types import SimpleNamespace
++from types import ModuleType, SimpleNamespace
+ from typing import Any, Dict, List, Optional
+ 
+ import pytest
+@@ -42,6 +44,20 @@ def _isolated(tmp_path: Path, monkeypatch):
+     monkeypatch.delenv("DOPEMUX_MCP_REAP", raising=False)
+ 
+ 
++@pytest.fixture(autouse=True)
++def _real_psutil(monkeypatch):
++    """Build liveness is tested against the real psutil.
++
++    ``tests/unit/test_health.py`` leaves a ``MagicMock`` in ``sys.modules["psutil"]``
++    for the rest of the run, and with it ``psutil.Error`` is not an exception
++    class. Each test here gets the real module; the stand-in returns afterwards.
++    """
++    if isinstance(sys.modules.get("psutil"), ModuleType):
++        return
++    monkeypatch.delitem(sys.modules, "psutil", raising=False)
++    importlib.import_module("psutil")
++
++
+ @pytest.fixture
+ def runtime(tmp_path: Path) -> Path:
+     path = tmp_path / "runtime"
+@@ -1626,9 +1642,32 @@ def _marked_dir(
+     return rt
+ 
+ 
+-def _build_pid(rt: Path, pid: int, *, age: float = 10.0) -> None:
++@pytest.fixture(autouse=True)
++def _test_process_is_a_verifiable_build(monkeypatch):
++    """Give the test process, and only it, a build identity.
++
++    Tests write ``os.getpid()`` as the pid of a live build. The test process is
++    not the leader of its own session, so the real probe would call it
++    unverified. Every other pid is still probed for real.
++    """
++    identity = {"pid": os.getpid(), "create_time": 1.0, "pgid": os.getpid()}
++    real = reap._build_process_identity
++    monkeypatch.setattr(
++        reap,
++        "_build_process_identity",
++        lambda pid: identity if pid == os.getpid() else real(pid),
++    )
++
++
++def _build_pid(rt: Path, pid: int, *, age: float = 10.0, legacy: bool = False) -> None:
++    """Write ``build-conport.pid`` as the launcher does; ``legacy`` is the old one-line file."""
+     pid_file = rt / "build-conport.pid"
+-    pid_file.write_text(f"{pid}\n", encoding="utf-8")
++    if legacy:
++        text = f"{pid}\n"
++    else:
++        record = reap._build_process_identity(pid) or {"pid": pid, "identity": "unverified"}
++        text = json.dumps(record) + "\n"
++    pid_file.write_text(text, encoding="utf-8")
+     os.utime(pid_file, (NOW - age, NOW - age))
+ 
+ 
+@@ -1671,8 +1710,12 @@ def test_a_marked_dir_with_a_live_build_is_not_a_candidate(
+     rt = _marked_dir(runtime, tmp_path / "removed" / "proj")
+     _build_pid(rt, os.getpid())  # alive and young: the build may still write here
+     assert _plan(reg, []) == []
+-    # older than the build budget: stale, as the launcher treats it
++    # past the build budget but still alive: protected until it exits. Age alone
++    # never proves a build stopped; the launcher is the one that terminates it.
+     _build_pid(rt, os.getpid(), age=dr.build_timeout_secs() + 60)
++    assert _plan(reg, []) == []
++    # the old one-line pid file proves nothing about the process: stale
++    _build_pid(rt, os.getpid(), legacy=True)
+     assert [c.dir_only for c in _plan(reg, [])] == [True]
+ 
+ 
+@@ -1997,7 +2040,7 @@ def test_an_idle_state_only_pair_with_a_live_build_is_not_planned(
+     assert _plan(reg, [], lease_registry=lease_registry) == []
+ 
+ 
+-@pytest.mark.parametrize("pid_state", ["dead", "past_the_build_budget"])
++@pytest.mark.parametrize("pid_state", ["dead", "legacy_one_line"])
+ def test_a_dead_or_stale_build_pid_does_not_block_a_reap(
+     tmp_path: Path, runtime: Path, pid_state: str
+ ):
+@@ -2006,8 +2049,8 @@ def test_a_dead_or_stale_build_pid_does_not_block_a_reap(
+     rt = _rt_dir(runtime)
+     if pid_state == "dead":
+         _build_pid(rt, _dead_pid())
+-    else:
+-        _build_pid(rt, os.getpid(), age=dr.build_timeout_secs() + 60)
++    else:  # a live pid in the old one-line format: unverifiable, so stale
++        _build_pid(rt, os.getpid(), legacy=True)
+     lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
+     assert [c.reason for c in _plan(reg, [], lease_registry=lease_registry)] == ["idle"]
+     assert [c.reason for c in _plan(reg, [_container("a1")])] == ["idle"]
+@@ -2365,3 +2408,16 @@ def test_a_same_root_lease_with_another_worktree_hash_is_not_the_pairs(
+     }
+     assert status["lease-conport-3100"] == "released"
+     assert status["lease-foreign-hash"] == "active"
++
++
++def test_m1_followup_negative_build_pid_is_stale_without_process_probe(tmp_path, monkeypatch):
++    """psutil rejects negative PIDs with ValueError; malformed registry stays inert."""
++    import psutil
++    def fake_process(pid):
++        if pid < 0:
++            raise ValueError("pid must be a positive integer")
++        raise AssertionError("no actual process probe permitted")
++    monkeypatch.setattr(psutil, "Process", fake_process)
++    (tmp_path / "build-conport.pid").write_text(json.dumps(
++        {"pid": -1, "create_time": 123.0, "pgid": -1}))
++    assert reap._live_build(tmp_path, NOW) is False
+diff --git a/tests/unit/test_mcp_stdio_proxy.py b/tests/unit/test_mcp_stdio_proxy.py
+index a6f2beff5..08fb2564f 100644
+--- a/tests/unit/test_mcp_stdio_proxy.py
++++ b/tests/unit/test_mcp_stdio_proxy.py
+@@ -12,6 +12,7 @@ import socket
+ import time
+ from contextlib import asynccontextmanager
+ from typing import Any, Dict, List
++from types import SimpleNamespace
+ 
+ import anyio
+ import pytest
+@@ -467,6 +468,7 @@ async def test_proxy_fails_fast_and_exits_one_when_reconnect_cannot_answer(monke
+     assert backend.calls == []
+ 
+ 
++@pytest.mark.usefixtures("m1_proxy_effect_fence")
+ async def test_proxy_bounds_a_request_with_a_read_timeout(monkeypatch):
+     monkeypatch.setattr(stdio_proxy, "REQUEST_TIMEOUT_S", 0.3)
+     backend = _Backend()
+@@ -485,6 +487,7 @@ async def test_proxy_bounds_a_request_with_a_read_timeout(monkeypatch):
+ # --- Streamable HTTP "Session terminated" (fix round 2) ---------------------
+ 
+ 
++@pytest.mark.usefixtures("m1_proxy_effect_fence")
+ async def test_proxy_reconnects_and_resends_after_streamable_session_terminated():
+     backend = _Backend("terminated", "ok")
+     async with _runner_via(backend) as (runner, box):
+@@ -515,6 +518,7 @@ def test_session_terminated_is_exact_code_and_message(
+     assert stdio_proxy._session_terminated(error) is expected
+ 
+ 
++@pytest.mark.usefixtures("m1_proxy_effect_fence")
+ async def test_proxy_does_not_resend_a_lookalike_error_that_may_have_committed():
+     backend = _Backend("terminated_lookalike", "ok")
+     async with _runner_via(backend) as (runner, box):
+@@ -960,3 +964,193 @@ async def test_own_backend_heals_through_both_checkpoints():
+     assert served == ["A"] and connects == ["A-terminated", "A"]
+     assert calls == ["A", "A", "A", "A"]  # before/after the first and the reconnect
+     assert code is None  # still serving
++
++
++@pytest.mark.usefixtures("m1_proxy_effect_fence")
++async def test_m1_followup_runner_cancel_reaches_backend_request_id():
++    """Real proxy/SDK, in-memory streams; backend cancellation is observable."""
++    backend = Server("cancellable-backend")
++    entered = anyio.Event()
++    cancelled = anyio.Event()
++    completed = anyio.Event()
++    ids = []
++    @backend.call_tool()
++    async def call(name, arguments):
++        ids.append(backend.request_context.request_id)
++        entered.set()
++        try:
++            await anyio.sleep(0.4)
++            completed.set()
++            return [types.TextContent(type="text", text="completed")]
++        except anyio.get_cancelled_exc_class():
++            cancelled.set()
++            raise
++    with anyio.fail_after(5):
++        async with _runner_via_proxy(backend) as (runner, _box):
++            # Backend initializes with id0; runner id900 is deliberately distinct.
++            # Distinct id on runner enforced directly by actual SDK state.
++            assert isinstance(runner._request_id, int)
++            runner._request_id = 900
++            with anyio.CancelScope() as scope:
++                async def cancel_when_entered():
++                    await entered.wait()
++                    await runner.send_notification(types.ClientNotification(
++                        types.CancelledNotification(method="notifications/cancelled",
++                            params=types.CancelledNotificationParams(requestId=900))))
++                    await anyio.sleep(0.05)
++                    scope.cancel()
++                async with anyio.create_task_group() as tg:
++                    tg.start_soon(cancel_when_entered)
++                    try:
++                        await runner.call_tool("wait", {})
++                    except McpError as exc:
++                        assert exc.error.message == "Request cancelled"
++            with anyio.move_on_after(1):
++                await cancelled.wait()
++            assert cancelled.is_set(), "backend completed instead of receiving cancellation"
++            assert not completed.is_set()
++            assert ids and ids[0] != 900
++
++
++@asynccontextmanager
++async def _m1_live_link(*, notification_mode="ok"):
++    """Real proxy core/SDK in memory; no network, children or live providers."""
++    server=Server("m1-cancel-contract")
++    seen={}
++    entered=anyio.Event()
++    notifications=[]
++    @server.call_tool()
++    async def call(name, arguments):
++        seen[name]=server.request_context.request_id
++        if name.startswith("wait"):
++            entered.set()
++            await anyio.sleep_forever()
++        return [types.TextContent(type="text",text=name)]
++    link=stdio_proxy._BackendLink(SPEC,_factory(server))
++    with anyio.fail_after(5):
++        async with _factory(server)(**link.client_kwargs()) as session:
++            await session.initialize()
++            original=session.send_notification
++            async def notify(message,*args,**kwargs):
++                if isinstance(message.root,types.CancelledNotification):
++                    notifications.append(message.root.params.requestId)
++                    if notification_mode=="failure":
++                        raise OSError("synthetic cleanup-send failure")
++                    if notification_mode=="timeout":
++                        await anyio.sleep_forever()
++                return await original(message,*args,**kwargs)
++            session.send_notification=notify
++            link.session=session
++            link._connected.set()
++            try:
++                yield SimpleNamespace(link=link,session=session,seen=seen,entered=entered,
++                                      notifications=notifications)
++            finally:
++                link.closing=True
++
++
++def _m1_tool(name):
++    return types.CallToolRequest(method="tools/call",
++        params=types.CallToolRequestParams(name=name,arguments={}))
++
++
++@pytest.mark.parametrize("notification_mode",["ok","failure","timeout"])
++@pytest.mark.usefixtures("m1_proxy_effect_fence")
++async def test_m1_followup_cancel_cleanup_preserves_caller_and_healthy_session(
++    notification_mode,monkeypatch
++):
++    monkeypatch.setattr(stdio_proxy,"CANCEL_CLEANUP_TIMEOUT_S",0.02)
++    async with _m1_live_link(notification_mode=notification_mode) as state:
++        scope=anyio.CancelScope()
++        caller_cancelled=[]
++        async def pending():
++            with scope:
++                try:
++                    await state.link.forward(_m1_tool("wait-A"),types.CallToolResult)
++                except anyio.get_cancelled_exc_class():
++                    caller_cancelled.append(True)
++                    raise
++        async with anyio.create_task_group() as group:
++            group.start_soon(pending)
++            await state.entered.wait()
++            # Another real SDK request completes while A is still pending.
++            result=await state.link.forward(_m1_tool("echo-B"),types.CallToolResult)
++            assert result.content[0].text=="echo-B"
++            assert state.seen["wait-A"] != state.seen["echo-B"]
++            cancelling_at=anyio.current_time()
++            scope.cancel()
++        assert anyio.current_time()-cancelling_at < 0.5
++        assert caller_cancelled==[True]
++        assert state.notifications==[state.seen["wait-A"]]
++        assert state.link._inflight=={}
++        assert state.link.session is state.session
++        result=await state.link.forward(_m1_tool("echo-C"),types.CallToolResult)
++        assert result.content[0].text=="echo-C"
++        assert len(state.notifications)==1
++
++
++@pytest.mark.usefixtures("m1_proxy_effect_fence")
++async def test_m1_followup_completed_request_is_not_cancelled():
++    async with _m1_live_link() as state:
++        with anyio.CancelScope() as scope:
++            result=await state.link.forward(_m1_tool("done"),types.CallToolResult)
++            scope.cancel()
++        assert result.content[0].text=="done"
++        assert state.notifications==[]
++        assert state.link._inflight=={}
++
++
++@pytest.mark.parametrize("reason",["shutdown","dead_session"])
++@pytest.mark.usefixtures("m1_proxy_effect_fence")
++async def test_m1_followup_shutdown_and_dead_session_send_no_cancel(reason):
++    async with _m1_live_link() as state:
++        scope=anyio.CancelScope()
++        outcomes=[]
++        async def pending():
++            with scope:
++                try:
++                    await state.link.forward(_m1_tool("wait-shutdown"),types.CallToolResult)
++                except McpError as exc:
++                    outcomes.append(exc.error.code)
++        async with anyio.create_task_group() as group:
++            group.start_soon(pending)
++            await state.entered.wait()
++            if reason=="shutdown":
++                state.link.closing=True
++                scope.cancel()
++            else:
++                state.link._end_session(state.session)
++        assert state.notifications==[]
++        assert state.link._inflight=={}
++        if reason=="dead_session":
++            assert outcomes==[types.CONNECTION_CLOSED]
++
++
++@pytest.mark.usefixtures("m1_proxy_effect_fence")
++async def test_m1_followup_sdk_request_id_contract_fails_closed_if_missing():
++    async with _m1_live_link() as state:
++        saved=state.session._request_id
++        del state.session._request_id
++        try:
++            with pytest.raises(McpError,match="unsupported SDK request-id contract"):
++                await state.link.forward(_m1_tool("must-not-execute"),types.CallToolResult)
++            assert state.seen=={}
++            assert state.link._inflight=={}
++            assert state.notifications==[]
++        finally:
++            state.session._request_id=saved
++        result=await state.link.forward(_m1_tool("healthy"),types.CallToolResult)
++        assert result.content[0].text=="healthy"
++
++
++@pytest.fixture
++def m1_proxy_effect_fence(monkeypatch):
++    import subprocess
++    import os
++    def refused(*a,**k):
++        raise AssertionError("M1 proxy qualification cannot use real sockets/children/signals")
++    monkeypatch.setattr(subprocess,"Popen",refused)
++    monkeypatch.setattr(socket.socket,"connect",refused)
++    monkeypatch.setattr(socket.socket,"bind",refused)
++    monkeypatch.setattr(os,"kill",refused)
++    monkeypatch.setattr(os,"killpg",refused)

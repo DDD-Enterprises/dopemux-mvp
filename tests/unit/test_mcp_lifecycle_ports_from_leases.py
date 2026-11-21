@@ -128,8 +128,8 @@ def _active(paths) -> List[Dict[str, Any]]:
     return PortLeaseRegistry.load(paths.leases).active_leases()
 
 
-def test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked(
-    tmp_path, paths
+def test_start_dry_run_without_envrc_plans_ports_and_is_not_blocked(
+    tmp_path, paths, m1_offline_lifecycle
 ):
     repo = _repo(tmp_path)
     result = _start(tmp_path, repo, paths)
@@ -140,24 +140,18 @@ def test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked(
     ), result.blocking_findings
     assert result.status == "PLANNED", result.blocking_findings
 
-    worktree_root = result.project_identity["worktree_root"]
-    by_service = {}
-    for lease in _active(paths):
-        by_service.setdefault(lease["service"], []).append(lease)
-        assert lease["worktree_root"] == worktree_root
-    assert {"conport", "dope-memory"} <= set(by_service)
-    # The planned services use the leased ports.
-    leased_vars = {
-        lease["port_var"]: lease["port"] for ls in by_service.values() for lease in ls
-    }
-    conport = next(s for s in result.services if s["service"] == "conport")
-    assert conport["ports"]["CONPORT_MCP_PORT"] == leased_vars["CONPORT_MCP_PORT"]
-    # Dry run still must not create the instance registry.
+    planned = {key: port for svc in result.services for key, port in svc["ports"].items()}
+    assert set(_LEASE_VARS) <= set(planned)
+    assert all(planned[key] > 0 for key in _LEASE_VARS)
+    assert _active(paths) == []
+    assert not paths.leases.exists()
     assert not paths.reg.exists()
 
 
-def test_start_reuses_existing_active_leases(tmp_path, paths):
-    repo = _repo(tmp_path)
+def test_start_reuses_existing_active_leases(tmp_path, paths, m1_offline_lifecycle):
+    repo, identity = m1_offline_lifecycle
+    lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
+                      lease_path=paths.leases, is_free_fn=lambda p: True)
     first = _start(tmp_path, repo, paths)
     leases_before = _active(paths)
     assert len(leases_before) == 4  # 3 conport roles + dope-memory
@@ -171,8 +165,10 @@ def test_start_reuses_existing_active_leases(tmp_path, paths):
     assert len(_active(paths)) == len(leases_before)
 
 
-def test_envrc_ports_still_win_when_present_and_leased(tmp_path, paths):
-    repo = _repo(tmp_path)
+def test_envrc_ports_still_win_when_present_and_leased(tmp_path, paths, m1_offline_lifecycle):
+    repo, identity = m1_offline_lifecycle
+    lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
+                      lease_path=paths.leases, is_free_fn=lambda p: True)
     # First pass has no envrc and allocates; then the envrc names those same ports.
     first = _start(tmp_path, repo, paths)
     leased = {s["service"]: s["ports"] for s in first.services}
@@ -521,16 +517,28 @@ def _active_by_var(paths, worktree_root: str) -> Dict[str, int]:
     }
 
 
-def test_a_start_after_init_and_stop_re_leases_the_envrc_ports(tmp_path, paths):
+def test_a_start_after_init_and_stop_re_leases_the_envrc_ports(
+    tmp_path, paths, m1_offline_lifecycle
+):
     repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
+    before = paths.leases.read_bytes()
     result = _start(tmp_path, repo, paths)
+    assert paths.leases.read_bytes() == before
+    # A real allocation still persists exactly the previewed service ports.
+    real = lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
+                             lease_path=paths.leases,
+                             env={k: str(v) for k, v in envrc_ports.items()},
+                             is_free_fn=lambda p: True)
     assert not result.blocking_findings, result.blocking_findings
     assert _active_by_var(paths, identity.worktree_root) == envrc_ports
     planned = {v: p for s in result.services for v, p in s["ports"].items()}
+    assert all(real[v] == planned[v] for v in _LEASE_VARS)
     assert {v: planned[v] for v in _LEASE_VARS} == envrc_ports
 
 
-def test_an_envrc_port_another_worktree_leased_is_replaced(tmp_path, paths):
+def test_an_envrc_port_another_worktree_leased_is_replaced(
+    tmp_path, paths, m1_offline_lifecycle
+):
     repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
     taken = envrc_ports["CONPORT_MCP_PORT"]
     reg = PortLeaseRegistry.load(paths.leases)
@@ -550,10 +558,19 @@ def test_an_envrc_port_another_worktree_leased_is_replaced(tmp_path, paths):
         }
     )
     reg.save()
+    before = paths.leases.read_bytes()
     result = _start(tmp_path, repo, paths)
+    assert paths.leases.read_bytes() == before
+    # A real allocation still persists exactly the previewed service ports.
+    real = lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
+                             lease_path=paths.leases,
+                             env={k: str(v) for k, v in envrc_ports.items()},
+                             is_free_fn=lambda p: True)
     assert not result.blocking_findings, result.blocking_findings
     ours = _active_by_var(paths, identity.worktree_root)
     assert ours["CONPORT_MCP_PORT"] != taken
+    planned = {v: p for s in result.services for v, p in s["ports"].items()}
+    assert all(real[v] == planned[v] for v in _LEASE_VARS)
     conport = next(s for s in result.services if s["service"] == "conport")
     assert conport["ports"]["CONPORT_MCP_PORT"] == ours["CONPORT_MCP_PORT"]
     # the other ports were free and are leased exactly as the envrc names them
@@ -577,9 +594,14 @@ def test_allocate_false_still_returns_the_envrc_ports_unleased(tmp_path, paths):
     assert _active(paths) == []  # status/doctor/stop never lease
 
 
-def test_the_launcher_cold_start_shape_re_leases_too(tmp_path, paths):
+def test_the_launcher_cold_start_shape_re_leases_too(
+    tmp_path, paths, m1_offline_lifecycle, monkeypatch
+):
     """ensure_backend calls run_lifecycle("start", services=[svc],
     hold_instance_lock=False) with port vars scrubbed from the process env."""
+    # Git worktree discovery is an external identity seam, not tenant behavior.
+    monkeypatch.setattr(lc.ct, "legacy_workspace_aliases",
+                        lambda identity: [identity.project_root])
     repo, identity, envrc_ports = _init_then_stop(tmp_path, paths)
     result = run_lifecycle(
         "start",
@@ -951,6 +973,15 @@ def _retarget_lease(paths, port_var: str, port: int) -> None:
 
 def _leased_start(tmp_path, paths):
     repo = _repo(tmp_path)
+    # A dry run plans without persisting, so the leases these tests retarget come
+    # from a real allocation first.
+    lc._resolve_ports(
+        resolve_identity_view(repo),
+        ["conport", "dope-memory"],
+        _catalog(),
+        lease_path=paths.leases,
+        is_free_fn=lambda p: True,
+    )
     first = _start(tmp_path, repo, paths)
     conport = next(s for s in first.services if s["service"] == "conport")
     return repo, conport["ports"]["CONPORT_MCP_PORT"]
@@ -1095,3 +1126,172 @@ def test_split_deferred_doctor_keeps_a_finding_bearing_an_expected_name():
     )
     assert kept == [ours]
     assert dropped == [other]
+
+
+# M1 follow-ups: real lifecycle/allocator with synthetic identity and Docker only.
+@pytest.fixture
+def m1_offline_lifecycle(tmp_path, paths, monkeypatch):
+    from dopemux.mcp.runtime_state import ProjectIdentityView
+    from dopemux.mcp.port_diagnostics import instance_id_for_path
+
+    repo = tmp_path / "offline-project"
+    repo.mkdir()
+    (repo / ".mcp.json").write_text(json.dumps({"mcpServers": {
+        "conport": {"type": "sse", "url": "http://localhost:3005/sse"},
+        "dope-memory": {"type": "http", "url": "http://localhost:3020/mcp"},
+    }}))
+    identity = ProjectIdentityView(
+        project_id=repo.name, workspace_id=str(repo), project_root=str(repo),
+        worktree_root=str(repo), project_hash="synthetic",
+        worktree_hash=instance_id_for_path(str(repo)), instance_id="synthetic",
+        identity_confidence="HIGH",
+    )
+    monkeypatch.setattr(__import__("sys").modules[__name__], "_repo", lambda *a, **k: repo)
+    monkeypatch.setattr(__import__("sys").modules[__name__], "resolve_identity_view", lambda *a, **k: identity)
+    monkeypatch.setattr(lc, "resolve_target_repo", lambda value: Path(value))
+    monkeypatch.setattr(lc, "resolve_identity_view", lambda *a, **k: identity)
+    monkeypatch.setattr(lc, "run_mcp_doctor", lambda *a, **k: SimpleNamespace(findings=[]))
+    monkeypatch.setattr(lc.dr, "docker_image_exists", lambda *a, **k: True)
+    def no_child(*a, **k):
+        raise AssertionError("M1 regression must not spawn a real child")
+    monkeypatch.setattr(subprocess, "Popen", no_child)
+    return repo, identity
+
+
+def test_m1_followup_status_uses_reallocated_leases_and_probes_them(
+    tmp_path, paths, m1_offline_lifecycle
+):
+    repo, identity = m1_offline_lifecycle
+    selected = ["conport", "dope-memory"]
+    old = lc._resolve_ports(identity, selected, _catalog(), lease_path=paths.leases,
+                            is_free_fn=lambda p: True)
+    (repo / ".envrc.dopemux-mcp").write_text(
+        "".join(f"export {var}={port}\n" for var, port in old.items())
+    )
+    reg = PortLeaseRegistry.load(paths.leases)
+    for lease in list(reg.active_leases()):
+        reg.mark_released(lease_id=lease["lease_id"])
+        foreign = dict(lease, lease_id="foreign-"+lease["lease_id"], status="active",
+                       worktree_root="/synthetic/foreign", project_root="/synthetic/foreign",
+                       worktree_hash="foreign", project_id="foreign")
+        reg.upsert_lease(foreign)
+    reg.save()
+    replacement = lc._resolve_ports(identity, selected, _catalog(), lease_path=paths.leases,
+                                    env={k: str(v) for k, v in old.items()},
+                                    is_free_fn=lambda p: True)
+    assert all(replacement[k] != old[k] for k in old)
+    before = paths.leases.read_bytes()
+    probes = []
+    result = run_lifecycle("status", repo=repo, services=selected, catalog=_catalog(),
+                           registry_path=paths.reg, docker_runner=_docker_empty(),
+                           process_env={}, port_is_free_fn=lambda p: probes.append(p) or True)
+    reported = {k: v for s in result.services for k, v in s["desired"]["ports"].items()
+                if k in replacement}
+    assert reported == replacement
+    conport = next(s for s in result.services if s["service"] == "conport")
+    assert conport["desired"]["ports"]["sse"] == replacement["CONPORT_MCP_PORT"]
+    assert conport["desired"]["ports"]["http"] == replacement["CONPORT_HTTP_PORT"]
+    assert replacement["CONPORT_HTTP_PORT"] in probes
+    assert replacement["DOPE_MEMORY_PORT"] in probes
+    assert paths.leases.read_bytes() == before
+
+
+@pytest.mark.parametrize("operation", ["start", "restart"])
+@pytest.mark.parametrize("existing", [False, True])
+def test_m1_followup_dry_run_does_not_persist_leases(
+    operation, existing, tmp_path, paths, m1_offline_lifecycle
+):
+    repo, identity = m1_offline_lifecycle
+    if existing:
+        reg = PortLeaseRegistry.load(paths.leases)
+        reg.save()
+    before = paths.leases.read_bytes() if existing else None
+    locks_before = {p.name:p.read_bytes() for p in paths.reg.parent.glob("*.lock")}
+    result = run_lifecycle(operation, repo=repo, services=["conport", "dope-memory"],
+                           catalog=_catalog(), dry_run=True, registry_path=paths.reg,
+                           docker_runner=_docker_empty(), skip_doctor=True, process_env={},
+                           port_is_free_fn=lambda p: True, product_root=_product(tmp_path))
+    assert result.status == "PLANNED", result.blocking_findings
+    assert all(s["ports"] for s in result.services)
+    assert (paths.leases.read_bytes() if paths.leases.exists() else None) == before
+    assert not paths.reg.exists()
+    assert {p.name:p.read_bytes() for p in paths.reg.parent.glob("*.lock")} == locks_before
+
+
+@pytest.mark.parametrize("existing", [False, True])
+def test_m1_followup_status_doctor_stop_never_write_leases(
+    existing, tmp_path, paths, m1_offline_lifecycle, monkeypatch
+):
+    from dopemux.mcp import doctor
+    repo, identity = m1_offline_lifecycle
+    if existing:
+        lc._resolve_ports(identity, ["conport", "dope-memory"], _catalog(),
+                          lease_path=paths.leases, is_free_fn=lambda p: True)
+    before = paths.leases.read_bytes() if existing else None
+    monkeypatch.setattr(doctor, "resolve_identity_view", lambda *a, **k: identity)
+    report = doctor.run_mcp_doctor(repo, catalog=_catalog(), skip_docker=True,
+        skip_port_probe=True, port_is_free_fn=lambda p: True, process_env={},
+        global_claude_path=tmp_path/"absent-global.json")
+    assert report is not None
+    for op in ("status", "stop"):
+        result = run_lifecycle(op, repo=repo, services=["conport", "dope-memory"],
+            catalog=_catalog(), dry_run=op == "stop", registry_path=paths.reg, docker_runner=_docker_empty(),
+            cmd_runner=_docker_empty(), skip_doctor=True, process_env={},
+            port_is_free_fn=lambda p: True, product_root=_product(tmp_path)
+            if not (tmp_path/"product").exists() else tmp_path/"product")
+        assert not result.blocking_findings, result.blocking_findings
+        assert (paths.leases.read_bytes() if paths.leases.exists() else None) == before
+
+
+def test_m1_followup_read_only_fallback_identity_and_reserved_exclusion(
+    tmp_path, paths, m1_offline_lifecycle
+):
+    _, identity = m1_offline_lifecycle
+    reg = PortLeaseRegistry.load(paths.leases)
+    for var, port, service, root in [("CONPORT_MCP_PORT", 3305, "conport", identity.worktree_root),
+        ("CONPORT_HTTP_PORT", 3304, "conport", "/synthetic/foreign"),
+        ("TASK_ORCHESTRATOR_HTTP_PORT", 8890, "task-orchestrator", identity.worktree_root)]:
+        reg.upsert_lease(dict(lease_id=var, service=service, port_role=var, port_var=var,
+            port=port, worktree_root=root, project_root=root, status="active", scope="worktree"))
+    reg.save()
+    before = paths.leases.read_bytes()
+    ports = lc._resolve_ports(identity, ["conport", "task-orchestrator"], _catalog(),
+        lease_path=paths.leases, allocate=False, env={"CONPORT_MCP_PORT": "3005",
+        "CONPORT_HTTP_PORT": "3004", "TASK_ORCHESTRATOR_HTTP_PORT": "7890"})
+    assert ports == {"CONPORT_MCP_PORT":3305,"CONPORT_HTTP_PORT":3004,
+                     "TASK_ORCHESTRATOR_HTTP_PORT":7890}
+    assert paths.leases.read_bytes() == before
+
+
+def test_m1_followup_dry_plan_matches_real_collision_repair_without_lock(
+    tmp_path, paths, m1_offline_lifecycle, monkeypatch
+):
+    from dopemux.mcp import docker_inspect as di
+    _, identity = m1_offline_lifecycle
+    collided = _seed_collision(paths, identity)
+    docker = di.DockerInspectResult(available=True, containers=[_conport_container(identity, collided)])
+    before = paths.leases.read_bytes()
+    def no_lock(*a, **k):
+        raise AssertionError("dry allocation must not take/create a lease lock")
+    with monkeypatch.context() as planning:
+        planning.setattr(lc, "registry_lock", no_lock)
+        plan = lc._resolve_ports(identity, ["dope-memory"], _catalog(),
+            lease_path=paths.leases, dry_run=True, is_free_fn=lambda p:p!=collided, docker=docker)
+    assert plan["DOPE_MEMORY_PORT"] != collided
+    assert paths.leases.read_bytes() == before
+    real = lc._resolve_ports(identity, ["dope-memory"], _catalog(),
+        lease_path=paths.leases, is_free_fn=lambda p:p!=collided, docker=docker)
+    assert real == plan
+    assert _active_by_var(paths, identity.worktree_root)["DOPE_MEMORY_PORT"] == plan["DOPE_MEMORY_PORT"]
+
+
+def test_m1_followup_reserved_port_preview_blocks_without_writes(
+    tmp_path, paths, m1_offline_lifecycle
+):
+    _, identity = m1_offline_lifecycle
+    catalog = _catalog()
+    catalog["servers"]["dope-memory"]["default_port_base"] = 7890
+    plan = lc._resolve_ports(identity, ["dope-memory"], catalog, lease_path=paths.leases,
+        env={"DOPE_MEMORY_PORT":"7890"}, dry_run=True, is_free_fn=lambda p:True)
+    assert plan["DOPE_MEMORY_PORT"] != 7890
+    assert not paths.leases.exists()

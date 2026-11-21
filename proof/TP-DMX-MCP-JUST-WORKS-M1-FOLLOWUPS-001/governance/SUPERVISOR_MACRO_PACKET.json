@@ -1,0 +1,267 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-MCP-M1-FOLLOWUPS-20261116-01",
+  "objective": "Execute the already approved one Codex author run for all four MCP M1 defensive follow-ups, with serialized deterministic qualification and truthful terminal return",
+  "repository": "DDD-Enterprises/dopemux-mvp",
+  "base_policy": "Dedicated branch4029f6 over base365f70ce; no main mutation or hidden head update",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "Hue explicitly approved one included Codex run for TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001, at most one draft, stop READY_FOR_AUDIT; trusted parent delegation 2026-11-16"
+    ],
+    "global_allowed_actions": [
+      "source_read",
+      "private_worktree_repair",
+      "hermetic_regression",
+      "deterministic_qualification",
+      "proof",
+      "guarded_branch_push_and_one_draft_after_effect_gates"
+    ],
+    "global_forbidden_actions": [
+      "merge",
+      "activate",
+      "sign",
+      "independent_audit",
+      "steward_action",
+      "live_process_signals",
+      "live_children_or_services",
+      "docker_mutation",
+      "host_config_mutation",
+      "main_checkout_mutation",
+      "paid_overflow",
+      "denied_retry",
+      "force_push",
+      "new_writer"
+    ],
+    "global_stop_conditions": [
+      "actual denial or uncertain operation",
+      "scope or base/custody drift",
+      "missing exact locked runtime",
+      "unfenced live effect",
+      "failed required gate prevents READY_FOR_AUDIT; preserve useful qualified work"
+    ]
+  },
+  "execution_authority": "NONE",
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "COORDINATOR_EXECUTION_BINDING.json",
+      "sha256": "139cc6f3eb8109e797eb087fe6fed8f85c7fa0e594019211e6cf007f8e5ac91e"
+    },
+    "authority_ceiling": "Existing operator-approved packet S0-S8 only; no next macro, audit or merge",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "Every child needs own binding; exact original approval remains ceiling; this envelope grants no authority"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "IMPLEMENT_A_D",
+      "task_packet_ref": {
+        "path": "IMPLEMENT_A_D_TASK_PACKET.json",
+        "sha256": "04c9e3db5a4545fe4d9d76c89ef45dd46e2772db594b228bd9412419a96456f7"
+      },
+      "objective": "Implement the four authorized defensive follow-ups with red-then-green hermetic regressions",
+      "dependencies": [],
+      "parallel_group": "SERIAL_ONE_WRITER",
+      "mutating": true,
+      "write_surface": [
+        "src/dopemux/mcp/lifecycle.py",
+        "src/dopemux/mcp/port_allocator.py",
+        "src/dopemux/mcp/launcher.py",
+        "src/dopemux/mcp/reap.py",
+        "src/dopemux/mcp/stdio_proxy.py",
+        "tests/unit/test_mcp_lifecycle.py",
+        "tests/unit/test_mcp_lifecycle_ports_from_leases.py",
+        "tests/unit/test_mcp_launcher.py",
+        "tests/unit/test_mcp_reap.py",
+        "tests/unit/test_mcp_stdio_proxy.py",
+        "claudedocs/mcp-just-works-design-2026-11-05.md",
+        "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json",
+        "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md",
+        "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/**",
+        "proof/pr_merge/embedded-audit/**"
+      ],
+      "canonical_writers": [
+        "/root/mcp_m1_four_followups"
+      ],
+      "semantic_scope": [
+        "MCP M1 A-D contracts and proof"
+      ],
+      "allowed_actions": [
+        "source_read",
+        "private_worktree_repair",
+        "hermetic_regression",
+        "deterministic_qualification",
+        "proof",
+        "guarded_branch_push_and_one_draft_after_effect_gates"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "sign",
+        "independent_audit",
+        "steward_action",
+        "live_process_signals",
+        "live_children_or_services",
+        "docker_mutation",
+        "host_config_mutation",
+        "main_checkout_mutation",
+        "paid_overflow",
+        "denied_retry",
+        "force_push",
+        "new_writer"
+      ],
+      "rollback_boundary": "Only this authorized worktree and private evidence; retain failed receipts; no main/host/runtime mutation and no automatic reset/revert/delete.",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN; manual operator-scoped execution; no workflow transition asserted",
+      "execution_route": {
+        "preferred": {
+          "runner": "codex",
+          "model": "gpt-6.1-sol",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "Frozen final substantive head; S9 held for independent non-Codex auditor"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "tests",
+        "proof",
+        "blockers",
+        "cleanup"
+      ],
+      "audit_group": "TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001",
+      "return_contract": [
+        "Preserve original packet gate results and stricter human effects restrictions; no manufactured READY/PASS"
+      ]
+    },
+    {
+      "workstream_id": "QUALIFY_AND_HAND_BACK",
+      "task_packet_ref": {
+        "path": "QUALIFY_AND_HAND_BACK_TASK_PACKET.json",
+        "sha256": "396c1312c6652f39206509d1c57e862a6cfc72808699bd0c5db11b0f8332e76a"
+      },
+      "objective": "Qualify candidate and assemble truthful proof; guarded one-draft eligibility only after actual effect gates",
+      "dependencies": [
+        "IMPLEMENT_A_D"
+      ],
+      "parallel_group": "SERIAL_ONE_WRITER",
+      "mutating": true,
+      "write_surface": [
+        "src/dopemux/mcp/lifecycle.py",
+        "src/dopemux/mcp/port_allocator.py",
+        "src/dopemux/mcp/launcher.py",
+        "src/dopemux/mcp/reap.py",
+        "src/dopemux/mcp/stdio_proxy.py",
+        "tests/unit/test_mcp_lifecycle.py",
+        "tests/unit/test_mcp_lifecycle_ports_from_leases.py",
+        "tests/unit/test_mcp_launcher.py",
+        "tests/unit/test_mcp_reap.py",
+        "tests/unit/test_mcp_stdio_proxy.py",
+        "claudedocs/mcp-just-works-design-2026-11-05.md",
+        "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json",
+        "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md",
+        "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/**",
+        "proof/pr_merge/embedded-audit/**"
+      ],
+      "canonical_writers": [
+        "/root/mcp_m1_four_followups"
+      ],
+      "semantic_scope": [
+        "MCP M1 A-D contracts and proof"
+      ],
+      "allowed_actions": [
+        "source_read",
+        "hermetic_regression",
+        "deterministic_qualification",
+        "proof",
+        "guarded_branch_push_and_one_draft_after_effect_gates"
+      ],
+      "forbidden_actions": [
+        "merge",
+        "activate",
+        "sign",
+        "independent_audit",
+        "steward_action",
+        "live_process_signals",
+        "live_children_or_services",
+        "docker_mutation",
+        "host_config_mutation",
+        "main_checkout_mutation",
+        "paid_overflow",
+        "denied_retry",
+        "force_push",
+        "new_writer"
+      ],
+      "rollback_boundary": "Only this authorized worktree and private evidence; retain failed receipts; no main/host/runtime mutation and no automatic reset/revert/delete.",
+      "delivery_risk_lane": "L2",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "NOT_RUN; manual operator-scoped execution; no workflow transition asserted",
+      "execution_route": {
+        "preferred": {
+          "runner": "codex",
+          "model": "gpt-6.1-sol",
+          "effort": "high"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "Frozen final substantive head; S9 held for independent non-Codex auditor"
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "tests",
+        "proof",
+        "blockers",
+        "cleanup"
+      ],
+      "audit_group": "TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001",
+      "return_contract": [
+        "Preserve original packet gate results and stricter human effects restrictions; no manufactured READY/PASS"
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "join_id": "TERMINAL_HAND_BACK",
+      "requires": [
+        "IMPLEMENT_A_D",
+        "QUALIFY_AND_HAND_BACK"
+      ],
+      "condition": "Both child actual returns with original packet gates preserved; no audit acceptance synthesized",
+      "join_type": "ALL_REQUIRED"
+    }
+  ],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "L2 non-Codex S9 audit remains required and NOT_RUN; not authorized in this run",
+    "proof_transport": "Local packet proof and one aggregate return; no source-app comments"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "actual denial or uncertain operation",
+      "scope or base/custody drift",
+      "missing exact locked runtime",
+      "unfenced live effect",
+      "failed required gate prevents READY_FOR_AUDIT; preserve useful qualified work"
+    ]
+  }
+}

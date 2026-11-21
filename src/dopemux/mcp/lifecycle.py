@@ -383,13 +383,16 @@ def _resolve_ports(
     source: str = "dopemux mcp start",
     env: Optional[Mapping[str, str]] = None,
     allocate: bool = True,
+    dry_run: bool = False,
+    planned: Optional[List[PortLeaseRegistry]] = None,
     is_free_fn: Optional[Callable[[int], bool]] = None,
     docker: Optional[di.DockerInspectResult] = None,
 ) -> Dict[str, int]:
     """Port map ``{port_env_var: port}`` for ``selected`` services.
 
-    Order without ``allocate``: ports an envrc/process env already names win;
-    otherwise the active leases bound to this project/worktree. With ``allocate``
+    Order without ``allocate``: active leases bound to this project/worktree
+    win over informational envrc/process ports; variables without leases retain
+    their env values. With ``allocate``
     the next paragraph decides which env ports count, and the rest are allocated
     and persisted as new leases under ``registry_lock``. The lock is held
     only for the release/allocate-and-save step. Task Orchestrator is a reserved
@@ -403,7 +406,13 @@ def _resolve_ports(
     port is leased when no other lease holds it and the socket is free (a port this
     worktree's own running sidecar publishes counts as free), else a fresh one, and
     the returned port replaces the envrc's (the envrc is informational). Without
-    ``allocate`` (status, doctor, stop) env ports are returned as before.
+    ``allocate`` (status, doctor, stop) no registry mutation is performed.
+    A dry run calculates the real allocation plan against an in-memory registry
+    and never creates a lease lock file, releases persisted leases or saves.
+    When a dry run allocates and ``planned`` is given, that in-memory registry
+    (stale leases released, planned leases added) is appended to it, so the
+    caller validates the plan against the state a real start would leave and
+    not against the untouched file.
 
     With ``docker`` and ``allocate``, a leased port that a same-project container
     of another service publishes (a cross-service collision an older
@@ -411,7 +420,17 @@ def _resolve_ports(
     instead of failing the start.
     """
     ports = _extract_ports(env or {}, selected, catalog)
-    if allocate and identity.worktree_root and identity.project_root:
+    if not allocate:
+        if identity.worktree_root and identity.project_root:
+            lease_vars = [v for n in selected if n != "task-orchestrator"
+                          for v in _port_vars_for(n, catalog)]
+            ports.update(
+                _leased_ports(
+                    PortLeaseRegistry.load(lease_path), identity, lease_vars
+                )
+            )
+        return ports
+    if identity.worktree_root and identity.project_root:
         lease_vars = [
             v
             for n in selected
@@ -438,15 +457,13 @@ def _resolve_ports(
     current = _leased_ports(PortLeaseRegistry.load(lease_path), identity, wanted)
     leased = {var: port for var, port in current.items() if var not in ports}
     stale = _leases_held_by_other_service(leased, catalog, docker, identity.project_id)
-    if not allocate:
-        stale = {}
     for var, port in leased.items():
         if var not in stale:
             ports.setdefault(var, port)
     lease_services = [
         n for n in lease_services if any(v not in ports for v in _port_vars_for(n, catalog))
     ]
-    if not lease_services or not allocate:
+    if not lease_services:
         return ports
 
     from .port_allocator import allocate_ports, port_is_free
@@ -465,9 +482,11 @@ def _resolve_ports(
 
     # Exactly the call `mcp_commands._allocate_ports` makes (allocate_ports_map):
     # no `identity=`, so the allocator derives the same lease identity as `init`.
-    with registry_lock(lease_path):
+    from contextlib import nullcontext
+
+    with (nullcontext() if dry_run else registry_lock(lease_path)):
+        leases = PortLeaseRegistry.load(lease_path)
         if stale:
-            leases = PortLeaseRegistry.load(lease_path)
             for lease in leases.active_leases():
                 var = str(lease.get("port_var") or "")
                 if (
@@ -482,16 +501,17 @@ def _resolve_ports(
                     )
                 ):
                     leases.mark_released(lease_id=str(lease.get("lease_id")))
-            leases.save()
+            if not dry_run:
+                leases.save()
         result = allocate_ports(
             lease_services,
             catalog,
             worktree=identity.worktree_root,
             project_root=identity.project_root,
             existing_envrc=env,
-            registry_path=lease_path,
-            persist=True,
-            dry_run=False,
+            registry=leases,
+            persist=not dry_run,
+            dry_run=dry_run,
             source=source,
             is_free_fn=alloc_is_free,
         )
@@ -500,6 +520,12 @@ def _resolve_ports(
         raise PortAllocationBlocked(
             msgs or "Port allocation blocked", result.blocking_findings
         )
+    if dry_run and planned is not None:
+        # The allocator skips registry writes in a dry run but still reports
+        # the leases it would create; apply them to the in-memory copy only.
+        for entry in result.leases:
+            leases.upsert_lease(entry)
+        planned.append(leases)
     for var, port in result.ports.items():
         ports.setdefault(str(var), int(port))
     return ports
@@ -1027,6 +1053,7 @@ def _mutable_facts(
     op: str,
     *,
     orchestrator_gate: bool,
+    dry_run: bool = False,
     identity: ProjectIdentityView,
     target: Path,
     selected: Sequence[str],
@@ -1071,6 +1098,7 @@ def _mutable_facts(
 
     docker = di.inspect_running_containers(runner=docker_runner)
 
+    planned_leases: List[PortLeaseRegistry] = []
     try:
         ports = _resolve_ports(
             identity,
@@ -1079,6 +1107,8 @@ def _mutable_facts(
             lease_path=default_lease_registry_path(),
             env=doctor_env,
             allocate=op in {"start", "restart"},
+            dry_run=dry_run,
+            planned=planned_leases,
             is_free_fn=is_free,
             docker=docker,
         )
@@ -1117,7 +1147,13 @@ def _mutable_facts(
         try:
             from .port_leases import PortLeaseRegistry
 
-            lease_reg = PortLeaseRegistry.load()
+            # A dry run that planned an allocation is checked against that
+            # plan: the file still holds the leases the plan releases or
+            # replaces.
+            if planned_leases:
+                lease_reg = planned_leases[0]
+            else:
+                lease_reg = PortLeaseRegistry.load()
             if lease_reg.parse_status == "ERROR":
                 blocking.append(
                     {
@@ -1625,6 +1661,7 @@ def run_lifecycle(
     # from them. A start/restart re-takes them under the instance lock before its
     # worktree part runs (B2 fix round 1), so a reap that finished in between is seen.
     facts_kw: Dict[str, Any] = dict(
+        dry_run=dry_run,
         identity=identity,
         target=target,
         selected=selected,

@@ -1,0 +1,11 @@
+claudedocs/mcp-just-works-design-2026-11-05.md
+src/dopemux/mcp/launcher.py
+src/dopemux/mcp/lifecycle.py
+src/dopemux/mcp/reap.py
+src/dopemux/mcp/stdio_proxy.py
+task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json
+task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md
+tests/unit/test_mcp_launcher.py
+tests/unit/test_mcp_lifecycle_ports_from_leases.py
+tests/unit/test_mcp_reap.py
+tests/unit/test_mcp_stdio_proxy.py

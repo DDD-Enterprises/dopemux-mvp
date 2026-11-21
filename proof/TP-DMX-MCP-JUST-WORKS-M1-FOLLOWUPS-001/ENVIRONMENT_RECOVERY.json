@@ -1,0 +1,22 @@
+{
+  "original_uv": "0.11.19 simple-v21",
+  "existing_compatible_uv": "0.12.11 simple-v24",
+  "path": "/Users/hue/.local/share/mise/installs/uv/0.12.11/uv-aarch64-apple-darwin/uv",
+  "command": "sync --offline --frozen --extra test --link-mode copy",
+  "session": 14980,
+  "exit_code": 0,
+  "installed_packages": 140,
+  "python": "3.12.13",
+  "mcp": "1.29.0",
+  "setuptools": "84.0.0",
+  "setuptools_locked_wheel_sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+  "setuptools_record_entries_checked": 342,
+  "wheel": "0.48.0",
+  "wheel_official_metadata_source": "https://pypi.org/pypi/wheel/0.48.0/json",
+  "wheel_official_metadata_verified_by": "coordinator /root",
+  "wheel_official_wheel_sha256": "3217dcc807155e45db462d7ef2431f5ddda0d7273b700d05a67b271ceb1287ab",
+  "wheel_record_entries_checked": 19,
+  "original_wheel_bytes_reconstructed": false,
+  "no_network_acquisition": true,
+  "old_failure_preserved": "ENVIRONMENT_SYNC.txt"
+}

@@ -6,11 +6,13 @@ and nothing under ``~/.dopemux`` is read or written.
 
 from __future__ import annotations
 
+import importlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
-from types import SimpleNamespace
+from types import ModuleType, SimpleNamespace
 from typing import Any, Dict, List, Optional
 
 import pytest
@@ -40,6 +42,20 @@ def _isolated(tmp_path: Path, monkeypatch):
         str(tmp_path / "runtime" / "port-leases.json"),
     )
     monkeypatch.delenv("DOPEMUX_MCP_REAP", raising=False)
+
+
+@pytest.fixture(autouse=True)
+def _real_psutil(monkeypatch):
+    """Build liveness is tested against the real psutil.
+
+    ``tests/unit/test_health.py`` leaves a ``MagicMock`` in ``sys.modules["psutil"]``
+    for the rest of the run, and with it ``psutil.Error`` is not an exception
+    class. Each test here gets the real module; the stand-in returns afterwards.
+    """
+    if isinstance(sys.modules.get("psutil"), ModuleType):
+        return
+    monkeypatch.delitem(sys.modules, "psutil", raising=False)
+    importlib.import_module("psutil")
 
 
 @pytest.fixture
@@ -1626,9 +1642,32 @@ def _marked_dir(
     return rt
 
 
-def _build_pid(rt: Path, pid: int, *, age: float = 10.0) -> None:
+@pytest.fixture(autouse=True)
+def _test_process_is_a_verifiable_build(monkeypatch):
+    """Give the test process, and only it, a build identity.
+
+    Tests write ``os.getpid()`` as the pid of a live build. The test process is
+    not the leader of its own session, so the real probe would call it
+    unverified. Every other pid is still probed for real.
+    """
+    identity = {"pid": os.getpid(), "create_time": 1.0, "pgid": os.getpid()}
+    real = reap._build_process_identity
+    monkeypatch.setattr(
+        reap,
+        "_build_process_identity",
+        lambda pid: identity if pid == os.getpid() else real(pid),
+    )
+
+
+def _build_pid(rt: Path, pid: int, *, age: float = 10.0, legacy: bool = False) -> None:
+    """Write ``build-conport.pid`` as the launcher does; ``legacy`` is the old one-line file."""
     pid_file = rt / "build-conport.pid"
-    pid_file.write_text(f"{pid}\n", encoding="utf-8")
+    if legacy:
+        text = f"{pid}\n"
+    else:
+        record = reap._build_process_identity(pid) or {"pid": pid, "identity": "unverified"}
+        text = json.dumps(record) + "\n"
+    pid_file.write_text(text, encoding="utf-8")
     os.utime(pid_file, (NOW - age, NOW - age))
 
 
@@ -1671,8 +1710,12 @@ def test_a_marked_dir_with_a_live_build_is_not_a_candidate(
     rt = _marked_dir(runtime, tmp_path / "removed" / "proj")
     _build_pid(rt, os.getpid())  # alive and young: the build may still write here
     assert _plan(reg, []) == []
-    # older than the build budget: stale, as the launcher treats it
+    # past the build budget but still alive: protected until it exits. Age alone
+    # never proves a build stopped; the launcher is the one that terminates it.
     _build_pid(rt, os.getpid(), age=dr.build_timeout_secs() + 60)
+    assert _plan(reg, []) == []
+    # the old one-line pid file proves nothing about the process: stale
+    _build_pid(rt, os.getpid(), legacy=True)
     assert [c.dir_only for c in _plan(reg, [])] == [True]
 
 
@@ -1997,7 +2040,7 @@ def test_an_idle_state_only_pair_with_a_live_build_is_not_planned(
     assert _plan(reg, [], lease_registry=lease_registry) == []
 
 
-@pytest.mark.parametrize("pid_state", ["dead", "past_the_build_budget"])
+@pytest.mark.parametrize("pid_state", ["dead", "legacy_one_line"])
 def test_a_dead_or_stale_build_pid_does_not_block_a_reap(
     tmp_path: Path, runtime: Path, pid_state: str
 ):
@@ -2006,8 +2049,8 @@ def test_a_dead_or_stale_build_pid_does_not_block_a_reap(
     rt = _rt_dir(runtime)
     if pid_state == "dead":
         _build_pid(rt, _dead_pid())
-    else:
-        _build_pid(rt, os.getpid(), age=dr.build_timeout_secs() + 60)
+    else:  # a live pid in the old one-line format: unverifiable, so stale
+        _build_pid(rt, os.getpid(), legacy=True)
     lease_registry = PortLeaseRegistry.load(runtime / "port-leases.json")
     assert [c.reason for c in _plan(reg, [], lease_registry=lease_registry)] == ["idle"]
     assert [c.reason for c in _plan(reg, [_container("a1")])] == ["idle"]
@@ -2365,3 +2408,16 @@ def test_a_same_root_lease_with_another_worktree_hash_is_not_the_pairs(
     }
     assert status["lease-conport-3100"] == "released"
     assert status["lease-foreign-hash"] == "active"
+
+
+def test_m1_followup_negative_build_pid_is_stale_without_process_probe(tmp_path, monkeypatch):
+    """psutil rejects negative PIDs with ValueError; malformed registry stays inert."""
+    import psutil
+    def fake_process(pid):
+        if pid < 0:
+            raise ValueError("pid must be a positive integer")
+        raise AssertionError("no actual process probe permitted")
+    monkeypatch.setattr(psutil, "Process", fake_process)
+    (tmp_path / "build-conport.pid").write_text(json.dumps(
+        {"pid": -1, "create_time": 123.0, "pgid": -1}))
+    assert reap._live_build(tmp_path, NOW) is False

@@ -51,7 +51,6 @@ from .port_diagnostics import instance_id_for_path
 from .reap import (
     INSTANCE_MARKER,
     INSTANCE_MARKER_FIELDS,
-    _pid_alive,
     _utc_stamp,
     attach,
     detach,
@@ -397,25 +396,74 @@ def build_pid_path(runtime_dir: Path, service: str) -> Path:
     return Path(runtime_dir) / f"build-{service}.pid"
 
 
-def _live_build_pid(pid_file: Path) -> Optional[int]:
-    """The pid of a build still running, or None (absent, dead, or older than the build budget).
+def _build_process_identity(pid: int) -> Optional[Dict[str, Any]]:
+    """Birth time and private process group of a live build session leader."""
+    if type(pid) is not int or pid <= 0:
+        return None
+    import psutil  # type: ignore[import-untyped]
 
-    The age limit is ``build_timeout_secs()`` (``DOPEMUX_MCP_BUILD_TIMEOUT_SECS``,
-    default 1800 s), the budget a build gets, never the shorter ``up`` budget.
+    try:
+        process = psutil.Process(pid)
+        if not process.is_running():
+            return None
+        if process.status() == psutil.STATUS_ZOMBIE:
+            return None
+        created = process.create_time()
+        group = os.getpgid(pid)
+        if group != pid or created <= 0:
+            return None
+        return {"pid": pid, "create_time": created, "pgid": group}
+    except (OSError, psutil.Error):
+        return None
+
+
+def _live_build_pid(pid_file: Path) -> Optional[int]:
+    """Keep ownership until a verified expired build exits; never stack builds.
+
+    Legacy/unverifiable records are stale and never signalled. Re-check birth
+    time and group immediately before each signal so recycled PIDs are
+    excluded. A failed termination remains tracked, and the reaper protects
+    it meanwhile.
     """
     try:
-        pid = int(pid_file.read_text(encoding="utf-8").strip())
+        record = json.loads(pid_file.read_text(encoding="utf-8"))
         age = time.time() - pid_file.stat().st_mtime
-    except (OSError, ValueError):
+        if not isinstance(record, dict) or type(record.get("pid")) is not int:
+            return None
+        pid: int = record["pid"]
+        if record != _build_process_identity(pid):
+            return None
+    except (OSError, ValueError, TypeError):
         return None
-    if pid <= 0 or age > dr.build_timeout_secs() or not _pid_alive(pid):
-        return None  # stale: replaced by the next build
-    return pid
+    if age <= dr.build_timeout_secs():
+        return pid
+    for signum in (signal.SIGTERM, signal.SIGKILL):
+        if record != _build_process_identity(pid):
+            return None
+        try:
+            os.killpg(pid, signum)
+        except ProcessLookupError:
+            return None
+        except OSError:
+            # cannot terminate safely: retain ownership, no new build
+            return pid
+        deadline = time.monotonic() + 2.0
+        while record == _build_process_identity(pid):
+            if time.monotonic() >= deadline:
+                break
+            time.sleep(0.05)
+        if record != _build_process_identity(pid):
+            return None
+    return pid  # even SIGKILL has not been observed to finish: still tracked
 
 
 def _write_build_pid(pid_file: Path, pid: int) -> None:
     tmp = pid_file.with_name(f".{pid_file.name}.{os.getpid()}.tmp")
-    tmp.write_text(f"{pid}\n", encoding="utf-8")
+    record = _build_process_identity(pid) or {
+        "pid": pid,
+        "identity": "unverified",
+    }
+    tmp.write_text(json.dumps(record) + "\n", encoding="utf-8")
     os.replace(tmp, pid_file)
 
 

@@ -1,0 +1,58 @@
+...................................................F                     [100%]
+=================================== FAILURES ===================================
+_______ test_m1_followup_sdk_request_id_contract_fails_closed_if_missing _______
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 1121, in test_m1_followup_sdk_request_id_contract_fails_closed_if_missing
+  |     async with _m1_live_link() as state:
+  |                ^^^^^^^^^^^^^^^
+  |   File "/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/contextlib.py", line 231, in __aexit__
+  |     await self.gen.athrow(value)
+  |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 1027, in _m1_live_link
+  |     async with _factory(server)(**link.client_kwargs()) as session:
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/hue/.local/share/mise/installs/python/3.12.13/lib/python3.12/contextlib.py", line 231, in __aexit__
+  |     await self.gen.athrow(value)
+  |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 107, in factory
+  |     async with anyio.create_task_group() as tg:
+  |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 815, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Exception Group Traceback (most recent call last):
+    |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 112, in factory
+    |     async with ClientSession(
+    |                ^^^^^^^^^^^^^^
+    |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/mcp/shared/session.py", line 238, in __aexit__
+    |     return await self._task_group.__aexit__(exc_type, exc_val, exc_tb)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 815, in __aexit__
+    |     raise BaseExceptionGroup(
+    | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+    +-+---------------- 1 ----------------
+      | Traceback (most recent call last):
+      |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 1126, in test_m1_followup_sdk_request_id_contract_fails_closed_if_missing
+      |     await state.link.forward(_m1_tool("must-not-execute"),types.CallToolResult)
+      |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/src/dopemux/mcp/stdio_proxy.py", line 521, in forward
+      |     raise _connection_lost(
+      | mcp.shared.exceptions.McpError: dopemux proxy: backend fake dropped during the request; not retried
+      | 
+      | During handling of the above exception, another exception occurred:
+      | 
+      | Traceback (most recent call last):
+      |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 115, in factory
+      |     yield session
+      |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 1042, in _m1_live_link
+      |     yield SimpleNamespace(link=link,session=session,seen=seen,entered=entered,
+      |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/tests/unit/test_mcp_stdio_proxy.py", line 1125, in test_m1_followup_sdk_request_id_contract_fails_closed_if_missing
+      |     with pytest.raises(McpError,match="unsupported SDK request-id contract"):
+      |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      |   File "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.venv/lib/python3.12/site-packages/_pytest/raises.py", line 719, in __exit__
+      |     raise AssertionError(self._fail_reason)
+      | AssertionError: Regex pattern did not match.
+      |   Expected regex: 'unsupported SDK request-id contract'
+      |   Actual message: 'dopemux proxy: backend fake dropped during the request; not retried'
+      +------------------------------------
+=========================== short test summary info ============================
+FAILED tests/unit/test_mcp_stdio_proxy.py::test_m1_followup_sdk_request_id_contract_fails_closed_if_missing
+1 failed, 51 passed, 221 deselected in 1.50s
