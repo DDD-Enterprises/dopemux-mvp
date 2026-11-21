@@ -1,0 +1,51 @@
+[
+  {
+    "old_test": "test_start_dry_run_without_envrc_allocates_leases_and_is_not_blocked",
+    "new_test": "test_start_dry_run_without_envrc_plans_ports_and_is_not_blocked",
+    "old_assertion": "Dryrun creates four active leases and planned service ports equal persisted leases.",
+    "new_assertion": "Dryrun returns PLANNED with all four positive planned ports, no leases and no lease/instance registry creation.",
+    "intent_preserved": "Missing envrc is nonblocking and yields usable service ports."
+  },
+  {
+    "old_test": "test_start_reuses_existing_active_leases",
+    "new_test": "test_start_reuses_existing_active_leases",
+    "old_assertion": "First dryrun persists four leases; second reuses them unchanged.",
+    "new_assertion": "Real allocator seeds temporary active leases; both dryrun plans reuse their ports without changing leases.",
+    "intent_preserved": "Existing identity-bound lease reuse and stable lease count."
+  },
+  {
+    "old_test": "test_envrc_ports_still_win_when_present_and_leased",
+    "new_test": "test_envrc_ports_still_win_when_present_and_leased",
+    "old_assertion": "First dryrun creates leases; matching envrc retains those ports on second dryrun.",
+    "new_assertion": "Real temporary allocator seeds leases; matching envrc and dryrun preserve identical planned ports and existing leases.",
+    "intent_preserved": "Matching active lease/envrc ports are retained; missing-envrc warning disappears."
+  },
+  {
+    "old_test": "test_a_start_after_init_and_stop_re_leases_the_envrc_ports",
+    "new_test": "test_a_start_after_init_and_stop_re_leases_the_envrc_ports",
+    "old_assertion": "Dryrun after released init leases persists envrc leases.",
+    "new_assertion": "Preview leaves existing released registry bytes unchanged; real temporary allocation then persists exactly the same envrc/planned ports.",
+    "intent_preserved": "Released init ports are reusable; real allocation still persists identity-bound leases."
+  },
+  {
+    "old_test": "test_an_envrc_port_another_worktree_leased_is_replaced",
+    "new_test": "test_an_envrc_port_another_worktree_leased_is_replaced",
+    "old_assertion": "Dryrun persists replacement lease while retaining other free envrc ports.",
+    "new_assertion": "Preview leaves bytes unchanged and plans replacement; real temporary allocation persists replacement rather than foreign port, with other free envrc ports unchanged.",
+    "intent_preserved": "Foreign ownership forces rebinding; unaffected preferred ports retain values."
+  },
+  {
+    "old_test": "test_build_pid_goes_stale_after_the_build_budget",
+    "new_test": "test_build_pid_budget_retains_ownership_until_verified_exit",
+    "old_assertion": "One-line PID becomes stale solely because file age exceeds timeout.",
+    "new_assertion": "Verified synthetic young build is retained; aged build remains owned when TERM denied, and shorter configured budget releases ownership only after verified synthetic exit.",
+    "intent_preserved": "Build budget distinct from up budget and honors environment setting; unsafe age-only abandonment removed."
+  },
+  {
+    "old_test": "test_the_launcher_cold_start_shape_re_leases_too",
+    "new_test": "test_the_launcher_cold_start_shape_re_leases_too",
+    "old_assertion": "Real-start lifecycle with injected command runner persists expected ConPort leases.",
+    "new_assertion": "Same production assertions retained. Identity/git-worktree discovery is synthetic, command runner remains injected and Popen guard refuses real child effects.",
+    "intent_preserved": "Actual non-dry lifecycle lease persistence, launcher hold_instance_lock=False call shape."
+  }
+]

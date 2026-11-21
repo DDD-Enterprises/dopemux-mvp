@@ -1,0 +1,328 @@
+{
+  "tp_id": "TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001",
+  "packet_id": "TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1521,
+  "risk_lane": "L2",
+  "tp_path": "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json",
+  "worktree_path": "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups",
+  "branch": "fix/mcp-just-works-m1-followups",
+  "repo_identity": {
+    "status": "PASS",
+    "origin": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "marker": ".dopetaskroot",
+    "base_sha": "365f70ce2edc907d14356d82d2843104dbdaa434",
+    "base_is_ancestor": true,
+    "merged_main_sha": "ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7",
+    "packet_sha256": "cecefd441ebfae39cfb695c0a45da9126a17402737d1683702d75d4785164851",
+    "companion_sha256": "b08899767b27c252cb962681f97ec84580fc81739f5175489a185d19c58918f9",
+    "note": "packet_sha256 is unchanged from the hand-back record. companion_sha256 differs because commit 54ec77f76 added YAML frontmatter to the companion."
+  },
+  "head_sha": "cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf",
+  "commit_sha": "ec3430c6328894b997a5c8b9d2de6ff107d59d89",
+  "routes": {
+    "implementation": {
+      "requested_runner": "codex",
+      "requested_model": "gpt-6.1-sol",
+      "requested_effort": "high",
+      "task": "/root/mcp_m1_four_followups",
+      "configured_model": "gpt-6.1-sol",
+      "provider_attested_model": "UNKNOWN",
+      "observed_effort": "UNKNOWN",
+      "actual_start": "Source intake; binding records; offline sync sessions74447(exit1) and14980(exit0 with compatible existing client); baseline48567(exit1); initial green94346(exit1); localized correction/final green19521(exit0). Sole writer/task unchanged.",
+      "fallback_used": false
+    },
+    "completion_after_reroute": {
+      "runner": "claude-code",
+      "model": "claude-fable-5-2",
+      "model_source": "session environment; not provider-attested",
+      "authority": "Owner rerouted the returned work to the Claude Code supervisor session instead of sending it back to Codex.",
+      "scope": "Fixed the 15 tests that failed at hand-back, corrected the dry-run lease planning and build-PID identity handling, wrapped the new over-length lines, committed, merged main, wrote this bundle. See REROUTE_TO_CLAUDE_RESULT.md.",
+      "deviation": "The packet binding named Codex as sole implementer. The diff now has two authors (Codex and Claude), so neither may audit it."
+    },
+    "gates": {
+      "runner": "local-shell",
+      "model": "NONE",
+      "effort": "NONE"
+    },
+    "independent_audit": {
+      "status": "PASS",
+      "route": "agy",
+      "model_requested": "gemini-4-argon-high",
+      "provider_attested_model": "UNKNOWN",
+      "route_chosen_by": "owner",
+      "route_chosen_text": "1 yes, 2 agy, 3 yes",
+      "route_chosen_at": "2026-11-20T03:00:37.260Z",
+      "model_chosen_by": "supervising session, reusing the model the owner approved for the PR #1516 audit",
+      "attempts": 1
+    }
+  },
+  "slices": [
+    {
+      "id": "S0",
+      "status": "PASS",
+      "evidence": "PROOF_CODEX_HANDBACK.json slice S0; BINDING_VALIDATION.txt"
+    },
+    {
+      "id": "S1",
+      "status": "PASS",
+      "evidence": "RED_BASELINE.txt; RED_BASELINE_FINAL.txt"
+    },
+    {
+      "id": "A",
+      "status": "PASS",
+      "summary": "status prefers this worktree's active lease ports over stale envrc ports"
+    },
+    {
+      "id": "B",
+      "status": "PASS",
+      "summary": "start/restart --dry-run plans against the lease registry in memory and persists nothing"
+    },
+    {
+      "id": "C",
+      "status": "PASS",
+      "summary": "a detached build older than DOPEMUX_MCP_BUILD_TIMEOUT_SECS is terminated by verified process identity before its PID file is replaced; an unverifiable record is retained and never signalled"
+    },
+    {
+      "id": "D",
+      "status": "PASS",
+      "summary": "the stdio proxy forwards a cancel to the backend under the backend's own request id"
+    },
+    {
+      "id": "S6",
+      "status": "PASS",
+      "summary": "design doc follow-up section updated; docs validator exit 0"
+    },
+    {
+      "id": "S7",
+      "status": "PASS",
+      "summary": "five test files, full fast suite, and lint/type comparison against the base all ran on the merged tree; see validations"
+    },
+    {
+      "id": "S8",
+      "status": "PASS",
+      "summary": "this bundle; draft PR #1521 open"
+    },
+    {
+      "id": "S9",
+      "status": "NOT_RUN",
+      "summary": "independent audit pending"
+    }
+  ],
+  "files_changed": [
+    "claudedocs/mcp-just-works-design-2026-11-05.md",
+    "src/dopemux/mcp/launcher.py",
+    "src/dopemux/mcp/lifecycle.py",
+    "src/dopemux/mcp/reap.py",
+    "src/dopemux/mcp/stdio_proxy.py",
+    "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.json",
+    "task-packets/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001.md",
+    "tests/unit/test_mcp_launcher.py",
+    "tests/unit/test_mcp_lifecycle_ports_from_leases.py",
+    "tests/unit/test_mcp_reap.py",
+    "tests/unit/test_mcp_stdio_proxy.py"
+  ],
+  "validations": [
+    {
+      "command": "python -m pytest -q --no-cov -p no:cacheprovider tests/unit/test_mcp_lifecycle.py tests/unit/test_mcp_lifecycle_ports_from_leases.py tests/unit/test_mcp_launcher.py tests/unit/test_mcp_reap.py tests/unit/test_mcp_stdio_proxy.py",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "result": "358 passed",
+      "tree": "29fb004ee174c27ff6358ba9d0052b9667050594",
+      "finished_at": "2026-11-20T03:06:14Z"
+    },
+    {
+      "command": "make test-fast",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "result": "4532 passed, 29 skipped, 2 warnings",
+      "tree": "29fb004ee174c27ff6358ba9d0052b9667050594",
+      "finished_at": "2026-11-20T03:03:45Z",
+      "note": "The 29 skips are pre-existing: 27 need fastmcp, which is not installed in this venv, and 2 files are quarantined from the fast lane."
+    },
+    {
+      "command": "ruff check --no-cache src/dopemux/mcp/lifecycle.py src/dopemux/mcp/port_allocator.py src/dopemux/mcp/launcher.py src/dopemux/mcp/reap.py src/dopemux/mcp/stdio_proxy.py",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "result": "4 findings on base, 4 now, all F841 in lifecycle.py and all present on the base",
+      "comparison_base": "365f70ce2edc907d14356d82d2843104dbdaa434",
+      "tree": "29fb004ee174c27ff6358ba9d0052b9667050594",
+      "note": "Non-zero exit is the base state; the gate is no new findings."
+    },
+    {
+      "command": "flake8 src/dopemux/mcp/lifecycle.py src/dopemux/mcp/port_allocator.py src/dopemux/mcp/launcher.py src/dopemux/mcp/reap.py src/dopemux/mcp/stdio_proxy.py",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "result": "659 findings on base, 652 now; E501 652 on base, 645 now; other codes unchanged (2 E203, 1 E303, 4 F841)",
+      "comparison_base": "365f70ce2edc907d14356d82d2843104dbdaa434",
+      "tree": "29fb004ee174c27ff6358ba9d0052b9667050594",
+      "note": "flake8 has no repo configuration and is not a CI gate here; run at its 79-column default for comparison only."
+    },
+    {
+      "command": "mypy --cache-dir=/dev/null src/dopemux/mcp/lifecycle.py src/dopemux/mcp/port_allocator.py src/dopemux/mcp/launcher.py src/dopemux/mcp/reap.py src/dopemux/mcp/stdio_proxy.py",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "result": "367 errors in 33 files on base and now; 2 of them located in the five files, on base and now",
+      "comparison_base": "365f70ce2edc907d14356d82d2843104dbdaa434",
+      "tree": "29fb004ee174c27ff6358ba9d0052b9667050594"
+    },
+    {
+      "command": "python scripts/docs_validator.py claudedocs/mcp-just-works-design-2026-11-05.md",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "tree": "29fb004ee174c27ff6358ba9d0052b9667050594"
+    },
+    {
+      "command": "git diff --name-only origin/main HEAD, filtered by the packet allowlist",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "result": "0 paths outside the allowlist",
+      "tree": "29fb004ee174c27ff6358ba9d0052b9667050594"
+    },
+    {
+      "command": "git diff --quiet 365f70ce origin/main -- <each of the five source files>",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "result": "main is identical to the packet base on all five source files, so the base figures above still apply after the merge"
+    },
+    {
+      "command": "python scripts/governance/validate_change_contract.py",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "result": "passes after the frontmatter commit; it failed on the first commit because the packet companion had no frontmatter",
+      "tree": "54ec77f76a88b19c7f23de6338338237ff61e1b2"
+    },
+    {
+      "command": "GitHub CI on PR #1521",
+      "exit_code": null,
+      "bucket": "FAIL",
+      "result": "on pushed head 54ec77f76: all checks pass except \"independent embedded audit\" and \"PR Steward / final readiness\", which fail because no audit proof exists yet; 3 checks skip",
+      "tree": "54ec77f76a88b19c7f23de6338338237ff61e1b2",
+      "note": "CI has not yet run on the merged head or on this bundle."
+    },
+    {
+      "command": "Codex-era validations (62 records)",
+      "exit_code": null,
+      "bucket": "HISTORICAL",
+      "result": "kept verbatim in PROOF_CODEX_HANDBACK.json; they describe the uncommitted hand-back tree, not this head"
+    }
+  ],
+  "codereview_status": "Independent audit by agy (gemini-4-argon-high requested) at cf3b262a7: PASS, no findings, 3 low risks. See AUDITOR_REPORT.md. Codex's hand-back self-review and the Claude session's own checks are not reviews.",
+  "precommit_status": "PASS_WITH_EXCEPTION: all hooks passed on the fix commit except markdownlint, which was skipped because its node environment fails to build on this machine (nodeenv cannot parse the installed node version). markdownlint-cli was run by hand on the changed markdown instead, exit 0.",
+  "audit": {
+    "status": "PASS",
+    "route": "agy",
+    "report": "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md",
+    "audited_head_sha": "cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf",
+    "signed": false,
+    "signature_note": "proof/pr_merge/embedded-audit/pr-1521/PROOF.json is written and awaits the owner's signature."
+  },
+  "pr_url_or_blocker": "https://github.com/DDD-Enterprises/dopemux-mvp/pull/1521 (draft). Audit passed. Blocked on the owner's signature on proof/pr_merge/embedded-audit/pr-1521/PROOF.json, then PR Steward.",
+  "residual_risks": [
+    "Cancel forwarding was exercised against in-memory SDK sessions with MCP SDK 1.29, which exposes the request id only through a private attribute. An SDK that drops it makes the proxy fail closed with INTERNAL_ERROR rather than forward a wrong id.",
+    "The 4 ruff F841 findings and 2 mypy errors in the five files exist on the base and were left alone as out of scope.",
+    "markdownlint did not run as a pre-commit hook locally; CI Documentation Check passed on the pushed head.",
+    "Auditor risk (low), src/dopemux/mcp/stdio_proxy.py lines 475-488: Relies on MCP Python SDK private attribute ClientSession._request_id to capture the backend request ID before send_request awaits. Auditor's mitigation note: Explicitly permitted by packet step S5; fails closed with McpError(INTERNAL_ERROR) if _request_id is missing or non-int, and is pinned by test_m1_followup_sdk_request_id_contract_fails_closed_if_missing.",
+    "Auditor risk (low), src/dopemux/mcp/launcher.py lines 440-457: Synchronous termination loop in _live_build_pid can block up to 4.0s (2.0s SIGTERM wait + 2.0s SIGKILL wait) when reaping an expired build that ignores SIGTERM. Auditor's mitigation note: Bounded to 4.0s total and only triggers when a build exceeds DOPEMUX_MCP_BUILD_TIMEOUT_SECS (default 1800s).",
+    "Auditor risk (low), src/dopemux/mcp/launcher.py lines 399-418: _build_process_identity is duplicated across launcher.py and reap.py to avoid circular imports. Auditor's mitigation note: Required by packet invariant C; parity between both modules is directly tested by test_m1_followup_build_stale_identity_never_signalled and test_m1_followup_expiry_signal_rules_and_reaper_agreement.",
+    "Validation was not run inside the sealed audit session (validation_status=NOT_RUN). The session had no repository and took no tool steps; it read the diff in the prompt. Local results are in review_bundle/LOCAL_VALIDATION.txt.",
+    "The auditor was not asked about the reversed test expectation by name. The prompt carries the diff without the proof files, so REROUTE_TO_CLAUDE_RESULT.md, which flags the reversal, was not in front of it. test_dead_or_stale_build_pid_does_not_block_a_reap now asserts that a live build older than DOPEMUX_MCP_BUILD_TIMEOUT_SECS does not block a reap. The auditor described fix C's termination of expired verified builds and returned PASS, but did not comment on that test change specifically. OPERATOR: decision pending on whether that is enough.",
+    "One auditor governs and there is no corroborating second audit. The PR #1516 packet carried a Grok corroboration; this one does not.",
+    "The diff has two authors, Codex and a Claude Code session. Independence rests on the auditor's model family (google-gemini) differing from both. All three model identities are requested or self-reported; none is provider-attested.",
+    "The owner chose the route (agy) and did not name a model. The session used gemini-4-argon-high, the model the owner approved for the PR #1516 audit.",
+    "AGY ran with tool permissions on always-proceed. Containment rests on the sealed directory and on the observed absence of tool steps in the stream, not on an enforced sandbox.",
+    "The audited head contains a merge of main. Earlier audited PRs were linear, and whether PR Steward accepts this shape is unknown until it runs on the signed proof.",
+    "Process identity, clocks and signals in the build-PID tests are synthetic. No real over-budget build was terminated, and no real MCP client cancel was sent to a running backend.",
+    "The raw AGY stream and the AGY CLI log contain the operator's home directory path, as in earlier bundles. Only the account email address was redacted (REDACTIONS.md)."
+  ],
+  "unknowns": [
+    "Provider-attested model and effort for the Codex run (requested gpt-6.1-sol/high per its hand-back).",
+    "CI on the audited head cf3b262a7 is 2 FAILURE, 3 SKIPPED, 20 SUCCESS; the two failures are the audit gates. CI on the proof-only commits that follow has not run.",
+    "Provider-attested model for the AGY run."
+  ],
+  "cleanup_status": {
+    "running_operation": null,
+    "source_changes_committed": true,
+    "branch_pushed": true,
+    "draft_created": true,
+    "host_or_main_checkout_mutation": false,
+    "worktree_retained": "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups",
+    "renamed": [
+      "PROOF.json -> PROOF_CODEX_HANDBACK.json",
+      "PROOF_HASHES.json -> PROOF_HASHES_CODEX_HANDBACK.json"
+    ],
+    "removed": [
+      "WORKING_DIFF_AT_REROUTE_TO_CLAUDE.patch (byte-identical duplicate of WORKING_DIFF.patch)"
+    ],
+    "nothing_else_deleted": true,
+    "audit_bundle_committed": "this commit",
+    "signed_proof_committed": false
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print=\"$(cat AUDIT_PROMPT.txt)\" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt (cwd = sealed dir holding only AUDIT_PROMPT.txt from scripts.audit.pal_clink_runner --build-prompt; AGY CLI 1.5.13; conversation_id=fe89e363-4bab-47da-88ef-05dee1a81345; launched 2026-11-20T03:09:39Z; wrapper end 2026-11-20T03:10:57Z; one attempt; raw stream retained in review_bundle/AGY_OUTPUT_RAW.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Auditor risk (low), src/dopemux/mcp/stdio_proxy.py lines 475-488: Relies on MCP Python SDK private attribute ClientSession._request_id to capture the backend request ID before send_request awaits. Auditor's mitigation note: Explicitly permitted by packet step S5; fails closed with McpError(INTERNAL_ERROR) if _request_id is missing or non-int, and is pinned by test_m1_followup_sdk_request_id_contract_fails_closed_if_missing.",
+      "Auditor risk (low), src/dopemux/mcp/launcher.py lines 440-457: Synchronous termination loop in _live_build_pid can block up to 4.0s (2.0s SIGTERM wait + 2.0s SIGKILL wait) when reaping an expired build that ignores SIGTERM. Auditor's mitigation note: Bounded to 4.0s total and only triggers when a build exceeds DOPEMUX_MCP_BUILD_TIMEOUT_SECS (default 1800s).",
+      "Auditor risk (low), src/dopemux/mcp/launcher.py lines 399-418: _build_process_identity is duplicated across launcher.py and reap.py to avoid circular imports. Auditor's mitigation note: Required by packet invariant C; parity between both modules is directly tested by test_m1_followup_build_stale_identity_never_signalled and test_m1_followup_expiry_signal_rules_and_reaper_agreement.",
+      "Validation was not run inside the sealed audit session (validation_status=NOT_RUN). The session had no repository and took no tool steps; it read the diff in the prompt. Local results are in review_bundle/LOCAL_VALIDATION.txt.",
+      "The auditor was not asked about the reversed test expectation by name. The prompt carries the diff without the proof files, so REROUTE_TO_CLAUDE_RESULT.md, which flags the reversal, was not in front of it. test_dead_or_stale_build_pid_does_not_block_a_reap now asserts that a live build older than DOPEMUX_MCP_BUILD_TIMEOUT_SECS does not block a reap. The auditor described fix C's termination of expired verified builds and returned PASS, but did not comment on that test change specifically. OPERATOR: decision pending on whether that is enough.",
+      "One auditor governs and there is no corroborating second audit. The PR #1516 packet carried a Grok corroboration; this one does not.",
+      "The diff has two authors, Codex and a Claude Code session. Independence rests on the auditor's model family (google-gemini) differing from both. All three model identities are requested or self-reported; none is provider-attested.",
+      "The owner chose the route (agy) and did not name a model. The session used gemini-4-argon-high, the model the owner approved for the PR #1516 audit.",
+      "AGY ran with tool permissions on always-proceed. Containment rests on the sealed directory and on the observed absence of tool steps in the stream, not on an enforced sandbox.",
+      "The audited head contains a merge of main. Earlier audited PRs were linear, and whether PR Steward accepts this shape is unknown until it runs on the signed proof.",
+      "Process identity, clocks and signals in the build-PID tests are synthetic. No real over-budget build was terminated, and no real MCP client cancel was sent to a running backend.",
+      "The raw AGY stream and the AGY CLI log contain the operator's home directory path, as in earlier bundles. Only the account email address was redacted (REDACTIONS.md)."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  },
+  "gates_run_at_sha": "29fb004ee174c27ff6358ba9d0052b9667050594",
+  "audited_head_sha": "cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf",
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "gpt-6.1-sol requested for the Codex run (provider-attested model UNKNOWN); claude-fable-5-2 for the Claude Code session that finished the work (session environment; self-reported, not provider-attested)",
+      "model_family": "openai-gpt+anthropic-claude",
+      "runner": "codex (first author); claude-code (completion after the owner's reroute)",
+      "runtime_family": "openai-codex+anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "auditor_run": {
+    "agy_cli_version": "1.5.13",
+    "conversation_id": "fe89e363-4bab-47da-88ef-05dee1a81345",
+    "launched": "2026-11-20T03:09:39Z",
+    "wrapper_end": "2026-11-20T03:10:57Z",
+    "exit_code": 0,
+    "verdict": "PASS",
+    "validation_status": "NOT_RUN",
+    "findings": 0,
+    "risks": 3,
+    "tool_steps": 0,
+    "prompt_sha256": "d6d65522314d8846b2d0e8d183894fb69cb201faa5cc634c3ba1a87c4a0500f0",
+    "diff_sha256": "dd6c0a94fa4d58516be334d32470332e6d687acf864020b40302a8755d816a7a",
+    "raw_stream_sha256": "bc08de6c2c94acb2eaa79c953c06bd733a6da0cb17e9c7e6be2d54d1d6dafcb6",
+    "evidence_label": "AUDITOR_WRITTEN_RAW_RETAINED",
+    "custody": "~/.local/share/dopemux/evidence/pr1521/r1/"
+  }
+}

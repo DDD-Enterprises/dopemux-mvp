@@ -1,0 +1,36 @@
+{
+  "inspection": "Bounded metadata-only check of declared dev extra, uv.lock and known uv cache; no sync/install/acquisition attempted.",
+  "declared_group": "project.optional-dependencies.dev",
+  "locked_tools": {
+    "black": {
+      "version": "26.3.1",
+      "qualified_payload": "NOT_FOUND",
+      "other_version_not_substituted": "26.10.1"
+    },
+    "flake8": {
+      "version": "7.3.0",
+      "qualified_payload": "NOT_FOUND",
+      "other_version_not_substituted": "7.5.0"
+    },
+    "mypy": {
+      "version": "1.19.1",
+      "wheel_link": "/Users/hue/.cache/uv/wheels-v6/pypi/mypy/1.19.1-cp312-cp312-macosx_11_0_arm64",
+      "resolved_payload": "/Users/hue/.cache/uv/archive-v0/NP0BmCuHoQ_7YRoI",
+      "payload_exists": false
+    },
+    "pre-commit": {
+      "version": "4.5.1",
+      "wheel_link": "/Users/hue/.cache/uv/wheels-v6/pypi/pre-commit/4.5.1-py2.py3-none-any",
+      "resolved_payload": "/Users/hue/.cache/uv/archive-v0/PzvRMnJWOGgErf4K",
+      "payload_exists": false
+    }
+  },
+  "known_sdist_cache_directories": {
+    "black": false,
+    "flake8": false,
+    "mypy": false,
+    "pre-commit": false
+  },
+  "complete_dev_closure_qualified": false,
+  "decision": "No frozen dev sync: exact artifacts incomplete. No drifted substitution, network acquisition, build or resident environment use."
+}

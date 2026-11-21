@@ -1,0 +1,137 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "stage": "coordination",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "original_operator_packet.json",
+    "operator_gate_refs": [
+      "Hue explicitly approved one included Codex run for TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001, at most one draft, stop READY_FOR_AUDIT; trusted parent delegation 2026-11-16"
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "NOT_RUN",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L2"
+  },
+  "selection": {
+    "runner": "codex-supervisor",
+    "runner_availability": "PROVEN",
+    "model": "UNKNOWN-existing-supervisor",
+    "effort": "UNKNOWN",
+    "connector": "collaboration.spawn_agent plus normal Mac exec_command",
+    "configured_identity": "UNKNOWN-existing-supervisor",
+    "response_claimed_identity": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": [
+      "Exact root/head/base and clean status verified",
+      "No follow-up proof/venv or credible current writer; exclusive worker assigned",
+      "Initial source-read receipt exit0; no model/provider fallback"
+    ]
+  },
+  "constraints": {
+    "allowed_actions": [
+      "source_read",
+      "private_worktree_repair",
+      "hermetic_regression",
+      "deterministic_qualification",
+      "proof",
+      "guarded_branch_push_and_one_draft_after_effect_gates"
+    ],
+    "forbidden_actions": [
+      "merge",
+      "activate",
+      "sign",
+      "independent_audit",
+      "steward_action",
+      "live_process_signals",
+      "live_children_or_services",
+      "docker_mutation",
+      "host_config_mutation",
+      "main_checkout_mutation",
+      "paid_overflow",
+      "denied_retry",
+      "force_push",
+      "new_writer"
+    ],
+    "stop_conditions": [
+      "actual denial or uncertain operation",
+      "scope or base/custody drift",
+      "missing exact locked runtime",
+      "unfenced live effect",
+      "failed required gate prevents READY_FOR_AUDIT; preserve useful qualified work"
+    ],
+    "custody_constraints": [
+      "/root/mcp_m1_four_followups sole writer; validation/evidence serialized after implementation; no new subagents"
+    ],
+    "context_constraints": [
+      "Full original packet invariants retained; S9 HELD; current user no live children or signals overrides packet allowance for own child processes"
+    ]
+  },
+  "justification": {
+    "why_runner": "Explicit Codex author run, normal shell deterministic gates",
+    "why_model": "Applicable AGENTS \u00a75 qualified implementation route; one pinned Sol implementer; gates use no model",
+    "why_effort": "High sufficient for cancellation/identity contracts; no escalation/fallback",
+    "alternatives_considered": [
+      {
+        "route": "existing producer",
+        "disposition": "not identified for new follow-up",
+        "reason": "Packet-only clean branch and no credible active writer in retained evidence"
+      },
+      {
+        "route": "extra worker or audit",
+        "disposition": "forbidden",
+        "reason": "One implementer approval; S9 separately held"
+      }
+    ],
+    "cost_latency_tradeoff": "One included run; account quota available; no paid overflow or external provider",
+    "evidence": [
+      "../ADMISSION_AND_START.json",
+      "original_operator_packet.json"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L2",
+      "operator_packet:S9"
+    ],
+    "upstream_obligations": [
+      {
+        "source_ref": "operator_packet:S9",
+        "required": true
+      }
+    ],
+    "selected_auditor_binding": "NOT_RUN_HELD_NO_AUDIT_AUTHORITY"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "macro_id": "MACRO-DMX-MCP-M1-FOLLOWUPS-20261116-01",
+  "runner_version": "collaboration agent runtime; exact binary UNKNOWN",
+  "effort_requested": "UNKNOWN",
+  "effort_observed": "UNKNOWN",
+  "auth_profile_ref": "ChatGPT subscription login observed; usage29%; no paid overflow",
+  "network_posture": "No live product/network/service/provider calls; offline dependency cache only; publication held until separate effect qualification",
+  "containment_posture": "Exact dedicated worktree; synthetic process/clock/signal fixtures; in-memory MCP; no ~/.dopemux",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "NOT_RUN"
+  },
+  "response_claimed_model": "UNKNOWN",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "UNKNOWN",
+  "qualification_receipt_ref": "../ADMISSION_AND_START.json"
+}

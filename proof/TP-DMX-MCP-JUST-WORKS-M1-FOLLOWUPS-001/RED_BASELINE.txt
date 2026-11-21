@@ -1,0 +1,6 @@
+Production baseline: packet-only4029f6fea371df313ededcbd6f37ad0ecd90e08d, source equal base365f70ce2edc907d14356d82d2843104dbdaa434.
+A: REPRODUCED - status reports stale envrc ports after real temporary allocator release/foreign claim/reallocation.
+B: REPRODUCED - dryrun start/restart create absent registry and mutate existing bytes (4cases).
+C: REPRODUCED - synthetic expired live build remains alive and another build starts.
+D: REPRODUCED - real in-memory proxy/SDK runner cancellation does not cancel backend request; backend completes.
+Raw final baseline RED_BASELINE_FINAL.txt:7failed117deselected,exit1. Initial fixture-only failures retained separately.

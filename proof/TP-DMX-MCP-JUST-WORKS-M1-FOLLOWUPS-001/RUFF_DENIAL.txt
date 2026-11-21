@@ -1,0 +1,7 @@
+Command: .venv/bin/ruff check src/dopemux/mcp/lifecycle.py src/dopemux/mcp/launcher.py src/dopemux/mcp/reap.py src/dopemux/mcp/stdio_proxy.py --output-format concise
+Execution: default sandbox, not escalated. Exit2. Tool transcript faf62d.
+error: Failed to initialize cache at /Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.ruff_cache: Operation not permitted (os error 1)
+ruff failed
+  Cause: Failed to create temporary file
+  Cause: No such file or directory (os error 2) at path "/Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups/.ruff_cache/0.14.14/.tmphqxaQe"
+No lint retry, --no-cache substitution, alternate root/executor or escalation of this denied operation performed.

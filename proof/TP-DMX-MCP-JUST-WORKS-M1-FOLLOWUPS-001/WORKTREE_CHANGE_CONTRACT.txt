@@ -1,0 +1,14 @@
+status=PASS
+max_lane=L2
+model_audit_required=True
+proof_only=False
+paths=9
+  [L2] claudedocs/mcp-just-works-design-2026-11-05.md
+  [L2] src/dopemux/mcp/launcher.py
+  [L2] src/dopemux/mcp/lifecycle.py
+  [L2] src/dopemux/mcp/reap.py
+  [L2] src/dopemux/mcp/stdio_proxy.py
+  [L2] tests/unit/test_mcp_launcher.py
+  [L2] tests/unit/test_mcp_lifecycle_ports_from_leases.py
+  [L2] tests/unit/test_mcp_reap.py
+  [L2] tests/unit/test_mcp_stdio_proxy.py

@@ -1,0 +1,12 @@
+Using CPython 3.12.13 interpreter at: /Users/hue/.local/share/mise/installs/python/3.12.13/bin/python3.12
+Creating virtual environment at: .venv
+   Building dopemux @ file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups
+  × Failed to build `dopemux @
+  │ file:///Users/hue/code/dopemux-mvp/.worktrees/mcp-just-works-m1-followups`
+  ├─▶ Failed to resolve requirements from `build-system.requires`
+  ├─▶ No solution found when resolving: `setuptools>=61.0`, `wheel`
+  ╰─▶ Because setuptools was not found in the cache and you require
+      setuptools>=61.0, we can conclude that your requirements are
+      unsatisfiable.
+
+hint: Packages were unavailable because the network was disabled. When the network is disabled, registry packages may only be read from the cache.

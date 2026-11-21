@@ -1,0 +1,40 @@
+MCP lifecycle follow-ups: local validation at cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf (2026-11-20T03:18:26Z), Python 3.12.13
+Five touched test files (test_mcp_lifecycle_ports_from_leases, test_mcp_launcher, test_mcp_reap, test_mcp_stdio_proxy, test_mcp_lifecycle):
+358 passed in 17.66s
+pytest exit=0
+
+Same five test files (byte-identical to cf3b262a7) against src/ and compose.yml from the base ba5c3e07b
+(standalone tree outside the worktree, 2026-11-20T03:30:11Z..03:30:31Z; counts from the JUnit report):
+207 passed, 41 failed, 110 errors (358 collected)
+pytest exit=1
+imported: <standalone tree>/src/dopemux/mcp/{reap,lifecycle,launcher,stdio_proxy}.py (each cmp-identical to the base blob)
+
+Per file on base:
+  test_mcp_lifecycle                     85 passed
+  test_mcp_lifecycle_ports_from_leases   35 passed, 11 failed
+  test_mcp_launcher                      47 passed, 25 failed
+  test_mcp_stdio_proxy                   40 passed,  5 failed
+  test_mcp_reap                          110 errors (fixture setup)
+
+How to read the base result:
+- All 110 errors and 14 of the 41 failures are AttributeError: the base has no
+  _build_process_identity in reap.py / launcher.py, which the new fixtures and tests call.
+  They show the tests need code added by this PR; they are not behavioural assertions.
+- 3 failures are the missing stdio_proxy cancel-cleanup constant (same kind).
+- The remaining 24 failures are behavioural assertions failing on base: dry-run persisting
+  leases, stale envrc ports not re-leased, _resolve_ports lacking dry_run, expired build not
+  signalled / bare-PID build file, cancel not forwarded with the backend request id.
+
+Discarded attempts (not evidence):
+- 03:26:12Z run reported "358 passed" for base. It imported the worktree's own src, because
+  tests/conftest.py inserts <repo>/src at sys.path[0]. Invalid; superseded by the run above.
+- A second attempt collected nothing (git archive aborted on a path absent at head) and
+  resolved dopemux through the venv's editable install to another worktree. Invalid.
+- A third run in the standalone tree without compose.yml gave 48 failed / 110 errors; 9 of
+  those failures were the product-root lookup, an artefact of the tree. Superseded.
+
+Full unit suite: last run on the merge commit 29fb004ee174c27ff6358ba9d0052b9667050594 (make test-fast, finished
+2026-11-20T03:03:45Z): 4532 passed, 29 skipped, exit 0. cf3b262a7 adds only files under proof/
+to that commit, so the suite was not rerun at cf3b262a7.
+
+Not run here: live Docker start/stop, a real MCP client cancel against a running backend.

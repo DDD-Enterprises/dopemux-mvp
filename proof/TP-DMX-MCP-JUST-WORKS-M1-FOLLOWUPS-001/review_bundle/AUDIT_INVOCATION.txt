@@ -1,0 +1,19 @@
+PR #1521 audit (packet TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001), head cf3b262a75efe9e2f4edc50af1b67ae50e4a8bdf, base ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7 (main = merge-base)
+
+UNIFIED_DIFF.diff: git diff ba5c3e07...cf3b262a -- . ':(exclude)proof'
+  11 files (CHANGED_FILES.txt); rebuilt from git while building this bundle, same sha256.
+  Left out of the diff: the 40 files under proof/TP-DMX-MCP-JUST-WORKS-M1-FOLLOWUPS-001/ (EXCLUDED_PROOF_FILES.txt).
+  The auditor did not see them.
+Prompt: scripts.audit.pal_clink_runner --build-prompt over that diff. Prompt sha256 d6d65522314d8846b2d0e8d183894fb69cb201faa5cc634c3ba1a87c4a0500f0.
+  Instruction-like scan by the same trusted builder: INSTRUCTION_LIKE.json.
+The run used a sealed dir holding only AUDIT_PROMPT.txt, under ~/.local/share/dopemux/evidence/pr1521/r1/agy. The wrapper recorded
+the CLI version, the UTC start, `agy exit=$?` and the UTC end.
+The bundle stores the AGY stream written as AGY_OUTPUT_RAW.jsonl under the name AGY_OUTPUT_RAW.txt (same bytes).
+
+GOVERNING (one attempt): agy 1.5.13 started=2026-11-20T03:09:39Z
+  cd <sealed agy dir, same prompt>
+  agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print="$(cat AUDIT_PROMPT.txt)" > "$E/AGY_OUTPUT_RAW.jsonl" 2> "$E/AGY_STDERR.txt"
+  wrapper: agy exit=0 2026-11-20T03:10:57Z
+  conversation_id=fe89e363-4bab-47da-88ef-05dee1a81345
+
+No second auditor ran on this head.
