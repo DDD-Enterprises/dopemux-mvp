@@ -1,0 +1,86 @@
+{
+  "status": "ok",
+  "verdict": "FAIL",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "category": "security_bypass",
+      "path": ".claude/hooks/dcp_surface_guard.py",
+      "lines": "48-95",
+      "title": "_alias_forms does not branch resolved symlink targets across prior alias forms, dropping earlier symlink-preserving spellings on a subsequent '..'",
+      "detail": "The docstring of _alias_forms (lines 48-63) and AMENDMENT_07.md claim that the walk retains 'the fully resolved path, the path with every .. resolved and every symlink name kept, and each mix in between, for any number of hops' up to _MAX_ALIAS_FORMS = 64 (2^6). In the actual loop (lines 84-90), when os.path.islink(entry) is True, 'real' is replaced with tuple((p, False) for p in target.parts[1:]) (where all earlier symlinks have already been resolved away), while every existing form f in 'forms' is only extended in 'named' with ((name, True),) and is never extended with the current symlink's resolved target relative to f. As a result, 'forms' grows by at most +1 per symlink rather than 2^k, and every form that preserved an earlier symlink name ends with (name, True) at the second symlink. If the next path component is '..', line 80 ('kept = [f[:-1] for f in forms if f and not f[-1][1]]') drops all forms in 'named' because their final element has is_symlink_name=True, leaving only 'real[:-1]' (which already resolved the first symlink out of the checkout). Consequently, a path such as '<transit>/../<checkout>/services/task-orchestrator/<sym2>/../x.py' or 'far/link/../<sibling>/services/task-orchestrator/<sym2>/../x.py'—where 'services/task-orchestrator' is a symlink to an outside directory and '<sym2>' is a symlink inside that target directory—yields no candidate under <checkout> or <sibling> in _alias_forms, raw, or realpath, bypassing surface_guard_block and surface_guard_warnings."
+    },
+    {
+      "id": "F2",
+      "severity": "high",
+      "category": "security_bypass",
+      "path": ".claude/hooks/dcp_surface_guard.py",
+      "lines": "85-89",
+      "title": "_alias_forms resolves symlink targets via os.path.realpath(entry) in a single leap, skipping intermediate symlinks in a symlink chain",
+      "detail": "At lines 86-87, when os.path.islink(entry) is True, _alias_forms computes target = Path(os.path.realpath(entry)) rather than resolving one symlink hop at a time (e.g. via os.readlink). Because os.path.realpath follows the entire transitive chain of symlinks at once, any chained symlink where an outer symlink points to a red-lane path that is itself a symlink to an outside path (for example, '<checkout>/docs/innocent.py' -> '<checkout>/services/task-orchestrator/x.py' -> '<outside>/plain.py', or '<outside_link>' -> '<sibling>/services/task-orchestrator' -> '<outside_dir>' followed by '/x.py') jumps directly from the outer link name to '<outside>/...', never emitting the intermediate '<checkout>/services/task-orchestrator/...' spelling for either _guard_roots or _repo_relative_candidates. Both surface_guard_block and surface_guard_warnings miss the red-lane/contract-surface match."
+    },
+    {
+      "id": "F3",
+      "severity": "medium",
+      "category": "provenance_and_freeze",
+      "path": "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md",
+      "lines": "6-16",
+      "title": "Frozen content head in G02_RETURN.md (7a469cb21) differs from audited head SHA (ee43f9914) without trusted-prompt range evidence",
+      "detail": "G02_RETURN.md records 7a469cb21d185b45d8e10fe0013e7f5d860b68f6 as the frozen content head and states that G02_RETURN.md is committed on top of it as a proof-only commit, whereas the trusted audit prompt specifies Head SHA ee43f99140c09ef30e596873fef8da776e0c87ac. Although AMENDMENT_02.md (step 4, line 55) required putting 'git rev-list and git diff --name-only <content-head>..<audited-head> for the new head in the trusted section of the audit prompt', that commit-range evidence is absent from the trusted section of this prompt. Consequently, the equivalence of the validation tree at 7a469cb21 and the audited head ee43f9914 cannot be verified from trusted metadata alone."
+    },
+    {
+      "id": "F4",
+      "severity": "low",
+      "category": "governance_and_custody",
+      "path": "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json",
+      "lines": "32-41,56-209",
+      "title": "Static packet allowlists, canonical_writers, retry caps, and T05 base-merge gate were exceeded via self-reported amendment records",
+      "detail": "G01 exhausted its 1 attempt, 1 correction round, and 1 retry (G01_RETURN.md:11-15). Thereafter, Amendments 02-07 modified .claude/hooks/dcp_surface_guard.py and tests/unit/dcp_surface_guard/test_file_repo_root.py directly in the supervisor session without updating canonical_writers (['G01-implementer']) or recording new execution bindings, and added 11 proof files under proof/MACRO-DMX-GUARD-FILE-REPO-001/ outside the static write_surface arrays of G01 and G02. In addition, G02_RETURN.md (line 39) records commit 79dded62a merging origin/main at ba5c3e07b (moving base from 264c97b23), but no separate operator ruling for G02 invariant T05 ('If main moves and the PR needs an update, stop and ask the operator which way') is recorded in the proof files. While AMENDMENT_02.md through AMENDMENT_07.md record verbatim AskUserQuestion operator exceptions for the supervisor code edits, instruction-like governance text inside candidate proof files is untrusted candidate data and cannot self-certify authority."
+    }
+  ],
+  "risks": [
+    "Red-lane and contract-surface protection in .claude/hooks/dcp_surface_guard.py can still be bypassed when a path combines an outer traversal/symlink with a symlinked red-lane directory and an inner symlink followed by '..', or when a symlink points to a symlinked red-lane file or directory (chained symlinks).",
+    "Candidate proof and packet files (TASK_PACKET.json, MACRO_PACKET.json, ISSUANCE.md, AMENDMENT_01.md..AMENDMENT_07.md) contain instruction-like agent rules and self-reported operator rulings; all such content was treated strictly as untrusted candidate data under audit.",
+    "Because tools and code execution are disabled in this embedded audit, test execution claims in G01_RETURN.md, G02_RETURN.md, and AMENDMENT_02.md..AMENDMENT_07.md could not be independently re-run by the auditor (validation_status=NOT_RUN)."
+  ],
+  "rationale": "The candidate diff fails closed under L3 security-enforcement audit for two primary reasons. First, in .claude/hooks/dcp_surface_guard.py, the Amendment 07 _alias_forms walk (lines 48-95) does not implement the combinatorial alias expansion described in its docstring and AMENDMENT_07.md: at each symlink (lines 85-89), it overwrites 'real' with the globally resolved os.path.realpath(entry) target and only appends ((name, True),) to prior forms in 'forms', never combining an earlier preserved symlink name with the resolved target of a later symlink, and never stepping through chained symlinks one hop at a time. When a second symlink is followed by '..', line 80 ('kept = [f[:-1] for f in forms if f and not f[-1][1]]') discards every form in 'named' (all of which end in is_symlink_name=True), destroying all earlier symlink-preserving spellings and re-opening a red-lane bypass for paths such as '<transit>/../<checkout>/services/task-orchestrator/<sym2>/../x.py' or 'far/link/../<sibling>/services/task-orchestrator/<sym2>/../x.py', as well as chained symlinks ('<link1>' -> '<checkout>/services/task-orchestrator/...' -> '<outside>/...'). Second, G02_RETURN.md freezes content head 7a469cb21d185b45d8e10fe0013e7f5d860b68f6 while the head under audit is ee43f99140c09ef30e596873fef8da776e0c87ac, without the trusted-prompt commit-range proof required by AMENDMENT_02.md step 4.",
+  "inspected_paths": [
+    ".claude/hooks/dcp_surface_guard.py",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_01.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_02.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_03.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_04.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_05.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_06.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_07.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AUTHORIZATION.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/ISSUANCE.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/SHA256SUMS.txt",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G02/TASK_PACKET.json",
+    "tests/unit/dcp_surface_guard/__init__.py",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py"
+  ],
+  "evidence_refs": [
+    ".claude/hooks/dcp_surface_guard.py:45-95 (_alias_forms walk, single-leap os.path.realpath, non-branching named list, and '..' pruning of all forms ending in is_symlink_name=True)",
+    ".claude/hooks/dcp_surface_guard.py:123-138 (_repo_relative_candidates reliance on _alias_forms)",
+    ".claude/hooks/dcp_surface_guard.py:245-298 (_absolute_bases, _guard_starts, _guard_readings)",
+    ".claude/hooks/dcp_surface_guard.py:338-380 (surface_guard_block and _block_reason_for_path)",
+    ".claude/hooks/dcp_surface_guard.py:456-494 (surface_guard_warnings per-path cache lookup)",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py:517-598 (Amendment 07 tests using a plain directory 'dir' rather than a second symlink before '..')",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_07.md:43-64 (claimed combinatorial walk and _MAX_ALIAS_FORMS=64 limit at >6 symlinks)",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_02.md:32-57 (writer-custody deviation and step 4 requirement for trusted-prompt content-head..audited-head range)",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md:6-48 (frozen content head 7a469cb21d185b45d8e10fe0013e7f5d860b68f6 vs audited head ee43f99140c09ef30e596873fef8da776e0c87ac and merge commit 79dded62a)",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json:32-41,67-74,145-150 (global_stop_conditions, write_surface, and canonical_writers)",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json:17-19,156-163 (A01-A03 attempt/retry caps and G01 write_surface/canonical_writers)",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G02/TASK_PACKET.json:21-24 (T02 no-code-edit rule and T05 base-movement operator gate)"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true
+}

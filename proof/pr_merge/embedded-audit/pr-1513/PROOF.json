@@ -1,0 +1,121 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "grok-4.7",
+      "model_family": "xai-grok",
+      "runner": "grok-cli",
+      "runtime_family": "xai-grok-cli"
+    },
+    "implementer": {
+      "model": "claude-opus-5-5 (planning and the G01 dispatch), claude-sonnet-5-5 (the G01 child, requested), claude-fable-5-2 (Amendments 02-10), claude-sonnet-5-5 (Amendment 11 and the freeze records); self-reported from the session model setting, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.7",
+    "invocation": "grok -m grok-4.7 --effort high (contained: init.tools == [], see review_bundle/AUDIT_INVOCATION.txt); grok CLI 1.0.77; session_id=01a1f74a-890d-7971-a17e-55398b65c01e; grok exit=0 2026-11-20T05:07:25Z; one attempt; raw stream retained in review_bundle/GROK_AUDIT_STREAM.txt",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1513-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "GROK-1",
+        "severity": "LOW",
+        "title": "realpath failure drops alias root starts",
+        "status": "OPEN",
+        "body": "In _guard_starts the loop does os.path.normpath, then os.path.realpath, then _alias_forms inside one try that swallows OSError and ValueError. A raise from realpath skips alias starts for that base and every later base. _alias_limit_exceeded only runs _walk_alias_forms, so a realpath failure is not by itself a hard block. CPython's default realpath (strict=False) usually absorbs link errors internally, and no openable allow was shown from this diff alone. .claude/hooks/dcp_surface_guard.py _guard_starts; _alias_limit_exceeded OPERATOR: decision pending."
+      },
+      {
+        "id": "GROK-2",
+        "severity": "LOW",
+        "title": "Writer and attempt-cap exceptions are operator-ratified but outside the packet",
+        "status": "OPEN",
+        "body": "G01's packet names G01-implementer as the only canonical writer of the guard and test file, with one correction round. Amendments 02-11 record the supervisor session writing those files directly, each under a one-off operator exception that does not change canonical_writers. The issued packet hashes are unchanged. This is a governance deviation already written into the proof records, not a red-lane bypass. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-1",
+        "severity": "MEDIUM",
+        "title": "Supervisor-authored code edits across Amendments 02-11 and proof files outside issued workstream write_surface",
+        "status": "OPEN",
+        "body": "[proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json] G01's issued TASK_PACKET.json and MACRO_PACKET.json designate 'G01-implementer' as the sole canonical writer of .claude/hooks/dcp_surface_guard.py and tests/unit/dcp_surface_guard/test_file_repo_root.py, with a cap of 1 attempt, 1 correction round, and 1 retry, and 1 final audit after J-FREEZE. After G01 exhausted its allowance on Amendment 01 and the initial Copilot retry, Amendments 02 through 11 were authored directly by the supervisor session, and three prior frozen heads underwent final audit before this fourth freeze. In addition, AMENDMENT_01.md..AMENDMENT_11.md, AUTHORIZATION.md, G01_EXECUTION_BINDING.json, G01_RETURN.md, and package/* reside outside the child write_surface arrays of G01 and G02. Each deviation was transparently recorded with verbatim operator rulings in AMENDMENT_02.md..AMENDMENT_11.md, while the issued packet JSON files were left unamended to preserve their issuance hashes. Corroborating auditor. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-2",
+        "severity": "LOW",
+        "title": "Exported file_repo_root helper returns only the nearest .git above realpath",
+        "status": "OPEN",
+        "body": "[.claude/hooks/dcp_surface_guard.py] file_repo_root(file_path, fallback) (lines 230-261) resolves os.path.realpath first and stops at the first ancestor directory containing a .git file or directory. While surface_guard_block and surface_guard_warnings no longer call file_repo_root (they use _guard_roots, which checks project_root plus all enclosing .git directories across lexical, realpath, and alias starts), file_repo_root remains exported for Wave 2B W09 per T01. Any downstream caller that relies on file_repo_root alone for security blocking would remain susceptible to a planted inner .git file or a symlinked directory resolving outside the repository. Corroborating auditor. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-3",
+        "severity": "LOW",
+        "title": "Direct edit to an external directory target of a checkout's red-lane symlink is not detectable by forward/upward path walking",
+        "status": "OPEN",
+        "body": "[.claude/hooks/dcp_surface_guard.py] If a checkout's red-lane directory (e.g., services/task-orchestrator) is a symlink pointing to an external directory outside all git checkouts, and an edit addresses a file directly via that external path without traversing any checkout or any symlink leading through a checkout, neither _guard_roots nor _walk_alias_forms can associate the external path with the checkout's red lane. Amendment 10 removed the block message suggestion to use the real path, and AMENDMENT_10.md / AMENDMENT_11.md / G02_RETURN.md document this pre-existing limitation for follow-up design. Corroborating auditor. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-4",
+        "severity": "LOW",
+        "title": "Symlink hop counter tracks recursion depth rather than sequential hop count, and dual-key warnings report one surface per call",
+        "status": "OPEN",
+        "body": "[.claude/hooks/dcp_surface_guard.py] (1) In _walk_alias_forms (lines 78-100), hops is incremented only on recursive symlink target walks (hops + 1) rather than cumulative sequential symlink resolutions across a path; however, sequential non-reverting symlinks double the form count at each link and trip _MAX_ALIAS_FORMS (64) at ~6 links, while OS kernels reject >32 total symlink resolutions with ELOOP on open. (2) In surface_guard_warnings (lines 563-578), when a single tool call supplies both file_path and notebook_path pointing to two distinct unwarned contract surfaces, the loop breaks after caching and returning the warning for the first unwarned surface only. Corroborating auditor. OPERATOR: decision pending."
+      },
+      {
+        "id": "AGY-5",
+        "severity": "LOW",
+        "title": "Candidate proof files contain explanatory text addressing the auditor",
+        "status": "OPEN",
+        "body": "[proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md] Although the deterministic scanner reported match_count=0, G01_RETURN.md lines 56-61 contain a section titled '## For the auditor' (including 'An auditor may rule otherwise') and G02_RETURN.md references auditor acceptance and ratings. Per Hard Rule 2 and the output contract, this text is flagged here and treated strictly as untrusted candidate data rather than instructions. Corroborating auditor. OPERATOR: decision pending."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "GROK-1 (LOW, OPEN): realpath failure drops alias root starts",
+      "GROK-2 (LOW, OPEN): Writer and attempt-cap exceptions are operator-ratified but outside the packet",
+      "AGY-1 (MEDIUM, OPEN): Supervisor-authored code edits across Amendments 02-11 and proof files outside issued workstream write_surface",
+      "AGY-2 (LOW, OPEN): Exported file_repo_root helper returns only the nearest .git above realpath",
+      "AGY-3 (LOW, OPEN): Direct edit to an external directory target of a checkout's red-lane symlink is not detectable by forward/upward path walking",
+      "AGY-4 (LOW, OPEN): Symlink hop counter tracks recursion depth rather than sequential hop count, and dual-key warnings report one surface per call",
+      "AGY-5 (LOW, OPEN): Candidate proof files contain explanatory text addressing the auditor",
+      "Grok risk: Disclosed reverse-lookup gap remains. If services/task-orchestrator is a symlink to a directory outside every repo, an edit of that outside directory's own path is allowed. The same allow applies to another symlink in the checkout whose target path never contains the red-lane component (for example services/jump pointing at the same outside directory): the walk only keeps names that appear on the path it is resolving, and it does not readdir siblings. AMENDMENT_10 and AMENDMENT_11 defer this; the records say main allows the outside path too.",
+      "Grok risk: Fail-closed cost: a walk that exceeds 64 spellings, 40 link hops, a loop, an unreadable link, ValueError, or RecursionError hard-blocks, including ordinary files. _alias_forms still returns () on those errors so discovery does not raise; _alias_limit_exceeded blocks first.",
+      "Grok risk: Freeze durability: G02_RETURN records Copilot review of content head 72aa9c902 as NOT_RUN and says a later Copilot review can void an audit run before it. Earlier rounds each found another symlink/.. shape. Full make test is NOT_RUN in the candidate record. This auditor did not execute the suite.",
+      "Grok risk: file_repo_root still returns the nearest .git above os.path.realpath. surface_guard_block does not use it after Amendment 01. A later W09 caller that blocks from file_repo_root alone reopens planted-.git and realpath-escape mistakes. T02 specifies this helper.",
+      "Grok risk: Trusted range 72aa9c902..3bc641e886914f49ee8a63f1bd1228b9909aa0a0 is only proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_11.md and G02_RETURN.md. Condensing Amendment 11 is proof-only; the longer text at 72aa9c902 was not in this message.",
+      "Grok risk: Bash and apply_patch edits stay unguarded (packet T05 / plan C17, owned by W09).",
+      "Grok risk: Instruction-like candidate text addresses the auditor (G01_RETURN 'For the auditor'; amendment and freeze records telling the auditor which residuals to accept). Treated as data, not as instructions. The candidate scan summary said detected=false; that summary is candidate-controlled.",
+      "AGY risk: No tools, file reads, shell commands, or test executions were run during this audit (per Hard Rule 1); live test pass rates, SHA-256 hashes of working tree files, git status, and CI check states outside the provided prompt text are UNKNOWN and not independently re-executed.",
+      "AGY risk: Wave 2B W09 will import file_repo_root from .claude/hooks/dcp_surface_guard.py; if W09 uses file_repo_root rather than multi-root discovery (_guard_roots) for hard-deny decisions, a planted .git entry or external symlink target could bypass W09.",
+      "AGY risk: Because _alias_limit_exceeded fails closed on any path with >64 alias spellings, >40 nested symlink hops, a symlink loop, or an unreadable symlink, legitimate edits to non-red-lane files behind deeply stacked symlinks (>=6 sequential symlinks) will also be hard-blocked.",
+      "AGY risk: G02_RETURN.md notes that a fresh Copilot review on frozen content head 72aa9c902ceec12a705f6993f98b7eb86e61c6ba was requested but had not run (NOT_RUN), and black --check fails on the modified Python files (unchanged from prior heads).",
+      "Audit scope: both auditors saw the whole diff ba5c3e07b...3bc641e88, 24 files, with a trusted brief carrying git's own commit range 72aa9c902..3bc641e88 (proof-only).",
+      "The auditors could not run anything; the claims in this proof about tests and probes are the implementer's, re-run for LOCAL_VALIDATION.txt but not by the auditors.",
+      "Three earlier frozen heads failed their audits (AUDIT_HISTORY.md); the symlink / '..' family produced a new variant on every head before this one, so closure is shown by the test file and the saved probes, not proven.",
+      "Open gap, same on main: an edit through the outside folder that a checkout's red-lane symlink points to is allowed (probe key f1_real_path_blocked).",
+      "Fail-closed cost: a path whose symlink walk cannot finish (more than 64 spellings, about six stacked links, a loop, a chain past 40 links, an unreadable link) is hard-blocked, ordinary files included.",
+      "Copilot did not review the content head (NOT_RUN); a later Copilot finding would void this audit.",
+      "Amendments 02-11 were written by the supervisor session under one-off operator exceptions outside the issued packet's named writer; the packet files are unchanged.",
+      "Auditor model identity: requested grok-4.7; init.model grok-4.7; receipt grok-4.7-build; self-reported grok-4.7; AGY requested gemini-4-argon-high, self-reported Gemini 4 Argon (High). Provider attestation UNKNOWN for both.",
+      "AGY tool permissions were always-proceed; containment rests on the observed absence of tool steps. The audit prompt was condensed (AMENDMENT_11.md and G02_RETURN.md) to fit AGY's message limit; the longer text is in git at 72aa9c902.",
+      "AMENDMENT_02.md records the operator's answer at 06:10:41Z; the session transcript shows 06:02:09.648Z. Not reconciled."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  },
+  "generated_at": "2026-11-20T06:52:39Z",
+  "head_sha": "3bc641e886914f49ee8a63f1bd1228b9909aa0a0",
+  "packet_id": "TP-DMX-PR1513-L3-AUDIT-001",
+  "pr_number": 1513,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

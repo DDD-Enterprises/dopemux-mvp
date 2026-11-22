@@ -1,0 +1,67 @@
+{
+  "status": "COMPLETE",
+  "verdict": "FAIL",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "title": "Hard-deny bypass: symlink targets are fully realpath'd, so an intermediate red-lane spelling is never kept",
+      "detail": "In _alias_forms, a symlink component is recorded as os.path.realpath(entry) plus the input component's own name. realpath canonicalizes the entire chain, and the walk never reads os.readlink, so a red-lane path that exists only as an intermediate target is not one of the emitted spellings. Layout: <wt>/.git present; <wt>/services/task-orchestrator is a symlink to <outside>/impl; <outside>/impl/x.py is a regular file; <wt>/docs/alias is a symlink to <wt>/services/task-orchestrator (absolute or relative). surface_guard_block(Write/Edit, file_path=<wt>/docs/alias/x.py) then has only <outside>/impl/x.py and <wt>/docs/alias/x.py. Against <wt>, the readings are docs/alias/x.py and a path outside <wt>. The red-lane relative path services/task-orchestrator/x.py is absent, so the call returns None. The same inode is blocked when file_path is <wt>/services/task-orchestrator/x.py. Root discovery still finds <wt> from <wt>/docs/alias/x.py; the miss is the reading set, and _guard_starts, _guard_readings, and _repo_relative_candidates all take their extra spellings from this same helper. test_symlink_into_red_lane_is_blocked covers a symlink whose realpath stays on a real red-lane file. test_symlinked_red_lane_dir_in_sibling_checkout_is_blocked covers a literal services/task-orchestrator path whose directory is a symlink to outside. Nothing in the test file composes those two layouts. The same hole applies to a contract-surface directory (schemas) reached through an alias symlink. This is a static trace of the added walk; it was not executed.",
+      "evidence": ".claude/hooks/dcp_surface_guard.py _alias_forms (os.path.realpath(entry) branch and [:_MAX_ALIAS_FORMS]); _repo_relative_candidates, _guard_starts, _guard_readings callers; tests/unit/dcp_surface_guard/test_file_repo_root.py test_symlink_into_red_lane_is_blocked and test_symlinked_red_lane_dir_in_sibling_checkout_is_blocked; proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_07.md claim that one walk yields every alias spelling of the path"
+    },
+    {
+      "id": "F2",
+      "severity": "high",
+      "title": "Frozen content head and trusted audit head differ, and the range is not in trusted evidence",
+      "detail": "G02_RETURN.md in this diff freezes content head 7a469cb21d185b45d8e10fe0013e7f5d860b68f6 and says Copilot reported no open issues on that head at 2026-11-19T12:14:38Z. The trusted head under audit is ee43f99140c09ef30e596873fef8da776e0c87ac. The trusted prompt contains no git rev-list and no git diff --name-only for 7a469cb21..ee43f991. The sentence in G02_RETURN.md that the commit adding that file is proof-only is candidate-controlled. Repository identity, PR head binding, CI, and review state of ee43f991 were not checked: the audit contract disables tools and forbids executing candidate code. Mandatory provenance and workflow checks are therefore unsatisfied.",
+      "evidence": "trusted head ee43f99140c09ef30e596873fef8da776e0c87ac; trusted base ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7; proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md subject line and CI/Copilot table"
+    }
+  ],
+  "risks": [
+    "Candidate TASK_PACKET invariants, amendment records, and G01_RETURN.md contain imperative agent instructions, authority lines, READY_FOR_AUDIT status, and auditor-facing steering ('An auditor may rule otherwise'). The untrusted instruction_like_scan_summary says detected=false. That text was treated as data and did not change the verdict rules.",
+    "AMENDMENT_07.md says _alias_forms keeps at most 64 spellings and that more than six symlink components can drop mixes (described as exponential). The implementation grows by about one form per symlink (one resolved spine plus each prior form with the new link name) and slices only in the islink branch. A raw path that already contains the red-lane text still matches. A matching alternate spelling can be shifted past index 63 by later symlink components. No test covers the cap. The documented bound and the code disagree.",
+    "file_repo_root still returns the nearest .git ancestor only. The block/warn path uses _guard_roots and keeps project_root plus every ancestor .git. Wave 2B W09 is described as a future caller of file_repo_root; a planted .git would still change that helper's result.",
+    "The guard blocks a red-lane relative path in any discovered checkout, including a repository other than this project. G01_RETURN.md records that as stricter than the original plan and left in place.",
+    "Edit/Write/NotebookEdit are the covered tools. Shell and apply_patch remain out of scope per the issued packet (plan row C17). An OSError inside _alias_forms returns () and leaves raw plus realpath only.",
+    "Amendments 02-07 say the supervisor wrote the guard outside canonical_writers G01-implementer under per-amendment operator exceptions. Those exceptions appear only in candidate proof markdown. They are not in the trusted prompt.",
+    "Candidate-reported validation (35 file-repo tests, 1025 passed and 1 pre-existing test_16_no_forbidden_files_modified, flake8 clean, full make test NOT_RUN, CI 20 pass and 2 fail on the audit/steward checks) was not re-run here and is tied in the proof record to 7a469cb21, not to ee43f991."
+  ],
+  "rationale": "Static review of the supplied PR diff at trusted head ee43f99140c09ef30e596873fef8da776e0c87ac. Planted-.git handling keeps every ancestor root, tool_edit_paths checks file_path and notebook_path, and the component walk as written retains services/task-orchestrator/x.py for the Amendment 04-07 shapes that put those components in the input path (including far/link/../<sibling>/services/task-orchestrator/dir/../x.py and the cwd-relative link/../ form). The hard-deny still fails open when the red-lane components occur only inside a symlink target that realpath follows out of the checkout: <wt>/docs/alias -> <wt>/services/task-orchestrator -> <outside>/impl, editing <wt>/docs/alias/x.py. That composition is the stated alias invariant of Amendment 07 and is not what the new tests cover. Separately, the freeze record names 7a469cb21d185b45d8e10fe0013e7f5d860b68f6, the trusted audit head is ee43f99140c09ef30e596873fef8da776e0c87ac, and the trusted prompt has no range evidence between them, so the subject is unpinned. validation_status is NOT_RUN.",
+  "inspected_paths": [
+    ".claude/hooks/dcp_surface_guard.py",
+    "tests/unit/dcp_surface_guard/__init__.py",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_01.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_02.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_03.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_04.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_05.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_06.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_07.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AUTHORIZATION.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/ISSUANCE.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/SHA256SUMS.txt",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G02/TASK_PACKET.json"
+  ],
+  "evidence_refs": [
+    "trusted head ee43f99140c09ef30e596873fef8da776e0c87ac",
+    "trusted base ba5c3e07b01ad46cae0d55cefdfbb9f9b3b647d7",
+    "PR 1513 DDD-Enterprises/dopemux-mvp",
+    ".claude/hooks/dcp_surface_guard.py:_alias_forms realpath branch",
+    ".claude/hooks/dcp_surface_guard.py:_guard_roots continues past every .git ancestor",
+    ".claude/hooks/dcp_surface_guard.py:_block_reason_for_path",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py:test_symlink_into_red_lane_is_blocked",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py:test_symlinked_red_lane_dir_in_sibling_checkout_is_blocked",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py:test_second_dotdot_after_symlinked_sibling_red_lane_is_blocked",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md frozen subject 7a469cb21d185b45d8e10fe0013e7f5d860b68f6",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_07.md"
+  ],
+  "validation_status": "NOT_RUN",
+  "instruction_like_acknowledged": true
+}

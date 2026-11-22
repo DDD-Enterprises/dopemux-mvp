@@ -1,0 +1,23 @@
+# Local validation at audited head 3bc641e886914f49ee8a63f1bd1228b9909aa0a0
+# Worktree clean:        0 changes. Clean env: env -i HOME PATH=/usr/bin:/bin PYTHONPATH=<worktree>/src; interpreter: main checkout .venv (the worktree has none).
+# Run 2026-11-20T06:49:21Z
+
+## guard tests
+...........................................................              [100%]
+59 passed in 0.35s
+
+## wider:       32 test files that mention dcp_surface_guard, native_hooks or red_lane
+            f"git diff --name-only {diff_range} failed "
+FAILED tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified
+1 failed, 1049 passed in 25.04s
+
+## flake8 --select=E9,F,W
+0 findings
+
+## black --check (known failing before this PR's amendments)
+Oh no! 💥 💔 💥
+2 files would be reformatted.
+
+## sha256 at audited head
+d81692f3562c2a5fd3d5925fe92c81356613e21bd363c69c1a4ef45f6da55765 .claude/hooks/dcp_surface_guard.py
+69cafe14d7537a3567dbd76140fbae74fdeaac8cc1cc5c748a79ca67b7d824c4 tests/unit/dcp_surface_guard/test_file_repo_root.py

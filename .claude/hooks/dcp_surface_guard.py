@@ -42,6 +42,111 @@ def _forbidden_patterns() -> tuple[re.Pattern, ...]:
         return _FALLBACK_COMPILED
 
 
+_MAX_ALIAS_FORMS = 64
+_MAX_SYMLINK_HOPS = 40
+
+_Form = tuple[tuple[str, bool], ...]
+
+
+class _AliasLimitExceeded(Exception):
+    """A path has more spellings than ``_MAX_ALIAS_FORMS``."""
+
+
+def _within_alias_limit(forms: list[_Form]) -> list[_Form]:
+    """Return ``forms`` unchanged, or raise when the list is over the limit.
+
+    Amendment 09: the list is never cut short. A dropped spelling could be the
+    one that names a red-lane file, so the caller must fail closed instead.
+    """
+    if len(forms) > _MAX_ALIAS_FORMS:
+        raise _AliasLimitExceeded(f"more than {_MAX_ALIAS_FORMS} spellings")
+    return forms
+
+
+def _walk_alias_forms(
+    path: str, hops: int, known: dict[_Form, list[_Form]]
+) -> list[_Form]:
+    """Forms of absolute ``path``; the first one is the fully resolved form.
+
+    Each form lists the components after the anchor as
+    ``(name, is_symlink_name)``. ``known`` remembers every spelling seen for
+    each resolved directory, so ``..`` out of a symlink's target gets back the
+    spellings of the directory it lands in. Raises OSError past
+    ``_MAX_SYMLINK_HOPS`` and ``_AliasLimitExceeded`` past
+    ``_MAX_ALIAS_FORMS``.
+    """
+    if hops > _MAX_SYMLINK_HOPS:
+        raise OSError("too many levels of symbolic links")
+    parts = Path(path).parts
+    anchor = parts[0]
+    real: _Form = ()
+    forms: list[_Form] = [real]
+    for name in parts[1:]:
+        if name == ".":
+            continue
+        if name == "..":
+            real = real[:-1]
+            kept = [f[:-1] for f in forms if f and not f[-1][1]]
+            forms = list(dict.fromkeys([real, *kept, *known.get(real, [])]))
+            forms = _within_alias_limit(forms)
+            continue
+        parent = os.path.join(anchor, *(n for n, _ in real))
+        entry = os.path.join(parent, name)
+        if os.path.islink(entry):
+            # Amendment 08: one hop, then walk the target as written, so a
+            # name that appears only in the middle of a chain is kept too.
+            target = os.path.join(parent, os.readlink(entry))
+            reached = _walk_alias_forms(target, hops + 1, known)
+            named = [f + ((name, True),) for f in forms]
+            real = reached[0]
+            forms = list(dict.fromkeys([*reached, *named]))
+        else:
+            real = real + ((name, False),)
+            forms = [f + ((name, False),) for f in forms]
+            forms = list(dict.fromkeys([real, *forms]))
+        # Amendment 11: every spelling seen so far for this real folder is a
+        # spelling of it now, however the walk got here. Doing this only after
+        # ``..`` (Amendment 08) lost the red-lane spelling when a link target
+        # went down more than one level, or when a link sat beside a
+        # symlinked red-lane ancestor, because the nested walk of the target
+        # started from the folder's real name alone.
+        forms = list(dict.fromkeys([*forms, *known.get(real, [])]))
+        forms = _within_alias_limit(forms)
+        seen = known.setdefault(real, [])
+        seen.extend(f for f in forms if f not in seen)
+    return forms
+
+
+def _alias_forms(path: str) -> tuple[str, ...]:
+    """Every spelling of absolute ``path`` that names the same file.
+
+    The path is walked one component at a time, the way the filesystem
+    resolves it. At a symlink both spellings are carried on: the link's own
+    name, and every spelling of the link's target. The target is read one hop
+    at a time (Amendment 08), so each link in a chain, and each symlink inside
+    a target path, contributes its own spelling. ``..`` steps to the parent of
+    where the walk really is, so a spelling whose last component is a symlink
+    name is dropped there (its lexical parent is a different directory), and
+    the spellings already seen for the directory it lands in are picked up.
+    Components that do not exist yet are kept as typed.
+
+    Each returned spelling resolves to the same file as ``path``. Returns ()
+    for a relative path, a symlink loop, a path that cannot be read, or a path
+    with more spellings than ``_MAX_ALIAS_FORMS`` (the block tier refuses that
+    last case first, see ``_alias_limit_exceeded``). Never raises.
+    """
+    try:
+        if not os.path.isabs(path):
+            return ()
+        anchor = Path(path).parts[0]
+        forms = _walk_alias_forms(path, 0, {})
+        return tuple(
+            dict.fromkeys(os.path.join(anchor, *(n for n, _ in f)) for f in forms)
+        )
+    except (OSError, ValueError, RecursionError, _AliasLimitExceeded):
+        return ()
+
+
 def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, ...]:
     """Every repo-relative reading of ``file_path`` that lands inside the root.
 
@@ -68,9 +173,17 @@ def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, 
     """
     raw = Path(file_path)
     candidates = [raw]
+    # Amendment 07: also read every alias spelling of the path. A spelling
+    # such as ``<x>/../<root>/services/<symlink>/f`` is the same file as the
+    # plain one, but raw does not sit under the root lexically and realpath
+    # follows the symlink out of it, so neither reading matched. This only
+    # adds candidates; the raw form is still read.
+    for form in _alias_forms(file_path):
+        if Path(form) not in candidates:
+            candidates.append(Path(form))
     try:
         real = Path(os.path.realpath(file_path))
-        if real != raw:
+        if real not in candidates:
             candidates.append(real)
     except (OSError, ValueError):
         pass
@@ -114,6 +227,169 @@ def _repo_relative_candidates(file_path: str, project_root: Path) -> tuple[str, 
     return tuple(dict.fromkeys(found))
 
 
+def file_repo_root(file_path: str, fallback: Path) -> Path:
+    """Root of the checkout that owns ``file_path``, else ``fallback``.
+
+    The red-lane rules are repo-relative, so an edit must be read against the
+    repo the file lives in, not the session's project root: a sibling worktree's
+    ``services/task-orchestrator/x.py`` is red-lane there too. Takes the realpath
+    (a relative path is read against ``fallback``), steps up to its nearest
+    existing ancestor (the file and its parent directories may not exist yet),
+    then walks up to the first directory holding a ``.git`` entry, a directory
+    for a main checkout or a file for a linked worktree. No subprocess and no
+    git command: this runs before every edit. Never raises.
+    """
+    try:
+        fallback = Path(fallback)
+        joined = file_path if os.path.isabs(file_path) else os.path.join(fallback, file_path)
+        cur = os.path.realpath(joined)
+        while not os.path.lexists(cur):
+            parent = os.path.dirname(cur)
+            if parent == cur:
+                return fallback
+            cur = parent
+        if not os.path.isdir(cur):
+            cur = os.path.dirname(cur)
+        while True:
+            if os.path.lexists(os.path.join(cur, ".git")):
+                return Path(cur)
+            parent = os.path.dirname(cur)
+            if parent == cur:
+                return fallback
+            cur = parent
+    except (OSError, ValueError):
+        return Path(fallback)
+
+
+def _guard_roots(file_path: str, project_root: Path) -> tuple[Path, ...]:
+    """Every root the guard reads ``file_path`` against, without duplicates.
+
+    ``project_root`` first, then each ancestor directory of the file's nearest
+    existing ancestor that holds a ``.git`` entry (file or directory), nearest
+    first. A ``.git`` entry planted inside a checkout can only add a reading,
+    never hide the project-root or enclosing-checkout one. No subprocess; never
+    raises.
+    """
+    roots = [Path(project_root)]
+    for start in _guard_starts(file_path, project_root):
+        try:
+            cur = start
+            while not os.path.lexists(cur):
+                parent = os.path.dirname(cur)
+                if parent == cur:
+                    break
+                cur = parent
+            if not os.path.isdir(cur):
+                cur = os.path.dirname(cur)
+            while True:
+                if os.path.lexists(os.path.join(cur, ".git")):
+                    roots.append(Path(cur))
+                parent = os.path.dirname(cur)
+                if parent == cur:
+                    break
+                cur = parent
+        except (OSError, ValueError):
+            continue
+    return tuple(dict.fromkeys(roots))
+
+
+def _absolute_bases(file_path: str, project_root: Path) -> tuple[str, ...]:
+    """``file_path`` as absolute path(s), with ``..`` and symlinks left as typed.
+
+    A relative path is joined to ``project_root`` and to the process cwd,
+    since either may be where the edit lands. Never raises.
+    """
+    if os.path.isabs(file_path):
+        return (file_path,)
+    bases = [os.path.join(project_root, file_path)]
+    try:
+        bases.append(os.path.join(os.getcwd(), file_path))
+    except OSError:
+        pass
+    return tuple(dict.fromkeys(bases))
+
+
+def _alias_limit_exceeded(file_path: str, project_root: Path) -> bool:
+    """True when the guard cannot list every spelling of ``file_path``.
+
+    That is: more than ``_MAX_ALIAS_FORMS`` spellings (Amendment 09), or, since
+    Amendment 11, any other abort of the walk: a symlink loop or a chain past
+    ``_MAX_SYMLINK_HOPS``, a link that cannot be read, a ``ValueError`` or a
+    ``RecursionError``. A walk that stops early has not checked the spelling it
+    never reached, so the caller blocks. The kernel refuses chains over about
+    32 links anyway, so no path that opens is affected. Never raises.
+    """
+    for base in _absolute_bases(file_path, project_root):
+        try:
+            _walk_alias_forms(base, 0, {})
+        except (_AliasLimitExceeded, OSError, ValueError, RecursionError):
+            return True
+    return False
+
+
+def _guard_starts(file_path: str, project_root: Path) -> tuple[str, ...]:
+    """Absolute forms of ``file_path`` that root discovery walks up from.
+
+    Amendment 03. A relative path is read both against ``project_root`` and
+    against the process cwd, since either may be where the edit lands. Each
+    form is taken lexically (``..`` collapsed, symlinks kept) and resolved
+    (``os.path.realpath``): a symlink inside a sibling checkout must not move
+    discovery out of that checkout. Forms are only ever added. Never raises.
+    """
+    starts: list[str] = []
+    try:
+        for base in _absolute_bases(file_path, project_root):
+            starts.append(os.path.normpath(base))
+            starts.append(os.path.realpath(base))
+            # Amendment 07: also walk up from every alias spelling.
+            # ``<symlink>/../<sibling>/<symlinked dir>/f`` collapses lexically
+            # to a path outside the sibling and realpath follows the inner
+            # symlink out of it, so neither start found its root.
+            starts.extend(_alias_forms(base))
+    except (OSError, ValueError):
+        pass
+    return tuple(dict.fromkeys(starts))
+
+
+def _guard_readings(file_path: str, root: Path, project_root: Path) -> tuple[str, ...]:
+    """Repo-relative readings of ``file_path`` against ``root``.
+
+    A relative path is resolved by ``os.path.realpath`` against the process cwd,
+    which need not be ``project_root``; so its ``project_root``-joined form is
+    read too. Readings are only ever added.
+    """
+    readings = list(_repo_relative_candidates(file_path, root))
+    if not os.path.isabs(file_path):
+        # Amendment 03/07: the project-root and cwd forms, joined without
+        # collapsing ``..`` so a symlink before it is still followed.
+        for base in _absolute_bases(file_path, project_root):
+            readings.extend(_repo_relative_candidates(base, root))
+    return tuple(dict.fromkeys(readings))
+
+
+def tool_edit_path(tool_input: dict) -> str:
+    """The path an Edit/Write/NotebookEdit targets: ``file_path``, else
+    ``notebook_path``, else ``""``. Only non-empty strings are read."""
+    for key in ("file_path", "notebook_path"):
+        value = (tool_input or {}).get(key)
+        if isinstance(value, str) and value:
+            return value
+    return ""
+
+
+def tool_edit_paths(tool_input: dict) -> list[str]:
+    """Every path an Edit/Write/NotebookEdit names: ``file_path`` then
+    ``notebook_path``, each only when it is a non-empty string, without
+    repeats. Amendment 02: the guard checks all of them, so a harmless
+    ``file_path`` cannot hide a ``notebook_path``."""
+    paths: list[str] = []
+    for key in ("file_path", "notebook_path"):
+        value = (tool_input or {}).get(key)
+        if isinstance(value, str) and value and value not in paths:
+            paths.append(value)
+    return paths
+
+
 def _repo_relative(file_path: str, project_root: Path) -> str:
     """Normalize file_path to forward-slash repo-relative string (primary reading)."""
     return _repo_relative_candidates(file_path, project_root)[0]
@@ -131,9 +407,17 @@ def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) ->
     """Return a block reason when an edit targets a red-lane seam file, else None."""
     if tool_name not in {"Edit", "Write", "NotebookEdit"}:
         return None
-    file_path = str((tool_input or {}).get("file_path") or "")
-    if not file_path:
-        return None
+    # Amendment 02: check every path the call names (file_path and
+    # notebook_path); the first one that is blocked wins.
+    for file_path in tool_edit_paths(tool_input):
+        reason = _block_reason_for_path(file_path, project_root)
+        if reason:
+            return reason
+    return None
+
+
+def _block_reason_for_path(file_path: str, project_root: Path) -> str | None:
+    """Return a block reason when one edit path is a red-lane seam file, else None."""
     # TP-DMX-PR1304-RED-LANE-PATH-REGEX-HARDENING-001: a control character (most
     # notably a newline) embedded in file_path can make an `^`-anchored,
     # `.*`-tailed forbidden pattern fail to match anywhere in the string — the
@@ -151,16 +435,31 @@ def surface_guard_block(tool_name: str, tool_input: dict, project_root: Path) ->
             f"no legitimate edit target has one. If this is unexpected, inspect "
             f"the literal tool_input.file_path value."
         )
+    # Amendment 09/11: a path whose symlink spellings the guard cannot list in
+    # full (too many, a loop, a chain past the hop limit, an unreadable link) is
+    # refused outright. Checking only the spellings the walk reached would let
+    # an unchecked one name a red-lane file.
+    if _alias_limit_exceeded(file_path, project_root):
+        return (
+            f"🚫 file_path goes through symlinks the guard cannot follow to "
+            f"the end (more than {_MAX_ALIAS_FORMS} spellings, a loop, more "
+            f"than {_MAX_SYMLINK_HOPS} links in a chain, or a link that "
+            f"cannot be read), so it cannot check every spelling. It is "
+            f"hard-blocked by red lane {RED_LANE_ID} as a precaution. Do not "
+            f"retry it under a different spelling: ask the operator to "
+            f"review where the path leads first."
+        )
     patterns = _forbidden_patterns()
-    for rel in _repo_relative_candidates(file_path, project_root):
-        if any(p.search(rel) for p in patterns):
-            return (
-                f"🚫 `{rel}` is protected by red lane {RED_LANE_ID} "
-                f"(merge-seam, execute=True). Edits are hard-blocked. "
-                f"If this change is genuinely required, the seam must be lifted "
-                f"via its own ADR + task packet — not an inline edit. "
-                f"See docs/03-reference/dcp/README.md."
-            )
+    for root in _guard_roots(file_path, project_root):
+        for rel in _guard_readings(file_path, root, project_root):
+            if any(p.search(rel) for p in patterns):
+                return (
+                    f"🚫 `{rel}` is protected by red lane {RED_LANE_ID} "
+                    f"(merge-seam, execute=True). Edits are hard-blocked. "
+                    f"If this change is genuinely required, the seam must be lifted "
+                    f"via its own ADR + task packet — not an inline edit. "
+                    f"See docs/03-reference/dcp/README.md."
+                )
     return None
 
 
@@ -203,11 +502,17 @@ def _matches_contract_surface(rel: str) -> str | None:
     return None
 
 
-def _proof_json_is_new(file_path: str) -> bool:
+def _proof_json_is_new(file_path: str, project_root: Path) -> bool:
     """True when the target path is proof/**/PROOF.json and the file doesn't
-    exist yet (scaffold flow) — suppress the warn-tier in that case."""
+    exist yet (scaffold flow) — suppress the warn-tier in that case.
+
+    Amendment 10: a relative path is looked up where the guard reads it
+    (``project_root`` and the process cwd). It is new only when neither has it.
+    """
     if "proof" in file_path and file_path.endswith("PROOF.json"):
-        return not Path(file_path).exists()
+        return not any(
+            os.path.lexists(base) for base in _absolute_bases(file_path, project_root)
+        )
     return False
 
 
@@ -227,6 +532,16 @@ def _save_warn_cache(project_root: Path, cache: dict) -> None:
         pass
 
 
+def _contract_surface_for_path(file_path: str, project_root: Path) -> str | None:
+    """Return the contract-surface label any reading of one path matches, else None."""
+    for root in _guard_roots(file_path, project_root):
+        for rel in _guard_readings(file_path, root, project_root):
+            category = _matches_contract_surface(rel)
+            if category:
+                return category
+    return None
+
+
 def surface_guard_warnings(
     tool_name: str,
     tool_input: dict,
@@ -236,26 +551,31 @@ def surface_guard_warnings(
     """Return once-per-(session, path) advisory when editing a contract surface."""
     if tool_name not in {"Edit", "Write", "NotebookEdit"}:
         return []
-    file_path = str((tool_input or {}).get("file_path") or "")
-    if not file_path:
-        return []
 
-    # Don't warn on new proof/*/PROOF.json writes (that's the scaffold flow)
-    if _proof_json_is_new(file_path):
-        return []
-
-    category = None
-    for rel in _repo_relative_candidates(file_path, project_root):
-        category = _matches_contract_surface(rel)
-        if category:
-            break
-    if not category:
-        return []
-
+    # Amendment 02: check every path the call names (file_path and
+    # notebook_path). Amendment 03: the warn cache is checked per path, so an
+    # already-warned first path cannot hide a new second one; the first
+    # contract surface not yet warned in this session is the one reported.
     session_key = session_id or "no-session"
-    cache_key = f"{session_key}:{file_path}"
-    cache = _load_warn_cache(project_root)
-    if cache.get(cache_key):
+    cache: dict | None = None
+    category = None
+    cache_key = ""
+    for candidate in tool_edit_paths(tool_input):
+        # Don't warn on new proof/*/PROOF.json writes (that's the scaffold flow)
+        if _proof_json_is_new(candidate, project_root):
+            continue
+        found = _contract_surface_for_path(candidate, project_root)
+        if not found:
+            continue
+        if cache is None:
+            cache = _load_warn_cache(project_root)
+        key = f"{session_key}:{candidate}"
+        if cache.get(key):
+            continue
+        category = found
+        cache_key = key
+        break
+    if not category or cache is None:
         return []
 
     cache[cache_key] = True

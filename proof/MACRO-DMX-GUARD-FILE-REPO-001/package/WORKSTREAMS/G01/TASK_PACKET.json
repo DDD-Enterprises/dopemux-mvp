@@ -1,0 +1,170 @@
+{
+  "id": "TP-DMX-GUARD-FILE-REPO-G01-IMPL-001",
+  "project": "dopemux-mvp",
+  "target": "Add file_repo_root and tool_edit_path to the DCP surface guard and use them in surface_guard_block and surface_guard_warnings (plan Task 0).",
+  "invariants": [
+    "C01 Shared workspace: other workers may edit this checkout. Edit only your write_surface; preserve others' edits; never revert unrelated work. Work only in .worktrees/guard-file-repo-root on fix/guard-file-repo-root (base 264c97b23ec1b3e007e62079d4f6d2632ad71775, plus the team lead's import commit); verify `git rev-parse --show-toplevel` and the branch before the first write.",
+    "C02 You never push, merge, open a PR, mark ready, sign, tag, change git config or rewrite history; the team lead alone commits, one commit per workstream, explicit pathspec.",
+    "C03 ADVISOR FORBIDDEN (budget 0): do not call the `advisor` tool and do not spawn subagents or delegate. advisor_calls is a required return field and must be 0; a nonzero count is a contract breach and the status becomes NEEDS_SUPERVISOR.",
+    "C04 Secrets and privacy: never read or print .env*, .envrc*, credential files, keychain items or tokens. Never write a home-directory path, user name or e-mail address into a tracked file: this repository is public. Tests build their checkouts under tmp_path.",
+    "C05 Truth buckets: report PASS / FAIL / NOT_RUN / UNKNOWN literally; never collapse NOT_RUN into PASS. Use only interfaces this packet names or that you confirm in source with file:line; otherwise write UNKNOWN.",
+    "C06 Return fields: status (exactly one of READY_FOR_AUDIT, BLOCKED, NEEDS_SUPERVISOR, INCOMPLETE), subject, validation (command, exit code, bucket), proof, audit (NOT_RUN: the single final audit follows the freeze), blockers (each with the action that clears it), advisor_calls, files_written, observed_model (from a runtime receipt, else UNKNOWN).",
+    "C07 Stop and return evidence instead of improvising when a needed file is outside your write_surface, a contract-sensitive surface outside it would change, a required fact is UNKNOWN, or validation still fails after one fix attempt for the same cause.",
+    "C08 Authority order: this packet, then runtime code, then schemas, then tests, then docs. This packet is self-contained. Its source is Task 0 of claudedocs/plans/2026-11-05-runner-memory-parity-2b.md (sha256 7479fa612d67037bd105edaf948266d8516f21ad2ad5584ed933f52ec9fc462b, on the local plan branch, not in this worktree); where they differ, this packet wins.",
+    "C10 No live mutation: never start, stop or rebuild a container, run `dopemux mcp|auth` commands, run a runner binary, touch the keychain, or write outside the worktree.",
+    "C11 Python 3.12 from the main checkout's venv, with this worktree first on the path: `PYTHONPATH=src ../../.venv/bin/python -m pytest -q -p no:cacheprovider <paths>`. First check `PYTHONPATH=src ../../.venv/bin/python -c \"import dopemux; print(dopemux.__file__)\"` prints a path inside this worktree, else STOP.",
+    "C12 You are changing the PreToolUse guard itself. The guard that checks your own edits is the one installed for your session, not the file in this worktree, so your edits do not change what blocks you. If the guard or a permission prompt refuses an edit, STOP. Never work around it.",
+    "A01 PROPOSED allowances (caps, not forecasts; accepted by the authorization): elapsed wall time 60 min from dispatch, excluding time waiting for the operator or for CI; subagent tokens 600,000; tool uses 150; 1 attempt + 1 retry; team-lead review: 1 diff re-read + at most 1 correction round.",
+    "A02 The team lead records duration_ms, subagent_tokens and tool_uses where the harness reports them, otherwise UNKNOWN. A retry needs a failed validation with a named cause and happens once. A second failure, an exceeded cap or any advisor call ends the workstream for this child.",
+    "A03 When a cap is hit: stop, start no further attempt, preserve work untouched, return NEEDS_SUPERVISOR with the counters. No model upgrade, provider change or extra attempt without a new operator ruling.",
+    "T01 Interfaces, module-level in .claude/hooks/dcp_surface_guard.py: `file_repo_root(file_path: str, fallback: Path) -> Path` and `tool_edit_path(tool_input: dict) -> str`. `surface_guard_block(tool_name, tool_input, project_root)` and `surface_guard_warnings(...)` keep their signatures. Wave 2B's hook core will import all four.",
+    "T02 file_repo_root: take os.path.realpath(file_path) (a relative path is read against `fallback`, as today), then its nearest existing ancestor (the file and its parent directories may not exist yet), then walk up to the first directory holding a `.git` entry, file or directory (a linked worktree has a `.git` file). No subprocess and no git command: this runs before every edit. Return `fallback` when no `.git` entry is found.",
+    "T03 tool_edit_path returns `file_path`, else `notebook_path` (NotebookEdit), else \"\", reading only non-empty strings.",
+    "T04 In surface_guard_block and surface_guard_warnings, the repo-relative candidates are computed against file_repo_root(path, project_root), not project_root. project_root stays the home of the warn cache. The control-character check, which fails closed, applies to whatever tool_edit_path returned.",
+    "T05 Unchanged: the tool-name set {Edit, Write, NotebookEdit}; where FORBIDDEN_PATHS comes from and the hardcoded fallback list; the contract-surface advisories; and no parsing of apply_patch text or shell commands (Wave 2B W09 owns that, plan row C17). No change to src/dopemux/dcp/red_lane_rules.py.",
+    "T06 Tests, names binding, in tests/unit/dcp_surface_guard/test_file_repo_root.py: test_sibling_worktree_red_lane_path_is_blocked (a red-lane path such as services/task-orchestrator/x.py inside a sibling checkout whose `.git` is a file), test_new_file_in_missing_directory_is_blocked, test_notebook_path_is_read, test_symlink_into_red_lane_is_blocked, test_exempt_file_in_sibling_worktree_stays_allowed (services/dopecon-bridge/ddg_mcp_stdio.py), test_path_outside_any_repo_is_allowed. Before the change the first four FAIL and the last two PASS; record that run. Fixtures create `.git` directories or `.git` files (`gitdir: ...`) under tmp_path; no real git command.",
+    "T07 No new failure in tests/test_dcp_surface_guard.py (a tests/ root file CI does not run), tests/unit/runner_memory_2a_r2_w09 and tests/dcp. Baseline on code identical to main 264c97b23: 458 passed, 1 failed. The one failure, tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified, is pre-existing: it diffs an old packet's base against HEAD and trips on main's own .github/workflows/ history. Report it, do not fix it, and do not count it as yours."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-GUARD-FILE-REPO-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-GUARD-FILE-REPO-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "fix/guard-file-repo-root",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(dcp-guard): resolve edit paths from the file's own repo; read notebook_path",
+    "allowlist": [
+      ".claude/hooks/dcp_surface_guard.py",
+      "tests/unit/dcp_surface_guard/__init__.py",
+      "tests/unit/dcp_surface_guard/test_file_repo_root.py"
+    ],
+    "verify": [
+      "PYTHONPATH=src ../../.venv/bin/python -m pytest -q -p no:cacheprovider tests/unit/dcp_surface_guard/",
+      "PYTHONPATH=src ../../.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_dcp_surface_guard.py tests/unit/runner_memory_2a_r2_w09 tests/dcp",
+      "git diff --check",
+      "git status --porcelain   # every modified or untracked path is inside the allowlist"
+    ]
+  },
+  "pr": {
+    "title": "fix(dcp-guard): resolve edit paths from the file's own repo; read notebook_path",
+    "body": "Implements MACRO-DMX-GUARD-FILE-REPO-001 (plan Task 0 of Runner Memory Wave 2B). Draft until CI is green.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "G01-S1",
+      "task": "Read the guard, its callers and its tests",
+      "requirements": [
+        "List every caller of surface_guard_block and surface_guard_warnings with file:line before any edit."
+      ],
+      "commands": [
+        "PYTHONPATH=src ../../.venv/bin/python -c \"import dopemux; print(dopemux.__file__)\"",
+        "rg -n 'surface_guard_block|surface_guard_warnings|_repo_relative_candidates' .claude src tests"
+      ],
+      "expected_files": [],
+      "validation": [
+        "callers listed; dopemux resolves inside the worktree"
+      ],
+      "context_files": [
+        ".claude/hooks/dcp_surface_guard.py",
+        "src/dopemux/claude/native_hooks.py",
+        "src/dopemux/dcp/red_lane_rules.py",
+        "tests/test_dcp_surface_guard.py"
+      ]
+    },
+    {
+      "id": "G01-S2",
+      "task": "TDD: write T06's tests first and show the expected red run, then implement T01-T04",
+      "requirements": [
+        "Record the red run: the first four tests FAIL, the last two PASS."
+      ],
+      "commands": [
+        "PYTHONPATH=src ../../.venv/bin/python -m pytest -q -p no:cacheprovider tests/unit/dcp_surface_guard/"
+      ],
+      "expected_files": [
+        "tests/unit/dcp_surface_guard/__init__.py",
+        "tests/unit/dcp_surface_guard/test_file_repo_root.py"
+      ],
+      "validation": [
+        "red as T06 states, then green"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "G01-S3",
+      "task": "Run commit.verify",
+      "requirements": [
+        "Report every command with its exit code and bucket."
+      ],
+      "commands": [
+        "PYTHONPATH=src ../../.venv/bin/python -m pytest -q -p no:cacheprovider tests/unit/dcp_surface_guard/",
+        "PYTHONPATH=src ../../.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_dcp_surface_guard.py tests/unit/runner_memory_2a_r2_w09 tests/dcp",
+        "git diff --check",
+        "git status --porcelain   # every modified or untracked path is inside the allowlist"
+      ],
+      "expected_files": [],
+      "validation": [
+        "all PASS"
+      ],
+      "context_files": []
+    },
+    {
+      "id": "G01-S4",
+      "task": "Return",
+      "requirements": [
+        "Status, validation table, files_written, advisor_calls, observed_model, blockers."
+      ],
+      "commands": [
+        "git status --porcelain",
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to the write_surface"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-GUARD-FILE-REPO-001",
+  "workstream_id": "G01",
+  "risk_lane": "L3",
+  "audit_group": "AUDIT-GUARD-FILE-REPO-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    ".claude/hooks/dcp_surface_guard.py",
+    "tests/unit/dcp_surface_guard/__init__.py",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py"
+  ],
+  "canonical_writers": [
+    "G01-implementer"
+  ],
+  "semantic_scope": [
+    "dcp-surface-guard-paths"
+  ],
+  "rollback_boundary": "git revert <G01 commit> on fix/guard-file-repo-root (REVERT_COMMITS); base 264c97b23ec1b3e007e62079d4f6d2632ad71775",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

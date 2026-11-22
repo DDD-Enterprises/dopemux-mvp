@@ -1,0 +1,97 @@
+{
+  "status": "complete",
+  "verdict": "NEEDS_SUPERVISOR",
+  "instruction_like_acknowledged": true,
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "high",
+      "title": "Frozen-head record does not identify the trusted head under audit",
+      "detail": "Trusted head under audit is 0dfc7220a60dad98d07401e9ca3e4235c142aa40. Candidate G02_RETURN.md records frozen content head 6212c8db4ac325c86e55c040fbefd3234c7ea83d and says the G02 return commit only adds that file on top of the freeze. The supplied diff against trusted base 7461fa8fbf04019497e475b17f10d24d900f840c also adds AMENDMENT_01.md, AUTHORIZATION.md, G01_EXECUTION_BINDING.json, G01_RETURN.md, and the package files. The commit range from 6212c8db4 to 0dfc7220 is not in evidence, so post-freeze code versus proof-only drift is UNKNOWN. Clearance requires a rev-list and tree comparison of 6212c8db4..0dfc7220 and a freeze record that names 0dfc7220."
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "title": "NotebookEdit coverage drops notebook_path when file_path is a non-empty string",
+      "detail": "tool_edit_path returns the first non-empty string among file_path then notebook_path. surface_guard_block and surface_guard_warnings classify only that one string. A NotebookEdit tool_input that also carries a non-empty file_path is judged from file_path alone, so notebook_path is never read. tests/unit/dcp_surface_guard/test_file_repo_root.py::test_notebook_path_is_read covers notebook_path only when file_path is absent. This matches issued T03 and leaves the dual-key case untested. Whether the live NotebookEdit schema forwards extra keys is UNKNOWN."
+    },
+    {
+      "id": "F3",
+      "severity": "medium",
+      "title": "Independent validation and workflow checks were not run",
+      "detail": "Candidate G01_RETURN.md and G02_RETURN.md claim pytest results and a CI table (20 passing, 2 failing audit gates, 3 skipped). Those claims are candidate-authored. This audit did not execute pytest, git, or GitHub workflow checks. validation_status is NOT_RUN. Pre-existing tests/dcp/test_dcp_0002_contract_derivation.py::test_16_no_forbidden_files_modified is reported by the candidate as a baseline failure and was not re-checked."
+    }
+  ],
+  "risks": [
+    {
+      "id": "R1",
+      "severity": "medium",
+      "title": "file_repo_root still binds the nearest .git entry",
+      "detail": "file_repo_root walks to the nearest .git file or directory and returns it. test_file_repo_root_missing_parents_returns_nearest_enclosing_repo pins a nested .git file as the winner. Amendment 01 keeps that helper for Wave 2B W09 while the guard itself uses _guard_roots. A later caller that blocks from file_repo_root alone reopens the planted-.git reading the amendment removed from surface_guard_block. The helper docstring states the nearest-checkout rule and does not state the planted-.git consequence."
+    },
+    {
+      "id": "R2",
+      "severity": "low",
+      "title": "Readings depend on pre-existing _repo_relative_candidates, which is outside the diff",
+      "detail": "_guard_readings only adds outputs of _repo_relative_candidates for the raw path and, for relative paths, the project_root-joined path. The red-lane decision is sound only if that helper yields a repo-relative reading for each root that actually contains the resolved file. Its body is not in the candidate diff."
+    },
+    {
+      "id": "R3",
+      "severity": "low",
+      "title": "realpath readings omit the lexical path",
+      "detail": "_guard_roots and file_repo_root classify os.path.realpath of the target. The new tests cover a symlink outside the red lane pointing in. A symlink that lives on a red-lane lexical path and points at a non-matching target is untested. If the edit tool replaces that symlink inode, the lexical red-lane path may be absent from the readings."
+    },
+    {
+      "id": "R4",
+      "severity": "low",
+      "title": "Same relative layout in any enclosing checkout is blocked",
+      "detail": "G01_RETURN.md states that an edit in another git checkout whose layout contains services/task-orchestrator/ is now blocked from a session in this project, and that shell-command and apply_patch edits stay unguarded for Wave 2B W09. The separate-checkout block is fail-closed. The shell and apply_patch gap is pre-existing and named out of scope. Both remain operator-facing behavior changes."
+    },
+    {
+      "id": "R5",
+      "severity": "info",
+      "title": "Instruction-shaped packet prose was treated as data",
+      "detail": "The deterministic scan summary in the candidate metadata says detected false, match_count 0. The proof package and TASK_PACKET invariants still contain imperative agent directions, TP_ROUTE blocks, stop conditions, and authority lines. Those strings were reviewed as candidate data and did not change the audit contract, verdict rules, or output schema."
+    }
+  ],
+  "rationale": "The guard change in the supplied diff implements Amendment 01 for the paths it reads. _guard_roots always starts with project_root and then appends every ancestor that lexists a .git entry, nearest first. surface_guard_block blocks when any _guard_readings result matches a forbidden pattern, so a planted .git file adds a reading and does not replace the project-root reading. Relative paths also get a project_root-joined reading, which is the Copilot relative-cwd fix. tool_edit_path supplies notebook_path when file_path is missing, and the new tests name sibling worktrees, missing parents, planted .git, foreign cwd, symlinks into the lane, the exempt sibling path, and direct file_repo_root cases. Trusted base 7461fa8fbf04019497e475b17f10d24d900f840c matches the merge-base named in G02_RETURN.md. Certification stops at F1: the trusted head 0dfc7220a60dad98d07401e9ca3e4235c142aa40 is not the frozen SHA in that return, and the post-freeze delta was not isolated. F2 is a real dual-key gap in the new notebook reader with UNKNOWN schema exploitability. Pytest, CI, and PR workflow state were not re-executed here.",
+  "inspected_paths": [
+    ".claude/hooks/dcp_surface_guard.py",
+    ".claude/hooks/dcp_surface_guard.py:file_repo_root",
+    " .claude/hooks/dcp_surface_guard.py:_guard_roots",
+    ".claude/hooks/dcp_surface_guard.py:_guard_readings",
+    ".claude/hooks/dcp_surface_guard.py:tool_edit_path",
+    ".claude/hooks/dcp_surface_guard.py:surface_guard_block",
+    ".claude/hooks/dcp_surface_guard.py:surface_guard_warnings",
+    "tests/unit/dcp_surface_guard/__init__.py",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_01.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AUTHORIZATION.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G01_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/EXECUTION_BINDING.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/ISSUANCE.md",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/MACRO_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/SHA256SUMS.txt",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G02/TASK_PACKET.json"
+  ],
+  "evidence_refs": [
+    "trusted head 0dfc7220a60dad98d07401e9ca3e4235c142aa40",
+    "trusted base 7461fa8fbf04019497e475b17f10d24d900f840c",
+    "PR 1513 DDD-Enterprises/dopemux-mvp",
+    "diff hunk .claude/hooks/dcp_surface_guard.py @@ -114,6 +114,96 @@ adding file_repo_root, _guard_roots, _guard_readings, tool_edit_path",
+    "diff hunk .claude/hooks/dcp_surface_guard.py surface_guard_block: file_path = tool_edit_path; for root in _guard_roots; for rel in _guard_readings; any(p.search(rel))",
+    "diff hunk .claude/hooks/dcp_surface_guard.py surface_guard_warnings: same root/reading loops, first contract-surface match",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py::test_planted_git_file_does_not_hide_a_red_lane_path",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py::test_planted_git_file_in_sibling_worktree_does_not_hide_it",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py::test_relative_sibling_path_is_blocked_when_cwd_is_elsewhere",
+    "tests/unit/dcp_surface_guard/test_file_repo_root.py::test_notebook_path_is_read",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/AMENDMENT_01.md T04 add-readings wording",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/G02_RETURN.md frozen subject 6212c8db4ac325c86e55c040fbefd3234c7ea83d",
+    "proof/MACRO-DMX-GUARD-FILE-REPO-001/package/WORKSTREAMS/G01/TASK_PACKET.json invariant T03",
+    "candidate instruction_like_scan_summary detected false match_count 0"
+  ],
+  "validation_status": "NOT_RUN"
+}
