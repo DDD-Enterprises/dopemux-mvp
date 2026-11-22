@@ -1,0 +1,120 @@
+{
+  "schema_version": "dopemux.project_mandate.v1",
+  "mandate_id": "REPLACE-mandate",
+  "issuer_ref": "REPLACE-native-authorization",
+  "project_id": "REPLACE-project",
+  "project_root": "/REPLACE/isolated/project",
+  "expires_at": 0,
+  "active_seconds": 120,
+  "spend_limit_micros": 0,
+  "max_parallel": 1,
+  "repair_limit": 1,
+  "stop_conditions": [
+    "owner-stop",
+    "material-scope",
+    "security",
+    "publishing",
+    "spending",
+    "human-phase"
+  ],
+  "gates": {
+    "security": "PASS",
+    "workflow": "PASS",
+    "spending": "PASS"
+  },
+  "route": {
+    "binding_id": "REPLACE-qualified-local-python",
+    "kind": "local_command",
+    "model_class": "deterministic",
+    "executable": "/REPLACE/absolute/python",
+    "valid_until": 0
+  },
+  "steps": [
+    {
+      "step_id": "implement",
+      "kind": "implementation",
+      "argv": [
+        "/REPLACE/absolute/python",
+        "-B",
+        "-c",
+        "from pathlib import Path;Path('feature.py').write_text('def answer(): return 42\\n')"
+      ],
+      "effects": [
+        "read",
+        "write"
+      ],
+      "write_paths": [
+        "feature.py"
+      ],
+      "depends_on": [],
+      "timeout_seconds": 30,
+      "heavy": false
+    },
+    {
+      "step_id": "test",
+      "kind": "test",
+      "argv": [
+        "/REPLACE/absolute/python",
+        "-B",
+        "-c",
+        "from feature import answer;assert answer()==42"
+      ],
+      "effects": [
+        "read",
+        "test"
+      ],
+      "write_paths": [],
+      "depends_on": [
+        "implement"
+      ],
+      "timeout_seconds": 30,
+      "heavy": false
+    },
+    {
+      "step_id": "repair",
+      "kind": "repair",
+      "argv": [
+        "/REPLACE/absolute/python",
+        "-B",
+        "-c",
+        "from pathlib import Path;Path('feature.py').write_text('def answer(): return 42\\n')"
+      ],
+      "effects": [
+        "read",
+        "write"
+      ],
+      "write_paths": [
+        "feature.py"
+      ],
+      "depends_on": [],
+      "timeout_seconds": 30,
+      "heavy": false,
+      "when_failed": "test"
+    },
+    {
+      "step_id": "retest",
+      "kind": "test",
+      "argv": [
+        "/REPLACE/absolute/python",
+        "-B",
+        "-c",
+        "from feature import answer;assert answer()==42"
+      ],
+      "effects": [
+        "read",
+        "test"
+      ],
+      "write_paths": [],
+      "depends_on": [
+        "repair"
+      ],
+      "timeout_seconds": 30,
+      "heavy": false,
+      "when_failed": "test"
+    }
+  ],
+  "success_steps": [
+    "test",
+    "retest"
+  ]
+}

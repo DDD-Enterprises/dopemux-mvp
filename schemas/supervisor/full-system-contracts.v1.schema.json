@@ -1,0 +1,4369 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dopemux:design:r2:contracts:v1",
+  "$comment": "PROPOSED design contracts; not adopted production schemas. JSON validity never proves authentic authority. All references are resolved locally.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/identity"
+    },
+    {
+      "$ref": "#/$defs/funding"
+    },
+    {
+      "$ref": "#/$defs/project_mandate"
+    },
+    {
+      "$ref": "#/$defs/admission"
+    },
+    {
+      "$ref": "#/$defs/runner_profile"
+    },
+    {
+      "$ref": "#/$defs/execution_tuple"
+    },
+    {
+      "$ref": "#/$defs/frontier"
+    },
+    {
+      "$ref": "#/$defs/resource_claim"
+    },
+    {
+      "$ref": "#/$defs/attempt"
+    },
+    {
+      "$ref": "#/$defs/settlement"
+    },
+    {
+      "$ref": "#/$defs/checkpoint"
+    },
+    {
+      "$ref": "#/$defs/event"
+    },
+    {
+      "$ref": "#/$defs/role_ack"
+    },
+    {
+      "$ref": "#/$defs/handover"
+    },
+    {
+      "$ref": "#/$defs/subject"
+    },
+    {
+      "$ref": "#/$defs/evidence"
+    },
+    {
+      "$ref": "#/$defs/exposure"
+    },
+    {
+      "$ref": "#/$defs/audit_request"
+    },
+    {
+      "$ref": "#/$defs/audit_result"
+    },
+    {
+      "$ref": "#/$defs/release_evidence"
+    },
+    {
+      "$ref": "#/$defs/qualification_snapshot"
+    },
+    {
+      "$ref": "#/$defs/workflow"
+    },
+    {
+      "$ref": "#/$defs/memory_record"
+    },
+    {
+      "$ref": "#/$defs/context_bundle"
+    },
+    {
+      "$ref": "#/$defs/materialization"
+    },
+    {
+      "$ref": "#/$defs/governance_record"
+    },
+    {
+      "$ref": "#/$defs/pack_transaction"
+    },
+    {
+      "$ref": "#/$defs/migration"
+    },
+    {
+      "$ref": "#/$defs/service_binding"
+    },
+    {
+      "$ref": "#/$defs/consumer_action"
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "git_oid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "nonnegative": {
+      "type": "number",
+      "minimum": 0
+    },
+    "positive": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "counter": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "classification": {
+      "enum": [
+        "PUBLIC",
+        "INTERNAL",
+        "CONFIDENTIAL",
+        "RESTRICTED",
+        "QUARANTINED"
+      ]
+    },
+    "known_text": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "KNOWN"
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "state",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "UNKNOWN"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "known_sha256": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "KNOWN"
+            },
+            "value": {
+              "$ref": "#/$defs/sha256"
+            }
+          },
+          "required": [
+            "state",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "UNKNOWN"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "known_timestamp": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "KNOWN"
+            },
+            "value": {
+              "$ref": "#/$defs/timestamp"
+            }
+          },
+          "required": [
+            "state",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "UNKNOWN"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "known_counter": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "KNOWN"
+            },
+            "value": {
+              "$ref": "#/$defs/counter"
+            }
+          },
+          "required": [
+            "state",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "UNKNOWN"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "known_integer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "KNOWN"
+            },
+            "value": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "state",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "UNKNOWN"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "known_bool": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "KNOWN"
+            },
+            "value": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "state",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "UNKNOWN"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": [
+            "state",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "evidence_ref": {
+      "type": "object",
+      "properties": {
+        "ref_id": {
+          "$ref": "#/$defs/id"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "classification": {
+          "$ref": "#/$defs/classification"
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "required": [
+        "ref_id",
+        "sha256",
+        "classification",
+        "locator"
+      ],
+      "additionalProperties": false
+    },
+    "canonical_receipt_ref": {
+      "type": "object",
+      "properties": {
+        "schema_kind": {
+          "enum": [
+            "execution_binding.v2",
+            "dispatch_input_receipt.v1",
+            "writer_custody_receipt.v1",
+            "admission_receipt.v1",
+            "freeze_receipt.v1",
+            "finality_receipt.v1",
+            "aggregate_return_envelope.v1",
+            "native_owner_record"
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidence_ref"
+        }
+      },
+      "required": [
+        "schema_kind",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "identity_link": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "enum": [
+            "project",
+            "repo",
+            "worktree",
+            "workstream",
+            "work",
+            "session",
+            "actor",
+            "resource",
+            "runner",
+            "route",
+            "attempt",
+            "subject",
+            "chatgpt_project",
+            "conversation",
+            "library_file",
+            "cloud_folder"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "source": {
+          "$ref": "#/$defs/evidence_ref"
+        }
+      },
+      "required": [
+        "namespace",
+        "value",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "clock": {
+      "type": "object",
+      "properties": {
+        "wall_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "monotonic_ns": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "clock_id": {
+          "$ref": "#/$defs/id"
+        },
+        "host_boot_id": {
+          "$ref": "#/$defs/known_text"
+        }
+      },
+      "required": [
+        "wall_at",
+        "monotonic_ns",
+        "clock_id",
+        "host_boot_id"
+      ],
+      "additionalProperties": false
+    },
+    "resource": {
+      "type": "object",
+      "properties": {
+        "resource_id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "FILE",
+            "GIT_INDEX",
+            "GIT_REF",
+            "DATABASE",
+            "SCHEMA",
+            "PORT",
+            "SERVICE",
+            "CREDENTIAL_PROFILE",
+            "ARTIFACT_DIR",
+            "DEPLOYMENT",
+            "DEVICE",
+            "HOST_HEAVY"
+          ]
+        },
+        "host_id": {
+          "$ref": "#/$defs/id"
+        },
+        "owner_id": {
+          "$ref": "#/$defs/id"
+        },
+        "canonical_locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "mode": {
+          "enum": [
+            "READ",
+            "EXCLUSIVE_WRITE"
+          ]
+        }
+      },
+      "required": [
+        "resource_id",
+        "kind",
+        "host_id",
+        "owner_id",
+        "canonical_locator",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "fence": {
+      "type": "object",
+      "properties": {
+        "resource_id": {
+          "$ref": "#/$defs/id"
+        },
+        "owner_id": {
+          "$ref": "#/$defs/id"
+        },
+        "owner_epoch": {
+          "$ref": "#/$defs/generation"
+        },
+        "generation": {
+          "$ref": "#/$defs/generation"
+        },
+        "expected_version": {
+          "$ref": "#/$defs/counter"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "required": [
+        "resource_id",
+        "owner_id",
+        "owner_epoch",
+        "generation",
+        "expected_version",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "workstream_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "allowed_effects": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "read",
+              "write",
+              "test",
+              "provider_submit",
+              "publish",
+              "release",
+              "deploy"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "allowed_resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resource"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "forbidden_effects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true
+        },
+        "data_classes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/classification"
+          },
+          "minItems": 1,
+          "maxItems": 5,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "project_id",
+        "workstream_ids",
+        "allowed_effects",
+        "allowed_resources",
+        "forbidden_effects",
+        "data_classes"
+      ],
+      "additionalProperties": false
+    },
+    "process_identity": {
+      "type": "object",
+      "properties": {
+        "host_id": {
+          "$ref": "#/$defs/id"
+        },
+        "boot_id": {
+          "$ref": "#/$defs/known_text"
+        },
+        "pid": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "uid": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "start_token": {
+          "$ref": "#/$defs/known_text"
+        },
+        "pgid": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "session_id": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "host_id",
+        "boot_id",
+        "pid",
+        "uid",
+        "start_token",
+        "pgid",
+        "session_id"
+      ],
+      "additionalProperties": false
+    },
+    "output_capture": {
+      "type": "object",
+      "properties": {
+        "stdout": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "stderr": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "captured_bytes": {
+          "$ref": "#/$defs/counter"
+        },
+        "observed_bytes": {
+          "$ref": "#/$defs/counter"
+        },
+        "capture_limit_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "stdout",
+        "stderr",
+        "captured_bytes",
+        "observed_bytes",
+        "capture_limit_bytes",
+        "truncated"
+      ],
+      "additionalProperties": false
+    },
+    "identity_layers": {
+      "type": "object",
+      "properties": {
+        "requested": {
+          "$ref": "#/$defs/known_text"
+        },
+        "configured": {
+          "$ref": "#/$defs/known_text"
+        },
+        "attempted": {
+          "$ref": "#/$defs/known_text"
+        },
+        "proxy_observed": {
+          "$ref": "#/$defs/known_text"
+        },
+        "provider_reported": {
+          "$ref": "#/$defs/known_text"
+        },
+        "provider_attested": {
+          "$ref": "#/$defs/known_text"
+        }
+      },
+      "required": [
+        "requested",
+        "configured",
+        "attempted",
+        "proxy_observed",
+        "provider_reported",
+        "provider_attested"
+      ],
+      "additionalProperties": false
+    },
+    "dependency": {
+      "type": "object",
+      "properties": {
+        "upstream_work_id": {
+          "$ref": "#/$defs/id"
+        },
+        "relation": {
+          "enum": [
+            "HARD_PREDICATE",
+            "SOFT_ORDER",
+            "DECLARED_RELATION"
+          ]
+        },
+        "consuming_phase": {
+          "enum": [
+            "IMPLEMENTATION",
+            "VALIDATION",
+            "NATIVE_ACCEPTANCE",
+            "RELEASE"
+          ]
+        },
+        "predicate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "owner_id": {
+          "$ref": "#/$defs/id"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "state": {
+          "enum": [
+            "SATISFIED",
+            "UNSATISFIED",
+            "UNKNOWN"
+          ]
+        }
+      },
+      "required": [
+        "upstream_work_id",
+        "relation",
+        "consuming_phase",
+        "predicate",
+        "owner_id",
+        "evidence",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "file_state": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "ABSENT"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "state": {
+              "const": "PRESENT"
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "mode": {
+              "type": "string",
+              "pattern": "^[0-7]{4}$"
+            }
+          },
+          "required": [
+            "state",
+            "sha256",
+            "mode"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "identity": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.identity.v1"
+        },
+        "identity_id": {
+          "$ref": "#/$defs/id"
+        },
+        "canonical": {
+          "$ref": "#/$defs/identity_link"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/identity_link"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "supersedes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/identity_link"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "owner_id": {
+          "$ref": "#/$defs/id"
+        },
+        "owner_generation": {
+          "$ref": "#/$defs/generation"
+        },
+        "admission_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "identity_id",
+        "canonical",
+        "aliases",
+        "supersedes",
+        "owner_id",
+        "owner_generation",
+        "admission_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "funding": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.funding.v1"
+        },
+        "funding_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "enum": [
+            "LOCAL_NO_PROVIDER",
+            "INCLUDED_PLAN",
+            "METERED_API",
+            "UNKNOWN"
+          ]
+        },
+        "account_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "cash_limit_micros": {
+          "$ref": "#/$defs/counter"
+        },
+        "reserved_cash_micros": {
+          "$ref": "#/$defs/counter"
+        },
+        "settled_cash_micros": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "quota_reserved_units": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "quota_consumed_units": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "price_card_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "native_accounting_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "funding_id",
+        "mode",
+        "account_ref",
+        "currency",
+        "cash_limit_micros",
+        "reserved_cash_micros",
+        "settled_cash_micros",
+        "quota_reserved_units",
+        "quota_consumed_units",
+        "price_card_ref",
+        "native_accounting_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "properties": {
+        "step_id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "implementation",
+            "test",
+            "validation",
+            "repair",
+            "read"
+          ]
+        },
+        "route_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "write_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "timeout_seconds": {
+          "$ref": "#/$defs/positive"
+        },
+        "cleanup_seconds": {
+          "$ref": "#/$defs/positive"
+        },
+        "capture_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "repair_of": {
+          "$ref": "#/$defs/known_text"
+        }
+      },
+      "required": [
+        "step_id",
+        "kind",
+        "route_ref",
+        "depends_on",
+        "argv",
+        "write_paths",
+        "effects",
+        "timeout_seconds",
+        "cleanup_seconds",
+        "capture_bytes",
+        "repair_of"
+      ],
+      "additionalProperties": false
+    },
+    "project_mandate": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.project_mandate.v2"
+        },
+        "mandate_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "issuer_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "principal_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "generation": {
+          "$ref": "#/$defs/generation"
+        },
+        "parent_admission_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "delegation_chain": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "scope": {
+          "$ref": "#/$defs/scope"
+        },
+        "issued_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "active_seconds": {
+          "$ref": "#/$defs/positive"
+        },
+        "wall_seconds": {
+          "$ref": "#/$defs/positive"
+        },
+        "spend_limit_micros": {
+          "$ref": "#/$defs/counter"
+        },
+        "funding": {
+          "$ref": "#/$defs/funding"
+        },
+        "max_parallel": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "repair_limit": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "stop_conditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/step"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "success_steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "trust_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "schema_set_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "execution_authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "mandate_id",
+        "project_id",
+        "issuer_ref",
+        "principal_ref",
+        "generation",
+        "parent_admission_ref",
+        "delegation_chain",
+        "scope",
+        "issued_at",
+        "expires_at",
+        "active_seconds",
+        "wall_seconds",
+        "spend_limit_micros",
+        "funding",
+        "max_parallel",
+        "max_attempts",
+        "repair_limit",
+        "stop_conditions",
+        "steps",
+        "success_steps",
+        "policy_digest",
+        "trust_digest",
+        "schema_set_digest",
+        "execution_authority"
+      ],
+      "additionalProperties": false
+    },
+    "admission": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.owner_admission.v1"
+        },
+        "admission_id": {
+          "$ref": "#/$defs/id"
+        },
+        "owner_domain": {
+          "enum": [
+            "MASTER",
+            "NATIVE_CT",
+            "DCP",
+            "TO",
+            "IDENTITY",
+            "AUDIT_BROKER",
+            "FINOPS",
+            "CONPORT",
+            "CRM",
+            "RELEASE"
+          ]
+        },
+        "issuer_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "principal_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "macro_id": {
+          "$ref": "#/$defs/id"
+        },
+        "packet_id": {
+          "$ref": "#/$defs/id"
+        },
+        "subject_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_generation": {
+          "$ref": "#/$defs/generation"
+        },
+        "decision": {
+          "enum": [
+            "ADMITTED",
+            "DENIED",
+            "UNKNOWN"
+          ]
+        },
+        "source_receipt": {
+          "$ref": "#/$defs/canonical_receipt_ref"
+        },
+        "verification_method": {
+          "enum": [
+            "LOCAL_OWNER_RESOLVER",
+            "OWNER_APPROVED_SIGNED_RECEIPT"
+          ]
+        },
+        "trust_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "observed_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "admission_id",
+        "owner_domain",
+        "issuer_ref",
+        "principal_ref",
+        "project_id",
+        "macro_id",
+        "packet_id",
+        "subject_digest",
+        "source_generation",
+        "decision",
+        "source_receipt",
+        "verification_method",
+        "trust_digest",
+        "observed_at",
+        "expires_at",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "control": {
+      "type": "object",
+      "properties": {
+        "control": {
+          "enum": [
+            "model",
+            "effort",
+            "tool_profile",
+            "mcp",
+            "fresh_session",
+            "resume",
+            "delegation",
+            "cancellation",
+            "descendant_closure",
+            "filesystem_containment",
+            "network_containment",
+            "native_exit",
+            "usage",
+            "provider_attestation"
+          ]
+        },
+        "state": {
+          "enum": [
+            "SUPPORTED_QUALIFIED",
+            "SUPPORTED_UNQUALIFIED",
+            "UNSUPPORTED",
+            "UNKNOWN"
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidence_ref"
+        }
+      },
+      "required": [
+        "control",
+        "state",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "runner_profile": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.runner_profile.v1"
+        },
+        "profile_id": {
+          "$ref": "#/$defs/id"
+        },
+        "runner_id": {
+          "$ref": "#/$defs/id"
+        },
+        "surface": {
+          "enum": [
+            "CLI",
+            "DESKTOP",
+            "BROWSER_MANUAL",
+            "ITERM_COMMAND",
+            "SYNTHETIC_FIXTURE",
+            "LOCAL_COMMAND"
+          ]
+        },
+        "runner_version": {
+          "$ref": "#/$defs/known_text"
+        },
+        "executable_digest": {
+          "$ref": "#/$defs/known_sha256"
+        },
+        "harness_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "input_format": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "output_format": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "transport": {
+          "enum": [
+            "PROCESS_STDIO",
+            "ITERM_API",
+            "DESKTOP_TASK",
+            "MANUAL_UI",
+            "MEMORY_FIXTURE"
+          ]
+        },
+        "controls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/control"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "instruction_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "tool_profile_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "network_posture": {
+          "enum": [
+            "ENFORCED_DENY",
+            "ENFORCED_ALLOWLIST",
+            "MONITORED_ONLY",
+            "UNKNOWN"
+          ]
+        },
+        "containment_posture": {
+          "enum": [
+            "MECHANICALLY_QUALIFIED",
+            "MONITORED_ONLY",
+            "UNKNOWN"
+          ]
+        },
+        "supported_fixture_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "minItems": 0,
+          "maxItems": 32,
+          "uniqueItems": true
+        },
+        "qualification_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "qualification_status": {
+          "enum": [
+            "QUALIFIED",
+            "CANDIDATE",
+            "REVOKED",
+            "UNKNOWN"
+          ]
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "profile_id",
+        "runner_id",
+        "surface",
+        "runner_version",
+        "executable_digest",
+        "harness_digest",
+        "input_format",
+        "output_format",
+        "transport",
+        "controls",
+        "instruction_digest",
+        "tool_profile_digest",
+        "network_posture",
+        "containment_posture",
+        "supported_fixture_versions",
+        "qualification_ref",
+        "qualification_status",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "execution_tuple": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.execution_tuple.v1"
+        },
+        "tuple_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "binding_ref": {
+          "$ref": "#/$defs/canonical_receipt_ref"
+        },
+        "runner_profile_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "route_id": {
+          "$ref": "#/$defs/id"
+        },
+        "model_identity": {
+          "$ref": "#/$defs/identity_layers"
+        },
+        "provider_identity": {
+          "$ref": "#/$defs/identity_layers"
+        },
+        "effort_requested": {
+          "$ref": "#/$defs/known_text"
+        },
+        "effort_observed": {
+          "$ref": "#/$defs/known_text"
+        },
+        "endpoint_mode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "endpoint_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "service_tier": {
+          "$ref": "#/$defs/known_text"
+        },
+        "auth_profile_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "funding_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "tool_profile_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "context_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "fallback_policy": {
+          "enum": [
+            "NONE",
+            "EXPLICIT_PINNED_ALTERNATES_ONLY"
+          ]
+        },
+        "fallback_outcome": {
+          "enum": [
+            "NOT_USED",
+            "USED_WITH_OWNER_ADMISSION",
+            "DENIED",
+            "UNKNOWN"
+          ]
+        },
+        "freshness_policy": {
+          "enum": [
+            "FRESH_REQUIRED",
+            "RESUME_EXACT_CHECKPOINT_ONLY"
+          ]
+        },
+        "delegation_policy": {
+          "enum": [
+            "FORBIDDEN",
+            "EXPLICIT_CHILD_TUPLES_ONLY"
+          ]
+        },
+        "qualification_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "tuple_id",
+        "project_id",
+        "binding_ref",
+        "runner_profile_ref",
+        "route_id",
+        "model_identity",
+        "provider_identity",
+        "effort_requested",
+        "effort_observed",
+        "endpoint_mode",
+        "endpoint_ref",
+        "service_tier",
+        "auth_profile_ref",
+        "funding_ref",
+        "tool_profile_digest",
+        "context_digest",
+        "fallback_policy",
+        "fallback_outcome",
+        "freshness_policy",
+        "delegation_policy",
+        "qualification_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "frontier": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.frontier.v1"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "work_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mandate_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mandate_generation": {
+          "$ref": "#/$defs/generation"
+        },
+        "subject_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dependency"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "current_phase": {
+          "enum": [
+            "IMPLEMENTATION",
+            "VALIDATION",
+            "NATIVE_ACCEPTANCE",
+            "RELEASE"
+          ]
+        },
+        "state": {
+          "enum": [
+            "BLOCKED",
+            "LEGAL_CANDIDATE",
+            "RESERVED",
+            "HELD",
+            "TERMINAL"
+          ]
+        },
+        "workflow_version": {
+          "$ref": "#/$defs/counter"
+        },
+        "workflow_admission": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resource"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "route_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "project_id",
+        "work_id",
+        "mandate_id",
+        "mandate_generation",
+        "subject_digest",
+        "dependencies",
+        "current_phase",
+        "state",
+        "workflow_version",
+        "workflow_admission",
+        "resources",
+        "route_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "resource_claim": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.resource_claim.v1"
+        },
+        "claim_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "work_id": {
+          "$ref": "#/$defs/id"
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/id"
+        },
+        "owner_epoch": {
+          "$ref": "#/$defs/generation"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resource"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "fences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fence"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "reservation_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "reserved_active_seconds": {
+          "$ref": "#/$defs/positive"
+        },
+        "reserved_spend_micros": {
+          "$ref": "#/$defs/counter"
+        },
+        "state": {
+          "enum": [
+            "RESERVED",
+            "CLAIMED",
+            "QUARANTINED",
+            "RELEASED"
+          ]
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "claim_id",
+        "project_id",
+        "work_id",
+        "attempt_id",
+        "owner_epoch",
+        "resources",
+        "fences",
+        "reservation_ref",
+        "reserved_active_seconds",
+        "reserved_spend_micros",
+        "state",
+        "created_at",
+        "expires_at",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "attempt": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.attempt.v1"
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "work_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mandate_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mandate_generation": {
+          "$ref": "#/$defs/generation"
+        },
+        "input_fingerprint": {
+          "$ref": "#/$defs/sha256"
+        },
+        "idempotency_key": {
+          "$ref": "#/$defs/id"
+        },
+        "claim_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "execution_tuple_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "state": {
+          "enum": [
+            "INTENT_DURABLE",
+            "START_OBSERVED",
+            "SUBMITTED",
+            "SUCCEEDED",
+            "FAILED",
+            "EFFECT_UNKNOWN"
+          ]
+        },
+        "submission_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "process": {
+          "$ref": "#/$defs/process_identity"
+        },
+        "native_exit": {
+          "$ref": "#/$defs/known_integer"
+        },
+        "descendants_closed": {
+          "$ref": "#/$defs/known_bool"
+        },
+        "output": {
+          "$ref": "#/$defs/output_capture"
+        },
+        "active_seconds": {
+          "$ref": "#/$defs/nonnegative"
+        },
+        "wall_seconds": {
+          "$ref": "#/$defs/nonnegative"
+        },
+        "cash_spent_micros": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "started_at": {
+          "$ref": "#/$defs/known_timestamp"
+        },
+        "ended_at": {
+          "$ref": "#/$defs/known_timestamp"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "attempt_id",
+        "project_id",
+        "work_id",
+        "mandate_id",
+        "mandate_generation",
+        "input_fingerprint",
+        "idempotency_key",
+        "claim_ref",
+        "execution_tuple_ref",
+        "state",
+        "submission_ref",
+        "process",
+        "native_exit",
+        "descendants_closed",
+        "output",
+        "active_seconds",
+        "wall_seconds",
+        "cash_spent_micros",
+        "started_at",
+        "ended_at",
+        "evidence_refs",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "settlement": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.unknown_settlement.v1"
+        },
+        "settlement_id": {
+          "$ref": "#/$defs/id"
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/id"
+        },
+        "original_result_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "native_owner_admission": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "outcome": {
+          "enum": [
+            "SUCCEEDED",
+            "FAILED",
+            "STILL_UNKNOWN"
+          ]
+        },
+        "effect_present": {
+          "$ref": "#/$defs/known_bool"
+        },
+        "process_closed": {
+          "$ref": "#/$defs/known_bool"
+        },
+        "cash_spent_micros": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "total_active_seconds": {
+          "$ref": "#/$defs/nonnegative"
+        },
+        "fence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "reconciliation_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "observed_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "requeue_effect": {
+          "const": false
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "settlement_id",
+        "attempt_id",
+        "original_result_ref",
+        "native_owner_admission",
+        "outcome",
+        "effect_present",
+        "process_closed",
+        "cash_spent_micros",
+        "total_active_seconds",
+        "fence_refs",
+        "reconciliation_evidence",
+        "observed_at",
+        "requeue_effect",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "checkpoint": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.checkpoint.v1"
+        },
+        "checkpoint_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "work_id": {
+          "$ref": "#/$defs/id"
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/id"
+        },
+        "input_fingerprint": {
+          "$ref": "#/$defs/sha256"
+        },
+        "subject_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "trust_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "schema_set_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "identity_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "custody_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "coverage_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "completed_steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "pending_effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "resume_mode": {
+          "enum": [
+            "READ_ONLY_COMPLETED",
+            "CONTINUE_UNFINISHED_WITH_CURRENT_GRANT",
+            "HELD_UNKNOWN_EFFECT"
+          ]
+        },
+        "output_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "clock": {
+          "$ref": "#/$defs/clock"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "checkpoint_id",
+        "project_id",
+        "work_id",
+        "attempt_id",
+        "input_fingerprint",
+        "subject_ref",
+        "policy_digest",
+        "trust_digest",
+        "schema_set_digest",
+        "identity_digest",
+        "custody_digest",
+        "coverage_digest",
+        "completed_steps",
+        "pending_effects",
+        "resume_mode",
+        "output_refs",
+        "clock",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.event.v2"
+        },
+        "event_id": {
+          "$ref": "#/$defs/id"
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "producer_id": {
+          "$ref": "#/$defs/id"
+        },
+        "producer_epoch": {
+          "$ref": "#/$defs/generation"
+        },
+        "sequence": {
+          "$ref": "#/$defs/generation"
+        },
+        "previous_event_digest": {
+          "$ref": "#/$defs/known_sha256"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "work_id": {
+          "$ref": "#/$defs/id"
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "payload_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "causation_id": {
+          "$ref": "#/$defs/known_text"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/id"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "classification": {
+          "$ref": "#/$defs/classification"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "event_id",
+        "key",
+        "producer_id",
+        "producer_epoch",
+        "sequence",
+        "previous_event_digest",
+        "project_id",
+        "work_id",
+        "attempt_id",
+        "kind",
+        "payload_ref",
+        "payload_sha256",
+        "causation_id",
+        "correlation_id",
+        "created_at",
+        "expires_at",
+        "classification",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "role_ack": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "schema_version": {
+              "const": "dopemux.role_ack.v2"
+            },
+            "ack_id": {
+              "$ref": "#/$defs/id"
+            },
+            "event_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "event_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "project_id": {
+              "$ref": "#/$defs/id"
+            },
+            "work_id": {
+              "$ref": "#/$defs/id"
+            },
+            "subject_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "stage": {
+              "const": "DELIVERY_DURABLE"
+            },
+            "role": {
+              "const": "TRANSPORT_RECEIVER"
+            },
+            "principal_ref": {
+              "$ref": "#/$defs/id"
+            },
+            "owner_admission_ref": {
+              "$ref": "#/$defs/evidence_ref"
+            },
+            "decision": {
+              "enum": [
+                "ACCEPTED",
+                "REJECTED",
+                "HELD",
+                "EXPIRED"
+              ]
+            },
+            "observed_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "persisted_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "predecessor_ack_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/evidence_ref"
+              },
+              "minItems": 0,
+              "maxItems": 16
+            },
+            "recovery_grant_ref": {
+              "$ref": "#/$defs/known_text"
+            },
+            "authority": {
+              "const": "NONE"
+            }
+          },
+          "required": [
+            "schema_version",
+            "ack_id",
+            "event_key",
+            "event_digest",
+            "project_id",
+            "work_id",
+            "subject_digest",
+            "stage",
+            "role",
+            "principal_ref",
+            "owner_admission_ref",
+            "decision",
+            "observed_at",
+            "persisted_at",
+            "predecessor_ack_refs",
+            "recovery_grant_ref",
+            "authority"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schema_version": {
+              "const": "dopemux.role_ack.v2"
+            },
+            "ack_id": {
+              "$ref": "#/$defs/id"
+            },
+            "event_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "event_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "project_id": {
+              "$ref": "#/$defs/id"
+            },
+            "work_id": {
+              "$ref": "#/$defs/id"
+            },
+            "subject_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "stage": {
+              "const": "NATIVE_ACCEPTANCE"
+            },
+            "role": {
+              "const": "NATIVE_CT"
+            },
+            "principal_ref": {
+              "$ref": "#/$defs/id"
+            },
+            "owner_admission_ref": {
+              "$ref": "#/$defs/evidence_ref"
+            },
+            "decision": {
+              "enum": [
+                "ACCEPTED",
+                "REJECTED",
+                "HELD",
+                "EXPIRED"
+              ]
+            },
+            "observed_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "persisted_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "predecessor_ack_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/evidence_ref"
+              },
+              "minItems": 0,
+              "maxItems": 16
+            },
+            "recovery_grant_ref": {
+              "$ref": "#/$defs/known_text"
+            },
+            "authority": {
+              "const": "NONE"
+            }
+          },
+          "required": [
+            "schema_version",
+            "ack_id",
+            "event_key",
+            "event_digest",
+            "project_id",
+            "work_id",
+            "subject_digest",
+            "stage",
+            "role",
+            "principal_ref",
+            "owner_admission_ref",
+            "decision",
+            "observed_at",
+            "persisted_at",
+            "predecessor_ack_refs",
+            "recovery_grant_ref",
+            "authority"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schema_version": {
+              "const": "dopemux.role_ack.v2"
+            },
+            "ack_id": {
+              "$ref": "#/$defs/id"
+            },
+            "event_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "event_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "project_id": {
+              "$ref": "#/$defs/id"
+            },
+            "work_id": {
+              "$ref": "#/$defs/id"
+            },
+            "subject_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "stage": {
+              "const": "MASTER_CONSOLIDATION"
+            },
+            "role": {
+              "const": "MASTER"
+            },
+            "principal_ref": {
+              "$ref": "#/$defs/id"
+            },
+            "owner_admission_ref": {
+              "$ref": "#/$defs/evidence_ref"
+            },
+            "decision": {
+              "enum": [
+                "ACCEPTED",
+                "REJECTED",
+                "HELD",
+                "EXPIRED"
+              ]
+            },
+            "observed_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "persisted_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "predecessor_ack_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/evidence_ref"
+              },
+              "minItems": 0,
+              "maxItems": 16
+            },
+            "recovery_grant_ref": {
+              "$ref": "#/$defs/known_text"
+            },
+            "authority": {
+              "const": "NONE"
+            }
+          },
+          "required": [
+            "schema_version",
+            "ack_id",
+            "event_key",
+            "event_digest",
+            "project_id",
+            "work_id",
+            "subject_digest",
+            "stage",
+            "role",
+            "principal_ref",
+            "owner_admission_ref",
+            "decision",
+            "observed_at",
+            "persisted_at",
+            "predecessor_ack_refs",
+            "recovery_grant_ref",
+            "authority"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schema_version": {
+              "const": "dopemux.role_ack.v2"
+            },
+            "ack_id": {
+              "$ref": "#/$defs/id"
+            },
+            "event_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "event_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "project_id": {
+              "$ref": "#/$defs/id"
+            },
+            "work_id": {
+              "$ref": "#/$defs/id"
+            },
+            "subject_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "stage": {
+              "const": "PARENT_RECEIPT"
+            },
+            "role": {
+              "const": "SOLE_PARENT"
+            },
+            "principal_ref": {
+              "$ref": "#/$defs/id"
+            },
+            "owner_admission_ref": {
+              "$ref": "#/$defs/evidence_ref"
+            },
+            "decision": {
+              "enum": [
+                "ACCEPTED",
+                "REJECTED",
+                "HELD",
+                "EXPIRED"
+              ]
+            },
+            "observed_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "persisted_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "predecessor_ack_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/evidence_ref"
+              },
+              "minItems": 0,
+              "maxItems": 16
+            },
+            "recovery_grant_ref": {
+              "$ref": "#/$defs/known_text"
+            },
+            "authority": {
+              "const": "NONE"
+            }
+          },
+          "required": [
+            "schema_version",
+            "ack_id",
+            "event_key",
+            "event_digest",
+            "project_id",
+            "work_id",
+            "subject_digest",
+            "stage",
+            "role",
+            "principal_ref",
+            "owner_admission_ref",
+            "decision",
+            "observed_at",
+            "persisted_at",
+            "predecessor_ack_refs",
+            "recovery_grant_ref",
+            "authority"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schema_version": {
+              "const": "dopemux.role_ack.v2"
+            },
+            "ack_id": {
+              "$ref": "#/$defs/id"
+            },
+            "event_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "event_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "project_id": {
+              "$ref": "#/$defs/id"
+            },
+            "work_id": {
+              "$ref": "#/$defs/id"
+            },
+            "subject_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "stage": {
+              "const": "RECOVERY_VERIFIED"
+            },
+            "role": {
+              "const": "NATIVE_RECOVERY_OWNER"
+            },
+            "principal_ref": {
+              "$ref": "#/$defs/id"
+            },
+            "owner_admission_ref": {
+              "$ref": "#/$defs/evidence_ref"
+            },
+            "decision": {
+              "enum": [
+                "ACCEPTED",
+                "REJECTED",
+                "HELD",
+                "EXPIRED"
+              ]
+            },
+            "observed_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "persisted_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "predecessor_ack_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/evidence_ref"
+              },
+              "minItems": 0,
+              "maxItems": 16
+            },
+            "recovery_grant_ref": {
+              "$ref": "#/$defs/known_text"
+            },
+            "authority": {
+              "const": "NONE"
+            }
+          },
+          "required": [
+            "schema_version",
+            "ack_id",
+            "event_key",
+            "event_digest",
+            "project_id",
+            "work_id",
+            "subject_digest",
+            "stage",
+            "role",
+            "principal_ref",
+            "owner_admission_ref",
+            "decision",
+            "observed_at",
+            "persisted_at",
+            "predecessor_ack_refs",
+            "recovery_grant_ref",
+            "authority"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schema_version": {
+              "const": "dopemux.role_ack.v2"
+            },
+            "ack_id": {
+              "$ref": "#/$defs/id"
+            },
+            "event_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "event_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "project_id": {
+              "$ref": "#/$defs/id"
+            },
+            "work_id": {
+              "$ref": "#/$defs/id"
+            },
+            "subject_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "stage": {
+              "const": "CLOSURE"
+            },
+            "role": {
+              "const": "NATIVE_CT"
+            },
+            "principal_ref": {
+              "$ref": "#/$defs/id"
+            },
+            "owner_admission_ref": {
+              "$ref": "#/$defs/evidence_ref"
+            },
+            "decision": {
+              "enum": [
+                "ACCEPTED",
+                "REJECTED",
+                "HELD",
+                "EXPIRED"
+              ]
+            },
+            "observed_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "persisted_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "predecessor_ack_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/evidence_ref"
+              },
+              "minItems": 0,
+              "maxItems": 16
+            },
+            "recovery_grant_ref": {
+              "$ref": "#/$defs/known_text"
+            },
+            "authority": {
+              "const": "NONE"
+            }
+          },
+          "required": [
+            "schema_version",
+            "ack_id",
+            "event_key",
+            "event_digest",
+            "project_id",
+            "work_id",
+            "subject_digest",
+            "stage",
+            "role",
+            "principal_ref",
+            "owner_admission_ref",
+            "decision",
+            "observed_at",
+            "persisted_at",
+            "predecessor_ack_refs",
+            "recovery_grant_ref",
+            "authority"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schema_version": {
+              "const": "dopemux.role_ack.v2"
+            },
+            "ack_id": {
+              "$ref": "#/$defs/id"
+            },
+            "event_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "event_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "project_id": {
+              "$ref": "#/$defs/id"
+            },
+            "work_id": {
+              "$ref": "#/$defs/id"
+            },
+            "subject_digest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "stage": {
+              "const": "CLOSURE"
+            },
+            "role": {
+              "const": "MASTER"
+            },
+            "principal_ref": {
+              "$ref": "#/$defs/id"
+            },
+            "owner_admission_ref": {
+              "$ref": "#/$defs/evidence_ref"
+            },
+            "decision": {
+              "enum": [
+                "ACCEPTED",
+                "REJECTED",
+                "HELD",
+                "EXPIRED"
+              ]
+            },
+            "observed_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "persisted_at": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "predecessor_ack_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/evidence_ref"
+              },
+              "minItems": 0,
+              "maxItems": 16
+            },
+            "recovery_grant_ref": {
+              "$ref": "#/$defs/known_text"
+            },
+            "authority": {
+              "const": "NONE"
+            }
+          },
+          "required": [
+            "schema_version",
+            "ack_id",
+            "event_key",
+            "event_digest",
+            "project_id",
+            "work_id",
+            "subject_digest",
+            "stage",
+            "role",
+            "principal_ref",
+            "owner_admission_ref",
+            "decision",
+            "observed_at",
+            "persisted_at",
+            "predecessor_ack_refs",
+            "recovery_grant_ref",
+            "authority"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "handover": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.handover.v1"
+        },
+        "handover_id": {
+          "$ref": "#/$defs/id"
+        },
+        "from_identity": {
+          "$ref": "#/$defs/identity_link"
+        },
+        "to_identity": {
+          "$ref": "#/$defs/identity_link"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "instruction_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "checkpoint_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "coverage_cutoff": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "missing_body_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "authority_state_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "return_destination": {
+          "$ref": "#/$defs/identity_link"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "handover_id",
+        "from_identity",
+        "to_identity",
+        "project_id",
+        "instruction_ref",
+        "source_refs",
+        "checkpoint_ref",
+        "coverage_cutoff",
+        "missing_body_refs",
+        "authority_state_ref",
+        "return_destination",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "repo_subject": {
+      "type": "object",
+      "properties": {
+        "repo_id": {
+          "$ref": "#/$defs/id"
+        },
+        "base_sha": {
+          "$ref": "#/$defs/git_oid"
+        },
+        "head_sha": {
+          "$ref": "#/$defs/git_oid"
+        },
+        "tree_sha": {
+          "$ref": "#/$defs/git_oid"
+        }
+      },
+      "required": [
+        "repo_id",
+        "base_sha",
+        "head_sha",
+        "tree_sha"
+      ],
+      "additionalProperties": false
+    },
+    "subject": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.subject.v1"
+        },
+        "subject_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "repositories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/repo_subject"
+          },
+          "minItems": 1,
+          "maxItems": 64
+        },
+        "file_manifest_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "subject_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "archive_sha256": {
+          "$ref": "#/$defs/known_sha256"
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "trust_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "schema_set_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "coverage_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "exposure_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "identity_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "custody_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "frozen_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "subject_id",
+        "project_id",
+        "repositories",
+        "file_manifest_ref",
+        "subject_digest",
+        "archive_sha256",
+        "policy_digest",
+        "trust_digest",
+        "schema_set_digest",
+        "coverage_digest",
+        "exposure_digest",
+        "identity_digest",
+        "custody_digest",
+        "frozen_at",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.evidence.v1"
+        },
+        "evidence_id": {
+          "$ref": "#/$defs/id"
+        },
+        "source_id": {
+          "$ref": "#/$defs/id"
+        },
+        "subject_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "original_sha256": {
+          "$ref": "#/$defs/known_sha256"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "kind": {
+          "enum": [
+            "OBSERVED_SOURCE",
+            "REPORTED",
+            "PROPOSED",
+            "UNKNOWN",
+            "SUPERSEDED"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "observed_at": {
+          "$ref": "#/$defs/known_timestamp"
+        },
+        "captured_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "classification": {
+          "$ref": "#/$defs/classification"
+        },
+        "redaction_policy_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "evidence_id",
+        "source_id",
+        "subject_digest",
+        "original_sha256",
+        "payload_sha256",
+        "source_locator",
+        "kind",
+        "scope",
+        "observed_at",
+        "captured_at",
+        "classification",
+        "redaction_policy_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "exposure": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.exposure.v1"
+        },
+        "exposure_id": {
+          "$ref": "#/$defs/id"
+        },
+        "subject_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "fixture_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "candidate_tuple_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "judge_tuple_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "parent_exposure_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 0,
+          "maxItems": 128
+        },
+        "visible_source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "prohibited_source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "ancestry_status": {
+          "enum": [
+            "CLOSED",
+            "UNKNOWN",
+            "CONFLICTING"
+          ]
+        },
+        "independence_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "exposure_id",
+        "subject_digest",
+        "fixture_ref",
+        "candidate_tuple_ref",
+        "judge_tuple_ref",
+        "parent_exposure_refs",
+        "visible_source_refs",
+        "prohibited_source_refs",
+        "ancestry_status",
+        "independence_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "audit_request": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.audit_request.v1"
+        },
+        "request_id": {
+          "$ref": "#/$defs/id"
+        },
+        "subject_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "audit_role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "broker_certification_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "auditor_tuple_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "exposure_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "required_identity_layers": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "requested",
+              "configured",
+              "attempted",
+              "proxy_observed",
+              "provider_reported",
+              "provider_attested"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "required_independence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "attempt_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "fallback_policy": {
+          "const": "NONE"
+        },
+        "funding_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "native_grant_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "subject_ref",
+        "audit_role",
+        "broker_certification_ref",
+        "auditor_tuple_ref",
+        "exposure_ref",
+        "required_identity_layers",
+        "required_independence",
+        "attempt_limit",
+        "fallback_policy",
+        "funding_ref",
+        "native_grant_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "audit_result": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.audit_result.v1"
+        },
+        "result_id": {
+          "$ref": "#/$defs/id"
+        },
+        "request_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "subject_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "audited_head": {
+          "$ref": "#/$defs/git_oid"
+        },
+        "route_result": {
+          "enum": [
+            "NATIVE_REPORT",
+            "MALFORMED",
+            "HEAD_MISMATCH",
+            "SUBJECT_MISMATCH",
+            "REQUIRED_IDENTITY_UNKNOWN",
+            "TRANSPORT_FAILURE",
+            "CAPACITY_FAILURE",
+            "API_EPERM",
+            "NO_REPORT"
+          ]
+        },
+        "verdict": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "PASS",
+            "PASS_WITH_RISKS",
+            "FAIL",
+            "NEEDS_SUPERVISOR",
+            null
+          ]
+        },
+        "native_report_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "actual_model": {
+          "$ref": "#/$defs/known_text"
+        },
+        "attempt_consumed": {
+          "type": "boolean"
+        },
+        "native_exit": {
+          "$ref": "#/$defs/known_integer"
+        },
+        "independence_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "recorded_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "result_id",
+        "request_ref",
+        "subject_digest",
+        "audited_head",
+        "route_result",
+        "verdict",
+        "native_report_ref",
+        "actual_model",
+        "attempt_consumed",
+        "native_exit",
+        "independence_ref",
+        "recorded_at",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "release_evidence": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.release_evidence.v1"
+        },
+        "release_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "subject_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "audited_head": {
+          "$ref": "#/$defs/git_oid"
+        },
+        "current_head": {
+          "$ref": "#/$defs/git_oid"
+        },
+        "review_settlement_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "audit_result_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "finality_ref": {
+          "$ref": "#/$defs/canonical_receipt_ref"
+        },
+        "steward_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "native_acceptance_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "merge_grant_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "activation_grant_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "state": {
+          "enum": [
+            "HELD",
+            "NATIVE_ACCEPTED",
+            "PUBLISHED",
+            "MERGED",
+            "ACTIVE",
+            "ROLLED_BACK"
+          ]
+        },
+        "merge_authorized": {
+          "const": false
+        },
+        "activation_authorized": {
+          "const": false
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "release_id",
+        "project_id",
+        "subject_ref",
+        "audited_head",
+        "current_head",
+        "review_settlement_ref",
+        "audit_result_ref",
+        "finality_ref",
+        "steward_ref",
+        "native_acceptance_ref",
+        "merge_grant_ref",
+        "activation_grant_ref",
+        "state",
+        "merge_authorized",
+        "activation_authorized",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "qualification_snapshot": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.qualification_snapshot.v1"
+        },
+        "snapshot_id": {
+          "$ref": "#/$defs/id"
+        },
+        "canonical_intelligence_owner": {
+          "enum": [
+            "MIQCP",
+            "MIQP-003",
+            "MMRC",
+            "MMPRC"
+          ]
+        },
+        "tuple_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "catalog_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "research_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "benchmark_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "exposure_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "identity_status": {
+          "enum": [
+            "QUALIFIED",
+            "STALE",
+            "UNKNOWN",
+            "REVOKED"
+          ]
+        },
+        "quality_status": {
+          "enum": [
+            "QUALIFIED",
+            "STALE",
+            "UNKNOWN",
+            "REVOKED"
+          ]
+        },
+        "economics_status": {
+          "enum": [
+            "QUALIFIED",
+            "STALE",
+            "UNKNOWN",
+            "REVOKED"
+          ]
+        },
+        "availability_status": {
+          "enum": [
+            "QUALIFIED",
+            "STALE",
+            "UNKNOWN",
+            "REVOKED"
+          ]
+        },
+        "harness_status": {
+          "enum": [
+            "QUALIFIED",
+            "STALE",
+            "UNKNOWN",
+            "REVOKED"
+          ]
+        },
+        "sample_count": {
+          "$ref": "#/$defs/counter"
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "dcp_import_receipt": {
+          "$ref": "#/$defs/known_text"
+        },
+        "eligibility_granted": {
+          "const": false
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "snapshot_id",
+        "canonical_intelligence_owner",
+        "tuple_ref",
+        "catalog_refs",
+        "research_refs",
+        "benchmark_refs",
+        "exposure_ref",
+        "identity_status",
+        "quality_status",
+        "economics_status",
+        "availability_status",
+        "harness_status",
+        "sample_count",
+        "created_at",
+        "expires_at",
+        "dcp_import_receipt",
+        "eligibility_granted",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "workflow": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.workflow_adapter.v1"
+        },
+        "operation_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "issuer_id": {
+          "$ref": "#/$defs/id"
+        },
+        "issuer_epoch": {
+          "$ref": "#/$defs/generation"
+        },
+        "backend": {
+          "enum": [
+            "INREPO_FASTAPI_BRIDGE",
+            "CURRENT_V3",
+            "CLOCKWORK"
+          ]
+        },
+        "backend_instance_id": {
+          "$ref": "#/$defs/id"
+        },
+        "item_id": {
+          "$ref": "#/$defs/id"
+        },
+        "operation": {
+          "enum": [
+            "QUERY_LEGALITY",
+            "QUERY_FRONTIER",
+            "TRANSITION",
+            "METADATA_UPDATE",
+            "MIRROR_RECEIPT"
+          ]
+        },
+        "expected_version": {
+          "$ref": "#/$defs/counter"
+        },
+        "trigger": {
+          "enum": [
+            "none",
+            "start",
+            "complete",
+            "block",
+            "hold",
+            "resume",
+            "cancel"
+          ]
+        },
+        "idempotency_key": {
+          "$ref": "#/$defs/id"
+        },
+        "payload_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "fence_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "native_admission_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "result_status": {
+          "enum": [
+            "APPLIED",
+            "NOT_APPLIED",
+            "CONFLICT",
+            "UNKNOWN"
+          ]
+        },
+        "new_version": {
+          "$ref": "#/$defs/known_counter"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "operation_id",
+        "project_id",
+        "issuer_id",
+        "issuer_epoch",
+        "backend",
+        "backend_instance_id",
+        "item_id",
+        "operation",
+        "expected_version",
+        "trigger",
+        "idempotency_key",
+        "payload_digest",
+        "fence_ref",
+        "native_admission_ref",
+        "result_status",
+        "new_version",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "memory_record": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.memory_adapter.v1"
+        },
+        "record_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "worktree_id": {
+          "$ref": "#/$defs/id"
+        },
+        "session_id": {
+          "$ref": "#/$defs/id"
+        },
+        "plane": {
+          "enum": [
+            "RAW_CHRONICLE",
+            "CURATED_CHRONICLE",
+            "STRUCTURED_CONPORT",
+            "QUARANTINE"
+          ]
+        },
+        "canonical_owner": {
+          "enum": [
+            "DOPE_MEMORY",
+            "CONPORT",
+            "TRANSCRIPT_INGEST_SAFETY"
+          ]
+        },
+        "source_event_id": {
+          "$ref": "#/$defs/id"
+        },
+        "source_timestamp": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "event_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "payload_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "details_json": {
+          "type": "object",
+          "properties": {
+            "trust": {
+              "enum": [
+                "canonical-explicit",
+                "conversation-derived",
+                "untrusted-source"
+              ]
+            },
+            "promotion_rule": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            }
+          },
+          "required": [
+            "trust",
+            "promotion_rule"
+          ],
+          "additionalProperties": false
+        },
+        "expected_revision": {
+          "$ref": "#/$defs/counter"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "classification": {
+          "$ref": "#/$defs/classification"
+        },
+        "retention_policy_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "promotion_grant_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_id",
+        "project_id",
+        "worktree_id",
+        "session_id",
+        "plane",
+        "canonical_owner",
+        "source_event_id",
+        "source_timestamp",
+        "event_type",
+        "payload_ref",
+        "details_json",
+        "expected_revision",
+        "source_refs",
+        "classification",
+        "retention_policy_ref",
+        "promotion_grant_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "context_item": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "canonical_owner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "trust": {
+          "enum": [
+            "canonical-explicit",
+            "conversation-derived",
+            "untrusted-source"
+          ]
+        },
+        "token_count": {
+          "$ref": "#/$defs/counter"
+        },
+        "materialization_ref": {
+          "$ref": "#/$defs/known_text"
+        }
+      },
+      "required": [
+        "source",
+        "canonical_owner",
+        "trust",
+        "token_count",
+        "materialization_ref"
+      ],
+      "additionalProperties": false
+    },
+    "context_bundle": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.context_bundle.v1"
+        },
+        "bundle_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "worktree_id": {
+          "$ref": "#/$defs/id"
+        },
+        "session_id": {
+          "$ref": "#/$defs/id"
+        },
+        "purpose": {
+          "enum": [
+            "SESSIONSTART_RECAP",
+            "EXPLICIT_RECALL",
+            "STATUS_PROJECTION",
+            "PROACTIVE_CANDIDATE"
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/context_item"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "unavailable_modalities": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "CHRONICLE",
+              "STRUCTURED",
+              "SEMANTIC",
+              "NATIVE_STATUS"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 4,
+          "uniqueItems": true
+        },
+        "token_budget": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32768
+        },
+        "used_tokens": {
+          "$ref": "#/$defs/counter"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "bundle_id",
+        "project_id",
+        "worktree_id",
+        "session_id",
+        "purpose",
+        "items",
+        "unavailable_modalities",
+        "token_budget",
+        "used_tokens",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "materialization": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.materialization_adapter.v1"
+        },
+        "materialization_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "CLAIM",
+            "WIKI_PAGE",
+            "RETRIEVAL_INDEX",
+            "CONTEXT_PROJECTION"
+          ]
+        },
+        "canonical_owner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "source_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "projection_schema_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "coverage_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "output_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "state": {
+          "enum": [
+            "CURRENT",
+            "STALE",
+            "TOMBSTONED",
+            "CONTESTED",
+            "UNKNOWN"
+          ]
+        },
+        "embedding_mode": {
+          "enum": [
+            "NONE",
+            "LOCAL_APPROVED",
+            "EXTERNAL_EXPLICITLY_APPROVED"
+          ]
+        },
+        "privacy_admission_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "materialization_id",
+        "project_id",
+        "kind",
+        "canonical_owner",
+        "source_refs",
+        "source_digest",
+        "projection_schema_digest",
+        "policy_digest",
+        "coverage_digest",
+        "output_ref",
+        "state",
+        "embedding_mode",
+        "privacy_admission_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "governance_record": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.governance_record.v1"
+        },
+        "record_id": {
+          "$ref": "#/$defs/id"
+        },
+        "rule_id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "ADOPTION",
+            "AMENDMENT",
+            "EXCEPTION",
+            "WAIVER",
+            "REVOCATION"
+          ]
+        },
+        "rule_owner_id": {
+          "$ref": "#/$defs/id"
+        },
+        "principal_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "source_rule_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "scope": {
+          "$ref": "#/$defs/scope"
+        },
+        "generation": {
+          "$ref": "#/$defs/generation"
+        },
+        "effective_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "supersedes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "owner_admission_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "retroactive_rewrite": {
+          "const": false
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "record_id",
+        "rule_id",
+        "kind",
+        "rule_owner_id",
+        "principal_ref",
+        "source_rule_ref",
+        "scope",
+        "generation",
+        "effective_at",
+        "expires_at",
+        "supersedes",
+        "owner_admission_ref",
+        "reason",
+        "retroactive_rewrite",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "managed_file": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "owner_class": {
+          "enum": [
+            "DOPEMUX_MANAGED",
+            "PROJECT_MANAGED",
+            "USER_MANAGED",
+            "UNKNOWN"
+          ]
+        },
+        "ownership_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "baseline_B": {
+          "$ref": "#/$defs/file_state"
+        },
+        "current_C": {
+          "$ref": "#/$defs/file_state"
+        },
+        "proposed_N": {
+          "$ref": "#/$defs/file_state"
+        },
+        "action": {
+          "enum": [
+            "INSTALL_N",
+            "PRESERVE_C",
+            "ADOPT_METADATA",
+            "CONFLICT",
+            "ADOPTION_REQUIRED"
+          ]
+        },
+        "backup_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        }
+      },
+      "required": [
+        "path",
+        "owner_class",
+        "ownership_ref",
+        "baseline_B",
+        "current_C",
+        "proposed_N",
+        "action",
+        "backup_ref"
+      ],
+      "additionalProperties": false
+    },
+    "pack_transaction": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.pack_transaction.v1"
+        },
+        "transaction_id": {
+          "$ref": "#/$defs/id"
+        },
+        "installation_id": {
+          "$ref": "#/$defs/id"
+        },
+        "target_identity": {
+          "$ref": "#/$defs/id"
+        },
+        "pack_source_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "schema_bundle_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "policy_profile_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "owner_admission_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "fence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_ref"
+          },
+          "minItems": 1,
+          "maxItems": 128
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/managed_file"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "journal_state": {
+          "enum": [
+            "PREPARED",
+            "BACKED_UP",
+            "STAGED",
+            "VALIDATED",
+            "APPLYING",
+            "MANIFEST_COMMITTED",
+            "COMPLETE",
+            "INCOMPLETE_TRANSACTION",
+            "ROLLING_BACK",
+            "ROLLED_BACK",
+            "CONFLICT"
+          ]
+        },
+        "manifest_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "multi_file_atomic": {
+          "const": false
+        },
+        "activation_enabled": {
+          "const": false
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "transaction_id",
+        "installation_id",
+        "target_identity",
+        "pack_source_digest",
+        "schema_bundle_digest",
+        "policy_profile_digest",
+        "owner_admission_ref",
+        "fence_refs",
+        "files",
+        "journal_state",
+        "manifest_ref",
+        "multi_file_atomic",
+        "activation_enabled",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "migration": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.migration.v1"
+        },
+        "migration_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "owner_id": {
+          "$ref": "#/$defs/id"
+        },
+        "from_subject": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "to_subject": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "from_epoch": {
+          "$ref": "#/$defs/generation"
+        },
+        "to_epoch": {
+          "$ref": "#/$defs/generation"
+        },
+        "identity_map_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "backup_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "source_watermark": {
+          "$ref": "#/$defs/counter"
+        },
+        "target_watermark": {
+          "$ref": "#/$defs/counter"
+        },
+        "state": {
+          "enum": [
+            "PREPARED",
+            "SHADOW_READ",
+            "QUIESCED",
+            "BACKFILLED",
+            "CAUGHT_UP",
+            "CUTOVER",
+            "VERIFIED",
+            "HOLD",
+            "ROLLED_BACK"
+          ]
+        },
+        "native_admission_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "rollback_contract_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "source_writes_enabled": {
+          "type": "boolean"
+        },
+        "target_writes_enabled": {
+          "type": "boolean"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "migration_id",
+        "project_id",
+        "owner_id",
+        "from_subject",
+        "to_subject",
+        "from_epoch",
+        "to_epoch",
+        "identity_map_ref",
+        "backup_ref",
+        "source_watermark",
+        "target_watermark",
+        "state",
+        "native_admission_ref",
+        "rollback_contract_ref",
+        "source_writes_enabled",
+        "target_writes_enabled",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "service_binding": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.service_binding.v1"
+        },
+        "binding_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "actor_id": {
+          "$ref": "#/$defs/id"
+        },
+        "worktree_id": {
+          "$ref": "#/$defs/id"
+        },
+        "service_id": {
+          "$ref": "#/$defs/id"
+        },
+        "instance_id": {
+          "$ref": "#/$defs/id"
+        },
+        "database_identity": {
+          "$ref": "#/$defs/known_text"
+        },
+        "transport": {
+          "enum": [
+            "MCP_STDIO",
+            "MCP_STREAMABLE_HTTP",
+            "MCP_SSE",
+            "REST",
+            "REDIS_STREAM",
+            "LOCAL_MEMORY",
+            "ITERM_API"
+          ]
+        },
+        "endpoint_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "catalog_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "profile_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "allowed_tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "read_purity": {
+          "enum": [
+            "QUALIFIED",
+            "UNQUALIFIED",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "lease_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "owner_admission_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "binding_id",
+        "project_id",
+        "actor_id",
+        "worktree_id",
+        "service_id",
+        "instance_id",
+        "database_identity",
+        "transport",
+        "endpoint_ref",
+        "catalog_digest",
+        "profile_digest",
+        "allowed_tools",
+        "read_purity",
+        "lease_ref",
+        "owner_admission_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    },
+    "consumer_action": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "dopemux.consumer_action.v1"
+        },
+        "action_id": {
+          "$ref": "#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "#/$defs/id"
+        },
+        "native_domain": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "account_id": {
+          "$ref": "#/$defs/id"
+        },
+        "canonical_action_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "action_fingerprint": {
+          "$ref": "#/$defs/sha256"
+        },
+        "content_subject_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "rights_consent_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "creator_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true
+        },
+        "collaborator_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 64,
+          "uniqueItems": true
+        },
+        "native_grant_ref": {
+          "$ref": "#/$defs/evidence_ref"
+        },
+        "approval_generation": {
+          "$ref": "#/$defs/generation"
+        },
+        "idempotency_key": {
+          "$ref": "#/$defs/id"
+        },
+        "external_claim_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "state": {
+          "enum": [
+            "PREPARED",
+            "GRANT_REQUESTED",
+            "HELD",
+            "SUBMITTED",
+            "OBSERVED_COMPLETE",
+            "EFFECT_UNKNOWN",
+            "REJECTED"
+          ]
+        },
+        "external_observation_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "production_grant_ref": {
+          "$ref": "#/$defs/known_text"
+        },
+        "authority": {
+          "const": "NONE"
+        }
+      },
+      "required": [
+        "schema_version",
+        "action_id",
+        "project_id",
+        "native_domain",
+        "account_id",
+        "canonical_action_name",
+        "action_fingerprint",
+        "content_subject_ref",
+        "rights_consent_ref",
+        "creator_ids",
+        "collaborator_ids",
+        "native_grant_ref",
+        "approval_generation",
+        "idempotency_key",
+        "external_claim_ref",
+        "state",
+        "external_observation_ref",
+        "production_grant_ref",
+        "authority"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
