@@ -1,0 +1,88 @@
+{
+  "id": "TP-DMX-PROJECT-ARCHAEOLOGY-SUPERVISOR-001",
+  "project": "DDD-Enterprises/dopemux-mvp",
+  "target": "Native crash-safe, capacity-aware execution supervisor for DMX-PROJECT-ARCHAEOLOGY-001",
+  "invariants": [
+    "RISK_LANE=L2 material runtime/routing change; one bounded implementer plus one final independent audit after content freeze.",
+    "Control Tower supervises; runtime executes only explicitly released archaeology campaign tasks.",
+    "Automatic retries and silent fallbacks are forbidden; capacity diversion before launch or explicit successor attempt after terminal capacity failure only.",
+    "Plan-included routes are preferred only after capability, privacy, exact-route, and independence filters.",
+    "UNKNOWN capacity is not unlimited; OUTCOME_UNKNOWN blocks duplicate dispatch.",
+    "Archaeology jobs have no repository/GitHub/ConPort/Task-Orchestrator/service effects unless separately released.",
+    "Runtime state lives outside the repository under an explicitly supplied state root."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "DDD-Enterprises/dopemux-mvp",
+    "repo_marker": "AGENTS.md",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-PROJECT-ARCHAEOLOGY-NATIVE-SUPERVISOR",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "feat/project-archaeology-supervisor-001",
+    "base_branch": "main",
+    "stacked_because": "Standalone implementation from exact remote main c395aa849eeaa08f201ffececed0f891bbfcee49."
+  },
+  "commit": {
+    "message": "feat(archaeology): add capacity-aware native supervisor",
+    "allowlist": [
+      "task-packets/generated/TP-DMX-PROJECT-ARCHAEOLOGY-SUPERVISOR-001.json",
+      "src/dopemux/archaeology_supervisor.py",
+      "tests/unit/test_archaeology_supervisor.py",
+      "docs/02-how-to/project-archaeology-supervisor.md"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/generated/TP-DMX-PROJECT-ARCHAEOLOGY-SUPERVISOR-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m pytest -q tests/unit/test_archaeology_supervisor.py",
+      "python -m dopemux.archaeology_supervisor --help",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base c395aa849eeaa08f201ffececed0f891bbfcee49 --head HEAD --format text"
+    ]
+  },
+  "pr": {
+    "title": "feat: add native project archaeology supervisor",
+    "body": "Implements a crash-safe, capacity-aware native campaign supervisor. No campaign execution or provider inference is part of this implementation packet.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "task": "Implement native archaeology supervisor runtime and CLI.",
+      "requirements": [
+        "Load external campaign/task and route ledgers; persist append-only events and atomic checkpoints under an external state root.",
+        "Use one-writer file locking.",
+        "Compute dependency-ready tasks and choose least-scarce qualified route after capability/privacy/exact-route/independence filters.",
+        "Capacity bands when observed percentage exists: GREEN <70, YELLOW 70-85, RED 85-95, CRITICAL >=95; UNKNOWN remains UNKNOWN.",
+        "Pre-dispatch capacity diversion allowed; terminal capacity failure creates distinct successor attempt; never mutate original attempt into success.",
+        "Runner invocation uses argv with shell=False; terminal receipt is written by a wrapper process independently of supervisor lifetime.",
+        "No automatic retry or fallback.",
+        "CLI surfaces: validate, init, status, run, probe; run supports --once and finite --max-dispatch.",
+        "Probe executable/version and safe metadata/catalog only; OpenCode model catalog is metadata-only and does not invoke inference.",
+        "Do not invent provider quota APIs/selectors and do not emit secrets."
+      ],
+      "expected_files": [
+        "src/dopemux/archaeology_supervisor.py",
+        "tests/unit/test_archaeology_supervisor.py",
+        "docs/02-how-to/project-archaeology-supervisor.md"
+      ],
+      "validation": [
+        "Unit tests cover scheduling, hard filters, capacity bands, premium reserve, diversion, explicit successor attempts, OUTCOME_UNKNOWN reconciliation, atomic state, and shell-free commands.",
+        "CLI help and schema validation pass.",
+        "git diff --check passes."
+      ],
+      "context_files": [
+        "AGENTS.md",
+        "config/ai/model-routing.policy.yaml",
+        "docs/03-reference/governance/evidence-economy.md",
+        "src/dopemux/orchestrator/idempotency.py"
+      ]
+    }
+  ]
+}
