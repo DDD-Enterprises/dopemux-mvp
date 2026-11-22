@@ -266,13 +266,21 @@ def parse_transition_result(payload: Any, item_id: str, trigger: str) -> Dict[st
         previous, new = result.get("previousRole"), result.get("newRole")
         if previous not in ROLES or new not in ROLES:
             return unknown
-        reason = None
+        notes: List[str] = []
         want_from, want_to = EXPECTED_MOVE[trigger]
         if (previous, new) != (want_from, want_to):
-            reason = (
+            notes.append(
                 f"applied, but the orchestrator moved the item from {previous} to {new}, "
                 f"not {want_from} to {want_to}; another writer may have changed it first"
             )
+        # Reaching terminal can complete parent items too; say so, since nobody clicked them.
+        cascades = result.get("cascadeEvents")
+        moved = [c for c in cascades if isinstance(c, dict) and c.get("applied") is True] if isinstance(cascades, list) else []
+        if moved:
+            targets = sorted({str(c.get("targetRole")) for c in moved})
+            noun = "parent item" if len(moved) == 1 else "parent items"
+            notes.append(f"the orchestrator also moved {len(moved)} {noun} to {', '.join(targets)}")
+        reason = _bounded("; ".join(notes)) if notes else None
         return {"status": "applied", "reason": reason, "previous_role": previous, "new_role": new}
     if applied is False:
         error = result.get("error")

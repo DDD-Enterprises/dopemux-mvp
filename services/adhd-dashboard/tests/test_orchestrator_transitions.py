@@ -267,6 +267,22 @@ class TestWrite:
         assert result["previous_role"] == "work" and result["new_role"] == "review"
         assert "not queue to work" in result["reason"]
 
+    def test_cascaded_moves_are_reported(self):
+        # Finishing the last child completes its parent too; the operator must be told.
+        payload = _applied("work", "terminal", "complete")
+        payload["results"][0]["cascadeEvents"] = [
+            {"itemId": "p-1", "title": "Parent", "previousRole": "work", "targetRole": "terminal", "applied": True},
+            {"itemId": "p-2", "title": "Grandparent", "previousRole": "work", "targetRole": "terminal",
+             "applied": False, "gateBlocked": True},
+        ]
+        result, _ = _run(trigger="complete", advance=_advancer(payload))
+        assert result["status"] == "applied"
+        assert "also moved 1 parent item to terminal" in result["reason"]
+
+    def test_no_cascade_means_no_note(self):
+        result, _ = _run(trigger="complete")
+        assert result["reason"] is None
+
     def test_gate_refusal_returns_the_missing_notes(self):
         payload = _refused(
             "Gate check failed: required notes not filled: proof-bundle",

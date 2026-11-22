@@ -4,6 +4,11 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest';
 
 import TaskQueue from '../TaskQueue';
+
+vi.mock('../../config', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../config')>()),
+  dashboardApiHeaders: { 'X-API-Key': 'synthetic-key' },
+}));
 import { brandTokens } from '../../theme';
 
 // Start and Finish write through POST /api/tasks/{id}/transition. Every test here uses a fake
@@ -96,6 +101,7 @@ test('Start posts one request with a fresh request id, the API key header and JS
   expect(url).toBe(`${TASKS}/${QUEUE_ID}/transition`);
   expect(init.method).toBe('POST');
   expect(init.headers['Content-Type']).toBe('application/json');
+  expect(init.headers['X-API-Key']).toBe('synthetic-key');
   expect(JSON.parse(init.body)).toEqual({ trigger: 'start', request_id: REQUEST_ID });
 });
 

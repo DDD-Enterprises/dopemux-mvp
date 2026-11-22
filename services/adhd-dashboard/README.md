@@ -71,7 +71,10 @@ Start/Finish only"). Body:
   also moves work to review and review to terminal, so the backend reads the role first and refuses
   otherwise.
 - `complete` is sent only when the item is in `work`. The orchestrator refuses it while required
-  notes are missing; the response lists them in `missing_notes`.
+  notes are missing; the response lists them in `missing_notes`. Two consequences: it moves the
+  item straight from work to terminal, skipping review; and an item whose tags match no note schema
+  has no gate, so it completes unchecked. Reaching terminal can also complete parent items; the
+  response's `reason` says how many.
 - No other trigger (cancel, block, hold, resume, reopen) is exposed. `item_id` must be a full
   lowercase UUID.
 
