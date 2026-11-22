@@ -1,0 +1,6 @@
+A	config/mcp/capability-shadow-policy.yaml
+A	proof/TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001/implementation-notes.md
+A	schemas/mcp/capability-semantic-contract.schema.json
+A	src/dopemux/mcp/capability_compiler.py
+A	task-packets/TP-DMX-MCP-CAPABILITY-T0-SEMANTIC-COMPILATION-001.json
+A	tests/unit/test_mcp_capability_compiler.py
