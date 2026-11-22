@@ -26,6 +26,10 @@ type Action =
   | { phase: 'unconfirmed'; title: string; url: string; result: TransitionResult; why: string }
   | { phase: 'refused' | 'failed'; title: string; url: string; message: string; missingNotes: MissingNote[] | null };
 
+// What a read returns to the code that started it. 'superseded' when a newer read started meanwhile:
+// its result was not shown, so it must not confirm anything either.
+type ReadOutcome = TaskQueueReading | null | 'superseded';
+
 const transitionUrl = (itemId: string) => `${TASKS_ENDPOINT}/${encodeURIComponent(itemId)}/transition`;
 const LABELS: Record<TransitionTrigger, string> = { start: 'Start', complete: 'Finish' };
 
@@ -93,7 +97,8 @@ const actionLines = (action: Action): string[] => {
 
 // Cyan needs the fresh read to list the item in its new role. The read lists only work and queue,
 // the first 20 of each, so Finish (terminal) can never be confirmed this way.
-const confirm = (reading: TaskQueueReading | null, itemId: string, result: TransitionResult): string | null => {
+const confirm = (reading: ReadOutcome, itemId: string, result: TransitionResult): string | null => {
+  if (reading === 'superseded') return 'a newer read replaced the one that would have confirmed it; refresh to see the item.';
   if (!reading || (reading.status !== 'ok' && reading.status !== 'empty')) return 'the fresh read failed, so the new role is not shown.';
   if (result.newRole !== 'work' && result.newRole !== 'queue') {
     return `the queue lists only work and queue items, so it cannot show ${result.newRole}.`;
@@ -126,7 +131,7 @@ const TaskQueue: React.FC = () => {
   const [action, setAction] = useState<Action | null>(null);
   const writing = useRef(false);
 
-  const read = useCallback(async (): Promise<TaskQueueReading | null> => {
+  const read = useCallback(async (): Promise<ReadOutcome> => {
     const request = ++latestRequest.current;
     const settle = (next: View) => {
       if (latestRequest.current === request) setView(next);
@@ -156,6 +161,7 @@ const TaskQueue: React.FC = () => {
       fail(' returned an unexpected payload.');
       return null;
     }
+    if (latestRequest.current !== request) return 'superseded';
     settle({ kind: 'read', reading });
     return reading;
   }, []);

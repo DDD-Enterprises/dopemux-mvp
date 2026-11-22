@@ -250,3 +250,27 @@ test('gremlinPink is never a status color', async () => {
     expect(getComputedStyle(element).color).not.toBe(pink);
   }
 });
+
+test('a confirming read that a newer Refresh replaced cannot turn the action cyan', async () => {
+  let resolveConfirming: (value: unknown) => void = () => {};
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValueOnce(reply(200, queue()))
+    .mockResolvedValueOnce(reply(200, transition()))
+    // The read the write starts to confirm itself: still pending when Refresh is clicked.
+    .mockReturnValueOnce(new Promise((resolve) => (resolveConfirming = resolve)))
+    // The newer read from Refresh fails.
+    .mockResolvedValueOnce(reply(502, {}));
+  await renderQueue(fetchMock);
+
+  await click('Start: Write the tests');
+  await click('Refresh queue');
+  await act(async () => {
+    resolveConfirming(reply(200, queue([workItem, { ...queueItem, role: 'work' }])));
+  });
+
+  expect(screen.getByTestId('task-queue-chip')).toHaveTextContent('[FAILED]');
+  expect(actionChip()).toHaveTextContent('[UNCONFIRMED]');
+  expect(actionChip()).not.toHaveStyle({ color: toRgb(brandTokens.colors.ritualCyan) });
+  expect(actionText()).toContain('newer read');
+});
