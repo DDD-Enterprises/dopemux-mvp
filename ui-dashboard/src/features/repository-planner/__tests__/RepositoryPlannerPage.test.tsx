@@ -179,6 +179,36 @@ describe('RepositoryPlannerPage', () => {
       });
     }
   });
+
+  test('CandidateShaChip dismisses copied state immediately on Escape key press', async () => {
+    const fullSha = dopemuxFixture.lanes[0].candidate_sha;
+    const shortSha = fullSha.slice(0, 12);
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      configurable: true,
+    });
+
+    try {
+      render(<RepositoryPlannerPage />);
+
+      const chip = screen.getByRole('button', { name: new RegExp(`Copy candidate SHA ${shortSha}`) });
+      fireEvent.click(chip);
+
+      expect(await screen.findByText(`Candidate SHA ${shortSha} copied`)).toBeVisible();
+
+      fireEvent.keyDown(chip, { key: 'Escape' });
+
+      expect(screen.queryByText(`Candidate SHA ${shortSha} copied`)).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: new RegExp(`Copy candidate SHA ${shortSha}`) })).toBeVisible();
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        configurable: true,
+      });
+    }
+  });
 });
 
 describe('extension registry', () => {
