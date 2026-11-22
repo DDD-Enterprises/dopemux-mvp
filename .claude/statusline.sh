@@ -1,335 +1,195 @@
 #!/bin/bash
-# Dopemux ADHD-Optimized Statusline
-# Shows: focus, session time, ADHD Engine, context %, model
+# Dopemux statusline for Claude Code.
+#
+# Mirrors the operator's zsh PS1 (`%n@%m %1~ %#` → `user@host dir %`), then appends:
+#   git branch ±dirty 🌳worktree | model ⚡effort | ctx used% usedK/sizeK
+#   | 5h <remaining>% ↺<time-to-reset> · 7d <remaining>% ↺<time-to-reset> | ⏱ session-minutes
+#
+# Input: the Claude Code statusLine JSON payload on stdin (keys confirmed on
+# Claude Code 2.1.272 — see memory note reference_claude_code_statusline_payload).
+# Every segment is optional: a missing/null key simply omits its segment.
+#
+# Constraints:
+#   - /bin/bash on macOS is 3.2.57 → no assoc arrays, no ${var,,}, no mapfile.
+#   - One jq pass, one value per line, successive `IFS= read -r` (never @tsv+read:
+#     tab is IFS-whitespace and empty fields shift every later variable).
+#   - Never hardcode the context size: Fable/Opus report 1,000,000, not 200K.
+#   - Keep it fast: no network probes; git calls only (≈30 ms in this repo).
 
-# Read JSON input
 input=$(cat)
 
-# Determine repository root (statusline runs from ~/.claude)
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-MODEL_TRACKER_SCRIPT="$PROJECT_ROOT/scripts/ccr_model_tracker.sh"
-CCR_ACTUAL_MODEL=""
-CCR_ROUTE_ALIAS=""
-CCR_RESOLVED_TARGET=""
-if [ -x "$MODEL_TRACKER_SCRIPT" ]; then
-    CCR_ACTUAL_MODEL="$($MODEL_TRACKER_SCRIPT --statusline 2>/dev/null)"
-    # Validate that we got a meaningful result
-    if [ -z "$CCR_ACTUAL_MODEL" ] || [ "$CCR_ACTUAL_MODEL" = "LLM:" ]; then
-        CCR_ACTUAL_MODEL=""
-    fi
-
-    CCR_ROUTE_ALIAS="$($MODEL_TRACKER_SCRIPT --route 2>/dev/null)"
-    if [ -z "$CCR_ROUTE_ALIAS" ] || [ "$CCR_ROUTE_ALIAS" = "LLM:" ]; then
-        CCR_ROUTE_ALIAS=""
-    fi
-
-    CCR_RESOLVED_TARGET="$($MODEL_TRACKER_SCRIPT --resolved 2>/dev/null)"
-    if [ -z "$CCR_RESOLVED_TARGET" ] || [ "$CCR_RESOLVED_TARGET" = "LLM:" ]; then
-        CCR_RESOLVED_TARGET=""
-    fi
+# Keep the last payload for schema debugging (local, atomic). Disable with
+# DOPEMUX_STATUSLINE_CAPTURE=0.
+if [ "${DOPEMUX_STATUSLINE_CAPTURE:-1}" != "0" ] && [ -d "$HOME/.claude" ]; then
+    cap="$HOME/.claude/.statusline-last-payload.json"
+    printf '%s' "$input" > "$cap.tmp.$$" 2>/dev/null && mv -f "$cap.tmp.$$" "$cap" 2>/dev/null
 fi
 
-# Debug logging (uncomment to diagnose token extraction issues)
-# echo "$input" > /tmp/statusline_debug.json
-# echo "$(date) - context_used: $(echo "$input" | jq -r '.context.used // .tokens.used // .usage.input_tokens // .token_count.input // 0' 2>/dev/null)" >> /tmp/statusline_debug.log
-# echo "$(date) - context_total: $(echo "$input" | jq -r '.context.total // .tokens.total // .usage.max_tokens // .token_count.max' 2>/dev/null)" >> /tmp/statusline_debug.log
+C_RST=$'\033[0m'; C_DIM=$'\033[2m'; C_BOLD=$'\033[1m'
+C_GRN=$'\033[32m'; C_YEL=$'\033[33m'; C_RED=$'\033[31m'
+C_CYN=$'\033[36m'; C_MAG=$'\033[35m'; C_GRY=$'\033[90m'
+SEP=" ${C_DIM}|${C_RST} "
 
-# Extract with safe defaults
-current_dir=$(echo "$input" | jq -r '.workspace.current_dir // "."' 2>/dev/null)
-[ -z "$current_dir" ] && current_dir="."
+# ── payload extraction (one jq pass; -1 = numeric field absent) ───────────────
+cur_dir="" model_name="" effort="" ctx_pct=-1 ctx_size=-1
+cu_in=-1 cu_cc=-1 cu_cr=-1 ctx_total_in=-1
+fh_used=-1 fh_reset=-1 sd_used=-1 sd_reset=-1 dur_ms=-1 over200k=false
 
-model_name=$(echo "$input" | jq -r '.model.display_name // .model.name // "Sonnet"' 2>/dev/null)
-[ -z "$model_name" ] && model_name="Sonnet"
-
-claude_version=$(echo "$input" | jq -r '.version // "2.x"' 2>/dev/null)
-[ -z "$claude_version" ] && claude_version="2.x"
-
-# Extract transcript path for token calculation
-transcript_path=$(echo "$input" | jq -r '.transcript_path // ""' 2>/dev/null)
-
-# Calculate cumulative token usage from transcript (fast, accurate)
-if [ -f "$transcript_path" ]; then
-    # Get most recent cache_read (current cached prompt size)
-    cache_read=$(tac "$transcript_path" | jq -r '.message.usage.cache_read_input_tokens // 0' 2>/dev/null | grep -v '^0$' | head -1)
-    [ -z "$cache_read" ] && cache_read=0
-
-    # Sum all output_tokens (conversation history)
-    output_total=$(jq -r '.message.usage.output_tokens // 0' "$transcript_path" 2>/dev/null | awk '{sum+=$1} END {print int(sum)}')
-    [ -z "$output_total" ] && output_total=0
-
-    # Get latest input_tokens (current user message)
-    latest_input=$(tac "$transcript_path" | jq -r '.message.usage.input_tokens // 0' 2>/dev/null | grep -v '^0$' | head -1)
-    [ -z "$latest_input" ] && latest_input=0
-
-    # Context = current cached prompt + all outputs + current input
-    # Note: cache_read already includes previous inputs, so we only add the LATEST input
-    context_used=$((cache_read + output_total + latest_input))
-else
-    # Fallback: try JSON paths (likely won't work, but try anyway)
-    context_used=$(echo "$input" | jq -r '.context.used // .tokens.used // 0' 2>/dev/null)
-    [ -z "$context_used" ] || [ "$context_used" = "null" ] && context_used=0
-fi
-
-# Detect context window from model ID (more reliable than display_name)
-model_id=$(echo "$input" | jq -r '.model.id // ""' 2>/dev/null)
-context_total=200000  # Default for most models
-
-case "$model_id" in
-    *"opus"*)
-        # Opus models: 200K
-        context_total=200000
-        ;;
-    *"sonnet-4-5"*|*"sonnet-4.5"*)
-        # Sonnet 4.5: Two variants exist
-        # - Regular: 200K context (claude-sonnet-4-5-20250929)
-        # - Extended: 1M context (indicated by JSON or model ID suffix)
-        json_total=$(echo "$input" | jq -r '.context.total // .tokens.total // 0' 2>/dev/null)
-        if [ "$json_total" -ge 1000000 ]; then
-            # Extended context variant (1M)
-            context_total=1000000
-        elif [ "$json_total" -gt 200000 ] && [ "$json_total" -lt 1000000 ]; then
-            # Use whatever JSON provides if it's between 200K and 1M
-            context_total=$json_total
-        else
-            # Default to regular 200K variant
-            context_total=200000
-        fi
-        ;;
-    *"sonnet"*|*"haiku"*)
-        # Other Claude models: 200K
-        context_total=200000
-        ;;
-    *)
-        # Unknown model: try JSON, fallback to 200K
-        json_total=$(echo "$input" | jq -r '.context.total // .tokens.total // 0' 2>/dev/null)
-        [ "$json_total" -gt 0 ] && context_total=$json_total || context_total=200000
-        ;;
-esac
-
-# Calculate context percentage (avoid division by zero)
-if [ "$context_total" -gt 0 ]; then
-    context_pct=$((context_used * 100 / context_total))
-else
-    context_pct=0
-fi
-
-# Check for 200K+ token warning (Claude Code v1.0.88+)
-exceeds_200k=$(echo "$input" | jq -r '.exceeds_200k_tokens // false' 2>/dev/null)
-
-# Directory and git
-dir=$(basename "$current_dir")
-[ -z "$dir" ] && dir="~"
-
-git_branch=""
-if [ -d "$current_dir/.git" ]; then
-    cd "$current_dir" 2>/dev/null
-    git_branch=$(git branch --show-current 2>/dev/null)
-fi
-
-# Worktree indicator (show tree icon for multi-instance branches)
-WORKTREE_ICON=""
-if [ -n "${DOPEMUX_INSTANCE_ID:-}" ]; then
-    WORKTREE_ICON=" 🌳"  # Tree for linked worktrees
-fi
-
-# Get enhanced PM/MCP/ADHD metrics from pm-status.sh (context-aware)
-PM_STATUS_METRICS=""
-if [ -f "$PROJECT_ROOT/scripts/pm-status.sh" ]; then
-    PM_STATUS_METRICS=$("$PROJECT_ROOT/scripts/pm-status.sh" 2>/dev/null || echo "PM: Offline")
-else
-    PM_STATUS_METRICS="PM: Script Missing"
-fi
-
-# MCP Server Status (fast port checks with nc)
-MCP_PAL="⚠️"        # 📚 PAL apilookup (port 3003)
-MCP_SERENA="⚠️"     # 🔬 Code intelligence (port 3006)
-MCP_DDG="⚠️"        # 📊 Decision Graph (port 3016)
-MCP_DOPE="⚠️"       # 🔎 Semantic Search - via Qdrant (port 6333)
-MCP_DESKTOP="⚠️"    # 🖥️ Context switching (port 3012)
-MCP_ACTIVITY="⚠️"   # 🎯 Activity Capture (port 8096)
-
-# Determine live port bases so multi-instance MCP clusters report accurately
-declare -a MCP_PORT_BASES=()
-
-add_port_base() {
-    local base="$1"
-    if [ -z "$base" ]; then
-        return
+if command -v jq >/dev/null 2>&1; then
+    jq_out=$(printf '%s' "$input" | jq -r '
+        def num(f): try (if (f|type) == "number" then (f|floor) else -1 end) catch -1;
+        [
+          (.workspace.current_dir // .cwd // ""),
+          (.model.display_name // .model.id // "Claude"),
+          (.effort.level // ""),
+          num(.context_window.used_percentage),
+          num(.context_window.context_window_size),
+          num(.context_window.current_usage.input_tokens),
+          num(.context_window.current_usage.cache_creation_input_tokens),
+          num(.context_window.current_usage.cache_read_input_tokens),
+          num(.context_window.total_input_tokens),
+          num(.rate_limits.five_hour.used_percentage),
+          num(.rate_limits.five_hour.resets_at),
+          num(.rate_limits.seven_day.used_percentage),
+          num(.rate_limits.seven_day.resets_at),
+          num(.cost.total_duration_ms),
+          (.exceeds_200k_tokens // false)
+        ] | .[] | tostring' 2>/dev/null)
+    if [ -n "$jq_out" ]; then
+        {
+            IFS= read -r cur_dir
+            IFS= read -r model_name
+            IFS= read -r effort
+            IFS= read -r ctx_pct
+            IFS= read -r ctx_size
+            IFS= read -r cu_in
+            IFS= read -r cu_cc
+            IFS= read -r cu_cr
+            IFS= read -r ctx_total_in
+            IFS= read -r fh_used
+            IFS= read -r fh_reset
+            IFS= read -r sd_used
+            IFS= read -r sd_reset
+            IFS= read -r dur_ms
+            IFS= read -r over200k
+        } <<EOF
+$jq_out
+EOF
     fi
-    if ! [[ "$base" =~ ^[0-9]+$ ]]; then
-        return
-    fi
-    for existing in "${MCP_PORT_BASES[@]}"; do
-        if [ "$existing" = "$base" ]; then
-            return
-        fi
-    done
-    MCP_PORT_BASES+=("$base")
-}
+fi
+[ -z "$cur_dir" ] && cur_dir="$PWD"
+[ -z "$model_name" ] && model_name="Claude"
 
-extract_port_base() {
-    local file="$1"
-    if [ ! -f "$file" ]; then
-        return
-    fi
-    local line
-    line=$(grep -E 'DOPEMUX_PORT_BASE' "$file" 2>/dev/null | tail -1)
-    if [ -z "$line" ]; then
-        return
-    fi
-    line="${line#*=}"
-    line="${line//\"/}"
-    line="${line//\'/}"
-    echo "$line"
-}
-
-add_port_base "${DOPEMUX_PORT_BASE:-}"
-add_port_base "${PORT_BASE:-}"
-
-env_port_base=$(extract_port_base "$PROJECT_ROOT/.dopemux/env/current.env")
-add_port_base "$env_port_base"
-
-sh_port_base=$(extract_port_base "$PROJECT_ROOT/.dopemux/env/current.sh")
-add_port_base "$sh_port_base"
-
-# Always include default + fallback bases so secondary instances still display
-for fallback_base in 3000 3030 3060 3090 3120; do
-    add_port_base "$fallback_base"
+# ── helpers ───────────────────────────────────────────────────────────────────
+is_int() { case "$1" in ''|*[!0-9-]*) return 1 ;; *) return 0 ;; esac; }
+for v in ctx_pct ctx_size cu_in cu_cc cu_cr ctx_total_in fh_used fh_reset sd_used sd_reset dur_ms; do
+    eval "is_int \"\$$v\" || $v=-1"
 done
 
-check_mcp_port() {
-    local offset="$1"
-    local base
-    for base in "${MCP_PORT_BASES[@]}"; do
-        local port=$((base + offset))
-        if nc -z -w 1 localhost "$port" >/dev/null 2>&1; then
-            echo "$port"
-            return 0
-        fi
-    done
-    return 1
+fmt_tok() {  # tokens → 1M / 200K / 123K
+    local n=$1
+    if [ "$n" -ge 1000000 ] && [ $((n % 1000000)) -eq 0 ]; then printf '%dM' $((n / 1000000))
+    else printf '%dK' $((n / 1000)); fi
+}
+fmt_countdown() {  # seconds → 2d04h / 1h23m / 47m / now
+    local s=$1 d h m
+    [ "$s" -le 0 ] && { printf 'now'; return; }
+    d=$((s / 86400)); h=$((s % 86400 / 3600)); m=$((s % 3600 / 60))
+    if   [ "$d" -gt 0 ]; then printf '%dd%02dh' "$d" "$h"
+    elif [ "$h" -gt 0 ]; then printf '%dh%02dm' "$h" "$m"
+    else printf '%dm' "$m"; fi
+}
+color_used() {  # used% → colour (green <60, yellow <80, red)
+    if   [ "$1" -lt 60 ]; then printf '%s' "$C_GRN"
+    elif [ "$1" -lt 80 ]; then printf '%s' "$C_YEL"
+    else printf '%s' "$C_RED"; fi
+}
+color_remaining() {  # remaining% → colour (green ≥50, yellow ≥20, red)
+    if   [ "$1" -ge 50 ]; then printf '%s' "$C_GRN"
+    elif [ "$1" -ge 20 ]; then printf '%s' "$C_YEL"
+    else printf '%s' "$C_RED"; fi
 }
 
-# Fast port checks using nc (netcat) - now multi-instance aware
-if pal_port=$(check_mcp_port 3); then MCP_PAL="📚"; fi
-if serena_port=$(check_mcp_port 6); then MCP_SERENA="🔬"; fi
-if ddg_port=$(check_mcp_port 16); then MCP_DDG="📊"; fi
-if nc -z -w 1 localhost 6333 2>/dev/null; then MCP_DOPE="🔎"; fi
-if desktop_port=$(check_mcp_port 12); then MCP_DESKTOP="🖥️"; fi
-if nc -z -w 1 localhost 8096 2>/dev/null; then MCP_ACTIVITY="🎯"; fi
+# ── 1. PS1 mirror: %n@%m %1~ %# ───────────────────────────────────────────────
+ps_user=${USER:-$(id -un 2>/dev/null)}
+ps_host=$(hostname -s 2>/dev/null); ps_host=${ps_host%%.*}
+if [ "$cur_dir" = "$HOME" ]; then ps_dir="~"; else ps_dir=$(basename "$cur_dir"); fi
+if [ "$(id -u 2>/dev/null)" = "0" ]; then ps_mark="#"; else ps_mark="%"; fi
+line="${C_GRN}${ps_user}@${ps_host}${C_RST} ${C_BOLD}${C_CYN}${ps_dir}${C_RST} ${C_DIM}${ps_mark}${C_RST}"
 
-# ADHD Engine status is now handled by pm-status.sh integration above
+# ── 2. git: branch ±dirty 🌳worktree ──────────────────────────────────────────
+if git -C "$cur_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    branch=$(git -C "$cur_dir" symbolic-ref --short -q HEAD 2>/dev/null) \
+        || branch=$(git -C "$cur_dir" rev-parse --short HEAD 2>/dev/null)
+    dirty=$(git -C "$cur_dir" status --porcelain -uno 2>/dev/null | wc -l | tr -d ' ')
+    git_dir=$(git -C "$cur_dir" rev-parse --absolute-git-dir 2>/dev/null)
+    common_dir=$(git -C "$cur_dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+    seg=" ${C_YEL}${branch}${C_RST}"
+    [ "${dirty:-0}" -gt 0 ] && seg="$seg ${C_MAG}±${dirty}${C_RST}"
+    if [ -n "${DOPEMUX_INSTANCE_ID:-}" ]; then seg="$seg 🌳${DOPEMUX_INSTANCE_ID}"
+    elif [ -n "$git_dir" ] && [ -n "$common_dir" ] && [ "$git_dir" != "$common_dir" ]; then seg="$seg 🌳"; fi
+    line="$line$seg"
+fi
 
-# ━━━ Task Orchestrator Status ━━━
-ORCH_STATUS=""
-if nc -z -w 1 localhost 3009 2>/dev/null; then
-    # Get ADHD state from orchestrator
-    ORCH_DATA=$(curl -s --connect-timeout 1 --max-time 1 \
-        -X POST "http://localhost:3009/api/tools/get_adhd_state" \
-        -H "Content-Type: application/json" -d '{}' 2>/dev/null)
+# ── 3. model ⚡effort ──────────────────────────────────────────────────────────
+seg="${C_GRY}${model_name}${C_RST}"
+[ -n "$effort" ] && seg="$seg ${C_DIM}⚡${effort}${C_RST}"
+line="$line$SEP$seg"
 
-    if [ -n "$ORCH_DATA" ] && echo "$ORCH_DATA" | jq -e . >/dev/null 2>&1; then
-        SESSION_MIN=$(echo "$ORCH_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(int(d.get('session_duration_minutes',0)))" 2>/dev/null || echo "0")
-        BREAK_NEEDED=$(echo "$ORCH_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('break_needed',False))" 2>/dev/null || echo "False")
-        ENERGY=$(echo "$ORCH_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('energy_level','?'))" 2>/dev/null || echo "?")
-
-        # Energy indicator
-        case "$ENERGY" in
-            high)   ENERGY_ICON="⚡" ;;
-            medium) ENERGY_ICON="🔋" ;;
-            low)    ENERGY_ICON="🪫" ;;
-            *)      ENERGY_ICON="🎯" ;;
-        esac
-
-        # Session timer with color coding
-        if [ "$BREAK_NEEDED" = "True" ]; then
-            ORCH_STATUS=" \033[31m${ENERGY_ICON} ${SESSION_MIN}m ☕\033[0m"
-        elif [ "$SESSION_MIN" -gt 20 ]; then
-            ORCH_STATUS=" \033[33m${ENERGY_ICON} ${SESSION_MIN}m\033[0m"
-        else
-            ORCH_STATUS=" \033[32m${ENERGY_ICON} ${SESSION_MIN}m\033[0m"
-        fi
-    else
-        ORCH_STATUS=" \033[32m🎯\033[0m"
+# ── 4. context usage ──────────────────────────────────────────────────────────
+ctx_used=-1
+if [ "$cu_in" -ge 0 ] || [ "$cu_cc" -ge 0 ] || [ "$cu_cr" -ge 0 ]; then
+    ctx_used=0
+    [ "$cu_in" -ge 0 ] && ctx_used=$((ctx_used + cu_in))
+    [ "$cu_cc" -ge 0 ] && ctx_used=$((ctx_used + cu_cc))
+    [ "$cu_cr" -ge 0 ] && ctx_used=$((ctx_used + cu_cr))
+elif [ "$ctx_total_in" -ge 0 ]; then
+    ctx_used=$ctx_total_in
+elif [ "$ctx_pct" -ge 0 ] && [ "$ctx_size" -gt 0 ]; then
+    ctx_used=$((ctx_pct * ctx_size / 100))
+fi
+if [ "$ctx_pct" -lt 0 ] && [ "$ctx_used" -ge 0 ] && [ "$ctx_size" -gt 0 ]; then
+    ctx_pct=$((ctx_used * 100 / ctx_size))
+fi
+if [ "$ctx_pct" -ge 0 ]; then
+    seg="$(color_used "$ctx_pct")ctx ${ctx_pct}%"
+    if [ "$ctx_used" -ge 0 ] && [ "$ctx_size" -gt 0 ]; then
+        seg="$seg $(fmt_tok "$ctx_used")/$(fmt_tok "$ctx_size")"
     fi
-else
-    ORCH_STATUS=" \033[90m🎯off\033[0m"
+    seg="$seg${C_RST}"
+    [ "$over200k" = "true" ] && seg="$seg ${C_RED}⚠️>200K${C_RST}"
+    line="$line$SEP$seg"
 fi
 
-# Build enhanced statusline with integrated PM metrics
-if [ -n "$WORKSPACE_NAME" ]; then
-    printf "\033[1;35m%s\033[0m " "$WORKSPACE_NAME"
-fi
-printf "\033[1;36m%s\033[0m" "$dir"
-
-# Git branch + changes
-if [ -n "$git_branch" ]; then
-    printf " \033[33m%s%s\033[0m" "$git_branch" "$git_changes"
-fi
-
-# Worktree icon (if multi-instance)
-if [ -n "$WORKTREE_ICON" ]; then
-    printf "%s" "$WORKTREE_ICON"
-fi
-
-printf " \033[2m|\033[0m"
-
-# Integrated PM/MCP/ADHD metrics from pm-status.sh (context-aware)
-printf "%s" "$PM_STATUS_METRICS"
-
-# Task Orchestrator status (energy + session timer)
-printf "%b" "$ORCH_STATUS"
-
-# Context usage (show tokens + percentage, color coded)
-# Convert to K format for readability (e.g., 86K/200K)
-used_k=$(( context_used / 1000 ))
-total_k=$(( context_total / 1000 ))
-
-if [ "$context_pct" -lt 60 ]; then
-    printf " \033[32m%dK/%dK (%d%%)\033[0m" "$used_k" "$total_k" "$context_pct"
-elif [ "$context_pct" -lt 80 ]; then
-    printf " \033[33m%dK/%dK (%d%%)\033[0m" "$used_k" "$total_k" "$context_pct"
-else
-    printf " \033[31m%dK/%dK (%d%%)\033[0m" "$used_k" "$total_k" "$context_pct"
-fi
-
-# Warning if exceeds 200K (Claude Code v1.0.88+)
-if [ "$exceeds_200k" = "true" ]; then
-    printf " \033[31m⚠️>200K\033[0m"
-fi
-
-# Model (Claude selection vs actual CCR/LiteLLM route)
-model_display="$model_name"
-
-# Use CCR-detected model (actual routed model) or fallback
-if [ -n "$CCR_ACTUAL_MODEL" ]; then
-    # Use CCR-detected model from logs/config
-    model_display="$CCR_ACTUAL_MODEL"
-else
-    # Fallback: try to get more specific model info from JSON
-    json_model_id=$(echo "$input" | jq -r '.model.id // ""' 2>/dev/null)
-    if [ -n "$json_model_id" ] && [ "$json_model_id" != "null" ]; then
-        case "$json_model_id" in
-            *"sonnet-4-5"*|*"sonnet-4.5"*) model_display="Sonnet-4.5" ;;
-            *"sonnet"*) model_display="Sonnet" ;;
-            *"haiku"*) model_display="Haiku" ;;
-            *"opus"*) model_display="Opus" ;;
-            *) model_display="${model_name:-Sonnet}" ;;
-        esac
+# ── 5. rate limits: 5h remaining% ↺reset · 7d remaining% ──────────────────────
+now=$(date +%s)
+seg=""
+if [ "$fh_used" -ge 0 ]; then
+    rem=$((100 - fh_used)); [ "$rem" -lt 0 ] && rem=0
+    seg="$(color_remaining "$rem")5h ${rem}%${C_RST}"
+    if [ "$fh_reset" -gt 0 ]; then
+        [ "$fh_reset" -gt 100000000000 ] && fh_reset=$((fh_reset / 1000))  # ms → s
+        seg="$seg ${C_DIM}↺$(fmt_countdown $((fh_reset - now)))${C_RST}"
     fi
 fi
+if [ "$sd_used" -ge 0 ]; then
+    rem=$((100 - sd_used)); [ "$rem" -lt 0 ] && rem=0
+    [ -n "$seg" ] && seg="$seg ${C_DIM}·${C_RST} "
+    seg="$seg$(color_remaining "$rem")7d ${rem}%${C_RST}"
+    if [ "$sd_reset" -gt 0 ]; then
+        [ "$sd_reset" -gt 100000000000 ] && sd_reset=$((sd_reset / 1000))  # ms → s
+        seg="$seg ${C_DIM}↺$(fmt_countdown $((sd_reset - now)))${C_RST}"
+    fi
+fi
+[ -n "$seg" ] && line="$line$SEP$seg"
 
-model_detail=""
-if [ -n "$CCR_ROUTE_ALIAS" ] && [ -n "$CCR_RESOLVED_TARGET" ]; then
-    model_detail="CCR ${CCR_ROUTE_ALIAS} -> LLM ${CCR_RESOLVED_TARGET}"
-elif [ -n "$CCR_ROUTE_ALIAS" ]; then
-    model_detail="CCR ${CCR_ROUTE_ALIAS}"
-elif [ -n "$CCR_RESOLVED_TARGET" ]; then
-    model_detail="LLM ${CCR_RESOLVED_TARGET}"
+# ── 6. session timer (ADHD 25-min checkpoints) ────────────────────────────────
+if [ "$dur_ms" -ge 0 ]; then
+    mins=$((dur_ms / 60000))
+    if   [ "$mins" -lt 25 ]; then seg="${C_GRN}⏱ ${mins}m${C_RST}"
+    elif [ "$mins" -lt 50 ]; then seg="${C_YEL}⏱ ${mins}m${C_RST}"
+    else seg="${C_RED}⏱ ${mins}m ☕${C_RST}"; fi
+    line="$line$SEP$seg"
 fi
 
-printf " \033[2m|\033[0m \033[90m%s\033[0m" "$model_display"
-if [ -n "$model_detail" ]; then
-    printf " \033[2m(%s)\033[0m" "$model_detail"
-fi
+printf '%s\n' "$line"
