@@ -1,0 +1,99 @@
+{
+  "id": "TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001",
+  "project": "dopemux-mvp",
+  "target": "One final independent adversarial L2 audit of the exact frozen S0 whole-system architecture subject; no implementation or ratification",
+  "invariants": [
+    "Current runtime/source/config/tests and live Git/GitHub state outrank uploaded snapshots, historical handoffs, plans, and architecture prose",
+    "Use OBSERVED, INFERRED, PROPOSED, CLAIMED, CONFLICTING, UNKNOWN, and NOT_RUN; every UNKNOWN names missing evidence",
+    "Preserve system boundaries: Dopemux coordinates; DCP controls policy/context; Dopetask executes only separately authorized work; Task Orchestrator owns workflow legality; canonical systems retain domain authority",
+    "No merge, mark-ready, activation, credential/permission change, production mutation, destructive action, history rewrite, or automatic execution authority is granted",
+    "No secrets, tokens, cookies, private keys, raw credentials, or sensitive provider payloads may enter research/proof artifacts",
+    "Ordinary main movement triggers affected-fact reharvest rather than blanket restart; exact SHA equality is required only where subject provenance requires it",
+    "A0 is judgment, not implementation; repository/runtime/GitHub mutation beyond its own audit/proof artifact publication is forbidden",
+    "Preferred audit route is a live-proven independent AGY/Gemini Pro-class route; operator candidate gemini-3.1-pro-high is reverified at dispatch and not silently substituted",
+    "Codex/OpenAI family must not serve as final auditor if S0 was authored by an OpenAI-family model",
+    "One bounded substantive repair may be authorized only after FAIL; no automatic second/third audit loop"
+  ],
+  "depends_on": [
+    "TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopemux",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-WHOLE-SYSTEM-ARCH-CONVERGENCE-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-WSAC-S0-WHOLE-SYSTEM-SYNTHESIS-001",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "docs(wsac): record final architecture audit",
+    "allowlist": [
+      "docs/06-research/2026-09-04-whole-system-architecture-convergence/audit/A0_FINAL_ARCHITECTURE_AUDIT.md",
+      "task-packets/TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001.json",
+      "proof/TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001/**"
+    ],
+    "verify": [
+      "python -m json.tool task-packets/TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001.json",
+      "python -m jsonschema -i task-packets/TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "git diff --check",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --files \"docs/06-research/2026-09-04-whole-system-architecture-convergence/audit/A0_FINAL_ARCHITECTURE_AUDIT.md\" \"task-packets/TP-DMX-WSAC-A0-FINAL-ARCHITECTURE-AUDIT-001.json\""
+    ]
+  },
+  "pr": {
+    "title": "docs(wsac): final independent whole-system architecture audit",
+    "body": "Whole-system architecture convergence evidence. No merge, activation, production, credential, or runtime mutation authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Verify exact S0 subject hashes, repo identity, auditor identity/independence, and current material drift before judgment.",
+      "validation": [
+        "A0 audits the exact frozen S0 bytes; hash mismatch or materially stale subject blocks judgment",
+        "Auditor is independent of the S0 architecture author and uses a different family/runtime where available",
+        "Requested/configured/served/proxy/provider-attested model identity stages are recorded separately; UNKNOWN stays UNKNOWN"
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Adversarially challenge authority boundaries and system/dataflow design.",
+      "validation": [
+        "Attempt to prove duplicate writers, hidden authority transfer, DCP/UAG/router overreach, bridge/retrieval laundering, runner-private-state promotion, Wiki/context authority creep, or workflow/execution bypass",
+        "Attempt to prove missing degraded-state, retry/idempotency, purge/invalidation, identity, custody, multi-project, or stale-evidence handling",
+        "Every challenge ends PASS, RISK, FAIL, or UNKNOWN with concrete evidence"
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Adversarially challenge runner/MCP/agent integration and future adaptability.",
+      "validation": [
+        "Attempt to prove the common capability/agent abstraction loses semantics for at least one current runner",
+        "Attempt to prove generated minimal tool surfaces cannot preserve required authority/tool capabilities",
+        "Attempt to prove exact-model independence, version adaptation, conformance testing, or fallback provenance is underspecified"
+      ]
+    },
+    {
+      "id": "S3",
+      "task": "Adversarially challenge convergence DAG and falsification plan.",
+      "validation": [
+        "Attempt to find hidden dependency cycles, unsafe parallelism, shared-writer collisions, migration dead ends, activation ambiguity, or benchmark metrics that can be gamed",
+        "No architecture recommendation is accepted merely because it is elegant or already planned"
+      ]
+    },
+    {
+      "id": "S4",
+      "task": "Issue one final exact-subject verdict and stop.",
+      "validation": [
+        "Verdict is PASS, PASS_WITH_RISKS, FAIL, NEEDS_SUPERVISOR, or SKIPPED",
+        "PASS_WITH_RISKS lists every non-blocking risk explicitly",
+        "FAIL/NEEDS_SUPERVISOR/SKIPPED/head mismatch/unknown auditor identity blocks ratification eligibility",
+        "A0 does not modify S0 architecture bytes or implement repairs"
+      ]
+    }
+  ]
+}
