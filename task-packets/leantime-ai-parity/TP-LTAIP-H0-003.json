@@ -1,0 +1,276 @@
+{
+  "id": "TP-LTAIP-H0-003",
+  "project": "dopemux-mvp",
+  "target": "h0-security/release-pinned-exposure-authorization-manifests",
+  "invariants": [
+    "Packets 001 and 002 are merged and current.",
+    "All candidate work occurs in disposable synthetic environments.",
+    "No production writes or credentials are used.",
+    "MCP writes remain disabled.",
+    "Every discovered write surface is classified or the packet fails closed.",
+    "Effective authorization must be blocking, not audit-only.",
+    "Zero P0/P1 authorization or response-field bypasses are permitted.",
+    "No weighted score can rescue a security failure.",
+    "Supervisor adjudication is mandatory before merge."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-002"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-H0-VALIDATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "security/TP-LTAIP-H0-003-exposure-authorization-manifests"
+  },
+  "commit": {
+    "message": "security: add candidate exposure and authorization manifests",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-003.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "config/leantime-ai-parity/h0/exposure-policy.yaml",
+      "scripts/leantime-ai-parity/h0/exposure/materialize_candidate_sources.py",
+      "scripts/leantime-ai-parity/h0/exposure/generate_exposure_manifest.py",
+      "scripts/leantime-ai-parity/h0/exposure/probe_authorization.py",
+      "scripts/leantime-ai-parity/h0/exposure/diff_exposure_manifests.py",
+      "scripts/leantime-ai-parity/h0/exposure/run_security_matrix.sh",
+      "tests/prototypes/leantime-ai-parity/h0/exposure/test_manifest_coverage.py",
+      "tests/prototypes/leantime-ai-parity/h0/exposure/test_cross_project_denials.py",
+      "tests/prototypes/leantime-ai-parity/h0/exposure/test_response_field_filtering.py",
+      "tests/prototypes/leantime-ai-parity/h0/exposure/test_upgrade_drift.py",
+      "tests/prototypes/leantime-ai-parity/h0/exposure/test_kill_switch.py",
+      "docs/06-research/leantime-ai-parity/h0/exposure-authorization/exposure-authorization-protocol.md",
+      "docs/06-research/leantime-ai-parity/h0/exposure-authorization/threat-model.md",
+      "reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.fresh.json",
+      "reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.upgraded.json",
+      "reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.fresh.json",
+      "reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.upgraded.json",
+      "reports/leantime-ai-parity/h0/exposure-authorization/authorization-matrix.csv",
+      "reports/leantime-ai-parity/h0/exposure-authorization/negative-test-results.json",
+      "reports/leantime-ai-parity/h0/exposure-authorization/manifest-diff.json",
+      "reports/leantime-ai-parity/h0/exposure-authorization/security-disposition.md",
+      "reports/leantime-ai-parity/h0/exposure-authorization/manifest.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-003/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-003/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-003/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-003/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-003/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-003/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-003/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-003/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-003/MERGE_READINESS.json"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))'",
+      "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/exposure",
+      "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.fresh.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.upgraded.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.fresh.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.upgraded.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/negative-test-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/manifest-diff.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/exposure-authorization/exposure-authorization-protocol.md docs/06-research/leantime-ai-parity/h0/exposure-authorization/threat-model.md reports/leantime-ai-parity/h0/exposure-authorization/security-disposition.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-003/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "security: add release-pinned exposure and authorization manifests",
+    "body": "Generate release-pinned API/plugin/MCP exposure manifests and adversarial authorization evidence for disposable Leantime and OpenProject Community candidates. MCP writes and production authority remain disabled. Supervisor adjudication required.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "apilookup",
+      "analyze",
+      "tracer",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "testgen",
+      "secaudit",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-policy-and-source-custody",
+      "task": "Pin candidate versions from Packet 002, materialize release-pinned source in tmp, and define deny-by-default exposure and authorization policy.",
+      "requirements": [
+        "Packet 002 must be merged and its candidate lock current.",
+        "Source clones live under tmp and are never committed.",
+        "Exposure scope includes documented APIs, plugin tools, MCP tools, runtime routes, and write-capable actions.",
+        "MCP writes remain disabled."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/exposure/materialize_candidate_sources.py --lock config/leantime-ai-parity/h0/candidate-images.lock.json --output tmp/ltaip-h0-003",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/exposure/test_manifest_coverage.py"
+      ],
+      "expected_files": [
+        "config/leantime-ai-parity/h0/exposure-policy.yaml",
+        "scripts/leantime-ai-parity/h0/exposure/materialize_candidate_sources.py",
+        "docs/06-research/leantime-ai-parity/h0/exposure-authorization/exposure-authorization-protocol.md",
+        "docs/06-research/leantime-ai-parity/h0/exposure-authorization/threat-model.md"
+      ],
+      "validation": [
+        "Policy is deny-by-default.",
+        "Every discovered surface must be classified or startup/test execution blocks.",
+        "No dynamic wildcard dispatch is approved."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml",
+        "authority/stage08/EPIC-08-003-release-pinned-exposure-and-blocking-authorization-manifests.md",
+        "reports/leantime-ai-parity/h0/workflow-trial/version-lock.json",
+        "config/leantime-ai-parity/h0/candidate-images.lock.json"
+      ]
+    },
+    {
+      "id": "step-2-generate-fresh-and-upgraded-manifests",
+      "task": "Generate content-addressed exposure manifests for fresh-install and upgraded disposable instances of both candidates.",
+      "requirements": [
+        "Classify read/write, authentication, object scope, project scope, response fields, plugin/edition boundary, and effective enforcement mode.",
+        "Leantime audit-only permission mode must not be represented as blocking enforcement.",
+        "The manifest must record source ref and runtime image digest."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/exposure/generate_exposure_manifest.py --candidate leantime --state fresh --lock config/leantime-ai-parity/h0/candidate-images.lock.json --source tmp/ltaip-h0-003/leantime --output reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.fresh.json",
+        "python scripts/leantime-ai-parity/h0/exposure/generate_exposure_manifest.py --candidate openproject --state fresh --lock config/leantime-ai-parity/h0/candidate-images.lock.json --source tmp/ltaip-h0-003/openproject --output reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.fresh.json",
+        "bash scripts/leantime-ai-parity/h0/exposure/run_security_matrix.sh --phase upgrade-manifest"
+      ],
+      "expected_files": [
+        "scripts/leantime-ai-parity/h0/exposure/generate_exposure_manifest.py",
+        "scripts/leantime-ai-parity/h0/exposure/diff_exposure_manifests.py",
+        "reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.fresh.json",
+        "reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.upgraded.json",
+        "reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.fresh.json",
+        "reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.upgraded.json",
+        "reports/leantime-ai-parity/h0/exposure-authorization/manifest-diff.json"
+      ],
+      "validation": [
+        "100 percent of discovered write surfaces are classified.",
+        "Unclassified surfaces cause a failing validator.",
+        "Fresh-to-upgrade drift is explicit."
+      ],
+      "context_files": [
+        "config/leantime-ai-parity/h0/exposure-policy.yaml",
+        "docs/06-research/leantime-ai-parity/h0/exposure-authorization/threat-model.md"
+      ]
+    },
+    {
+      "id": "step-3-adversarial-authorization-matrix",
+      "task": "Run cross-project, object-level, response-field, token-scope, upgrade-drift, and kill-switch negative tests using synthetic disposable instances.",
+      "requirements": [
+        "Synthetic writes are allowed only inside disposable trial instances.",
+        "No production or shared credentials.",
+        "Final-object authorization and response-field filtering must be tested.",
+        "Zero P0/P1 bypasses are required.",
+        "Fresh install and upgrade must prove effective blocking mode."
+      ],
+      "commands": [
+        "bash scripts/leantime-ai-parity/h0/exposure/run_security_matrix.sh --phase authorization",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/exposure",
+        "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/negative-test-results.json >/dev/null"
+      ],
+      "expected_files": [
+        "scripts/leantime-ai-parity/h0/exposure/probe_authorization.py",
+        "scripts/leantime-ai-parity/h0/exposure/run_security_matrix.sh",
+        "tests/prototypes/leantime-ai-parity/h0/exposure/test_manifest_coverage.py",
+        "tests/prototypes/leantime-ai-parity/h0/exposure/test_cross_project_denials.py",
+        "tests/prototypes/leantime-ai-parity/h0/exposure/test_response_field_filtering.py",
+        "tests/prototypes/leantime-ai-parity/h0/exposure/test_upgrade_drift.py",
+        "tests/prototypes/leantime-ai-parity/h0/exposure/test_kill_switch.py",
+        "reports/leantime-ai-parity/h0/exposure-authorization/authorization-matrix.csv",
+        "reports/leantime-ai-parity/h0/exposure-authorization/negative-test-results.json"
+      ],
+      "validation": [
+        "Zero P0/P1 bypasses.",
+        "All unclassified surfaces block.",
+        "Kill switch blocks candidate adapter execution.",
+        "No sensitive values appear in logs."
+      ],
+      "context_files": [
+        "reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.fresh.json",
+        "reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.fresh.json"
+      ]
+    },
+    {
+      "id": "step-4-security-disposition-audit-proof-pr",
+      "task": "Write candidate security disposition, run independent security audit, finalize proof, open PR, obtain PR Steward readiness, and return to supervisor adjudication.",
+      "requirements": [
+        "A candidate with any P0/P1 bypass receives FAIL, not a weighted penalty.",
+        "Audit must be independent from the implementer.",
+        "Supervisor review is mandatory regardless of PR Steward READY."
+      ],
+      "commands": [
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-003.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))'",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/exposure",
+        "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.fresh.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/leantime-community-exposure.upgraded.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.fresh.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/openproject-community-exposure.upgraded.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/negative-test-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/manifest-diff.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/exposure-authorization/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/exposure-authorization/exposure-authorization-protocol.md docs/06-research/leantime-ai-parity/h0/exposure-authorization/threat-model.md reports/leantime-ai-parity/h0/exposure-authorization/security-disposition.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-003/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/exposure-authorization/security-disposition.md",
+        "reports/leantime-ai-parity/h0/exposure-authorization/manifest.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-003/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-003/AUDITOR_REPORT.md",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-003/MERGE_READINESS.json"
+      ],
+      "validation": [
+        "Independent security audit is PASS or PASS_WITH_RISKS with no P0/P1 open findings.",
+        "PR Steward is current and READY or the packet remains blocked.",
+        "Supervisor adjudication is requested before merge."
+      ],
+      "context_files": [
+        "docs/ops/embedded-audit-proof.md",
+        "docs/03-reference/governance/proof-contract.md",
+        "authority/stage08/VALIDATION-REPORT.md"
+      ]
+    }
+  ]
+}

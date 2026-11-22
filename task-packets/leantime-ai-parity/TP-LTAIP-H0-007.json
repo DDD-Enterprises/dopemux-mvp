@@ -1,0 +1,276 @@
+{
+  "id": "TP-LTAIP-H0-007",
+  "project": "dopemux-mvp",
+  "target": "h0-analysis/probabilistic-tco-team-model",
+  "invariants": [
+    "Equivalent scope across candidates.",
+    "Every estimate has evidence and assumption.",
+    "Hard gates run before cost ranking.",
+    "Random simulation is seeded and reproducible.",
+    "Missing role coverage blocks implementation."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-002",
+    "TP-LTAIP-H0-003",
+    "TP-LTAIP-H0-004",
+    "TP-LTAIP-H0-006"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-H0-VALIDATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-002",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "analysis/TP-LTAIP-H0-007-tco-team-model"
+  },
+  "commit": {
+    "message": "analysis: add equivalent-scope probabilistic tco model",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-007.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-007.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-007/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-007/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-007/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-007/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-007/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-007/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-007/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-007/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-007/MERGE_READINESS.json",
+      "config/leantime-ai-parity/h0/tco-model.json",
+      "scripts/leantime-ai-parity/h0/tco/collect_prototype_evidence.py",
+      "scripts/leantime-ai-parity/h0/tco/run_simulation.py",
+      "scripts/leantime-ai-parity/h0/tco/run_sensitivity.py",
+      "scripts/leantime-ai-parity/h0/tco/validate_role_coverage.py",
+      "tests/prototypes/leantime-ai-parity/h0/tco/test_model_determinism.py",
+      "tests/prototypes/leantime-ai-parity/h0/tco/test_distribution_bounds.py",
+      "tests/prototypes/leantime-ai-parity/h0/tco/test_failure_branches.py",
+      "docs/06-research/leantime-ai-parity/h0/tco/model-method.md",
+      "docs/06-research/leantime-ai-parity/h0/tco/team-operating-model.md",
+      "docs/06-research/leantime-ai-parity/h0/tco/tco-disposition.md",
+      "config/leantime-ai-parity/h0/tco-model.json",
+      "reports/leantime-ai-parity/h0/tco/evidence-inputs.json",
+      "reports/leantime-ai-parity/h0/tco/simulation-results.json",
+      "reports/leantime-ai-parity/h0/tco/sensitivity.json",
+      "reports/leantime-ai-parity/h0/tco/capacity-gaps.json",
+      "reports/leantime-ai-parity/h0/tco/manifest.json",
+      "reports/leantime-ai-parity/h0/tco/scenario-summary.csv"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-007.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+      "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/tco",
+      "python -m json.tool config/leantime-ai-parity/h0/tco-model.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/tco/evidence-inputs.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/tco/simulation-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/tco/sensitivity.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/tco/capacity-gaps.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/tco/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/tco/model-method.md docs/06-research/leantime-ai-parity/h0/tco/team-operating-model.md docs/06-research/leantime-ai-parity/h0/tco/tco-disposition.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-007/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "analysis: add equivalent-scope probabilistic TCO and team model",
+    "body": "Model expected and downside TCO, migration, failure branches, support, and named role coverage from actual Horizon 0 evidence. No procurement or fake schedule precision.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "analyze",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "consensus",
+      "challenge",
+      "implement",
+      "testgen",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-evidence-model",
+      "task": "Collect prototype evidence and define source-linked distributions, correlations, and failure branches.",
+      "requirements": [
+        "Actual observed hours are separated from estimates.",
+        "Quotes have date and scope.",
+        "Unknowns have distributions or remain unscored."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/tco/collect_prototype_evidence.py --output reports/leantime-ai-parity/h0/tco/evidence-inputs.json",
+        "python -m json.tool config/leantime-ai-parity/h0/tco-model.json >/dev/null"
+      ],
+      "expected_files": [
+        "config/leantime-ai-parity/h0/tco-model.json",
+        "reports/leantime-ai-parity/h0/tco/evidence-inputs.json",
+        "docs/06-research/leantime-ai-parity/h0/tco/model-method.md"
+      ],
+      "validation": [
+        "Every parameter has source, date, unit, range, and confidence."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-simulation",
+      "task": "Run seeded simulations for surviving candidate/package variants and explicit failure branches.",
+      "requirements": [
+        "At least 10,000 seeded draws.",
+        "P50/P80/P95 and tail drivers reported.",
+        "No failed hard-gate scenario receives a rank."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/tco/run_simulation.py --config config/leantime-ai-parity/h0/tco-model.json --seed 20260722 --draws 10000 --output reports/leantime-ai-parity/h0/tco/simulation-results.json",
+        "python scripts/leantime-ai-parity/h0/tco/run_sensitivity.py --results reports/leantime-ai-parity/h0/tco/simulation-results.json --output reports/leantime-ai-parity/h0/tco/sensitivity.json"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/tco/simulation-results.json",
+        "reports/leantime-ai-parity/h0/tco/sensitivity.json",
+        "reports/leantime-ai-parity/h0/tco/scenario-summary.csv"
+      ],
+      "validation": [
+        "Repeated runs with same seed are byte-stable.",
+        "Failure branches and downside are visible."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-3-team-model",
+      "task": "Map required skills, named ownership, on-call, support load, bus factor, and unresolved capacity gaps.",
+      "requirements": [
+        "Security/SRE and accessibility ownership explicit.",
+        "No role is filled by “AI”."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/tco/validate_role_coverage.py --config config/leantime-ai-parity/h0/tco-model.json --output reports/leantime-ai-parity/h0/tco/capacity-gaps.json"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/tco/capacity-gaps.json",
+        "docs/06-research/leantime-ai-parity/h0/tco/team-operating-model.md",
+        "docs/06-research/leantime-ai-parity/h0/tco/tco-disposition.md"
+      ],
+      "validation": [
+        "Named ownership exists or implementation is BLOCKED_CAPACITY."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-4-audit-proof",
+      "task": "Run independent economic/model challenge, finalize proof, and obtain PR Steward readiness.",
+      "requirements": [
+        "Auditor can reproduce key percentiles and challenge assumptions."
+      ],
+      "commands": [
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-007.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/tco",
+        "python -m json.tool config/leantime-ai-parity/h0/tco-model.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/tco/evidence-inputs.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/tco/simulation-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/tco/sensitivity.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/tco/capacity-gaps.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/tco/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/tco/model-method.md docs/06-research/leantime-ai-parity/h0/tco/team-operating-model.md docs/06-research/leantime-ai-parity/h0/tco/tco-disposition.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-007/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/tco/manifest.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-007/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-007/AUDITOR_REPORT.md"
+      ],
+      "validation": [
+        "Model audit is non-blocking.",
+        "Uncertainty remains visible."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}

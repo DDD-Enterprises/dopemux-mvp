@@ -1,0 +1,297 @@
+{
+  "id": "TP-LTAIP-H0-004",
+  "project": "dopemux-mvp",
+  "target": "h0-prototype/leantime-mutation-atomicity-event-path-spike",
+  "invariants": [
+    "All work uses disposable synthetic instances.",
+    "No user-visible success is credited before canonical commit.",
+    "Polling is labeled non-atomic and reconciliatory.",
+    "Core changes remain patch artifacts, not a fork.",
+    "No weighted score rescues lost or duplicated canonical events."
+  ],
+  "depends_on": [
+    "TP-LTAIP-H0-003"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "LTAIP-H0-VALIDATION-001",
+    "base_branch": "main",
+    "parent_tp_id": "TP-LTAIP-H0-003",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "prototype/TP-LTAIP-H0-004-atomicity-event-path"
+  },
+  "commit": {
+    "message": "prototype: test leantime mutation atomicity and event paths",
+    "allowlist": [
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json",
+      "task-packets/leantime-ai-parity/TP-LTAIP-H0-004.md",
+      "task-packets/INDEX.md",
+      "docs/INDEX.md",
+      "docs/docs_index.yaml",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-004/PROOF.json",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-004/COMMAND_LOG.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-004/AUDITOR_REPORT.md",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-004/GIT_STATUS_BEFORE.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-004/GIT_STATUS_AFTER.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-004/GIT_DIFF_STAT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-004/GIT_DIFF.patch",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-004/PRECOMMIT.txt",
+      "proof/leantime-ai-parity/TP-LTAIP-H0-004/MERGE_READINESS.json",
+      "config/leantime-ai-parity/h0/atomicity-spike.json",
+      "compose/leantime-ai-parity/h0/compose.atomicity-spike.yml",
+      "plugins/leantime-ai-parity-h0-atomicity-spike/README.md",
+      "plugins/leantime-ai-parity-h0-atomicity-spike/app/Listeners/OutboxProbe.php",
+      "plugins/leantime-ai-parity-h0-atomicity-spike/app/Services/OutboxProbe.php",
+      "plugins/leantime-ai-parity-h0-atomicity-spike/database/migrations/2026_01_01_000001_create_ltaip_probe_outbox.php",
+      "scripts/leantime-ai-parity/h0/atomicity/materialize_source.py",
+      "scripts/leantime-ai-parity/h0/atomicity/trace_mutations.py",
+      "scripts/leantime-ai-parity/h0/atomicity/run_failure_matrix.py",
+      "scripts/leantime-ai-parity/h0/atomicity/run_polling_reconciliation.py",
+      "scripts/leantime-ai-parity/h0/atomicity/measure_rebase_tax.py",
+      "scripts/leantime-ai-parity/h0/atomicity/destroy_spike.sh",
+      "tests/prototypes/leantime-ai-parity/h0/atomicity/test_commit_rollback.py",
+      "tests/prototypes/leantime-ai-parity/h0/atomicity/test_listener_failure.py",
+      "tests/prototypes/leantime-ai-parity/h0/atomicity/test_duplicate_reorder.py",
+      "tests/prototypes/leantime-ai-parity/h0/atomicity/test_crash_recovery.py",
+      "docs/06-research/leantime-ai-parity/h0/atomicity/event-path-protocol.md",
+      "docs/06-research/leantime-ai-parity/h0/atomicity/mutation-semantics.md",
+      "docs/06-research/leantime-ai-parity/h0/atomicity/architecture-disposition.md",
+      "reports/leantime-ai-parity/h0/atomicity/mutation-paths.json",
+      "reports/leantime-ai-parity/h0/atomicity/failure-matrix.json",
+      "reports/leantime-ai-parity/h0/atomicity/reconciliation-results.json",
+      "reports/leantime-ai-parity/h0/atomicity/core-patch/leantime-v3.9.8.patch",
+      "reports/leantime-ai-parity/h0/atomicity/core-patch/next-release.patch",
+      "reports/leantime-ai-parity/h0/atomicity/rebase-tax.json",
+      "reports/leantime-ai-parity/h0/atomicity/manifest.json"
+    ],
+    "verify": [
+      "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+      "docker compose -f compose/leantime-ai-parity/h0/compose.atomicity-spike.yml config --quiet",
+      "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/atomicity",
+      "python -m json.tool config/leantime-ai-parity/h0/atomicity-spike.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/atomicity/mutation-paths.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/atomicity/failure-matrix.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/atomicity/reconciliation-results.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/atomicity/rebase-tax.json >/dev/null",
+      "python -m json.tool reports/leantime-ai-parity/h0/atomicity/manifest.json >/dev/null",
+      "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/atomicity/event-path-protocol.md docs/06-research/leantime-ai-parity/h0/atomicity/mutation-semantics.md docs/06-research/leantime-ai-parity/h0/atomicity/architecture-disposition.md",
+      "python scripts/check_docs_hygiene.py",
+      "python scripts/check_docs_filename_hygiene.py",
+      "python scripts/check_root_hygiene.py",
+      "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-004/PROOF.json",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "prototype: test Leantime mutation atomicity and event paths",
+    "body": "Add a disposable Leantime 3.9.8 mutation/event-path spike with failure injection, polling/reconciliation fallback, and explicit merge-tax evidence. No production outbox or fork.",
+    "base": "main"
+  },
+  "pal_chain": {
+    "enabled": true,
+    "steps": [
+      "apilookup",
+      "analyze",
+      "tracer",
+      "thinkdeep",
+      "challenge",
+      "planner",
+      "challenge",
+      "implement",
+      "testgen",
+      "secaudit",
+      "codereview",
+      "precommit",
+      "challenge"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step-1-source-trace",
+      "task": "Materialize Leantime 3.9.8 source in tmp and produce call/transaction traces for representative mutations.",
+      "requirements": [
+        "Use candidate lock from Packet 002 and exposure manifest from Packet 003.",
+        "Temporary upstream source is never committed.",
+        "Trace transaction entry, repository write, event dispatch, listener invocation, and response timing."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/atomicity/materialize_source.py --lock config/leantime-ai-parity/h0/candidate-images.lock.json --output tmp/ltaip-h0-004",
+        "python scripts/leantime-ai-parity/h0/atomicity/trace_mutations.py --source tmp/ltaip-h0-004/leantime --output reports/leantime-ai-parity/h0/atomicity/mutation-paths.json"
+      ],
+      "expected_files": [
+        "config/leantime-ai-parity/h0/atomicity-spike.json",
+        "docs/06-research/leantime-ai-parity/h0/atomicity/event-path-protocol.md",
+        "reports/leantime-ai-parity/h0/atomicity/mutation-paths.json"
+      ],
+      "validation": [
+        "Every representative mutation has a complete call-order record.",
+        "Transaction boundaries and UNKNOWN segments are explicit."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-2-plugin-failure-matrix",
+      "task": "Install the disposable probe plugin and execute commit, rollback, listener failure, duplicate, reorder, and crash tests.",
+      "requirements": [
+        "No external HTTP in listeners.",
+        "All records carry transaction/correlation IDs.",
+        "Synthetic data only."
+      ],
+      "commands": [
+        "docker compose -f compose/leantime-ai-parity/h0/compose.atomicity-spike.yml up -d --build",
+        "python scripts/leantime-ai-parity/h0/atomicity/run_failure_matrix.py --config config/leantime-ai-parity/h0/atomicity-spike.json --output reports/leantime-ai-parity/h0/atomicity/failure-matrix.json",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/atomicity"
+      ],
+      "expected_files": [
+        "plugins/leantime-ai-parity-h0-atomicity-spike/app/Listeners/OutboxProbe.php",
+        "plugins/leantime-ai-parity-h0-atomicity-spike/app/Services/OutboxProbe.php",
+        "reports/leantime-ai-parity/h0/atomicity/failure-matrix.json"
+      ],
+      "validation": [
+        "Atomicity is proven with failure evidence or explicitly disproven.",
+        "Lost, duplicate, and reordered events are counted."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-3-fallback-and-rebase",
+      "task": "Prototype bounded polling/reconciliation and measure one transaction-aware core-patch variant across two source versions.",
+      "requirements": [
+        "Polling never claims atomicity.",
+        "Core patch is stored only as a report artifact.",
+        "Rebase work is measured, not narrated."
+      ],
+      "commands": [
+        "python scripts/leantime-ai-parity/h0/atomicity/run_polling_reconciliation.py --config config/leantime-ai-parity/h0/atomicity-spike.json --output reports/leantime-ai-parity/h0/atomicity/reconciliation-results.json",
+        "python scripts/leantime-ai-parity/h0/atomicity/measure_rebase_tax.py --source tmp/ltaip-h0-004/leantime --output reports/leantime-ai-parity/h0/atomicity/rebase-tax.json"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/atomicity/reconciliation-results.json",
+        "reports/leantime-ai-parity/h0/atomicity/core-patch/leantime-v3.9.8.patch",
+        "reports/leantime-ai-parity/h0/atomicity/core-patch/next-release.patch",
+        "reports/leantime-ai-parity/h0/atomicity/rebase-tax.json",
+        "docs/06-research/leantime-ai-parity/h0/atomicity/architecture-disposition.md"
+      ],
+      "validation": [
+        "Each alternative has explicit semantics, loss window, recovery path, and maintenance cost.",
+        "No architecture is selected when a P0 correctness failure remains."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    },
+    {
+      "id": "step-4-teardown-audit-proof",
+      "task": "Destroy the spike, run independent audit, finalize proof, and obtain PR Steward readiness.",
+      "requirements": [
+        "No containers, volumes, or tmp source remain.",
+        "Security/authority supervisor review is mandatory."
+      ],
+      "commands": [
+        "bash scripts/leantime-ai-parity/h0/atomicity/destroy_spike.sh --volumes",
+        "rm -rf tmp/ltaip-h0-004",
+        "python -c 'import json,jsonschema; jsonschema.validate(json.load(open(\"task-packets/leantime-ai-parity/TP-LTAIP-H0-004.json\")), json.load(open(\"dopetask-cannonical-spec.json\")))' ",
+        "docker compose -f compose/leantime-ai-parity/h0/compose.atomicity-spike.yml config --quiet",
+        "python -m pytest -q tests/prototypes/leantime-ai-parity/h0/atomicity",
+        "python -m json.tool config/leantime-ai-parity/h0/atomicity-spike.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/atomicity/mutation-paths.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/atomicity/failure-matrix.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/atomicity/reconciliation-results.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/atomicity/rebase-tax.json >/dev/null",
+        "python -m json.tool reports/leantime-ai-parity/h0/atomicity/manifest.json >/dev/null",
+        "python scripts/docs_validator.py docs/06-research/leantime-ai-parity/h0/atomicity/event-path-protocol.md docs/06-research/leantime-ai-parity/h0/atomicity/mutation-semantics.md docs/06-research/leantime-ai-parity/h0/atomicity/architecture-disposition.md",
+        "python scripts/check_docs_hygiene.py",
+        "python scripts/check_docs_filename_hygiene.py",
+        "python scripts/check_root_hygiene.py",
+        "python scripts/audit/validate_audit_proof.py proof/leantime-ai-parity/TP-LTAIP-H0-004/PROOF.json",
+        "git diff --check"
+      ],
+      "expected_files": [
+        "reports/leantime-ai-parity/h0/atomicity/manifest.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-004/PROOF.json",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-004/AUDITOR_REPORT.md",
+        "proof/leantime-ai-parity/TP-LTAIP-H0-004/MERGE_READINESS.json"
+      ],
+      "validation": [
+        "Teardown evidence passes.",
+        "Independent audit is non-blocking.",
+        "Supervisor adjudicates before merge."
+      ],
+      "context_files": [
+        "RULES.md",
+        "PROJECT.md",
+        "ARCHITECTURE.md",
+        "docs/03-reference/systems/system-boundaries.md",
+        "PM_PLANE.md",
+        "SERVICE_CATALOG.md",
+        "AGENTS.md",
+        "PAL_EXECUTION_RULES.md",
+        "PAL_CHAINING_DOCTRINE.md",
+        "dopetask-cannonical-spec.json",
+        "docs/03-reference/governance/proof-contract.md",
+        "docs/03-reference/governance/proof-bundle-schema.md",
+        "docs/03-reference/governance/handoff-contract.md",
+        "docs/ops/embedded-audit-proof.md",
+        "config/repo_hygiene/root_hygiene_policy.json",
+        "config/docs_hygiene/docs_placement_policy.yaml"
+      ]
+    }
+  ]
+}
