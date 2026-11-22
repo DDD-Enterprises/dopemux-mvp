@@ -1,0 +1,190 @@
+I am the independent auditor for this packet. I will read the audit rules and the packet first, then verify only the pinned files and the required checks.
+
+The audit contract requires me to judge this myself, so I will not delegate it. Next I will read the packet and the verdict rules.
+
+The packet and verdict rules are in. I will confirm the contract file, then verify the pinned hashes and read both diffs.
+
+Hashes match the sums file. The export has no git metadata, so I will pin by those file hashes and review only the changed files plus the two named callers.
+
+The export’s audit schema is present, so I will use its fields. The full unit-test discovery and the workflow pytest open sockets, so I will not run those commands.
+
+S1 and S2 hold on the code and on the suites that stay inside temporary directories. The two exact commands that open sockets were not run, so the verdict is `NEEDS_SUPERVISOR`. Acceptance is `NOT_GRANTED`.
+
+## Scope
+Independent audit of TP-DMX-DESK-GATE-FOLLOWUP-001. The writer route was Claude. This review is Grok, and it did not implement or supervise the change. No child reviewer was used: the audit contract requires this reviewer to re-run the checks and decide.
+
+The export has no `.git` directory. `git rev-parse` exited 128 in both trees, so the commit SHAs were not observed (`observed_head` and `head_match` are null). `shasum -a 256 -c SHA256SUMS.txt` exited 0. The supplied diffs are the change under review.
+
+`dopemux-mvp/schemas/proof/embedded_audit.schema.json` is present. No proof file was written: the trees are read-only and this assignment forbids modifications. The JSON below is the contract verdict, which carries `acceptance`.
+
+## Checks
+| Check | Exit | Bucket |
+|---|---|---|
+| `shasum -a 256 -c SHA256SUMS.txt` | 0 | PASS |
+| Pinned digests equal `sha256(dispatch-desk/tools/gate.py)` and `sha256(dispatch-desk/tools/ledger.py)` | 0 | PASS |
+| `flake8` on the two dopemux files | 0 | PASS |
+| `unittest discover -s tools -p 'test_gate.py'` (11 tests, temp ledgers) | 0 | PASS |
+| `pytest -q tests/unit/test_dispatch_gate.py` (27 passed, temp dirs) | 0 | PASS |
+| Exact `unittest discover -s tools -p 'test_*.py'` | — | NOT_RUN |
+| Exact pytest of `test_dispatch_gate.py` and `test_native_hooks_workflow.py` | — | NOT_RUN |
+
+The exact discovery also loads `tools/test_desk.py` and `tools/test_serve.py`, which call `urllib.request.urlopen` on `127.0.0.1` (`test_desk.py:115`, `test_serve.py:22`). The workflow file’s SessionStart path imports `.claude/hooks/mcp_health_probe.py`, which opens TCP to `127.0.0.1` (`mcp_health_probe.py:86`) and can run `docker ps` (`mcp_health_probe.py:95`). PreToolUse and UserPromptSubmit open `redis://localhost:6379/0` (`native_hooks.py:118`). Those commands were not run.
+
+## S1
+A GO result writes nothing and does not create a ledger, with or without a task id. `ledger.read` returns `[]` when the file is absent (`ledger.py:50`) and does not create it. An unreadable ledger returns GO before any append (`gate.py:37`). The record line runs only when `task and code != GO` (`gate.py:50`). Tests that passed: missing file with a task id (`test_gate.py:40`), no task and with task (`test_gate.py:25`), and an existing ledger left byte-for-byte unchanged (`test_gate.py:31`).
+
+Refusals are unchanged. A pause still appends one `pause_acknowledged` per asker per request (`gate.py:45`, idempotency key unchanged) and, when a task id is present, a `gate_checked` record with `allowed: false` (`gate.py:50`). The once-per-asker test and the unapproved test passed (`test_gate.py:53`, `test_gate.py:64`, `test_gate.py:85`).
+
+Bad usage still exits 2. `LedgerError` is printed to stderr and `sys.exit(2)` (`gate.py:67`). The CLI test asserts exit 2 for `--task ../x` (`test_gate.py:111`) and that test passed. argparse still uses exit 2 for a missing command or project.
+
+## S2
+No path executes a helper whose bytes failed the pin. `resolve_gate` returning none still returns `NOT_INSTALLED` before any read or subprocess (`dispatch_gate.py:119`). `_read_verified` reads at most 256 KiB plus one byte, rejects oversize, compares SHA-256 to `_PINNED`, and on `OSError` returns none (`dispatch_gate.py:93`). None becomes `UNKNOWN` with `gate identity unverified` and does not call `_run` (`dispatch_gate.py:122`). The pins equal the on-disk hashes of `gate.py` and `ledger.py`. `check` catches `TimeoutExpired` and `Exception` and returns `UNKNOWN` (`dispatch_gate.py:137`).
+
+The bytes that matched are written into a new directory from `tempfile.mkdtemp` and that copy is what `python -I` runs (`dispatch_gate.py:128`, `dispatch_gate.py:146`). On this machine `mkdtemp` is mode `0700`, and `python3 -I` (3.12.13) sets `safe_path` and does not put the script directory or the working directory on `sys.path`. The pinned gate then inserts only `dirname(abspath(__file__))` (`gate.py:23`), which is the temp directory, and imports `ledger` from there (`gate.py:24`). `ledger.py` imports only the standard library. A swap of the original `gate.py` after the read is not what runs; the unit test for that passed. `--require-approval` is absent from the argv (`dispatch_gate.py:146`). The flag test passed (`test_dispatch_gate.py:155`).
+
+Gate stdout and file bytes do not reach session context. The hook reads `result.state` only and emits fixed sentences (`native_hooks.py:396`). `native_hooks.py` is not in the dopemux diff. The workflow test that plants `IGNORE PREVIOUS INSTRUCTIONS` in a fake gate message (`test_native_hooks_workflow.py:478`) was not executed. That sentence is a negative assertion in a test. It does not address this auditor, so it is not `instruction_like_content`.
+
+Both diffs stay inside the allowlists: `tools/gate.py`, `tools/test_gate.py`, and the two dopemux paths. `README.md` is allowlisted and unchanged.
+
+## Findings
+No product defect at medium or above. Residuals, not findings: a same-user replacement of the temp copy is possible after the write and before the interpreter reads it back; a blocking `ledger.py` (fifo or slow device) is not covered by the subprocess timeout and can stall the hook before `UNKNOWN`; `rmtree(..., ignore_errors=True)` can leave that temp directory (`dispatch_gate.py:135`).
+
+## Unblock
+1. Say whether loopback TCP and the desk’s localhost HTTP tests are allowed. If they are, run the exact `unittest discover -s tools -p 'test_*.py'` and the exact two-file pytest, and return those exit codes.
+2. If they stay disallowed, split those socket tests out of the packet commands and re-audit. The narrowed gate suites, flake8, and the pin check have already exited 0.
+3. Add the git objects if the commit SHAs themselves must be observed. The file hashes already match `SHA256SUMS.txt`.
+
+Delegation: no subagents. Requested model `grok-4.7`, effort `UNKNOWN`. Observed model `UNKNOWN` (no runtime receipt). No savings claimed.
+
+```json
+{
+  "schema": "independent-audit/v1",
+  "status": "NEEDS_SUPERVISOR",
+  "subject": {
+    "packet_id": "TP-DMX-DESK-GATE-FOLLOWUP-001",
+    "repo": "dopemux-mvp+dispatch-desk",
+    "pinned_sha": "dopemux-mvp 28ee38ebf; dispatch-desk 84bff89a3683c9796f91ad4f47157f5462ebcd2c",
+    "observed_head": null,
+    "head_match": null,
+    "base": "dopemux-mvp 0aa2cf3497c59f8c607f92986d01e7b7f2620919; dispatch-desk 456244f0f66ddfb06412ac05a1b4d8b501a16b14",
+    "file_hashes": {
+      "inputs/TASK_PACKET.md": "a49a75b1cfb91cafcec069a9edcbfe08c9275e376dd9d012398831993da85b9c",
+      "inputs/VERDICT_CONTRACT.md": "e32b5edc158f6f01472ef36bb224fb472c9fcdb135b816a44c1622833ee0db0b",
+      "inputs/dispatch-desk.diff": "78dadd8723d289983cd54ebcb792c67b90b8d30c80e2bc36b83ec4aeef780bd4",
+      "inputs/dopemux-mvp.diff": "c8169421a341376c786a2d24cb6d178865b6e4db4b94781f80f6d45c55d19d7a",
+      "dopemux-mvp/src/dopemux/claude/dispatch_gate.py": "ce85d9f4c9ad0baa6e8f5db969e4a2a3c65376fe9a59c465b865636dbb56be17",
+      "dopemux-mvp/tests/unit/test_dispatch_gate.py": "719939971135d96276baeda350f0d87f1dc4622dd60d8924f701190fb62fc9ae",
+      "dispatch-desk/tools/gate.py": "d6d13111779ab4058f86a4afdce4ca21c309136039ee89df43c08ebfe41dd386",
+      "dispatch-desk/tools/ledger.py": "2fec110186e6dfded71001cec2eb74e2aff84f1011623d4a812fe19c961c65fd",
+      "dispatch-desk/tools/test_gate.py": "e3dab337a884746aa67d30db7addeb1407f95dfd2a53511ba27c6d2d9c86ede4"
+    }
+  },
+  "auditor": {
+    "runner": "grok-cli",
+    "model_requested": "grok-4.7",
+    "model_observed": "UNKNOWN",
+    "effort": "UNKNOWN",
+    "independent_of_implementer": true
+  },
+  "checks": [
+    {
+      "id": "pin-shasums",
+      "command_or_method": "shasum -a 256 -c SHA256SUMS.txt",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "All nine listed files OK."
+    },
+    {
+      "id": "pin-helpers",
+      "command_or_method": "sha256 of dispatch-desk/tools/gate.py and ledger.py compared with dispatch_gate.py _PINNED",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "Both digests equal d6d13111779ab4058f86a4afdce4ca21c309136039ee89df43c08ebfe41dd386 and 2fec110186e6dfded71001cec2eb74e2aff84f1011623d4a812fe19c961c65fd."
+    },
+    {
+      "id": "flake8",
+      "command_or_method": "/Users/hue/code/dopemux-mvp/.venv/bin/flake8 dopemux-mvp/src/dopemux/claude/dispatch_gate.py dopemux-mvp/tests/unit/test_dispatch_gate.py",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "No flake8 output."
+    },
+    {
+      "id": "desk-discover-exact",
+      "command_or_method": "cd dispatch-desk && python3 -m unittest discover -s tools -p 'test_*.py'",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "evidence": "Would collect tools/test_desk.py and tools/test_serve.py, which urlopen http://127.0.0.1 (test_desk.py:115, test_serve.py:22)."
+    },
+    {
+      "id": "desk-test-gate",
+      "command_or_method": "cd dispatch-desk && PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools -p 'test_gate.py'",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "Ran 11 tests in 0.077s, OK. Temp ledgers only. Narrower than the required discover pattern."
+    },
+    {
+      "id": "pytest-exact",
+      "command_or_method": "cd dopemux-mvp && PYTHONPATH=$PWD/src /Users/hue/code/dopemux-mvp/.venv/bin/python -m pytest -q tests/unit/test_dispatch_gate.py tests/test_native_hooks_workflow.py -p no:cacheprovider",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "evidence": "SessionStart calls emit_mcp_health, which connects to 127.0.0.1 (mcp_health_probe.py:86) and can run docker ps (mcp_health_probe.py:95). UserPromptSubmit and PreToolUse open redis://localhost:6379/0 (native_hooks.py:118)."
+    },
+    {
+      "id": "pytest-dispatch-gate",
+      "command_or_method": "cd dopemux-mvp && PYTHONDONTWRITEBYTECODE=1 GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null PYTHONPATH=$PWD/src /Users/hue/code/dopemux-mvp/.venv/bin/python -m pytest -q tests/unit/test_dispatch_gate.py -p no:cacheprovider",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "27 passed in 2.14s. Fake gate and temp directories. Workflow file not included."
+    },
+    {
+      "id": "allowlist",
+      "command_or_method": "diff --git headers in inputs/dispatch-desk.diff and inputs/dopemux-mvp.diff",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "dispatch-desk: tools/gate.py, tools/test_gate.py. dopemux-mvp: src/dopemux/claude/dispatch_gate.py, tests/unit/test_dispatch_gate.py. native_hooks.py is absent from the diff."
+    },
+    {
+      "id": "s1-readonly-go",
+      "command_or_method": "Read gate.py check() and ledger.read(); narrowed test_gate.py",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "GO returns before append when the ledger is missing or unreadable (gate.py:37, ledger.py:50). gate_checked runs only when task is set and code != GO (gate.py:50). Pause ack and refusal records remain (gate.py:45-51). CLI LedgerError exits 2 (gate.py:67-69)."
+    },
+    {
+      "id": "s2-verify-before-exec",
+      "command_or_method": "Read dispatch_gate.py, gate.py:23, ledger.py imports; python3 -I sys.path probe; narrowed pytest",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "evidence": "Identity failure returns UNKNOWN before _run (dispatch_gate.py:122). Executed path is the temp copy under python -I (dispatch_gate.py:146). gate.py:23 inserts dirname(abspath(__file__)), the temp directory, then imports ledger. python3 -I 3.12.13 keeps the script directory off sys.path. --require-approval is not added (dispatch_gate.py:146-156)."
+    },
+    {
+      "id": "session-context",
+      "command_or_method": "Read native_hooks.py _desk_gate_context",
+      "exit_code": null,
+      "bucket": "PASS",
+      "evidence": "Only result.state is used. UNKNOWN, PAUSE_REQUESTED, and UNAPPROVED emit fixed sentences (native_hooks.py:403-414). result.message is not copied. The workflow test that asserts this was not executed."
+    }
+  ],
+  "findings": [],
+  "instruction_like_content": [],
+  "author_claims_not_reproduced": [],
+  "remaining_risks": [
+    "Same-uid replacement of the temp copy is possible after the write and before python -I reads gate.py and imports ledger. mkdtemp mode observed as 0700.",
+    "_read_verified has no deadline. A blocking ledger.py can stall check() before UNKNOWN.",
+    "shutil.rmtree(tmp, ignore_errors=True) can leave the temp directory (dispatch_gate.py:135)."
+  ],
+  "unknowns": [
+    "Export has no .git directory. Commits 28ee38ebf and 84bff89a3683c9796f91ad4f47157f5462ebcd2c were not observed.",
+    "Exact unittest discover and exact two-file pytest exit codes are unknown because those commands open sockets.",
+    "No test executes a temp copy of the pinned gate.py. The in-place -I CLI test and the fake temp-copy test passed separately."
+  ],
+  "skip_reason": null,
+  "unblock": [
+    "Decide whether loopback TCP, docker ps, and the desk localhost HTTP tests are allowed.",
+    "If allowed, run the exact unittest discover and the exact two-file pytest and return those exit codes.",
+    "If disallowed, remove those socket tests from the packet commands and re-audit. Narrowed gate tests, flake8, and pin checks already exited 0.",
+    "Attach git objects if the commit SHAs must be observed. SHA256SUMS already matched."
+  ],
+  "acceptance": "NOT_GRANTED"
+}
+```

@@ -1,0 +1,95 @@
+diff --git a/tools/gate.py b/tools/gate.py
+index 36604cf..1c1da3a 100644
+--- a/tools/gate.py
++++ b/tools/gate.py
+@@ -7,7 +7,9 @@ acknowledgements.
+ 
+   gate.py check --project adOps --task TP-ADOPS-X-001 [--by codex] [--require-approval]
+ 
+-Exit 0: go ahead.  Exit 3: a pause is requested (acknowledged in the ledger, once per asker per
++Exit 0: go ahead.  GO is read-only: it appends nothing to the ledger and never creates a missing
++ledger file.  Refusals (pause or unapproved) with a task id are recorded as gate_checked allowed=false.
++Exit 3: a pause is requested (acknowledged in the ledger, once per asker per
+ pause request, so a hook that checks often does not grow the ledger).
+ Exit 4: --require-approval and no operator approval is recorded.  Exit 2: bad usage.
+ If the ledger is missing or unreadable the gate allows work and says so on stderr: the desk is an
+@@ -25,7 +27,11 @@ GO, PAUSED, UNAPPROVED = 0, 3, 4
+ 
+ 
+ def check(project, task=None, by=None, require_approval=False, path=L.DEFAULT):
+-    """Return (exit code, message) and record what the runner was told."""
++    """Return (exit code, message) and record refusals (never GO)."""
++    if not (isinstance(project, str) and L.ID.match(project)):
++        raise L.LedgerError(f'bad project: {project!r}')
++    if task is not None and not (isinstance(task, str) and L.ID.match(task)):
++        raise L.LedgerError(f'bad task: {task!r}')
+     try:
+         state = L.fold(L.read(path))
+     except OSError as e:
+@@ -41,7 +47,7 @@ def check(project, task=None, by=None, require_approval=False, path=L.DEFAULT):
+                  key='ack-' + hashlib.sha256(f'{key}|{pz["seq"]}|{by or ""}'.encode()).hexdigest()[:32], path=path)
+     elif require_approval and task and not state['tasks'].get(f'{project}/{task}', {}).get('approved'):
+         code, msg = UNAPPROVED, f'no operator approval recorded for {project}/{task}'
+-    if task:
++    if task and code != GO:   # GO is read-only: only refusals are recorded
+         L.append('gate_checked', 'runner', project=project, task=task, payload={'allowed': code == GO, 'by': by}, path=path)
+     return code, msg
+ 
+diff --git a/tools/test_gate.py b/tools/test_gate.py
+index b418571..ec1149b 100644
+--- a/tools/test_gate.py
++++ b/tools/test_gate.py
+@@ -22,11 +22,50 @@ class Gate(unittest.TestCase):
+     def op(self, kind, **kw):
+         L.append(kind, 'operator', path=self.path, **kw)
+ 
+-    def test_no_ledger_or_no_pause_means_go_and_the_check_is_recorded(self):
++    def test_no_ledger_or_no_pause_means_go_and_nothing_is_written(self):
+         self.assertEqual(gate.check('p', path=self.path)[0], gate.GO)
+-        self.assertFalse(os.path.exists(self.path))   # a project-wide check with nothing to say writes nothing
++        self.assertFalse(os.path.exists(self.path))
+         self.assertEqual(gate.check('p', 'T1', by='codex', path=self.path)[0], gate.GO)
+-        self.assertEqual(L.fold(L.read(self.path))['tasks']['p/T1']['last_gate']['allowed'], True)
++        self.assertFalse(os.path.exists(self.path))   # GO is read-only, even with a task id
++
++    def test_go_with_task_leaves_existing_ledger_byte_for_byte_unchanged(self):
++        self.op('approved', project='p', task='T1')
++        with open(self.path, 'rb') as f:
++            before = f.read()
++        self.assertEqual(gate.check('p', 'T1', by='codex', require_approval=True, path=self.path)[0], gate.GO)
++        self.assertEqual(gate.check('p', 'T2', by='codex', path=self.path)[0], gate.GO)
++        with open(self.path, 'rb') as f:
++            self.assertEqual(f.read(), before)
++
++    def test_go_on_missing_ledger_does_not_create_the_file(self):
++        missing = os.path.join(self.tmp.name, 'nope', 'ledger.jsonl')
++        self.assertEqual(gate.check('p', 'T1', by='codex', path=missing)[0], gate.GO)
++        self.assertFalse(os.path.exists(missing))
++        self.assertFalse(os.path.exists(os.path.dirname(missing)))
++
++    def test_bad_task_or_project_raises_and_writes_nothing(self):
++        with self.assertRaises(L.LedgerError):
++            gate.check('p', '../x', path=self.path)
++        with self.assertRaises(L.LedgerError):
++            gate.check('../x', 'T1', path=self.path)
++        self.assertFalse(os.path.exists(self.path))
++
++    def test_pause_with_task_writes_one_ack_and_a_refusal_record(self):
++        self.op('pause_requested', project='p', payload={'scope': 'project', 'mode': 'stop'})
++        n = len(L.read(self.path))
++        for _ in range(3):
++            self.assertEqual(gate.check('p', 'T1', by='codex', path=self.path)[0], gate.PAUSED)
++        recs = L.read(self.path)[n:]
++        kinds = [r['kind'] for r in recs]
++        self.assertEqual(kinds.count('pause_acknowledged'), 1)
++        gc = [r for r in recs if r['kind'] == 'gate_checked']
++        self.assertTrue(gc and all(r['payload']['allowed'] is False for r in gc))
++
++    def test_unapproved_with_require_approval_records_a_refusal(self):
++        self.assertEqual(gate.check('p', 'T1', by='codex', require_approval=True, path=self.path)[0], gate.UNAPPROVED)
++        recs = L.read(self.path)
++        self.assertEqual([r['kind'] for r in recs], ['gate_checked'])
++        self.assertEqual(recs[0]['payload']['allowed'], False)
+ 
+     def test_pause_holds_and_is_acknowledged_until_resumed(self):
+         self.op('pause_requested', project='p', payload={'scope': 'project', 'mode': 'checkpoint'})

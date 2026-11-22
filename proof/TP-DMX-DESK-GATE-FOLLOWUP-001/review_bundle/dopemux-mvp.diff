@@ -1,0 +1,265 @@
+diff --git a/src/dopemux/claude/dispatch_gate.py b/src/dopemux/claude/dispatch_gate.py
+index 633b57cd8..d66e8a223 100644
+--- a/src/dopemux/claude/dispatch_gate.py
++++ b/src/dopemux/claude/dispatch_gate.py
+@@ -4,13 +4,23 @@ Advisory client for the optional external Dispatch desk gate.
+ Runs ``gate.py check`` and maps its exit code to a typed result. The gate is
+ an external tool: when it is absent nothing runs. This module never raises
+ from ``check`` and never passes ``--require-approval``.
++
++Identity check: before running, ``gate.py`` and ``ledger.py`` are read as
++bytes from the gate's tools/ directory (size-capped) and compared with pinned
++SHA-256 digests. Any read error, missing file, oversize file or mismatch gives
++UNKNOWN "gate identity unverified" and nothing runs. Only the verified bytes
++are executed: they are written to a private temp dir (removed afterwards) and
++run from there, so a file swapped on disk after verification is not executed.
+ """
+ 
+ from __future__ import annotations
+ 
++import hashlib
+ import os
++import shutil
+ import subprocess
+ import sys
++import tempfile
+ from dataclasses import dataclass
+ from pathlib import Path
+ from typing import Optional
+@@ -21,6 +31,18 @@ UNAPPROVED = "UNAPPROVED"
+ NOT_INSTALLED = "NOT_INSTALLED"
+ UNKNOWN = "UNKNOWN"
+ 
++# SHA-256 of the helper files at dispatch-desk commit 84bff89.
++_PINNED = {
++    "gate.py": (
++        "d6d13111779ab4058f86a4afdce4ca21c309136039ee89df43c08ebfe41dd386"
++    ),
++    "ledger.py": (
++        "2fec110186e6dfded71001cec2eb74e2aff84f1011623d4a812fe19c961c65fd"
++    ),
++}
++_MAX_HELPER_BYTES = 256 * 1024
++_UNVERIFIED = "gate identity unverified"
++
+ _EXIT_STATES = {0: GO, 3: PAUSE_REQUESTED, 4: UNAPPROVED}
+ 
+ 
+@@ -68,6 +90,24 @@ def resolve_gate() -> Optional[Path]:
+     return gate if gate.is_file() else None
+ 
+ 
++def _read_verified(gate: Path) -> Optional[dict]:
++    """Return {name: bytes} when every pinned file matches, else None."""
++    files = {}
++    try:
++        for name, digest in _PINNED.items():
++            path = gate.parent / name
++            with open(path, "rb") as f:
++                data = f.read(_MAX_HELPER_BYTES + 1)
++            if len(data) > _MAX_HELPER_BYTES:
++                return None
++            if hashlib.sha256(data).hexdigest() != digest:
++                return None
++            files[name] = data
++    except OSError:
++        return None
++    return files
++
++
+ def check(
+     root: "str | Path",
+     by: str,
+@@ -79,25 +119,42 @@ def check(
+         gate = resolve_gate()
+         if gate is None:
+             return GateResult(NOT_INSTALLED)
++        files = _read_verified(gate)
++        if files is None:
++            return GateResult(UNKNOWN, _UNVERIFIED)
+         project = resolve_project(root, timeout)
+         if project is None:
+             return GateResult(UNKNOWN, "project key unresolved")
+-        argv = [
+-            sys.executable or "python3",
+-            "-I",
+-            str(gate),
+-            "check",
+-            "--project",
+-            project,
+-        ]
+-        if task:
+-            argv += ["--task", task]
+-        argv += ["--by", by]
+-        run_kw = {"capture_output": True, "text": True, "timeout": timeout}
+-        proc = subprocess.run(argv, **run_kw)
+-        message = _clean(proc.stdout or proc.stderr or "")
+-        return GateResult(_EXIT_STATES.get(proc.returncode, UNKNOWN), message)
++        tmp = tempfile.mkdtemp(prefix="dopemux-gate-")
++        try:
++            for name, data in files.items():
++                with open(os.path.join(tmp, name), "wb") as f:
++                    f.write(data)
++            script = os.path.join(tmp, "gate.py")
++            return _run(script, project, by, task, timeout)
++        finally:
++            shutil.rmtree(tmp, ignore_errors=True)
+     except subprocess.TimeoutExpired:
+         return GateResult(UNKNOWN, "gate timed out")
+     except Exception as exc:  # fail open: the gate is advisory
+         return GateResult(UNKNOWN, f"gate error: {type(exc).__name__}")
++
++
++def _run(
++    script: str, project: str, by: str, task: Optional[str], timeout: float
++) -> GateResult:
++    argv = [
++        sys.executable or "python3",
++        "-I",
++        script,
++        "check",
++        "--project",
++        project,
++    ]
++    if task:
++        argv += ["--task", task]
++    argv += ["--by", by]
++    run_kw = {"capture_output": True, "text": True, "timeout": timeout}
++    proc = subprocess.run(argv, **run_kw)
++    message = _clean(proc.stdout or proc.stderr or "")
++    return GateResult(_EXIT_STATES.get(proc.returncode, UNKNOWN), message)
+diff --git a/tests/unit/test_dispatch_gate.py b/tests/unit/test_dispatch_gate.py
+index 78a81091d..6a9e1e1a3 100644
+--- a/tests/unit/test_dispatch_gate.py
++++ b/tests/unit/test_dispatch_gate.py
+@@ -1,5 +1,6 @@
+ """Tests for the optional Dispatch desk gate client (fake gate only)."""
+ 
++import hashlib
+ import json
+ import subprocess
+ import textwrap
+@@ -17,7 +18,8 @@ FAKE = textwrap.dedent("""
+     with open(cfg["argv_file"], "w") as f:
+         json.dump(sys.argv[1:], f)
+     with open(cfg["flags_file"], "w") as f:
+-        json.dump({"ledger": os.environ.get("DISPATCH_DESK_LEDGER")}, f)
++        json.dump({"ledger": os.environ.get("DISPATCH_DESK_LEDGER"),
++                   "file": os.path.abspath(__file__)}, f)
+     if cfg.get("sleep"):
+         time.sleep(cfg["sleep"])
+     code = cfg["code"]
+@@ -27,6 +29,13 @@ FAKE = textwrap.dedent("""
+     """)
+ 
+ 
++FAKE_LEDGER = "# fake ledger helper\nVALUE = 1\n"
++
++
++def _sha(text):
++    return hashlib.sha256(text.encode()).hexdigest()
++
++
+ def _git(cwd, *args):
+     subprocess.run(
+         ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+@@ -54,6 +63,12 @@ def env(tmp_path, monkeypatch):
+     home = tmp_path / "desk"
+     (home / "tools").mkdir(parents=True)
+     (home / "tools" / "gate.py").write_text(FAKE)
++    (home / "tools" / "ledger.py").write_text(FAKE_LEDGER)
++    monkeypatch.setattr(
++        dg,
++        "_PINNED",
++        {"gate.py": _sha(FAKE), "ledger.py": _sha(FAKE_LEDGER)},
++    )
+     cfg = tmp_path / "cfg.json"
+     ledger = tmp_path / "ledger.jsonl"
+     monkeypatch.setenv("DISPATCH_DESK_HOME", str(home))
+@@ -76,6 +91,8 @@ def env(tmp_path, monkeypatch):
+     configure.argv = lambda: json.loads((tmp_path / "argv.json").read_text())
+     configure.flags = lambda: json.loads((tmp_path / "flags.json").read_text())
+     configure.ledger = ledger
++    configure.home = home
++    configure.argv_file = tmp_path / "argv.json"
+     return configure
+ 
+ 
+@@ -233,3 +250,77 @@ def test_project_passed_to_gate(env, repo):
+     dg.check(Path(repo), by="x")
+     argv = env.argv()
+     assert argv[argv.index("--project") + 1] == dg.resolve_project(repo)
++
++
++def test_pinned_hashes_match_dispatch_desk_84bff89():
++    assert dg._PINNED == {
++        "gate.py": (
++            "d6d13111779ab4058f86a4afdce4ca21"
++            "c309136039ee89df43c08ebfe41dd386"
++        ),
++        "ledger.py": (
++            "2fec110186e6dfded71001cec2eb74e2"
++            "aff84f1011623d4a812fe19c961c65fd"
++        ),
++    }
++
++
++def _assert_unverified(env, repo):
++    result = dg.check(repo, by="x")
++    assert result.state == dg.UNKNOWN
++    assert result.message == "gate identity unverified"
++    assert not env.argv_file.exists()
++
++
++def test_gate_hash_mismatch_runs_nothing(env, repo):
++    env(0)
++    (env.home / "tools" / "gate.py").write_text(FAKE + "\n# tampered\n")
++    _assert_unverified(env, repo)
++
++
++def test_missing_ledger_runs_nothing(env, repo):
++    env(0)
++    (env.home / "tools" / "ledger.py").unlink()
++    _assert_unverified(env, repo)
++
++
++def test_ledger_hash_mismatch_runs_nothing(env, repo):
++    env(0)
++    (env.home / "tools" / "ledger.py").write_text(FAKE_LEDGER + "# x\n")
++    _assert_unverified(env, repo)
++
++
++def test_oversize_file_runs_nothing(env, repo, monkeypatch):
++    env(0)
++    big = FAKE + "#" * (dg._MAX_HELPER_BYTES + 1)
++    (env.home / "tools" / "gate.py").write_text(big)
++    monkeypatch.setattr(
++        dg, "_PINNED", {"gate.py": _sha(big), "ledger.py": _sha(FAKE_LEDGER)}
++    )
++    _assert_unverified(env, repo)
++
++
++def test_runs_from_private_temp_dir_removed_afterwards(env, repo):
++    env(0)
++    assert dg.check(repo, by="x").state == dg.GO
++    ran = Path(env.flags()["file"])
++    assert ran.name == "gate.py"
++    assert env.home not in ran.parents
++    assert not ran.parent.exists()
++
++
++def test_file_swapped_after_verification_is_not_what_runs(
++    env, repo, monkeypatch
++):
++    env(0)
++    real = dg.tempfile.mkdtemp
++
++    def swap_then_mkdtemp(*a, **k):
++        swapped = "import sys\nsys.exit(7)\n"
++        (env.home / "tools" / "gate.py").write_text(swapped)
++        return real(*a, **k)
++
++    monkeypatch.setattr(dg.tempfile, "mkdtemp", swap_then_mkdtemp)
++    result = dg.check(repo, by="x")
++    assert result.state == dg.GO
++    assert env.argv_file.exists()
