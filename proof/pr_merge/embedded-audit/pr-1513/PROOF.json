@@ -13,7 +13,7 @@
       "runner": "claude-code-desktop",
       "runtime_family": "anthropic-claude-code"
     },
-    "independence": "PENDING_OPERATOR_ATTESTATION"
+    "independence": "PROVEN"
   },
   "embedded_audit": {
     "required": true,

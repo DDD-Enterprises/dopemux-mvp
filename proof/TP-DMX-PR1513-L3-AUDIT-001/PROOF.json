@@ -53,7 +53,7 @@
       "runner": "claude-code-desktop",
       "runtime_family": "anthropic-claude-code"
     },
-    "independence": "PENDING_OPERATOR_ATTESTATION"
+    "independence": "PROVEN"
   },
   "fallback_auditor_approval": {
     "approved_by": "operator",
