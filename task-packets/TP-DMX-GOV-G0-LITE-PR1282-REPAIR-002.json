@@ -1,0 +1,85 @@
+{
+  "id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002",
+  "project": "dopemux-mvp",
+  "target": "Close bounded PR #1282 review findings by materializing late canonical R1 repair proof and making G0-Lite overlap stop semantics explicit, without authorizing G0-Lite payload implementation, merge, activation, Task Orchestrator mutation, or PR #1268 mutation.",
+  "invariants": [
+    "PR #1282 remains the only publication PR; no replacement PR, mark-ready, merge, activation, G0-Lite payload implementation, Task Orchestrator mutation, or PR #1268 mutation is authorized.",
+    "Overlap classification is execution-main relative: IDENTICAL may continue; SUBSET may continue only when missing payload is explicitly bounded; COMPATIBLE may continue; SUPERSET stops for supervisor adjudication; CONFLICTING stops; UNKNOWN stops.",
+    "The late R1 canonical proof records only historically observed R1-audit facts and explicitly labels PROOF_MATERIALIZATION=LATE_REPAIR_CLOSURE; it does not claim the proof existed earlier or provide final R2 audit closure.",
+    "No additional final independent audit for R2 runs before early Codex and Copilot review routes are requested and stabilized; the recorded R1 audit remains historical lineage only."
+  ],
+  "depends_on": [
+    "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "https://github.com/DDD-Enterprises/dopemux-mvp.git",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "DMX-GOV-G0-LITE-PR1282-REPAIR-002",
+    "base_branch": "main",
+    "parent_tp_id": "TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "docs/g0-lite-implementation-authority-001",
+    "base_branch": "main",
+    "stacked_because": "Bounded existing-PR repair continues on the verified PR #1282 branch."
+  },
+  "commit": {
+    "message": "fix(governance): close G0-Lite repair proof and overlap gaps",
+    "allowlist": [
+      "task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json",
+      "task-packets/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001.json",
+      "task-packets/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002.json",
+      "task-packets/INDEX.md",
+      "docs/03-reference/governance/governed-delivery/g0-lite-implementation-authority.md",
+      "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/**",
+      "proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002/**",
+      "proof/DMX-GOV-G0-LITE-IMPLEMENTATION-AUTHORITY-001/**",
+      "proof/pr_merge/embedded-audit/pr-1282/**"
+    ],
+    "verify": [
+      "python -m jsonschema -i task-packets/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-002.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python -m jsonschema -i task-packets/TP-DMX-GOV-DELIVERY-EVIDENCE-SPINE-G0-LITE-001.json docs/03-reference/spec/dopetask/dopetask-canonical-spec.json",
+      "python scripts/audit/validate_audit_proof.py proof/TP-DMX-GOV-G0-LITE-PR1282-REPAIR-001/PROOF.json",
+      "python3 scripts/governance/validate_change_contract.py --base origin/main --head HEAD --format text",
+      "pre-commit run --from-ref origin/main --to-ref HEAD",
+      "git diff --check"
+    ]
+  },
+  "pr": {
+    "title": "docs(governance): authorize G0-Lite implementation after merge",
+    "body": "Bounded in-place PR #1282 review repair. Preserve implementation, merge, activation, Task Orchestrator, and PR #1268 prohibitions.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "S0",
+      "task": "Reharvest R1 audit/proof lineage, packet bindings, current PR state, and all review threads before mutation.",
+      "validation": [
+        "Record observed, inferred, and UNKNOWN facts; unavailable review routes remain BLOCKED_REVIEW_CAPACITY.",
+        "Do not run a final independent audit."
+      ]
+    },
+    {
+      "id": "S1",
+      "task": "Make overlap action semantics identical in controlling G0 packet and authority record, then materialize canonical late R1 proof from observed R1 audit facts.",
+      "validation": [
+        "SUPERSET maps exactly to STOP_FOR_SUPERVISOR_ADJUDICATION in both artifacts.",
+        "R1 PROOF.json, AUDITOR_REPORT.md, and review_bundle bind R1 packet, audited SHA, PASS_WITH_RISKS verdict, authority-record subject, current G0 packet digest/blob, SUPERSET semantics, and deterministic validation receipts."
+      ]
+    },
+    {
+      "id": "S2",
+      "task": "Run deterministic validation, commit and push only the bounded repair, then request early Codex and Copilot reviews through supported non-metered mechanisms.",
+      "validation": [
+        "Schema, digest/blob, proof-root identity, adversarial SUPERSET, truthful INDEX, changed-contract, pre-commit, diff-check, secret scan, and allowlist pass.",
+        "Stop before final audit if either early-review lane is unavailable, pending, or blocking."
+      ]
+    }
+  ]
+}
