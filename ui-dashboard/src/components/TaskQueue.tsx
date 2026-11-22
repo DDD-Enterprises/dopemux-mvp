@@ -2,13 +2,32 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Button, Paper, Typography } from '@mui/material';
 
 import { dashboardApiHeaders, dashboardApiUrl } from '../config';
-import { parseTaskQueue, type TaskQueueItem, type TaskQueueReading } from '../taskQueue';
+import {
+  parseTaskQueue,
+  parseTransitionResult,
+  triggerFor,
+  type MissingNote,
+  type TaskQueueItem,
+  type TaskQueueReading,
+  type TransitionResult,
+  type TransitionTrigger,
+} from '../taskQueue';
 import { brandTokens } from '../theme';
 import { formatClockTime } from '../time';
 
 const TASKS_ENDPOINT = `${dashboardApiUrl}/api/tasks`;
 
 type View = { kind: 'waiting' } | { kind: 'failed'; message: string } | { kind: 'read'; reading: TaskQueueReading };
+
+// A Start or Finish click. Nothing is shown as moved until a fresh GET /api/tasks shows it.
+type Action =
+  | { phase: 'pending'; title: string; url: string }
+  | { phase: 'confirmed'; title: string; url: string; result: TransitionResult }
+  | { phase: 'unconfirmed'; title: string; url: string; result: TransitionResult; why: string }
+  | { phase: 'refused' | 'failed'; title: string; url: string; message: string; missingNotes: MissingNote[] | null };
+
+const transitionUrl = (itemId: string) => `${TASKS_ENDPOINT}/${encodeURIComponent(itemId)}/transition`;
+const LABELS: Record<TransitionTrigger, string> = { start: 'Start', complete: 'Finish' };
 
 // Cockpit status colors: cyan = a real read, yellow = waiting or degraded, red = failed or blocked.
 const { ritualCyan, giltEdge, errorRed } = brandTokens.colors;
@@ -43,6 +62,47 @@ const statusLines = (view: View): string[] => {
   return [`task-orchestrator · ${reading.projectName ?? 'project unknown'} · read at ${readAt}.`];
 };
 
+const actionChipFor = (action: Action): { label: string; color: string } => {
+  if (action.phase === 'pending') return { label: '[PENDING]', color: giltEdge };
+  if (action.phase === 'confirmed') return { label: '[CONFIRMED]', color: ritualCyan };
+  if (action.phase === 'unconfirmed') return { label: '[UNCONFIRMED]', color: giltEdge };
+  if (action.phase === 'refused') return { label: '[REFUSED]', color: errorRed };
+  return { label: '[FAILED]', color: errorRed };
+};
+
+const actor = (result: TransitionResult) => `written as ${result.actorId ?? 'an unknown actor'}, unverified`;
+
+const actionLines = (action: Action): string[] => {
+  if (action.phase === 'pending') return [`Writing "${action.title}": POST ${action.url}.`];
+  if (action.phase === 'confirmed') {
+    return [`"${action.title}" is now in ${action.result.newRole}: the fresh read shows it (${actor(action.result)}).`];
+  }
+  if (action.phase === 'unconfirmed') {
+    return [
+      `The orchestrator applied it: "${action.title}" moved from ${action.result.previousRole ?? 'unknown'} to ${action.result.newRole} (${actor(action.result)}).`,
+      `Not confirmed: ${action.why}`,
+      ...(action.result.reason ? [`Note: ${action.result.reason}.`] : []),
+    ];
+  }
+  const lead = action.phase === 'refused' ? 'Refused' : 'Failed';
+  return [
+    `${lead}: POST ${action.url}: ${action.message}`,
+    ...(action.missingNotes ?? []).map((note) => `Missing note: ${note.key}${note.description ? ` — ${note.description}` : ''}`),
+  ];
+};
+
+// Cyan needs the fresh read to list the item in its new role. The read lists only work and queue,
+// the first 20 of each, so Finish (terminal) can never be confirmed this way.
+const confirm = (reading: TaskQueueReading | null, itemId: string, result: TransitionResult): string | null => {
+  if (!reading || (reading.status !== 'ok' && reading.status !== 'empty')) return 'the fresh read failed, so the new role is not shown.';
+  if (result.newRole !== 'work' && result.newRole !== 'queue') {
+    return `the queue lists only work and queue items, so it cannot show ${result.newRole}.`;
+  }
+  const listed = reading.items.find((item) => item.id === itemId);
+  if (listed?.role === result.newRole) return null;
+  return `the fresh read does not show it in ${result.newRole} (it lists the first 20 work and 20 queue items).`;
+};
+
 const itemMeta = (item: TaskQueueItem): string =>
   [
     `priority ${item.priority ?? 'unknown'}`,
@@ -63,7 +123,10 @@ const TaskQueue: React.FC = () => {
   // Only the newest request may set the view; an unmounted panel sets nothing.
   const latestRequest = useRef(0);
 
-  const read = useCallback(async () => {
+  const [action, setAction] = useState<Action | null>(null);
+  const writing = useRef(false);
+
+  const read = useCallback(async (): Promise<TaskQueueReading | null> => {
     const request = ++latestRequest.current;
     const settle = (next: View) => {
       if (latestRequest.current === request) setView(next);
@@ -75,25 +138,26 @@ const TaskQueue: React.FC = () => {
       response = await fetch(TASKS_ENDPOINT, { headers: dashboardApiHeaders });
     } catch {
       fail(', no response (network error).');
-      return;
+      return null;
     }
     if (!response.ok) {
       fail(` returned HTTP ${response.status}.`);
-      return;
+      return null;
     }
     let raw: unknown;
     try {
       raw = await response.json();
     } catch {
       fail(' returned invalid JSON.');
-      return;
+      return null;
     }
     const reading = parseTaskQueue(raw);
     if (!reading) {
       fail(' returned an unexpected payload.');
-      return;
+      return null;
     }
     settle({ kind: 'read', reading });
+    return reading;
   }, []);
 
   // The first read starts from the initial 'waiting' view, so the effect sets no state itself.
@@ -107,6 +171,56 @@ const TaskQueue: React.FC = () => {
   const refresh = () => {
     setView({ kind: 'waiting' });
     void read();
+  };
+
+  const transition = async (item: TaskQueueItem) => {
+    if (writing.current) return;
+    writing.current = true;
+    const url = transitionUrl(item.id);
+    const trigger = triggerFor(item.role);
+    const title = item.title;
+    setAction({ phase: 'pending', title, url });
+
+    let result: TransitionResult | null = null;
+    let failure: string | null = null;
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { ...(dashboardApiHeaders as Record<string, string>), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trigger, request_id: crypto.randomUUID() }),
+      });
+      let raw: unknown = null;
+      try {
+        raw = await response.json();
+      } catch {
+        raw = null;
+      }
+      result = parseTransitionResult(raw);
+      if (!result) failure = `returned HTTP ${response.status} with an unexpected payload; the write outcome is unknown, refresh the queue.`;
+    } catch {
+      failure = 'no response (network error); the write outcome is unknown, refresh the queue.';
+    }
+
+    // Always re-read: the panel shows the store, never a guess about the write.
+    const reading = await read();
+    writing.current = false;
+
+    if (!result) {
+      setAction({ phase: 'failed', title, url, message: failure ?? 'unknown failure.', missingNotes: null });
+      return;
+    }
+    if (result.status === 'applied') {
+      const why = confirm(reading, item.id, result);
+      setAction(why === null ? { phase: 'confirmed', title, url, result } : { phase: 'unconfirmed', title, url, result, why });
+      return;
+    }
+    setAction({
+      phase: result.status === 'refused' ? 'refused' : 'failed',
+      title,
+      url,
+      message: result.reason ?? 'no reason given.',
+      missingNotes: result.missingNotes,
+    });
   };
 
   const chip = chipFor(view);
@@ -149,6 +263,23 @@ const TaskQueue: React.FC = () => {
         ))}
       </Box>
 
+      {action && (
+        <Box data-testid="task-action" aria-live="polite" sx={{ display: 'grid', gap: 0.5, mb: 2 }}>
+          <Typography
+            component="span"
+            data-testid="task-action-chip"
+            sx={{ ...monoSx, fontSize: '0.6875rem', letterSpacing: '0.08em', color: actionChipFor(action).color }}
+          >
+            {actionChipFor(action).label}
+          </Typography>
+          {actionLines(action).map((line) => (
+            <Typography key={line} variant="body2" sx={{ ...monoSx, color: brandTokens.text.secondary, overflowWrap: 'anywhere' }}>
+              {line}
+            </Typography>
+          ))}
+        </Box>
+      )}
+
       {reading?.status === 'empty' && (
         <Typography variant="body2">{`No work or queue items for ${reading.projectName ?? 'this project'}.`}</Typography>
       )}
@@ -177,9 +308,21 @@ const TaskQueue: React.FC = () => {
                     {item.title}
                   </Typography>
                 </Box>
-                <Typography variant="caption" sx={{ ...monoSx, color: brandTokens.text.secondary }}>
-                  {itemMeta(item)}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                  <Typography variant="caption" sx={{ ...monoSx, color: brandTokens.text.secondary }}>
+                    {itemMeta(item)}
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    aria-label={`${LABELS[triggerFor(item.role)]}: ${item.title}`}
+                    disabled={action?.phase === 'pending'}
+                    onClick={() => void transition(item)}
+                    sx={{ ml: 'auto' }}
+                  >
+                    {LABELS[triggerFor(item.role)]}
+                  </Button>
+                </Box>
               </Box>
             ))}
           </Box>
@@ -193,7 +336,7 @@ const TaskQueue: React.FC = () => {
 
       {reading && reading.status !== 'unavailable' && reading.status !== 'wrong_project' && (
         <Typography variant="caption" sx={{ display: 'block', mt: 2, color: brandTokens.text.muted }}>
-          Read-only: start, finish and skip are not wired to the orchestrator.
+          Start moves a queue item to work; Finish completes a work item. Writes are recorded as operator:cockpit, unverified until Wave 2C. Skip is not offered.
         </Typography>
       )}
     </Paper>

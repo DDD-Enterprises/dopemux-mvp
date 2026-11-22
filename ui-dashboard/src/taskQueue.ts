@@ -71,3 +71,59 @@ export const parseTaskQueue = (raw: unknown): TaskQueueReading | null => {
     fetchedAt: asText(raw.fetched_at),
   };
 };
+
+// The cockpit's reading of POST /api/tasks/{id}/transition (services/adhd-dashboard/orchestrator_transitions.py).
+// Start and Finish only (operator ruling 2026-11-22). A payload this module does not recognise
+// returns null and the panel reports the write's outcome as unknown.
+
+export type TransitionTrigger = 'start' | 'complete';
+export type TransitionStatus = 'applied' | 'refused' | 'unavailable' | 'wrong_project';
+
+export interface MissingNote {
+  key: string;
+  description: string | null;
+}
+
+export interface TransitionResult {
+  status: TransitionStatus;
+  reason: string | null;
+  previousRole: string | null;
+  newRole: string | null;
+  /** Required notes the orchestrator's gate found missing; null when it named none. */
+  missingNotes: MissingNote[] | null;
+  /** The actor the backend wrote as. The orchestrator records it unverified until Wave 2C. */
+  actorId: string | null;
+}
+
+const TRANSITION_STATUSES: readonly TransitionStatus[] = ['applied', 'refused', 'unavailable', 'wrong_project'];
+
+export const triggerFor = (role: TaskQueueRole): TransitionTrigger => (role === 'queue' ? 'start' : 'complete');
+
+const parseMissingNotes = (raw: unknown): MissingNote[] | null | undefined => {
+  if (raw === null || raw === undefined) return null;
+  if (!Array.isArray(raw)) return undefined;
+  const notes: MissingNote[] = [];
+  for (const note of raw) {
+    if (!isObject(note) || !asText(note.key)) return undefined;
+    notes.push({ key: note.key as string, description: asText(note.description) });
+  }
+  return notes;
+};
+
+export const parseTransitionResult = (raw: unknown): TransitionResult | null => {
+  if (!isObject(raw)) return null;
+  const status = TRANSITION_STATUSES.find((candidate) => candidate === raw.status);
+  if (!status) return null;
+  const newRole = asText(raw.new_role);
+  if (status === 'applied' && !newRole) return null;
+  const missingNotes = parseMissingNotes(raw.missing_notes);
+  if (missingNotes === undefined) return null;
+  return {
+    status,
+    reason: asText(raw.reason),
+    previousRole: asText(raw.previous_role),
+    newRole,
+    missingNotes,
+    actorId: isObject(raw.actor) ? asText(raw.actor.id) : null,
+  };
+};

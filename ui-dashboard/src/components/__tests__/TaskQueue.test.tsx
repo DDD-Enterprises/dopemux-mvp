@@ -85,11 +85,15 @@ test('ok: says so when the source holds more than it returned, or does not say h
   expect(screen.getByText('Showing 2; total unknown.')).toBeInTheDocument();
 });
 
-test('the panel is read-only: no control changes a task', async () => {
+test('the only controls that change a task are Start on queue rows and Finish on work rows', async () => {
   await renderQueue(vi.fn().mockResolvedValue(ok(payload())));
 
-  expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Refresh queue']);
-  expect(screen.getByText('Read-only: start, finish and skip are not wired to the orchestrator.')).toBeInTheDocument();
+  expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Refresh queue', 'Finish', 'Start']);
+  expect(
+    screen.getByText(
+      'Start moves a queue item to work; Finish completes a work item. Writes are recorded as operator:cockpit, unverified until Wave 2C. Skip is not offered.',
+    ),
+  ).toBeInTheDocument();
 });
 
 test('empty is a result, not a failure', async () => {
@@ -176,8 +180,9 @@ test('a slow earlier read cannot overwrite a newer one', async () => {
   expect(screen.queryByText('Wire the queue')).not.toBeInTheDocument();
 });
 
-test('nothing in the panel is a tab stop except the refresh button', async () => {
+test('nothing in the panel is a tab stop except its buttons', async () => {
   await renderQueue(vi.fn().mockResolvedValue(ok(payload())));
 
-  expect(document.querySelectorAll('[tabindex]')).toHaveLength(1);
+  // Refresh, plus one Start or Finish per listed item.
+  expect(document.querySelectorAll('[tabindex]')).toHaveLength(3);
 });
