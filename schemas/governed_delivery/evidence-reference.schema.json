@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dopemux.dev/schemas/governed_delivery/evidence-reference.v1.schema.json",
+  "title": "EvidenceReference v1",
+  "description": "Identifies evidence without copying the authoritative body. A reference never amplifies the authority of what it points at: authority_effect records the referent's own effect in its owning system only. Digests and identities are produced by deterministic tooling; a model-generated value may never satisfy a trust boundary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "evidence_class",
+    "owner_system",
+    "producer_identity",
+    "canonical_location",
+    "digest_or_signature",
+    "project_id",
+    "repository_id",
+    "worktree_id",
+    "packet_id",
+    "observed_at",
+    "freshness_state",
+    "authority_effect"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "governed-delivery.evidence-reference.v1",
+      "description": "Exact literal. An unknown major version is denied rather than coerced, so this is a const and not a permissive pattern."
+    },
+    "evidence_id": { "type": "string", "minLength": 1 },
+    "evidence_class": {
+      "type": "string",
+      "description": "Canonical evidence classes enumerated by DMX-GOV-WORKFLOW-OPT-001 section 05.",
+      "enum": [
+        "TASK_PACKET",
+        "REPO_IDENTITY_RECEIPT",
+        "SCOPE_RECEIPT",
+        "VALIDATION_RECEIPT",
+        "CONTENT_FREEZE_RECEIPT",
+        "AUDIT_REQUEST",
+        "AUDIT_EXECUTION_RECEIPT",
+        "AUDIT_RESULT",
+        "PROOF_BUNDLE",
+        "PROOF_ONLY_EQUIVALENCE_RECEIPT",
+        "PR_REFERENCE",
+        "CI_CHECK_RESULT",
+        "REVIEW_FINDING",
+        "REVIEW_DISPOSITION",
+        "PR_STEWARD_RESULT",
+        "OPERATOR_DECISION",
+        "MERGE_RECEIPT",
+        "POST_MERGE_RECEIPT",
+        "ACTIVATION_RECEIPT",
+        "WORKFLOW_TRANSITION_RECEIPT"
+      ]
+    },
+    "owner_system": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The system that canonically owns this evidence. The reference is never the owner."
+    },
+    "producer_identity": { "type": "string", "minLength": 1 },
+    "canonical_location": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Where the authoritative body lives. Reference-over-copy: the body is not duplicated here."
+    },
+    "digest_or_signature": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "repository_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "workspace_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "worktree_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "instance_id": { "type": ["string", "null"], "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "packet_id": { "type": "string", "minLength": 1, "pattern": "^(?!\\s*$)(?!\\s*[Uu][Nn][Kk][Nn][Oo][Ww][Nn]\\s*$).+$" },
+    "base_sha": { "type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+    "head_sha": { "type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+    "tree_sha": { "type": ["string", "null"], "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$" },
+    "content_digest": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "schema_version_used": { "type": ["string", "null"] },
+    "policy_version": { "type": ["string", "null"] },
+    "tool_version": { "type": ["string", "null"] },
+    "environment_digest": { "type": ["string", "null"] },
+    "observed_at": {
+      "type": "string",
+      "description": "ISO-8601 instant at which the referenced evidence was observed."
+    },
+    "valid_until": {
+      "type": ["string", "null"],
+      "description": "Explicit expiry when freshness is semantic for this evidence class. Null means freshness is not time-bounded."
+    },
+    "freshness_state": {
+      "type": "string",
+      "enum": ["CURRENT", "STALE", "EXPIRED", "SUPERSEDED", "TOMBSTONED", "UNKNOWN"]
+    },
+    "supersedes": { "type": ["string", "null"] },
+    "tombstone": { "type": ["boolean", "null"] },
+    "authority_effect": {
+      "type": "string",
+      "description": "The referent's own authority effect in its owning system. A reference cannot raise this value.",
+      "enum": ["NONE", "ADVISORY", "GATE_INPUT", "CANONICAL_DECISION", "TRANSITION_RECEIPT"]
+    }
+  }
+}
