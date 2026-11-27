@@ -1,0 +1,153 @@
+{
+  "id": "TP-DMX-FOUNDATIONS-W01-CI-001",
+  "project": "dopemux-mvp",
+  "target": "Add a separate-process `tests/arch` step to the required Unit Tests job in .github/workflows/ci-complete.yml, after proving tests/arch is green on Python 3.11 with the frozen extras. Escalate to Sonnet only if the CI-equivalent run fails (design section 7).",
+  "invariants": [
+    "MACRO-DMX-FOUNDATIONS-001 invariants apply. Authority NONE: nothing here is executed by issuance. Governing documents: plan docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md (requirements and exact write sets) and design docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md (authority, non-goals, constraints). Where this packet and the plan disagree on a write set, STOP and return NEEDS_SUPERVISOR.",
+    "Custody: all mutation happens inside /Users/hue/code/dopemux-mvp/.worktrees/foundations-wave-1 on branch feat/foundations-wave-1 (HEAD at issuance 7c883d7e100e3be54b8b59b1419ff80cf00eb8ee, on origin/main 93050d135ffc2592000c1d0edef82b2912935525). One mutating implementer per workstream; workstreams run serially (max_mutating_workstreams 1), so no two writers hold the worktree at once. Shared workspace: preserve other workstreams' commits and never revert unrelated work.",
+    "Write surface is closed. A task that needs a file outside its write_surface stops and returns; widening needs a supervisor amendment to the MacroPacket recorded with the reason. Stage with an explicit pathspec limited to the write_surface; never `git add -A` or `git add .`.",
+    "Forbidden paths for every workstream (plan Global Constraints): services/adhd_engine/api/routes.py, services/adhd_engine/tests/test_state_contract.py, .mcp.json, mcp_catalog.yaml, .claude/statusline.sh, scripts/dopemux_dashboard.py, and anything under plugins/. Reason: open PR #1472 (Pulse) owns routes.py and test_state_contract.py; the rest are contract-sensitive or the operator's live tooling.",
+    "No skip, xfail or --deselect to get a check green. Every new test must pass under Python 3.11 with `uv sync --frozen --extra test --extra services`. Local runs use /Users/hue/code/dopemux-mvp/.venv/bin/pytest from the worktree root.",
+    "Report every check as PASS, FAIL or NOT_RUN; never fold NOT_RUN into PASS. A failed validation stops the workstream and returns the output; do not edit tests to make them pass unless the plan step says so.",
+    "Nothing is pushed by a workstream. No PR is opened, no draft is marked ready, no merge, no signing. The draft PR is a team-lead step after freeze and needs operator approval. No intermediate model audit: the single final independent audit is operator-gated (AUDITOR_BINDING_PROPOSED.json, PROPOSED ONLY). Do not call the advisor tool.",
+    "Return contract: status, subject (commit sha), validation (PASS/FAIL/NOT_RUN per named check), proof, audit (NOT_RUN), blockers, advisor_calls (must be 0), files_written, observed_model (UNKNOWN unless a runtime receipt exists).",
+    "Executor and route (TP_ROUTE): runner=claude-code model=claude-haiku-5-5 effort=low. Cost-first: cheapest adequate qualified model; escalation only after a failed validation, one tier up for fix rounds 4-5, recorded with the reason (design section 7; AGENTS.md section 5). Requested model is a selector, not proof of execution identity: observed identity is UNKNOWN unless a runtime receipt exists.",
+    "The CI environment is Python 3.11; the repo venv is 3.12. The 3.11 run in Step 1 has not been tried before and is the first deterministic fact this wave needs."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-FOUNDATIONS-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-FOUNDATIONS-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/foundations-wave-1",
+    "base_branch": "main",
+    "stacked_because": "all five workstreams commit serially to the one local branch feat/foundations-wave-1 (design + plan commits at its base); the draft PR and push are separate operator-approved team-lead steps after freeze"
+  },
+  "commit": {
+    "message": "ci: run tests/arch contract tests in the unit test job",
+    "allowlist": [
+      ".github/workflows/ci-complete.yml"
+    ],
+    "verify": [
+      "git diff --name-only HEAD~1..HEAD | sort   # subset of the write_surface",
+      "git diff --check HEAD~1..HEAD",
+      "git log -1 --format=%B   # ends with the Co-Authored-By trailer of the model that wrote the commit"
+    ]
+  },
+  "pr": {
+    "title": "Foundations Wave 1: tests/arch in CI, ADHD engine MCP repair, dopemux adhd status, port drift test",
+    "body": "MACRO-DMX-FOUNDATIONS-001. One PR for all five workstreams, opened as a draft by the team lead after freeze and operator approval; this workstream does not open or push it.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Plan Task 1 Step 1: prove tests/arch passes in a CI-equivalent environment",
+      "requirements": [
+        "From the worktree root; the env dir is throwaway. Any failure: STOP and return the output. Do not edit tests."
+      ],
+      "commands": [
+        "export UV_PROJECT_ENVIRONMENT=\"$(mktemp -d)/ci311\"",
+        "uv sync --frozen --python 3.11 --extra test --extra services",
+        "uv run --frozen --python 3.11 pytest tests/arch -n auto --maxfail=1 --disable-warnings --no-cov -q"
+      ],
+      "expected_files": [],
+      "validation": [
+        "PASS only if 184 passed, none skipped"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "Plan Task 1 Step 2: insert the step after the dope-memory step, same indentation (about line 194 of ci-complete.yml, job 'Unit Tests')",
+      "requirements": [
+        "Step name '▶️ Run arch contract gate'; run: uv run --frozen pytest tests/arch -n auto --maxfail=1 --disable-warnings --no-cov, with the plan's two-line comment explaining the separate pytest process. Exact YAML is in the plan, Task 1 Step 2."
+      ],
+      "commands": [],
+      "expected_files": [
+        ".github/workflows/ci-complete.yml"
+      ],
+      "validation": [
+        "git diff shows only the inserted step in the unit test job"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Plan Task 1 Step 3: validate the workflow",
+      "requirements": [
+        "The 'Validate GitHub Actions workflow syntax' hook must pass."
+      ],
+      "commands": [
+        "pre-commit run --files .github/workflows/ci-complete.yml"
+      ],
+      "expected_files": [],
+      "validation": [
+        "hook PASS"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W01-S4",
+      "task": "Plan Task 1 Step 4: commit (local only)",
+      "requirements": [
+        "Commit message ends with the trailer: Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>"
+      ],
+      "commands": [
+        "git add .github/workflows/ci-complete.yml",
+        "git commit -m \"ci: run tests/arch contract tests in the unit test job\""
+      ],
+      "expected_files": [],
+      "validation": [
+        "one commit; only the write_surface file changed"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-FOUNDATIONS-001",
+  "workstream_id": "W01",
+  "risk_lane": "L3",
+  "audit_group": "FOUNDATIONS-001-FINAL-AUDIT",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code",
+      "model": "claude-haiku-5-5",
+      "effort": "low"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    ".github/workflows/ci-complete.yml"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "ci-arch-gate"
+  ],
+  "rollback_boundary": "git revert of the W01 commit(s) on feat/foundations-wave-1 (REVERT_COMMITS); nothing is pushed by this workstream"
+}

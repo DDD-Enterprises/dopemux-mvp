@@ -1,0 +1,205 @@
+{
+  "id": "TP-DMX-FOUNDATIONS-W03-ADHDCLI-001",
+  "project": "dopemux-mvp",
+  "target": "Ship `dopemux adhd status` (--json, --url) with URL resolution order, status/engine_mode vocabulary and exit codes exactly as the plan Task 3 Interfaces specify, using requests, without touching routes.py.",
+  "invariants": [
+    "MACRO-DMX-FOUNDATIONS-001 invariants apply. Authority NONE: nothing here is executed by issuance. Governing documents: plan docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md (requirements and exact write sets) and design docs/91-rfc/rfc-2026-10-30-foundations-wave-1.md (authority, non-goals, constraints). Where this packet and the plan disagree on a write set, STOP and return NEEDS_SUPERVISOR.",
+    "Custody: all mutation happens inside /Users/hue/code/dopemux-mvp/.worktrees/foundations-wave-1 on branch feat/foundations-wave-1 (HEAD at issuance 7c883d7e100e3be54b8b59b1419ff80cf00eb8ee, on origin/main 93050d135ffc2592000c1d0edef82b2912935525). One mutating implementer per workstream; workstreams run serially (max_mutating_workstreams 1), so no two writers hold the worktree at once. Shared workspace: preserve other workstreams' commits and never revert unrelated work.",
+    "Write surface is closed. A task that needs a file outside its write_surface stops and returns; widening needs a supervisor amendment to the MacroPacket recorded with the reason. Stage with an explicit pathspec limited to the write_surface; never `git add -A` or `git add .`.",
+    "Forbidden paths for every workstream (plan Global Constraints): services/adhd_engine/api/routes.py, services/adhd_engine/tests/test_state_contract.py, .mcp.json, mcp_catalog.yaml, .claude/statusline.sh, scripts/dopemux_dashboard.py, and anything under plugins/. Reason: open PR #1472 (Pulse) owns routes.py and test_state_contract.py; the rest are contract-sensitive or the operator's live tooling.",
+    "No skip, xfail or --deselect to get a check green. Every new test must pass under Python 3.11 with `uv sync --frozen --extra test --extra services`. Local runs use /Users/hue/code/dopemux-mvp/.venv/bin/pytest from the worktree root.",
+    "Report every check as PASS, FAIL or NOT_RUN; never fold NOT_RUN into PASS. A failed validation stops the workstream and returns the output; do not edit tests to make them pass unless the plan step says so.",
+    "Nothing is pushed by a workstream. No PR is opened, no draft is marked ready, no merge, no signing. The draft PR is a team-lead step after freeze and needs operator approval. No intermediate model audit: the single final independent audit is operator-gated (AUDITOR_BINDING_PROPOSED.json, PROPOSED ONLY). Do not call the advisor tool.",
+    "Return contract: status, subject (commit sha), validation (PASS/FAIL/NOT_RUN per named check), proof, audit (NOT_RUN), blockers, advisor_calls (must be 0), files_written, observed_model (UNKNOWN unless a runtime receipt exists).",
+    "Executor and route (TP_ROUTE): runner=claude-code model=claude-sonnet-5-5 effort=medium. Cost-first: cheapest adequate qualified model; escalation only after a failed validation, one tier up for fix rounds 4-5, recorded with the reason (design section 7; AGENTS.md section 5). Requested model is a selector, not proof of execution identity: observed identity is UNKNOWN unless a runtime receipt exists."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-FOUNDATIONS-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-FOUNDATIONS-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "feat/foundations-wave-1",
+    "base_branch": "main",
+    "stacked_because": "all five workstreams commit serially to the one local branch feat/foundations-wave-1 (design + plan commits at its base); the draft PR and push are separate operator-approved team-lead steps after freeze"
+  },
+  "commit": {
+    "message": "feat(cli): add read-only dopemux adhd status",
+    "allowlist": [
+      "src/dopemux/commands/adhd_commands.py",
+      "src/dopemux/cli.py",
+      "tests/unit/test_adhd_commands.py"
+    ],
+    "verify": [
+      "git diff --name-only HEAD~1..HEAD | sort   # subset of the write_surface",
+      "git diff --check HEAD~1..HEAD",
+      "git log -1 --format=%B   # ends with the Co-Authored-By trailer of the model that wrote the commit"
+    ]
+  },
+  "pr": {
+    "title": "Foundations Wave 1: tests/arch in CI, ADHD engine MCP repair, dopemux adhd status, port drift test",
+    "body": "MACRO-DMX-FOUNDATIONS-001. One PR for all five workstreams, opened as a draft by the team lead after freeze and operator approval; this workstream does not open or push it.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W03-S1",
+      "task": "Plan Task 3 Step 1: write tests/unit/test_adhd_commands.py",
+      "requirements": [
+        "Patch dopemux.commands.adhd_commands.requests.get with a fake mapping URL suffix to (status_code, body) or raising requests.ConnectionError / requests.Timeout. Fixtures MAIN_STATE, PULSE_STATE, FALLBACK_HEALTH, NORMAL_HEALTH as in the plan. Implement every named test, including all five Review Focus tests; invoke through click.testing.CliRunner on the adhd group."
+      ],
+      "commands": [],
+      "expected_files": [
+        "tests/unit/test_adhd_commands.py"
+      ],
+      "validation": [
+        "file written, not yet run"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W03-S2",
+      "task": "Plan Task 3 Step 2: run them and see them fail",
+      "requirements": [
+        "Expected: collection error, No module named 'dopemux.commands.adhd_commands'."
+      ],
+      "commands": [
+        "pytest tests/unit/test_adhd_commands.py -q --no-cov"
+      ],
+      "expected_files": [],
+      "validation": [
+        "FAIL with the expected collection error"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W03-S3",
+      "task": "Plan Task 3 Step 3: implement src/dopemux/commands/adhd_commands.py and register the group in cli.py",
+      "requirements": [
+        "Interfaces exactly as in the plan. cli.py change is an import plus cli.add_command(adhd) next to the update_commands registration (about line 3202); no other cli.py edit. engine_mode rule: fallback / normal / unknown as specified. One-line human output; add the degraded text or failure detail."
+      ],
+      "commands": [],
+      "expected_files": [
+        "src/dopemux/commands/adhd_commands.py",
+        "src/dopemux/cli.py"
+      ],
+      "validation": [
+        "module imports cleanly"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W03-S4",
+      "task": "Plan Task 3 Step 4: run the tests",
+      "requirements": [],
+      "commands": [
+        "pytest tests/unit/test_adhd_commands.py -q --no-cov"
+      ],
+      "expected_files": [],
+      "validation": [
+        "all passed"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W03-S5",
+      "task": "Plan Task 3 Step 5: check the command is wired",
+      "requirements": [
+        "Expected: one unreachable line and exit=1."
+      ],
+      "commands": [
+        "/Users/hue/code/dopemux-mvp/.venv/bin/python -m dopemux adhd status --url http://127.0.0.1:9 ; echo \"exit=$?\""
+      ],
+      "expected_files": [],
+      "validation": [
+        "unreachable line, exit=1"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W03-S6",
+      "task": "Plan Task 3 Step 6: lint and type-check",
+      "requirements": [
+        "No new findings in the touched files."
+      ],
+      "commands": [
+        "flake8 src/dopemux/commands/adhd_commands.py tests/unit/test_adhd_commands.py",
+        "mypy src/dopemux/commands/adhd_commands.py"
+      ],
+      "expected_files": [],
+      "validation": [
+        "no new findings"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    },
+    {
+      "id": "W03-S7",
+      "task": "Plan Task 3 Step 7: commit (local only)",
+      "requirements": [
+        "Commit message ends with the trailer: Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+      ],
+      "commands": [
+        "git add src/dopemux/commands/adhd_commands.py src/dopemux/cli.py tests/unit/test_adhd_commands.py",
+        "git commit -m \"feat(cli): add read-only dopemux adhd status\""
+      ],
+      "expected_files": [],
+      "validation": [
+        "one commit; only the write_surface files changed"
+      ],
+      "context_files": [
+        "docs/91-rfc/rfc-2026-10-30-foundations-wave-1-plan.md"
+      ]
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-FOUNDATIONS-001",
+  "workstream_id": "W03",
+  "risk_lane": "L2",
+  "audit_group": "FOUNDATIONS-001-FINAL-AUDIT",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    "src/dopemux/commands/adhd_commands.py",
+    "src/dopemux/cli.py",
+    "tests/unit/test_adhd_commands.py"
+  ],
+  "canonical_writers": [
+    "W03-implementer"
+  ],
+  "semantic_scope": [
+    "adhd-status-cli"
+  ],
+  "rollback_boundary": "git revert of the W03 commit(s) on feat/foundations-wave-1 (REVERT_COMMITS); nothing is pushed by this workstream"
+}
