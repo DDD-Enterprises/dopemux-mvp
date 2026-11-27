@@ -210,5 +210,5 @@
     },
     "independence": "PROVEN"
   },
-  "audit_evidence": "Independence and auditor identity (grok-cli, grok-4.7) attested by the operator in chat on 2026-11-26 (\"Yes, I attest both\"); no runtime model receipt. dispatch-desk subject is 84bff89a3683c9796f91ad4f47157f5462ebcd2c (hu3mann/dispatch-desk#1)."
+  "audit_evidence": "Independence and auditor identity (grok-cli, grok-4.7) attested by the operator in chat: 2026-11-26 for round 2 and 2026-11-27 for round 3 (\"Yes, I attest both\"); no runtime model receipt. dispatch-desk subject is 84bff89a3683c9796f91ad4f47157f5462ebcd2c (hu3mann/dispatch-desk#1)."
 }
