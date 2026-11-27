@@ -1,8 +1,11 @@
 """Tests for the optional Dispatch desk gate client (fake gate only)."""
 
+import hashlib
 import json
+import os
 import subprocess
 import textwrap
+import threading
 from pathlib import Path
 
 import pytest
@@ -17,7 +20,8 @@ FAKE = textwrap.dedent("""
     with open(cfg["argv_file"], "w") as f:
         json.dump(sys.argv[1:], f)
     with open(cfg["flags_file"], "w") as f:
-        json.dump({"ledger": os.environ.get("DISPATCH_DESK_LEDGER")}, f)
+        json.dump({"ledger": os.environ.get("DISPATCH_DESK_LEDGER"),
+                   "file": os.path.abspath(__file__)}, f)
     if cfg.get("sleep"):
         time.sleep(cfg["sleep"])
     code = cfg["code"]
@@ -25,6 +29,13 @@ FAKE = textwrap.dedent("""
     print(out, file=sys.stderr if code else sys.stdout)
     sys.exit(code)
     """)
+
+
+FAKE_LEDGER = "# fake ledger helper\nVALUE = 1\n"
+
+
+def _sha(text):
+    return hashlib.sha256(text.encode()).hexdigest()
 
 
 def _git(cwd, *args):
@@ -54,6 +65,12 @@ def env(tmp_path, monkeypatch):
     home = tmp_path / "desk"
     (home / "tools").mkdir(parents=True)
     (home / "tools" / "gate.py").write_text(FAKE)
+    (home / "tools" / "ledger.py").write_text(FAKE_LEDGER)
+    monkeypatch.setattr(
+        dg,
+        "_PINNED",
+        {"gate.py": _sha(FAKE), "ledger.py": _sha(FAKE_LEDGER)},
+    )
     cfg = tmp_path / "cfg.json"
     ledger = tmp_path / "ledger.jsonl"
     monkeypatch.setenv("DISPATCH_DESK_HOME", str(home))
@@ -76,6 +93,8 @@ def env(tmp_path, monkeypatch):
     configure.argv = lambda: json.loads((tmp_path / "argv.json").read_text())
     configure.flags = lambda: json.loads((tmp_path / "flags.json").read_text())
     configure.ledger = ledger
+    configure.home = home
+    configure.argv_file = tmp_path / "argv.json"
     return configure
 
 
@@ -233,3 +252,138 @@ def test_project_passed_to_gate(env, repo):
     dg.check(Path(repo), by="x")
     argv = env.argv()
     assert argv[argv.index("--project") + 1] == dg.resolve_project(repo)
+
+
+def test_pinned_hashes_match_dispatch_desk_84bff89():
+    assert dg._PINNED == {
+        "gate.py": (
+            "d6d13111779ab4058f86a4afdce4ca21"
+            "c309136039ee89df43c08ebfe41dd386"
+        ),
+        "ledger.py": (
+            "2fec110186e6dfded71001cec2eb74e2"
+            "aff84f1011623d4a812fe19c961c65fd"
+        ),
+    }
+
+
+def _assert_unverified(env, repo):
+    result = dg.check(repo, by="x")
+    assert result.state == dg.UNKNOWN
+    assert result.message == "gate identity unverified"
+    assert not env.argv_file.exists()
+
+
+def test_gate_hash_mismatch_runs_nothing(env, repo):
+    env(0)
+    (env.home / "tools" / "gate.py").write_text(FAKE + "\n# tampered\n")
+    _assert_unverified(env, repo)
+
+
+def test_missing_ledger_runs_nothing(env, repo):
+    env(0)
+    (env.home / "tools" / "ledger.py").unlink()
+    _assert_unverified(env, repo)
+
+
+def test_ledger_hash_mismatch_runs_nothing(env, repo):
+    env(0)
+    (env.home / "tools" / "ledger.py").write_text(FAKE_LEDGER + "# x\n")
+    _assert_unverified(env, repo)
+
+
+def test_oversize_file_runs_nothing(env, repo, monkeypatch):
+    env(0)
+    big = FAKE + "#" * (dg._MAX_HELPER_BYTES + 1)
+    (env.home / "tools" / "gate.py").write_text(big)
+    monkeypatch.setattr(
+        dg, "_PINNED", {"gate.py": _sha(big), "ledger.py": _sha(FAKE_LEDGER)}
+    )
+    _assert_unverified(env, repo)
+
+
+def test_runs_from_private_temp_dir_removed_afterwards(env, repo):
+    env(0)
+    assert dg.check(repo, by="x").state == dg.GO
+    ran = Path(env.flags()["file"])
+    assert ran.name == "gate.py"
+    assert env.home not in ran.parents
+    assert not ran.parent.exists()
+
+
+def test_file_swapped_after_verification_is_not_what_runs(
+    env, repo, monkeypatch
+):
+    env(0)
+    real = dg.tempfile.mkdtemp
+
+    def swap_then_mkdtemp(*a, **k):
+        swapped = "import sys\nsys.exit(7)\n"
+        (env.home / "tools" / "gate.py").write_text(swapped)
+        return real(*a, **k)
+
+    monkeypatch.setattr(dg.tempfile, "mkdtemp", swap_then_mkdtemp)
+    result = dg.check(repo, by="x")
+    assert result.state == dg.GO
+    assert env.argv_file.exists()
+
+
+def _check_bounded(repo, fifo=None, limit=2.0):
+    """Run check() in a thread; fail (and unblock the FIFO) if it hangs."""
+    box = {}
+    t = threading.Thread(
+        target=lambda: box.update(r=dg.check(repo, by="x")), daemon=True
+    )
+    t.start()
+    t.join(limit)
+    if t.is_alive():
+        if fifo is not None:  # release the blocked open() so the thread ends
+            fd = os.open(str(fifo), os.O_RDWR | os.O_NONBLOCK)
+            os.close(fd)
+            t.join(1.0)
+        pytest.fail("check() hung on a non-regular helper file")
+    return box["r"]
+
+
+def _fifo(path):
+    if path.exists() or path.is_symlink():
+        path.unlink()
+    os.mkfifo(str(path))
+    return path
+
+
+@pytest.mark.parametrize("name", ["ledger.py", "gate.py"])
+def test_fifo_helper_is_unverified_and_does_not_hang(env, repo, name):
+    env(0)
+    fifo = _fifo(env.home / "tools" / name)
+    result = _check_bounded(repo, fifo)
+    if name == "ledger.py":
+        assert result.state == dg.UNKNOWN
+        assert result.message == "gate identity unverified"
+    else:  # resolve_gate() already refuses a non-file gate.py
+        assert result.state == dg.NOT_INSTALLED
+    assert not env.argv_file.exists()
+
+
+def test_symlink_to_fifo_is_unverified_and_does_not_hang(
+    env, repo, tmp_path
+):
+    env(0)
+    fifo = _fifo(tmp_path / "elsewhere.fifo")
+    link = env.home / "tools" / "ledger.py"
+    link.unlink()
+    link.symlink_to(fifo)
+    result = _check_bounded(repo, fifo)
+    assert result.state == dg.UNKNOWN
+    assert result.message == "gate identity unverified"
+    assert not env.argv_file.exists()
+
+
+def test_symlink_to_regular_verified_file_still_runs(env, repo, tmp_path):
+    env(0)
+    real = tmp_path / "real_ledger.py"
+    real.write_text(FAKE_LEDGER)
+    link = env.home / "tools" / "ledger.py"
+    link.unlink()
+    link.symlink_to(real)
+    assert dg.check(repo, by="x").state == dg.GO

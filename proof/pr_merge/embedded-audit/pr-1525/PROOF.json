@@ -1,0 +1,58 @@
+{
+ "repo": "DDD-Enterprises/dopemux-mvp",
+ "pr_number": 1525,
+ "head_sha": "3de60fa9a2a7d41c5e4b0faadad11f94bb47d99f",
+ "packet_id": "TP-DMX-DESK-GATE-FOLLOWUP-001",
+ "generated_at": "2026-11-27T23:08:30.079405+00:00",
+ "mutation_performed": false,
+ "github_mutation_route_added": false,
+ "audit_identity": {
+  "auditor": {
+   "effort": "runner default (not set)",
+   "model": "grok-4.7",
+   "model_family": "xai-grok",
+   "runner": "grok-cli",
+   "runtime_family": "xai-grok-cli"
+  },
+  "implementer": {
+   "model": "claude-opus-5-5 (supervisor session, configured); writer claude-sonnet-5-5 requested (S1, S2)",
+   "model_family": "anthropic-claude",
+   "runner": "claude-code-desktop",
+   "runtime_family": "anthropic-claude-code"
+  },
+  "independence": "PROVEN"
+ },
+ "embedded_audit": {
+  "required": true,
+  "status": "PASS_WITH_RISKS",
+  "auditor_tool": "grok-cli",
+  "auditor_model": "grok-4.7",
+  "invocation": "grok --cwd <sealed read-only git-archive export of dopemux-mvp 3de60fa9a and dispatch-desk 84bff89, with diffs, repair diff, packet and verdict contract> -m grok-4.7 --always-approve --disable-web-search --no-subagents --max-turns 80 --output-format plain --prompt-file AUDIT_PROMPT.md; round 3 on 2026-11-27, loopback allowed by the owner; earlier rounds in review_bundle/",
+  "exit_code": 0,
+  "report_path": "proof/TP-DMX-DESK-GATE-FOLLOWUP-001/AUDITOR_REPORT.md",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "LOW",
+    "status": "ACCEPTED_RISK",
+    "title": "Malformed project id with no task now exits 2 instead of GO",
+    "body": "dispatch-desk tools/gate.py:31 rejects a project id outside ledger.ID before reading the ledger; the CLI exits 2. The hook maps exit 2 to UNKNOWN and still allows work. Accepted by the owner in chat 2026-11-26: \"Accept F1 as is\"."
+   }
+  ],
+  "fixes_applied": [],
+  "remaining_risks": [
+   "Same-uid replacement of the temp copy is possible after the write and before python -I reads it; mkdtemp mode 0700 (unchanged since round 2).",
+   "rmtree with ignore_errors can leave the temp directory; subprocess timeout does not reap the child.",
+   "No committed test runs the pinned gate bytes through the temp-copy path; the supervisor end-to-end runs did.",
+   "os.open and a regular-file os.read have no deadline: a kernel stall inside open, or inside a read of a regular-file inode, can still stall check() before UNKNOWN. FIFO, symlink-to-FIFO, directory and device helpers are now rejected before any read.",
+   "The client pins dispatch-desk 84bff89, so it reports UNKNOWN until hu3mann/dispatch-desk#1 is merged and installed."
+  ],
+  "skip_reason": null,
+  "instruction_like_content": {
+   "detected": false,
+   "match_count": 0,
+   "truncated": false,
+   "matches": []
+  }
+ }
+}
