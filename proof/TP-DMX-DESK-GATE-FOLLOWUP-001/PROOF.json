@@ -134,5 +134,38 @@
     "The original Possie wording of item 1; scope was reconstructed from Codex memory summaries and confirmed by the owner.",
     "Grok plan usage for both audit runs: not readable outside the Grok app; no payment or API-key prompt appeared."
   ],
-  "cleanup_status": "Both worktrees clean after local commits; nothing pushed; no remote branches; real ledger untouched; sealed audit export in the session scratchpad."
+  "cleanup_status": "Both worktrees clean after local commits; nothing pushed; no remote branches; real ledger untouched; sealed audit export in the session scratchpad.",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "grok-cli",
+    "auditor_model": "grok-4.7",
+    "invocation": "grok --cwd <sealed read-only git-archive export of dopemux-mvp 28ee38ebf and dispatch-desk 84bff89, with diffs, packet and verdict contract> -m grok-4.7 --always-approve --disable-web-search --no-subagents --max-turns 80 --output-format plain --prompt-file AUDIT_PROMPT.md; round 2 on 2026-11-26 with loopback allowed by the owner; round 1 returned NEEDS_SUPERVISOR",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-DESK-GATE-FOLLOWUP-001/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "LOW",
+        "status": "ACCEPTED_RISK",
+        "title": "Malformed project id with no task now exits 2 instead of GO",
+        "body": "dispatch-desk tools/gate.py:31 rejects a project id outside ledger.ID before reading the ledger; the CLI exits 2. The hook maps exit 2 to UNKNOWN and still allows work. Accepted by the owner in chat 2026-11-26: \"Accept F1 as is\"."
+      }
+    ],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Same-uid replacement of the temp copy is possible after the write and before python -I reads it; mkdtemp mode is 0700.",
+      "_read_verified has no deadline; a blocking ledger.py can stall session start before UNKNOWN.",
+      "rmtree with ignore_errors can leave the temp directory; subprocess timeout does not reap the child.",
+      "No committed test runs the pinned gate bytes through the temp-copy path; the supervisor end-to-end run did.",
+      "The client pins dispatch-desk 84bff89, so it reports UNKNOWN until hu3mann/dispatch-desk#1 is merged and installed."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "truncated": false,
+      "matches": []
+    }
+  }
 }
