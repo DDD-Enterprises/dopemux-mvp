@@ -4,8 +4,8 @@
   "worktree_path": "dopemux-mvp: .worktrees/desk-gate-followup-001; dispatch-desk: ~/code/dispatch-desk-wt/gate-readonly-go",
   "branch": "dopemux-mvp: fix/desk-gate-helper-identity-001; dispatch-desk: fix/gate-readonly-go",
   "repo_identity": "DDD-Enterprises/dopemux-mvp (base 0aa2cf3497c59f8c607f92986d01e7b7f2620919, contains 3e31e7af); hu3mann/dispatch-desk (base 456244f0f66ddfb06412ac05a1b4d8b501a16b14)",
-  "head_sha": "28ee38ebff52e849cfba92a22835f8759ae092aa",
-  "commit_sha": "dopemux-mvp 28ee38ebf; dispatch-desk 84bff89a3683c9796f91ad4f47157f5462ebcd2c",
+  "head_sha": "3de60fa9a2a7d41c5e4b0faadad11f94bb47d99f",
+  "commit_sha": "dopemux-mvp 3de60fa9a (S2 repair; earlier 28ee38ebf); dispatch-desk 84bff89a3683c9796f91ad4f47157f5462ebcd2c",
   "routes": [
     {
       "workstream": "coordinator",
@@ -46,7 +46,8 @@
   ],
   "slices": [
     "S1 dispatch-desk: GO is read-only; bad project/task ids rejected before the ledger is read (exit 2 preserved)",
-    "S2 dopemux-mvp: gate.py and ledger.py verified against SHA-256 pinned to dispatch-desk 84bff89; only the verified bytes run, from a private temp dir"
+    "S2 dopemux-mvp: gate.py and ledger.py verified against SHA-256 pinned to dispatch-desk 84bff89; only the verified bytes run, from a private temp dir",
+    "S2 repair (3de60fa9a): helpers opened non-blockingly and type-checked on the opened descriptor; a FIFO or symlink to one gives UNKNOWN instead of stalling session start (Codex review on #1525)"
   ],
   "files_changed": [
     "dispatch-desk: tools/gate.py",
@@ -108,6 +109,30 @@
       "exit_code": 0,
       "bucket": "PASS",
       "reason": "72 tests OK; 50 passed"
+    },
+    {
+      "command": "S2 repair: pytest gate and hook tests (supervisor re-run)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "54 passed; flake8 clean"
+    },
+    {
+      "command": "S2 repair red check: new FIFO tests against the previous client (supervisor)",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "reason": "2 FIFO tests failed via the hang guard, as expected; file restored"
+    },
+    {
+      "command": "S2 repair end-to-end with real gate files, temp ledger (supervisor)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "fixed gate GO writes nothing; old gate refused; pause works; no temp dirs left"
+    },
+    {
+      "command": "Grok round 3 on 3de60fa9a: exact suites (auditor)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "72 tests OK; 54 passed"
     }
   ],
   "codereview_status": "NOT_RUN",
@@ -115,7 +140,7 @@
   "audit": {
     "required": true,
     "status": "PASS_WITH_RISKS",
-    "route": "grok-cli grok-4.7, round 2 on 2026-11-26 (round 1 NEEDS_SUPERVISOR); sealed read-only git-archive export of the same pinned commits; loopback allowed by the owner in chat 2026-11-26, no other network; web search disabled; no subagents; both exact suites exit 0 (72 OK, 50 passed); one low finding F1; acceptance NOT_GRANTED"
+    "route": "grok-cli grok-4.7; round 3 on 2026-11-27 of 3de60fa9a (round 2 PASS_WITH_RISKS on 28ee38ebf, round 1 NEEDS_SUPERVISOR); sealed read-only export; loopback allowed by the owner; no other network; no subagents; F1 unchanged and accepted"
   },
   "pr_url_or_blocker": "No PR (forbidden by the packet). F1 accepted by the operator 2026-11-26. Push, PR and merge of both repos together remain operator gates.",
   "residual_risks": [
@@ -123,11 +148,11 @@
     "Both changes must land together: the dopemux client pins dispatch-desk 84bff89, so it reports UNKNOWN against the current dispatch-desk main (456244f) until 84bff89 is merged there.",
     "Any future change to dispatch-desk gate.py or ledger.py needs a matching pin update in dopemux-mvp.",
     "Same-user replacement of the temp copy between write and interpreter read (auditor residual); the temp dir is mode 0700.",
-    "_read_verified has no deadline; a blocking ledger.py (e.g. a FIFO) can stall session start before UNKNOWN (auditor residual).",
     "rmtree with ignore_errors can leave a temp dir (auditor residual).",
     "A refusal that passes a task id still appends one gate_checked line per check during a pause (unchanged behaviour).",
     "Auditor: no automated test runs the pinned gate bytes through the temp-copy path; the supervisor end-to-end run did (recorded in validations) but it is not a committed test.",
-    "subprocess.run timeout does not reap the child (auditor)."
+    "subprocess.run timeout does not reap the child (auditor).",
+    "Kernel-level stall inside open or a regular-file read remains unbounded (auditor round 3); special files no longer stall session start."
   ],
   "unknowns": [
     "Observed model identity for every route (no runtime receipts).",
@@ -140,7 +165,7 @@
     "status": "PASS_WITH_RISKS",
     "auditor_tool": "grok-cli",
     "auditor_model": "grok-4.7",
-    "invocation": "grok --cwd <sealed read-only git-archive export of dopemux-mvp 28ee38ebf and dispatch-desk 84bff89, with diffs, packet and verdict contract> -m grok-4.7 --always-approve --disable-web-search --no-subagents --max-turns 80 --output-format plain --prompt-file AUDIT_PROMPT.md; round 2 on 2026-11-26 with loopback allowed by the owner; round 1 returned NEEDS_SUPERVISOR",
+    "invocation": "grok --cwd <sealed read-only git-archive export of dopemux-mvp 3de60fa9a and dispatch-desk 84bff89, with diffs, repair diff, packet and verdict contract> -m grok-4.7 --always-approve --disable-web-search --no-subagents --max-turns 80 --output-format plain --prompt-file AUDIT_PROMPT.md; round 3 on 2026-11-27, loopback allowed by the owner; earlier rounds in review_bundle/",
     "exit_code": 0,
     "report_path": "proof/TP-DMX-DESK-GATE-FOLLOWUP-001/AUDITOR_REPORT.md",
     "findings": [
@@ -154,10 +179,10 @@
     ],
     "fixes_applied": [],
     "remaining_risks": [
-      "Same-uid replacement of the temp copy is possible after the write and before python -I reads it; mkdtemp mode is 0700.",
-      "_read_verified has no deadline; a blocking ledger.py can stall session start before UNKNOWN.",
+      "Same-uid replacement of the temp copy is possible after the write and before python -I reads it; mkdtemp mode 0700 (unchanged since round 2).",
       "rmtree with ignore_errors can leave the temp directory; subprocess timeout does not reap the child.",
-      "No committed test runs the pinned gate bytes through the temp-copy path; the supervisor end-to-end run did.",
+      "No committed test runs the pinned gate bytes through the temp-copy path; the supervisor end-to-end runs did.",
+      "os.open and a regular-file os.read have no deadline: a kernel stall inside open, or inside a read of a regular-file inode, can still stall check() before UNKNOWN. FIFO, symlink-to-FIFO, directory and device helpers are now rejected before any read.",
       "The client pins dispatch-desk 84bff89, so it reports UNKNOWN until hu3mann/dispatch-desk#1 is merged and installed."
     ],
     "skip_reason": null,

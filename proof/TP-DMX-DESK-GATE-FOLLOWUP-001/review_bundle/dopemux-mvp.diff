@@ -1,8 +1,8 @@
 diff --git a/src/dopemux/claude/dispatch_gate.py b/src/dopemux/claude/dispatch_gate.py
-index 633b57cd8..d66e8a223 100644
+index 633b57cd8..b12ab9a16 100644
 --- a/src/dopemux/claude/dispatch_gate.py
 +++ b/src/dopemux/claude/dispatch_gate.py
-@@ -4,13 +4,23 @@ Advisory client for the optional external Dispatch desk gate.
+@@ -4,13 +4,24 @@ Advisory client for the optional external Dispatch desk gate.
  Runs ``gate.py check`` and maps its exit code to a typed result. The gate is
  an external tool: when it is absent nothing runs. This module never raises
  from ``check`` and never passes ``--require-approval``.
@@ -20,13 +20,14 @@ index 633b57cd8..d66e8a223 100644
 +import hashlib
  import os
 +import shutil
++import stat
  import subprocess
  import sys
 +import tempfile
  from dataclasses import dataclass
  from pathlib import Path
  from typing import Optional
-@@ -21,6 +31,18 @@ UNAPPROVED = "UNAPPROVED"
+@@ -21,6 +32,18 @@ UNAPPROVED = "UNAPPROVED"
  NOT_INSTALLED = "NOT_INSTALLED"
  UNKNOWN = "UNKNOWN"
  
@@ -45,7 +46,7 @@ index 633b57cd8..d66e8a223 100644
  _EXIT_STATES = {0: GO, 3: PAUSE_REQUESTED, 4: UNAPPROVED}
  
  
-@@ -68,6 +90,24 @@ def resolve_gate() -> Optional[Path]:
+@@ -68,6 +91,35 @@ def resolve_gate() -> Optional[Path]:
      return gate if gate.is_file() else None
  
  
@@ -55,8 +56,19 @@ index 633b57cd8..d66e8a223 100644
 +    try:
 +        for name, digest in _PINNED.items():
 +            path = gate.parent / name
-+            with open(path, "rb") as f:
-+                data = f.read(_MAX_HELPER_BYTES + 1)
++            flags = os.O_RDONLY | os.O_NONBLOCK | getattr(os, "O_CLOEXEC", 0)
++            fd = os.open(path, flags)  # O_NONBLOCK: a FIFO must not block
++            try:
++                if not stat.S_ISREG(os.fstat(fd).st_mode):
++                    return None
++                data = os.read(fd, _MAX_HELPER_BYTES + 1)
++                while 0 < len(data) <= _MAX_HELPER_BYTES:
++                    more = os.read(fd, _MAX_HELPER_BYTES + 1 - len(data))
++                    if not more:
++                        break
++                    data += more
++            finally:
++                os.close(fd)
 +            if len(data) > _MAX_HELPER_BYTES:
 +                return None
 +            if hashlib.sha256(data).hexdigest() != digest:
@@ -70,7 +82,7 @@ index 633b57cd8..d66e8a223 100644
  def check(
      root: "str | Path",
      by: str,
-@@ -79,25 +119,42 @@ def check(
+@@ -79,25 +131,42 @@ def check(
          gate = resolve_gate()
          if gate is None:
              return GateResult(NOT_INSTALLED)
@@ -129,17 +141,22 @@ index 633b57cd8..d66e8a223 100644
 +    message = _clean(proc.stdout or proc.stderr or "")
 +    return GateResult(_EXIT_STATES.get(proc.returncode, UNKNOWN), message)
 diff --git a/tests/unit/test_dispatch_gate.py b/tests/unit/test_dispatch_gate.py
-index 78a81091d..6a9e1e1a3 100644
+index 78a81091d..935c8803b 100644
 --- a/tests/unit/test_dispatch_gate.py
 +++ b/tests/unit/test_dispatch_gate.py
-@@ -1,5 +1,6 @@
+@@ -1,8 +1,11 @@
  """Tests for the optional Dispatch desk gate client (fake gate only)."""
  
 +import hashlib
  import json
++import os
  import subprocess
  import textwrap
-@@ -17,7 +18,8 @@ FAKE = textwrap.dedent("""
++import threading
+ from pathlib import Path
+ 
+ import pytest
+@@ -17,7 +20,8 @@ FAKE = textwrap.dedent("""
      with open(cfg["argv_file"], "w") as f:
          json.dump(sys.argv[1:], f)
      with open(cfg["flags_file"], "w") as f:
@@ -149,7 +166,7 @@ index 78a81091d..6a9e1e1a3 100644
      if cfg.get("sleep"):
          time.sleep(cfg["sleep"])
      code = cfg["code"]
-@@ -27,6 +29,13 @@ FAKE = textwrap.dedent("""
+@@ -27,6 +31,13 @@ FAKE = textwrap.dedent("""
      """)
  
  
@@ -163,7 +180,7 @@ index 78a81091d..6a9e1e1a3 100644
  def _git(cwd, *args):
      subprocess.run(
          ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
-@@ -54,6 +63,12 @@ def env(tmp_path, monkeypatch):
+@@ -54,6 +65,12 @@ def env(tmp_path, monkeypatch):
      home = tmp_path / "desk"
      (home / "tools").mkdir(parents=True)
      (home / "tools" / "gate.py").write_text(FAKE)
@@ -176,7 +193,7 @@ index 78a81091d..6a9e1e1a3 100644
      cfg = tmp_path / "cfg.json"
      ledger = tmp_path / "ledger.jsonl"
      monkeypatch.setenv("DISPATCH_DESK_HOME", str(home))
-@@ -76,6 +91,8 @@ def env(tmp_path, monkeypatch):
+@@ -76,6 +93,8 @@ def env(tmp_path, monkeypatch):
      configure.argv = lambda: json.loads((tmp_path / "argv.json").read_text())
      configure.flags = lambda: json.loads((tmp_path / "flags.json").read_text())
      configure.ledger = ledger
@@ -185,7 +202,7 @@ index 78a81091d..6a9e1e1a3 100644
      return configure
  
  
-@@ -233,3 +250,77 @@ def test_project_passed_to_gate(env, repo):
+@@ -233,3 +252,138 @@ def test_project_passed_to_gate(env, repo):
      dg.check(Path(repo), by="x")
      argv = env.argv()
      assert argv[argv.index("--project") + 1] == dg.resolve_project(repo)
@@ -263,3 +280,64 @@ index 78a81091d..6a9e1e1a3 100644
 +    result = dg.check(repo, by="x")
 +    assert result.state == dg.GO
 +    assert env.argv_file.exists()
++
++
++def _check_bounded(repo, fifo=None, limit=2.0):
++    """Run check() in a thread; fail (and unblock the FIFO) if it hangs."""
++    box = {}
++    t = threading.Thread(
++        target=lambda: box.update(r=dg.check(repo, by="x")), daemon=True
++    )
++    t.start()
++    t.join(limit)
++    if t.is_alive():
++        if fifo is not None:  # release the blocked open() so the thread ends
++            fd = os.open(str(fifo), os.O_RDWR | os.O_NONBLOCK)
++            os.close(fd)
++            t.join(1.0)
++        pytest.fail("check() hung on a non-regular helper file")
++    return box["r"]
++
++
++def _fifo(path):
++    if path.exists() or path.is_symlink():
++        path.unlink()
++    os.mkfifo(str(path))
++    return path
++
++
++@pytest.mark.parametrize("name", ["ledger.py", "gate.py"])
++def test_fifo_helper_is_unverified_and_does_not_hang(env, repo, name):
++    env(0)
++    fifo = _fifo(env.home / "tools" / name)
++    result = _check_bounded(repo, fifo)
++    if name == "ledger.py":
++        assert result.state == dg.UNKNOWN
++        assert result.message == "gate identity unverified"
++    else:  # resolve_gate() already refuses a non-file gate.py
++        assert result.state == dg.NOT_INSTALLED
++    assert not env.argv_file.exists()
++
++
++def test_symlink_to_fifo_is_unverified_and_does_not_hang(
++    env, repo, tmp_path
++):
++    env(0)
++    fifo = _fifo(tmp_path / "elsewhere.fifo")
++    link = env.home / "tools" / "ledger.py"
++    link.unlink()
++    link.symlink_to(fifo)
++    result = _check_bounded(repo, fifo)
++    assert result.state == dg.UNKNOWN
++    assert result.message == "gate identity unverified"
++    assert not env.argv_file.exists()
++
++
++def test_symlink_to_regular_verified_file_still_runs(env, repo, tmp_path):
++    env(0)
++    real = tmp_path / "real_ledger.py"
++    real.write_text(FAKE_LEDGER)
++    link = env.home / "tools" / "ledger.py"
++    link.unlink()
++    link.symlink_to(real)
++    assert dg.check(repo, by="x").state == dg.GO
