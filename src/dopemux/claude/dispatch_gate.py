@@ -18,6 +18,7 @@ from __future__ import annotations
 import hashlib
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -96,8 +97,19 @@ def _read_verified(gate: Path) -> Optional[dict]:
     try:
         for name, digest in _PINNED.items():
             path = gate.parent / name
-            with open(path, "rb") as f:
-                data = f.read(_MAX_HELPER_BYTES + 1)
+            flags = os.O_RDONLY | os.O_NONBLOCK | getattr(os, "O_CLOEXEC", 0)
+            fd = os.open(path, flags)  # O_NONBLOCK: a FIFO must not block
+            try:
+                if not stat.S_ISREG(os.fstat(fd).st_mode):
+                    return None
+                data = os.read(fd, _MAX_HELPER_BYTES + 1)
+                while 0 < len(data) <= _MAX_HELPER_BYTES:
+                    more = os.read(fd, _MAX_HELPER_BYTES + 1 - len(data))
+                    if not more:
+                        break
+                    data += more
+            finally:
+                os.close(fd)
             if len(data) > _MAX_HELPER_BYTES:
                 return None
             if hashlib.sha256(data).hexdigest() != digest:
