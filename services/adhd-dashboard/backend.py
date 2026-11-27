@@ -9,9 +9,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import aiohttp
 import redis.asyncio as redis
-from fastapi import FastAPI, HTTPException, Security, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, Security, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.security import APIKeyHeader
 import uvicorn
 from pathlib import Path
@@ -38,6 +38,8 @@ REPO_ROOT = _configure_import_paths()
 
 from services.shared.brand_voice import StatusChip, brand_log, brand_error, brand_payload, voice_header
 from orchestrator_tasks import read_task_queue
+from orchestrator_transitions import build_response as build_transition_response
+from orchestrator_transitions import handle_transition_request
 from task_recommender import TaskRecommender
 
 try:
@@ -394,6 +396,7 @@ async def root():
             "/api/cognitive-load",
             "/api/task-recommendations",
             "/api/tasks",
+            "/api/tasks/{item_id}/transition",
             "/api/sessions/today",
             "/metrics",
             "/health",
@@ -460,6 +463,33 @@ async def get_tasks(api_key: str = Security(verify_api_key)):
     outcome = "success" if payload.get("status") in ("ok", "empty") else "error"
     _record_request("/api/tasks", outcome, start_time)
     return payload
+
+
+@app.post("/api/tasks/{item_id}/transition")
+async def post_task_transition(item_id: str, request: Request):
+    """Start or Finish one Task Orchestrator item (operator ruling 2026-11-22: Start/Finish only).
+
+    Unlike the read routes, this needs DASHBOARD_API_KEY set and matched by X-API-Key; with no key
+    configured it refuses. Every outcome is a JSON body with status applied, refused, unavailable
+    or wrong_project; the write's actor is operator:cockpit, recorded unverified until Wave 2C.
+    """
+    start_time = time.time()
+    endpoint = "/api/tasks/{item_id}/transition"
+    try:
+        body = await request.body()
+        status_code, payload = await handle_transition_request(
+            item_id=item_id,
+            api_key=request.headers.get("X-API-Key"),
+            configured_key=API_KEY,
+            body=body,
+            checkout=REPO_ROOT,
+        )
+    except Exception:  # noqa: BLE001 - never a bare 500 from this route
+        logger.exception("transition route failed")
+        reason = "the backend failed while handling this request; the write outcome is unknown; refresh the queue"
+        status_code, payload = 500, build_transition_response("unavailable", item_id=item_id, reason=reason)
+    _record_request(endpoint, "success" if payload.get("status") == "applied" else "error", start_time)
+    return JSONResponse(status_code=status_code, content=payload)
 
 
 @app.get("/api/cognitive-load")

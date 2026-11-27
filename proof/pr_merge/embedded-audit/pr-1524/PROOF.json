@@ -1,0 +1,64 @@
+{
+  "audit_identity": {
+    "auditor": {
+      "effort": "high",
+      "model": "gemini",
+      "model_family": "google-gemini",
+      "runner": "agy",
+      "runtime_family": "agy"
+    },
+    "implementer": {
+      "model": "claude-fable-5-2 requested; Co-Authored-By trailers: Claude Fable 5.2 on 14b6a67e5, 52f9a8b2f, 3448b4f4e and 8f874437f, Claude Opus 5.5 on 467f1dfc2; observed model UNKNOWN; self-reported, not provider-attested",
+      "model_family": "anthropic-claude",
+      "runner": "claude-code-desktop",
+      "runtime_family": "anthropic-claude-code"
+    },
+    "independence": "PROVEN"
+  },
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS",
+    "auditor_tool": "agy",
+    "auditor_model": "gemini",
+    "invocation": "agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print=\"$(cat AUDIT_PROMPT.txt)\" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt (cwd = sealed dir holding only AUDIT_PROMPT.txt from scripts.audit.pal_clink_runner --build-prompt; AGY CLI 1.5.18; conversation_id=c35809af-ad0d-4891-83b5-e936fea126bc; launched 2026-11-27T04:56:29Z, wrapper end 2026-11-27T04:57:30Z; one attempt; raw stream retained in review_bundle/AGY_OUTPUT_RAW.txt)",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-PR1524-L3-AUDIT-001/AUDITOR_REPORT.md",
+    "findings": [],
+    "fixes_applied": [],
+    "remaining_risks": [
+      "Validation was not run inside the sealed audit sessions (validation_status=NOT_RUN); local pytest in services/adhd-dashboard (181 passed), tsc, vitest (174/174) and vite build pass at the audited head. No CI job runs services/adhd-dashboard/tests: pytest.ini has testpaths = tests, the unit gate collects tests/unit plus two files, and the workflows name adhd-dashboard only for container builds.",
+      "Corroborating Grok G-1 (LOW, OPEN): The confirmed action chip drops the orchestrator anomaly note whenever the fresh read lists the clicked item in the returned new role. A Start/Finish whose previous/new roles differ from queue→work or work→terminal still renders [CONFIRMED] when that new role is work or queue and visible in the first 20 rows.",
+      "Corroborating Grok G-2 (LOW, OPEN): The browser parser accepts any contract body with a known status and, for applied, a new_role. It does not require item_id to equal the row that was clicked. The backend parser does require that match before it will report applied.",
+      "AGY risk (OPEN): External writer TOCTOU window: while _WRITE_LOCK serializes requests within the backend process and re-verifies the port 7890 container ID after reading the item role, an external runner writing directly to port 7890 can still transition the item between read_item_role and send_transition; parse_transition_result mitigates this by detecting unexpected (previousRole, newRole) pairs and surfacing them in reason.",
+      "AGY risk (OPEN): Unverified actor attribution: transitions are sent as actor {id: 'operator:cockpit', kind: 'user'}, which the Task Orchestrator records without cryptographic verification until Wave 2C lands.",
+      "AGY risk (OPEN): Browser-bundled API key: when VITE_DASHBOARD_API_KEY is configured for the frontend, the secret is present in client bundle assets, so the backend must remain bound to 127.0.0.1 as documented in services/adhd-dashboard/README.md.",
+      "AGY risk (OPEN): Candidate tests were reviewed statically from the diff only and were not executed in this embedded audit because candidate code execution and tools are disabled (validation_status=NOT_RUN).",
+      "Supervisor check of Grok G-1 (a cyan confirmed chip hides the orchestrator's anomaly note): accurate and OPEN, low. In TaskQueue.tsx, actionLines for the confirmed phase prints only the new role and drops result.reason, while the unconfirmed phase prints it. The backend puts an unexpected move in reason while still answering applied. The note is hidden only when the item lands in work or queue and is listed: a Finish that cascades always lands in terminal and shows as unconfirmed with its note. OPERATOR: decision pending.",
+      "Supervisor check of Grok G-2 (the browser does not check that the answer's item_id is the clicked item): accurate and OPEN, low. parseTransitionResult in taskQueue.ts does not read item_id. The backend builds every answer from the item id in the request path and parse_transition_result refuses to report applied for another item, so a mismatched answer would need a broken or hostile backend on 127.0.0.1:8097. Defence in depth only. OPERATOR: decision pending.",
+      "Supervisor check of Grok's risks on the key and loopback: accurate and OPEN. The route fails closed without DASHBOARD_API_KEY and compares X-API-Key in constant time, but it does not check the client address, and the cockpit's copy of the key (VITE_DASHBOARD_API_KEY) is in the browser bundle. Safety rests on running the backend on 127.0.0.1, as the README says.",
+      "Supervisor check of Grok's risk on more than one backend process: accurate and OPEN. The lock that serialises the role read and the write is per process; two uvicorn workers could both read queue and both send start, and the second start would move the item work to review. The README's command starts one process; nothing enforces it.",
+      "Grok's risks on the external-writer window, unverified actor, complete skipping review, and cascades restate limits the PR body and README already record; AGY raised the same first three. They stay OPEN.",
+      "Grok's risk on helpers outside the diff (check_port_owner, _post, extract_tool_payload) is answered by the PR #1518 audit, which covered them at df8b6bc5d, and by the local test runs here; main has not changed them since.",
+      "Grok's risk on provenance not re-fetched inside the sealed audit: the supervising session built the diff from git objects in a worktree at the audited head, read the PR head and review threads from GitHub, and recorded CI in CI_EVIDENCE.json.",
+      "Audit scope: the whole PR diff, merge-base 0aa2cf349 to 467f1dfc2; when this bundle was built main had moved to 44e5ac3cc (#1513) without touching this PR's files, scripts/audit, scripts/governance, schemas/proof, config/audit or .github/workflows. The PR branch is behind main and was not merged or rebased.",
+      "Auditor model identity: requested gemini-4-argon-high; provider-attested identity UNKNOWN; recorded as the schema family value 'gemini'.",
+      "AGY tool permissions were always-proceed; containment rests on the observed absence of tool steps.",
+      "Advisory GitHub reviews, not embedded auditors: Codex reviewed 8f874437f with 2 findings. P2 (a confirming read that a newer Refresh replaced could still turn an action cyan) was fixed in 467f1dfc2, the audited head, and its thread resolved. P1 (no supervisor-issued packet for a new workflow writer, AGENTS.md section 3) was settled by the operator's waiver and its thread resolved. Codex's review-summary comment for 467f1dfc2 says completed with has_any_findings=true and posted no new review or thread; read as referring to those two. Copilot did not review this PR; the operator chose to freeze without asking it ('Freeze and audit now').",
+      "No supervisor-issued MacroPacket or Task Packet exists for this work. The operator waived the requirement for this change ('Waive it, record why', 2026-11-22T16:11:42Z) after being told a packet written then could bind only the remaining steps, not the implementation. Authority is the operator's requests recorded under fallback_auditor_approval and operator_decisions.",
+      "Not exercised: any live write (deliberately; the orchestrator on 127.0.0.1:7890 holds the operator's real tasks), the orchestrator's refusal shape live, Start and Finish in a browser, and the backend inside the compose container, where the route can never prove port ownership and answers unavailable. The write route works only for a host-run backend; the service README says so.",
+      "Known limits recorded in the PR, not defects against its claims: Finish never shows the cyan confirmed state because the panel lists only work and queue items; Start confirms only when the item is among the first 20 work items; complete moves work straight to terminal, skipping review, and can complete parent items (the response reports how many); an item with no matching note schema completes ungated."
+    ],
+    "skip_reason": null,
+    "instruction_like_content": {
+      "detected": false,
+      "match_count": 0,
+      "matches": [],
+      "truncated": false
+    }
+  },
+  "generated_at": "2026-11-27T05:01:44Z",
+  "head_sha": "467f1dfc23bc25455804223e26d11d4930c98947",
+  "packet_id": "TP-DMX-PR1524-L3-AUDIT-001",
+  "pr_number": 1524,
+  "repo": "DDD-Enterprises/dopemux-mvp"
+}

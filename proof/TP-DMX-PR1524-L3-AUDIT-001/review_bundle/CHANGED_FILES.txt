@@ -1,0 +1,10 @@
+claudedocs/design/ui-dashboard-audit-2026-10-30.md
+services/adhd-dashboard/README.md
+services/adhd-dashboard/backend.py
+services/adhd-dashboard/orchestrator_transitions.py
+services/adhd-dashboard/tests/test_orchestrator_transitions.py
+ui-dashboard/src/components/TaskQueue.tsx
+ui-dashboard/src/components/__tests__/TaskQueue.test.tsx
+ui-dashboard/src/components/__tests__/TaskQueue.transitions.test.tsx
+ui-dashboard/src/taskQueue.test.ts
+ui-dashboard/src/taskQueue.ts

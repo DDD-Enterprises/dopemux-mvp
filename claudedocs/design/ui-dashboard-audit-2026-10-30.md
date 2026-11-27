@@ -147,9 +147,18 @@ add the forecast to the engine's `state_update` payload if a live forecast is wa
 
 **Follow-up (not in this branch):**
 
-- Task queue (2): show the Task Orchestrator's real queue in a read-only `TaskQueue` panel fed by
-  `GET /api/tasks`, which reads the orchestrator MCP on :7890. `/api/task-recommendations` is not a
-  task list: it returns work-type advice, which the load instrument already shows.
+- Task queue (2): show the Task Orchestrator's real queue in a `TaskQueue` panel fed by
+  `GET /api/tasks`, which reads the orchestrator MCP on :7890 (PR #1518, merged).
+  `/api/task-recommendations` is not a task list: it returns work-type advice, which the load
+  instrument already shows.
+- Task queue writes (2, slice 4): Start on queue rows and Finish on work rows, through
+  `POST /api/tasks/{item_id}/transition` (operator ruling 2026-11-22: "Yes, Start/Finish only").
+  The route needs `DASHBOARD_API_KEY` set and matched by `X-API-Key` and refuses when it is unset;
+  it proves port 7890 ownership before and after reading the item's role, allows `start` only from
+  queue and `complete` only from work, and writes as `operator:cockpit`, which the orchestrator
+  records unverified until Wave 2C. The panel shows a move as confirmed (cyan) only when a fresh
+  read lists the item in its new role, so Finish stays unconfirmed (yellow): the read never lists
+  terminal items. No Skip.
 - TeamDashboard still needs a real source (2).
 - TaskSequencer timer, skip and finish-time defects from the component pass.
 - Tab-stop cleanup in TaskSequencer and TeamDashboard (13, 14).

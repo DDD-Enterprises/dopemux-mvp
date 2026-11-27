@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { parseTaskQueue } from './taskQueue';
+import { parseTaskQueue, parseTransitionResult, triggerFor } from './taskQueue';
 
 const base = {
   source: 'task-orchestrator-mcp',
@@ -89,4 +89,65 @@ test.each([
   ['another endpoint\'s payload', { energy: { energy_level: 'medium' }, recommendation: 'Rest.' }],
 ])('%s is not a task queue', (_label, raw) => {
   expect(parseTaskQueue(raw)).toBeNull();
+});
+
+// --- POST /api/tasks/{id}/transition --------------------------------------------------------
+
+const transition = {
+  source: 'task-orchestrator-mcp',
+  endpoint: 'http://127.0.0.1:7890/mcp',
+  status: 'applied',
+  reason: null,
+  item_id: 'q1',
+  trigger: 'start',
+  request_id: 'r-1',
+  actor: { id: 'operator:cockpit', kind: 'user', verification: 'unverified: recorded by the orchestrator but not checked until Wave 2C' },
+  previous_role: 'queue',
+  new_role: 'work',
+  missing_notes: null,
+  project: { expected: { project_id: 'alpha-1', name: 'alpha' }, owner: { project_id: 'alpha-1', name: 'alpha' }, verdict: 'OK' },
+};
+
+test('an applied transition keeps its roles and actor', () => {
+  expect(parseTransitionResult(transition)).toEqual({
+    status: 'applied',
+    reason: null,
+    previousRole: 'queue',
+    newRole: 'work',
+    missingNotes: null,
+    actorId: 'operator:cockpit',
+  });
+});
+
+test('a gate refusal keeps the missing notes', () => {
+  const result = parseTransitionResult({
+    ...transition,
+    status: 'refused',
+    reason: 'orchestrator refused: Gate check failed: required notes not filled: proof-bundle',
+    new_role: null,
+    missing_notes: [{ key: 'proof-bundle', description: 'AGENTS.md section 9 proof' }, { key: 'review', description: null }],
+  });
+
+  expect(result?.status).toBe('refused');
+  expect(result?.missingNotes).toEqual([
+    { key: 'proof-bundle', description: 'AGENTS.md section 9 proof' },
+    { key: 'review', description: null },
+  ]);
+});
+
+test.each([
+  ['null', null],
+  ['no status', { ...transition, status: undefined }],
+  ['an unknown status', { ...transition, status: 'done' }],
+  ['a queue payload', { ...base }],
+  ['applied without a new role', { ...transition, new_role: null }],
+  ['missing notes that are not a list', { ...transition, status: 'refused', missing_notes: 'proof-bundle' }],
+  ['a missing note without a key', { ...transition, status: 'refused', missing_notes: [{ description: 'x' }] }],
+])('%s is not a transition result', (_label, raw) => {
+  expect(parseTransitionResult(raw)).toBeNull();
+});
+
+test('queue items start and work items finish', () => {
+  expect(triggerFor('queue')).toBe('start');
+  expect(triggerFor('work')).toBe('complete');
 });

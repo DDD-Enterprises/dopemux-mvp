@@ -1,0 +1,50 @@
+{
+  "status": "complete",
+  "verdict": "PASS_WITH_RISKS",
+  "findings": [
+    {
+      "severity": "low",
+      "summary": "The confirmed action chip drops the orchestrator anomaly note whenever the fresh read lists the clicked item in the returned new role. A Start/Finish whose previous/new roles differ from queue→work or work→terminal still renders [CONFIRMED] when that new role is work or queue and visible in the first 20 rows.",
+      "evidence": "ui-dashboard/src/components/TaskQueue.tsx confirm() returns null when listed.role === result.newRole for work|queue; actionLines() for phase confirmed emits only the new-role sentence and omits result.reason. Backend parse_transition_result records the mismatch in reason while still returning status applied."
+    },
+    {
+      "severity": "low",
+      "summary": "The browser parser accepts any contract body with a known status and, for applied, a new_role. It does not require item_id to equal the row that was clicked. The backend parser does require that match before it will report applied.",
+      "evidence": "ui-dashboard/src/taskQueue.ts parseTransitionResult; services/adhd-dashboard/orchestrator_transitions.py parse_transition_result itemId check. confirm() then keys off the clicked item.id."
+    }
+  ],
+  "risks": [
+    "DASHBOARD_API_KEY is the write credential and the README states the cockpit copies it from VITE_DASHBOARD_API_KEY into the browser bundle. The new route checks the header and fails closed when the key is unset, and it does not enforce a loopback bind. Exposure of the dashboard origin is enough to mint Start/Finish calls.",
+    "Every write is actor {id: operator:cockpit, kind: user} with verification left unverified until Wave 2C. The orchestrator records the actor and does not authenticate it. Possession of the dashboard key is the only gate.",
+    "The role read, owner re-check, and advance_item share one asyncio.Lock inside a single backend process. A second worker process can also observe queue and send start. The orchestrator start trigger also advances work→review and review→terminal, which is why the backend restricts start to a prior queue read; that restriction is per process.",
+    "complete is sent for work items and moves them to terminal, skipping review. Items whose tags match no note schema pass the gate. Reaching terminal can cascade-complete parents. The response and the yellow unconfirmed chip report cascades; Finish can never turn cyan because GET /api/tasks lists only work and queue.",
+    "A writer outside this process can still change the item between the role read and advance_item. The response reports the move the orchestrator actually made. The second Docker owner check narrows container swap and leaves a window after that check returns.",
+    "Imported helpers (check_port_owner, _post, extract_tool_payload, MCP_URL, API_KEY, CORS) are outside this diff. Tests mock them. Their production behavior was not re-read here.",
+    "Candidate metadata head SHA matches the trusted head 467f1dfc23bc25455804223e26d11d4930c98947 and base 0aa2cf3497c59f8c607f92986d01e7b7f2620919. Git object, PR diff completeness, and workflow/CI were not re-fetched."
+  ],
+  "rationale": "The delta adds the cockpit's only orchestrator write: POST /api/tasks/{item_id}/transition, implemented in orchestrator_transitions.py and wired from backend.py without the open read-route API-key dependency. handle_transition_request returns 403 when DASHBOARD_API_KEY is unset, 401 on a missing or unequal X-API-Key via hmac.compare_digest, and 400 on a body that lacks string trigger and request_id. transition_item allows only start from queue and complete from work, requires a lowercase UUID item id and a UUID request id, resolves project identity, and under _WRITE_LOCK requires owner verdict OK with a stable container id before and after read_item_role. The MCP sender allow-list is query_items get and advance_item with a single start|complete transition and a fixed operator:cockpit actor. Failures before tools/call map to nothing-was-written; failures at or after the write map to outcome-unknown; unreadable replies stay unavailable. Responses are JSON contract bodies, and the route's broad except still returns that shape at HTTP 500. The panel posts one JSON body with a new request id, disables Start/Finish while pending, re-reads GET /api/tasks, and paints cyan only when that read lists the same id in the new work or queue role. Finish stays unconfirmed because terminal rows are absent. Unexpected server text is bounded and tool error text is kept out of the client body in the client tests. Those tests were not executed in this audit. Residual risk is the localhost trust boundary: a bundle-held key, an unverified actor, a process-local lock, and a Finish path that skips review and can cascade, with the strongest UI confirmation unavailable for terminal moves.",
+  "inspected_paths": [
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "services/adhd-dashboard/README.md",
+    "services/adhd-dashboard/backend.py",
+    "services/adhd-dashboard/orchestrator_transitions.py",
+    "services/adhd-dashboard/tests/test_orchestrator_transitions.py",
+    "ui-dashboard/src/components/TaskQueue.tsx",
+    "ui-dashboard/src/components/__tests__/TaskQueue.test.tsx",
+    "ui-dashboard/src/components/__tests__/TaskQueue.transitions.test.tsx",
+    "ui-dashboard/src/taskQueue.test.ts",
+    "ui-dashboard/src/taskQueue.ts"
+  ],
+  "evidence_refs": [
+    "Trusted head 467f1dfc23bc25455804223e26d11d4930c98947 equals candidate metadata head_sha; trusted base 0aa2cf3497c59f8c607f92986d01e7b7f2620919 equals candidate base_sha.",
+    "instruction_like_scan_summary.detected is false, match_count 0. Diff comments record the 2026-11-22 Start/Finish ruling; they do not retarget the audit contract.",
+    "services/adhd-dashboard/backend.py post_task_transition calls handle_transition_request with X-API-Key, API_KEY, raw body, and REPO_ROOT, and maps exceptions to status unavailable.",
+    "services/adhd-dashboard/orchestrator_transitions.py ALLOWED_TRIGGERS, _check_call, handle_transition_request auth, transition_item owner/role/lock sequence, parse_transition_result, HTTP_STATUS.",
+    "services/adhd-dashboard/README.md Start and Finish: key required, browser bundle, loopback guidance, unverified actor, cascade and ungated complete behavior.",
+    "services/adhd-dashboard/tests/test_orchestrator_transitions.py covers allow-list, UUID checks, owner re-check, container id swap, role precondition, overlap lock, outcome-unknown, auth 403/401/400, and route wiring. Not executed.",
+    "ui-dashboard/src/taskQueue.ts triggerFor and parseTransitionResult.",
+    "ui-dashboard/src/components/TaskQueue.tsx transition(), confirm(), actionLines(), button labels Start/Finish only.",
+    "ui-dashboard/src/components/__tests__/TaskQueue.transitions.test.tsx covers pending disable, cyan only after a fresh work read, yellow Finish, refused notes, failed/unknown, and superseded confirming reads. Not executed."
+  ],
+  "validation_status": "NOT_RUN"
+}

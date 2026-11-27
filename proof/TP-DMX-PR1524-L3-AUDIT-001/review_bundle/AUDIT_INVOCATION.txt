@@ -1,0 +1,17 @@
+PR #1524 audits (packet TP-DMX-PR1524-L3-AUDIT-001), head 467f1dfc23bc25455804223e26d11d4930c98947, base 0aa2cf3497c59f8c607f92986d01e7b7f2620919 (the merge-base with main)
+
+Prompt: scripts.audit.pal_clink_runner --build-prompt over the whole PR diff `git diff 0aa2cf349 467f1dfc2`
+(UNIFIED_DIFF.diff; this PR has no earlier proof files to exclude).
+Prompt sha256 ad8528058da54f95961d1568ccf29d7463a635e6aa228dcb29c0926ece70a4ce. Both runs used a sealed dir holding only AUDIT_PROMPT.txt, under
+~/.local/share/dopemux/evidence/pr1524/r1/. Each wrapper recorded `<runner> exit=$?` and the UTC end time.
+The bundle stores the AGY stream written as AGY_OUTPUT_RAW.jsonl under the name AGY_OUTPUT_RAW.txt (same bytes).
+
+GOVERNING (one attempt): agy 1.5.18 --model gemini-4-argon-high ; head=467f1dfc23bc25455804223e26d11d4930c98947 ; started=2026-11-27T04:56:29Z
+  cd <sealed agy dir, same prompt>
+  agy --model gemini-4-argon-high --sandbox --disable-slash-commands --output-format stream-json --print-timeout 20m --print="$(cat AUDIT_PROMPT.txt)" > AGY_OUTPUT_RAW.jsonl 2> AGY_STDERR.txt
+  wrapper: agy exit=0 2026-11-27T04:57:30Z   conversation_id=c35809af-ad0d-4891-83b5-e936fea126bc
+
+CORROBORATING: grok grok 1.0.92 (b06756fd6256) [stable] -m grok-4.7 --effort high contained ; head=467f1dfc23bc25455804223e26d11d4930c98947 ; started=2026-11-27T04:56:34Z
+  grok -m grok-4.7 --effort high --sandbox workspace --cwd <sealed grok dir> --system-prompt-override "You are an independent code auditor. You have no tools and no skills; do not request or load any. Read the audit request in the user message and reply only with the JSON object it specifies, nothing else." --disallowed-tools "$(cat GROK_DISALLOWED_TOOLS.txt)" --deny "Bash,Read,Edit,Write,WebFetch,WebSearch,XSearch,CallMcpTool,FetchMcpResource,ListMcpResources" --no-subagents --disable-web-search --no-plan --permission-mode default --max-turns 2 --verbatim --output-format streaming-messages-json --prompt-file AUDIT_PROMPT.txt > GROK_OUTPUT_RAW.jsonl 2> GROK_STDERR.txt
+  wrapper: grok exit=0 2026-11-27T05:00:57Z   session_id=01a21b5c-c605-7ce1-98ec-1cc3c82571b1
+  Tool probe before the run (content-free prompt, same denylist): init.tools == [] (GROK_INIT_TOOLS.json; raw probe in custody).
