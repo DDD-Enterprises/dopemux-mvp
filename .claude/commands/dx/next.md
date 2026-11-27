@@ -5,9 +5,9 @@ allowed-tools: [
   "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__get_next_item",
   "mcp__task-orchestrator__get_context",
-  "mcp__conport__conport_get_context"
+  "mcp__conport__get_custom_data"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:next — Pick the Next Work Item
@@ -99,7 +99,17 @@ Next actions:
 
 ## Phase 5: ConPort Cross-Check (Optional)
 
-If `mcp__conport__conport_get_context` is available, fetch it and look for `current_focus`. If set and matches one of the candidates, mark that candidate with a `(resuming previous focus)` annotation.
+If `mcp__conport__get_custom_data` is available, read the session record `/dx:implement` saves:
+
+```
+record = mcp__conport__get_custom_data(
+  workspace_id="$(git rev-parse --show-toplevel)",
+  category="dx_session",
+  key="last_session"
+)
+```
+
+Skip this phase if the read returns `Not found`. If `record.value.session_completed` is false and `record.value.current_task` matches one of the candidates, mark that candidate with a `(resuming previous focus)` annotation.
 
 This bridges interrupted sessions — the operator's prior intent surfaces alongside the next-best ranking.
 

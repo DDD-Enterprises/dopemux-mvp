@@ -1,0 +1,208 @@
+{
+  "id": "TP-DMX-CMD-REPAIR-W01-CONPORT-NAMES-001",
+  "project": "dopemux-mvp",
+  "target": "Replace the 8 non-existent `mcp__conport__conport_*` tool names and the 2 non-existent FTS tools (search_decisions_fts, search_custom_data_value_fts) in .claude/commands with live ConPort SSE tool names, aligning every documented argument with server.py signatures.",
+  "invariants": [
+    "MACRO I01-I10 apply (MACRO_PACKET.json objective + this package).",
+    "Rename map (exact, 1:1): `mcp__conport__conport_get_context` -> `mcp__conport__get_context`; `mcp__conport__conport_get_progress` -> `mcp__conport__get_progress`; `mcp__conport__conport_log_decision` -> `mcp__conport__log_decision`; `mcp__conport__conport_log_progress` -> `mcp__conport__log_progress`; `mcp__conport__conport_save_custom_data` -> `mcp__conport__save_custom_data`; `mcp__conport__conport_search_content` -> `mcp__conport__search_content`; `mcp__conport__conport_update_context` -> `mcp__conport__update_context`; `mcp__conport__conport_update_progress` -> `mcp__conport__update_progress`. The same map applies to bare mentions without the mcp__conport__ prefix.",
+    "FTS map: search_decisions_fts and search_custom_data_value_fts -> search_content(workspace_id, query). Drop `limit` (search_content has none) and instruct reading the top N results instead. Where a command already lists get_decisions as an alternative, keep get_decisions(workspace_id, limit).",
+    "Live signatures (docker/mcp-servers-source/conport/server.py): get_context: get_context(workspace_id: str) | get_progress: get_progress(workspace_id: str, status: Optional[str]=None, limit: int=20) | log_decision: log_decision(workspace_id: str, topic: str, decision: str, rationale: str, tags: Optional[List[str]]=None) | log_progress: log_progress(workspace_id: str, description: str, status: str='IN_PROGRESS', priority: str='medium', linked_decision_id: Optional[str]=None) | save_custom_data: save_custom_data(workspace_id: str, category: str, key: str, value: Any) | search_content: search_content(workspace_id: str, query: str) | update_context: update_context(workspace_id: str, context_data: dict) | update_progress: update_progress(progress_id: str, updates: dict) | get_decisions: get_decisions(workspace_id: Optional[str]=None, limit: int=10) | get_custom_data: get_custom_data(workspace_id: str, category: Optional[str]=None, key: Optional[str]=None)",
+    "Every example call carries workspace_id. Where an example omitted it, add the placeholder `\"workspace_id\": \"<workspace_root>\"` (the .claude/claude.md convention). Never invent concrete values.",
+    "Argument names in examples must match the signature parameter names (e.g. log_decision uses topic/decision/rationale/tags; log_progress uses description/status/priority/linked_decision_id). If a command's intent cannot be expressed with the live tool, STOP and return evidence (fallback trigger).",
+    "Only text in the listed files changes. Model pins (`model:` frontmatter) are NOT touched (W02 owns them)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-CMD-REPAIR-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-CMD-REPAIR-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "fix/cmd-repair-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(commands): use live ConPort SSE tool names and replace dead FTS tools",
+    "allowlist": [
+      ".claude/commands/bootstrap.md",
+      ".claude/commands/caveat.md",
+      ".claude/commands/decision.md",
+      ".claude/commands/doc-pull.md",
+      ".claude/commands/dx/context.md",
+      ".claude/commands/dx/implement.md",
+      ".claude/commands/dx/next.md",
+      ".claude/commands/followup.md",
+      ".claude/commands/mem-query.md",
+      ".claude/commands/mem-search.md",
+      ".claude/commands/mem/save.md",
+      ".claude/commands/mem/summarize.md",
+      ".claude/commands/pattern.md",
+      ".claude/commands/research-deep.md",
+      ".claude/commands/research-report.md",
+      ".claude/commands/runbook-update.md",
+      ".claude/commands/scratch.md",
+      ".claude/commands/search-decisions.md"
+    ],
+    "verify": [
+      "rg -n 'conport_[a-z]' .claude/commands ; test $? -eq 1",
+      "rg -n '_fts\\b' .claude/commands ; test $? -eq 1",
+      "git diff --name-only | sort  # must equal the W01 allowlist subset that changed"
+    ]
+  },
+  "pr": {
+    "title": "fix(commands): repair dead ConPort tool names, stale model pins and dead targets; add reference drift gate",
+    "body": "Implements MACRO-DMX-CMD-REPAIR-001 (W01-W04). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W01-S1",
+      "task": "Verify base and authority inputs",
+      "requirements": [
+        "Worktree HEAD == origin/main (fresh fetch); clean porcelain.",
+        "mcp_tool_surfaces.json servers.conport.source == 'live' and tools == the 17 names in server.py."
+      ],
+      "commands": [
+        "git rev-parse HEAD origin/main",
+        "python3 -c \"import json;print(sorted(json.load(open('mcp_tool_surfaces.json'))['servers']['conport']['tools']))\"",
+        "grep -nE '^async def ' docker/mcp-servers-source/conport/server.py"
+      ],
+      "expected_files": [],
+      "validation": [
+        "HEAD equals origin/main",
+        "conport tool list matches server.py"
+      ],
+      "context_files": [
+        "mcp_tool_surfaces.json",
+        "docker/mcp-servers-source/conport/server.py"
+      ]
+    },
+    {
+      "id": "W01-S2",
+      "task": "Apply rename + FTS maps and align arguments",
+      "requirements": [
+        "Edit only allowlisted files.",
+        "Preserve each command's intent, wording and structure; change tool names, argument names and examples only."
+      ],
+      "commands": [],
+      "expected_files": [
+        ".claude/commands/bootstrap.md",
+        ".claude/commands/caveat.md",
+        ".claude/commands/decision.md",
+        ".claude/commands/doc-pull.md",
+        ".claude/commands/dx/context.md",
+        ".claude/commands/dx/implement.md",
+        ".claude/commands/dx/next.md",
+        ".claude/commands/followup.md",
+        ".claude/commands/mem-query.md",
+        ".claude/commands/mem-search.md",
+        ".claude/commands/mem/save.md",
+        ".claude/commands/mem/summarize.md",
+        ".claude/commands/pattern.md",
+        ".claude/commands/research-deep.md",
+        ".claude/commands/research-report.md",
+        ".claude/commands/runbook-update.md",
+        ".claude/commands/scratch.md",
+        ".claude/commands/search-decisions.md"
+      ],
+      "validation": [
+        "verify commands exit 0"
+      ],
+      "context_files": [
+        ".claude/commands/bootstrap.md",
+        ".claude/commands/caveat.md",
+        ".claude/commands/decision.md",
+        ".claude/commands/doc-pull.md",
+        ".claude/commands/dx/context.md",
+        ".claude/commands/dx/implement.md",
+        ".claude/commands/dx/next.md",
+        ".claude/commands/followup.md",
+        ".claude/commands/mem-query.md",
+        ".claude/commands/mem-search.md",
+        ".claude/commands/mem/save.md",
+        ".claude/commands/mem/summarize.md",
+        ".claude/commands/pattern.md",
+        ".claude/commands/research-deep.md",
+        ".claude/commands/research-report.md",
+        ".claude/commands/runbook-update.md",
+        ".claude/commands/scratch.md",
+        ".claude/commands/search-decisions.md"
+      ]
+    },
+    {
+      "id": "W01-S3",
+      "task": "Return",
+      "requirements": [
+        "Report per file: references changed (old -> new), argument changes, any STOP.",
+        "Report advisor_calls and files_written."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-CMD-REPAIR-001",
+  "workstream_id": "W01",
+  "risk_lane": "L2",
+  "audit_group": "AGY-CMD-REPAIR-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-haiku-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [
+      {
+        "runner": "claude-code-agent",
+        "model": "claude-sonnet-5-5",
+        "effort": "UNKNOWN"
+      }
+    ],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    ".claude/commands/bootstrap.md",
+    ".claude/commands/caveat.md",
+    ".claude/commands/decision.md",
+    ".claude/commands/doc-pull.md",
+    ".claude/commands/dx/context.md",
+    ".claude/commands/dx/implement.md",
+    ".claude/commands/dx/next.md",
+    ".claude/commands/followup.md",
+    ".claude/commands/mem-query.md",
+    ".claude/commands/mem-search.md",
+    ".claude/commands/mem/save.md",
+    ".claude/commands/mem/summarize.md",
+    ".claude/commands/pattern.md",
+    ".claude/commands/research-deep.md",
+    ".claude/commands/research-report.md",
+    ".claude/commands/runbook-update.md",
+    ".claude/commands/scratch.md",
+    ".claude/commands/search-decisions.md"
+  ],
+  "canonical_writers": [
+    "W01-implementer"
+  ],
+  "semantic_scope": [
+    "conport-command-tool-names"
+  ],
+  "rollback_boundary": "git revert <W01 commit> on fix/cmd-repair-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}

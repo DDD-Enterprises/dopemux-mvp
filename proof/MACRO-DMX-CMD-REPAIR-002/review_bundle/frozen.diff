@@ -1,0 +1,277 @@
+diff --git a/.claude/commands/dx/implement.md b/.claude/commands/dx/implement.md
+index 16d33ceb6..b9484a06f 100644
+--- a/.claude/commands/dx/implement.md
++++ b/.claude/commands/dx/implement.md
+@@ -5,8 +5,8 @@ allowed-tools: [
+   "Bash", "Read", "Write", "Edit", "Grep", "Glob", "TodoWrite",
+   "mcp__conport__*",
+   "mcp__serena__*",
+-  "mcp__pal__apilookup",
+-  "mcp__pal__thinkdeep", "mcp__pal__debug", "mcp__pal__codereview"
++  "mcp__pal-stdio__apilookup",
++  "mcp__pal-stdio__thinkdeep", "mcp__pal-stdio__debug", "mcp__pal-stdio__codereview"
+ ]
+ model: "claude-sonnet-5-5"
+ ---
+diff --git a/.claude/commands/dx/note.md b/.claude/commands/dx/note.md
+index 31f139fed..667fd8c58 100644
+--- a/.claude/commands/dx/note.md
++++ b/.claude/commands/dx/note.md
+@@ -45,7 +45,7 @@ If upsert mode is missing `<id>` or `<key>`, stop and ask (do not guess a key).
+ - If `--role` not given, use the role from the schema entry. If the key isn't in the schema and no `--role` is given, stop and ask for `--role` (free-form keys still need a phase).
+ - **If the schema entry has a `skill` pointer** (e.g. `pal:analyze`, `verify`): suggest running it and pasting the output as the body:
+   ```
+-  💡 This note maps to skill "<skill>". Run it (e.g. mcp__pal__analyze) and paste the output,
++  💡 This note maps to skill "<skill>". Run it (e.g. mcp__pal-stdio__analyze) and paste the output,
+      or write the note directly. Guidance:
+      <guidance text>
+   ```
+diff --git a/.claude/commands/zen-continue.md b/.claude/commands/zen-continue.md
+deleted file mode 100644
+index 2d930a7cd..000000000
+--- a/.claude/commands/zen-continue.md
++++ /dev/null
+@@ -1,2 +0,0 @@
+-Continue after context overflow via **Zen** context revival.
+-Call: /mcp zen execute_workflow {"instruction":"context_recovery"}
+diff --git a/.claude/commands/zen.md b/.claude/commands/zen.md
+deleted file mode 100644
+index c5bd7ad60..000000000
+--- a/.claude/commands/zen.md
++++ /dev/null
+@@ -1,3 +0,0 @@
+-Route instruction to **Zen** for multi-model handling.
+-Call: /mcp zen execute_workflow {"instruction":"<multi-step instruction>"}
+-Examples: deep code review, long debugging, context-recovery.
+diff --git a/docs/02-how-to/mcp-integration-guide.md b/docs/02-how-to/mcp-integration-guide.md
+index ebfd69b06..34ac73a63 100644
+--- a/docs/02-how-to/mcp-integration-guide.md
++++ b/docs/02-how-to/mcp-integration-guide.md
+@@ -162,14 +162,17 @@ Dead-name traps (all found live in instruction surfaces during the P0 audit):
+ | `mcp__zen__*` | `mcp__pal-stdio__*` | PAL renamed; pal-stdio is the sole PAL surface (the pal `:3003/mcp` URL is fiction) |
+ | `serena-v2` / `mcp__serena-v2__*` | `mcp__serena__*` | catalog key is `serena` |
+ 
+-**Drift-gate coverage today**: `find_unknown_command_tool_surfaces` scans
+-`.claude/commands/*.md` — server-granular for every `mcp__<server>__<tool>`
+-reference, tool-granular for conport (via the static `_CONPORT_TOOL_SNAPSHOT`
+-in `fleet_catalog.py`). The full snapshot-backed, all-server, all-surface
+-tool-granular gate is MCPINT-FND-DRIFTGATE-003 (pending). Known snapshot holes:
+-stdio servers (pal-stdio, gpt-researcher, MCP_DOCKER) are captured as
+-`unreachable` with zero tools — their counts (18 / 5) stand on session evidence
+-until exec-transport capture lands.
++**Drift-gate coverage today**: two gates scan `.claude/commands/**/*.md`.
++`find_unknown_command_tool_surfaces` (`fleet_catalog.py`) is server-granular for
++every `mcp__<server>__<tool>` reference and tool-granular for conport, via the
++static `_CONPORT_TOOL_SNAPSHOT` — the 17 live ConPort SSE tool names (the old
++`conport_*` names are gone). `tests/arch/test_claude_command_references.py` checks
++`mcp__<server>__<tool>` and `/mcp <server> <tool>` references against every
++captured (live/seed) tool list in `mcp_tool_surfaces.json`, plus model pins and
++`scripts/` paths. The full snapshot-backed, all-server, all-surface gate is
++MCPINT-FND-DRIFTGATE-003 (pending). Known snapshot holes: stdio servers
++(pal-stdio, gpt-researcher, MCP_DOCKER) are captured as `unreachable` with zero
++tools, so their tool names cannot be verified until exec-transport capture lands.
+ 
+ ## 6. Debug runbook
+ 
+diff --git a/proof/MACRO-DMX-CMD-REPAIR-002/MACRO_PACKET.md b/proof/MACRO-DMX-CMD-REPAIR-002/MACRO_PACKET.md
+new file mode 100644
+index 000000000..68d45cff0
+--- /dev/null
++++ b/proof/MACRO-DMX-CMD-REPAIR-002/MACRO_PACKET.md
+@@ -0,0 +1,21 @@
++# MACRO-DMX-CMD-REPAIR-002 — MacroPacket (follow-up to MACRO-DMX-CMD-REPAIR-001)
++
++Issued by: control tower supervisor (this session). Authority: NONE beyond the operator chat task
++("Follow-up to MACRO-DMX-CMD-REPAIR-001 ... No push or merge."). Base: fix/cmd-repair-001 @ f082007ff.
++Forbidden: push, merge, PR, force-push, history rewrite, signing, audit-route changes.
++
++## Workstreams (disjoint write surfaces, serialized W07 -> W08 because W08's real-repo test needs W07 done)
++
++| WS | Objective | Write allowlist | Route |
++|---|---|---|---|
++| W07 | Retire `.claude/commands/zen.md` and `zen-continue.md` (server `zen` exists nowhere; renamed pal, PAL has no `execute_workflow`); repoint `mcp__pal__*` to `mcp__pal-stdio__*` in `dx/implement.md`, `dx/note.md`; fix stale snapshot paragraph in `docs/02-how-to/mcp-integration-guide.md` | the 2 deleted files, `.claude/commands/dx/implement.md`, `.claude/commands/dx/note.md`, `docs/02-how-to/mcp-integration-guide.md` | local supervisor (Sonnet 5.5) |
++| W08 | Enable `/mcp <server> <tool>` prose scan in `tests/arch/test_claude_command_references.py` with negative controls; tighten `_MCP_REF` (underscore servers, trailing boundary); recompute `UNVERIFIED_SERVERS` | `tests/arch/test_claude_command_references.py` | local supervisor (Sonnet 5.5) |
++
++TP_ROUTE (both): runner Claude Code, model claude-sonnet-5-5, effort runner-default (observed UNKNOWN). Why: edits are
++mechanical (<10 lines each, 5 files); spawning a child costs more context than doing the work. Exception to
++cost-first delegation recorded: no child dispatched. Advisor: supervisor-side only.
++
++## Acceptance
++`pytest tests/arch` green; black/flake8 clean on touched Python; `validate_change_contract` preflight PASS;
++one commit per workstream with explicit pathspec; final independent audit via operator-approved route = NOT_RUN
++(operator gate; gemini-3.1-pro-high availability UNKNOWN). Aggregate authority: NONE.
+diff --git a/tests/arch/test_claude_command_references.py b/tests/arch/test_claude_command_references.py
+index da3786169..1245ea268 100644
+--- a/tests/arch/test_claude_command_references.py
++++ b/tests/arch/test_claude_command_references.py
+@@ -5,8 +5,9 @@ root where repo state is needed) and returns a list of violation strings, so
+ the same helpers can be pointed at synthetic or historical command trees.
+ 
+ Checks:
+-1. ``mcp__<server>__<tool>`` names a tool in ``mcp_tool_surfaces.json``
+-   when the server has a captured (live/seed, non-empty) tool list.
++1. ``mcp__<server>__<tool>`` and ``/mcp <server> <tool>`` name a tool in
++   ``mcp_tool_surfaces.json`` when the server has a captured (live/seed,
++   non-empty) tool list.
+    ``mcp__<server>__*`` is a server reference only (no tool check).
+ 2. Every referenced MCP server (wildcards included) is known to the surfaces
+    snapshot, the MCP catalog or ``.mcp.json``; referenced servers with no
+@@ -27,7 +28,7 @@ COMMANDS_DIR = REPO_ROOT / ".claude" / "commands"
+ # Servers referenced by commands that have no captured tool list, so their tool
+ # names cannot be verified. A new unverifiable server must be added here
+ # deliberately; a server that gains a captured list must be removed.
+-UNVERIFIED_SERVERS = frozenset({"pal", "gpt-researcher"})
++UNVERIFIED_SERVERS = frozenset({"pal-stdio", "gpt-researcher"})
+ 
+ ALLOWED_COMMAND_MODELS = frozenset(
+     {
+@@ -42,13 +43,18 @@ ALLOWED_COMMAND_MODELS = frozenset(
+ )
+ 
+ _CAPTURED_SOURCES = frozenset({"live", "seed"})
+-# Tool token: a bare ``*`` (server wildcard) or a full name with optional
+-# hyphenated parts, so ``get_context-foo`` is not truncated to ``get_context``.
+-_MCP_TOOL = r"(\*|[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*)"
+-_MCP_REF = re.compile(r"mcp__([A-Za-z0-9-]+)__" + _MCP_TOOL)
+-# NOTE: the ``/mcp <server> <tool>`` prose form is intentionally unchecked.
+-# zen.md and zen-continue.md currently reference a nonexistent ``zen`` server
+-# (follow-up packet); a prose scan would flag them.
++# Tool token: any run of name characters (or a bare ``*`` server wildcard) up
++# to a non-name character, so malformed tokens such as ``get_context--bad`` or
++# ``*bad`` are captured whole and reported instead of truncating to a valid
++# prefix. Server names may contain single underscores (``MCP_DOCKER``); the
++# ``__`` separator ends the lazy server group.
++_MCP_TOOL = r"([A-Za-z0-9_*-]+)"
++_MCP_SERVER = r"([A-Za-z0-9-]+(?:_[A-Za-z0-9-]+)*?)"
++_MCP_REF = re.compile(r"mcp__" + _MCP_SERVER + r"__" + _MCP_TOOL)
++# Prose form ``/mcp <server> <tool>``.
++_MCP_PROSE_REF = re.compile(
++    r"(?<![\w/])/mcp\s+([A-Za-z0-9_-]+)\s+([A-Za-z0-9_*-]+)"
++)
+ # Repo-root ``scripts/`` paths, optionally ``./scripts/`` (not nested).
+ _SCRIPT_PATH = r"scripts/[A-Za-z0-9_./-]+\.(?:py|sh)\b"
+ _SCRIPT_REF = re.compile(r"(?<![\w/.-])(?:\./)?" + _SCRIPT_PATH)
+@@ -60,13 +66,14 @@ def _command_files(commands_dir: Path) -> list[Path]:
+ 
+ 
+ def _mcp_refs(commands_dir: Path):
+-    """Yield (location, server, tool) for every mcp__server__tool mention."""
++    """Yield (location, server, tool) for mcp__s__t or /mcp s t mentions."""
+     for path in _command_files(commands_dir):
+         rel = path.relative_to(commands_dir)
+         text = path.read_text(encoding="utf-8")
+         for lineno, line in enumerate(text.splitlines(), start=1):
+-            for match in _MCP_REF.finditer(line):
+-                yield f"{rel}:{lineno}", match.group(1), match.group(2)
++            for pattern in (_MCP_REF, _MCP_PROSE_REF):
++                for match in pattern.finditer(line):
++                    yield f"{rel}:{lineno}", match.group(1), match.group(2)
+ 
+ 
+ def _surface_servers(repo_root: Path) -> dict:
+@@ -225,21 +232,23 @@ def test_should_report_violation_when_server_is_unknown(tmp_path):
+ 
+ 
+ def test_should_report_violation_when_unverified_server_unlisted(tmp_path):
+-    _write_command(tmp_path, "Use `mcp__pal__thinkdeep` here.")
++    _write_command(tmp_path, "Use `mcp__pal-stdio__thinkdeep` here.")
+ 
+     violations = check_mcp_servers(tmp_path, REPO_ROOT, unverified=frozenset())
+ 
+-    assert any("'pal'" in v and "UNVERIFIED_SERVERS" in v for v in violations)
++    assert any(
++        "'pal-stdio'" in v and "UNVERIFIED_SERVERS" in v for v in violations
++    )
+ 
+ 
+ def test_should_report_violation_when_unverified_entry_is_stale(tmp_path):
+     _write_command(tmp_path, "Use `mcp__conport__get_context` here.")
+ 
+-    stale = frozenset({"pal"})
++    stale = frozenset({"pal-stdio"})
+ 
+     violations = check_mcp_servers(tmp_path, REPO_ROOT, unverified=stale)
+ 
+-    assert any("UNVERIFIED_SERVERS entry 'pal'" in v for v in violations)
++    assert any("UNVERIFIED_SERVERS entry 'pal-stdio'" in v for v in violations)
+ 
+ 
+ def test_should_report_violation_when_model_pin_is_stale(tmp_path):
+@@ -303,11 +312,13 @@ def test_should_accept_wildcard_when_server_is_known_and_captured(tmp_path):
+ def test_should_require_unverified_listing_when_wildcard_server_uncaptured(
+     tmp_path,
+ ):
+-    _write_command(tmp_path, "Use `mcp__pal__*` here.")
++    _write_command(tmp_path, "Use `mcp__pal-stdio__*` here.")
+ 
+     violations = check_mcp_servers(tmp_path, REPO_ROOT, unverified=frozenset())
+ 
+-    assert any("'pal'" in v and "UNVERIFIED_SERVERS" in v for v in violations)
++    assert any(
++        "'pal-stdio'" in v and "UNVERIFIED_SERVERS" in v for v in violations
++    )
+ 
+ 
+ def test_should_report_violation_when_dot_slash_script_is_missing(tmp_path):
+@@ -332,3 +343,61 @@ def test_should_ignore_nested_scripts_dir_when_not_repo_root_scripts(tmp_path):
+     _write_command(tmp_path, "See foo/scripts/x.py and xscripts/a.py.")
+ 
+     assert check_script_refs(tmp_path, REPO_ROOT) == []
++
++
++# --- Prose scan and regex-edge negative controls (follow-up W08) -----------
++
++
++def test_should_report_violation_when_prose_tool_is_not_captured(tmp_path):
++    _write_command(tmp_path, "Call: /mcp conport no_such_tool {}")
++
++    violations = check_mcp_tool_refs(tmp_path, REPO_ROOT)
++
++    assert len(violations) == 1
++    assert "mcp__conport__no_such_tool" in violations[0]
++
++
++def test_should_report_violation_when_prose_server_is_unknown(tmp_path):
++    _write_command(tmp_path, "Call: /mcp zen execute_workflow {}")
++
++    violations = check_mcp_servers(tmp_path, REPO_ROOT)
++
++    assert any("unknown MCP server 'zen'" in v for v in violations)
++
++
++def test_should_accept_prose_reference_when_tool_is_captured(tmp_path):
++    _write_command(tmp_path, "Call: /mcp conport get_context {}")
++
++    assert check_mcp_tool_refs(tmp_path, REPO_ROOT) == []
++    assert check_mcp_servers(tmp_path, REPO_ROOT, frozenset()) == []
++
++
++def test_should_ignore_slash_mcp_when_embedded_in_a_path(tmp_path):
++    _write_command(tmp_path, "See docs/mcp zen thing and a/mcp zen x.")
++
++    assert list(_mcp_refs(tmp_path)) == []
++
++
++def test_should_report_violation_when_tool_token_is_malformed(tmp_path):
++    _write_command(tmp_path, "Use `mcp__conport__get_context--bad` here.")
++
++    violations = check_mcp_tool_refs(tmp_path, REPO_ROOT)
++
++    assert len(violations) == 1
++    assert "get_context--bad" in violations[0]
++
++
++def test_should_report_violation_when_wildcard_has_trailing_garbage(tmp_path):
++    _write_command(tmp_path, "Use `mcp__conport__*bad` here.")
++
++    violations = check_mcp_tool_refs(tmp_path, REPO_ROOT)
++
++    assert len(violations) == 1
++
++
++def test_should_parse_server_name_when_it_contains_an_underscore(tmp_path):
++    _write_command(tmp_path, "Use `mcp__MCP_DOCKER__some_tool` here.")
++
++    servers = {s for _loc, s, _t in _mcp_refs(tmp_path)}
++
++    assert servers == {"MCP_DOCKER"}

@@ -5,7 +5,7 @@ allowed-tools: [
   "Bash(git rev-parse:*)", "Read",
   "mcp__task-orchestrator__get_blocked_items"
 ]
-model: "claude-sonnet-4-5"
+model: "claude-sonnet-5-5"
 ---
 
 # /dx:blocked — Blocked Work-Items

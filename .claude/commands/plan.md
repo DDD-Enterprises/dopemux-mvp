@@ -1,4 +1,4 @@
-Use sequential_thinking to produce ≤5 steps with:
+Use the PAL `planner` tool (MCP server `pal-stdio`) to produce ≤5 steps with:
 - files to touch, tests to write first, rollback plan, doc updates.
 - Store plan summary to repo docs (`docs/**`) + ConPort decision/progress:/docs/plans/<id>.md
 

@@ -1,0 +1,126 @@
+{
+  "id": "TP-DMX-CMD-REPAIR-W03-DEAD-TARGETS-001",
+  "project": "dopemux-mvp",
+  "target": "Repoint or remove the 5 dead targets referenced by slash commands: scripts/adr_new.py and scripts/docs_manifest.py (adr-new.md), scripts/docs_manifest.py (doc-new.md), scripts/set-profile.sh (safe.md), the `sequential_thinking` tool (plan.md) and the `task-master-ai` MCP server (plan-tasks.md).",
+  "invariants": [
+    "MACRO I01-I10 apply (MACRO_PACKET.json objective + this package).",
+    "Every replacement target must exist in the worktree, and the return must cite its path, CLI command or MCP tool name (MCP tools must appear in mcp_tool_surfaces.json or mcp_catalog.yaml). If no real equivalent exists, remove the dead step and add one line stating the capability is unavailable.",
+    "Hints, to verify (not instructions to trust): ADR numbering can be derived by listing docs/90-adr/ (mixed `adr-NNN-*` naming, 125 files). No docs_manifest generator was found; scripts/check_docs_hygiene.py references docs_index.yaml. `dopemux profile use <name>` exists (src/dopemux/profile_commands.py:112). task-orchestrator exposes create_work_tree (mcp_tool_surfaces.json). pal-stdio is in mcp_catalog.yaml.",
+    "No new scripts, commands, MCP config or catalog entries (I05)."
+  ],
+  "depends_on": [],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-CMD-REPAIR-001",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-CMD-REPAIR-001",
+    "final_packet": false
+  },
+  "execution": {
+    "agent": "claude",
+    "branch": "fix/cmd-repair-001",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(commands): repoint or remove dead script and MCP targets",
+    "allowlist": [
+      ".claude/commands/adr-new.md",
+      ".claude/commands/doc-new.md",
+      ".claude/commands/plan-tasks.md",
+      ".claude/commands/plan.md",
+      ".claude/commands/safe.md"
+    ],
+    "verify": [
+      "for f in scripts/adr_new.py scripts/docs_manifest.py scripts/set-profile.sh; do rg -n \"$f\" .claude/commands && exit 1; done; true",
+      "rg -n 'sequential_thinking|task-master-ai' .claude/commands ; test $? -eq 1"
+    ]
+  },
+  "pr": {
+    "title": "fix(commands): repair dead ConPort tool names, stale model pins and dead targets; add reference drift gate",
+    "body": "Implements MACRO-DMX-CMD-REPAIR-001 (W01-W04). Draft until the final independent L2 audit and operator review.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W03-S1",
+      "task": "Resolve each dead target",
+      "requirements": [
+        "For each of the 5 references decide REPOINT (cite existing target) or REMOVE (state unavailable)."
+      ],
+      "commands": [
+        "ls docs/90-adr | tail",
+        "rg -n 'docs_index' scripts",
+        "rg -n 'create_work_tree' mcp_tool_surfaces.json"
+      ],
+      "expected_files": [
+        ".claude/commands/adr-new.md",
+        ".claude/commands/doc-new.md",
+        ".claude/commands/plan-tasks.md",
+        ".claude/commands/plan.md",
+        ".claude/commands/safe.md"
+      ],
+      "validation": [
+        "verify commands exit 0"
+      ],
+      "context_files": [
+        ".claude/commands/adr-new.md",
+        ".claude/commands/doc-new.md",
+        ".claude/commands/plan-tasks.md",
+        ".claude/commands/plan.md",
+        ".claude/commands/safe.md"
+      ]
+    },
+    {
+      "id": "W03-S2",
+      "task": "Return",
+      "requirements": [
+        "Decision table: reference -> REPOINT/REMOVE -> evidence path. advisor_calls, files_written."
+      ],
+      "commands": [
+        "git diff --stat"
+      ],
+      "expected_files": [],
+      "validation": [
+        "diff limited to allowlist"
+      ],
+      "context_files": []
+    }
+  ],
+  "schema_version": "dopemux.governed_execution.task_packet.v2",
+  "macro_id": "MACRO-DMX-CMD-REPAIR-001",
+  "workstream_id": "W03",
+  "risk_lane": "L2",
+  "audit_group": "AGY-CMD-REPAIR-001",
+  "execution_requirements": {
+    "preferred_route": {
+      "runner": "claude-code-agent",
+      "model": "claude-sonnet-5-5",
+      "effort": "UNKNOWN"
+    },
+    "allowed_fallbacks": [],
+    "binding": "LIVE_PROOF_REQUIRED",
+    "auditor_independence": "DIFFERENT_FAMILY"
+  },
+  "write_surface": [
+    ".claude/commands/adr-new.md",
+    ".claude/commands/doc-new.md",
+    ".claude/commands/plan-tasks.md",
+    ".claude/commands/plan.md",
+    ".claude/commands/safe.md"
+  ],
+  "canonical_writers": [
+    "W03-implementer"
+  ],
+  "semantic_scope": [
+    "command-dead-targets"
+  ],
+  "rollback_boundary": "git revert <W03 commit> on fix/cmd-repair-001 (REVERT_COMMITS); base 95e95bee88cae5e6c95e6e34f7c28bb423ad9496",
+  "operator_gate_required": true,
+  "receipt_refs": {},
+  "authority": "NONE"
+}
