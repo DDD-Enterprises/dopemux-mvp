@@ -1,0 +1,38 @@
+{
+  "status": "ok",
+  "verdict": "PASS",
+  "findings": [],
+  "risks": [
+    "External writer TOCTOU window: while _WRITE_LOCK serializes requests within the backend process and re-verifies the port 7890 container ID after reading the item role, an external runner writing directly to port 7890 can still transition the item between read_item_role and send_transition; parse_transition_result mitigates this by detecting unexpected (previousRole, newRole) pairs and surfacing them in reason.",
+    "Unverified actor attribution: transitions are sent as actor {id: 'operator:cockpit', kind: 'user'}, which the Task Orchestrator records without cryptographic verification until Wave 2C lands.",
+    "Browser-bundled API key: when VITE_DASHBOARD_API_KEY is configured for the frontend, the secret is present in client bundle assets, so the backend must remain bound to 127.0.0.1 as documented in services/adhd-dashboard/README.md.",
+    "Candidate tests were reviewed statically from the diff only and were not executed in this embedded audit because candidate code execution and tools are disabled (validation_status=NOT_RUN)."
+  ],
+  "rationale": "Audited PR #1524 for repository DDD-Enterprises/dopemux-mvp at head SHA 467f1dfc23bc25455804223e26d11d4930c98947 against base SHA 0aa2cf3497c59f8c607f92986d01e7b7f2620919. Provenance metadata (repo, pr_number, head_sha, base_sha) and the 10 changed files in the diff match the trusted envelope, and instruction_like_scan_summary reported no detections (detected=false, match_count=0). The change implements the Start/Finish task transition slice (POST /api/tasks/{item_id}/transition) across the ADHD dashboard backend and UI. On the backend, handle_transition_request fails closed (403 when DASHBOARD_API_KEY is unset, 401 when X-API-Key does not match via hmac.compare_digest, 400 on malformed JSON body), enforces a strict send-site allow-list in _check_call (only query_items get and single-item advance_item with trigger start or complete), validates lowercase UUID item_id and UUID request_id, serializes read-check-write under _WRITE_LOCK, verifies port 7890 project ownership and container_id continuity both before and after reading the item role, enforces role preconditions (start only from queue, complete only from work), distinguishes pre-send failures (McpReadError -> nothing was written) from post-send failures (TransitionOutcomeUnknown -> outcome is unknown), and bounds/sanitizes orchestrator error text without leaking internal session details or container IDs. On the frontend, TaskQueue.tsx and taskQueue.ts expose only Start on queue items and Finish on work items, avoid optimistic state mutations by always re-reading GET /api/tasks after a write, prevent superseded reads from falsely confirming transitions, and respect brand status color tokens.",
+  "inspected_paths": [
+    "claudedocs/design/ui-dashboard-audit-2026-10-30.md",
+    "services/adhd-dashboard/README.md",
+    "services/adhd-dashboard/backend.py",
+    "services/adhd-dashboard/orchestrator_transitions.py",
+    "services/adhd-dashboard/tests/test_orchestrator_transitions.py",
+    "ui-dashboard/src/components/TaskQueue.tsx",
+    "ui-dashboard/src/components/__tests__/TaskQueue.test.tsx",
+    "ui-dashboard/src/components/__tests__/TaskQueue.transitions.test.tsx",
+    "ui-dashboard/src/taskQueue.test.ts",
+    "ui-dashboard/src/taskQueue.ts"
+  ],
+  "evidence_refs": [
+    "services/adhd-dashboard/backend.py:468-493 (post_task_transition route wiring, X-API-Key pass-through, and fallback 500 JSON contract payload)",
+    "services/adhd-dashboard/orchestrator_transitions.py:59-77 (ALLOWED_TRIGGERS, EXPECTED_MOVE, ACTOR, _UUID regex, _WRITE_LOCK, and TransitionOutcomeUnknown)",
+    "services/adhd-dashboard/orchestrator_transitions.py:130-199 (_check_call send-site allow-list and _call_tool pre-send vs post-send error classification)",
+    "services/adhd-dashboard/orchestrator_transitions.py:254-290 (parse_transition_result role validation, unexpected move detection, cascade reporting, and bounded refusal reason/missing_notes extraction)",
+    "services/adhd-dashboard/orchestrator_transitions.py:295-368 (transition_item UUID/trigger validation, _WRITE_LOCK serialization, dual check_owner verification with container_id equality, and role precondition check)",
+    "services/adhd-dashboard/orchestrator_transitions.py:374-408 (handle_transition_request fail-closed DASHBOARD_API_KEY check and hmac.compare_digest verification)",
+    "services/adhd-dashboard/tests/test_orchestrator_transitions.py:124-638 (unit test coverage for allow-list, UUID validation, dual ownership checks, role preconditions, lock serialization, MCP error isolation, and FastAPI route integration)",
+    "ui-dashboard/src/taskQueue.ts:79-129 (triggerFor mapping and parseTransitionResult schema validation)",
+    "ui-dashboard/src/components/TaskQueue.tsx:100-109 (confirm helper requiring non-superseded fresh read listing the item in work or queue)",
+    "ui-dashboard/src/components/TaskQueue.tsx:182-230 (transition handler guarding concurrent clicks via writing.current, posting with crypto.randomUUID(), and re-reading queue state)",
+    "ui-dashboard/src/components/__tests__/TaskQueue.transitions.test.tsx:83-276 (UI tests verifying Start/Finish controls, pending state, confirmed/unconfirmed/refused/failed states, color tokens, and superseded read handling)"
+  ],
+  "validation_status": "NOT_RUN"
+}
