@@ -7,10 +7,42 @@
   "head_sha": "dopemux-mvp 28ee38ebf (code head, audited); dispatch-desk 84bff89a3683c9796f91ad4f47157f5462ebcd2c",
   "commit_sha": "dopemux-mvp 28ee38ebf; dispatch-desk 84bff89a3683c9796f91ad4f47157f5462ebcd2c",
   "routes": [
-    {"workstream": "coordinator", "runner": "claude-code", "model_requested": "claude-opus-5-5", "model_observed": "UNKNOWN", "effort": "UNKNOWN", "skills": ["task-packet"]},
-    {"workstream": "S1", "runner": "claude-code", "model_requested": "claude-sonnet-5-5", "model_observed": "UNKNOWN", "effort": "medium", "skills": []},
-    {"workstream": "S2", "runner": "claude-code", "model_requested": "claude-sonnet-5-5", "model_observed": "UNKNOWN", "effort": "medium", "skills": []},
-    {"workstream": "final-audit", "runner": "grok-cli", "model_requested": "grok-4.7", "model_observed": "UNKNOWN", "effort": "UNKNOWN", "skills": ["independent-audit"]}
+    {
+      "workstream": "coordinator",
+      "runner": "claude-code",
+      "model_requested": "claude-opus-5-5",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "task-packet"
+      ]
+    },
+    {
+      "workstream": "S1",
+      "runner": "claude-code",
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "UNKNOWN",
+      "effort": "medium",
+      "skills": []
+    },
+    {
+      "workstream": "S2",
+      "runner": "claude-code",
+      "model_requested": "claude-sonnet-5-5",
+      "model_observed": "UNKNOWN",
+      "effort": "medium",
+      "skills": []
+    },
+    {
+      "workstream": "final-audit",
+      "runner": "grok-cli",
+      "model_requested": "grok-4.7",
+      "model_observed": "UNKNOWN",
+      "effort": "UNKNOWN",
+      "skills": [
+        "independent-audit"
+      ]
+    }
   ],
   "slices": [
     "S1 dispatch-desk: GO is read-only; bad project/task ids rejected before the ledger is read (exit 2 preserved)",
@@ -23,31 +55,84 @@
     "dopemux-mvp: tests/unit/test_dispatch_gate.py"
   ],
   "validations": [
-    {"command": "dispatch-desk: python3 -m unittest discover -s tools -p 'test_*.py' (supervisor re-run)", "exit_code": 0, "bucket": "PASS", "reason": "72 tests OK"},
-    {"command": "dispatch-desk S1 red run of new tests on base code (writer)", "exit_code": 1, "bucket": "PASS", "reason": "3 new GO tests failed on base as expected; not re-run by supervisor"},
-    {"command": "dopemux-mvp: pytest -q tests/unit/test_dispatch_gate.py tests/test_native_hooks_workflow.py (supervisor re-run)", "exit_code": 0, "bucket": "PASS", "reason": "50 passed"},
-    {"command": "dopemux-mvp: flake8 dispatch_gate.py test_dispatch_gate.py (supervisor re-run)", "exit_code": 0, "bucket": "PASS", "reason": "no output"},
-    {"command": "dopemux-mvp: S2 red check, base client logic with empty _PINNED, new tests kept (supervisor)", "exit_code": 1, "bucket": "PASS", "reason": "all 7 new tests failed as expected; file restored, diff stat unchanged"},
-    {"command": "end-to-end: new client against real gate files, temporary ledger (supervisor)", "exit_code": 0, "bucket": "PASS", "reason": "84bff89 gate: GO with and without task, ledger not created; 456244f gate: UNKNOWN 'gate identity unverified', not run; after a project pause: PAUSE_REQUESTED via the verified ledger.py copy; no temp dirs left; ~/.dispatch-desk not created"},
-    {"command": "git diff --name-only equals allowlist (both repos)", "exit_code": 0, "bucket": "PASS", "reason": "two files per repo"},
-    {"command": "full make test / full pre-commit", "exit_code": null, "bucket": "NOT_RUN", "reason": "out of packet scope; focused synthetic tests only"}
+    {
+      "command": "dispatch-desk: python3 -m unittest discover -s tools -p 'test_*.py' (supervisor re-run)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "72 tests OK"
+    },
+    {
+      "command": "dispatch-desk S1 red run of new tests on base code (writer)",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "reason": "3 new GO tests failed on base as expected; not re-run by supervisor"
+    },
+    {
+      "command": "dopemux-mvp: pytest -q tests/unit/test_dispatch_gate.py tests/test_native_hooks_workflow.py (supervisor re-run)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "50 passed"
+    },
+    {
+      "command": "dopemux-mvp: flake8 dispatch_gate.py test_dispatch_gate.py (supervisor re-run)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "no output"
+    },
+    {
+      "command": "dopemux-mvp: S2 red check, base client logic with empty _PINNED, new tests kept (supervisor)",
+      "exit_code": 1,
+      "bucket": "PASS",
+      "reason": "all 7 new tests failed as expected; file restored, diff stat unchanged"
+    },
+    {
+      "command": "end-to-end: new client against real gate files, temporary ledger (supervisor)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "84bff89 gate: GO with and without task, ledger not created; 456244f gate: UNKNOWN 'gate identity unverified', not run; after a project pause: PAUSE_REQUESTED via the verified ledger.py copy; no temp dirs left; ~/.dispatch-desk not created"
+    },
+    {
+      "command": "git diff --name-only equals allowlist (both repos)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "two files per repo"
+    },
+    {
+      "command": "full make test / full pre-commit",
+      "exit_code": null,
+      "bucket": "NOT_RUN",
+      "reason": "out of packet scope; focused synthetic tests only"
+    },
+    {
+      "command": "Grok round 2: exact dispatch-desk discover and exact two-file pytest (auditor)",
+      "exit_code": 0,
+      "bucket": "PASS",
+      "reason": "72 tests OK; 50 passed"
+    }
   ],
   "codereview_status": "NOT_RUN",
   "precommit_status": "NOT_RUN",
-  "audit": {"required": true, "status": "NEEDS_SUPERVISOR", "route": "grok-cli grok-4.7, sealed read-only git-archive export, web search disabled, no subagents; no findings; exact suite commands NOT_RUN by the auditor because some tests open loopback sockets (127.0.0.1, redis localhost, docker ps)"},
-  "pr_url_or_blocker": "No PR (forbidden by the packet). Blocker: owner decision on whether the auditor may run the two exact suite commands that open loopback connections, then a re-audit; or narrow the packet commands and re-audit.",
+  "audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "route": "grok-cli grok-4.7, round 2 on 2026-11-26 (round 1 NEEDS_SUPERVISOR); sealed read-only git-archive export of the same pinned commits; loopback allowed by the owner in chat 2026-11-26, no other network; web search disabled; no subagents; both exact suites exit 0 (72 OK, 50 passed); one low finding F1; acceptance NOT_GRANTED"
+  },
+  "pr_url_or_blocker": "No PR (forbidden by the packet). Open: operator decision on low finding F1, then push, PR and merge of both repos together remain operator gates.",
   "residual_risks": [
+    "F1 (low, auditor): a project id outside the ledger ID pattern, with no task, now exits 2 instead of GO; the hook maps that to UNKNOWN and still allows work (dispatch-desk tools/gate.py:31).",
     "Both changes must land together: the dopemux client pins dispatch-desk 84bff89, so it reports UNKNOWN against the current dispatch-desk main (456244f) until 84bff89 is merged there.",
     "Any future change to dispatch-desk gate.py or ledger.py needs a matching pin update in dopemux-mvp.",
     "Same-user replacement of the temp copy between write and interpreter read (auditor residual); the temp dir is mode 0700.",
     "_read_verified has no deadline; a blocking ledger.py (e.g. a FIFO) can stall session start before UNKNOWN (auditor residual).",
     "rmtree with ignore_errors can leave a temp dir (auditor residual).",
-    "A refusal that passes a task id still appends one gate_checked line per check during a pause (unchanged behaviour)."
+    "A refusal that passes a task id still appends one gate_checked line per check during a pause (unchanged behaviour).",
+    "Auditor: no automated test runs the pinned gate bytes through the temp-copy path; the supervisor end-to-end run did (recorded in validations) but it is not a committed test.",
+    "subprocess.run timeout does not reap the child (auditor)."
   ],
   "unknowns": [
     "Observed model identity for every route (no runtime receipts).",
-    "Grok plan usage for this run: billing not readable outside the Grok app; no payment or API-key prompt appeared.",
-    "The original Possie wording of item 1; scope was reconstructed from Codex memory summaries and confirmed by the owner."
+    "The original Possie wording of item 1; scope was reconstructed from Codex memory summaries and confirmed by the owner.",
+    "Grok plan usage for both audit runs: not readable outside the Grok app; no payment or API-key prompt appeared."
   ],
   "cleanup_status": "Both worktrees clean after local commits; nothing pushed; no remote branches; real ledger untouched; sealed audit export in the session scratchpad."
 }
