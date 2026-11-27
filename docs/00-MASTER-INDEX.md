@@ -236,6 +236,15 @@ Status: [LOGGED] Topology Complete
 - [Workflow Kit Architecture](04-explanation/workflow-kit-architecture.md)
 - [PR Merge Queue Orchestration](04-explanation/pr-merge-queue-orchestration.md)
 
+### Claude Code Mods and Merge Gates
+- [Dopemux Claude Code Mods](04-explanation/claude-code-mods.md) - what a mod is and how Pulse, Route Ledger and Memory Bridge differ (none has run live)
+- [Pulse Reference](03-reference/mods/pulse.md)
+- [Route Ledger Reference](03-reference/mods/route-ledger.md)
+- [Memory Bridge Reference](03-reference/mods/memory-bridge.md)
+- [Claude Code Mods Live Verification](92-runbooks/claude-code-mods-live-verification.md) - first real-session run and how to record it
+- [Merging Signed-Proof PRs Under the Up-to-Date Rule](92-runbooks/signed-proof-merge-order.md)
+- [Command Drift Gate](03-reference/command-drift-gate.md) - gate for `.claude/commands/`
+
 ### RFCs
 - [Workflow Kit Pickle Mechanics Transfer](91-rfc/workflow-kit-pickle-mechanics-transfer.md)
 
