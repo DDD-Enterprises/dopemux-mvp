@@ -595,6 +595,400 @@ def _codes(findings):
     return [f["code"] for f in findings]
 
 
+@pytest.mark.parametrize("operation", ["start", "restart"])
+def test_existing_only_pending_preflight_precedes_all_effects(
+    tmp_path, monkeypatch, operation
+):
+    from dopemux.mcp import conport_tenant as ct
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    repo = _fixture_repo(tmp_path)
+    identity = resolve_identity_view(repo)
+    path = ct.secrets_path(identity.project_id)
+    ct.write_secrets(
+        path,
+        ct.TenantCredentials(
+            "conport_existing", "conport_existing", "synthetic-password"
+        ),
+    )
+    path.with_name(ct.STATE_FILENAME).write_text("gate")
+    monkeypatch.setenv(ct.EXISTING_ONLY_ENV, "true")
+    runner = _recording_runner()
+    result = run_lifecycle(
+        operation,
+        repo=repo,
+        services=["conport"],
+        catalog=_catalog(),
+        registry_path=tmp_path / "instances.json",
+        docker_runner=_docker_empty(),
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda _: True,
+    )
+    assert result.exit_code == 1
+    assert "CONPORT_TENANT_EXISTING_ONLY_REQUIRED" in _codes(result.blocking_findings)
+    assert not runner.calls and not (tmp_path / "instances.json").exists()
+    assert path.with_name(ct.STATE_FILENAME).read_text() == "gate"
+
+
+def test_existing_only_lifecycle_keeps_captured_mode_during_resolution(
+    tmp_path, monkeypatch
+):
+    import contextlib
+    from dopemux.mcp import conport_tenant as ct
+    from dopemux.mcp.runtime_state import resolve_identity_view
+
+    repo = _fixture_repo(tmp_path)
+    identity = resolve_identity_view(repo)
+    path = ct.secrets_path(identity.project_id)
+    ct.write_secrets(
+        path,
+        ct.TenantCredentials(
+            "conport_existing", "conport_existing", "synthetic-password"
+        ),
+    )
+    monkeypatch.setenv(ct.EXISTING_ONLY_ENV, "true")
+
+    @contextlib.contextmanager
+    def lock(project_id):
+        path.with_name(ct.STATE_FILENAME).write_text("database:001")
+        monkeypatch.setenv(ct.EXISTING_ONLY_ENV, "false")
+        yield
+
+    monkeypatch.setattr(ct, "provision_lock", lock)
+    runner = _recording_runner()
+    result = run_lifecycle(
+        "start",
+        repo=repo,
+        services=["conport"],
+        catalog=_catalog(),
+        registry_path=tmp_path / "instances.json",
+        docker_runner=_docker_empty(),
+        cmd_runner=runner,
+        product_root=_product(tmp_path),
+        process_env={},
+        skip_doctor=True,
+        port_is_free_fn=lambda _: True,
+    )
+    assert result.exit_code == 1
+    assert not any(c["kind"] in {"up", "other"} for c in runner.calls)
+    assert path.with_name(ct.STATE_FILENAME).read_text() == "database:001"
+
+
+def _eventbus_start(
+    tmp_path,
+    declarations="",
+    *,
+    running_mode=None,
+    process_env=None,
+    dry_run=False,
+    operation="start",
+    retain_running_after_stop=False,
+):
+    repo = _fixture_repo(tmp_path)
+    with (repo / ".envrc.dopemux-mcp").open("a") as stream:
+        stream.write(declarations)
+    reg = tmp_path / "reg" / "instances.json"
+    runner = _recording_runner()
+    running = [True]
+    snapshot = _docker_empty()
+    if running_mode is not None:
+        from dopemux.mcp import docker_inspect as di
+        from dopemux.mcp.runtime_state import resolve_identity_view
+
+        identity = resolve_identity_view(repo)
+        name = dr.container_name_for(
+            dr.project_slug(repo.name), identity.worktree_hash, "dope-memory"
+        )
+        row = di.DockerContainerInfo(
+            id="memory",
+            name=name,
+            image="memory",
+            status="Up",
+            labels={
+                dr.LABEL_MANAGED: "true",
+                "dopemux.project_id": identity.project_id,
+                "dopemux.service": "dope-memory",
+            },
+            published_ports=[],
+        )
+        snapshot = lambda *args, **kwargs: SimpleNamespace(
+            returncode=0, stdout="", stderr=""
+        )
+        # Snapshot construction stays synthetic: no Docker daemon is consulted.
+        from unittest.mock import patch
+
+        context = patch(
+            "dopemux.mcp.lifecycle.di.inspect_running_containers",
+            side_effect=lambda **kwargs: di.DockerInspectResult(
+                available=True, containers=[row] if running[0] else []
+            ),
+        )
+    else:
+        import contextlib
+
+        context = contextlib.nullcontext()
+
+    def commands(cmd, **kwargs):
+        if list(cmd)[:2] == ["docker", "stop"] and not retain_running_after_stop:
+            running[0] = False
+        if list(cmd)[:2] == ["docker", "inspect"]:
+            runner.calls.append({"kind": "eventbus_inspect", "cmd": list(cmd)})
+            return SimpleNamespace(
+                returncode=0, stdout=running_mode or "unknown", stderr=""
+            )
+        return runner(cmd, **kwargs)
+
+    with context:
+        result = run_lifecycle(
+            operation,
+            repo=repo,
+            services=["dope-memory"],
+            catalog=_catalog(),
+            dry_run=dry_run,
+            registry_path=reg,
+            docker_runner=snapshot,
+            cmd_runner=commands,
+            product_root=_product(tmp_path),
+            process_env=process_env or {},
+            skip_doctor=True,
+            port_is_free_fn=lambda p: True,
+        )
+    return result, runner, repo, reg
+
+
+@pytest.mark.parametrize("value", ["false", "true", None])
+def test_eventbus_target_mode_renders_override(tmp_path, monkeypatch, value):
+    monkeypatch.setenv(
+        "DOPE_MEMORY_EVENTBUS_ENABLED", "false" if value == "true" else "true"
+    )
+    declaration = (
+        "" if value is None else f"export DOPE_MEMORY_EVENTBUS_ENABLED={value}\n"
+    )
+    result, _, _, _ = _eventbus_start(
+        tmp_path, declaration, process_env={"DOPE_MEMORY_EVENTBUS_ENABLED": "invalid"}
+    )
+    assert result.exit_code == 0, result.blocking_findings
+    override = next(
+        Path(p) for p in result.runtime_artifacts if p.endswith("compose.override.yml")
+    )
+    text = override.read_text()
+    if value is None:
+        assert "ENABLE_EVENTBUS:" not in text
+    else:
+        assert f'ENABLE_EVENTBUS: "{value}"' in text
+    if value == "false":
+        assert "DOPE_MEMORY_EVENTBUS_DISABLED" in _codes(
+            _svc(result, "dope-memory")["findings"]
+        )
+        plan = json.loads((override.parent / "start-plan.json").read_text())
+        assert plan["dope_memory_eventbus_enabled"] is False
+
+
+@pytest.mark.parametrize(
+    "declaration",
+    [
+        "export DOPE_MEMORY_EVENTBUS_ENABLED=FALSE\n",
+        "export DOPE_MEMORY_EVENTBUS_ENABLED=\n",
+        "export DOPE_MEMORY_EVENTBUS_ENABLED=$(touch sentinel)\n",
+        "export DOPE_MEMORY_EVENTBUS_ENABLED=false\nexport DOPE_MEMORY_EVENTBUS_ENABLED=true\n",
+        "export DOPE_MEMORY_EVENTBUS_ENABLED false\n",
+        "export DOPE_MEMORY_EVENTBUS_ENABLED=false#not-a-comment\n",
+        "unset DOPE_MEMORY_EVENTBUS_ENABLED\n",
+    ],
+)
+def test_eventbus_invalid_input_blocks_before_writes(tmp_path, declaration):
+    result, runner, repo, reg = _eventbus_start(tmp_path, declaration)
+    assert result.exit_code == 1
+    assert "DOPE_MEMORY_EVENTBUS_INVALID" in _codes(result.blocking_findings)
+    assert not runner.calls
+    assert not reg.parent.exists()
+    assert not (repo / ".dopemux").exists()
+
+
+@pytest.mark.parametrize("actual", ["true", "unknown", "", "garbage"])
+def test_eventbus_running_mismatch_or_unknown_requires_restart(tmp_path, actual):
+    result, runner, repo, _ = _eventbus_start(
+        tmp_path, "export DOPE_MEMORY_EVENTBUS_ENABLED=false\n", running_mode=actual
+    )
+    assert result.exit_code == 1
+    assert _svc(result, "dope-memory")["action"] == "blocked"
+    finding = next(
+        f
+        for f in result.blocking_findings
+        if f["code"] == "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED"
+    )
+    assert "mcp restart --repo" in finding["message"]
+    assert "--services dope-memory" in finding["message"]
+    assert str(repo) in finding["message"]
+    assert runner.calls
+    assert all(c["kind"] == "eventbus_inspect" for c in runner.calls)
+
+
+@pytest.mark.parametrize("mode", ["false", "true"])
+def test_eventbus_matching_running_mode_allows_already_running(tmp_path, mode):
+    result, runner, _, _ = _eventbus_start(
+        tmp_path, f"export DOPE_MEMORY_EVENTBUS_ENABLED={mode}\n", running_mode=mode
+    )
+    assert result.exit_code == 0
+    assert _svc(result, "dope-memory")["action"] == "already_running"
+    assert runner.calls
+    assert all(c["kind"] == "eventbus_inspect" for c in runner.calls)
+
+
+def test_eventbus_restart_preview_plans_recreation(tmp_path):
+    result, _, _, _ = _eventbus_start(
+        tmp_path,
+        "export DOPE_MEMORY_EVENTBUS_ENABLED=false\n",
+        running_mode="true",
+        dry_run=True,
+        operation="restart",
+    )
+    assert result.exit_code == 0, result.blocking_findings
+    assert _svc(result, "dope-memory")["action"] == "start"
+    assert "DOPE_MEMORY_EVENTBUS_DISABLED" in _codes(
+        _svc(result, "dope-memory")["preflight_findings"]
+    )
+
+
+def test_eventbus_restart_refreshes_snapshot_and_starts_requested_mode(tmp_path):
+    result, runner, _, _ = _eventbus_start(
+        tmp_path,
+        "export DOPE_MEMORY_EVENTBUS_ENABLED=false\n",
+        running_mode="true",
+        operation="restart",
+    )
+    assert result.exit_code == 0, result.blocking_findings
+    assert _svc(result, "dope-memory")["action"] == "started"
+    calls = [call["cmd"] for call in runner.calls]
+    stop = next(i for i, cmd in enumerate(calls) if cmd[:2] == ["docker", "stop"])
+    up = next(i for i, cmd in enumerate(calls) if "up" in cmd)
+    assert stop < up
+    override = next(
+        Path(p) for p in result.runtime_artifacts if p.endswith("compose.override.yml")
+    )
+    assert 'ENABLE_EVENTBUS: "false"' in override.read_text()
+
+
+def test_eventbus_restart_does_not_hide_a_still_running_mismatch(tmp_path):
+    result, _, _, _ = _eventbus_start(
+        tmp_path,
+        "export DOPE_MEMORY_EVENTBUS_ENABLED=false\n",
+        running_mode="true",
+        operation="restart",
+        retain_running_after_stop=True,
+    )
+    assert result.exit_code == 1
+    assert _svc(result, "dope-memory")["action"] == "blocked"
+    assert "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED" in _codes(result.blocking_findings)
+
+
+@pytest.mark.parametrize("replacement", ["true", "invalid"])
+def test_eventbus_changed_while_waiting_for_instance_lock_blocks(
+    tmp_path, monkeypatch, replacement
+):
+    import contextlib
+    from dopemux.mcp import lifecycle
+
+    envrc_paths = []
+    read_mode = dr.read_dope_memory_eventbus_mode
+
+    def read(path):
+        envrc_paths.append(path)
+        return read_mode(path)
+
+    @contextlib.contextmanager
+    def lock(path):
+        text = (
+            envrc_paths[0]
+            .read_text()
+            .replace(
+                "DOPE_MEMORY_EVENTBUS_ENABLED=false",
+                f"DOPE_MEMORY_EVENTBUS_ENABLED={replacement}",
+            )
+        )
+        envrc_paths[0].write_text(text)
+        yield
+
+    monkeypatch.setattr(dr, "read_dope_memory_eventbus_mode", read)
+    monkeypatch.setattr(lifecycle, "instance_lock", lock)
+    result, runner, _, _ = _eventbus_start(
+        tmp_path, "export DOPE_MEMORY_EVENTBUS_ENABLED=false\n"
+    )
+    assert result.exit_code == 1
+    assert "DOPE_MEMORY_EVENTBUS_CHANGED" in _codes(result.blocking_findings)
+    assert not any(call["kind"] == "up" for call in runner.calls)
+
+
+@pytest.mark.parametrize(
+    "failure", [OSError("unavailable"), subprocess.TimeoutExpired("docker", 10)]
+)
+def test_eventbus_inspect_failure_stays_unknown(failure):
+    def runner(cmd, **kwargs):
+        assert cmd[:3] == ["docker", "inspect", "--format"]
+        assert cmd[-1] == "container-id"
+        raise failure
+
+    assert dr.inspect_dope_memory_eventbus_mode("container-id", runner=runner) is None
+
+
+@pytest.mark.parametrize(
+    "declaration",
+    [
+        "export DOPE_MEMORY_EVENTBUS_ENABLED='false' # API only\n",
+        'DOPE_MEMORY_EVENTBUS_ENABLED="false"\n',
+    ],
+)
+def test_eventbus_quoted_literal_supported(tmp_path, declaration):
+    result, _, _, _ = _eventbus_start(tmp_path, declaration, dry_run=True)
+    assert result.exit_code == 0
+    assert "DOPE_MEMORY_EVENTBUS_DISABLED" in _codes(
+        _svc(result, "dope-memory")["preflight_findings"]
+    )
+
+
+def test_eventbus_doctor_reports_target_api_only_mode(tmp_path):
+    from dopemux.mcp.doctor import run_mcp_doctor
+
+    repo = _fixture_repo(tmp_path)
+    with (repo / ".envrc.dopemux-mcp").open("a") as stream:
+        stream.write("export DOPE_MEMORY_EVENTBUS_ENABLED=false\n")
+    report = run_mcp_doctor(
+        repo,
+        catalog=_catalog(),
+        skip_docker=True,
+        skip_port_probe=True,
+        process_env={"DOPE_MEMORY_EVENTBUS_ENABLED": "true"},
+    )
+    finding = next(
+        f for f in report.findings if f["code"] == "DOPE_MEMORY_EVENTBUS_DISABLED"
+    )
+    assert "ingestion disabled" in finding["message"]
+    assert "isolation" in finding["message"]
+
+
+def test_eventbus_override_replaces_product_default(tmp_path):
+    import yaml
+
+    result, _, _, _ = _eventbus_start(
+        tmp_path, "export DOPE_MEMORY_EVENTBUS_ENABLED=false\n"
+    )
+    override = next(
+        Path(p) for p in result.runtime_artifacts if p.endswith("compose.override.yml")
+    )
+    base = yaml.load(
+        (Path(__file__).parents[2] / "compose.yml").read_text(), Loader=yaml.BaseLoader
+    )
+    patch = yaml.load(override.read_text(), Loader=yaml.BaseLoader)
+    env = dict(
+        entry.split("=", 1) for entry in base["services"]["dope-memory"]["environment"]
+    )
+    assert env["ENABLE_EVENTBUS"] == "true"
+    env.update(patch["services"]["dope-memory"]["environment"])
+    assert env["ENABLE_EVENTBUS"] == "false"
+
 def test_should_plan_build_then_up_when_image_missing_in_dry_run(tmp_path: Path):
     # Arrange
     runner = _recording_runner(inspect_rc=1)

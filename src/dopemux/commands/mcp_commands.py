@@ -19,8 +19,10 @@ import os
 import re
 import shutil
 import socket
-import sys
+import stat
 import subprocess
+import sys
+import tempfile
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -1307,8 +1309,8 @@ def _write_envrc(
 ) -> None:
     """Write the per-worktree env file (sourced by direnv `.envrc` or `.env.mcp` consumers).
 
-    ``preserve`` holds tenant keys (``CONPORT_DB_*``) read from the previous file;
-    they are re-emitted so ``init --force`` cannot orphan an existing database.
+    ``preserve`` holds tenant keys and validated ingestion/idle-retention policy read
+    from the previous file, so ``init --force`` cannot discard those choices.
     """
     env_exports = _project_env_exports(worktree, project_root)
     lines = [
@@ -1327,10 +1329,39 @@ def _write_envrc(
         lines.append(f"export {var}={port}")
     if preserve:
         lines.append("")
-        lines.append("# Preserved from the previous file (tenant keys)")
+        lines.append(
+            "# Preserved from the previous file (tenant keys and runtime policy)"
+        )
         for var, value in sorted(preserve.items()):
             lines.append(f"export {var}={shlex_quote(str(value))}")
-    envrc_path.write_text("\n".join(lines) + "\n")
+    if envrc_path.is_symlink():
+        raise click.ClickException("Refusing to replace a symlink envrc.")
+    mode = 0o600
+    if envrc_path.exists():
+        info = envrc_path.stat()
+        if not stat.S_ISREG(info.st_mode):
+            raise click.ClickException("Envrc must be a regular file.")
+        mode = stat.S_IMODE(info.st_mode)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=envrc_path.parent,
+            prefix=f".{envrc_path.name}.",
+            delete=False,
+        ) as stream:
+            temporary = Path(stream.name)
+            os.fchmod(stream.fileno(), mode)
+            stream.write("\n".join(lines) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        if envrc_path.is_symlink():
+            raise click.ClickException("Refusing to replace a symlink envrc.")
+        os.replace(temporary, envrc_path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def _append_missing_env_exports(envrc_path: Path, exports: Dict[str, Any]) -> List[str]:
@@ -2287,34 +2318,76 @@ def mcp_init_cmd(
             )
         wrote_mcp_json = False
 
-    # Allocate only after init preconditions pass so dry collisions do not write leases.
-    existing_env: Dict[str, str] = {}
-    if envrc_path.exists():
-        try:
-            from dopemux.mcp.envrc import load_envrc
+    from dopemux.mcp.lifecycle import runtime_dir_for_paths
+    from dopemux.mcp.locks import instance_lock
+    from dopemux.mcp.port_diagnostics import instance_id_for_path
 
-            parsed = load_envrc(envrc_path)
-            if parsed.values:
-                existing_env = dict(parsed.values)
-        except Exception:  # noqa: BLE001 — fall back to pure preferred formula
-            existing_env = {}
-    port_vars = _allocate_ports(
-        repo,
-        ordered,
-        catalog,
-        project_root=str(identity.project_root),
-        existing_envrc=existing_env or None,
-        source="dopemux mcp init",
+    runtime_dir = runtime_dir_for_paths(
+        project_root=str(identity.project_root), worktree_hash=instance_id_for_path(repo)
     )
+    # Same lock and instance path as reap; registry/lease work stays inside,
+    # synchronous builds and tenant provisioning stay outside.
+    with instance_lock(runtime_dir):
+        if envrc_path.exists() and not force:
+            raise click.ClickException(
+                f"{envrc_path.name} already exists. Use --force to overwrite."
+            )
+        # Allocate only after init preconditions pass so dry collisions do not write leases.
+        from dopemux.mcp import docker_runtime as dr
+        from dopemux.mcp.idle_retention import (
+            KEY as RETENTION_KEY,
+            IdleRetentionError,
+            read_retention_policy,
+        )
 
-    if wrote_mcp_json:
-        _atomic_write_json(mcp_json_path, config)
-    elif mcp_json_path.exists() and force:
-        _atomic_write_json(mcp_json_path, config)
-        wrote_mcp_json = True
+        try:
+            retention_mode = read_retention_policy(envrc_path)
+        except IdleRetentionError:
+            raise click.ClickException(
+                "IDLE_RETENTION_INVALID: target retention policy cannot be verified; nothing regenerated."
+            ) from None
 
-    preserved = {k: v for k, v in existing_env.items() if k.startswith("CONPORT_DB_")}
-    _write_envrc(envrc_path, port_vars, repo, str(identity.project_root), preserve=preserved)
+        try:
+            eventbus_mode = dr.read_dope_memory_eventbus_mode(envrc_path)
+        except (OSError, UnicodeError, ValueError) as exc:
+            raise click.ClickException(
+                f"DOPE_MEMORY_EVENTBUS_INVALID: target {ENVRC_FILENAME} must contain "
+                f"at most one literal true or false {dr.DOPE_MEMORY_EVENTBUS_KEY} declaration; "
+                "nothing regenerated."
+            ) from exc
+        existing_env: Dict[str, str] = {}
+        if envrc_path.exists():
+            try:
+                from dopemux.mcp.envrc import load_envrc
+
+                parsed = load_envrc(envrc_path)
+                if parsed.values:
+                    existing_env = dict(parsed.values)
+            except Exception:  # noqa: BLE001 — fall back to pure preferred formula
+                existing_env = {}
+        port_vars = _allocate_ports(
+            repo,
+            ordered,
+            catalog,
+            project_root=str(identity.project_root),
+            existing_envrc=existing_env or None,
+            source="dopemux mcp init",
+        )
+
+        if wrote_mcp_json:
+            _atomic_write_json(mcp_json_path, config)
+        elif mcp_json_path.exists() and force:
+            _atomic_write_json(mcp_json_path, config)
+            wrote_mcp_json = True
+
+        preserved = {k: v for k, v in existing_env.items() if k.startswith("CONPORT_DB_")}
+        if eventbus_mode is not None:
+            preserved[dr.DOPE_MEMORY_EVENTBUS_KEY] = str(eventbus_mode).lower()
+        if retention_mode is not None:
+            preserved[RETENTION_KEY] = str(retention_mode).lower()
+        _write_envrc(
+            envrc_path, port_vars, repo, str(identity.project_root), preserve=preserved
+        )
 
     if wrote_mcp_json:
         console.logger.info(f"[success]Wrote {mcp_json_path}[/success]")

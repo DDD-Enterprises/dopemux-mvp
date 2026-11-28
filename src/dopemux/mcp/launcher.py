@@ -5,7 +5,8 @@ Design D2/D4/D7 of claudedocs/mcp-just-works-design-2026-11-05.md:
 1. Root: git top-level of ``--root`` or the process cwd; refuse outside git or
    when ``.mcp.json`` is not the dopemux-rendered launcher entry.
 2. Identity from git only (``resolve_identity_view``), never ambient env.
-3. Warm path: registry record + SDK probe, no lifecycle call. Cold path: under
+3. Warm path: registry record + SDK probe, plus proof of any explicit dope-memory
+   ingestion mode, no lifecycle call. Cold path: under
    ``instance_lock(runtime_dir)``, start through ``run_lifecycle("start")``.
    A missing image is built detached and the launch refuses (never block a
    session on a multi-minute build).
@@ -31,6 +32,7 @@ from __future__ import annotations
 import contextlib
 import json
 import os
+import shlex
 import signal
 import subprocess
 import sys
@@ -58,6 +60,7 @@ from .reap import (
 )
 from .runtime_registry import RuntimeRegistry, default_registry_path
 from .runtime_state import (
+    ENVRC_FILENAME,
     PROJECT_MCP_FILENAME,
     ProjectIdentityView,
     resolve_identity_view,
@@ -519,6 +522,51 @@ def _build_image_if_missing(target: LaunchTarget) -> None:
 # --- ensure ---------------------------------------------------------------------
 
 
+def _memory_eventbus_intent(target: LaunchTarget) -> Optional[bool]:
+    """Read current target-only intent; never expose malformed input in a refusal."""
+    if target.service != "dope-memory":
+        return None
+    try:
+        return dr.read_dope_memory_eventbus_mode(target.root / ENVRC_FILENAME)
+    except (OSError, UnicodeError, ValueError):
+        raise LaunchError(
+            "DOPE_MEMORY_EVENTBUS_INVALID",
+            f"target {ENVRC_FILENAME} must contain at most one literal true or false "
+            f"{dr.DOPE_MEMORY_EVENTBUS_KEY} declaration; review target config",
+        ) from None
+
+
+def _verify_memory_eventbus(
+    target: LaunchTarget,
+    backend: BackendSpec,
+    desired: Optional[bool],
+    *,
+    state: Optional[Any] = None,
+) -> None:
+    """Prove explicit mode on this target's port owner before attaching; no effects."""
+    if target.service != "dope-memory" or desired is None:
+        return
+    if state is None:
+        state = inspect_running_containers(timeout=GUARD_DOCKER_TIMEOUT_S)
+    port = urlparse(backend.url).port
+    owners = (
+        [c for c in state.containers if port in (c.published_ports or [])]
+        if state.available and port is not None
+        else []
+    )
+    if owners:
+        # Pure ownership check; no free-port probe is needed when an owner exists.
+        # It rejects ambiguous/foreign owners before the narrow mode inspection.
+        _check_sidecar_owner(target, port, state, lambda _: False)
+        if dr.inspect_dope_memory_eventbus_mode(owners[0].id) is desired:
+            return
+    raise LaunchError(
+        "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED",
+        "running dope-memory ingestion mode does not match or cannot be proven; "
+        f"run `dopemux mcp restart --repo {shlex.quote(str(target.root))} --services dope-memory`",
+    )
+
+
 def ensure_backend(
     target: LaunchTarget,
     *,
@@ -531,12 +579,21 @@ def ensure_backend(
 ) -> BackendSpec:
     """A reachable sidecar for ``target`` (conport / dope-memory)."""
     deadline = clock() + wait_s
+    desired_eventbus = _memory_eventbus_intent(target)
     warm = find_backend(target)
     if warm is not None and probe(warm):
+        _verify_memory_eventbus(target, warm, desired_eventbus)
         return warm
     with instance_lock(target.runtime_dir):
+        if _memory_eventbus_intent(target) is not desired_eventbus:
+            raise LaunchError(
+                "DOPE_MEMORY_EVENTBUS_CHANGED",
+                "target dope-memory ingestion setting changed while waiting for launch lock; "
+                "review target config and reconnect explicitly",
+            )
         warm = find_backend(target)
         if warm is not None and probe(warm):
+            _verify_memory_eventbus(target, warm, desired_eventbus)
             return warm
         _build_image_if_missing(target)
         result = lifecycle(
@@ -705,6 +762,9 @@ def reconnect_guard(
     ``dopemux.worktree_hash`` (``LAUNCH_BACKEND_OWNER_CHANGED``). A free port passes:
     nothing can answer there, so the connect attempt fails and is retried. The
     proxy calls it before every connect and again after every ``initialize``.
+    An explicit dope-memory ingestion setting is re-read on each call. A proven
+    free port may retry before connect; the ``after_initialize`` hook requires
+    the owned container and matching mode before the proxy exposes the session.
     """
 
     def inspect() -> Any:
@@ -714,15 +774,39 @@ def reconnect_guard(
 
     port = urlparse(backend.url).port
 
-    def guard() -> None:
+    def check(*, after_initialize: bool = False) -> None:
         try:
             if target.service == TO_SERVICE:
                 _orchestrator_port_is_ours(target, inspect(), port_is_free)
             else:
-                _check_sidecar_owner(target, port, inspect(), port_is_free)
+                desired_eventbus = _memory_eventbus_intent(target)
+                state = inspect()
+                if (
+                    target.service == "dope-memory"
+                    and desired_eventbus is not None
+                    and not after_initialize
+                    and state.available
+                    and port is not None
+                    and not any(
+                        port in (c.published_ports or []) for c in state.containers
+                    )
+                    and port_is_free(port)
+                ):
+                    # A down backend may enter the existing transport backoff.
+                    # This exception is never used after a successful initialize.
+                    return
+                _check_sidecar_owner(target, port, state, port_is_free)
+                _verify_memory_eventbus(target, backend, desired_eventbus, state=state)
         except LaunchError as exc:
             raise ProxyRefused(exc.code, exc.remedy) from None
 
+    def guard() -> None:
+        check()
+
+    def after_initialize() -> None:
+        check(after_initialize=True)
+
+    setattr(guard, "after_initialize", after_initialize)
     return guard
 
 

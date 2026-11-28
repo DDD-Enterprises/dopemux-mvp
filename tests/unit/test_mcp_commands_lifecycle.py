@@ -7,8 +7,218 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from click.testing import CliRunner
+import pytest
 
 from dopemux.commands import mcp_commands
+
+
+@pytest.fixture(autouse=True)
+def isolated_lifecycle_state(tmp_path, monkeypatch):
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_RUNTIME_REGISTRY", str(tmp_path / "runtime" / "instances.json")
+    )
+    monkeypatch.setenv(
+        "DOPEMUX_MCP_PORT_LEASE_REGISTRY", str(tmp_path / "runtime" / "leases.json")
+    )
+
+
+@pytest.mark.parametrize("mode", ["false", "true"])
+def test_init_force_preserves_target_eventbus_mode(tmp_path, monkeypatch, mode):
+    repo = _repo(tmp_path)
+    envrc = repo / ".envrc.dopemux-mcp"
+    with envrc.open("a") as stream:
+        stream.write(f"export DOPE_MEMORY_EVENTBUS_ENABLED={mode}\n")
+    monkeypatch.setattr(
+        mcp_commands,
+        "resolve_project_identity",
+        lambda **kwargs: SimpleNamespace(project_root=repo, worktree_root=repo),
+    )
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *a, **kw: _catalog())
+    monkeypatch.setattr(mcp_commands, "_allocate_ports", lambda *a, **kw: {})
+    monkeypatch.setattr(mcp_commands, "_init_sidecars", lambda *a, **kw: True)
+    monkeypatch.setenv("DOPE_MEMORY_EVENTBUS_ENABLED", "invalid")
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["init", "--force", "--repo", str(repo)]
+    )
+    assert result.exit_code == 0, result.output
+    assert f"export DOPE_MEMORY_EVENTBUS_ENABLED={mode}" in envrc.read_text()
+
+
+@pytest.mark.parametrize(
+    "value", ["invalid", "false\nexport DOPE_MEMORY_EVENTBUS_ENABLED=true"]
+)
+def test_init_force_rejects_invalid_eventbus_before_any_write(
+    tmp_path, monkeypatch, value
+):
+    repo = _repo(tmp_path)
+    envrc = repo / ".envrc.dopemux-mcp"
+    with envrc.open("a") as stream:
+        stream.write(f"export DOPE_MEMORY_EVENTBUS_ENABLED={value}\n")
+    before = {path: path.read_bytes() for path in (envrc, repo / ".mcp.json")}
+    monkeypatch.setattr(
+        mcp_commands,
+        "resolve_project_identity",
+        lambda **kwargs: SimpleNamespace(project_root=repo, worktree_root=repo),
+    )
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *a, **kw: _catalog())
+    calls = []
+    monkeypatch.setattr(
+        mcp_commands, "_allocate_ports", lambda *a, **kw: calls.append("allocate") or {}
+    )
+    monkeypatch.setattr(
+        mcp_commands,
+        "_init_sidecars",
+        lambda *a, **kw: calls.append("sidecars") or True,
+    )
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["init", "--force", "--repo", str(repo)]
+    )
+    assert result.exit_code == 1
+    assert "DOPE_MEMORY_EVENTBUS_INVALID" in result.output
+    assert not calls
+    assert all(path.read_bytes() == content for path, content in before.items())
+
+
+@pytest.mark.parametrize("policy", ["true", "false"])
+def test_init_force_preserves_literal_idle_retention(tmp_path, monkeypatch, policy):
+    repo = _repo(tmp_path)
+    path = repo / ".envrc.dopemux-mcp"
+    with path.open("a") as stream:
+        stream.write(f"DOPEMUX_MCP_RETAIN_IDLE={policy}\n")
+    monkeypatch.setattr(
+        mcp_commands,
+        "resolve_project_identity",
+        lambda **kw: SimpleNamespace(project_root=repo, worktree_root=repo),
+    )
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *a, **kw: _catalog())
+    monkeypatch.setattr(mcp_commands, "_allocate_ports", lambda *a, **kw: {})
+    monkeypatch.setattr(mcp_commands, "_init_sidecars", lambda *a, **kw: True)
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["init", "--force", "--repo", str(repo)]
+    )
+    assert result.exit_code == 0, result.output
+    assert f"export DOPEMUX_MCP_RETAIN_IDLE={policy}" in path.read_text()
+
+
+@pytest.mark.parametrize("policy", ["yes", "true\nDOPEMUX_MCP_RETAIN_IDLE=false"])
+def test_init_force_invalid_retention_writes_nothing(tmp_path, monkeypatch, policy):
+    repo = _repo(tmp_path)
+    path = repo / ".envrc.dopemux-mcp"
+    with path.open("a") as stream:
+        stream.write(f"DOPEMUX_MCP_RETAIN_IDLE={policy}\n")
+    before = {p: p.read_bytes() for p in (path, repo / ".mcp.json")}
+    monkeypatch.setattr(
+        mcp_commands,
+        "resolve_project_identity",
+        lambda **kw: SimpleNamespace(project_root=repo, worktree_root=repo),
+    )
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *a, **kw: _catalog())
+
+    def forbidden(*a, **kw):
+        raise AssertionError("Invalid retention must not allocate or build")
+
+    monkeypatch.setattr(mcp_commands, "_allocate_ports", forbidden)
+    monkeypatch.setattr(mcp_commands, "_init_sidecars", forbidden)
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["init", "--force", "--repo", str(repo)]
+    )
+    assert result.exit_code == 1
+    assert "IDLE_RETENTION_INVALID" in result.output
+    assert all(p.read_bytes() == data for p, data in before.items())
+
+
+def test_envrc_atomic_replace_exposes_old_or_new_retention_and_preserves_mode(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / ".envrc.dopemux-mcp"
+    old = "DOPEMUX_MCP_RETAIN_IDLE=true\n# old\n"
+    path.write_text(old)
+    path.chmod(0o640)
+    observed = []
+    replace = mcp_commands.os.replace
+
+    def atomic(source, destination):
+        if Path(destination) == path:
+            observed.append((path.read_text(), Path(source).read_text()))
+        return replace(source, destination)
+
+    monkeypatch.setattr(mcp_commands.os, "replace", atomic)
+    mcp_commands._write_envrc(
+        path,
+        {},
+        str(tmp_path),
+        str(tmp_path),
+        preserve={"DOPEMUX_MCP_RETAIN_IDLE": "true"},
+    )
+    assert len(observed) == 1 and observed[0][0] == old
+    assert "export DOPEMUX_MCP_RETAIN_IDLE=true" in observed[0][1]
+    assert path.stat().st_mode & 0o777 == 0o640
+
+
+def test_envrc_atomic_writer_rejects_symlink(tmp_path):
+    target = tmp_path / "target"
+    target.write_text("preserve\n")
+    path = tmp_path / ".envrc.dopemux-mcp"
+    path.symlink_to(target)
+    with pytest.raises(Exception, match="symlink"):
+        mcp_commands._write_envrc(path, {}, str(tmp_path), str(tmp_path), preserve={})
+    assert target.read_text() == "preserve\n" and path.is_symlink()
+
+
+def test_init_reads_current_retention_and_allocates_under_canonical_instance_lock(
+    tmp_path, monkeypatch
+):
+    import contextlib
+    from dopemux.mcp import locks
+    from dopemux.mcp.lifecycle import runtime_dir_for_paths
+    from dopemux.mcp.port_diagnostics import instance_id_for_path
+
+    repo = _repo(tmp_path)
+    path = repo / ".envrc.dopemux-mcp"
+    with path.open("a") as stream:
+        stream.write("DOPEMUX_MCP_RETAIN_IDLE=false\n")
+    held = []
+    expected = runtime_dir_for_paths(
+        project_root=repo, worktree_hash=instance_id_for_path(str(repo))
+    )
+
+    @contextlib.contextmanager
+    def lock(runtime):
+        assert runtime == expected
+        # Another authorized writer committed true while init waited for lock.
+        path.write_text(
+            path.read_text().replace(
+                "DOPEMUX_MCP_RETAIN_IDLE=false", "DOPEMUX_MCP_RETAIN_IDLE=true"
+            )
+        )
+        held.append(True)
+        try:
+            yield
+        finally:
+            held.pop()
+
+    def allocate(*a, **kw):
+        assert held and kw["existing_envrc"]["DOPEMUX_MCP_RETAIN_IDLE"] == "true"
+        return {}
+
+    def sidecars(*a, **kw):
+        assert not held
+        return True
+
+    monkeypatch.setattr(locks, "instance_lock", lock)
+    monkeypatch.setattr(
+        mcp_commands,
+        "resolve_project_identity",
+        lambda **kw: SimpleNamespace(project_root=repo, worktree_root=repo),
+    )
+    monkeypatch.setattr(mcp_commands, "_load_catalog", lambda *a, **kw: _catalog())
+    monkeypatch.setattr(mcp_commands, "_allocate_ports", allocate)
+    monkeypatch.setattr(mcp_commands, "_init_sidecars", sidecars)
+    result = CliRunner().invoke(
+        mcp_commands.mcp, ["init", "--force", "--repo", str(repo)]
+    )
+    assert result.exit_code == 0, result.output
+    assert "export DOPEMUX_MCP_RETAIN_IDLE=true" in path.read_text()
 
 
 def _catalog():

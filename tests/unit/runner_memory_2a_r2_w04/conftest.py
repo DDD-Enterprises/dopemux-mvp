@@ -11,6 +11,7 @@ import io
 import json
 import secrets
 import threading
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,6 +20,18 @@ from typing import Any, Dict, List, Optional
 import pytest
 
 from dopemux.mcp import http_stdio_bridge as bridge
+
+
+@pytest.fixture(autouse=True)
+def protocol_runtime_fixture(monkeypatch):
+    """Explicit synthetic custody for protocol-only tests; production has no bypass."""
+
+    @contextmanager
+    def fake_runtime(discovery):
+        yield lambda: None
+
+    monkeypatch.setattr(bridge, "runtime_session", fake_runtime)
+
 
 SESSION_ID = "fake-session-1"
 

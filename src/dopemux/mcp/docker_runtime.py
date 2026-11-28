@@ -260,6 +260,83 @@ def labels_as_compose_map(labels: Mapping[str, str]) -> str:
 
 DOPE_MEMORY_AUTH_MODES = ("off", "log", "enforce")
 DOPE_MEMORY_AUTH_MOUNT = "/run/dopemux-auth"
+DOPE_MEMORY_EVENTBUS_KEY = "DOPE_MEMORY_EVENTBUS_ENABLED"
+
+
+def read_dope_memory_eventbus_mode(envrc_path: Path) -> Optional[bool]:
+    """Read one literal target-local flag without executing envrc or using ambient env.
+
+    Duplicate declarations, shell expressions and malformed values fail closed.
+    Omission leaves the product compose consumer behavior unchanged.
+    """
+    if not envrc_path.exists():
+        return None
+    candidate = re.compile(rf"\b{DOPE_MEMORY_EVENTBUS_KEY}\b")
+    declaration = re.compile(
+        rf"^\s*(?:export\s+)?{DOPE_MEMORY_EVENTBUS_KEY}\s*=\s*"
+        r"(?:([\"'])(true|false)\1|(true|false))(?:\s+#.*)?\s*$"
+    )
+    lines = [
+        line
+        for line in envrc_path.read_text(encoding="utf-8").splitlines()
+        if not line.lstrip().startswith("#")
+        and candidate.search(line.split(" #", 1)[0])
+    ]
+    if not lines:
+        return None
+    match = declaration.fullmatch(lines[0]) if len(lines) == 1 else None
+    if match is None:
+        raise ValueError(
+            f"{DOPE_MEMORY_EVENTBUS_KEY} must have exactly one literal true or false declaration"
+        )
+    return (match.group(2) or match.group(3)) == "true"
+
+
+def dope_memory_eventbus_finding(enabled: Optional[bool]) -> Optional[Dict[str, Any]]:
+    """Describe desired ingestion mode without asserting a live runtime change."""
+    if enabled is None:
+        return None
+    return {
+        "code": "DOPE_MEMORY_EVENTBUS_ENABLED"
+        if enabled
+        else "DOPE_MEMORY_EVENTBUS_DISABLED",
+        "severity": "INFO",
+        "service": "dope-memory",
+        "message": (
+            "Target dope-memory requests event ingestion enabled; event isolation is not verified."
+            if enabled
+            else "Target dope-memory requests API-only mode: event ingestion disabled; "
+            "shared-event isolation is not repaired."
+        ),
+    }
+
+
+def inspect_dope_memory_eventbus_mode(
+    container_id: str, *, runner: Optional[Runner] = None
+) -> Optional[bool]:
+    """Inspect only ENABLE_EVENTBUS; Docker emits true/false/unknown, never raw env."""
+    template = (
+        '{{$value := "unknown"}}{{$seen := false}}{{$duplicate := false}}'
+        "{{range .Config.Env}}{{if ge (len .) 16}}"
+        '{{if eq (slice . 0 16) "ENABLE_EVENTBUS="}}'
+        "{{if $seen}}{{$duplicate = true}}{{end}}{{$seen = true}}"
+        '{{if eq . "ENABLE_EVENTBUS=true"}}{{$value = "true"}}'
+        '{{else if eq . "ENABLE_EVENTBUS=false"}}{{$value = "false"}}'
+        '{{else}}{{$value = "unknown"}}{{end}}{{end}}{{end}}{{end}}'
+        "{{if $duplicate}}unknown{{else}}{{$value}}{{end}}"
+    )
+    try:
+        result = (runner or subprocess.run)(
+            ["docker", "inspect", "--format", template, container_id],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    value = (result.stdout or "").strip() if result.returncode == 0 else "unknown"
+    return {"true": True, "false": False}.get(value)
 
 
 def resolve_dope_memory_auth_mode(auth_mode: Optional[str] = None) -> str:
@@ -305,6 +382,7 @@ def generate_compose_override(
     auth_dir: Optional[Path] = None,
     conport_auth_mode: Optional[str] = None,
     images: Optional[Mapping[str, str]] = None,
+    dope_memory_eventbus_enabled: Optional[bool] = None,
 ) -> str:
     """Generate compose.override.yml that neutralizes fixed names + relative volumes.
 
@@ -363,6 +441,10 @@ def generate_compose_override(
         mem_p = int(ports.get("DOPE_MEMORY_PORT", 3020))
         mode = resolve_dope_memory_auth_mode(auth_mode)
         auth_env = f'      DOPE_MEMORY_AUTH_MODE: "{mode}"\n'
+        if dope_memory_eventbus_enabled is not None:
+            if not isinstance(dope_memory_eventbus_enabled, bool):
+                raise ValueError("dope_memory_eventbus_enabled must be bool or None")
+            auth_env += f'      ENABLE_EVENTBUS: "{str(dope_memory_eventbus_enabled).lower()}"\n'
         auth_volume = ""
         if mount_auth:
             auth_env += f'      DOPE_MEMORY_AUTH_DIR: "{DOPE_MEMORY_AUTH_MOUNT}"\n'

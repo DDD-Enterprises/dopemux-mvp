@@ -8,6 +8,7 @@ from __future__ import annotations
 import contextlib
 import json
 import re
+import shlex
 import shutil
 import socket
 import subprocess
@@ -1657,6 +1658,67 @@ def run_lifecycle(
             transport=transport,
         )
 
+    eventbus_mode: Optional[bool] = None
+    if "dope-memory" in selected and op in {"start", "restart"}:
+        try:
+            eventbus_mode = dr.read_dope_memory_eventbus_mode(target / ENVRC_FILENAME)
+        except (OSError, UnicodeError, ValueError):
+            # Before mutable facts: invalid mode must not allocate leases, build
+            # images, create locks or overwrite runtime artifacts.
+            return _blocked_result(
+                op,
+                dry_run=dry_run,
+                selected=selected,
+                blocking=[
+                    {
+                        "code": "DOPE_MEMORY_EVENTBUS_INVALID",
+                        "severity": "FAIL",
+                        "service": "dope-memory",
+                        "message": (
+                            f"Target {ENVRC_FILENAME}: {dr.DOPE_MEMORY_EVENTBUS_KEY} "
+                            "must have exactly one literal true or false declaration"
+                        ),
+                    }
+                ],
+                warnings=warnings,
+                container_names=container_names,
+                labels_by_service=labels_by_service,
+                ports=_extract_ports(doctor_env, selected, catalog),
+                catalog=catalog,
+                identity_dict=identity.to_dict(),
+                reg_path=reg_path,
+            )
+
+    existing_tenant_only = False
+    if "conport" in selected and op in {"start", "restart"}:
+        try:
+            # Capture actual process policy once; neither envrc nor process_env
+            # overrides may weaken it during this invocation.
+            existing_tenant_only = ct.existing_tenant_only_mode()
+            if existing_tenant_only:
+                ct.qualify_existing_tenant(identity)
+        except ct.TenantError as exc:
+            return _blocked_result(
+                op,
+                dry_run=dry_run,
+                selected=selected,
+                blocking=[
+                    {
+                        "code": exc.code,
+                        "severity": "FAIL",
+                        "service": "conport",
+                        "message": exc.detail,
+                    }
+                ],
+                warnings=warnings,
+                container_names=container_names,
+                labels_by_service=labels_by_service,
+                ports=_extract_ports(doctor_env, selected, catalog),
+                catalog=catalog,
+                identity_dict=identity.to_dict(),
+                reg_path=reg_path,
+            )
+
     # The mutable facts: registry, docker snapshot, ports and every finding derived
     # from them. A start/restart re-takes them under the instance lock before its
     # worktree part runs (B2 fix round 1), so a reap that finished in between is seen.
@@ -1907,6 +1969,9 @@ def run_lifecycle(
         target=target,
         docker_runner=docker_runner,
         envrc_values=dict(envrc.values),
+        dope_memory_eventbus_enabled=eventbus_mode,
+        eventbus_reconfigure=op == "restart",
+        existing_tenant_only=existing_tenant_only,
     )
 
     if op == "restart":
@@ -2194,6 +2259,8 @@ def _resolve_conport_tenant(
     identity: ProjectIdentityView,
     envrc_values: Mapping[str, str],
     cmd_runner: Optional[Callable[..., Any]],
+    *,
+    existing_only: Optional[bool] = None,
 ) -> Tuple[Optional[ct.TenantCredentials], List[Dict[str, Any]]]:
     """D5 database phase for this start; ``(None, [FAIL])`` when conport must not start."""
     try:
@@ -2201,9 +2268,12 @@ def _resolve_conport_tenant(
             identity,
             envrc_values=envrc_values,
             psql=ct.default_psql_runner(runner=cmd_runner),
+            existing_only=existing_only,
         )
     except ct.TenantError as exc:
-        return None, [{"code": exc.code, "severity": "FAIL", "message": exc.detail or exc.code}]
+        return None, [
+            {"code": exc.code, "severity": "FAIL", "message": exc.detail or exc.code}
+        ]
     except (OSError, ValueError) as exc:
         return None, [
             {
@@ -2238,6 +2308,7 @@ def _run_tenant_gate(
     cmd_runner: Optional[Callable[..., Any]],
     *,
     expected: bool,
+    existing_only: Optional[bool] = None,
 ) -> List[Dict[str, Any]]:
     """D5 gate phase in this instance's conport container, under ``provision_lock``.
 
@@ -2258,6 +2329,17 @@ def _run_tenant_gate(
     failed = False  # explicit: an empty detail must never read as success
     detail = ""
     try:
+        strict = ct.existing_tenant_only_mode() if existing_only is None else existing_only
+        if strict:
+            with provision_lock(project_id):
+                ct.qualify_existing_tenant(identity)
+            return [
+                {
+                    "code": "CONPORT_TENANT_EXISTING_ONLY",
+                    "severity": "INFO",
+                    "message": "Existing tenant state qualified; automatic gate adoption disabled",
+                }
+            ]
         if not expected and ct.pending_gate_credentials(project_id) is None:
             return []
         with provision_lock(project_id):
@@ -2451,6 +2533,80 @@ def _start_services(**kw: Any) -> LifecycleResult:
     docker_runner = kw.get("docker_runner")
     envrc_values: Mapping[str, str] = kw.get("envrc_values") or {}
     prebuilt: Mapping[str, _ImageStep] = kw.get("prebuilt") or {}
+    eventbus_mode: Optional[bool] = kw.get("dope_memory_eventbus_enabled")
+
+    if "dope-memory" in selected:
+        # Re-read at the execution boundary under the caller's instance lock.
+        # Config may have changed while waiting or pre-building; do not apply
+        # the stale plan or report already_running against stale intent.
+        try:
+            eventbus_changed = (
+                dr.read_dope_memory_eventbus_mode(target / ENVRC_FILENAME)
+                is not eventbus_mode
+            )
+        except (OSError, UnicodeError, ValueError):
+            eventbus_changed = True
+        if eventbus_changed:
+            return _blocked_result(
+                "start",
+                dry_run=dry_run,
+                selected=selected,
+                blocking=[
+                    {
+                        "code": "DOPE_MEMORY_EVENTBUS_CHANGED",
+                        "severity": "FAIL",
+                        "service": "dope-memory",
+                        "message": (
+                            "Target dope-memory ingestion setting changed or became unreadable "
+                            "after preflight; no start applied. Review target envrc and rerun explicitly."
+                        ),
+                    }
+                ],
+                warnings=[],
+                container_names=container_names,
+                labels_by_service=labels_by_service,
+                ports=ports,
+                catalog=catalog,
+                identity_dict=identity_dict,
+                reg_path=reg_path,
+            )
+
+    if (
+        "dope-memory" in selected
+        and eventbus_mode is not None
+        and not (dry_run and kw.get("eventbus_reconfigure"))
+    ):
+        existing = _already_running_managed(
+            docker, container_names["dope-memory"], project_id, "dope-memory"
+        )
+        if (
+            existing
+            and dr.inspect_dope_memory_eventbus_mode(existing.id, runner=cmd_runner)
+            is not eventbus_mode
+        ):
+            return _blocked_result(
+                "start",
+                dry_run=dry_run,
+                selected=selected,
+                blocking=[
+                    {
+                        "code": "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED",
+                        "severity": "FAIL",
+                        "service": "dope-memory",
+                        "message": (
+                            "Running dope-memory ingestion mode does not match or cannot be proven; "
+                            f"run `dopemux mcp restart --repo {shlex.quote(str(target))} --services dope-memory`."
+                        ),
+                    }
+                ],
+                warnings=[],
+                container_names=container_names,
+                labels_by_service=labels_by_service,
+                ports=ports,
+                catalog=catalog,
+                identity_dict=identity_dict,
+                reg_path=reg_path,
+            )
 
     compose_services = [s for s in selected if s in {"conport", "dope-memory"}]
     to_selected = "task-orchestrator" in selected
@@ -2495,6 +2651,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
             labels_by_service=labels_by_service,
             memory_data_path=memory_data,
             images={svc: dr.compose_image_name(svc, product=product) for svc in compose_services},
+            dope_memory_eventbus_enabled=eventbus_mode,
         )
 
     plan_doc = {
@@ -2506,6 +2663,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
         "task_orchestrator_strategy": "wrapper_singleton" if to_selected else None,
         "product_root": str(product),
         "memory_data_path": str(memory_data),
+        "dope_memory_eventbus_enabled": eventbus_mode,
     }
 
     # The runtime dir's mcp.env, compose override and plan serve the compose
@@ -2536,7 +2694,13 @@ def _start_services(**kw: Any) -> LifecycleResult:
         cname = container_names[svc]
         svc_ports = _ports_for_service(svc, ports, catalog)
         labels = labels_by_service[svc]
+        mode_finding = dr.dope_memory_eventbus_finding(eventbus_mode) if svc == "dope-memory" else None
+        mode_findings = [mode_finding] if mode_finding else []
         existing = _already_running_managed(docker, cname, project_id, svc)
+        if svc == "dope-memory" and dry_run and kw.get("eventbus_reconfigure"):
+            # A restart preview plans recreation; the pre-stop snapshot cannot
+            # prove that the requested override is already applied.
+            existing = None
         # TO: also check wrapper name
         if svc == "task-orchestrator" and not existing:
             existing = _already_running_managed(
@@ -2545,10 +2709,14 @@ def _start_services(**kw: Any) -> LifecycleResult:
             # unlabeled TO on fixed port is already blocked in collision
 
         if existing:
-            existing_findings: List[Dict[str, Any]] = []
+            existing_findings: List[Dict[str, Any]] = list(mode_findings)
             if svc == "conport" and not dry_run:
                 existing_findings = _run_tenant_gate(
-                    identity, existing.name, cmd_runner, expected=False
+                    identity,
+                    existing.name,
+                    cmd_runner,
+                    expected=False,
+                    existing_only=kw.get("existing_tenant_only"),
                 )
             gate_failed = any(f.get("severity") == "FAIL" for f in existing_findings)
             if gate_failed:
@@ -2591,7 +2759,7 @@ def _start_services(**kw: Any) -> LifecycleResult:
 
         commands: List[List[str]] = []
         image_name = ""
-        image_findings: List[Dict[str, Any]] = []
+        image_findings: List[Dict[str, Any]] = list(mode_findings)
         will_build = False
         if svc in {"conport", "dope-memory"}:
             # R3: ambient identity/port/tenant exports never reach compose.
@@ -2682,7 +2850,10 @@ def _start_services(**kw: Any) -> LifecycleResult:
                 # D5 database phase before the sidecar starts. The credentials
                 # reach this compose `up` only, never mcp.env or the plan.
                 tenant, tenant_findings = _resolve_conport_tenant(
-                    identity, envrc_values, cmd_runner
+                    identity,
+                    envrc_values,
+                    cmd_runner,
+                    existing_only=kw.get("existing_tenant_only"),
                 )
                 findings.extend(tenant_findings)
                 if tenant is None:
@@ -2769,7 +2940,13 @@ def _start_services(**kw: Any) -> LifecycleResult:
             if tenant is not None and tenant.gate_pending and result.exit_code == 0:
                 # D5 gate phase: only once this instance's container answers.
                 if probe == "OK":
-                    gate = _run_tenant_gate(identity, cname, cmd_runner, expected=True)
+                    gate = _run_tenant_gate(
+                        identity,
+                        cname,
+                        cmd_runner,
+                        expected=True,
+                        existing_only=kw.get("existing_tenant_only"),
+                    )
                     findings.extend(gate)
                     gate_failed = any(f.get("severity") == "FAIL" for f in gate)
                 else:

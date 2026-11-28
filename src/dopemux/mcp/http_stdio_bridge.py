@@ -28,9 +28,10 @@ import urllib.request
 from dataclasses import dataclass
 from json import JSONDecodeError
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from dopemux.auth import AuthError, get_token
+from dopemux.mcp.bridge_runtime import BridgeRuntimeError, runtime_session
 from dopemux.mcp.envrc import is_secret_like_key, parse_envrc_text, safe_port_int
 
 
@@ -300,7 +301,14 @@ def _parse_body(body: str, content_type: str) -> List[Dict[str, Any]]:
 class _StreamableClient:
     """One streamable-HTTP session; the token lives only in the Authorization header."""
 
-    def __init__(self, endpoint: str, token: str, ids: Mapping[str, str], timeout: float) -> None:
+    def __init__(
+        self,
+        endpoint: str,
+        token: str,
+        ids: Mapping[str, str],
+        timeout: float,
+        before_exchange: Callable[[], None],
+    ) -> None:
         self.endpoint = endpoint
         self.session_id: Optional[str] = None
         self._token = token
@@ -310,6 +318,7 @@ class _StreamableClient:
         self._schemas: Dict[str, Tuple[str, ...]] = {}
         self._listed = False
         self._counter = 0
+        self._before_exchange = before_exchange
 
     def __repr__(self) -> str:
         return f"_StreamableClient(endpoint={self.endpoint!r}, session={self.session_id is not None})"
@@ -319,6 +328,7 @@ class _StreamableClient:
 
     def _exchange(self, message: Dict[str, Any]) -> List[Dict[str, Any]]:
         """POST one message; return the messages in the reply (empty for a 202)."""
+        self._before_exchange()
         is_initialize = message.get("method") == "initialize"
         if is_initialize:
             self.session_id = None
@@ -407,7 +417,7 @@ class _StreamableClient:
                 request["params"] = {"cursor": cursor}
             try:
                 replies = self._exchange_with_reinit(request)
-            except BridgeAuthError:
+            except (BridgeAuthError, BridgeRuntimeError):
                 raise
             except Exception:
                 logger.debug("tool schema lookup failed", exc_info=True)
@@ -532,19 +542,30 @@ def _fail_startup(message: str) -> int:
 def _run_streamable(server: str, principal: str, timeout: float) -> int:
     try:
         discovery = discover_profile(server, Path.cwd())
-        token = get_token(principal)
-        if not token:
-            raise BridgeStartupError(f"the token for principal {principal} is empty")
-    except BridgeStartupError as exc:
+        with runtime_session(discovery) as before_exchange:
+            token = get_token(principal)
+            if not token:
+                raise BridgeStartupError(
+                    f"the token for principal {principal} is empty"
+                )
+            client = _StreamableClient(
+                f"{discovery.base_url}/mcp",
+                token,
+                discovery.ids,
+                timeout,
+                before_exchange,
+            )
+            del token
+            return _serve_streamable(client, server, principal)
+    except (BridgeStartupError, BridgeRuntimeError) as exc:
         return _fail_startup(str(exc))
     except AuthError as exc:
         return _fail_startup(f"cannot get the token for principal {principal}: {exc}")
     except OSError as exc:
         return _fail_startup(f"cannot read the working directory: {type(exc).__name__}")
 
-    client = _StreamableClient(f"{discovery.base_url}/mcp", token, discovery.ids, timeout)
-    del token
 
+def _serve_streamable(client: _StreamableClient, server: str, principal: str) -> int:
     while True:
         line = sys.stdin.readline()
         if line == "":
@@ -560,6 +581,12 @@ def _run_streamable(server: str, principal: str, timeout: float) -> int:
         request_id = request_data.get("id")
         try:
             replies = client.send(request_data)
+        except BridgeRuntimeError as exc:
+            message = str(exc)
+            _stderr(message)
+            if is_request:
+                _write_stdout(_jsonrpc_error(request_id, SERVER_ERROR_CODE, message))
+            return EXIT_STARTUP
         except BridgeAuthError as exc:
             message = (
                 f"HTTP {exc.status} from {server} for principal {principal}: the token was rejected; "

@@ -17,6 +17,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 from urllib.parse import urlparse
 
 from . import docker_inspect as di
+from . import docker_runtime as dr
 from . import port_diagnostics as pd
 from .envrc import (
     load_envrc,
@@ -480,6 +481,28 @@ def run_mcp_doctor(
     # Merge env: process env + envrc (envrc wins for doctor inspection)
     base_env = dict(process_env if process_env is not None else {})
     doctor_env = merge_envrc_into_environ(base_env, envrc, override=True)
+
+    try:
+        eventbus_mode = dr.read_dope_memory_eventbus_mode(envrc_path)
+    except (OSError, UnicodeError, ValueError):
+        _add(
+            findings,
+            "DOPE_MEMORY_EVENTBUS_INVALID",
+            "FAIL",
+            f"Target {ENVRC_FILENAME}: {dr.DOPE_MEMORY_EVENTBUS_KEY} must have "
+            "exactly one literal true or false declaration",
+            service="dope-memory",
+        )
+    else:
+        eventbus_finding = dr.dope_memory_eventbus_finding(eventbus_mode)
+        if eventbus_finding:
+            _add(
+                findings,
+                eventbus_finding["code"],
+                eventbus_finding["severity"],
+                eventbus_finding["message"],
+                service="dope-memory",
+            )
 
     # --- Identity ---
     identity = resolve_identity_view(repo_path, envrc_values=doctor_env, trust_env=trust_env)
