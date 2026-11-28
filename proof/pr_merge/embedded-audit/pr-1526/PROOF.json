@@ -1,0 +1,99 @@
+{
+  "packet_id": "TP-DMX-CODEX-MCP-PUBLISH-W01-20261128-008",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1526,
+  "head_sha": "6a1db868843738fad982ee93c4b00e66de0565a9",
+  "generated_at": "2026-11-28T11:57:20.013493+00:00",
+  "embedded_audit": {
+    "required": true,
+    "status": "PASS_WITH_RISKS",
+    "auditor_tool": "claude-code-cli",
+    "auditor_model": "sonnet",
+    "invocation": "claude --print --model sonnet --effort high --safe-mode --restricted --strict-mcp-config --no-session-persistence --setting-sources  --permission-mode manual --permission-prompts none --tools Read,Bash --allowedTools Read Bash(rtk proxy .venv/bin/python proof/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/W02/audit_subject_check.py) Bash(rtk proxy git diff --cached --check) Bash(rtk proxy .control-tower/bin/ct validate-macro --file task-packets/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/MACRO_PACKET.json) Bash(rtk proxy .venv/bin/python proof/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/W01/verify_contract.py) Bash(rtk proxy .venv/bin/python -m pytest services/working-memory-assistant/tests/test_mcp_sqlite_thread_affinity.py services/working-memory-assistant/tests/test_mcp_http_endpoint.py services/working-memory-assistant/tests/unit services/working-memory-assistant/tests/test_store_fail_closed.py services/working-memory-assistant/tests/test_migration_runner_optimized.py --no-cov -q --tb=short) Bash(rtk proxy .venv/bin/python -m pytest tests/unit/runner_memory_2a_r2_w01/test_mcp_writes.py tests/unit/runner_memory_2a_r2_w01/test_rest_writes.py tests/unit/runner_memory_2a_r2_w01/test_auth_identity.py --no-cov -q --tb=short) Bash(rtk proxy .venv/bin/python -m pytest proof/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/W03/test_runtime_config.py --no-cov -q --tb=short) Bash(rtk proxy env MEMORY_ROLLOUT_TEST_SUBJECT=proof/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/W03/run_runtime.py .venv/bin/python -m pytest proof/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/W03/test_runtime_build_environment.py --no-cov -q --tb=short) --output-format stream-json --verbose",
+    "exit_code": 0,
+    "report_path": "proof/TP-DMX-CODEX-MCP-PUBLISH-W01-20261128-008/AUDITOR_REPORT.md",
+    "findings": [
+      {
+        "id": "F2",
+        "severity": "LOW",
+        "title": "Synchronous backend work reached through MCP blocks the whole ASGI loop.",
+        "status": "OPEN",
+        "body": "services/working-memory-assistant/mcp_http.py:140\nAll 10 callbacks are now async around synchronous calls. A SQLite lock wait or the synchronous ADHD state hint in recap would stall other requests, including /health. Plan step 2 discloses the blocking. Carried from 006; severity unchanged."
+      },
+      {
+        "id": "F3",
+        "severity": "LOW",
+        "title": "Resolved dependency versions are not pinned on a build cache miss.",
+        "status": "OPEN",
+        "body": "services/working-memory-assistant/Dockerfile.dope-memory:39\npip install .[services] follows COPY of src and tools; apt-get upgrade is at line 23. Plan step 5 discloses this and asks to record deployed versions, but no helper records or enforces them. Cache state not observed. Carried; disclosure improved."
+      },
+      {
+        "id": "F4",
+        "severity": "LOW",
+        "title": "start does not verify data mounts or anonymous volume identity after recreation.",
+        "status": "OPEN",
+        "body": "proof/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/W03/run_runtime.py:134\nIt checks running state, eventbus, auth mode and image only. The volume ID is asserted in backup modes (lines 100-101). The mount check is manual. Carried."
+      },
+      {
+        "id": "F5",
+        "severity": "LOW",
+        "title": "Write probes, database attribution and disable-on-failure are not mechanically gated.",
+        "status": "OPEN",
+        "body": "proof/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/W03/run_client_check.py:18\nThe probe checks only the audit gate file, not the frozen subject or functional and enable receipts. Readback is a substring check (line 59). Attribution and disabling have no frozen helper. App-server stderr is written under the proof tree (mode 0600). The plan's 007 paragraph makes these manual steps. Carried."
+      },
+      {
+        "id": "F6",
+        "severity": "LOW",
+        "title": "The one-shot build uses a 1200s timeout, shorter than the canonical default, with no replay path.",
+        "status": "OPEN",
+        "body": "proof/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/W03/run_runtime.py:158\ndocker_runtime.py:43 defaults DEFAULT_BUILD_TIMEOUT_SECS to 1800. On TimeoutExpired, private_log raises, build.json stays PREPARED_ONCE, a replay is refused and memory remains stopped. Plan step 9 discloses that a build failure may leave memory stopped. Also present in 006 but not recorded there. Static only; build duration unknown."
+      }
+    ],
+    "fixes_applied": [
+      "Canonical Compose interpolation environment correction independently verified;006FAIL retained"
+    ],
+    "remaining_risks": [
+      "F2 to F6 are open and not accepted",
+      "005 low findings R005-L1 to L6 and older F2-F5 and A3/A4 remain open and unaccepted; they were not re-adjudicated",
+      "New tests use in-process ASGI transport, not a real server socket",
+      "Cancellation is tested only after a confirmed write, not during a transaction",
+      "Populated recap and reflection generation paths have no new coverage",
+      "Production lifespan does not close cached stores",
+      "enable() compare-then-replace is not atomic against a non-cooperating writer",
+      "Checkpoint-to-socket TOCTOU and dependence on the retained worktree and venv remain",
+      "The subject checker and freeze manifest are not themselves hash-pinned by the checker",
+      "ROLLOUT_PLAN.md step 7 or 8 wording still says 'in006' for the no-ConPort-write rule (cosmetic)"
+    ],
+    "skip_reason": null
+  },
+  "audit_identity": {
+    "implementer": {
+      "runner": "codex-subagent",
+      "model": "gpt-6.1-sol",
+      "model_family": "gpt",
+      "runtime_family": "codex"
+    },
+    "auditor": {
+      "runner": "claude-code-cli",
+      "model": "sonnet",
+      "model_family": "claude",
+      "runtime_family": "claude-code-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "audit_identity_evidence": {
+    "implementer_model": "Configured/requested gpt-6.1-sol in independent source-worker bindings001/W01,W02;002/W01;004/W01;005/W01;006/W01; provider attestation UNKNOWN.001/W03 and002/W02 Claude routes were auditors, not source writers.007/W01 is deterministic shell correction.",
+    "auditor_model_requested": "sonnet",
+    "auditor_model_response_claimed": "claude-sonnet-5-5",
+    "auditor_effort_requested": "high",
+    "auditor_effort_observed": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "independence_basis": "Separate external Claude Code CLI process, first-party Max route, safe/restricted isolation, strict no-MCP config and no session persistence; no source-edit tools or permission denials; full source diff reviewed per original report; all source implementation belonged to Codex workers. Signing attests this evidence and does not turn it into provider attestation."
+  },
+  "audit_source": "existing-independent-Claude-CLI-audit; signed import; zero new model calls",
+  "source_diff_sha256": "310dbea891f69f10f0ad47cbf73ac7bd5cd25006567fb73abe3375482b97a538",
+  "original_audit_report_sha256": "1995c98c64cee84874155eecf18e9a968947dadb556756309fc6a99b1e44eea3",
+  "risk_acceptance": "NOT_GRANTED",
+  "readiness_preparation_macro": "MACRO-DMX-CODEX-MCP-READY-20261128-009"
+}
