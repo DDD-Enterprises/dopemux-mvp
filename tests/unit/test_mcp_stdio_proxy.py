@@ -11,8 +11,8 @@ import importlib.util
 import socket
 import time
 from contextlib import asynccontextmanager
-from typing import Any, Dict, List
 from types import SimpleNamespace
+from typing import Any, Dict, List
 
 import anyio
 import pytest
@@ -23,7 +23,9 @@ from mcp.shared.exceptions import McpError
 from mcp.shared.memory import create_client_server_memory_streams
 from mcp.shared.message import SessionMessage
 
-from dopemux.mcp import stdio_proxy
+from dopemux.mcp import docker_runtime as dr
+from dopemux.mcp import launcher, stdio_proxy
+from dopemux.mcp.docker_inspect import DockerContainerInfo, DockerInspectResult
 from dopemux.mcp.stdio_proxy import BackendSpec
 
 SPEC = BackendSpec(url="http://127.0.0.1:9/mcp", transport="http", name="fake")
@@ -883,7 +885,14 @@ def _owner_guard(owner: Dict[str, str], calls: List[str]):
     return guard
 
 
-async def _drive(plan: List[str], owner: Dict[str, str], *, list_first: bool):
+async def _drive(
+    plan: List[str],
+    owner: Dict[str, str],
+    *,
+    list_first: bool,
+    guard_builder=None,
+    factory_builder=None,
+):
     """Runner against the proxy: (outcome, served, connects, guard calls, exit code)."""
     served: List[str] = []
     connects: List[str] = []
@@ -898,8 +907,10 @@ async def _drive(plan: List[str], owner: Dict[str, str], *, list_first: bool):
                     SPEC,
                     proxy_streams[0],
                     proxy_streams[1],
-                    session_factory=_owner_factory(plan, owner, served, connects),
-                    reconnect_guard=_owner_guard(owner, calls),
+                    session_factory=(factory_builder or _owner_factory)(
+                        plan, owner, served, connects
+                    ),
+                    reconnect_guard=(guard_builder or _owner_guard)(owner, calls),
                 )
 
             tg.start_soon(_serve)
@@ -916,6 +927,7 @@ async def _drive(plan: List[str], owner: Dict[str, str], *, list_first: bool):
                             await anyio.sleep(0.01)
             tg.cancel_scope.cancel()
     return outcome, served, connects, calls, box.get("code")
+
 
 
 WRONG = (
@@ -964,6 +976,227 @@ async def test_own_backend_heals_through_both_checkpoints():
     assert served == ["A"] and connects == ["A-terminated", "A"]
     assert calls == ["A", "A", "A", "A"]  # before/after the first and the reconnect
     assert code is None  # still serving
+
+
+def _memory_guard_builder(tmp_path, monkeypatch, *, desired=False):
+    """Real launcher guard; Docker ownership and narrow mode are synthetic."""
+    tmp_path.joinpath(".envrc.dopemux-mcp").write_text(
+        f"export DOPE_MEMORY_EVENTBUS_ENABLED={str(desired).lower()}\n"
+    )
+    target = SimpleNamespace(
+        root=tmp_path.resolve(),
+        service="dope-memory",
+        identity=SimpleNamespace(project_id="project-A", worktree_hash="abcd"),
+    )
+    backend = BackendSpec("http://127.0.0.1:3120/mcp", "http", "dope-memory")
+
+    def builder(owner, calls):
+        def docker():
+            calls.append(owner["now"])
+            containers = []
+            if owner["now"] != "down":
+                containers = [
+                    DockerContainerInfo(
+                        id="memory-owner",
+                        name="memory",
+                        published_ports=[3120],
+                        labels={
+                            dr.LABEL_MANAGED: "true",
+                            "dopemux.project_id": "project-" + owner["now"],
+                            "dopemux.worktree_hash": "abcd",
+                            "dopemux.service": "dope-memory",
+                        },
+                    )
+                ]
+            return DockerInspectResult(available=True, containers=containers)
+
+        monkeypatch.setattr(
+            dr,
+            "inspect_dope_memory_eventbus_mode",
+            lambda _: owner.get("mode", desired),
+        )
+        return launcher.reconnect_guard(
+            target,
+            backend,
+            docker=docker,
+            port_is_free=lambda _: owner["now"] == "down",
+        )
+
+    return builder
+
+
+def _recovering_memory_factory(plan, owner, served, connects):
+    """First session drops, one connect fails, then the requested recovery lands."""
+    base = _owner_factory(
+        ["A-terminated", "B" if plan[0] == "foreign" else "A"], owner, served, connects
+    )
+    attempts = 0
+
+    @asynccontextmanager
+    async def factory(**kwargs):
+        nonlocal attempts
+        attempts += 1
+        this_attempt = attempts
+        if this_attempt == 2:
+            connects.append("down")
+            raise OSError("synthetic backend restarting")
+        if this_attempt == 3:
+            owner["now"] = "B" if plan[0] == "foreign" else "A"
+            if plan[0] == "ownerless":
+                owner["now"] = "down"
+            if plan[0] == "mismatch":
+                owner["mode"] = not owner["desired"]
+            if plan[0] == "unknown":
+                owner["mode"] = None
+        async with base(**kwargs) as session:
+            try:
+                yield session
+            finally:
+                if this_attempt == 1:
+                    owner["now"] = "down"
+
+    return factory
+
+
+@pytest.mark.parametrize("desired", [False, True])
+async def test_explicit_memory_mode_recovers_with_existing_backoff(
+    tmp_path, monkeypatch, desired, capsys
+):
+    owner = {"now": "A", "desired": desired}
+    outcome, served, connects, calls, code = await _drive(
+        ["matching"],
+        owner,
+        list_first=False,
+        guard_builder=_memory_guard_builder(tmp_path, monkeypatch, desired=desired),
+        factory_builder=_recovering_memory_factory,
+    )
+    assert outcome["result"].content[0].text == "served by project A"
+    assert served == ["A"]
+    assert connects == ["A-terminated", "down", "A"]
+    assert calls == ["A", "A", "down", "down", "A"]
+    assert "retrying in" in capsys.readouterr().err
+    assert code is None
+
+
+@pytest.mark.parametrize(
+    "recovery,code",
+    [
+        ("foreign", launcher.OWNER_CHANGED),
+        ("ownerless", "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED"),
+        ("mismatch", "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED"),
+        ("unknown", "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED"),
+    ],
+)
+async def test_memory_recovery_is_verified_after_initialize_before_tools(
+    tmp_path, monkeypatch, recovery, code
+):
+    owner = {"now": "A", "desired": False}
+    outcome, served, connects, calls, exit_code = await _drive(
+        [recovery],
+        owner,
+        list_first=False,
+        guard_builder=_memory_guard_builder(tmp_path, monkeypatch),
+        factory_builder=_recovering_memory_factory,
+    )
+    assert "result" not in outcome
+    assert code in outcome["error"].message
+    assert connects[:2] == ["A-terminated", "down"]
+    assert len(connects) == 3  # recovery initialized, but was never exposed
+    assert served == []
+    assert calls[-2] == "down"
+    assert exit_code == 1
+
+
+async def test_initial_failed_connects_keep_post_initialize_hook_distinct():
+    calls = []
+
+    class Guard:
+        def __call__(self):
+            calls.append("pre")
+
+        def after_initialize(self):
+            calls.append("post")
+            raise stdio_proxy.ProxyRefused("STRICT_POST", "not verified")
+
+    def guard_builder(owner, ignored):
+        return Guard()
+
+    def factory_builder(plan, owner, served, connects):
+        base = _owner_factory(["A"], owner, served, connects)
+        first = True
+
+        @asynccontextmanager
+        async def factory(**kwargs):
+            nonlocal first
+            if first:
+                first = False
+                connects.append("down")
+                raise OSError("synthetic initial refusal")
+            async with base(**kwargs) as session:
+                yield session
+
+        return factory
+
+    outcome, served, connects, _, code = await _drive(
+        [],
+        {"now": "A"},
+        list_first=False,
+        guard_builder=guard_builder,
+        factory_builder=factory_builder,
+    )
+    assert "STRICT_POST" in outcome["error"].message
+    assert calls == ["pre", "pre", "post"]
+    assert connects == ["down", "A"] and served == []
+    assert code == 1
+
+
+@pytest.mark.parametrize(
+    "failure", ["noncallable", "lookup", "lookup_attribute", "invoke"]
+)
+async def test_post_initialize_hook_errors_refuse_closed(failure):
+    class Guard:
+        def __call__(self):
+            pass
+
+        @property
+        def after_initialize(self):
+            if failure == "lookup":
+                raise ValueError("synthetic lookup failure")
+            if failure == "lookup_attribute":
+                raise AttributeError("synthetic present-hook lookup failure")
+            if failure == "noncallable":
+                return None
+            return lambda: (_ for _ in ()).throw(
+                ValueError("synthetic invocation failure")
+            )
+
+    outcome, served, connects, _, code = await _drive(
+        ["A"], {"now": "A"}, list_first=False, guard_builder=lambda *_: Guard()
+    )
+    assert stdio_proxy.GUARD_FAILED_CODE in outcome["error"].message
+    assert served == [] and connects == ["A"]
+    assert code == 1
+
+
+async def test_post_initialize_hook_lookup_obeys_guard_timeout(monkeypatch):
+    monkeypatch.setattr(stdio_proxy, "GUARD_TIMEOUT_S", 0.02)
+
+    class Guard:
+        def __call__(self):
+            pass
+
+        @property
+        def after_initialize(self):
+            time.sleep(0.2)  # a descriptor is user code, just like the callback
+            return lambda: None
+
+    link = stdio_proxy._BackendLink(
+        SPEC, _factory(_fake_backend()), reconnect_guard=Guard()
+    )
+    started = time.monotonic()
+    assert await link._guard_allows(after_initialize=True) is False
+    assert link.refusal.code == stdio_proxy.GUARD_FAILED_CODE
+    assert time.monotonic() - started < 0.15
 
 
 @pytest.mark.usefixtures("m1_proxy_effect_fence")

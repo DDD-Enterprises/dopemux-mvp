@@ -356,7 +356,8 @@ class ReapReport:
         longer eligible under the lock), ``registry_busy`` (containers removed, the
         registry lock stayed busy: a later run finishes the state) or
         ``state_error`` (containers removed, a registry or lease save failed: the
-        runtime dir stays and a later run finishes the state)."""
+        runtime dir stays and a later run finishes the state). ``retained_idle``
+        and ``idle_retention_*`` are scoped policy holds before destructive work."""
         self.skipped.append(cand)
         self.skip_reasons.append(reason)
 
@@ -404,7 +405,12 @@ def _entry_for(
 
 
 def _still_eligible(
-    cand: "ReapCandidate", *, now: float, idle_s: float, exists: Callable[[Path], bool]
+    cand: "ReapCandidate",
+    *,
+    now: float,
+    idle_s: float,
+    exists: Callable[[Path], bool],
+    held_reasons: Optional[List[str]] = None,
 ) -> bool:
     """The plan's predicate on current state (live attachments checked by the caller).
 
@@ -418,10 +424,17 @@ def _still_eligible(
         return False
     if cand.dir_only:
         return _worktree_gone(cand.worktree_root, exists)
-    if _worktree_gone(cand.worktree_root, exists):
-        return True
-    age = _last_detach_age(cand.runtime_dir, now)
-    return age is not None and age >= idle_s
+    return (
+        _plan_reason(
+            cand.worktree_root,
+            cand.runtime_dir,
+            now=now,
+            idle_s=idle_s,
+            exists=exists,
+            held_reasons=held_reasons,
+        )
+        is not None
+    )
 
 
 def _last_detach_age(runtime_dir: Path, now: float) -> Optional[float]:
@@ -436,6 +449,7 @@ def _plan_reason(
     now: float,
     idle_s: float,
     exists: Callable[[Path], bool],
+    held_reasons: Optional[List[str]] = None,
 ) -> Optional[Reason]:
     """The plan's reason for a registry-joined pair (live attachments checked by the
     caller): ``worktree_missing``, else ``idle`` once ``idle_s`` passed since the
@@ -445,6 +459,13 @@ def _plan_reason(
         return "worktree_missing"
     age = _last_detach_age(runtime_dir, now)
     if age is not None and age >= idle_s:
+        from .idle_retention import idle_retention
+
+        decision = idle_retention(Path(worktree_root))
+        if decision.hold_idle:
+            if held_reasons is not None:
+                held_reasons.append(decision.reason)
+            return None
         return "idle"
     return None
 
@@ -1094,10 +1115,12 @@ def _reap_one(
         if live_attachments(cand.runtime_dir) > 0:
             report.skip(cand, "attached")
             return
-        if not _still_eligible(cand, now=now(), idle_s=idle_s, exists=exists):
-            report.skip(
-                cand, "stale"
-            )  # a launcher came and went, or the worktree is back
+        held_reasons: List[str] = []
+        if not _still_eligible(
+            cand, now=now(), idle_s=idle_s, exists=exists, held_reasons=held_reasons
+        ):
+            # A launcher came and went, policy changed, or the worktree is back.
+            report.skip(cand, held_reasons[0] if held_reasons else "stale")
             return
         # Task B5 round 2 / B6: a container the plan did not list (a start or a
         # restart since the plan created it), or no answer from docker, makes the

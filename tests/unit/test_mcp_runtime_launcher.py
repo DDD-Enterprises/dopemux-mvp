@@ -2,11 +2,308 @@
 
 from __future__ import annotations
 
+import contextlib
 import re
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from dopemux.mcp import docker_runtime as dr
+from dopemux.mcp import launcher
+from dopemux.mcp.docker_inspect import DockerContainerInfo, DockerInspectResult
+from dopemux.mcp.stdio_proxy import BackendSpec, ProxyRefused
+
+
+def _eventbus_launcher(
+    tmp_path,
+    monkeypatch,
+    *,
+    mode="false",
+    actual=False,
+    inside=False,
+    available=True,
+    owner=True,
+    foreign=False,
+):
+    root = tmp_path.resolve()
+    envrc = root / ".envrc.dopemux-mcp"
+    if mode is not None:
+        envrc.write_text(f"export DOPE_MEMORY_EVENTBUS_ENABLED={mode}\n")
+    identity = SimpleNamespace(
+        project_id="target-project",
+        worktree_hash="abcd",
+        worktree_root=str(root),
+        project_root=str(root),
+    )
+    target = launcher.LaunchTarget(
+        root, identity, "dope-memory", {}, root / "runtime", "target"
+    )
+    backend = BackendSpec("http://127.0.0.1:3120/mcp", "http", "dope-memory")
+    container = DockerContainerInfo(
+        id="target-container",
+        name="memory",
+        published_ports=[3120],
+        labels={
+            dr.LABEL_MANAGED: "true",
+            "dopemux.project_id": "foreign" if foreign else identity.project_id,
+            "dopemux.worktree_hash": identity.worktree_hash,
+            "dopemux.service": "dope-memory",
+        },
+    )
+    state = DockerInspectResult(
+        available=available, containers=[container] if owner else []
+    )
+    calls = []
+    values = iter([None, backend] if inside else [backend])
+    monkeypatch.setattr(launcher, "find_backend", lambda target: next(values))
+    monkeypatch.setattr(launcher, "inspect_running_containers", lambda **kw: state)
+
+    def inspect(container_id):
+        calls.append(("inspect", container_id))
+        return actual
+
+    monkeypatch.setattr(dr, "inspect_dope_memory_eventbus_mode", inspect)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Warm attach must not build or start a service")
+
+    monkeypatch.setattr(launcher, "_build_image_if_missing", forbidden)
+
+    @contextlib.contextmanager
+    def lock(path):
+        calls.append(("lock", path))
+        yield
+
+    monkeypatch.setattr(launcher, "instance_lock", lock)
+    return target, backend, envrc, calls, state, forbidden
+
+
+@pytest.mark.parametrize("inside", [False, True])
+@pytest.mark.parametrize("actual", [True, None])
+def test_eventbus_warm_attach_refuses_mismatch_or_unknown(
+    tmp_path, monkeypatch, inside, actual
+):
+    target, _, _, calls, _, lifecycle = _eventbus_launcher(
+        tmp_path, monkeypatch, inside=inside, actual=actual
+    )
+    with pytest.raises(launcher.LaunchError) as error:
+        launcher.ensure_backend(
+            target, wait_s=1, lifecycle=lifecycle, probe=lambda _: True
+        )
+    assert error.value.code == "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED"
+    assert "mcp restart --repo" in error.value.remedy
+    assert "--services dope-memory" in error.value.remedy
+    assert ("inspect", "target-container") in calls
+    assert sum(call[0] == "lock" for call in calls) == int(inside)
+
+
+@pytest.mark.parametrize("inside", [False, True])
+@pytest.mark.parametrize("mode,actual", [("false", False), ("true", True)])
+def test_eventbus_warm_attach_accepts_proven_current_mode(
+    tmp_path, monkeypatch, inside, mode, actual
+):
+    target, backend, _, calls, _, lifecycle = _eventbus_launcher(
+        tmp_path, monkeypatch, inside=inside, mode=mode, actual=actual
+    )
+    monkeypatch.setenv("DOPE_MEMORY_EVENTBUS_ENABLED", "invalid")
+    assert (
+        launcher.ensure_backend(
+            target, wait_s=1, lifecycle=lifecycle, probe=lambda _: True
+        )
+        == backend
+    )
+    assert ("inspect", "target-container") in calls
+
+
+@pytest.mark.parametrize(
+    "mode", ["invalid", "false\nexport DOPE_MEMORY_EVENTBUS_ENABLED=true"]
+)
+def test_eventbus_invalid_warm_intent_is_sanitized(tmp_path, monkeypatch, mode):
+    target, _, _, calls, _, lifecycle = _eventbus_launcher(
+        tmp_path, monkeypatch, mode=mode
+    )
+    with pytest.raises(launcher.LaunchError) as error:
+        launcher.ensure_backend(
+            target, wait_s=1, lifecycle=lifecycle, probe=lambda _: True
+        )
+    assert error.value.code == "DOPE_MEMORY_EVENTBUS_INVALID"
+    assert mode not in error.value.remedy
+    assert not calls
+
+
+@pytest.mark.parametrize("replacement", ["true", "invalid"])
+def test_eventbus_lock_time_intent_change_refuses_before_build(
+    tmp_path, monkeypatch, replacement
+):
+    target, _, envrc, _, _, lifecycle = _eventbus_launcher(
+        tmp_path, monkeypatch, inside=True
+    )
+
+    @contextlib.contextmanager
+    def lock(path):
+        envrc.write_text(f"export DOPE_MEMORY_EVENTBUS_ENABLED={replacement}\n")
+        yield
+
+    monkeypatch.setattr(launcher, "instance_lock", lock)
+    with pytest.raises(launcher.LaunchError) as error:
+        launcher.ensure_backend(
+            target, wait_s=1, lifecycle=lifecycle, probe=lambda _: True
+        )
+    assert error.value.code == (
+        "DOPE_MEMORY_EVENTBUS_INVALID"
+        if replacement == "invalid"
+        else "DOPE_MEMORY_EVENTBUS_CHANGED"
+    )
+
+
+@pytest.mark.parametrize("available,owner", [(False, False), (True, False)])
+def test_eventbus_explicit_warm_mode_requires_container_proof(
+    tmp_path, monkeypatch, available, owner
+):
+    target, _, _, calls, _, lifecycle = _eventbus_launcher(
+        tmp_path, monkeypatch, available=available, owner=owner
+    )
+    with pytest.raises(launcher.LaunchError) as error:
+        launcher.ensure_backend(
+            target, wait_s=1, lifecycle=lifecycle, probe=lambda _: True
+        )
+    assert error.value.code == "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED"
+    assert not any(call[0] == "inspect" for call in calls)
+
+
+def test_eventbus_foreign_warm_owner_is_never_mode_inspected(tmp_path, monkeypatch):
+    target, _, _, calls, _, lifecycle = _eventbus_launcher(
+        tmp_path, monkeypatch, foreign=True
+    )
+    with pytest.raises(launcher.LaunchError) as error:
+        launcher.ensure_backend(
+            target, wait_s=1, lifecycle=lifecycle, probe=lambda _: True
+        )
+    assert error.value.code == launcher.OWNER_CHANGED
+    assert not any(call[0] == "inspect" for call in calls)
+
+
+def test_eventbus_reconnect_reads_changed_intent_on_every_call(tmp_path, monkeypatch):
+    target, backend, envrc, calls, state, _ = _eventbus_launcher(tmp_path, monkeypatch)
+    guard = launcher.reconnect_guard(target, backend, docker=lambda: state)
+    guard()
+    assert calls == [("inspect", "target-container")]
+    envrc.write_text("export DOPE_MEMORY_EVENTBUS_ENABLED=true\n")
+    with pytest.raises(ProxyRefused) as error:
+        guard()
+    assert error.value.code == "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED"
+    monkeypatch.setattr(dr, "inspect_dope_memory_eventbus_mode", lambda _: True)
+    guard()
+    envrc.write_text("export DOPE_MEMORY_EVENTBUS_ENABLED=invalid\n")
+    with pytest.raises(ProxyRefused) as invalid:
+        guard()
+    assert invalid.value.code == "DOPE_MEMORY_EVENTBUS_INVALID"
+
+
+@pytest.mark.parametrize("actual", [True, None])
+def test_eventbus_reconnect_refuses_mismatch_unknown(tmp_path, monkeypatch, actual):
+    target, backend, _, _, state, _ = _eventbus_launcher(
+        tmp_path, monkeypatch, actual=actual
+    )
+    guard = launcher.reconnect_guard(target, backend, docker=lambda: state)
+    with pytest.raises(ProxyRefused) as error:
+        guard()
+    assert error.value.code == "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED"
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        OSError("private-marker"),
+        UnicodeError("private-marker"),
+        ValueError("private-marker"),
+    ],
+)
+def test_eventbus_envrc_failure_is_sanitized_for_attach_and_reconnect(
+    tmp_path, monkeypatch, failure
+):
+    target, backend, _, calls, state, lifecycle = _eventbus_launcher(
+        tmp_path, monkeypatch
+    )
+
+    def fail(path):
+        raise failure
+
+    monkeypatch.setattr(dr, "read_dope_memory_eventbus_mode", fail)
+    with pytest.raises(launcher.LaunchError) as error:
+        launcher.ensure_backend(
+            target, wait_s=1, lifecycle=lifecycle, probe=lambda _: True
+        )
+    assert error.value.code == "DOPE_MEMORY_EVENTBUS_INVALID"
+    assert "private-marker" not in str(error.value)
+    guard = launcher.reconnect_guard(target, backend, docker=lambda: state)
+    with pytest.raises(ProxyRefused) as refused:
+        guard()
+    assert refused.value.code == "DOPE_MEMORY_EVENTBUS_INVALID"
+    assert "private-marker" not in str(refused.value)
+    assert not calls
+
+
+@pytest.mark.parametrize("available", [True, False])
+def test_eventbus_reconnect_without_owner_cannot_prove_explicit_mode(
+    tmp_path, monkeypatch, available
+):
+    target, backend, _, calls, state, _ = _eventbus_launcher(
+        tmp_path, monkeypatch, available=available, owner=False
+    )
+    guard = launcher.reconnect_guard(
+        target, backend, docker=lambda: state, port_is_free=lambda _: True
+    )
+    if available:
+        guard()  # proven down before connect: let the proxy's transport retry
+    else:
+        with pytest.raises(ProxyRefused):
+            guard()
+    with pytest.raises(ProxyRefused) as error:
+        guard.after_initialize()
+    assert error.value.code == "DOPE_MEMORY_EVENTBUS_RESTART_REQUIRED"
+    assert not calls
+
+
+def test_eventbus_occupied_unowned_port_still_refuses_before_connect(
+    tmp_path, monkeypatch
+):
+    target, backend, _, calls, state, _ = _eventbus_launcher(
+        tmp_path, monkeypatch, owner=False
+    )
+    guard = launcher.reconnect_guard(
+        target, backend, docker=lambda: state, port_is_free=lambda _: False
+    )
+    with pytest.raises(ProxyRefused) as error:
+        guard()
+    assert error.value.code == launcher.OWNER_CHANGED
+    assert not calls
+
+
+def test_eventbus_reconnect_foreign_owner_never_mode_inspected(tmp_path, monkeypatch):
+    target, backend, _, calls, state, _ = _eventbus_launcher(
+        tmp_path, monkeypatch, foreign=True
+    )
+    guard = launcher.reconnect_guard(target, backend, docker=lambda: state)
+    with pytest.raises(ProxyRefused) as error:
+        guard()
+    assert error.value.code == launcher.OWNER_CHANGED
+    assert not calls
+
+
+def test_eventbus_unset_warm_intent_preserves_existing_behavior(tmp_path, monkeypatch):
+    target, backend, _, calls, _, lifecycle = _eventbus_launcher(
+        tmp_path, monkeypatch, mode=None
+    )
+    monkeypatch.setenv("DOPE_MEMORY_EVENTBUS_ENABLED", "false")
+    assert (
+        launcher.ensure_backend(
+            target, wait_s=1, lifecycle=lifecycle, probe=lambda _: True
+        )
+        == backend
+    )
+    assert not calls
 
 
 def test_compose_up_command_includes_override_and_no_deps(tmp_path: Path):

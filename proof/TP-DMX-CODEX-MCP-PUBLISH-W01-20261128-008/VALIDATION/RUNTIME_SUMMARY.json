@@ -1,0 +1,30 @@
+{
+  "observation_scope": "Fresh installed CLI/Desktop runtime project threads during authorized local rollout; historical checkpoint, not a new publication-time runtime test",
+  "connected_runtime_servers": [
+    "pal-stdio",
+    "dope-context",
+    "task-orchestrator",
+    "serena",
+    "cloudflare",
+    "computer-history",
+    "node_repl",
+    "cua_repl",
+    "conport",
+    "dope-memory"
+  ],
+  "configured_enabled_count": 8,
+  "injected_builtin_servers": [
+    "cua_repl",
+    "computer-history"
+  ],
+  "memory_diagnostic_writes_verified": 2,
+  "memory_writer_principal": "runner:codex",
+  "memory_principal_self_asserted": false,
+  "earlier_conport_diagnostic_writes_verified": 2,
+  "conport_writes_replayed": 0,
+  "remaining_memory_diagnostic_write_budget": 0,
+  "new_model_turns_in_client_probes": 0,
+  "existing_GUI_session_adoption": "UNKNOWN",
+  "credentials_or_private_row_identifiers_in_this_summary": false,
+  "retention_check": "PASS futureclockdryrun; no destructive reap"
+}

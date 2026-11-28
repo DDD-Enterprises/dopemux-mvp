@@ -62,6 +62,7 @@ proxy's sampling, elicitation and roots callbacks and its message handler).
 from __future__ import annotations
 
 import asyncio
+import inspect
 import logging
 import os
 import sys
@@ -128,6 +129,7 @@ DRAIN_S = 1.0
 
 SessionFactory = Callable[..., AsyncContextManager[ClientSession]]
 ReconnectGuard = Callable[[], None]
+_NO_POST_INITIALIZE_HOOK = object()
 
 # Every runner request the proxy serves, with the result type the backend returns.
 _FORWARDED: Dict[type, type] = {
@@ -368,7 +370,7 @@ class _BackendLink:
             async with self._factory(**self.client_kwargs()) as session:
                 with anyio.fail_after(INITIALIZE_TIMEOUT_S):
                     init = await session.initialize()
-                if not await self._guard_allows():
+                if not await self._guard_allows(after_initialize=True):
                     outcome = "refused"  # the owner changed between guard and connect
                     return outcome
                 outcome = "ended"
@@ -396,13 +398,29 @@ class _BackendLink:
             await anyio.sleep(delay)
             delay = min(delay * 2, RECONNECT_BACKOFF_MAX_S)
 
-    async def _guard_allows(self) -> bool:
-        """Run the reconnect guard; any failure is a refusal recorded in ``refusal``."""
-        if self._guard is None:
+    async def _guard_allows(self, *, after_initialize: bool = False) -> bool:
+        """Run the guard, or its optional strict post-initialize hook; fail closed."""
+        guard = self._guard
+        if guard is None:
             return True
+
+        def run_check() -> None:
+            check = guard
+            if (
+                after_initialize
+                and inspect.getattr_static(
+                    check, "after_initialize", _NO_POST_INITIALIZE_HOOK
+                )
+                is not _NO_POST_INITIALIZE_HOOK
+            ):
+                # A missing optional hook differs from a present hook whose
+                # lookup or invocation fails. Both errors remain fail closed.
+                check = getattr(check, "after_initialize")
+            check()
+
         try:
             with anyio.fail_after(GUARD_TIMEOUT_S):
-                await anyio.to_thread.run_sync(self._guard, abandon_on_cancel=True)
+                await anyio.to_thread.run_sync(run_check, abandon_on_cancel=True)
         except ProxyRefused as exc:
             self.refusal = exc
         except Exception as exc:  # noqa: BLE001 - fail closed on anything unexpected
@@ -614,8 +632,10 @@ async def serve(
     ``ClientSession`` built with the given kwargs (the proxy's callbacks); the
     default connects to ``backend.url`` with the SDK transport.
     ``reconnect_guard()`` runs before every connect and after every
-    ``initialize`` (see the module docstring). Returns 0 when the read side
-    closes, 1 when the backend is gone for good or its owner was refused.
+    ``initialize`` (see the module docstring). When the guard supplies an
+    ``after_initialize`` callable, that stricter hook replaces only the second
+    call; ordinary zero-argument guards keep both calls. Returns 0 when the read
+    side closes, 1 when the backend is gone for good or its owner was refused.
     """
     link = _BackendLink(
         backend,

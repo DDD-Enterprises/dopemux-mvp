@@ -42,6 +42,7 @@ import hmac
 import os
 import re
 import secrets
+import stat
 import subprocess
 import tempfile
 from dataclasses import dataclass, field, replace
@@ -908,6 +909,56 @@ def _current(path: Path) -> Optional[TenantCredentials]:
     return replace(creds, gate_pending=owed)
 
 
+EXISTING_ONLY_ENV = "DOPEMUX_CONPORT_EXISTING_TENANT_ONLY"
+
+
+def existing_tenant_only_mode() -> bool:
+    """Restrictive process policy only; never read from an envrc/tenant credential map."""
+    raw = os.environ.get(EXISTING_ONLY_ENV)
+    if raw is None or raw == "false":
+        return False
+    if raw != "true":
+        raise TenantError(
+            "CONPORT_TENANT_POLICY_INVALID",
+            f"{EXISTING_ONLY_ENV} must be literal true or false",
+        )
+    return True
+
+
+def qualify_existing_tenant(
+    identity: Any, *, secrets_root: Optional[Path] = None
+) -> TenantCredentials:
+    """Read-only file/state precondition, reusable before effects and under provision lock.
+
+    This verifies stored credential custody and no owed phase, not DB connectivity.
+    No SQL, envrc adoption, state clear or credential writer is reachable here.
+    """
+    try:
+        path = secrets_path(
+            str(getattr(identity, "project_id", "") or ""), secrets_root=secrets_root
+        )
+        info = path.stat()
+        if (
+            path.is_symlink()
+            or _state_path(path).is_symlink()
+            or not stat.S_ISREG(info.st_mode)
+            or stat.S_IMODE(info.st_mode) != 0o600
+            or info.st_uid != os.getuid()
+        ):
+            raise ValueError("custody")
+        if _read_state(path):
+            raise ValueError("pending")
+        current = _current(path)
+        if current is None or current.gate_pending or _read_state(path):
+            raise ValueError("unqualified")
+    except (TenantError, OSError, UnicodeError, ValueError):
+        raise TenantError(
+            "CONPORT_TENANT_EXISTING_ONLY_REQUIRED",
+            "Stored tenant credentials and empty canonical state must be verified; automatic changes forbidden",
+        ) from None
+    return current
+
+
 def _record_migration(path: Path) -> Callable[[str], None]:
     return lambda name: _write_state(path, f"{STATE_DATABASE}:{name}")
 
@@ -979,6 +1030,7 @@ def resolve_tenant(
     psql: PsqlRunner,
     secrets_root: Optional[Path] = None,
     provision: bool = True,
+    existing_only: Optional[bool] = None,
 ) -> Optional[TenantCredentials]:
     """Secrets file → legacy envrc → shared store with history → provision.
 
@@ -993,6 +1045,13 @@ def resolve_tenant(
             "PROJECT_IDENTITY_UNKNOWN", "conport tenant needs a git project identity"
         )
     path = secrets_path(project_id, secrets_root=secrets_root)
+
+    strict = existing_tenant_only_mode() if existing_only is None else existing_only
+    if strict:
+        if not provision:
+            return qualify_existing_tenant(identity, secrets_root=secrets_root)
+        with provision_lock(project_id):
+            return qualify_existing_tenant(identity, secrets_root=secrets_root)
 
     current = _current(path)
     if current is not None:

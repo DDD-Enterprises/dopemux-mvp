@@ -1,0 +1,19 @@
+{
+  "process_exit_code": 0,
+  "executor_wall_seconds_observed": 168.99,
+  "timeout": false,
+  "requested_model": "sonnet",
+  "requested_effort": "high",
+  "observed_effort": "UNKNOWN",
+  "provider_attested_identity": "UNKNOWN",
+  "audit_invocations_consumed": 1,
+  "audit_invocations_remaining": 0,
+  "fallback_used": false,
+  "runtime_model_keys": [
+    "claude-sonnet-5-5"
+  ],
+  "runtime_is_error": false,
+  "runtime_num_turns": 49,
+  "permission_denial_count": 0,
+  "billing_amount": "UNKNOWN; Max route; no paid fallback"
+}

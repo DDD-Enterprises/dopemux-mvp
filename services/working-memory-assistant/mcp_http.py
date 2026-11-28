@@ -133,8 +133,12 @@ def build_mcp_server(
             raise ToolError(result.error or "tool call failed")
         return result.data
 
+    # REST and MCP share a backend with cached, thread-affine SQLite
+    # connections. Async callbacks keep these synchronous backend calls on the
+    # ASGI event-loop thread; FastMCP dispatches sync callbacks to worker threads.
+    # Do not offload individual calls without changing the connection ownership.
     @mcp.tool(name="memory_search")
-    def memory_search(
+    async def memory_search(
         query: str = "",
         workspace_id: str = read_workspace_id,
         instance_id: str = read_default_instance_id,
@@ -175,7 +179,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_store")
-    def memory_store(
+    async def memory_store(
         category: str,
         entry_type: str,
         summary: str,
@@ -213,7 +217,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_recap")
-    def memory_recap(
+    async def memory_recap(
         workspace_id: str = read_workspace_id,
         instance_id: str = read_default_instance_id,
         scope: str = "session",
@@ -232,7 +236,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_mark_issue")
-    def memory_mark_issue(
+    async def memory_mark_issue(
         issue_entry_id: str,
         description: str,
         workspace_id: WorkspaceIdParam = None,
@@ -259,7 +263,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_link_resolution")
-    def memory_link_resolution(
+    async def memory_link_resolution(
         issue_entry_id: str,
         resolution_entry_id: str,
         workspace_id: WorkspaceIdParam = None,
@@ -285,7 +289,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_replay_session")
-    def memory_replay_session(
+    async def memory_replay_session(
         session_id: str,
         workspace_id: str = read_workspace_id,
         instance_id: str = read_default_instance_id,
@@ -307,7 +311,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_correct")
-    def memory_correct(
+    async def memory_correct(
         entry_id: str,
         correction_type: str,
         workspace_id: WorkspaceIdParam = None,
@@ -341,7 +345,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_generate_reflection")
-    def memory_generate_reflection(
+    async def memory_generate_reflection(
         workspace_id: WorkspaceIdParam = None,
         instance_id: InstanceIdParam = None,
         session_id: Optional[str] = None,
@@ -363,7 +367,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_reflections")
-    def memory_reflections(
+    async def memory_reflections(
         workspace_id: str = read_workspace_id,
         instance_id: str = read_default_instance_id,
         session_id: Optional[str] = None,
@@ -380,7 +384,7 @@ def build_mcp_server(
         )
 
     @mcp.tool(name="memory_trajectory")
-    def memory_trajectory(
+    async def memory_trajectory(
         workspace_id: str = read_workspace_id,
         instance_id: str = read_default_instance_id,
     ) -> dict[str, Any]:

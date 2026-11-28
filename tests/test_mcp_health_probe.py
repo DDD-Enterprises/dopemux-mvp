@@ -4,10 +4,13 @@ Tests for .claude/hooks/mcp_health_probe.py
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
+
+import pytest
 
 _HOOKS_DIR = Path(__file__).resolve().parents[1] / ".claude" / "hooks"
 if str(_HOOKS_DIR) not in sys.path:
@@ -256,16 +259,10 @@ def test_mcp_json_missing_returns_none(tmp_path):
 def test_cache_fresh_skips_probe(tmp_path):
     """Fresh cache → probe functions not called."""
     _make_mcp_json(tmp_path, port=3005)
-    # Pre-warm cache
-    from datetime import datetime, timezone
-    cache = {
-        "servers": {"conport": {"up": True, "port": 3005}},
-        "leaked_containers": 0,
-        "written_at": datetime.now(timezone.utc).isoformat(),
-    }
-    cache_path = tmp_path / ".claude" / ".mcp-health-cache.json"
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    cache_path.write_text(json.dumps(cache))
+    # Pre-warm through the public entrypoint so the cache binds its inputs.
+    with patch("mcp_health_probe._probe_port", return_value=True), \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        emit_mcp_health(tmp_path)
 
     with patch("mcp_health_probe._probe_port") as mock_probe, \
          patch("mcp_health_probe._count_leaked_containers") as mock_docker:
@@ -280,3 +277,156 @@ def test_exception_in_probe_returns_none(tmp_path):
     with patch("mcp_health_probe._probe_port", side_effect=Exception("boom")):
         result = emit_mcp_health(tmp_path)
     assert result is None
+
+
+_TEMPLATE = "http://localhost:${CONPORT_MCP_PORT:-3005}/mcp"
+
+
+def _write_template_config(root):
+    (root / ".mcp.json").write_text(json.dumps({"mcpServers": {
+        "conport": {"type": "sse", "url": _TEMPLATE},
+        "dope-memory": {"type": "http", "url":
+            "http://localhost:${DOPE_MEMORY_PORT:-3020}/mcp"},
+    }}))
+
+
+def test_target_envrc_ports_override_ambient_without_mutation(tmp_path, monkeypatch):
+    _write_template_config(tmp_path)
+    (tmp_path / ".envrc.dopemux-mcp").write_text(
+        "export CONPORT_MCP_PORT='3007' # checkout port\n"
+        'export DOPE_MEMORY_PORT="3054"\n')
+    monkeypatch.setenv("CONPORT_MCP_PORT", "9999")
+    monkeypatch.setenv("DOPE_MEMORY_PORT", "9998")
+    before = dict(os.environ)
+    with patch("mcp_health_probe._probe_port", return_value=True) as probe, \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        emit_mcp_health(tmp_path)
+    assert probe.call_args_list == [call(3007), call(3054)]
+    assert dict(os.environ) == before
+
+
+@pytest.mark.parametrize("body", [None, "", "export CONPORT_MCP_PORT=oops\n",
+    "export CONPORT_MCP_PORT=0\n", "export CONPORT_MCP_PORT=65536\n",
+    "export CONPORT_MCP_PORT=3007\nexport CONPORT_MCP_PORT=3008\n",
+    "export CONPORT_MCP_PORT 3007\n"])
+def test_bad_target_config_is_visible_and_never_probed(tmp_path, monkeypatch, body):
+    (tmp_path / ".mcp.json").write_text(json.dumps({"mcpServers": {
+        "conport": {"type": "sse", "url": _TEMPLATE}}}))
+    if body is not None:
+        (tmp_path / ".envrc.dopemux-mcp").write_text(body)
+    monkeypatch.setenv("CONPORT_MCP_PORT", "4444")
+    with patch("mcp_health_probe._probe_port") as probe, \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        result = emit_mcp_health(tmp_path)
+    probe.assert_not_called()
+    assert "configuration" in result
+    assert "not listening" not in result
+
+
+def test_shell_text_is_not_executed_or_echoed(tmp_path):
+    marker = tmp_path / "executed"
+    _write_template_config(tmp_path)
+    (tmp_path / ".envrc.dopemux-mcp").write_text(
+        f"export CONPORT_MCP_PORT=$(touch {marker})\n"
+        "export DOPE_MEMORY_PORT=3054\n"
+        f"touch {marker}\n")
+    with patch("mcp_health_probe._probe_port", return_value=True) as probe, \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        result = emit_mcp_health(tmp_path)
+    assert not marker.exists()
+    assert "touch" not in result
+    assert probe.call_args_list == [call(3054)]
+
+
+def test_literal_port_ignores_invalid_envrc(tmp_path):
+    _make_mcp_json(tmp_path, port=7890)
+    (tmp_path / ".envrc.dopemux-mcp").write_text("CONPORT_MCP_PORT=bad\n")
+    with patch("mcp_health_probe._probe_port", return_value=True) as probe, \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        emit_mcp_health(tmp_path)
+    probe.assert_called_once_with(7890)
+
+
+def test_legacy_cache_is_invalidated(tmp_path):
+    _write_template_config(tmp_path)
+    (tmp_path / ".envrc.dopemux-mcp").write_text(
+        "CONPORT_MCP_PORT=3007\nDOPE_MEMORY_PORT=3054\n")
+    from datetime import datetime, timezone
+    cache = tmp_path / ".claude" / ".mcp-health-cache.json"
+    cache.parent.mkdir()
+    cache.write_text(json.dumps({"written_at": datetime.now(timezone.utc).isoformat(),
+        "servers": {"conport": {"up": False, "port": 3005}}}))
+    with patch("mcp_health_probe._probe_port", return_value=True) as probe, \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        result = emit_mcp_health(tmp_path)
+    assert probe.call_args_list == [call(3007), call(3054)]
+    assert "not listening" not in result
+
+
+@pytest.mark.parametrize("change", ["envrc", "mcp"])
+def test_config_change_invalidates_fresh_cache(tmp_path, change):
+    _write_template_config(tmp_path)
+    envrc = tmp_path / ".envrc.dopemux-mcp"
+    envrc.write_text("CONPORT_MCP_PORT=3007\nDOPE_MEMORY_PORT=3054\n")
+    with patch("mcp_health_probe._probe_port", return_value=True), \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        emit_mcp_health(tmp_path)
+    if change == "envrc":
+        envrc.write_text("CONPORT_MCP_PORT=3008\nDOPE_MEMORY_PORT=3054\n")
+    else:
+        _make_mcp_json(tmp_path, port=7777)
+    with patch("mcp_health_probe._probe_port", return_value=False) as probe, \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        result = emit_mcp_health(tmp_path)
+    assert probe.called
+    assert "not listening" in result
+    assert probe.call_args_list == ([call(3008), call(3054)] if change == "envrc"
+                                    else [call(7777)])
+
+
+@pytest.mark.parametrize("value", ["0", "65536", "invalid"])
+def test_extract_port_invalid_ambient_does_not_fall_back(monkeypatch, value):
+    monkeypatch.setenv("CONPORT_MCP_PORT", value)
+    assert _extract_port(_TEMPLATE) is None
+
+
+@pytest.mark.parametrize("url", ["http://remote.example:3007/mcp",
+                                "http://[::1]:3007/mcp"])
+def test_unsupported_host_is_not_probed_as_ipv4_localhost(tmp_path, url):
+    (tmp_path / ".mcp.json").write_text(json.dumps({"mcpServers": {
+        "conport": {"type": "sse", "url": url}}}))
+    with patch("mcp_health_probe._probe_port") as probe, \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        result = emit_mcp_health(tmp_path)
+    probe.assert_not_called()
+    assert "not probed" in result
+    assert "✅" not in result
+
+
+def test_malformed_reassignment_invalidates_prior_value(tmp_path):
+    (tmp_path / ".mcp.json").write_text(json.dumps({"mcpServers": {
+        "conport": {"type": "sse", "url": _TEMPLATE}}}))
+    (tmp_path / ".envrc.dopemux-mcp").write_text(
+        "CONPORT_MCP_PORT=3007\nexport CONPORT_MCP_PORT 3008\n")
+    with patch("mcp_health_probe._probe_port") as probe, \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        result = emit_mcp_health(tmp_path)
+    probe.assert_not_called()
+    assert "configuration" in result
+
+
+def test_unrelated_envrc_values_do_not_invalidate_or_enter_cache(tmp_path):
+    _write_template_config(tmp_path)
+    envrc = tmp_path / ".envrc.dopemux-mcp"
+    envrc.write_text("CONPORT_MCP_PORT=3007\nDOPE_MEMORY_PORT=3054\n"
+                     "UNRELATED_VALUE=synthetic-before\n")
+    with patch("mcp_health_probe._probe_port", return_value=True), \
+         patch("mcp_health_probe._count_leaked_containers", return_value=0):
+        emit_mcp_health(tmp_path)
+    envrc.write_text(envrc.read_text().replace("synthetic-before", "synthetic-after"))
+    with patch("mcp_health_probe._probe_port") as probe, \
+         patch("mcp_health_probe._count_leaked_containers") as docker:
+        emit_mcp_health(tmp_path)
+    probe.assert_not_called()
+    docker.assert_not_called()
+    assert "synthetic" not in (tmp_path / ".claude" / ".mcp-health-cache.json").read_text()

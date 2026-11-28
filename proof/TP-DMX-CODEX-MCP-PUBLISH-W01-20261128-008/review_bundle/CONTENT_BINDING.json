@@ -1,0 +1,43 @@
+{
+  "audited_base_sha": "041934957233427fb9b94dfbcd6dc798f069401d",
+  "source_diff_sha256": "310dbea891f69f10f0ad47cbf73ac7bd5cd25006567fb73abe3375482b97a538",
+  "file_hashes": {
+    ".claude/hooks/mcp_health_probe.py": "7fbed37d0d2684392cfa3bd859ff99654fb446cfe0d025dcc45b67319cc068bc",
+    "services/working-memory-assistant/mcp_http.py": "93b8bfdb31b05b2eaddd5c76bbfd10d07f0417f848fbfa4e63fbf093d2b7bce8",
+    "services/working-memory-assistant/tests/test_mcp_sqlite_thread_affinity.py": "8b72b3296dae1070f9d2b1a9437bdccb2d37efa6671d4f9393cdfaeeb5cd5b97",
+    "src/dopemux/commands/mcp_commands.py": "8801c7cc59135638195a5c9723cdce175520ca6f0fa3e1a12037cd8abfbd8daa",
+    "src/dopemux/mcp/bridge_runtime.py": "ec5dada224a13d03711446be2b11693a5f253d8a733063bb30998bcb1d5c1efa",
+    "src/dopemux/mcp/conport_tenant.py": "512436b1bf47e45b4f2c44047fe783882d9832652173aced838f54c946cad86e",
+    "src/dopemux/mcp/docker_runtime.py": "82e0693774ae455303bb7de2814eedbe2ad3829d7f4d538854460bc419b8a225",
+    "src/dopemux/mcp/doctor.py": "7a6a5c3c3ae7049878b1a80d7e0f3116a2c199c41a13de9c382aaa9e2f83bb21",
+    "src/dopemux/mcp/http_stdio_bridge.py": "f5d03903308bc92f0ccbfe3e0b75527efdd4b262db0238552629184645fa41f1",
+    "src/dopemux/mcp/idle_retention.py": "f1c7e4ea3189c304629c668a494644e0f4ee4cc926a169931c599415df2e57d5",
+    "src/dopemux/mcp/launcher.py": "bd137c60534ccaf7bf1545dd2ce1bedf39f1fc61f73372b5e1076376fd82deb6",
+    "src/dopemux/mcp/lifecycle.py": "127835d32a67a979977b7b653322175d872a7cc916773f87fcd354b51ec8326a",
+    "src/dopemux/mcp/reap.py": "e3da563d3cb1fe951ad333cb7eaea28a0103f1bad2ffbd07c9dc6c2b361facdd",
+    "src/dopemux/mcp/stdio_proxy.py": "2e358b017b144de153441c81f434dbe0722061510e9028d29b2f62f91b662849",
+    "tests/test_mcp_health_probe.py": "d6292675667697b5b716daa97a9c1a79bcbcdf3b971212e2414c970d1ebe50b9",
+    "tests/unit/runner_memory_2a_r2_w04/conftest.py": "2fbc3ae3f06a5b9e2ff78a3119463f98da06ce0d4e784744f503808827cd577f",
+    "tests/unit/test_conport_existing_tenant.py": "ad2d6c86e4fed0b259738f2cff3999684aa4603913e4bd35ddbf318ed47abc65",
+    "tests/unit/test_mcp_bridge_runtime.py": "83e26b5ba1d673a842a85b99eaa23708d5161b9542ebdd73c032755580f0cde7",
+    "tests/unit/test_mcp_commands_lifecycle.py": "324b2ce73b100bb4ae5831e69d7a3e2f63589f5cfdf7f43a5704897422c2eeed",
+    "tests/unit/test_mcp_idle_retention.py": "e1f4918a8776c63c89e65bb50df894154ed9ad51024927a2698c00fa8e74f2c0",
+    "tests/unit/test_mcp_lifecycle.py": "b19f82d48b5a10ade969db7133c950e9728f320db1e406dde7de9025e03de349",
+    "tests/unit/test_mcp_runtime_launcher.py": "df6c9c69f7c4e1656d54005fda1382820447041d536cde847d5a6067d21d2d4a",
+    "tests/unit/test_mcp_stdio_proxy.py": "340868e3f11b749dcb6569fe9ea9efcc50d7295305e2843e3cd396a17ef6d34f"
+  },
+  "original_local_freeze_manifest_sha256": "79d145159c83d8e56c5f514204a1e3823b2530bdc6d1ffbfbf12ce218554ddf1",
+  "verbatim_auditor_report_sha256": "1995c98c64cee84874155eecf18e9a968947dadb556756309fc6a99b1e44eea3",
+  "source_commit_sha": "6a1db868843738fad982ee93c4b00e66de0565a9",
+  "public_proof_only_successor": "Required: changes confined to this proof directory",
+  "local_only_artifacts": [
+    "Raw auditor transcript/stderr",
+    "Private config/SQLite/volume backups",
+    "Machine-specific rollout helpers/plans and runtime files",
+    "Detailed diagnostic row identifiers"
+  ],
+  "private_artifacts_published": false,
+  "source_commit_equivalence": "PASS",
+  "substantive_tree_sha": "982b1e72c78615a2fa78512ea780a224c8988bf1",
+  "source_diff_storage": "Exact Git object reference in SOURCE_DIFF_REFERENCE.json; original local patch retained"
+}
