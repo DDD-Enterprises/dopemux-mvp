@@ -1,0 +1,125 @@
+{
+  "schema_version": "dopemux.governed_execution.execution_binding.v2",
+  "packet_id": "TP-DMX-CODEX-MCP-PUBLISH-W01-20261128-008",
+  "stage": "publication_custody",
+  "authority": "NONE",
+  "authority_refs": {
+    "task_packet_ref": "task-packets/MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008/WORKSTREAMS/W01/TASK_PACKET.json",
+    "operator_gate_refs": [
+      "Latest user ok do them now explicitly authorizes committing the existing audited repair, pushing its branch and creating a PR. Publish only allowed source and sanitized proof; no merge/ready/signing/service/credential effects or additional model calls."
+    ]
+  },
+  "policy_refs": {
+    "dcp_route_decision_ref": "NOT_RUN",
+    "dcp_status": "NOT_RUN",
+    "dcp_risk_class": "NOT_RUN",
+    "task_orchestrator_state_ref": "PENDING new admission before execution",
+    "universal_router_recommendation_ref": "NOT_RUN",
+    "audit_broker_certification_ref": "NOT_RUN",
+    "context_packet_ref": "NOT_RUN"
+  },
+  "delivery": {
+    "risk_lane": "L3"
+  },
+  "selection": {
+    "runner": "local-shell",
+    "runner_availability": "PROVEN",
+    "model": "NOT_REQUIRED",
+    "effort": "NOT_REQUIRED",
+    "connector": "local-cli",
+    "configured_identity": "NOT_REQUIRED",
+    "response_claimed_identity": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "containment_evidence": [
+      "Exact scopedbranch/source hashes; no sourceedits; public-safe metadata only"
+    ]
+  },
+  "constraints": {
+    "allowed_actions": [
+      "read",
+      "validate",
+      "write_proof",
+      "commit_allowed_files"
+    ],
+    "forbidden_actions": [
+      "source_semantic_edits",
+      "merge",
+      "mark_ready",
+      "close",
+      "force_push",
+      "history_rewrite",
+      "service_mutation",
+      "credentials_or_permissions",
+      "signing",
+      "additional_model_calls"
+    ],
+    "stop_conditions": [
+      "Sourcehash or canonicalowner conflict",
+      "Secret exposure",
+      "Remotehead conflict; no forcepush",
+      "Unknown commit/push/PR outcome: reconcile before retry"
+    ],
+    "custody_constraints": [
+      "Primary tracked source read-only; only separately operator-authorized primary envrc/data effects after audit/backups. Preserve all old subjects."
+    ],
+    "context_constraints": [
+      "No secrets or credentials; bounded relevant context only."
+    ]
+  },
+  "justification": {
+    "why_runner": "Deterministic local Git/schema/tests/GitHub CLI meet this mechanical publication scope.",
+    "why_model": "No qualified model subtask needed; unchanged audited code, no extra inference/audit authorization.",
+    "why_effort": "No model call.",
+    "alternatives_considered": [
+      {
+        "route": "local-shell/NONE",
+        "disposition": "reserved",
+        "reason": "Deterministic inventory, schema checks, tests, hashes and packaging."
+      },
+      {
+        "route": "agy",
+        "disposition": "not selected for audit",
+        "reason": "Models listed but equivalent tool-disabled audit containment not proven; use supported Claude CLI isolated route."
+      }
+    ],
+    "cost_latency_tradeoff": "No additional model calls; measured savings UNKNOWN.",
+    "evidence": [
+      "Latest user ok do them now explicitly authorizes committing the existing audited repair, pushing its branch and creating a PR. Publish only allowed source and sanitized proof; no merge/ready/signing/service/credential effects or additional model calls.",
+      "AGENTS.md",
+      "docs/ops/embedded-audit.md",
+      "proof/MACRO-DMX-CODEX-MCP-COMPOSE-20261128-007/W02/PROOF.json"
+    ]
+  },
+  "audit": {
+    "effective_required": true,
+    "effective_requirement_sources": [
+      "delivery:L3"
+    ],
+    "upstream_obligations": [],
+    "selected_auditor_binding": "REUSED007sourceaudit; no new audit"
+  },
+  "fallback": {
+    "allowed": false,
+    "trigger": "NOT_RUN",
+    "binding": {
+      "runner": "NOT_RUN",
+      "model": "NOT_RUN",
+      "effort": "NOT_RUN"
+    }
+  },
+  "macro_id": "MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008",
+  "runner_version": "UNKNOWN",
+  "effort_requested": "NOT_REQUIRED",
+  "effort_observed": "NOT_REQUIRED",
+  "auth_profile_ref": "Existing Keychain-backed GitHub CLI identity; no token export",
+  "network_posture": "Only Git/GitHub publication and read-only CI inspection explicitly authorized; no provider inference.",
+  "containment_posture": "Dedicated worktree, source allowlist, no credential/production/activation effects",
+  "fallback_outcome": {
+    "fallback_used": false,
+    "fallback_reason": "NOT_RUN"
+  },
+  "response_claimed_model": "UNKNOWN",
+  "provider_attested_model": "UNKNOWN",
+  "independence_class": "UNKNOWN",
+  "qualification_receipt_ref": "proof/MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008/QUALIFICATION.json"
+}

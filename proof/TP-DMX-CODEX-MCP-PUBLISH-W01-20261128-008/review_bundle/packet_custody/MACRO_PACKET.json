@@ -1,0 +1,312 @@
+{
+  "schema_version": "dopemux.governed_execution.macro_packet.v2",
+  "macro_id": "MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008",
+  "objective": "Commit and publish existing audited MCP repair as draftPR; preserve exact source, safe publicproof and hosted verification.",
+  "repository": "dopemux-mvp",
+  "base_policy": "Verified origin/main=HEAD=041934957233427fb9b94dfbcd6dc798f069401d; frozen23file source310dbea891f69f10f0ad47cbf73ac7bd5cd25006567fb73abe3375482b97a538. Retain existing runtime-dependent worktree.",
+  "issued_by": "control_tower_supervisor",
+  "authority": {
+    "operator_refs": [
+      "Latest user ok do them now explicitly authorizes committing the existing audited repair, pushing its branch and creating a PR. Publish only allowed source and sanitized proof; no merge/ready/signing/service/credential effects or additional model calls."
+    ],
+    "global_allowed_actions": [
+      "read",
+      "validate",
+      "write_proof",
+      "commit_allowed_files",
+      "push_branch",
+      "create_draft_pr"
+    ],
+    "global_forbidden_actions": [
+      "source_semantic_edits",
+      "merge",
+      "mark_ready",
+      "close",
+      "force_push",
+      "history_rewrite",
+      "service_mutation",
+      "credentials_or_permissions",
+      "signing",
+      "additional_model_calls"
+    ],
+    "global_stop_conditions": [
+      "Primary tracked source mutation outside separately approved envrc/data runtime scope",
+      "Confirmed secret exposure",
+      "Canonical owner conflict affecting all children"
+    ]
+  },
+  "team_lead": {
+    "execution_binding_ref": {
+      "path": "EXECUTION_BINDING.json",
+      "sha256": "12df51cd1a98a2dc6e1e405b72b7e0f6ee750e52e2d117b96ed2bd804395ceff"
+    },
+    "authority_ceiling": "Latest explicit operator authority permits only scoped commits, nonforce branch push and draft PR. No semantic changes, merge/readiness/signing/service effects.",
+    "may_delegate": true,
+    "may_create_canonical_packets": false,
+    "may_merge": false,
+    "may_activate": false,
+    "binding_policy": "one mutating implementer per workstream; bindings are constraints, not grants"
+  },
+  "workstreams": [
+    {
+      "workstream_id": "W01",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W01/TASK_PACKET.json",
+        "sha256": "a17f90710ddd1cd0d50d47e5038b217f220d5f00b7ac0748e50207eccdef0ed0"
+      },
+      "objective": "Verify exact frozen23file source; prepare sanitized public audit/proof; commit source and proof separately without semantic changes.",
+      "dependencies": [],
+      "parallel_group": "W01",
+      "mutating": true,
+      "write_surface": [
+        ".claude/hooks/mcp_health_probe.py",
+        "services/working-memory-assistant/mcp_http.py",
+        "services/working-memory-assistant/tests/test_mcp_sqlite_thread_affinity.py",
+        "src/dopemux/commands/mcp_commands.py",
+        "src/dopemux/mcp/bridge_runtime.py",
+        "src/dopemux/mcp/conport_tenant.py",
+        "src/dopemux/mcp/docker_runtime.py",
+        "src/dopemux/mcp/doctor.py",
+        "src/dopemux/mcp/http_stdio_bridge.py",
+        "src/dopemux/mcp/idle_retention.py",
+        "src/dopemux/mcp/launcher.py",
+        "src/dopemux/mcp/lifecycle.py",
+        "src/dopemux/mcp/reap.py",
+        "src/dopemux/mcp/stdio_proxy.py",
+        "tests/test_mcp_health_probe.py",
+        "tests/unit/runner_memory_2a_r2_w04/conftest.py",
+        "tests/unit/test_conport_existing_tenant.py",
+        "tests/unit/test_mcp_bridge_runtime.py",
+        "tests/unit/test_mcp_commands_lifecycle.py",
+        "tests/unit/test_mcp_idle_retention.py",
+        "tests/unit/test_mcp_lifecycle.py",
+        "tests/unit/test_mcp_runtime_launcher.py",
+        "tests/unit/test_mcp_stdio_proxy.py",
+        "proof/TP-DMX-CODEX-MCP-PUBLISH-W01-20261128-008/",
+        "task-packets/MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008/"
+      ],
+      "canonical_writers": [
+        "W01-sole-writer"
+      ],
+      "semantic_scope": [
+        "audited_source_commit_and_publicproof"
+      ],
+      "allowed_actions": [
+        "read",
+        "validate",
+        "write_proof",
+        "commit_allowed_files"
+      ],
+      "forbidden_actions": [
+        "source_semantic_edits",
+        "merge",
+        "mark_ready",
+        "close",
+        "force_push",
+        "history_rewrite",
+        "service_mutation",
+        "credentials_or_permissions",
+        "signing",
+        "additional_model_calls"
+      ],
+      "rollback_boundary": "No destructive rollback. On publication error retain commits/branch/receipts and reconcile exact hostedstate; no forcepush or deletion.",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "PENDING008admission",
+      "execution_route": {
+        "preferred": {
+          "runner": "local-shell",
+          "model": "NOT_REQUIRED",
+          "effort": "NOT_REQUIRED"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "Reuse007 independent sourceaudit via exact sourcecommit equivalence; proof-onlymetadata closure validation per embedded-audit.md; no new audit/PR-readiness claim."
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "route",
+        "files",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "REUSED007_SOURCE_PUBLICATION008",
+      "return_contract": [
+        "Preserve all exact source/plan/route/receipt states; acceptance NONE.",
+        "No hidden extension after failed audit, no unrelated runtime or destructive effect."
+      ]
+    },
+    {
+      "workstream_id": "W02",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W02/TASK_PACKET.json",
+        "sha256": "8975d550af9a88300577423ccd7fa394c2e634fd74335cdf1a5c5618cd9afe34"
+      },
+      "objective": "Fast-forward-only push exact allowed branch and create ONE draft PR to main with concrete validation/risk description; reconcile unknown attempts before any retry.",
+      "dependencies": [
+        "W01"
+      ],
+      "parallel_group": "W02",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008/W02/"
+      ],
+      "canonical_writers": [
+        "W02-sole-writer"
+      ],
+      "semantic_scope": [
+        "remote_branch_and_draftPR"
+      ],
+      "allowed_actions": [
+        "read",
+        "validate",
+        "write_proof",
+        "push_branch",
+        "create_draft_pr"
+      ],
+      "forbidden_actions": [
+        "source_semantic_edits",
+        "merge",
+        "mark_ready",
+        "close",
+        "force_push",
+        "history_rewrite",
+        "service_mutation",
+        "credentials_or_permissions",
+        "signing",
+        "additional_model_calls"
+      ],
+      "rollback_boundary": "No destructive rollback. On publication error retain commits/branch/receipts and reconcile exact hostedstate; no forcepush or deletion.",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "PENDING008admission",
+      "execution_route": {
+        "preferred": {
+          "runner": "local-shell",
+          "model": "NOT_REQUIRED",
+          "effort": "NOT_REQUIRED"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "Reuse007 independent sourceaudit via exact sourcecommit equivalence; proof-onlymetadata closure validation per embedded-audit.md; no new audit/PR-readiness claim."
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "route",
+        "files",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "REUSED007_SOURCE_PUBLICATION008",
+      "return_contract": [
+        "Preserve all exact source/plan/route/receipt states; acceptance NONE.",
+        "No hidden extension after failed audit, no unrelated runtime or destructive effect."
+      ]
+    },
+    {
+      "workstream_id": "W03",
+      "task_packet_ref": {
+        "path": "WORKSTREAMS/W03/TASK_PACKET.json",
+        "sha256": "16f5a0297c41f319507ed5d5fec02b4a19ee4c95bca92895c9f9816a3314b060"
+      },
+      "objective": "Verify hosted branch/PR head, draft state, changed paths and CI status; preserve PASS/FAIL/NOT_RUN/UNKNOWN without promoting readiness.",
+      "dependencies": [
+        "W02"
+      ],
+      "parallel_group": "W03",
+      "mutating": true,
+      "write_surface": [
+        "proof/MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008/W03/"
+      ],
+      "canonical_writers": [
+        "W03-sole-writer"
+      ],
+      "semantic_scope": [
+        "hosted_read_verification"
+      ],
+      "allowed_actions": [
+        "read",
+        "validate",
+        "write_proof"
+      ],
+      "forbidden_actions": [
+        "source_semantic_edits",
+        "merge",
+        "mark_ready",
+        "close",
+        "force_push",
+        "history_rewrite",
+        "service_mutation",
+        "credentials_or_permissions",
+        "signing",
+        "additional_model_calls"
+      ],
+      "rollback_boundary": "No destructive rollback. On publication error retain commits/branch/receipts and reconcile exact hostedstate; no forcepush or deletion.",
+      "delivery_risk_lane": "L3",
+      "dcp_route_ref": "NOT_RUN",
+      "dcp_status": "NOT_RUN",
+      "dcp_risk_class": "NOT_RUN",
+      "task_orchestrator_ref": "PENDING008admission",
+      "execution_route": {
+        "preferred": {
+          "runner": "local-shell",
+          "model": "NOT_REQUIRED",
+          "effort": "NOT_REQUIRED"
+        },
+        "allowed_fallbacks": []
+      },
+      "audit": {
+        "required": true,
+        "final_subject": "Reuse007 independent sourceaudit via exact sourcecommit equivalence; proof-onlymetadata closure validation per embedded-audit.md; no new audit/PR-readiness claim."
+      },
+      "return_fields": [
+        "status",
+        "subject",
+        "route",
+        "files",
+        "validation",
+        "proof",
+        "audit",
+        "blockers"
+      ],
+      "audit_group": "REUSED007_SOURCE_PUBLICATION008",
+      "return_contract": [
+        "Preserve all exact source/plan/route/receipt states; acceptance NONE.",
+        "No hidden extension after failed audit, no unrelated runtime or destructive effect."
+      ]
+    }
+  ],
+  "joins": [],
+  "parallelism": {
+    "max_mutating_workstreams": 1,
+    "one_mutating_implementer_per_workstream": true,
+    "overlap_policy": "fail_closed"
+  },
+  "evidence_budget": {
+    "intermediate_model_audits": 0,
+    "final_audit_policy": "No new model/audit calls. Unchanged007successful sourceaudit reused only with deterministic exact-content proof; signed/TTL/PR acceptance NOT_RUN.",
+    "proof_transport": "sanitized"
+  },
+  "return_contract": {
+    "aggregate_return_required": true,
+    "immediate_return_triggers": [
+      "authority_conflict",
+      "global_stop"
+    ]
+  },
+  "execution_authority": "NONE"
+}

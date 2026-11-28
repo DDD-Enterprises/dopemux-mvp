@@ -1,0 +1,64 @@
+{
+  "status": "FAIL_PREEXISTING",
+  "violations": [
+    {
+      "path": ".antigravitycli/8045acdf-ddc1-4770-9e5f-66a542feed87.json",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": ".antigravitycli/c1be0ae4-af24-4184-9a66-bb7ce6372872.json",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": ".clinerules/caveman.md",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": ".cursor/rules/caveman.mdc",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": ".windsurf/rules/caveman.md",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": "FINAL_BLOCKERS.json",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": "FINAL_CLOSED_PRS.json",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": "FINAL_MAIN_SHA.txt",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": "FINAL_MERGED_PRS.json",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": "FINAL_MERGE_READINESS_SUMMARY.md",
+      "exists_in_base": true,
+      "unchanged": true
+    },
+    {
+      "path": "FINAL_OPEN_PR_INVENTORY.json",
+      "exists_in_base": true,
+      "unchanged": true
+    }
+  ],
+  "checker_and_policy_unchanged": true,
+  "source_changes_added_violations": false,
+  "unrelated_cleanup_performed": false,
+  "base_sha": "041934957233427fb9b94dfbcd6dc798f069401d"
+}

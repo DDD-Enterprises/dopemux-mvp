@@ -1,0 +1,65 @@
+{
+  "tests": [
+    {
+      "argv": [
+        ".venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_mcp_health_probe.py",
+        "tests/unit/test_mcp_lifecycle.py",
+        "tests/unit/test_mcp_commands_lifecycle.py",
+        "tests/unit/test_mcp_identity_git_only.py",
+        "tests/unit/test_mcp_runtime_launcher.py",
+        "tests/unit/test_mcp_launcher.py",
+        "tests/unit/test_mcp_commands_catalog.py",
+        "tests/unit/test_mcp_stdio_proxy.py",
+        "tests/unit/test_mcp_bridge_runtime.py",
+        "tests/unit/test_mcp_reap.py",
+        "tests/unit/test_mcp_idle_retention.py",
+        "tests/unit/test_conport_existing_tenant.py",
+        "tests/unit/test_mcp_conport_tenant.py",
+        "tests/unit/test_mcp_lifecycle_ports_from_leases.py",
+        "tests/unit/runner_memory_2a_r2_w01",
+        "tests/unit/runner_memory_2a_r2_w02",
+        "tests/unit/runner_memory_2a_r2_w03",
+        "tests/unit/runner_memory_2a_r2_w04",
+        "--no-cov",
+        "-q",
+        "--tb=short",
+        "--maxfail=3"
+      ],
+      "exit_code": 0,
+      "passed": 1210,
+      "output_tail": [
+        "..........................................................               [100%]",
+        "1210 passed in 47.58s"
+      ],
+      "registry_isolated": true
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "-m",
+        "pytest",
+        "services/working-memory-assistant/tests/test_mcp_sqlite_thread_affinity.py",
+        "services/working-memory-assistant/tests/test_mcp_http_endpoint.py",
+        "services/working-memory-assistant/tests/unit",
+        "services/working-memory-assistant/tests/test_store_fail_closed.py",
+        "services/working-memory-assistant/tests/test_migration_runner_optimized.py",
+        "--no-cov",
+        "-q",
+        "--tb=short"
+      ],
+      "exit_code": 0,
+      "passed": 77,
+      "output_tail": [
+        ".....                                                                    [100%]",
+        "77 passed in 1.25s"
+      ],
+      "registry_isolated": false
+    }
+  ],
+  "python": "3.12.13",
+  "full_unit_suite": "NOT_RUN",
+  "sandbox_fixture_denial": "Initial constrained attempt could not bindlocalhost; permittedfixture rerun passed; no sourcechange"
+}

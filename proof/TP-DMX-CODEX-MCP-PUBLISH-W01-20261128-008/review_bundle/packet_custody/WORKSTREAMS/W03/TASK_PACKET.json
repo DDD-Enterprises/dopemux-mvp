@@ -1,0 +1,59 @@
+{
+  "id": "TP-DMX-CODEX-MCP-PUBLISH-W03-20261128-008",
+  "project": "dopemux-mvp",
+  "target": "Verify hosted branch/PR head, draft state, changed paths and CI status; preserve PASS/FAIL/NOT_RUN/UNKNOWN without promoting readiness.",
+  "invariants": [
+    "Latest user ok do them now explicitly authorizes committing the existing audited repair, pushing its branch and creating a PR. Publish only allowed source and sanitized proof; no merge/ready/signing/service/credential effects or additional model calls.",
+    "DeliveryL3 inherited source obligation; existing independent007PASS_WITH_RISKS subject310dbea891f69f10f0ad47cbf73ac7bd5cd25006567fb73abe3375482b97a538 reused only after deterministic exact-byte/commit-tree equivalence.",
+    "This is publication/proof custody only: no source semantic edits, additional audit/inference, service restarts, diagnostic writes, migrations, credentials, permissions or signing.",
+    "Commit source23files first, then separately only sanitized canonicalproof and008packetmetadata. Preserve all previous rawreports/transcripts/privatebackups locally, never publish private runtime payloads.",
+    "Repository is public; publicproof excludes rawlogs, credentials, machine-specific runtime files, privatebackup paths and diagnosticrowidentifiers. Sourceauditreport preserved verbatim after secret/machine-path scan.",
+    "No merge, ready, close, forcepush, historyrewrite or automatic nextMacroPacket. Draft PR only; CI/readiness and signed exact-PR-head audit acceptance remain separate.",
+    "Zero additional model-call budget; deterministic shell handles mechanical custody/publication. Existing operator approval covers commit/push/PR; do not request it again.",
+    "After sourcecommit verify gitdiff(base,sourcecommit) bytes match oldstagedsubject and everysourcefile hash, record committedtree binding. Proof-onlysuccessor closure validated separately, never claim a fresh audit."
+  ],
+  "depends_on": [
+    "W02"
+  ],
+  "repo_binding": {
+    "project_id": "dopemux-mvp",
+    "repo_marker": ".dopetaskroot",
+    "origin_hint": "DDD-Enterprises/dopemux-mvp",
+    "require_identity_match": true
+  },
+  "series": {
+    "id": "MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008",
+    "base_branch": "main",
+    "parent_tp_id": "MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008",
+    "final_packet": true
+  },
+  "execution": {
+    "agent": "codex",
+    "branch": "fix/codex-mcp-repair-20261127",
+    "base_branch": "main"
+  },
+  "commit": {
+    "message": "fix(mcp): restore authenticated Codex memory connections",
+    "allowlist": [
+      "proof/MACRO-DMX-CODEX-MCP-PUBLISH-20261128-008/W03/"
+    ],
+    "verify": [
+      "git diff --check",
+      "Focused deterministic tests for changed contract; record commands and exits."
+    ]
+  },
+  "pr": {
+    "title": "fix(mcp): restore authenticated Codex memory connections",
+    "body": "Explicitly operator-authorized draft publication of the audited MCP repair. No merge/readiness/signing authority.",
+    "base": "main"
+  },
+  "steps": [
+    {
+      "id": "W03-S1",
+      "task": "Verify hosted branch/PR head, draft state, changed paths and CI status; preserve PASS/FAIL/NOT_RUN/UNKNOWN without promoting readiness.",
+      "validation": [
+        "Subject hashes, scoped diff/secret scan, canonical schemas, deterministic tests, actual Git/GitHub exit receipts."
+      ]
+    }
+  ]
+}
