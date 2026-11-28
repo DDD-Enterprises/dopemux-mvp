@@ -1,0 +1,38 @@
+{
+  "macro_id": "MACRO-DMX-CODEX-MCP-READY-20261128-009",
+  "operator_instruction": "get it merge ready",
+  "source_commit": "6a1db868843738fad982ee93c4b00e66de0565a9",
+  "source_diff_sha256": "310dbea891f69f10f0ad47cbf73ac7bd5cd25006567fb73abe3375482b97a538",
+  "audit_generated_at": "2026-11-28T11:57:20.013493+00:00",
+  "auditor_report_sha256": "1995c98c64cee84874155eecf18e9a968947dadb556756309fc6a99b1e44eea3",
+  "audit_identity": {
+    "implementer": {
+      "runner": "codex-subagent",
+      "model": "gpt-6.1-sol",
+      "model_family": "gpt",
+      "runtime_family": "codex"
+    },
+    "auditor": {
+      "runner": "claude-code-cli",
+      "model": "sonnet",
+      "model_family": "claude",
+      "runtime_family": "claude-code-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "identity_provenance": {
+    "implementer_model": "Configured/requested gpt-6.1-sol in independent source-worker bindings001/W01,W02;002/W01;004/W01;005/W01;006/W01; provider attestation UNKNOWN.001/W03 and002/W02 Claude routes were auditors, not source writers.007/W01 is deterministic shell correction.",
+    "auditor_model_requested": "sonnet",
+    "auditor_model_response_claimed": "claude-sonnet-5-5",
+    "auditor_effort_requested": "high",
+    "auditor_effort_observed": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "independence_basis": "Separate external Claude Code CLI process, first-party Max route, safe/restricted isolation, strict no-MCP config and no session persistence; no source-edit tools or permission denials; full source diff reviewed per original report; all source implementation belonged to Codex workers. Signing attests this evidence and does not turn it into provider attestation."
+  },
+  "zero_new_model_calls": true,
+  "source_unchanged": true,
+  "signer_trust_change": false,
+  "risk_acceptance": "NOT_GRANTED",
+  "no_merge": true
+}

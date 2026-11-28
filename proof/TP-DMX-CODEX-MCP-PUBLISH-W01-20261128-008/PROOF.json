@@ -196,5 +196,44 @@
   "proof_only_successor_closure": "Require only this proof directory after sourcecommit; staged and actualclosure recorded in publicationreceipt",
   "pr_scoped_gate": "NOT_RUN",
   "signature_status": "NOT_RUN; not authorized",
-  "acceptance": "NOT_GRANTED"
+  "acceptance": "NOT_GRANTED",
+  "packet_id": "TP-DMX-CODEX-MCP-PUBLISH-W01-20261128-008",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "pr_number": 1526,
+  "audit_identity": {
+    "implementer": {
+      "runner": "codex-subagent",
+      "model": "gpt-6.1-sol",
+      "model_family": "gpt",
+      "runtime_family": "codex"
+    },
+    "auditor": {
+      "runner": "claude-code-cli",
+      "model": "sonnet",
+      "model_family": "claude",
+      "runtime_family": "claude-code-cli",
+      "effort": "high"
+    },
+    "independence": "PROVEN"
+  },
+  "audit_identity_evidence": {
+    "implementer_model": "Configured/requested gpt-6.1-sol in independent source-worker bindings001/W01,W02;002/W01;004/W01;005/W01;006/W01; provider attestation UNKNOWN.001/W03 and002/W02 Claude routes were auditors, not source writers.007/W01 is deterministic shell correction.",
+    "auditor_model_requested": "sonnet",
+    "auditor_model_response_claimed": "claude-sonnet-5-5",
+    "auditor_effort_requested": "high",
+    "auditor_effort_observed": "UNKNOWN",
+    "provider_attested_identity": "UNKNOWN",
+    "independence_basis": "Separate external Claude Code CLI process, first-party Max route, safe/restricted isolation, strict no-MCP config and no session persistence; no source-edit tools or permission denials; full source diff reviewed per original report; all source implementation belonged to Codex workers. Signing attests this evidence and does not turn it into provider attestation."
+  },
+  "readiness_preparation": {
+    "macro_id": "MACRO-DMX-CODEX-MCP-READY-20261128-009",
+    "initial_pr_head": "6c73e6b497541075ce1941e010cf580b67e89313",
+    "qualified_at": "2026-11-28T13:34:31.237891+00:00",
+    "scope": "Required packet_id and signed structured audit identity only; original source/report/verdict/time/budget/risks preserved",
+    "signature_status": "Pending separate PR-scoped signed attestation",
+    "source_patch_sha256": "310dbea891f69f10f0ad47cbf73ac7bd5cd25006567fb73abe3375482b97a538",
+    "report_sha256": "1995c98c64cee84874155eecf18e9a968947dadb556756309fc6a99b1e44eea3",
+    "new_audit_calls": 0,
+    "security_risk_acceptance": "NOT_GRANTED"
+  }
 }
